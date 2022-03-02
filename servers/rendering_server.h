@@ -1049,18 +1049,7 @@ public:
 
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
-	enum EnvironmentSDFGIRayCount {
-		ENV_SDFGI_RAY_COUNT_4,
-		ENV_SDFGI_RAY_COUNT_8,
-		ENV_SDFGI_RAY_COUNT_16,
-		ENV_SDFGI_RAY_COUNT_32,
-		ENV_SDFGI_RAY_COUNT_64,
-		ENV_SDFGI_RAY_COUNT_96,
-		ENV_SDFGI_RAY_COUNT_128,
-		ENV_SDFGI_RAY_COUNT_MAX,
-	};
-
-	virtual void environment_set_sdfgi_ray_count(EnvironmentSDFGIRayCount p_ray_count) = 0;
+	virtual void environment_set_sdfgi_ray_count(int p_ray_count) = 0;
 
 	enum EnvironmentSDFGIFramesToConverge {
 		ENV_SDFGI_CONVERGE_IN_5_FRAMES,
@@ -1603,7 +1592,6 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
-VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToUpdateLight);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIYScale);
 VARIANT_ENUM_CAST(RenderingServer::SubSurfaceScatteringQuality);

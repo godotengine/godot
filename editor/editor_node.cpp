@@ -510,7 +510,7 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
 	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
 	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
-	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
+	int ray_count = int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count"));
 	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
 	RS::VoxelGIQuality voxel_gi_quality = RS::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
 	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);

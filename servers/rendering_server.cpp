@@ -2392,15 +2392,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_100_PERCENT);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_4);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_8);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_16);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_32);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_64);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_96);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_128);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_MAX);
-
 	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_5_FRAMES);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_10_FRAMES);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_CONVERGE_IN_15_FRAMES);
@@ -2975,8 +2966,8 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/lightmapping/probe_capture/update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapping/probe_capture/update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
 
-	GLOBAL_DEF("rendering/global_illumination/sdfgi/probe_ray_count", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
+	GLOBAL_DEF("rendering/global_illumination/sdfgi/probe_ray_count", 8);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_RANGE, "1,128,1"));
 	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 5);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
 	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_update_lights", 2);

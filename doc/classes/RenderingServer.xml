@@ -1029,7 +1029,7 @@
 		</method>
 		<method name="environment_set_sdfgi_ray_count">
 			<return type="void" />
-			<argument index="0" name="ray_count" type="int" enum="RenderingServer.EnvironmentSDFGIRayCount" />
+			<argument index="0" name="ray_count" type="int" />
 			<description>
 			</description>
 		</method>
@@ -4193,22 +4193,6 @@
 		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale">
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_8" value="1" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_16" value="2" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_32" value="3" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_64" value="4" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_96" value="5" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_128" value="6" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_MAX" value="7" enum="EnvironmentSDFGIRayCount">
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_5_FRAMES" value="0" enum="EnvironmentSDFGIFramesToConverge">
 		</constant>
