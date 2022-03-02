@@ -414,7 +414,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							cw = tab_size * font->get_char_size(' ').width;
 						}
 
-						if (end > 0 && w + cw + begin > p_width) {
+						if (end > 0 && fw + cw + begin > p_width) {
 							break; //don't allow lines longer than assigned width
 						}
 
@@ -437,13 +437,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						was_separatable = separatable;
 						just_breaked_in_middle = false;
 
-						w += cw;
 						fw += cw;
 
 						end++;
 					}
 					CHECK_HEIGHT(fh);
-					ENSURE_WIDTH(w);
+					ENSURE_WIDTH(fw);
 
 					line_ascent = MAX(line_ascent, ascent);
 					line_descent = MAX(line_descent, descent);
@@ -579,6 +578,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 								if (visible) {
 									line_is_blank = false;
+									w += font->get_char_size(c[i], c[i + 1]).x;
 								}
 
 								if (c[i] == '\t') {
