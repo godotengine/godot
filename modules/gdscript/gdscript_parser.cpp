@@ -4995,21 +4995,21 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 					}
 #ifdef TOOLS_ENABLED
+					// Warn if the default value set is not the same as the export type, since it won't be coerced and
+					// may create wrong expectations.
 					if (subexpr->type == Node::TYPE_CONSTANT && (member._export.type != Variant::NIL || member.data_type.has_type)) {
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
 							if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
-								if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
-									Variant::CallError err;
-									const Variant *args = &cn->value;
-									cn->value = Variant::construct(member._export.type, &args, 1, err);
-								} else {
+								if (!Variant::can_convert(cn->value.get_type(), member._export.type)) {
 									_set_error("Can't convert the provided value to the export type.");
 									return;
+								} else if (!member.data_type.has_type) {
+									_add_warning(GDScriptWarning::EXPORT_HINT_TYPE_MISTMATCH, member.line, Variant::get_type_name(cn->value.get_type()), Variant::get_type_name(member._export.type));
 								}
 							}
-							member.default_value = cn->value;
 						}
+						member.default_value = cn->value;
 					}
 #endif
 
