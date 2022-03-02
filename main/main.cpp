@@ -425,6 +425,7 @@ Error Main::test_setup() {
 	ResourceLoader::load_path_remaps();
 
 	register_scene_types();
+	register_driver_types();
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -435,7 +436,6 @@ Error Main::test_setup() {
 	register_platform_apis();
 
 	register_module_types();
-	register_driver_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -458,13 +458,13 @@ void Main::test_cleanup() {
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
-	unregister_driver_types();
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
 
 	unregister_module_types();
 	unregister_platform_apis();
+	unregister_driver_types();
 	unregister_scene_types();
 	unregister_server_types();
 
@@ -1890,6 +1890,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_scene_types();
 
+	MAIN_PRINT("Main: Load Driver Types");
+
+	register_driver_types();
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
@@ -1925,13 +1929,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	camera_server = CameraServer::create();
 
-	MAIN_PRINT("Main: Load Physics, Drivers, Scripts");
+	MAIN_PRINT("Main: Load Physics");
 
 	initialize_physics();
 	initialize_navigation_server();
 	register_server_singletons();
-
-	register_driver_types();
 
 	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
@@ -2816,8 +2818,6 @@ void Main::cleanup(bool p_force) {
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
 
-	unregister_driver_types();
-
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
@@ -2826,6 +2826,7 @@ void Main::cleanup(bool p_force) {
 
 	unregister_module_types();
 	unregister_platform_apis();
+	unregister_driver_types();
 	unregister_scene_types();
 	unregister_server_types();
 

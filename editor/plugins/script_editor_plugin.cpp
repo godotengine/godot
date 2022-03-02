@@ -762,7 +762,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (p_save && file.is_valid()) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
-			if (file->is_built_in()) {
+			if (!file->is_built_in()) {
 				save_current_script();
 			}
 		}

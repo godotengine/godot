@@ -428,7 +428,7 @@ private:
 
 	bool glow_bicubic_upscale = false;
 	bool glow_high_quality = false;
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
+	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	mutable RID_Owner<RendererSceneEnvironmentRD, true> environment_owner;
 

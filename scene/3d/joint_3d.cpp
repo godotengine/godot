@@ -124,7 +124,7 @@ void Joint3D::set_node_a(const NodePath &p_node_a) {
 		return;
 	}
 
-	if (joint.is_valid()) {
+	if (is_configured()) {
 		_disconnect_signals();
 	}
 
@@ -141,7 +141,7 @@ void Joint3D::set_node_b(const NodePath &p_node_b) {
 		return;
 	}
 
-	if (joint.is_valid()) {
+	if (is_configured()) {
 		_disconnect_signals();
 	}
 
@@ -166,15 +166,18 @@ int Joint3D::get_solver_priority() const {
 
 void Joint3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (is_configured()) {
+				_disconnect_signals();
+			}
 			_update_joint();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (joint.is_valid()) {
+			if (is_configured()) {
 				_disconnect_signals();
-				_update_joint(true);
 			}
+			_update_joint(true);
 		} break;
 	}
 }
@@ -183,6 +186,10 @@ void Joint3D::set_exclude_nodes_from_collision(bool p_enable) {
 	if (exclude_from_collision == p_enable) {
 		return;
 	}
+	if (is_configured()) {
+		_disconnect_signals();
+	}
+	_update_joint(true);
 	exclude_from_collision = p_enable;
 	_update_joint();
 }

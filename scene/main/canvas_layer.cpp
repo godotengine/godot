@@ -58,11 +58,7 @@ void CanvasLayer::set_visible(bool p_visible) {
 		if (c) {
 			RenderingServer::get_singleton()->canvas_item_set_visible(c->get_canvas_item(), p_visible && c->is_visible());
 
-			if (c->is_visible()) {
-				c->_propagate_visibility_changed(p_visible);
-			} else {
-				c->parent_visible_in_tree = p_visible;
-			}
+			c->_propagate_visibility_changed(p_visible);
 		}
 	}
 }

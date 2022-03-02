@@ -378,7 +378,7 @@ private:
 	Node3DEditor *spatial_editor;
 
 	Camera3D *previewing;
-	Camera3D *preview;
+	Camera3D *preview = nullptr;
 
 	bool previewing_cinema;
 	bool _is_node_locked(const Node *p_node);
