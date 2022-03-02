@@ -558,7 +558,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		DocData *dd = EditorHelp::get_doc_data();
 		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_name);
 		if (E) {
-			class_description = E->get().brief_description;
+			class_description = DTR(E->get().brief_description);
 		}
 
 		description_bit->set_text(class_description);
