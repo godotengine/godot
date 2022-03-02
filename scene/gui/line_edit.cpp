@@ -1002,7 +1002,8 @@ void LineEdit::_notification(int p_what) {
 					} else {
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
-							Rect2 trect = Rect2(caret.l_caret.position.x - 2.5 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							Size2 gr_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, caret_column);
+							Rect2 trect = Rect2(gr_bounds.x, caret.l_caret.position.y, gr_bounds.y - gr_bounds.x, get_theme_default_base_scale());
 							trect.position += ofs;
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir) {
@@ -1043,7 +1044,7 @@ void LineEdit::_notification(int p_what) {
 							} else if (rect.position.x + rect.size.x > ofs_max) {
 								rect.size.x = ofs_max - rect.position.x;
 							}
-							rect.size.y = caret_width;
+							rect.size.y = get_theme_default_base_scale();
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
 						}
 					}
@@ -1062,7 +1063,7 @@ void LineEdit::_notification(int p_what) {
 								} else if (rect.position.x + rect.size.x > ofs_max) {
 									rect.size.x = ofs_max - rect.position.x;
 								}
-								rect.size.y = caret_width * 3;
+								rect.size.y = 3 * get_theme_default_base_scale();
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
 							}
 						}

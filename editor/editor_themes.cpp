@@ -432,8 +432,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	String preset = EDITOR_GET("interface/theme/preset");
 
-	int border_size = EDITOR_GET("interface/theme/border_size");
-	int corner_radius = EDITOR_GET("interface/theme/corner_radius");
+	const int border_size = EDITOR_GET("interface/theme/border_size");
+	const int caret_width = EDITOR_GET("interface/theme/caret_width");
+	const int corner_radius = EDITOR_GET("interface/theme/corner_radius");
 
 	Color preset_accent_color;
 	Color preset_base_color;
@@ -1535,7 +1536,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("minimum_character_width", "LineEdit", 4);
 	theme->set_constant("outline_size", "LineEdit", 0);
-	theme->set_constant("caret_width", "LineEdit", 1);
+	theme->set_constant("caret_width", "LineEdit", Math::round(caret_width * EDSCALE));
 
 	// TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_line_edit);
@@ -1552,8 +1553,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
-	theme->set_constant("outline_size", "TextEdit", 0);
-	theme->set_constant("caret_width", "TextEdit", 1);
+	theme->set_constant("caret_width", "TextEdit", Math::round(caret_width * EDSCALE));
 
 	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
