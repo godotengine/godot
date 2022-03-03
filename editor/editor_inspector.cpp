@@ -36,6 +36,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "multi_node_edit.h"
@@ -2684,10 +2685,10 @@ void EditorInspector::update_tree() {
 			if (dot != -1) {
 				String ov = property_label_string.substr(dot);
 				property_label_string = property_label_string.substr(0, dot);
-				property_label_string = property_label_string.capitalize();
+				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
 				property_label_string += ov;
 			} else {
-				property_label_string = property_label_string.capitalize();
+				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
 			}
 		}
 
@@ -2738,13 +2739,15 @@ void EditorInspector::update_tree() {
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
+				String label = component;
 				if (capitalize_paths) {
-					component = component.capitalize();
+					label = EditorPropertyNameProcessor::get_singleton()->process_name(label);
 				}
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, component, object, c, use_folding, section_depth);
+				section->setup(acc_path, label, object, c, use_folding, section_depth);
+				section->set_tooltip(EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(component));
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -2776,7 +2779,7 @@ void EditorInspector::update_tree() {
 				editor_inspector_array = memnew(EditorInspectorArray);
 
 				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
-				array_label = property_label_string.capitalize();
+				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
 				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request), varray(array_element_prefix));

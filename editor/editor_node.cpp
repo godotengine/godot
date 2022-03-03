@@ -90,6 +90,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
@@ -5797,6 +5798,9 @@ void EditorNode::notify_settings_changed() {
 }
 
 EditorNode::EditorNode() {
+	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+	add_child(epnp);
+
 	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
@@ -6026,6 +6030,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
 	EDITOR_DEF("interface/editor/show_update_spinner", false);
 	EDITOR_DEF("interface/editor/update_continuously", false);
+	EDITOR_DEF("interface/editor/translate_properties", true);
 	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", true);
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
