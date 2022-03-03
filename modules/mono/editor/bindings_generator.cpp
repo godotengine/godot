@@ -379,11 +379,19 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				} else {
-					const PropertyInterface *target_iprop = target_itype->find_property_by_name(target_cname);
+					const TypeInterface *current_itype = target_itype;
+					const PropertyInterface *target_iprop = nullptr;
+
+					while (target_iprop == nullptr && current_itype != nullptr) {
+						target_iprop = current_itype->find_property_by_name(target_cname);
+						if (target_iprop == nullptr) {
+							current_itype = _get_type_or_null(TypeReference(current_itype->base_name));
+						}
+					}
 
 					if (target_iprop) {
 						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-						xml_output.append(target_itype->proxy_name);
+						xml_output.append(current_itype->proxy_name);
 						xml_output.append(".");
 						xml_output.append(target_iprop->proxy_name);
 						xml_output.append("\"/>");
