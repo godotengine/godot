@@ -2159,6 +2159,37 @@ void PhysicalBone3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_po
 	PhysicsServer3D::get_singleton()->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
+void PhysicalBone3D::set_linear_velocity(const Vector3 &p_velocity) {
+	linear_velocity = p_velocity;
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+}
+
+Vector3 PhysicalBone3D::get_linear_velocity() const {
+	return linear_velocity;
+}
+
+void PhysicalBone3D::set_angular_velocity(const Vector3 &p_velocity) {
+	angular_velocity = p_velocity;
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+}
+
+Vector3 PhysicalBone3D::get_angular_velocity() const {
+	return angular_velocity;
+}
+
+void PhysicalBone3D::set_use_custom_integrator(bool p_enable) {
+	if (custom_integrator == p_enable) {
+		return;
+	}
+
+	custom_integrator = p_enable;
+	PhysicsServer3D::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
+}
+
+bool PhysicalBone3D::is_using_custom_integrator() {
+	return custom_integrator;
+}
+
 void PhysicalBone3D::reset_physics_simulation_state() {
 	if (simulate_physics) {
 		_start_physics_simulation();
@@ -2867,6 +2898,11 @@ void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		return;
 	}
 
+	linear_velocity = p_state->get_linear_velocity();
+	angular_velocity = p_state->get_angular_velocity();
+
+	GDVIRTUAL_CALL(_integrate_forces, p_state);
+
 	/// Update bone transform.
 
 	Transform3D global_transform(p_state->get_transform());
@@ -2929,8 +2965,19 @@ void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &PhysicalBone3D::set_angular_damp);
 	ClassDB::bind_method(D_METHOD("get_angular_damp"), &PhysicalBone3D::get_angular_damp);
 
+	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &PhysicalBone3D::set_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &PhysicalBone3D::get_linear_velocity);
+
+	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &PhysicalBone3D::set_angular_velocity);
+	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &PhysicalBone3D::get_angular_velocity);
+
+	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &PhysicalBone3D::set_use_custom_integrator);
+	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &PhysicalBone3D::is_using_custom_integrator);
+
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &PhysicalBone3D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &PhysicalBone3D::is_able_to_sleep);
+
+	GDVIRTUAL_BIND(_integrate_forces, "state");
 
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
@@ -2943,10 +2990,13 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
 
 	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
