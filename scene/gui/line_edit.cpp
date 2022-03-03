@@ -847,7 +847,8 @@ void LineEdit::_notification(int p_what) {
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
 			if (draw_caret || drag_caret_force_displayed) {
-				const int caret_width = get_theme_constant(SNAME("caret_width")) * get_theme_default_base_scale();
+				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
+				const int caret_width = get_theme_constant(SNAME("caret_width")) * MAX(1, get_theme_default_base_scale());
 
 				if (ime_text.length() == 0) {
 					// Normal caret.
