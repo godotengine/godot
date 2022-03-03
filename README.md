@@ -19,7 +19,7 @@ Windows), mobile platforms (Android, iOS), as well as Web-based platforms
 
 ## Free, open source and community-driven
 
-Godot is completely free, and open-source under the very permissive [MIT license](https://godotengine.org/license).
+Godot is completely free and open-source under the very permissive [MIT license](https://godotengine.org/license).
 No strings attached, no royalties, nothing. The users' games are theirs, down
 to the last line of engine code. Godot's development is fully independent and
 community-driven, empowering users to help shape their engine to match their
@@ -57,7 +57,7 @@ To get started contributing to the project, see the [contributing guide](CONTRIB
 
 ## Documentation and demos
 
-The official documentation is hosted on [Read The Docs](https://docs.godotengine.org).
+The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
 
 The [class reference](https://docs.godotengine.org/en/latest/classes/)
