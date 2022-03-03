@@ -6470,8 +6470,8 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					gltf_animation->get_tracks().insert(transform_track_i.key, track);
 				}
 			}
-		} else if (String(orig_track_path).contains(":blend_shapes/")) {
-			const Vector<String> node_suffix = String(orig_track_path).split(":blend_shapes/");
+		} else if (String(orig_track_path).contains(":") && animation->track_get_type(track_i) == Animation::TYPE_BLEND_SHAPE) {
+			const Vector<String> node_suffix = String(orig_track_path).split(":");
 			const NodePath path = node_suffix[0];
 			const String suffix = node_suffix[1];
 			Node *node = ap->get_parent()->get_node_or_null(path);
