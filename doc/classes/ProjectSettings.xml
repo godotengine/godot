@@ -439,9 +439,6 @@
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
 		</member>
-		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
-			Maximum amount of functions per frame allowed when profiling.
-		</member>
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>

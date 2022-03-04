@@ -986,9 +986,9 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				// Clear old script signatures. (should we move all this into the profiler?)
 				profiler_signature.clear();
 				// Add max funcs options to request.
+				// The hardcoded value below matches the size in the ScriptsProfiler constructor.
 				Array opts;
-				int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
-				opts.push_back(CLAMP(max_funcs, 16, 512));
+				opts.push_back(16384);
 				data.push_back(opts);
 			}
 			_put_msg("profiler:servers", data);

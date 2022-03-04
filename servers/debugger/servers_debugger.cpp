@@ -267,7 +267,8 @@ public:
 	}
 
 	ScriptsProfiler() {
-		info.resize(GLOBAL_GET("debug/settings/profiler/max_functions"));
+		// The hardcoded value below matches the size in ScriptEditorDebugger.
+		info.resize(16384);
 		ptrs.resize(info.size());
 	}
 };
