@@ -160,6 +160,7 @@ private:
 	float display_max_scale = 1.f;
 	Point2i origin;
 	bool displays_arrangement_dirty = true;
+	bool is_resizing = false;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
 	NSCursor *cursors[CURSOR_MAX];
@@ -206,6 +207,8 @@ public:
 	void mouse_process_popups(bool p_close = false);
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);
+	void set_is_resizing(bool p_is_resizing);
+	bool get_is_resizing() const;
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);

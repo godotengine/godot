@@ -149,6 +149,20 @@
 	}
 }
 
+- (void)windowWillStartLiveResize:(NSNotification *)notification {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->set_is_resizing(true);
+	}
+}
+
+- (void)windowDidEndLiveResize:(NSNotification *)notification {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->set_is_resizing(false);
+	}
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
 	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
