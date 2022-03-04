@@ -1718,11 +1718,19 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 		case INTERPOLATION_CUBIC: {
 			int pre = idx - 1;
 			if (pre < 0) {
-				pre = 0;
+				if (loop && p_loop_wrap) {
+					pre = len - 1;
+				} else {
+					pre = 0;
+				}
 			}
 			int post = next + 1;
 			if (post >= len) {
-				post = next;
+				if (loop && p_loop_wrap) {
+					post = 0;
+				} else {
+					post = next;
+				}
 			}
 
 			return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
