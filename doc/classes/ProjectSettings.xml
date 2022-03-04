@@ -1568,7 +1568,9 @@
 		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also bilinear scaling 3d [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive.
+			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. MSAA can also smooth out the edges of alpha-tested materials if alpha antialiasing is enabled on the material (see [member BaseMaterial3D.alpha_antialiasing_mode]). A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also [member rendering/scaling_3d/mode] and [member rendering/scaling_3d/scale] for supersampling, which provides higher quality but is much more expensive.
+			[b]Note:[/b] MSAA does not operate on shader-induced aliasing, which means it cannot smooth out specular aliasing. To smooth out specular aliasing, a screen-space antialiasing method must be used (see [member rendering/anti_aliasing/quality/screen_space_aa]).
+			[b]Note:[/b] The depth prepass ([member rendering/driver/depth_prepass/enable]) helps improve performance in most cases by eliminating pixel overdraw, but when [member rendering/anti_aliasing/quality/msaa] is enabled, the depth prepass can be expensive. You can try different MSAA/depth prepass settings to find a configuration that is right for your project.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
@@ -1596,7 +1598,8 @@
 		</member>
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
-			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
+			[b]Note:[/b] The depth prepass helps improve performance in most cases by eliminating pixel overdraw, but when [member rendering/anti_aliasing/quality/msaa] is enabled, the depth prepass can be expensive. You can try different MSAA/depth prepass settings to find a configuration that is right for your project.
+			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using the Vulkan Mobile backend, there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			The video driver to use.
