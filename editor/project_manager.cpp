@@ -1022,6 +1022,8 @@ public:
 		}
 	};
 
+	bool project_opening_initiated;
+
 	ProjectList();
 	~ProjectList();
 
@@ -1099,6 +1101,7 @@ ProjectList::ProjectList() {
 	add_child(_scroll_children);
 
 	_icon_load_index = 0;
+	project_opening_initiated = false;
 }
 
 ProjectList::~ProjectList() {
@@ -1707,7 +1710,9 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 		emit_signal(SIGNAL_SELECTION_CHANGED);
 
-		if (!mb->get_control() && mb->is_doubleclick()) {
+		// Do not allow opening a project more than once using a single project manager instance.
+		// Opening the same project in several editor instances at once can lead to various issues.
+		if (!mb->get_control() && mb->is_doubleclick() && !project_opening_initiated) {
 			emit_signal(SIGNAL_PROJECT_ASK_OPEN);
 		}
 	}
@@ -2034,6 +2039,8 @@ void ProjectManager::_open_selected_projects() {
 		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
 		ERR_FAIL_COND(err);
 	}
+
+	_project_list->project_opening_initiated = true;
 
 	_dim_window();
 	get_tree()->quit();
