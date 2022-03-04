@@ -353,10 +353,8 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 		ch += CH_RESERVED_MAX - 1;
 	}
 
-	Map<int, Ref<ConnectedPeer>>::Element *E = nullptr;
-
 	if (target_peer > 0) {
-		E = peer_map.find(target_peer);
+		Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(target_peer);
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
 		ERR_FAIL_COND_V_MSG(E->value()->channels.size() <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value()->channels.size()));
@@ -372,7 +370,7 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 				continue;
 			}
 
-			ERR_CONTINUE_MSG(F.value->channels.size() <= ch, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value()->channels.size()));
+			ERR_CONTINUE_MSG(F.value->channels.size() <= ch, vformat("Unable to send packet on channel %d, max channels: %d", ch, F.value->channels.size()));
 			ERR_CONTINUE(F.value->channels[ch].is_null());
 			F.value->channels[ch]->put_packet(p_buffer, p_buffer_size);
 		}
