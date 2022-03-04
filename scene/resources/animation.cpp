@@ -4347,7 +4347,7 @@ struct AnimationCompressionDataState {
 		if (temp_packets.size() == 0) {
 			return; //nohing to do
 		}
-#define DEBUG_PACKET_PUSH
+//#define DEBUG_PACKET_PUSH
 #ifdef DEBUG_PACKET_PUSH
 #ifndef _MSC_VER
 #warning Debugging packet push, disable this code in production to gain a bit more import performance.
@@ -4378,7 +4378,7 @@ struct AnimationCompressionDataState {
 			header_bytes += 2;
 		}
 
-		while (header_bytes % 4 != 0) {
+		while (header_bytes < 8 && header_bytes % 4 != 0) { // First cond needed to silence wrong GCC warning.
 			header[header_bytes++] = 0;
 		}
 
