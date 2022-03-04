@@ -51,6 +51,7 @@ class TabContainer : public Container {
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
+	void _refresh_tab_names();
 	void _update_margins();
 	void _on_mouse_exited();
 	void _on_tab_changed(int p_tab);
@@ -61,7 +62,6 @@ class TabContainer : public Container {
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
 
 protected:
-	void _child_renamed_callback();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
