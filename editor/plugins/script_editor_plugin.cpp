@@ -810,7 +810,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	}
 	if (idx >= 0) {
 		if (history_pos >= 0) {
-			idx = history[history_pos].control->get_index();
+			idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 		}
 		tab_container->set_current_tab(idx);
 	} else {
@@ -1429,7 +1429,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					file_system_dock->navigate_to_path(path);
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-					tab_container->set_current_tab(file_system_dock->get_index());
+					tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
 				}
 			} break;
 			case CLOSE_DOCS: {
@@ -3376,7 +3376,7 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	}
 
 	history_pos = p_new_pos;
-	tab_container->set_current_tab(history[history_pos].control->get_index());
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
 
 	n = history[history_pos].control;
 
