@@ -8,6 +8,8 @@
 	<string>$binary</string>
 	<key>CFBundleName</key>
 	<string>$name</string>
+	<key>CFBundleDisplayName</key>
+	<string>$name</string>
 	<key>CFBundleGetInfoString</key>
 	<string>$info</string>
 	<key>CFBundleIconFile</key>
