@@ -5664,8 +5664,10 @@ void TextEdit::_generate_context_menu() {
 	if (editable) {
 		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : Key::NONE);
 	}
-	menu->add_separator();
-	if (is_selecting_enabled()) {
+	if (selecting_enabled || editable) {
+		menu->add_separator();
+	}
+	if (selecting_enabled) {
 		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : Key::NONE);
 	}
 	if (editable) {
