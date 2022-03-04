@@ -411,9 +411,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Colors
 	bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
-	const Color dark_color_1 = base_color.lerp(Color(0, 0, 0, 1), contrast);
-	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5);
-	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2);
+	// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
+	// Some places in the editor use 8-bit integer colors.
+	const Color dark_color_1 = base_color.lerp(Color(0, 0, 0, 1), contrast).clamp();
+	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5).clamp();
+	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2).clamp();
 
 	const Color background_color = dark_color_2;
 
