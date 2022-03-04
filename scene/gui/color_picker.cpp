@@ -1429,7 +1429,8 @@ void ColorPickerButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }
 
-ColorPickerButton::ColorPickerButton() {
+ColorPickerButton::ColorPickerButton(const String &p_text) :
+		Button(p_text) {
 	set_toggle_mode(true);
 }
 

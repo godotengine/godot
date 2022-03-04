@@ -4712,7 +4712,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 	return d;
 }
 
-RichTextLabel::RichTextLabel() {
+RichTextLabel::RichTextLabel(const String &p_text) {
 	main = memnew(ItemFrame);
 	main->index = 0;
 	current = main;
@@ -4733,6 +4733,8 @@ RichTextLabel::RichTextLabel() {
 	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
+
+	set_text(p_text);
 
 	set_clip_contents(true);
 }

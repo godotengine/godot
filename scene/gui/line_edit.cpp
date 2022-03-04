@@ -2437,7 +2437,7 @@ void LineEdit::_ensure_menu() {
 	}
 }
 
-LineEdit::LineEdit() {
+LineEdit::LineEdit(const String &p_placeholder) {
 	text_rid = TS->create_shaped_text();
 	_create_undo_state();
 
@@ -2451,6 +2451,8 @@ LineEdit::LineEdit() {
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
 	set_caret_blink_enabled(false);
+
+	set_placeholder(p_placeholder);
 
 	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
 }
