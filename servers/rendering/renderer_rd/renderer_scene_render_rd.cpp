@@ -4064,7 +4064,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		return;
 	}
 
-	RENDER_TIMESTAMP(">Volumetric Fog");
+	RENDER_TIMESTAMP("> Volumetric Fog");
 	RD::get_singleton()->draw_command_begin_label("Volumetric Fog");
 
 	if (env && env->volumetric_fog_enabled && !rb->volumetric_fog) {
@@ -4136,7 +4136,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	if (p_fog_volumes.size() > 0) {
 		RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog Volumes");
 
-		RENDER_TIMESTAMP("Render Fog Volumes");
+		RENDER_TIMESTAMP("Render FogVolumes");
 
 		VolumetricFogShader::VolumeUBO params;
 
@@ -4730,7 +4730,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER);
 
-	RENDER_TIMESTAMP("<Volumetric Fog");
+	RENDER_TIMESTAMP("< Volumetric Fog");
 	RD::get_singleton()->draw_command_end_label();
 	RD::get_singleton()->draw_command_end_label();
 
@@ -4819,7 +4819,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	bool render_gi = p_render_data->render_buffers.is_valid() && p_use_gi;
 
 	if (render_shadows && render_gi) {
-		RENDER_TIMESTAMP("Render GI + Render Shadows (parallel)");
+		RENDER_TIMESTAMP("Render GI + Render Shadows (Parallel)");
 	} else if (render_shadows) {
 		RENDER_TIMESTAMP("Render Shadows");
 	} else if (render_gi) {
