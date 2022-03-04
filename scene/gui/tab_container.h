@@ -33,6 +33,7 @@
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tab_bar.h"
+#include "scene/property_list_helper.h"
 
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
@@ -101,6 +102,19 @@ private:
 		Ref<Font> tab_font;
 		int tab_font_size;
 	} theme_cache;
+	struct CachedTab {
+		bool has_title = false;
+		String title;
+		Ref<Texture2D> icon;
+		bool disabled = false;
+		bool hidden = false;
+	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+
+	mutable Vector<CachedTab> pending_tabs;
+	CachedTab &get_pending_tab(int p_idx) const;
 
 	HashMap<Node *, RID> tab_panels;
 
@@ -129,6 +143,12 @@ private:
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
