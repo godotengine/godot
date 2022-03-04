@@ -796,7 +796,7 @@ void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
 
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {
-		return get_name() + " (" + get_path().get_slice("::", 0) + ")";
+		return get_name() + " (" + get_path() + ")";
 	} else {
 		return get_path();
 	}
