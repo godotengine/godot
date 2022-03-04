@@ -787,6 +787,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
 		}
 
 		for (const String &E : translations) {
@@ -795,6 +796,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				String fname = tmp_app_path_name + "/Contents/Resources/" + tr->get_locale() + ".lproj";
 				tmp_app_dir->make_dir_recursive(fname);
 				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				String prop = "application/config/name_" + tr->get_locale();
+				if (ProjectSettings::get_singleton()->has_setting(prop)) {
+					f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
+				}
 			}
 		}
 	}
