@@ -3738,8 +3738,13 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		} break;
 		case Variant::DICTIONARY: {
-			EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
-			return editor;
+			if (p_hint == PROPERTY_HINT_LOCALIZABLE_STRING) {
+				EditorPropertyLocalizableString *editor = memnew(EditorPropertyLocalizableString);
+				return editor;
+			} else {
+				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
+				return editor;
+			}
 		} break;
 		case Variant::ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
