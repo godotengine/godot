@@ -435,7 +435,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color disabled_color = mono_color.inverted().lerp(base_color, 0.7);
 	const Color disabled_bg_color = mono_color.inverted().lerp(base_color, 0.9);
 
-	Color icon_hover_color = Color(1, 1, 1) * (dark_theme ? 1.15 : 1.45);
+	const Color icon_normal_color = Color(1, 1, 1);
+	Color icon_hover_color = icon_normal_color * (dark_theme ? 1.15 : 1.45);
 	icon_hover_color.a = 1.0;
 	Color icon_focus_color = icon_hover_color;
 	// Make the pressed icon color overbright because icons are not completely white on a dark theme.
@@ -688,6 +689,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "Button", font_focus_color);
 	theme->set_color("font_pressed_color", "Button", accent_color);
 	theme->set_color("font_disabled_color", "Button", font_disabled_color);
+	theme->set_color("icon_normal_color", "Button", icon_normal_color);
 	theme->set_color("icon_hover_color", "Button", icon_hover_color);
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
