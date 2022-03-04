@@ -133,6 +133,7 @@
 		<method name="is_embedding_subwindows" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the viewport is currently embedding windows.
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
@@ -151,7 +152,6 @@
 			<return type="void" />
 			<argument index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if the viewport is currently embedding windows.
 			</description>
 		</method>
 		<method name="push_unhandled_input">
@@ -220,6 +220,8 @@
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
+			If [code]true[/code], the viewport wiil embed [Window]s. When [Window]s are embedded in a viewport, they will appear as children of that viewport and they will not be able to leave the viewport.
+			If [code]false[/code], [Window]s will be created at the same level as the parent viewport. For the main windows's viewport this means, that the window will be created as an actual window from the window manager's point of view, allowing them to be moved outside the main window (and alt-tabbing through them if desired). For other viewports this means, that they are displayed within the current window as [SceneTree]-siblings of the viewport.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
