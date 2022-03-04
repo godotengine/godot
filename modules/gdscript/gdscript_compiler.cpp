@@ -98,6 +98,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		case GDScriptParser::DataType::NATIVE: {
 			result.kind = GDScriptDataType::NATIVE;
 			result.native_type = p_datatype.native_type;
+			result.builtin_type = p_datatype.builtin_type;
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			result.kind = GDScriptDataType::SCRIPT;
