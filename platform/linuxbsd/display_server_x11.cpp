@@ -109,6 +109,15 @@ struct Hints {
 	unsigned long status = 0;
 };
 
+static String get_atom_name(Display *p_disp, Atom p_atom) {
+	char *name = XGetAtomName(p_disp, p_atom);
+	ERR_FAIL_NULL_V_MSG(name, String(), "Atom is invalid.");
+	String ret;
+	ret.parse_utf8(name);
+	XFree(name);
+	return ret;
+}
+
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SUBWINDOWS:
@@ -435,7 +444,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
 	if (selection_owner == x11_window) {
 		static const char *target_type = "PRIMARY";
-		if (p_source != None && String(XGetAtomName(x11_display, p_source)) == target_type) {
+		if (p_source != None && get_atom_name(x11_display, p_source) == target_type) {
 			return internal_clipboard_primary;
 		} else {
 			return internal_clipboard;
@@ -2448,8 +2457,7 @@ String DisplayServerX11::keyboard_get_layout_language(int p_index) const {
 
 		Atom names = kbd->names->symbols;
 		if (names != None) {
-			char *name = XGetAtomName(x11_display, names);
-			Vector<String> info = String(name).split("+");
+			Vector<String> info = get_atom_name(x11_display, names).split("+");
 			if (p_index >= 0 && p_index < _group_count) {
 				if (p_index + 1 < info.size()) {
 					ret = info[p_index + 1]; // Skip "pc" at the start and "inet"/"group" at the end of symbols.
@@ -2459,7 +2467,6 @@ String DisplayServerX11::keyboard_get_layout_language(int p_index) const {
 			} else {
 				ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
 			}
-			XFree(name);
 		}
 		XkbFreeKeyboard(kbd, 0, true);
 	}
@@ -2486,9 +2493,7 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 		}
 
 		if (p_index >= 0 && p_index < _group_count) {
-			char *full_name = XGetAtomName(x11_display, groups[p_index]);
-			ret.parse_utf8(full_name);
-			XFree(full_name);
+			ret = get_atom_name(x11_display, groups[p_index]);
 		} else {
 			ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
 		}
@@ -2551,7 +2556,7 @@ static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count)
 	for (int i = 0; i < p_count; i++) {
 		Atom atom = p_list[i];
 
-		if (atom != None && String(XGetAtomName(p_display, atom)) == target_type) {
+		if (atom != None && get_atom_name(p_display, atom) == target_type) {
 			return atom;
 		}
 	}
@@ -2560,15 +2565,15 @@ static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count)
 
 static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
 	static const char *target_type = "text/uri-list";
-	if (p_t1 != None && String(XGetAtomName(p_disp, p_t1)) == target_type) {
+	if (p_t1 != None && get_atom_name(p_disp, p_t1) == target_type) {
 		return p_t1;
 	}
 
-	if (p_t2 != None && String(XGetAtomName(p_disp, p_t2)) == target_type) {
+	if (p_t2 != None && get_atom_name(p_disp, p_t2) == target_type) {
 		return p_t2;
 	}
 
-	if (p_t3 != None && String(XGetAtomName(p_disp, p_t3)) == target_type) {
+	if (p_t3 != None && get_atom_name(p_disp, p_t3) == target_type) {
 		return p_t3;
 	}
 
@@ -2890,7 +2895,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 		// is the owner during a selection request.
 		CharString clip;
 		static const char *target_type = "PRIMARY";
-		if (p_selection != None && String(XGetAtomName(x11_display, p_selection)) == target_type) {
+		if (p_selection != None && get_atom_name(x11_display, p_selection) == target_type) {
 			clip = internal_clipboard_primary.utf8();
 		} else {
 			clip = internal_clipboard.utf8();
@@ -3914,6 +3919,7 @@ void DisplayServerX11::process_events() {
 					Property p = _read_property(x11_display, windows[window_id].x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
+					XFree(p.data);
 					for (int i = 0; i < files.size(); i++) {
 						files.write[i] = files[i].replace("file://", "").uri_decode().strip_edges();
 					}
@@ -3956,6 +3962,7 @@ void DisplayServerX11::process_events() {
 					if (more_than_3) {
 						Property p = _read_property(x11_display, source, XInternAtom(x11_display, "XdndTypeList", False));
 						requested = pick_target_from_list(x11_display, (Atom *)p.data, p.nitems);
+						XFree(p.data);
 					} else {
 						requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2], event.xclient.data.l[3], event.xclient.data.l[4]);
 					}
