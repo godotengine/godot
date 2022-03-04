@@ -76,9 +76,6 @@ class EditorSpinSlider : public Range {
 	bool hide_slider;
 	bool flat;
 
-	bool use_custom_label_color;
-	Color custom_label_color;
-
 	void _evaluate_input_text();
 
 	void _update_value_input_stylebox();
@@ -111,8 +108,6 @@ public:
 
 	void set_flat(bool p_enable);
 	bool is_flat() const;
-
-	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
 
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit();

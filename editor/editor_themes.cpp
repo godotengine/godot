@@ -467,6 +467,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
 	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
 
+	const float prop_color_saturation = accent_color.get_s() * 0.75;
+	const float prop_color_value = accent_color.get_v();
+
+	theme->set_color("property_color_x", "Editor", Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_y", "Editor", Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_z", "Editor", Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_w", "Editor", Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
 	theme->set_color("disabled_font_color", "Editor", font_disabled_color);
@@ -867,6 +875,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
 	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
+
+	// EditorSpinSlider.
+	theme->set_color("label_color", "EditorSpinSlider", font_color);
+	theme->set_color("read_only_label_color", "EditorSpinSlider", font_readonly_color);
 
 	Ref<StyleBoxFlat> style_property_bg = style_default->duplicate();
 	style_property_bg->set_bg_color(highlight_color);
