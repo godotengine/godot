@@ -63,7 +63,7 @@ void ProjectSettingsEditor::queue_save() {
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
-	tab_container->set_current_tab(plugin_settings->get_index());
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
 }
 
 void ProjectSettingsEditor::update_plugins() {
