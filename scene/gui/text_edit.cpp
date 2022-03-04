@@ -6579,7 +6579,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	emit_signal(SNAME("lines_edited_from"), p_to_line, p_from_line);
 }
 
-TextEdit::TextEdit() {
+TextEdit::TextEdit(const String &p_placeholder) {
 	placeholder_data_buf.instantiate();
 
 	clear();
@@ -6620,6 +6620,8 @@ TextEdit::TextEdit() {
 	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));
 
 	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");
+
+	set_placeholder(p_placeholder);
 
 	set_editable(true);
 }

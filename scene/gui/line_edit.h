@@ -332,7 +332,7 @@ public:
 
 	void show_virtual_keyboard();
 
-	LineEdit();
+	LineEdit(const String &p_placeholder = String());
 	~LineEdit();
 };
 
