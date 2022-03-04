@@ -143,12 +143,12 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-	int w = graph->get_size().width;
-	int h = graph->get_size().height;
+	const int w = graph->get_size().width;
+	const int h = graph->get_size().height;
 
 	bool reset_texture = false;
 
-	int desired_len = w * h * 4;
+	const int desired_len = w * h * 4;
 
 	if (graph_image.size() != desired_len) {
 		reset_texture = true;
@@ -156,12 +156,13 @@ void EditorVisualProfiler::_update_plot() {
 	}
 
 	uint8_t *wr = graph_image.ptrw();
+	const Color background_color = get_theme_color("dark_color_2", "Editor");
 
-	//clear
+	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
-		wr[i + 0] = 0;
-		wr[i + 1] = 0;
-		wr[i + 2] = 0;
+		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
+		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
+		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
 		wr[i + 3] = 255;
 	}
 
@@ -259,9 +260,9 @@ void EditorVisualProfiler::_update_plot() {
 				uint8_t r, g, b;
 
 				if (column_cpu[j].a == 0) {
-					r = 0;
-					g = 0;
-					b = 0;
+					r = Math::fast_ftoi(background_color.r * 255);
+					g = Math::fast_ftoi(background_color.g * 255);
+					b = Math::fast_ftoi(background_color.b * 255);
 				} else {
 					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0, 255);
@@ -279,9 +280,9 @@ void EditorVisualProfiler::_update_plot() {
 				uint8_t r, g, b;
 
 				if (column_gpu[j].a == 0) {
-					r = 0;
-					g = 0;
-					b = 0;
+					r = Math::fast_ftoi(background_color.r * 255);
+					g = Math::fast_ftoi(background_color.g * 255);
+					b = Math::fast_ftoi(background_color.b * 255);
 				} else {
 					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
