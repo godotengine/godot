@@ -662,8 +662,12 @@ private:
 	real_t bounce = 0.0;
 	real_t mass = 1.0;
 	real_t friction = 1.0;
+	Vector3 linear_velocity;
+	Vector3 angular_velocity;
 	real_t gravity_scale = 1.0;
 	bool can_sleep = true;
+
+	bool custom_integrator = false;
 
 	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
 	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
@@ -676,6 +680,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
@@ -690,6 +695,15 @@ private:
 
 public:
 	void _on_bone_parent_changed();
+
+	void set_linear_velocity(const Vector3 &p_velocity);
+	Vector3 get_linear_velocity() const override;
+
+	void set_angular_velocity(const Vector3 &p_velocity);
+	Vector3 get_angular_velocity() const override;
+
+	void set_use_custom_integrator(bool p_enable);
+	bool is_using_custom_integrator();
 
 #ifdef TOOLS_ENABLED
 	void _set_gizmo_move_joint(bool p_move_joint);
