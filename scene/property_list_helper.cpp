@@ -43,7 +43,7 @@ void PropertyListHelper::register_base_helper(PropertyListHelper *p_helper) { //
 	base_helpers.push_back(p_helper);
 }
 
-const PropertyListHelper::Property *PropertyListHelper::_get_property(const String &p_property, int *r_index) const {
+const PropertyListHelper::Property *PropertyListHelper::_get_property(const String &p_property, int *r_index, bool p_allow_oob) const {
 	const Vector<String> components = p_property.rsplit("/", true, 1);
 	if (components.size() < 2 || !components[0].begins_with(prefix)) {
 		return nullptr;
@@ -55,7 +55,7 @@ const PropertyListHelper::Property *PropertyListHelper::_get_property(const Stri
 	}
 
 	int index = index_string.to_int();
-	if (index < 0 || index >= _call_array_length_getter()) {
+	if (index < 0 || (!p_allow_oob && index >= _call_array_length_getter())) {
 		return nullptr;
 	}
 
@@ -165,7 +165,7 @@ bool PropertyListHelper::property_get_value(const String &p_property, Variant &r
 
 bool PropertyListHelper::property_set_value(const String &p_property, const Variant &p_value) const {
 	int index;
-	const Property *property = _get_property(p_property, &index);
+	const Property *property = _get_property(p_property, &index, allow_oob_assign);
 
 	if (property) {
 		_call_setter(property->setter, index, p_value);
