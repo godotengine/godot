@@ -138,6 +138,13 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 void TabContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			// If some nodes happen to be renamed outside the tree, the tab names need to be updated manually.
+			if (get_tab_count() > 0) {
+				_refresh_tab_names();
+			}
+		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
@@ -430,12 +437,11 @@ void TabContainer::_on_tab_selected(int p_tab) {
 	emit_signal(SNAME("tab_selected"), p_tab);
 }
 
-void TabContainer::_child_renamed_callback() {
+void TabContainer::_refresh_tab_names() {
 	Vector<Control *> controls = _get_tab_controls();
 	for (int i = 0; i < controls.size(); i++) {
 		if (!controls[i]->has_meta("_tab_name") && String(controls[i]->get_name()) != get_tab_title(i)) {
 			tab_bar->set_tab_title(i, controls[i]->get_name());
-			return;
 		}
 	}
 }
@@ -457,7 +463,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	_update_margins();
 
-	p_child->connect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
+	p_child->connect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -508,7 +514,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	if (p_child->has_meta("_tab_name")) {
 		p_child->remove_meta("_tab_name");
 	}
-	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
+	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -635,6 +641,11 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 		tab_bar->set_tab_title(p_tab, p_title);
 		child->set_meta("_tab_name", p_title);
 	}
+
+	_update_margins();
+	if (!get_clip_tabs()) {
+		update_minimum_size();
+	}
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
@@ -643,6 +654,9 @@ String TabContainer::get_tab_title(int p_tab) const {
 
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	tab_bar->set_tab_icon(p_tab, p_icon);
+
+	_update_margins();
+	_repaint();
 }
 
 Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
@@ -651,6 +665,11 @@ Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
 
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 	tab_bar->set_tab_disabled(p_tab, p_disabled);
+
+	_update_margins();
+	if (!get_clip_tabs()) {
+		update_minimum_size();
+	}
 }
 
 bool TabContainer::is_tab_disabled(int p_tab) const {
@@ -663,6 +682,11 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 
 	tab_bar->set_tab_hidden(p_tab, p_hidden);
 	child->hide();
+
+	_update_margins();
+	if (!get_clip_tabs()) {
+		update_minimum_size();
+	}
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
@@ -735,7 +759,9 @@ void TabContainer::set_popup(Node *p_popup) {
 	if (had_popup != bool(popup)) {
 		update();
 		_update_margins();
-		update_minimum_size();
+		if (!get_clip_tabs()) {
+			update_minimum_size();
+		}
 	}
 }
 
