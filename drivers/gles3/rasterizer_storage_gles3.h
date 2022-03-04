@@ -1169,27 +1169,21 @@ public:
 			int height = 0;
 
 			GLuint color = 0;
-
-			Effect() {
-			}
 		};
 
 		Effect copy_screen_effect;
 
 		struct MipMaps {
 			struct Size {
-				GLuint fbo;
-				GLuint color;
-				int width;
-				int height;
+				GLuint fbo = 0;
+				GLuint color = 0;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Size> sizes;
 			GLuint color = 0;
 			int levels = 0;
-
-			MipMaps() {
-			}
 		};
 
 		MipMaps mip_maps[2];
@@ -1199,14 +1193,14 @@ public:
 			GLuint color = 0;
 			GLuint depth = 0;
 			RID texture;
-
-			External() {
-			}
 		} external;
 
-		int x = 0, y = 0, width = 0, height = 0;
+		int x = 0;
+		int y = 0;
+		int width = 0;
+		int height = 0;
 
-		bool flags[RENDER_TARGET_FLAG_MAX];
+		bool flags[RENDER_TARGET_FLAG_MAX] = {};
 
 		// instead of allocating sized render targets immediately,
 		// defer this for faster startup
