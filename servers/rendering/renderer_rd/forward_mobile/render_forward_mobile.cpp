@@ -653,9 +653,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	if (draw_sky || draw_sky_fog_only) {
 		// !BAS! @TODO See if we can limit doing some things double and maybe even move this into _pre_opaque_render
 		// and change Forward Clustered in the same way as we have here (but without using subpasses)
-		RENDER_TIMESTAMP("Setup Sky resolution buffers");
+		RENDER_TIMESTAMP("Setup Sky Resolution Buffers");
 
-		RD::get_singleton()->draw_command_begin_label("Setup Sky resolution buffers");
+		RD::get_singleton()->draw_command_begin_label("Setup Sky Resolution Buffers");
 
 		if (p_render_data->reflection_probe.is_valid()) {
 			CameraMatrix correction;
@@ -972,9 +972,9 @@ void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
 /* */
 
 void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
-	RENDER_TIMESTAMP("Setup Rendering Material");
+	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
-	RD::get_singleton()->draw_command_begin_label("Render Material");
+	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
 
 	_update_render_base_uniform_set();
 
@@ -997,7 +997,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
-	RENDER_TIMESTAMP("Render Material");
+	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, 0);
@@ -1039,7 +1039,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<GeometryInstance *> &p_in
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
-	RENDER_TIMESTAMP("Render Material");
+	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, true, false);
@@ -1089,7 +1089,7 @@ void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_
 }
 
 void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
-	RENDER_TIMESTAMP("Setup Render Collider Heightfield");
+	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
 
