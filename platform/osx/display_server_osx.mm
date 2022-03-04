@@ -599,6 +599,14 @@ void DisplayServerOSX::set_last_focused_window(WindowID p_window) {
 	last_focused_window = p_window;
 }
 
+void DisplayServerOSX::set_is_resizing(bool p_is_resizing) {
+	is_resizing = p_is_resizing;
+}
+
+bool DisplayServerOSX::get_is_resizing() const {
+	return is_resizing;
+}
+
 void DisplayServerOSX::window_update(WindowID p_window) {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
