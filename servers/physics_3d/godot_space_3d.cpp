@@ -1007,11 +1007,8 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	return collided;
 }
 
+// Assumes a valid collision pair, this should have been checked beforehand in the BVH or octree.
 void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A, GodotCollisionObject3D *B, int p_subindex_B, void *p_self) {
-	if (!A->interacts_with(B)) {
-		return nullptr;
-	}
-
 	GodotCollisionObject3D::Type type_A = A->get_type();
 	GodotCollisionObject3D::Type type_B = B->get_type();
 	if (type_A > type_B) {
