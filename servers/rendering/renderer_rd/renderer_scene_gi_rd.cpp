@@ -1002,7 +1002,7 @@ void RendererSceneGIRD::SDFGI::store_probes() {
 	push_constant.y_mult = y_mult;
 
 	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
-	RENDER_TIMESTAMP("Average Probes");
+	RENDER_TIMESTAMP("Average SDFGI Probes");
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.integrate_pipeline[SDFGIShader::INTEGRATE_MODE_STORE]);
@@ -1555,14 +1555,14 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 	if (cascade_next != cascade) {
 		RD::get_singleton()->draw_command_begin_label("SDFGI Pre-Process Cascade");
 
-		RENDER_TIMESTAMP(">SDFGI Update SDF");
+		RENDER_TIMESTAMP("> SDFGI Update SDF");
 		//done rendering! must update SDF
 		//clear dispatch indirect data
 
 		SDFGIShader::PreprocessPushConstant push_constant;
 		memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
 
-		RENDER_TIMESTAMP("Scroll SDF");
+		RENDER_TIMESTAMP("SDFGI Scroll SDF");
 
 		//scroll
 		if (cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
@@ -1701,7 +1701,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 
 			push_constant.half_size = true;
 			{
-				RENDER_TIMESTAMP("SDFGI Jump Flood (Half Size)");
+				RENDER_TIMESTAMP("SDFGI Jump Flood (Half-Size)");
 
 				uint32_t s = cascade_half_size;
 
@@ -1723,7 +1723,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 					}
 				}
 
-				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Half Size)");
+				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Half-Size)");
 
 				//continue with optimized jump flood for smaller reads
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
@@ -1759,7 +1759,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 
 		} else {
 			//full size jumpflood
-			RENDER_TIMESTAMP("SDFGI Jump Flood");
+			RENDER_TIMESTAMP("SDFGI Jump Flood (Full-Size)");
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE]);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdf_initialize_uniform_set, 0);
@@ -1790,7 +1790,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 					}
 				}
 
-				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized");
+				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Full-Size)");
 
 				//continue with optimized jump flood for smaller reads
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->sdfgi_shader.preprocess_pipeline[SDFGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
@@ -1882,7 +1882,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		//finalize render and update sdf
 #endif
 
-		RENDER_TIMESTAMP("<SDFGI Update SDF");
+		RENDER_TIMESTAMP("< SDFGI Update SDF");
 		RD::get_singleton()->draw_command_end_label();
 	}
 }
@@ -1891,7 +1891,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
 
-	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lighs");
+	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lights");
 
 	update_cascades();
 

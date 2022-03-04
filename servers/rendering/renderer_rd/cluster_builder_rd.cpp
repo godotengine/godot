@@ -398,7 +398,7 @@ void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const CameraMa
 }
 
 void ClusterBuilderRD::bake_cluster() {
-	RENDER_TIMESTAMP(">Bake Cluster");
+	RENDER_TIMESTAMP("> Bake 3D Cluster");
 
 	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
 
@@ -429,7 +429,7 @@ void ClusterBuilderRD::bake_cluster() {
 
 		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
-		RENDER_TIMESTAMP("Render Elements");
+		RENDER_TIMESTAMP("Render 3D Cluster Elements");
 
 		//render elements
 		{
@@ -466,7 +466,7 @@ void ClusterBuilderRD::bake_cluster() {
 			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_COMPUTE);
 		}
 		//store elements
-		RENDER_TIMESTAMP("Pack Elements");
+		RENDER_TIMESTAMP("Pack 3D Cluster Elements");
 
 		{
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -492,7 +492,7 @@ void ClusterBuilderRD::bake_cluster() {
 	} else {
 		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
-	RENDER_TIMESTAMP("<Bake Cluster");
+	RENDER_TIMESTAMP("< Bake 3D Cluster");
 	RD::get_singleton()->draw_command_end_label();
 }
 

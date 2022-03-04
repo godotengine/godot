@@ -145,7 +145,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 }
 
 void RendererViewport::_draw_3d(Viewport *p_viewport) {
-	RENDER_TIMESTAMP(">Begin Rendering 3D Scene");
+	RENDER_TIMESTAMP("> Render 3D Scene");
 
 	Ref<XRInterface> xr_interface;
 	if (p_viewport->use_xr && XRServer::get_singleton() != nullptr) {
@@ -170,7 +170,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
 	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
 
-	RENDER_TIMESTAMP("<End Rendering 3D Scene");
+	RENDER_TIMESTAMP("< Render 3D Scene");
 }
 
 void RendererViewport::_draw_viewport(Viewport *p_viewport) {
@@ -281,7 +281,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		int shadow_count = 0;
 		int directional_light_count = 0;
 
-		RENDER_TIMESTAMP("Cull Canvas Lights");
+		RENDER_TIMESTAMP("Cull 2D Lights");
 		for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
 			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 
@@ -355,8 +355,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 			RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
 
-			RENDER_TIMESTAMP(">Render 2D Shadows");
-			RENDER_TIMESTAMP("Cull Occluders");
+			RENDER_TIMESTAMP("> Render PointLight2D Shadows");
+			RENDER_TIMESTAMP("Cull LightOccluder2Ds");
 
 			//make list of occluders
 			for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
@@ -378,13 +378,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 			RendererCanvasRender::Light *light = lights_with_shadow;
 			while (light) {
-				RENDER_TIMESTAMP("Render Shadow");
+				RENDER_TIMESTAMP("Render PointLight2D Shadow");
 
 				RSG::canvas_render->light_update_shadow(light->light_internal, shadow_count++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
 				light = light->shadows_next_ptr;
 			}
 
-			RENDER_TIMESTAMP("<End rendering 2D Shadows");
+			RENDER_TIMESTAMP("< Render PointLight2D Shadows");
 		}
 
 		if (directional_lights_with_shadow) {
@@ -436,7 +436,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 				RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
 
-				RENDER_TIMESTAMP(">Render Directional 2D Shadows");
+				RENDER_TIMESTAMP("> Render DirectionalLight2D Shadows");
 
 				//make list of occluders
 				int occ_cullded = 0;
@@ -467,7 +467,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				light = light->shadows_next_ptr;
 			}
 
-			RENDER_TIMESTAMP("<Render Directional 2D Shadows");
+			RENDER_TIMESTAMP("< Render DirectionalLight2D Shadows");
 		}
 
 		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().get_layer() > scenario_canvas_max_layer) {
@@ -566,7 +566,7 @@ void RendererViewport::draw_viewports() {
 
 	Map<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 	//draw viewports
-	RENDER_TIMESTAMP(">Render Viewports");
+	RENDER_TIMESTAMP("> Render Viewports");
 
 	//determine what is visible
 	draw_viewports_pass++;
@@ -641,7 +641,7 @@ void RendererViewport::draw_viewports() {
 			continue; //should not draw
 		}
 
-		RENDER_TIMESTAMP(">Rendering Viewport " + itos(i));
+		RENDER_TIMESTAMP("> Render Viewport " + itos(i));
 
 		RSG::storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
@@ -699,7 +699,7 @@ void RendererViewport::draw_viewports() {
 			vp->update_mode = RS::VIEWPORT_UPDATE_DISABLED;
 		}
 
-		RENDER_TIMESTAMP("<Rendering Viewport " + itos(i));
+		RENDER_TIMESTAMP("< Render Viewport " + itos(i));
 
 		objects_drawn += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] + vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME];
 		vertices_drawn += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] + vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME];
@@ -711,7 +711,7 @@ void RendererViewport::draw_viewports() {
 	total_vertices_drawn = vertices_drawn;
 	total_draw_calls_used = draw_calls_used;
 
-	RENDER_TIMESTAMP("<Render Viewports");
+	RENDER_TIMESTAMP("< Render Viewports");
 	//this needs to be called to make screen swapping more efficient
 	RSG::rasterizer->prepare_for_blitting_render_targets();
 

@@ -1417,7 +1417,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		bool needs_pre_resolve = _needs_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
 		if (needs_pre_resolve) {
-			RENDER_TIMESTAMP("GI + Render Depth Pre-Pass (parallel)");
+			RENDER_TIMESTAMP("GI + Render Depth Pre-Pass (Parallel)");
 		} else {
 			RENDER_TIMESTAMP("Render Depth Pre-Pass");
 		}
@@ -1444,8 +1444,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			RENDER_TIMESTAMP("Resolve Depth Pre-Pass");
-			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass");
+			RENDER_TIMESTAMP("Resolve Depth Pre-Pass (MSAA)");
+			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass (MSAA)");
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI) {
 				if (needs_pre_resolve) {
 					RD::get_singleton()->barrier(RD::BARRIER_MASK_RASTER, RD::BARRIER_MASK_COMPUTE);
@@ -1562,15 +1562,15 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	if (using_separate_specular) {
 		if (using_sss) {
-			RENDER_TIMESTAMP("Sub Surface Scattering");
-			RD::get_singleton()->draw_command_begin_label("Process Sub Surface Scattering");
+			RENDER_TIMESTAMP("Sub-Surface Scattering");
+			RD::get_singleton()->draw_command_begin_label("Process Sub-Surface Scattering");
 			_process_sss(p_render_data->render_buffers, p_render_data->cam_projection);
 			RD::get_singleton()->draw_command_end_label();
 		}
 
 		if (using_ssr) {
-			RENDER_TIMESTAMP("Screen Space Reflection");
-			RD::get_singleton()->draw_command_begin_label("Process Screen Space Reflections");
+			RENDER_TIMESTAMP("Screen-Space Reflections");
+			RD::get_singleton()->draw_command_begin_label("Process Screen-Space Reflections");
 			_process_ssr(p_render_data->render_buffers, render_buffer->color_fb, render_buffer->normal_roughness_buffer, render_buffer->specular, render_buffer->specular, Color(0, 0, 0, 1), p_render_data->environment, p_render_data->cam_projection, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED);
 			RD::get_singleton()->draw_command_end_label();
 		} else {
@@ -1590,9 +1590,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_render_buffers_copy_depth_texture(p_render_data);
 	}
 
-	RENDER_TIMESTAMP("Render Transparent Pass");
+	RENDER_TIMESTAMP("Render 3D Transparent Pass");
 
-	RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
+	RD::get_singleton()->draw_command_begin_label("Render 3D Transparent Pass");
 
 	rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, true);
 
@@ -1618,7 +1618,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_begin_label("Copy framebuffer for SSIL");
 	if (using_ssil) {
-		RENDER_TIMESTAMP("Copy Final Framebuffer");
+		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL)");
 		_copy_framebuffer_to_ssil(p_render_data->render_buffers);
 	}
 	RD::get_singleton()->draw_command_end_label();
@@ -1731,7 +1731,7 @@ void RenderForwardClustered::_render_shadow_end(uint32_t p_barrier) {
 }
 
 void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
-	RENDER_TIMESTAMP("Setup Render Collider Heightfield");
+	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
 
@@ -1769,9 +1769,9 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 }
 
 void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
-	RENDER_TIMESTAMP("Setup Rendering Material");
+	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
-	RD::get_singleton()->draw_command_begin_label("Render Material");
+	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
 
 	RenderDataRD render_data;
 	render_data.cam_projection = p_cam_projection;
@@ -1795,7 +1795,7 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
-	RENDER_TIMESTAMP("Render Material");
+	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, true, false, rp_uniform_set);
@@ -1841,7 +1841,7 @@ void RenderForwardClustered::_render_uv2(const PagedArray<GeometryInstance *> &p
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
-	RENDER_TIMESTAMP("Render Material");
+	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, true, false, rp_uniform_set, true);
