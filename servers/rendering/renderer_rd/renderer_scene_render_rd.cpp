@@ -3440,8 +3440,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					continue;
 				}
 
+				const real_t distance = camera_plane.distance_to(li->transform.origin);
+
+				if (storage->light_is_distance_fade_enabled(li->light)) {
+					const float fade_begin = storage->light_get_distance_fade_begin(li->light);
+					const float fade_length = storage->light_get_distance_fade_length(li->light);
+
+					if (distance > fade_begin) {
+						if (distance > fade_begin + fade_length) {
+							// Out of range, don't draw this light to improve performance.
+							continue;
+						}
+					}
+				}
+
 				cluster.omni_light_sort[cluster.omni_light_count].instance = li;
-				cluster.omni_light_sort[cluster.omni_light_count].depth = camera_plane.distance_to(li->transform.origin);
+				cluster.omni_light_sort[cluster.omni_light_count].depth = distance;
 				cluster.omni_light_count++;
 			} break;
 			case RS::LIGHT_SPOT: {
@@ -3449,8 +3463,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					continue;
 				}
 
+				const real_t distance = camera_plane.distance_to(li->transform.origin);
+
+				if (storage->light_is_distance_fade_enabled(li->light)) {
+					const float fade_begin = storage->light_get_distance_fade_begin(li->light);
+					const float fade_length = storage->light_get_distance_fade_length(li->light);
+
+					if (distance > fade_begin) {
+						if (distance > fade_begin + fade_length) {
+							// Out of range, don't draw this light to improve performance.
+							continue;
+						}
+					}
+				}
+
 				cluster.spot_light_sort[cluster.spot_light_count].instance = li;
-				cluster.spot_light_sort[cluster.spot_light_count].depth = camera_plane.distance_to(li->transform.origin);
+				cluster.spot_light_sort[cluster.spot_light_count].depth = distance;
 				cluster.spot_light_count++;
 			} break;
 		}
@@ -3494,7 +3522,24 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 		light_data.attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
 
-		float energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
+		// Reuse fade begin, fade length and distance for shadow LOD determination later.
+		float fade_begin = 0.0;
+		float fade_length = 0.0;
+		real_t distance = 0.0;
+
+		float fade = 1.0;
+		if (storage->light_is_distance_fade_enabled(li->light)) {
+			fade_begin = storage->light_get_distance_fade_begin(li->light);
+			fade_length = storage->light_get_distance_fade_length(li->light);
+			distance = camera_plane.distance_to(li->transform.origin);
+
+			if (distance > fade_begin) {
+				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+				fade = Math::smoothstep(0.0f, 1.0f, 1.0f - float(distance - fade_begin) / fade_length);
+			}
+		}
+
+		float energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI * fade;
 
 		light_data.color[0] = linear_col.r * energy;
 		light_data.color[1] = linear_col.g * energy;
@@ -3555,7 +3600,17 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.projector_rect[3] = 0;
 		}
 
-		if (shadow_atlas && shadow_atlas->shadow_owners.has(li->self)) {
+		const bool needs_shadow = shadow_atlas && shadow_atlas->shadow_owners.has(li->self);
+
+		bool in_shadow_range = true;
+		if (needs_shadow && storage->light_is_distance_fade_enabled(li->light)) {
+			if (distance > storage->light_get_distance_fade_shadow(li->light)) {
+				// Out of range, don't draw shadows to improve performance.
+				in_shadow_range = false;
+			}
+		}
+
+		if (needs_shadow && in_shadow_range) {
 			// fill in the shadow information
 
 			light_data.shadow_enabled = true;

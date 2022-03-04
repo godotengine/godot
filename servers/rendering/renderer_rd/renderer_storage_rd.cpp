@@ -6600,6 +6600,16 @@ void RendererStorageRD::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
+void RendererStorageRD::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->distance_fade = p_enabled;
+	light->distance_fade_begin = p_begin;
+	light->distance_fade_shadow = p_shadow;
+	light->distance_fade_length = p_length;
+}
+
 void RendererStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light);
