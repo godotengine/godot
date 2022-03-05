@@ -1269,8 +1269,8 @@ SceneImportSettings::SceneImportSettings() {
 
 	item_save_path = memnew(EditorFileDialog);
 	item_save_path->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	item_save_path->add_filter("*.tres;Text Resource");
-	item_save_path->add_filter("*.res;Binary Resource");
+	item_save_path->add_filter("*.tres; " + TTR("Text Resource"));
+	item_save_path->add_filter("*.res; " + TTR("Binary Resource"));
 	add_child(item_save_path);
 	item_save_path->connect("file_selected", callable_mp(this, &SceneImportSettings::_save_path_changed));
 
