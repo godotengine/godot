@@ -106,12 +106,6 @@
 				Returns the title of the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
-		<method name="get_tabs_rearrange_group" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the [TabBar]'s rearrange group ID.
-			</description>
-		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -206,13 +200,6 @@
 				Sets a [code]title[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
-		<method name="set_tabs_rearrange_group">
-			<return type="void" />
-			<argument index="0" name="group_id" type="int" />
-			<description>
-				Defines the rearrange group ID. Choose for each [TabBar] the same value to dragging tabs between [TabBar]. Enable drag with [member drag_to_rearrange_enabled].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
@@ -241,6 +228,10 @@
 		</member>
 		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
 			The number of tabs currently in the bar.
+		</member>
+		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
+			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
+			Setting this to [code]-1[/code] will disable rearranging between [TabBar]s.
 		</member>
 	</members>
 	<signals>

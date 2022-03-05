@@ -401,7 +401,10 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			}
 
 			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
-			set_current_tab(hover_now);
+			if (!is_tab_disabled(hover_now)) {
+				set_current_tab(hover_now);
+			}
+
 		} else if (get_tabs_rearrange_group() != -1) {
 			// Drag and drop between TabContainers.
 			Node *from_node = get_node(from_path);
@@ -416,8 +419,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				}
 
 				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
-
-				set_current_tab(hover_now);
+				if (!is_tab_disabled(hover_now)) {
+					set_current_tab(hover_now);
+				}
 			}
 		}
 	}
@@ -864,6 +868,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 }
 
