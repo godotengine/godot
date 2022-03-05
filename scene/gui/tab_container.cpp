@@ -401,7 +401,10 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			}
 
 			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
-			set_current_tab(hover_now);
+			if (!is_tab_disabled(hover_now)) {
+				set_current_tab(hover_now);
+			}
+
 		} else if (get_tabs_rearrange_group() != -1) {
 			// Drag and drop between TabContainers.
 			Node *from_node = get_node(from_path);
@@ -416,8 +419,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				}
 
 				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
-
-				set_current_tab(hover_now);
+				if (!is_tab_disabled(hover_now)) {
+					set_current_tab(hover_now);
+				}
 			}
 		}
 	}
