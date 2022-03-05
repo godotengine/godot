@@ -4104,15 +4104,21 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 		const int wireframe_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME);
 		const int overdraw_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW);
 		const int shadeless_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS);
-		const String unsupported_tooltip = TTR("Not available when using the GLES2 renderer.");
+		const String unsupported_suffix = " " + TTR("(Not in GLES2)");
+		const String unsupported_tooltip = TTR("Debug draw modes are only available when using the GLES3 renderer, not GLES2.");
 
-		view_menu->get_popup()->set_item_disabled(normal_idx, true);
 		view_menu->get_popup()->set_item_tooltip(normal_idx, unsupported_tooltip);
+
 		view_menu->get_popup()->set_item_disabled(wireframe_idx, true);
+		view_menu->get_popup()->set_item_text(wireframe_idx, TTR("Display Wireframe") + unsupported_suffix);
 		view_menu->get_popup()->set_item_tooltip(wireframe_idx, unsupported_tooltip);
+
 		view_menu->get_popup()->set_item_disabled(overdraw_idx, true);
+		view_menu->get_popup()->set_item_text(overdraw_idx, TTR("Display Overdraw") + unsupported_suffix);
 		view_menu->get_popup()->set_item_tooltip(overdraw_idx, unsupported_tooltip);
+
 		view_menu->get_popup()->set_item_disabled(shadeless_idx, true);
+		view_menu->get_popup()->set_item_text(shadeless_idx, TTR("Display Unshaded") + unsupported_suffix);
 		view_menu->get_popup()->set_item_tooltip(shadeless_idx, unsupported_tooltip);
 	}
 
