@@ -486,7 +486,7 @@ bool SceneTree::process(double p_time) {
 		}
 		E->get()->set_time_left(time_left);
 
-		if (time_left < 0) {
+		if (time_left <= 0) {
 			E->get()->emit_signal(SNAME("timeout"));
 			timers.erase(E);
 		}

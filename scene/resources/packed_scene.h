@@ -228,7 +228,7 @@ public:
 	virtual void set_last_modified_time(uint64_t p_time) override { state->set_last_modified_time(p_time); }
 
 #endif
-	Ref<SceneState> get_state();
+	Ref<SceneState> get_state() const;
 
 	PackedScene();
 };
