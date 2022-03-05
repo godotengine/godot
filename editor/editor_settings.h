@@ -77,6 +77,8 @@ private:
 
 	static Ref<EditorSettings> singleton;
 
+	Set<String> changed_settings;
+
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
@@ -140,6 +142,9 @@ public:
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);
 	void add_property_hint(const PropertyInfo &p_hint);
+	Array get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
+	void mark_setting_changed(const String &p_setting);
 
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }

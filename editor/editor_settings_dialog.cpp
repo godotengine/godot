@@ -136,7 +136,13 @@ void EditorSettingsDialog::_notification(int p_what) {
 			_update_icons();
 			// Update theme colors.
 			inspector->update_category_list();
-			_update_shortcuts();
+
+			bool update_shortcuts_tab =
+					EditorSettings::get_singleton()->check_changed_settings_in_group("shortcuts") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("builtin_action_overrides");
+			if (update_shortcuts_tab) {
+				_update_shortcuts();
+			}
 		} break;
 	}
 }
@@ -215,6 +221,8 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 
 	undo_redo->create_action(TTR("Edit Built-in Action") + " '" + p_name + "'");
+	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
 	undo_redo->add_do_method(this, "_settings_changed");
@@ -230,6 +238,8 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	undo_redo->create_action(TTR("Edit Shortcut") + " '" + p_path + "'");
 	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
+	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
 	undo_redo->add_do_method(this, "_update_shortcuts");
 	undo_redo->add_undo_method(this, "_update_shortcuts");
 	undo_redo->add_do_method(this, "_settings_changed");
