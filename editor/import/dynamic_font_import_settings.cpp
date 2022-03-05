@@ -767,7 +767,6 @@ bool DynamicFontImportSettings::_char_update(int32_t p_char) {
 		selected_chars.insert(p_char);
 		return true;
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
 }
 
 void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {

@@ -117,7 +117,7 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 	if (name_edit->get_text().is_empty()) {
 		is_valid = false;
 		name_validation->set_texture(invalid_icon);
-		name_validation->set_tooltip(TTR("Plugin name cannot not be blank."));
+		name_validation->set_tooltip(TTR("Plugin name cannot be blank."));
 	}
 	if (script_edit->get_text().get_extension() != ext) {
 		is_valid = false;
@@ -127,7 +127,7 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 	if (script_edit->get_text().get_basename().is_empty()) {
 		is_valid = false;
 		script_validation->set_texture(invalid_icon);
-		script_validation->set_tooltip(TTR("Script name cannot not be blank."));
+		script_validation->set_tooltip(TTR("Script name cannot be blank."));
 	}
 	if (subfolder_edit->get_text().is_empty()) {
 		is_valid = false;

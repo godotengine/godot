@@ -82,7 +82,7 @@
 				Returns [code]true[/code] if the scene file has nodes.
 			</description>
 		</method>
-		<method name="get_state">
+		<method name="get_state" qualifiers="const">
 			<return type="SceneState" />
 			<description>
 				Returns the [code]SceneState[/code] representing the scene file contents.
