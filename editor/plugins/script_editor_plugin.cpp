@@ -682,7 +682,7 @@ void ScriptEditor::_update_recent_scripts() {
 	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files")));
 	recent_scripts->set_item_disabled(recent_scripts->get_item_id(recent_scripts->get_item_count() - 1), rc.is_empty());
 
-	recent_scripts->set_as_minsize();
+	recent_scripts->reset_size();
 }
 
 void ScriptEditor::_open_recent_script(int p_idx) {
@@ -1635,7 +1635,7 @@ void ScriptEditor::_notification(int p_what) {
 
 			filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 
-			recent_scripts->set_as_minsize();
+			recent_scripts->reset_size();
 
 			if (is_inside_tree()) {
 				_update_script_colors();

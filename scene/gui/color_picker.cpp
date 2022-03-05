@@ -1304,7 +1304,7 @@ void ColorPickerButton::pressed() {
 
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
-	popup->set_as_minsize();
+	popup->reset_size();
 	picker->_update_presets();
 
 	Rect2i usable_rect = popup->get_usable_parent_rect();

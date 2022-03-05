@@ -732,7 +732,7 @@ void EditorNode::_notification(int p_what) {
 			}
 			_update_scene_tabs();
 
-			recent_scenes->set_as_minsize();
+			recent_scenes->reset_size();
 
 			// debugger area
 			if (EditorDebuggerNode::get_singleton()->is_visible()) {
@@ -3791,7 +3791,7 @@ void EditorNode::_update_recent_scenes() {
 
 	recent_scenes->add_separator();
 	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTR("Clear Recent Scenes")));
-	recent_scenes->set_as_minsize();
+	recent_scenes->reset_size();
 }
 
 void EditorNode::_quick_opened() {
@@ -5432,7 +5432,7 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 				memdelete(n);
 			}
 			tool_menu->remove_item(i);
-			tool_menu->set_as_minsize();
+			tool_menu->reset_size();
 			return;
 		}
 	}
@@ -6211,7 +6211,7 @@ EditorNode::EditorNode() {
 
 	dock_vb->add_child(dock_float);
 
-	dock_select_popup->set_as_minsize();
+	dock_select_popup->reset_size();
 	dock_select_rect_over = -1;
 	dock_popup_selected = -1;
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {

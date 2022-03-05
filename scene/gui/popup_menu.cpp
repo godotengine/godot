@@ -186,7 +186,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 
 	float scroll_offset = control->get_position().y;
 
-	submenu_popup->set_as_minsize(); // Shrink the popup size to its contents.
+	submenu_popup->reset_size(); // Shrink the popup size to its contents.
 	Size2 submenu_size = submenu_popup->get_size();
 
 	Point2 submenu_pos;

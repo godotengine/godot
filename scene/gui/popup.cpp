@@ -111,10 +111,6 @@ void Popup::_close_pressed() {
 	call_deferred(SNAME("hide"));
 }
 
-void Popup::set_as_minsize() {
-	set_size(get_contents_minimum_size());
-}
-
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
