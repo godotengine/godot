@@ -2564,6 +2564,22 @@ int OS_OSX::get_screen_dpi(int p_screen) const {
 	return 72;
 }
 
+float OS_OSX::get_screen_refresh_rate(int p_screen) const {
+	if (p_screen < 0) {
+		p_screen = get_current_screen();
+	}
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		const CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
+		return (float)displayRefreshRate;
+	}
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+	return OS::get_singleton()->SCREEN_REFRESH_RATE_FALLBACK;
+}
+
 Size2 OS_OSX::get_screen_size(int p_screen) const {
 	if (p_screen < 0) {
 		p_screen = get_current_screen();
