@@ -37,6 +37,9 @@
 #include "action_map/openxr_action_map.h"
 #include "openxr_api.h"
 
+// declare some default strings
+#define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
+
 class OpenXRInterface : public XRInterface {
 	GDCLASS(OpenXRInterface, XRInterface);
 
@@ -54,39 +57,42 @@ private:
 
 	void _load_action_map();
 
-	struct Action {
-		String action_name;
-		OpenXRAction::ActionType action_type;
-		RID action_rid;
+	struct Action { // An action we've registered with OpenXR
+		String action_name; // Name of our action as presented to Godot (can be altered from the action map)
+		OpenXRAction::ActionType action_type; // The action type of this action
+		RID action_rid; // RID of the action registered with our OpenXR API
 	};
-	struct ActionSet {
-		String action_set_name;
-		bool is_active;
-		RID action_set_rid;
-		Vector<Action *> actions;
+	struct ActionSet { // An action set we've registered with OpenXR
+		String action_set_name; // Name of our action set
+		bool is_active; // If true this action set is active and we will sync it
+		Vector<Action *> actions; // List of actions in this action set
+		RID action_set_rid; // RID of the action registered with our OpenXR API
 	};
-	struct Tracker {
-		String path_name;
-		RID path_rid;
-		Ref<XRPositionalTracker> positional_tracker;
-		Vector<Action *> actions;
+	struct Tracker { // A tracker we've registered with OpenXR
+		String tracker_name; // Name of our tracker (can be altered from the action map)
+		Vector<Action *> actions; // Actions related to this tracker
+		Ref<XRPositionalTracker> positional_tracker; // Our positional tracker object that holds our tracker state
+		RID tracker_rid; // RID of the tracker registered with our OpenXR API
+		RID interaction_profile; // RID of the interaction profile bound to this tracker (can be null)
 	};
 
 	Vector<ActionSet *> action_sets;
+	Vector<RID> interaction_profiles;
 	Vector<Tracker *> trackers;
 
 	ActionSet *create_action_set(const String &p_action_set_name, const String &p_localized_name, const int p_priority);
 	void free_action_sets();
 
-	Action *create_action(ActionSet *p_action_set, const String &p_action_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> p_toplevel_paths);
+	Action *create_action(ActionSet *p_action_set, const String &p_action_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<Tracker *> p_trackers);
 	Action *find_action(const String &p_action_name);
 	void free_actions(ActionSet *p_action_set);
 
-	Tracker *get_tracker(const String &p_path_name);
-	Tracker *find_tracker(const String &p_positional_tracker_name);
+	Tracker *find_tracker(const String &p_tracker_name, bool p_create = false);
 	void link_action_to_tracker(Tracker *p_tracker, Action *p_action);
 	void handle_tracker(Tracker *p_tracker);
 	void free_trackers();
+
+	void free_interaction_profiles();
 
 	void _set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye);
 
@@ -97,6 +103,7 @@ public:
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
 
+	virtual PackedStringArray get_suggested_tracker_names() const override;
 	virtual TrackingStatus get_tracking_status() const override;
 
 	bool initialise_on_startup() const;
@@ -121,6 +128,13 @@ public:
 	bool pre_draw_viewport(RID p_render_target) override;
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
+
+	void on_state_ready();
+	void on_state_visible();
+	void on_state_focused();
+	void on_state_stopping();
+	void on_pose_recentered();
+	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 
 	OpenXRInterface();
 	~OpenXRInterface();
