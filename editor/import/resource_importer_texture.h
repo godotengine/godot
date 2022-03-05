@@ -37,7 +37,7 @@
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
 
-class StreamTexture2D;
+class CompressedTexture2D;
 
 class ResourceImporterTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterTexture, ResourceImporter);
@@ -67,9 +67,9 @@ protected:
 
 	Map<StringName, MakeInfo> make_flags;
 
-	static void _texture_reimport_roughness(const Ref<StreamTexture2D> &p_tex, const String &p_normal_path, RenderingServer::TextureDetectRoughnessChannel p_channel);
-	static void _texture_reimport_3d(const Ref<StreamTexture2D> &p_tex);
-	static void _texture_reimport_normal(const Ref<StreamTexture2D> &p_tex);
+	static void _texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RenderingServer::TextureDetectRoughnessChannel p_channel);
+	static void _texture_reimport_3d(const Ref<CompressedTexture2D> &p_tex);
+	static void _texture_reimport_normal(const Ref<CompressedTexture2D> &p_tex);
 
 	static ResourceImporterTexture *singleton;
 	static const char *compression_formats[];

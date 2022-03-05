@@ -35,7 +35,7 @@
 #include "core/io/resource_importer.h"
 #include "core/object/ref_counted.h"
 
-class StreamTexture2D;
+class CompressedTexture2D;
 
 class LayeredTextureImport : public RefCounted {
 	GDCLASS(LayeredTextureImport, RefCounted);

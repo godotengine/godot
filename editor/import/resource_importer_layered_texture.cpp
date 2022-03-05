@@ -104,16 +104,16 @@ String ResourceImporterLayeredTexture::get_save_extension() const {
 String ResourceImporterLayeredTexture::get_resource_type() const {
 	switch (mode) {
 		case MODE_CUBEMAP: {
-			return "StreamCubemap";
+			return "CompressedCubemap";
 		} break;
 		case MODE_2D_ARRAY: {
-			return "StreamTexture2DArray";
+			return "CompressedTexture2DArray";
 		} break;
 		case MODE_CUBEMAP_ARRAY: {
-			return "StreamCubemapArray";
+			return "CompressedCubemapArray";
 		} break;
 		case MODE_3D: {
-			return "StreamTexture3D";
+			return "CompressedTexture3D";
 		} break;
 	}
 	ERR_FAIL_V(String());
@@ -263,7 +263,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_8('T');
 	f->store_8('L');
 
-	f->store_32(StreamTextureLayered::FORMAT_VERSION);
+	f->store_32(CompressedTextureLayered::FORMAT_VERSION);
 	f->store_32(p_images.size()); // For 2d layers or 3d depth.
 	f->store_32(mode);
 	f->store_32(0);

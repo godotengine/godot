@@ -260,9 +260,9 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
-static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
-static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
+static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderCompressedTextureLayered> resource_loader_texture_layered;
+static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
@@ -805,7 +805,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Texture);
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);
 	GDREGISTER_CLASS(Sky);
-	GDREGISTER_CLASS(StreamTexture2D);
+	GDREGISTER_CLASS(CompressedTexture2D);
 	GDREGISTER_CLASS(ImageTexture);
 	GDREGISTER_CLASS(AtlasTexture);
 	GDREGISTER_CLASS(MeshTexture);
@@ -820,14 +820,14 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(ImageTextureLayered);
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);
 	GDREGISTER_CLASS(ImageTexture3D);
-	GDREGISTER_CLASS(StreamTexture3D);
+	GDREGISTER_CLASS(CompressedTexture3D);
 	GDREGISTER_CLASS(Cubemap);
 	GDREGISTER_CLASS(CubemapArray);
 	GDREGISTER_CLASS(Texture2DArray);
-	GDREGISTER_VIRTUAL_CLASS(StreamTextureLayered);
-	GDREGISTER_CLASS(StreamCubemap);
-	GDREGISTER_CLASS(StreamCubemapArray);
-	GDREGISTER_CLASS(StreamTexture2DArray);
+	GDREGISTER_VIRTUAL_CLASS(CompressedTextureLayered);
+	GDREGISTER_CLASS(CompressedCubemap);
+	GDREGISTER_CLASS(CompressedCubemapArray);
+	GDREGISTER_CLASS(CompressedTexture2DArray);
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(FontData);
@@ -1013,7 +1013,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
-	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
+	ClassDB::add_compatibility_class("CompressedTexture", "CompressedTexture2D");
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
