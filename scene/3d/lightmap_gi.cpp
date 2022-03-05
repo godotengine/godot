@@ -982,7 +982,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 
 		config->set_value("remap", "importer", "2d_array_texture");
-		config->set_value("remap", "type", "StreamTexture2DArray");
+		config->set_value("remap", "type", "CompressedTexture2DArray");
 		if (!config->has_section_key("params", "compress/mode")) {
 			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
 		}

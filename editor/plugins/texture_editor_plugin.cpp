@@ -64,8 +64,8 @@ void TexturePreview::_update_metadata_label_text() {
 	String format;
 	if (Object::cast_to<ImageTexture>(*texture)) {
 		format = Image::get_format_name(Object::cast_to<ImageTexture>(*texture)->get_format());
-	} else if (Object::cast_to<StreamTexture2D>(*texture)) {
-		format = Image::get_format_name(Object::cast_to<StreamTexture2D>(*texture)->get_format());
+	} else if (Object::cast_to<CompressedTexture2D>(*texture)) {
+		format = Image::get_format_name(Object::cast_to<CompressedTexture2D>(*texture)->get_format());
 	} else {
 		format = texture->get_class();
 	}
@@ -110,7 +110,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<StreamTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
