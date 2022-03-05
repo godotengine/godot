@@ -549,6 +549,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 				}
 			}
 			new_anim->set_path("");
+			new_anim->set_name(new_name);
 
 			undo_redo->create_action(TTR("Duplicate Animation"));
 			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
