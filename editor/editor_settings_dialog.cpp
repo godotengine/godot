@@ -134,8 +134,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
-			// Update theme colors.
-			inspector->update_category_list();
 
 			bool update_shortcuts_tab =
 					EditorSettings::get_singleton()->check_changed_settings_in_group("shortcuts") ||
