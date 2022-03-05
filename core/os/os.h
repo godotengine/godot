@@ -209,6 +209,9 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	// Returned by get_screen_refresh_rate if the method fails.
+	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0;
+
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
 	virtual void set_current_screen(int p_screen) {}
@@ -217,6 +220,7 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
 	virtual float get_screen_scale(int p_screen = -1) const { return 1.0; }
 	virtual float get_screen_max_scale() const { return 1.0; };
+	virtual float get_screen_refresh_rate(int p_screen = -1) const { return SCREEN_REFRESH_RATE_FALLBACK; };
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
 	virtual Size2 get_max_window_size() const { return Size2(); };
