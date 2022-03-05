@@ -71,12 +71,6 @@
 				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
-		<method name="get_tabs_rearrange_group" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the [TabContainer] rearrange group id.
-			</description>
-		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -130,13 +124,6 @@
 				Sets a custom title for the tab at index [code]tab_idx[/code] (tab titles default to the name of the indexed child node). Set it to blank to make it the child's name again.
 			</description>
 		</method>
-		<method name="set_tabs_rearrange_group">
-			<return type="void" />
-			<argument index="0" name="group_id" type="int" />
-			<description>
-				Defines rearrange group id, choose for each [TabContainer] the same value to enable tab drag between [TabContainer]. Enable drag with [member drag_to_rearrange_enabled].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
@@ -153,6 +140,10 @@
 		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="1">
 			Sets the position at which tabs will be placed. See [enum TabBar.AlignmentMode] for details.
+		</member>
+		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
+			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
+			Setting this to [code]-1[/code] will disable rearranging between [TabContainer]s.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
