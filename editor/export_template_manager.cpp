@@ -645,7 +645,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 	// To support custom Android builds, we install the Java source code and buildsystem
 	// from android_source.zip to the project's res://android folder.
 
-	DirAccessRef da = DirAccess::open("res://");
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 
 	// Make res://android dir (if it does not exist).

@@ -512,7 +512,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		if (target_path.ends_with("/")) {
 			target_path = target_path.substr(0, target_path.length() - 1);
 		}
-		DirAccess *dirAccess = DirAccess::open("res://");
+		DirAccess *dirAccess = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (dirAccess->file_exists(p_path)) {
 			path = target_path;
 		} else if (dirAccess->dir_exists(p_path)) {
