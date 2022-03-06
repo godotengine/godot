@@ -76,7 +76,7 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 	int index = max_alloc++;
 	BVH *_new = &p_bvh[index];
 	_new->aabb = aabb;
-	_new->center = aabb.position + aabb.size * 0.5;
+	_new->center = aabb.position + aabb.size * 0.5f;
 	_new->face_index = -1;
 	_new->left = left;
 	_new->right = right;
@@ -152,7 +152,7 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 			bw[i].left = -1;
 			bw[i].right = -1;
 			bw[i].face_index = i;
-			bw[i].center = bw[i].aabb.position + bw[i].aabb.size * 0.5;
+			bw[i].center = bw[i].aabb.position + bw[i].aabb.size * 0.5f;
 		}
 
 		vertices.resize(db.size());

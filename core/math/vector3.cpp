@@ -99,11 +99,11 @@ Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, 
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 *
-			((p1 * 2.0) +
+	out = 0.5f *
+			((p1 * 2) +
 					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 	return out;
 }
 
@@ -118,11 +118,11 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 *
-			((p1 * 2.0) +
+	out = 0.5f *
+			((p1 * 2) +
 					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 	return out;
 }
 
@@ -130,7 +130,7 @@ Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
 	Vector3 v = *this;
 	Vector3 vd = p_to - v;
 	real_t len = vd.length();
-	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+	return len <= p_delta || len < (real_t)CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 Basis Vector3::outer(const Vector3 &p_b) const {

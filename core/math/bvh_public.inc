@@ -452,7 +452,7 @@ void update() {
 }
 
 void params_set_pairing_expansion(real_t p_value) {
-	if (p_value < 0.0) {
+	if (p_value < 0) {
 #ifdef BVH_ALLOW_AUTO_EXPANSION
 		_auto_pairing_expansion = true;
 #endif
@@ -465,8 +465,8 @@ void params_set_pairing_expansion(real_t p_value) {
 	_pairing_expansion = p_value;
 
 	// calculate shrinking threshold
-	const real_t fudge_factor = 1.1;
-	_aabb_shrinkage_threshold = _pairing_expansion * POINT::AXIS_COUNT * 2.0 * fudge_factor;
+	const real_t fudge_factor = 1.1f;
+	_aabb_shrinkage_threshold = _pairing_expansion * POINT::AXIS_COUNT * 2 * fudge_factor;
 }
 
 // This routine is not just an enclose check, it also checks for special case of shrinkage
@@ -481,8 +481,8 @@ bool expanded_aabb_encloses_not_shrink(const BOUNDS &p_expanded_aabb, const BOUN
 	const POINT &exp_size = p_expanded_aabb.size;
 	const POINT &new_size = p_aabb.size;
 
-	real_t exp_l = 0.0;
-	real_t new_l = 0.0;
+	real_t exp_l = 0;
+	real_t new_l = 0;
 
 	for (int i = 0; i < POINT::AXIS_COUNT; ++i) {
 		exp_l += exp_size[i];

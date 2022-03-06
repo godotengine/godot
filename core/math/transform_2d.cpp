@@ -48,7 +48,7 @@ void Transform2D::affine_invert() {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
-	real_t idet = 1.0 / det;
+	real_t idet = 1 / det;
 
 	SWAP(elements[0][0], elements[1][1]);
 	elements[0] *= Vector2(idet, -idet);
@@ -238,11 +238,11 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 
 	real_t dot = v1.dot(v2);
 
-	dot = CLAMP(dot, -1.0, 1.0);
+	dot = CLAMP(dot, -1, 1);
 
 	Vector2 v;
 
-	if (dot > 0.9995) {
+	if (dot > 0.9995f) {
 		v = Vector2::linear_interpolate(v1, v2, p_c).normalized(); //linearly interpolate to avoid numerical precision issues
 	} else {
 		real_t angle = p_c * Math::acos(dot);

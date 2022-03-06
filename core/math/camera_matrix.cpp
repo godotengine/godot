@@ -154,11 +154,11 @@ void CameraMatrix::set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_
 void CameraMatrix::set_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar) {
 	set_identity();
 
-	matrix[0][0] = 2.0 / (p_right - p_left);
+	matrix[0][0] = 2 / (p_right - p_left);
 	matrix[3][0] = -((p_right + p_left) / (p_right - p_left));
-	matrix[1][1] = 2.0 / (p_top - p_bottom);
+	matrix[1][1] = 2 / (p_top - p_bottom);
 	matrix[3][1] = -((p_top + p_bottom) / (p_top - p_bottom));
-	matrix[2][2] = -2.0 / (p_zfar - p_znear);
+	matrix[2][2] = -2 / (p_zfar - p_znear);
 	matrix[3][2] = -((p_zfar + p_znear) / (p_zfar - p_znear));
 	matrix[3][3] = 1.0;
 }
@@ -388,7 +388,7 @@ void CameraMatrix::invert() {
 		pvt_j[k] = k;
 		for (i = k; i < 4; i++) {
 			for (j = k; j < 4; j++) {
-				if (Math::absd(matrix[i][j]) > Math::absd(pvt_val)) {
+				if (Math::abs(matrix[i][j]) > Math::abs(pvt_val)) {
 					pvt_i[k] = i;
 					pvt_j[k] = j;
 					pvt_val = matrix[i][j];
@@ -398,7 +398,7 @@ void CameraMatrix::invert() {
 
 		/** Product of pivots, gives determinant when finished **/
 		determinat *= pvt_val;
-		if (Math::absd(determinat) < 1e-7) {
+		if (Math::abs(determinat) < (real_t)1e-7) {
 			return; //(false);  /** Matrix is singular (zero determinant). **/
 		}
 
@@ -554,7 +554,7 @@ real_t CameraMatrix::get_aspect() const {
 int CameraMatrix::get_pixels_per_meter(int p_for_pixel_width) const {
 	Vector3 result = xform(Vector3(1, 0, -1));
 
-	return int((result.x * 0.5 + 0.5) * p_for_pixel_width);
+	return int((result.x * 0.5f + 0.5f) * p_for_pixel_width);
 }
 
 bool CameraMatrix::is_orthogonal() const {
@@ -571,7 +571,7 @@ real_t CameraMatrix::get_fov() const {
 	right_plane.normalize();
 
 	if ((matrix[8] == 0) && (matrix[9] == 0)) {
-		return Math::rad2deg(Math::acos(Math::abs(right_plane.normal.x))) * 2.0;
+		return Math::rad2deg(Math::acos(Math::abs(right_plane.normal.x))) * 2;
 	} else {
 		// our frustum is asymmetrical need to calculate the left planes angle separately..
 		Plane left_plane = Plane(matrix[3] + matrix[0],
