@@ -116,6 +116,9 @@ private:
 
 	float _get_attenuation_db(float p_distance) const;
 
+	float panning_strength = 1.0f;
+	float cached_global_panning_strength = 1.0f;
+
 protected:
 	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
@@ -181,6 +184,9 @@ public:
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
+
+	void set_panning_strength(float p_panning_strength);
+	float get_panning_strength() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 
