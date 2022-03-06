@@ -58,8 +58,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_as_minsize();
-
 	Popup();
 	~Popup();
 };

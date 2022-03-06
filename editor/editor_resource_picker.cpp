@@ -149,7 +149,7 @@ void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
 	Rect2 gt = edit_button->get_screen_rect();
-	edit_menu->set_as_minsize();
+	edit_menu->reset_size();
 	int ms = edit_menu->get_contents_minimum_size().width;
 	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
 	edit_menu->set_position(popup_pos);
@@ -476,7 +476,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();
-			edit_menu->set_as_minsize();
+			edit_menu->reset_size();
 			edit_menu->set_position(pos);
 			edit_menu->popup();
 		}

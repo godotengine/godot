@@ -1185,7 +1185,7 @@ void EditorPropertyLayers::_button_pressed() {
 	}
 
 	Rect2 gp = button->get_screen_rect();
-	layers->set_as_minsize();
+	layers->reset_size();
 	Vector2 popup_pos = gp.position - Vector2(layers->get_contents_minimum_size().x, 0);
 	layers->set_position(popup_pos);
 	layers->popup();
