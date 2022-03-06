@@ -2037,14 +2037,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
-			begin_transform(TRANSFORM_TRANSLATE, true);
-		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
-			begin_transform(TRANSFORM_ROTATE, true);
-		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
-			begin_transform(TRANSFORM_SCALE, true);
+		if (!is_freelook_active()) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
+				begin_transform(TRANSFORM_TRANSLATE, true);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
+				begin_transform(TRANSFORM_ROTATE, true);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
+				begin_transform(TRANSFORM_SCALE, true);
+			}
 		}
 
 		// Freelook doesn't work in orthogonal mode.
