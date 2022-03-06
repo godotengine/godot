@@ -199,14 +199,15 @@ void main() {
 	vec4 quarter_res_color = vec4(1.0);
 	vec4 custom_fog = vec4(0.0);
 
+	vec3 eyedir = cube_normal;
+	eyedir.z *= -1.0;
+
 #ifdef USE_CUBEMAP_PASS
-	vec3 inverted_cube_normal = cube_normal;
-	inverted_cube_normal.z *= -1.0;
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * params.luminance_multiplier;
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), eyedir) * params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * params.luminance_multiplier;
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), eyedir) * params.luminance_multiplier;
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
