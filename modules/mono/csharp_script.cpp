@@ -2807,7 +2807,8 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	if (p_variant_type == Variant::INT && p_type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(p_type.type_class->get_mono_ptr())) {
-		r_hint = PROPERTY_HINT_ENUM;
+		MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
+		r_hint = GDMonoUtils::Marshal::type_has_flags_attribute(reftype) ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
 
 		Vector<MonoClassField *> fields = p_type.type_class->get_enum_fields();
 
@@ -2844,7 +2845,8 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 			uint64_t val = GDMonoUtils::unbox_enum_value(val_obj, enum_basetype, r_error);
 			ERR_FAIL_COND_V_MSG(r_error, -1, "Failed to unbox '" + enum_field_name + "' constant enum value.");
 
-			if (val != (unsigned int)i) {
+			unsigned int expected_val = r_hint == PROPERTY_HINT_FLAGS ? 1 << i : i;
+			if (val != expected_val) {
 				uses_default_values = false;
 			}
 
