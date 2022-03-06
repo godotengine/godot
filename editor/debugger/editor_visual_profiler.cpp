@@ -789,7 +789,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
+	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 1024);
 	frame_metrics.resize(metric_size);
 	last_metric = -1;
 	//cursor_metric=-1;

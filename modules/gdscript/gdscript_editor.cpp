@@ -65,7 +65,7 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	script.instantiate();
 	String processed_template = p_template;
 #ifdef TOOLS_ENABLED
-	if (!EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
+	if (!EDITOR_GET("text_editor/completion/add_type_hints")) {
 		processed_template = processed_template.replace(": int", "")
 									 .replace(": String", "")
 									 .replace(": float", "")
@@ -2771,10 +2771,10 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/behavior/indent/type", false);
+		bool use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
 		if (use_space_indentation) {
-			int indent_size = EDITOR_DEF("text_editor/behavior/indent/size", 4);
+			int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
 
 			String space_indent = "";
 			for (int i = 0; i < indent_size; i++) {

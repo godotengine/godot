@@ -3588,7 +3588,7 @@ void AnimationTrackEditor::commit_insert_queue() {
 		}
 	}
 
-	if (bool(EDITOR_DEF("editors/animation/confirm_insert_track", true)) && num_tracks > 0) {
+	if (bool(EDITOR_GET("editors/animation/confirm_insert_track")) && num_tracks > 0) {
 		// Potentially a new key, does not exist.
 		if (num_tracks == 1) {
 			// TRANSLATORS: %s will be replaced by a phrase describing the target of track.
