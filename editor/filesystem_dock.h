@@ -185,6 +185,13 @@ private:
 	ItemList *files;
 	bool import_dock_needs_update;
 
+	bool holding_branch = false;
+	Vector<TreeItem *> tree_items_selected_on_drag_begin;
+	PackedInt32Array list_items_selected_on_drag_begin;
+
+	void _tree_mouse_exited();
+	void _reselect_items_selected_on_drag_begin(bool reset = false);
+
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	Vector<String> _compute_uncollapsed_paths();
