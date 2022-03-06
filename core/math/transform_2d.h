@@ -160,9 +160,15 @@ Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
 }
 
 Vector2 Transform2D::basis_xform_inv(const Vector2 &p_vec) const {
+	real_t det = basis_determinant();
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(det == 0, Vector2());
+#endif
+	real_t idet = 1.0f / det;
+
 	return Vector2(
-			elements[0].dot(p_vec),
-			elements[1].dot(p_vec));
+			elements[1][1] * idet * p_vec.x + elements[1][0] * -idet * p_vec.y,
+			elements[0][1] * -idet * p_vec.x + elements[0][0] * idet * p_vec.y);
 }
 
 Vector2 Transform2D::xform(const Vector2 &p_vec) const {
