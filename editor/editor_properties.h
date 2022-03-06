@@ -234,9 +234,9 @@ class EditorPropertyFlags : public EditorProperty {
 	GDCLASS(EditorPropertyFlags, EditorProperty);
 	VBoxContainer *vbox;
 	Vector<CheckBox *> flags;
-	Vector<int> flag_indices;
+	Vector<uint32_t> flag_values;
 
-	void _flag_toggled();
+	void _flag_toggled(int p_index);
 
 protected:
 	static void _bind_methods();
