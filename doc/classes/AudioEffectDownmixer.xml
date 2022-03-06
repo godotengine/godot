@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectDownmixer" inherits="AudioEffect" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Down-mix effect allowing progressive conversion of stereo audio to mono.
+	</brief_description>
+	<description>
+		Down-mix effect allowing progressive conversion of stereo audio to mono.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="0.0">
+			The strength of the down-mixing effect. 0 means no down-mixing, 1 means down-mix to mono.
+		</member>
+	</members>
+</class>

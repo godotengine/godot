@@ -41,6 +41,7 @@
 #include "audio/effects/audio_effect_compressor.h"
 #include "audio/effects/audio_effect_delay.h"
 #include "audio/effects/audio_effect_distortion.h"
+#include "audio/effects/audio_effect_downmixer.h"
 #include "audio/effects/audio_effect_eq.h"
 #include "audio/effects/audio_effect_filter.h"
 #include "audio/effects/audio_effect_limiter.h"
@@ -170,6 +171,7 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectEQ21);
 
 		GDREGISTER_CLASS(AudioEffectDistortion);
+		GDREGISTER_CLASS(AudioEffectDownmixer);
 
 		GDREGISTER_CLASS(AudioEffectStereoEnhance);
 
