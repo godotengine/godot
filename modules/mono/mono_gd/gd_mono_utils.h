@@ -61,6 +61,7 @@ bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
 bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
 bool type_is_generic_icollection(MonoReflectionType *p_reftype);
 bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
+bool type_has_flags_attribute(MonoReflectionType *p_reftype);
 
 void get_generic_type_definition(MonoReflectionType *p_reftype, MonoReflectionType **r_generic_reftype);
 
