@@ -121,8 +121,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	void _allocate_normal_roughness_texture(RenderBufferDataForwardClustered *rb);
 
 	RID render_base_uniform_set;
-	LocalVector<RID> render_pass_uniform_sets;
-	RID sdfgi_pass_uniform_set;
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 

@@ -56,8 +56,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u.binding = 0;
-			u.ids.push_back(blit.sampler);
-			u.ids.push_back(rd_texture);
+			u.append_id(blit.sampler);
+			u.append_id(rd_texture);
 			uniforms.push_back(u);
 			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 
@@ -175,8 +175,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
-		u.ids.push_back(blit.sampler);
-		u.ids.push_back(rd_texture);
+		u.append_id(blit.sampler);
+		u.append_id(rd_texture);
 		uniforms.push_back(u);
 		uset = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 	}
@@ -241,6 +241,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
+	uniform_set_cache = memnew(UniformSetCacheRD);
+
 	{
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
 		if (shader_cache_dir.is_empty()) {
@@ -301,5 +303,6 @@ RendererCompositorRD::RendererCompositorRD() {
 }
 
 RendererCompositorRD::~RendererCompositorRD() {
+	memdelete(uniform_set_cache);
 	ShaderRD::set_shader_cache_dir(String());
 }

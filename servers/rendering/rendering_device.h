@@ -726,16 +726,65 @@ public:
 
 	struct Uniform {
 		UniformType uniform_type;
-		int binding; //binding index as specified in shader
+		int binding; // Binding index as specified in shader.
 
-		//for single items, provide one ID, for
-		//multiple items (declared as arrays in shader),
-		//provide more
-		//for sampler with texture, supply two IDs for each.
-		//accepted IDs are: Sampler, Texture, Uniform Buffer and Texture Buffer
-		Vector<RID> ids;
+	private:
+		// In most cases only one ID is provided per binding, so avoid allocating memory unnecesarily for performance.
+		RID id; // If only one is provided, this is used.
+		Vector<RID> ids; // If multiple ones are provided, this is used instead.
 
-		Uniform() {
+	public:
+		_FORCE_INLINE_ uint32_t get_id_count() const {
+			return (id.is_valid() ? 1 : ids.size());
+		}
+
+		_FORCE_INLINE_ RID get_id(uint32_t p_idx) const {
+			if (id.is_valid()) {
+				ERR_FAIL_COND_V(p_idx != 0, RID());
+				return id;
+			} else {
+				return ids[p_idx];
+			}
+		}
+		_FORCE_INLINE_ void set_id(uint32_t p_idx, RID p_id) {
+			if (id.is_valid()) {
+				ERR_FAIL_COND(p_idx != 0);
+				id = p_id;
+			} else {
+				ids.write[p_idx] = p_id;
+			}
+		}
+
+		_FORCE_INLINE_ void append_id(RID p_id) {
+			if (ids.is_empty()) {
+				if (id == RID()) {
+					id = p_id;
+				} else {
+					ids.push_back(id);
+					ids.push_back(p_id);
+					id = RID();
+				}
+			} else {
+				ids.push_back(p_id);
+			}
+		}
+
+		_FORCE_INLINE_ void clear_ids() {
+			id = RID();
+			ids.clear();
+		}
+
+		_FORCE_INLINE_ Uniform(UniformType p_type, int p_binding, RID p_id) {
+			uniform_type = p_type;
+			binding = p_binding;
+			id = p_id;
+		}
+		_FORCE_INLINE_ Uniform(UniformType p_type, int p_binding, const Vector<RID> &p_ids) {
+			uniform_type = p_type;
+			binding = p_binding;
+			ids = p_ids;
+		}
+		_FORCE_INLINE_ Uniform() {
 			uniform_type = UNIFORM_TYPE_IMAGE;
 			binding = 0;
 		}

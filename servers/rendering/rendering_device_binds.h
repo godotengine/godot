@@ -441,23 +441,23 @@ public:
 	RD_SETGET(RD::UniformType, uniform_type)
 	RD_SETGET(int32_t, binding)
 
-	void add_id(const RID &p_id) { base.ids.push_back(p_id); }
-	void clear_ids() { base.ids.clear(); }
+	void add_id(const RID &p_id) { base.append_id(p_id); }
+	void clear_ids() { base.clear_ids(); }
 	Array get_ids() const {
 		Array ids;
-		for (int i = 0; i < base.ids.size(); i++) {
-			ids.push_back(base.ids[i]);
+		for (uint32_t i = 0; i < base.get_id_count(); i++) {
+			ids.push_back(base.get_id(i));
 		}
 		return ids;
 	}
 
 protected:
 	void _set_ids(const Array &p_ids) {
-		base.ids.clear();
+		base.clear_ids();
 		for (int i = 0; i < p_ids.size(); i++) {
 			RID id = p_ids[i];
 			ERR_FAIL_COND(id.is_null());
-			base.ids.push_back(id);
+			base.append_id(id);
 		}
 	}
 	static void _bind_methods() {
