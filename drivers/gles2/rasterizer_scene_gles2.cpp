@@ -1401,7 +1401,21 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 
 					if (!s->blend_shape_data.empty() && i != VS::ARRAY_BONES && s->blend_shape_buffer_size > 0) {
 						glBindBuffer(GL_ARRAY_BUFFER, s->blend_shape_buffer_id);
-						glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, GL_FLOAT, GL_FALSE, 8 * 4 * sizeof(float), CAST_INT_TO_UCHAR_PTR(i * 4 * sizeof(float)));
+						// When using octahedral compression (2 component normal/tangent)
+						// decompression changes the component count to 3/4
+						int size;
+						switch (i) {
+							case VS::ARRAY_NORMAL: {
+								size = 3;
+							} break;
+							case VS::ARRAY_TANGENT: {
+								size = 4;
+							} break;
+							default:
+								size = s->attribs[i].size;
+						}
+
+						glVertexAttribPointer(s->attribs[i].index, size, GL_FLOAT, GL_FALSE, 8 * 4 * sizeof(float), CAST_INT_TO_UCHAR_PTR(i * 4 * sizeof(float)));
 
 					} else {
 						glBindBuffer(GL_ARRAY_BUFFER, s->vertex_id);
@@ -2429,7 +2443,9 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		state.scene_shader.set_conditional(SceneShaderGLES2::USE_PHYSICAL_LIGHT_ATTENUATION, storage->config.use_physical_light_attenuation);
 
-		bool octahedral_compression = e->instance->base_type != VS::INSTANCE_IMMEDIATE && ((RasterizerStorageGLES2::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
+		bool octahedral_compression = e->instance->base_type != VS::INSTANCE_IMMEDIATE &&
+				((RasterizerStorageGLES2::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION &&
+				(((RasterizerStorageGLES2::Surface *)e->geometry)->blend_shape_data.empty() || ((RasterizerStorageGLES2::Surface *)e->geometry)->blend_shape_buffer_size == 0);
 		if (octahedral_compression != prev_octahedral_compression) {
 			state.scene_shader.set_conditional(SceneShaderGLES2::ENABLE_OCTAHEDRAL_COMPRESSION, octahedral_compression);
 			rebind = true;
