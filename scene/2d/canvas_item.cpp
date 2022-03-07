@@ -363,16 +363,21 @@ bool CanvasItem::is_visible_in_tree() const {
 		p = p->get_parent_item();
 	}
 
-	const Node *n = get_parent();
-	while (n) {
-		const CanvasLayer *c = Object::cast_to<CanvasLayer>(n);
-		if (c && !c->is_visible()) {
-			return false;
-		}
-		n = n->get_parent();
+	if (canvas_layer) {
+		return canvas_layer->is_visible();
 	}
 
 	return true;
+}
+
+void CanvasItem::_toplevel_visibility_changed(bool p_visible) {
+	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, visible && p_visible);
+
+	if (visible) {
+		_propagate_visibility_changed(p_visible);
+	} else {
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
+	}
 }
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
@@ -391,7 +396,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
-		if (c && c->visible) { //should the toplevels stop propagation? i think so but..
+		if (c && c->visible && !c->toplevel) {
 			c->_propagate_visibility_changed(p_visible);
 		}
 	}
@@ -1062,6 +1067,7 @@ void CanvasItem::force_update_transform() {
 }
 
 void CanvasItem::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_toplevel_visibility_changed", "visible"), &CanvasItem::_toplevel_visibility_changed);
 	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"), &CanvasItem::_toplevel_raise_self);
 	ClassDB::bind_method(D_METHOD("_update_callback"), &CanvasItem::_update_callback);
 

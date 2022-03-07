@@ -208,6 +208,7 @@ private:
 	mutable bool global_invalid;
 
 	void _toplevel_raise_self();
+	void _toplevel_visibility_changed(bool p_visible);
 
 	void _propagate_visibility_changed(bool p_visible);
 
