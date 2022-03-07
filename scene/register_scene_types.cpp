@@ -76,6 +76,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/animation/root_motion_view.h"
+#include "scene/animation/skeleton_retarget.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
@@ -523,6 +524,12 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
+
+	GDREGISTER_CLASS(SkeletonRetarget);
+	GDREGISTER_CLASS(RetargetProfile);
+	GDREGISTER_CLASS(RetargetRichProfile);
+	GDREGISTER_CLASS(RetargetBoneOption);
+	GDREGISTER_CLASS(RetargetBoneMap);
 
 	GDREGISTER_CLASS(VehicleBody3D);
 	GDREGISTER_CLASS(VehicleWheel3D);

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetBoneMap" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A map of skeleton bone names with intermediate bone names as key.
+	</brief_description>
+	<description>
+		To register a key in the editor, a [RetargetProfile] is required.
+		In the inspector, maps are organized by [RetargetProfile], but if there is no [RetargetProfile], they are listed in the unprofiled bones section.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_key">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="find_key" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_keys" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="has_key">
+			<return type="bool" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_key">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<argument index="1" name="bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="redraw_needed">
+			<description>
+				Emitted when the drawing on the inspector needs to be updated, it is enable only when [code]tools[/code] is enabled.
+			</description>
+		</signal>
+		<signal name="retarget_map_updated">
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

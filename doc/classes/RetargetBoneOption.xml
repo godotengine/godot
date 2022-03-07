@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetBoneOption" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Set the options for each intermediate bone.
+	</brief_description>
+	<description>
+		It has [code]RetargetMode[/code] as one of the options.
+		For example, if you have two models that are both in T-stance and have different bone rests, using [code]RETARGET_MODE_GLOBAL[/code] will generally look good.
+		However, for bones that are slanted even at T-stance, such as fingers, the joints may rotate in odd directions. In such a case, it is recommended to use [code]RETARGET_MODE_LOCAL[/code] with a restriction in the bone rest axis such as "+X axis rotation to bend".
+		Thus, the properties that should be set for each intermediate bone and do not need to be set for each skeleton, will be put together in [RetargetBoneOption] instead of [RetargetBoneMap].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_key">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_keys" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="get_retarget_mode" qualifiers="const">
+			<return type="int" enum="Animation.RetargetMode" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="has_key">
+			<return type="bool" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_key">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_retarget_mode">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<argument index="1" name="retarget_mode" type="int" enum="Animation.RetargetMode" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="redraw_needed">
+			<description>
+				Emitted when the drawing on the inspector needs to be updated, it is enable only when [code]tools[/code] is enabled.
+			</description>
+		</signal>
+		<signal name="retarget_option_updated">
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

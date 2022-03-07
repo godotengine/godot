@@ -65,6 +65,13 @@
 				Sets the key identified by [code]key_idx[/code] to value [code]animation[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
+		<method name="audio_track_get_auto_volume" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at [code]idx[/code] override the volume in [AudioStreamPlayer].
+			</description>
+		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="track_idx" type="int" />
@@ -101,6 +108,14 @@
 			<description>
 				Inserts an Audio Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of an Audio Track.
 				[code]stream[/code] is the [AudioStream] resource to play. [code]start_offset[/code] is the number of seconds cut off at the beginning of the audio stream, while [code]end_offset[/code] is at the ending.
+			</description>
+		</method>
+		<method name="audio_track_set_auto_volume">
+			<return type="void" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], the track at [code]idx[/code] override the volume in [AudioStreamPlayer].
 			</description>
 		</method>
 		<method name="audio_track_set_key_end_offset">
@@ -291,6 +306,13 @@
 				Returns the arguments values to be called on a method track for a given key in a given track.
 			</description>
 		</method>
+		<method name="position_track_get_retarget_mode" qualifiers="const">
+			<return type="int" enum="Animation.RetargetMode" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
+				Returns the retarget mode of a given track.
+			</description>
+		</method>
 		<method name="position_track_insert_key">
 			<return type="int" />
 			<argument index="0" name="track_idx" type="int" />
@@ -299,11 +321,26 @@
 			<description>
 			</description>
 		</method>
+		<method name="position_track_set_retarget_mode">
+			<return type="void" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="retarget_mode" type="int" enum="Animation.RetargetMode" />
+			<description>
+				Sets the retarget mode of a given track.
+			</description>
+		</method>
 		<method name="remove_track">
 			<return type="void" />
 			<argument index="0" name="track_idx" type="int" />
 			<description>
 				Removes a track by specifying the track index.
+			</description>
+		</method>
+		<method name="rotation_track_get_retarget_mode" qualifiers="const">
+			<return type="int" enum="Animation.RetargetMode" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
+				Returns the retarget mode of a given track.
 			</description>
 		</method>
 		<method name="rotation_track_insert_key">
@@ -314,12 +351,35 @@
 			<description>
 			</description>
 		</method>
+		<method name="rotation_track_set_retarget_mode">
+			<return type="void" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="retarget_mode" type="int" enum="Animation.RetargetMode" />
+			<description>
+				Sets the retarget mode of a given track.
+			</description>
+		</method>
+		<method name="scale_track_get_retarget_mode" qualifiers="const">
+			<return type="int" enum="Animation.RetargetMode" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
+				Returns the retarget mode of a given track.
+			</description>
+		</method>
 		<method name="scale_track_insert_key">
 			<return type="int" />
 			<argument index="0" name="track_idx" type="int" />
 			<argument index="1" name="time" type="float" />
 			<argument index="2" name="scale" type="Vector3" />
 			<description>
+			</description>
+		</method>
+		<method name="scale_track_set_retarget_mode">
+			<return type="void" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="retarget_mode" type="int" enum="Animation.RetargetMode" />
+			<description>
+				Sets the retarget mode of a given track.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -645,6 +705,15 @@
 		</constant>
 		<constant name="HANDLE_MODE_BALANCED" value="1" enum="HandleMode">
 			Assigning the balanced handle mode to a Bezier Track's keyframe makes it so the two handles of the keyframe always stay aligned when changing either the keyframe's left or right handle.
+		</constant>
+		<constant name="RETARGET_MODE_GLOBAL" value="0" enum="RetargetMode">
+			Retarget the global transform in the model space relative to the bone rest.
+		</constant>
+		<constant name="RETARGET_MODE_LOCAL" value="1" enum="RetargetMode">
+			Retarget the local transform relative to the bone rest.
+		</constant>
+		<constant name="RETARGET_MODE_ABSOLUTE" value="2" enum="RetargetMode">
+			Retarget the local transform relative to the initial value of transform which is [code]Transform()[/code].
 		</constant>
 	</constants>
 </class>

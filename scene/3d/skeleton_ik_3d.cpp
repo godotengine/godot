@@ -417,6 +417,9 @@ void SkeletonIK3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			reload_chain();
+			if (skeleton) {
+				skeleton->clear_bones_global_pose_override();
+			}
 		} break;
 	}
 }

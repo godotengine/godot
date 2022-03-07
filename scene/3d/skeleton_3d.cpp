@@ -318,9 +318,8 @@ void Skeleton3D::_notification(int p_what) {
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
 				}
 			}
-#ifdef TOOLS_ENABLED
+
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);
-#endif // TOOLS_ENABLED
 		} break;
 
 #ifndef _3D_DISABLED
@@ -509,6 +508,7 @@ void Skeleton3D::add_bone(const String &p_name) {
 	b.name = p_name;
 	bones.push_back(b);
 	process_order_dirty = true;
+	rest_dirty = true;
 	version++;
 	_make_dirty();
 	update_gizmos();
@@ -568,6 +568,8 @@ void Skeleton3D::set_bone_parent(int p_bone, int p_parent) {
 
 	bones.write[p_bone].parent = p_parent;
 	process_order_dirty = true;
+
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -586,6 +588,7 @@ void Skeleton3D::unparent_bone_and_rest(int p_bone) {
 	bones.write[p_bone].parent = -1;
 	process_order_dirty = true;
 
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -608,6 +611,7 @@ void Skeleton3D::set_bone_children(int p_bone, Vector<int> p_children) {
 	bones.write[p_bone].child_bones = p_children;
 
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -617,6 +621,7 @@ void Skeleton3D::add_bone_child(int p_bone, int p_child) {
 	bones.write[p_bone].child_bones.push_back(p_child);
 
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -632,6 +637,7 @@ void Skeleton3D::remove_bone_child(int p_bone, int p_child) {
 	}
 
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -644,13 +650,24 @@ void Skeleton3D::set_bone_rest(int p_bone, const Transform3D &p_rest) {
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
 	bones.write[p_bone].rest = p_rest;
+	rest_dirty = true;
 	_make_dirty();
 }
+
 Transform3D Skeleton3D::get_bone_rest(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 
 	return bones[p_bone].rest;
+}
+
+Transform3D Skeleton3D::get_bone_global_rest(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
+	if (rest_dirty) {
+		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	}
+	return bones[p_bone].global_rest;
 }
 
 void Skeleton3D::set_bone_enabled(int p_bone, bool p_enabled) {
@@ -681,6 +698,7 @@ bool Skeleton3D::is_show_rest_only() const {
 void Skeleton3D::clear_bones() {
 	bones.clear();
 	process_order_dirty = true;
+	rest_dirty = true;
 	version++;
 	_make_dirty();
 }
@@ -741,6 +759,17 @@ Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 	((Skeleton3D *)this)->bones.write[p_bone].update_pose_cache();
 	return bones[p_bone].pose_cache;
+}
+
+Transform3D Skeleton3D::get_bone_final_pose(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
+	((Skeleton3D *)this)->bones.write[p_bone].update_pose_cache();
+	if (bones[p_bone].local_pose_override_amount >= CMP_EPSILON || bones[p_bone].global_pose_override_amount >= CMP_EPSILON) {
+		return ((Skeleton3D *)this)->global_pose_to_local_pose(p_bone, get_bone_global_pose(p_bone));
+	} else {
+		return bones[p_bone].pose_cache;
+	}
 }
 
 void Skeleton3D::_make_dirty() {
@@ -1046,9 +1075,15 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 			if (b.parent >= 0) {
 				b.pose_global = bonesptr[b.parent].pose_global * pose;
 				b.pose_global_no_override = b.pose_global;
+				if (rest_dirty) {
+					b.global_rest = bonesptr[b.parent].global_rest * b.rest;
+				}
 			} else {
 				b.pose_global = pose;
 				b.pose_global_no_override = b.pose_global;
+				if (rest_dirty) {
+					b.global_rest = b.rest;
+				}
 			}
 		} else {
 			if (b.parent >= 0) {
@@ -1089,6 +1124,7 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 		emit_signal(SceneStringNames::get_singleton()->bone_pose_changed, current_bone_idx);
 	}
+	rest_dirty = false;
 }
 
 // Helper functions
@@ -1148,6 +1184,134 @@ Basis Skeleton3D::global_pose_z_forward_to_bone_forward(int p_bone_idx, Basis p_
 	}
 
 	return return_basis;
+}
+
+// Retarget functions
+
+Transform3D Skeleton3D::extract_global_retarget_transform(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Transform3D());
+	Transform3D tr = Transform3D();
+	Transform3D s_grest = Transform3D();
+	int s_parent = get_bone_parent(p_bone_idx);
+	if (s_parent >= 0) {
+		s_grest = get_bone_global_rest(s_parent);
+	}
+	tr.basis = s_grest.basis * get_bone_final_pose(p_bone_idx).basis * bones[p_bone_idx].rest.basis.inverse() * s_grest.basis.inverse();
+	tr.origin = s_grest.basis.xform(get_bone_pose(p_bone_idx).origin - get_bone_rest(p_bone_idx).origin);
+	return tr;
+}
+
+Vector3 Skeleton3D::extract_global_retarget_position(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3());
+	Quaternion s_grest = Quaternion();
+	int s_parent = get_bone_parent(p_bone_idx);
+	if (s_parent >= 0) {
+		s_grest = get_bone_global_rest(s_parent).basis.get_rotation_quaternion();
+	}
+	return s_grest.xform(get_bone_pose_position(p_bone_idx) - get_bone_rest(p_bone_idx).origin);
+}
+
+Quaternion Skeleton3D::extract_global_retarget_rotation(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Quaternion());
+	Quaternion s_grest = Quaternion();
+	int s_parent = get_bone_parent(p_bone_idx);
+	if (s_parent >= 0) {
+		s_grest = get_bone_global_rest(s_parent).basis.get_rotation_quaternion();
+	}
+	return s_grest * get_bone_pose_rotation(p_bone_idx) * bones[p_bone_idx].rest.basis.get_rotation_quaternion().inverse() * s_grest.inverse();
+}
+
+Vector3 Skeleton3D::extract_global_retarget_scale(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3(1, 1, 1));
+	Basis s_grest = Basis();
+	int s_parent = get_bone_parent(p_bone_idx);
+	if (s_parent >= 0) {
+		s_grest = get_bone_global_rest(s_parent).basis;
+	}
+	return (s_grest * get_bone_pose(p_bone_idx).basis * bones[p_bone_idx].rest.basis.inverse() * s_grest.inverse()).get_scale();
+}
+
+Transform3D Skeleton3D::global_retarget_transform_to_local_pose(int p_bone_idx, Transform3D p_transform) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Transform3D());
+	Transform3D tr = Transform3D();
+	Transform3D t_grest = Transform3D();
+	int t_parent = get_bone_parent(p_bone_idx);
+	if (t_parent >= 0) {
+		t_grest = get_bone_global_rest(t_parent);
+	}
+	tr.basis = t_grest.basis.inverse() * p_transform.basis * t_grest.basis * bones[p_bone_idx].rest.basis;
+	tr.origin = t_grest.basis.xform_inv(p_transform.origin) + get_bone_rest(p_bone_idx).origin;
+	return tr;
+}
+
+Vector3 Skeleton3D::global_retarget_position_to_local_pose(int p_bone_idx, Vector3 p_position) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3());
+	Quaternion t_grest = Quaternion();
+	int t_parent = get_bone_parent(p_bone_idx);
+	if (t_parent >= 0) {
+		t_grest = get_bone_global_rest(t_parent).basis.get_rotation_quaternion();
+	}
+	return t_grest.xform_inv(p_position) + get_bone_rest(p_bone_idx).origin;
+}
+
+Quaternion Skeleton3D::global_retarget_rotation_to_local_pose(int p_bone_idx, Quaternion p_rotation) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Quaternion());
+	Quaternion t_grest = Quaternion();
+	int t_parent = get_bone_parent(p_bone_idx);
+	if (t_parent >= 0) {
+		t_grest = get_bone_global_rest(t_parent).basis.get_rotation_quaternion();
+	}
+	return t_grest.inverse() * p_rotation * t_grest * bones[p_bone_idx].rest.basis.get_rotation_quaternion();
+}
+
+Vector3 Skeleton3D::global_retarget_scale_to_local_pose(int p_bone_idx, Vector3 p_scale) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3(1, 1, 1));
+	Basis t_grest = Basis();
+	int t_parent = get_bone_parent(p_bone_idx);
+	if (t_parent >= 0) {
+		t_grest = get_bone_global_rest(t_parent).basis;
+	}
+	return (t_grest.inverse() * Basis().scaled(p_scale) * t_grest * bones[p_bone_idx].rest.basis).get_scale();
+}
+
+Transform3D Skeleton3D::extract_local_retarget_transform(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Transform3D());
+	return bones[p_bone_idx].rest.affine_inverse() * get_bone_pose(p_bone_idx);
+}
+
+Vector3 Skeleton3D::extract_local_retarget_position(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3());
+	return get_bone_pose_position(p_bone_idx) - bones[p_bone_idx].rest.origin;
+}
+
+Quaternion Skeleton3D::extract_local_retarget_rotation(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Quaternion());
+	return bones[p_bone_idx].rest.basis.get_rotation_quaternion().inverse() * get_bone_pose_rotation(p_bone_idx);
+}
+
+Vector3 Skeleton3D::extract_local_retarget_scale(int p_bone_idx) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3(1, 1, 1));
+	return (bones[p_bone_idx].rest.basis.inverse() * get_bone_pose(p_bone_idx).basis).get_scale();
+}
+
+Transform3D Skeleton3D::local_retarget_transform_to_local_pose(int p_bone_idx, Transform3D p_transform) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Transform3D());
+	return bones[p_bone_idx].rest * p_transform;
+}
+
+Vector3 Skeleton3D::local_retarget_position_to_local_pose(int p_bone_idx, Vector3 p_position) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3());
+	return bones[p_bone_idx].rest.origin + p_position;
+}
+
+Quaternion Skeleton3D::local_retarget_rotation_to_local_pose(int p_bone_idx, Quaternion p_rotation) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Quaternion());
+	return bones[p_bone_idx].rest.basis.get_rotation_quaternion() * p_rotation;
+}
+
+Vector3 Skeleton3D::local_retarget_scale_to_local_pose(int p_bone_idx, Vector3 p_scale) {
+	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), Vector3(1, 1, 1));
+	return (bones[p_bone_idx].rest.basis * Basis().scaled(p_scale)).get_scale();
 }
 
 // Modifications
@@ -1216,6 +1380,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_bones"), &Skeleton3D::clear_bones);
 
 	ClassDB::bind_method(D_METHOD("get_bone_pose", "bone_idx"), &Skeleton3D::get_bone_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_final_pose", "bone_idx"), &Skeleton3D::get_bone_final_pose);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_position", "bone_idx", "position"), &Skeleton3D::set_bone_pose_position);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_rotation", "bone_idx", "rotation"), &Skeleton3D::set_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_scale", "bone_idx", "scale"), &Skeleton3D::set_bone_pose_scale);
@@ -1227,6 +1392,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_bone_enabled", "bone_idx"), &Skeleton3D::is_bone_enabled);
 	ClassDB::bind_method(D_METHOD("set_bone_enabled", "bone_idx", "enabled"), &Skeleton3D::set_bone_enabled, DEFVAL(true));
 
+	ClassDB::bind_method(D_METHOD("get_bone_global_rest", "bone_idx"), &Skeleton3D::get_bone_global_rest);
 	ClassDB::bind_method(D_METHOD("clear_bones_global_pose_override"), &Skeleton3D::clear_bones_global_pose_override);
 	ClassDB::bind_method(D_METHOD("set_bone_global_pose_override", "bone_idx", "pose", "amount", "persistent"), &Skeleton3D::set_bone_global_pose_override, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_bone_global_pose_override", "bone_idx"), &Skeleton3D::get_bone_global_pose_override);
@@ -1258,6 +1424,25 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton3D::physical_bones_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton3D::physical_bones_remove_collision_exception);
 
+	// Retarget functions
+	ClassDB::bind_method(D_METHOD("extract_global_retarget_transform", "bone_idx"), &Skeleton3D::extract_global_retarget_transform);
+	ClassDB::bind_method(D_METHOD("extract_global_retarget_position", "bone_idx"), &Skeleton3D::extract_global_retarget_position);
+	ClassDB::bind_method(D_METHOD("extract_global_retarget_rotation", "bone_idx"), &Skeleton3D::extract_global_retarget_rotation);
+	ClassDB::bind_method(D_METHOD("extract_global_retarget_scale", "bone_idx"), &Skeleton3D::extract_global_retarget_scale);
+	ClassDB::bind_method(D_METHOD("global_retarget_transform_to_local_pose", "bone_idx", "transform"), &Skeleton3D::global_retarget_transform_to_local_pose);
+	ClassDB::bind_method(D_METHOD("global_retarget_position_to_local_pose", "bone_idx", "position"), &Skeleton3D::global_retarget_position_to_local_pose);
+	ClassDB::bind_method(D_METHOD("global_retarget_rotation_to_local_pose", "bone_idx", "rotation"), &Skeleton3D::global_retarget_rotation_to_local_pose);
+	ClassDB::bind_method(D_METHOD("global_retarget_scale_to_local_pose", "bone_idx", "scale"), &Skeleton3D::global_retarget_scale_to_local_pose);
+
+	ClassDB::bind_method(D_METHOD("extract_local_retarget_transform", "bone_idx"), &Skeleton3D::extract_local_retarget_transform);
+	ClassDB::bind_method(D_METHOD("extract_local_retarget_position", "bone_idx"), &Skeleton3D::extract_local_retarget_position);
+	ClassDB::bind_method(D_METHOD("extract_local_retarget_rotation", "bone_idx"), &Skeleton3D::extract_local_retarget_rotation);
+	ClassDB::bind_method(D_METHOD("extract_local_retarget_scale", "bone_idx"), &Skeleton3D::extract_local_retarget_scale);
+	ClassDB::bind_method(D_METHOD("local_retarget_transform_to_local_pose", "bone_idx", "transform"), &Skeleton3D::local_retarget_transform_to_local_pose);
+	ClassDB::bind_method(D_METHOD("local_retarget_position_to_local_pose", "bone_idx", "position"), &Skeleton3D::local_retarget_position_to_local_pose);
+	ClassDB::bind_method(D_METHOD("local_retarget_rotation_to_local_pose", "bone_idx", "rotation"), &Skeleton3D::local_retarget_rotation_to_local_pose);
+	ClassDB::bind_method(D_METHOD("local_retarget_scale_to_local_pose", "bone_idx", "scale"), &Skeleton3D::local_retarget_scale_to_local_pose);
+
 	// Modifications
 	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton3D::set_modification_stack);
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton3D::get_modification_stack);
@@ -1268,10 +1453,7 @@ void Skeleton3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
 #endif // _3D_DISABLED
 
-#ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("pose_updated"));
-#endif // TOOLS_ENABLED
-
 	ADD_SIGNAL(MethodInfo("bone_pose_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("show_rest_only_changed"));

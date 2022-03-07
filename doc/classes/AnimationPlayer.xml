@@ -46,6 +46,7 @@
 		</method>
 		<method name="clear_caches">
 			<return type="void" />
+			<argument index="0" name="p_emit_signal" type="bool" default="false" />
 			<description>
 				[AnimationPlayer] caches animated nodes. It may not notice if a node disappears; [method clear_caches] forces it to update the cache again.
 			</description>
@@ -214,6 +215,18 @@
 		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation applied (as if it had been seeked to time 0), then reverted after saving.
 			In other words, the saved scene file will contain the "default pose", as defined by the reset animation, if any, with the editor keeping the values that the nodes had before saving.
+		</member>
+		<member name="retarget_map" type="RetargetBoneMap" setter="set_retarget_map" getter="get_retarget_map">
+			The map used when extracting and applying retarget tracks.
+		</member>
+		<member name="retarget_option" type="RetargetBoneOption" setter="set_retarget_option" getter="get_retarget_option">
+			The option used when extracting retarget tracks.
+		</member>
+		<member name="retarget_profile" type="RetargetProfile" setter="set_retarget_profile" getter="get_retarget_profile">
+			The profile used when editing [RetargetBoneMap] and [RetargetBoneOption].
+		</member>
+		<member name="retarget_skeleton" type="NodePath" setter="set_retarget_skeleton" getter="get_retarget_skeleton" default="NodePath(&quot;&quot;)">
+			The [Skeleton3D] to extract or apply retarget tracks.
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" default="NodePath(&quot;..&quot;)">
 			The node from which node path references will travel.

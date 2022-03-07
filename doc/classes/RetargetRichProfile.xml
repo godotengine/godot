@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetRichProfile" inherits="RetargetProfile" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that defines the intermediate bones and the mapper layout in the inspector for retarget.
+	</brief_description>
+	<description>
+		A resource that defines textures, coordinates, and groups in addition to the intermediate bones.
+		This provides a GUI with the buttons placed on the silhouette image to register the keys to [RetargetBoneMap] and [RetargetBoneOption].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_group">
+			<return type="void" />
+			<argument index="0" name="group_name" type="StringName" />
+			<argument index="1" name="to_index" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="find_group">
+			<return type="int" />
+			<argument index="0" name="group_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_group_name" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_group_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_groups_size" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intermediate_bone_group_id" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intermediate_bone_handle_offset" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_group">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_group_name">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="group_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_group_texture">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="group_texture" type="Texture2D" />
+			<description>
+			</description>
+		</method>
+		<method name="set_intermediate_bone_group_id">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="group_id" type="int" />
+			<argument index="2" name="emit_signal" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="set_intermediate_bone_handle_offset">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="handle_offset" type="Vector2" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="group_updated">
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

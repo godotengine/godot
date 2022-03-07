@@ -536,7 +536,10 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 		return false;
 	}
 	Node *parent = player->get_node(player->get_root());
-
+#ifndef _3D_DISABLED
+	Skeleton3D *rtg_sk = Object::cast_to<Skeleton3D>(player->get_node_or_null(player->get_retarget_skeleton()));
+	bool retarget_is_valid = player->get_retarget_map().is_valid() && rtg_sk;
+#endif // _3D_DISABLED
 	List<StringName> sname;
 	player->get_animation_list(&sname);
 
@@ -545,23 +548,57 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TrackType track_type = anim->track_get_type(i);
+#ifndef _3D_DISABLED
+			if (anim->track_is_retarget(i)) {
+				if (retarget_is_valid) {
+					String imbone = path.get_concatenated_subnames();
+					if (player->get_retarget_map()->has_key(imbone)) {
+						path = String(parent->get_path_to(rtg_sk)) + ":" + player->get_retarget_map()->get_bone_name(imbone);
+					} else {
+						continue;
+					}
+				} else {
+					// Prevent to animate root.
+					// Empty path are treated as root. Usually it is ".:subpath", not ":subpath".
+					continue;
+				}
+			}
+#endif // _3D_DISABLED
 
-			Animation::TrackType track_cache_type = track_type;
-			if (track_cache_type == Animation::TYPE_POSITION_3D || track_cache_type == Animation::TYPE_ROTATION_3D || track_cache_type == Animation::TYPE_SCALE_3D) {
-				track_cache_type = Animation::TYPE_POSITION_3D; //reference them as position3D tracks, even if they modify rotation or scale
+			// May only used by transform 3d tracks.
+			Animation::TrackType track_src_type = track_type;
+
+			if (!track_cache.has(path)) {
+				track_cache[path] = Vector<TrackCache *>();
+			}
+
+			Vector<TrackCache *> &tracks = track_cache.get(path);
+
+			// Merge some caches.
+			if (track_type == Animation::TYPE_BEZIER) {
+				track_type = Animation::TYPE_VALUE;
+			}
+			if (track_type == Animation::TYPE_ROTATION_3D || track_type == Animation::TYPE_SCALE_3D) {
+				track_type = Animation::TYPE_POSITION_3D; //reference them as position3D tracks, even if they modify rotation or scale
 			}
 
 			TrackCache *track = nullptr;
-			if (track_cache.has(path)) {
-				track = track_cache.get(path);
-			}
-
-			//if not valid, delete track
-			if (track && (track->type != track_cache_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
-				playing_caches.erase(track);
-				memdelete(track);
-				track_cache.erase(path);
-				track = nullptr;
+			int tracks_len = tracks.size();
+			for (int j = 0; j < tracks_len; j++) {
+				if (tracks.get(j)->type == track_type) {
+					track = tracks.get(j);
+					//if not valid, delete track
+					if (ObjectDB::get_instance(track->object_id) == nullptr) {
+						playing_caches.erase(track);
+						tracks.remove_at(j);
+						memdelete(track);
+						track = nullptr;
+						if (tracks.size() <= 0) {
+							track_cache.erase(path);
+						}
+					}
+					break;
+				}
 			}
 
 			if (!track) {
@@ -594,9 +631,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_value;
 
 					} break;
-					case Animation::TYPE_POSITION_3D:
-					case Animation::TYPE_ROTATION_3D:
-					case Animation::TYPE_SCALE_3D: {
+					case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
 						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
@@ -631,7 +666,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 						track = track_xform;
 
-						switch (track_type) {
+						switch (track_src_type) {
 							case Animation::TYPE_POSITION_3D: {
 								track_xform->loc_used = true;
 							} break;
@@ -644,7 +679,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							default: {
 							}
 						}
-
 #endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_BLEND_SHAPE: {
@@ -691,20 +725,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_method;
 
 					} break;
-					case Animation::TYPE_BEZIER: {
-						TrackCacheBezier *track_bezier = memnew(TrackCacheBezier);
-
-						if (resource.is_valid()) {
-							track_bezier->object = resource.ptr();
-						} else {
-							track_bezier->object = child;
-						}
-
-						track_bezier->subpath = leftover_path;
-						track_bezier->object_id = track_bezier->object->get_instance_id();
-
-						track = track_bezier;
-					} break;
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
 
@@ -728,16 +748,15 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						continue;
 					}
 				}
-
-				track_cache[path] = track;
-			} else if (track_cache_type == Animation::TYPE_POSITION_3D) {
+				track_cache[path].push_back(track);
+			} else if (track_type == Animation::TYPE_POSITION_3D) {
 				TrackCacheTransform *track_xform = static_cast<TrackCacheTransform *>(track);
 				if (track->setup_pass != setup_pass) {
 					track_xform->loc_used = false;
 					track_xform->rot_used = false;
 					track_xform->scale_used = false;
 				}
-				switch (track_type) {
+				switch (track_src_type) {
 					case Animation::TYPE_POSITION_3D: {
 						track_xform->loc_used = true;
 					} break;
@@ -756,21 +775,34 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 		}
 	}
 
-	List<NodePath> to_delete;
+	List<NodePath> to_delete_path;
+	List<int> to_delete_idx;
 
 	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
-		TrackCache *tc = track_cache[*K];
-		if (tc->setup_pass != setup_pass) {
-			to_delete.push_back(*K);
+		to_delete_idx.clear();
+		Vector<TrackCache *> &tcs = track_cache[*K];
+		int tracks_len = tcs.size();
+		for (int i = 0; i < tracks_len; i++) {
+			TrackCache *tc = tcs.get(i);
+			if (tc->setup_pass != setup_pass) {
+				to_delete_idx.push_front(i);
+			}
+		}
+		while (to_delete_idx.front()) {
+			int idx = to_delete_idx.front()->get();
+			tcs.remove_at(idx);
+			to_delete_path.pop_front();
+		}
+		if (tcs.size() <= 0) {
+			to_delete_path.push_back(*K);
 		}
 	}
 
-	while (to_delete.front()) {
-		NodePath np = to_delete.front()->get();
-		memdelete(track_cache[np]);
+	while (to_delete_path.front()) {
+		NodePath np = to_delete_path.front()->get();
 		track_cache.erase(np);
-		to_delete.pop_front();
+		to_delete_path.pop_front();
 	}
 
 	state.track_map.clear();
@@ -792,7 +824,12 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 void AnimationTree::_clear_caches() {
 	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
-		memdelete(track_cache[*K]);
+		Vector<TrackCache *> &tracks = track_cache[*K];
+		int tracks_len = tracks.size();
+		for (int i = 0; i < tracks_len; i++) {
+			memdelete(tracks.get(i));
+		}
+		tracks.clear();
 	}
 	playing_caches.clear();
 
@@ -911,6 +948,11 @@ void AnimationTree::_process_graph(double p_delta) {
 	//apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
 
 	{
+#ifndef _3D_DISABLED
+		Node *parent = player->get_node(player->get_root());
+		Skeleton3D *rtg_sk = Object::cast_to<Skeleton3D>(player->get_node_or_null(player->get_retarget_skeleton()));
+		bool retarget_is_valid = player->get_retarget_map().is_valid() && rtg_sk;
+#endif // _3D_DISABLED
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
 		for (const AnimationNode::AnimationState &as : state.animation_states) {
@@ -926,15 +968,42 @@ void AnimationTree::_process_graph(double p_delta) {
 
 			for (int i = 0; i < a->get_track_count(); i++) {
 				NodePath path = a->track_get_path(i);
-
+#ifndef _3D_DISABLED
+				if (a->track_is_retarget(i)) {
+					if (retarget_is_valid) {
+						if (player->get_retarget_map()->has_key(path.get_concatenated_subnames())) {
+							path = String(parent->get_path_to(rtg_sk)) + ":" + player->get_retarget_map()->get_bone_name(path.get_concatenated_subnames());
+						} else {
+							continue;
+						}
+					} else {
+						continue;
+					}
+				}
+#endif // _3D_DISABLED
 				ERR_CONTINUE(!track_cache.has(path));
 
-				TrackCache *track = track_cache[path];
+				TrackCache *track = nullptr;
+				Animation::TrackType cache_type = a->track_get_type(i);
 
-				Animation::TrackType ttype = a->track_get_type(i);
-				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {
-					//broken animation, but avoid error spamming
-					continue;
+				// Merge some caches
+				if (cache_type == Animation::TYPE_BEZIER) {
+					cache_type = Animation::TYPE_VALUE;
+				}
+				if (cache_type == Animation::TYPE_ROTATION_3D || cache_type == Animation::TYPE_SCALE_3D) {
+					cache_type = Animation::TYPE_POSITION_3D;
+				}
+
+				Vector<TrackCache *> &tcs = track_cache[path];
+				int tracks_len = tcs.size();
+				for (int j = 0; j < tracks_len; j++) {
+					if (tcs.get(j)->type == cache_type) {
+						track = tcs.get(j);
+						break;
+					}
+				}
+				if (!track) {
+					continue; //may happen should not
 				}
 
 				track->root_motion = root_motion_track == path;
@@ -946,279 +1015,427 @@ void AnimationTree::_process_graph(double p_delta) {
 
 				real_t blend = (*as.track_blends)[blend_idx] * weight;
 
-				switch (ttype) {
+				switch (cache_type) {
 					case Animation::TYPE_POSITION_3D: {
+						switch (a->track_get_type(i)) {
+							case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
-						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->loc = t->init_loc;
-							t->rot = t->init_rot;
-							t->scale = t->init_scale;
-						}
-						if (track->root_motion) {
-							double prev_time = time - delta;
-							if (!backward) {
-								if (prev_time < 0) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
+								TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+								if (t->process_pass != process_pass) {
+									t->process_pass = process_pass;
+									t->loc = t->init_loc;
+									t->rot = t->init_rot;
+									t->scale = t->init_scale;
+								}
+								if (track->root_motion) {
+									double prev_time = time - delta;
+									if (!backward) {
+										if (prev_time < 0) {
+											switch (a->get_loop_mode()) {
+												case Animation::LOOP_NONE: {
+													prev_time = 0;
+												} break;
+												case Animation::LOOP_LINEAR: {
+													prev_time = Math::fposmod(prev_time, (double)a->get_length());
+												} break;
+												case Animation::LOOP_PINGPONG: {
+													prev_time = Math::pingpong(prev_time, (double)a->get_length());
+												} break;
+												default:
+													break;
+											}
+										}
+									} else {
+										if (prev_time > a->get_length()) {
+											switch (a->get_loop_mode()) {
+												case Animation::LOOP_NONE: {
+													prev_time = (double)a->get_length();
+												} break;
+												case Animation::LOOP_LINEAR: {
+													prev_time = Math::fposmod(prev_time, (double)a->get_length());
+												} break;
+												case Animation::LOOP_PINGPONG: {
+													prev_time = Math::pingpong(prev_time, (double)a->get_length());
+												} break;
+												default:
+													break;
+											}
+										}
+									}
+
+									Vector3 loc[2];
+
+									if (!backward) {
+										if (prev_time > time) {
+											Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+											if (err != OK) {
+												continue;
+											}
+											a->position_track_interpolate(i, (double)a->get_length(), &loc[1]);
+											Vector3 v = loc[1] - loc[0];
+											if (a->track_is_retarget(i) && retarget_is_valid) {
+												int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+												if (bone_idx == -1) {
+													continue;
+												}
+												if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+													v = rtg_sk->global_retarget_position_to_local_pose(bone_idx, v);
+												} else if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+													v = rtg_sk->local_retarget_position_to_local_pose(bone_idx, v);
+												}
+											}
+											t->loc += v * blend;
 											prev_time = 0;
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
+										}
+									} else {
+										if (prev_time < time) {
+											Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+											if (err != OK) {
+												continue;
+											}
+											a->position_track_interpolate(i, 0, &loc[1]);
+											Vector3 v = loc[1] - loc[0];
+											if (a->track_is_retarget(i) && retarget_is_valid) {
+												int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+												if (bone_idx == -1) {
+													continue;
+												}
+												if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+													v = rtg_sk->global_retarget_position_to_local_pose(bone_idx, v);
+												} else if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+													v = rtg_sk->local_retarget_position_to_local_pose(bone_idx, v);
+												}
+											}
+											t->loc += v * blend;
+											prev_time = 0;
+										}
 									}
-								}
-							} else {
-								if (prev_time > a->get_length()) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = (double)a->get_length();
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							}
 
-							Vector3 loc[2];
-
-							if (!backward) {
-								if (prev_time > time) {
 									Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
 									if (err != OK) {
 										continue;
 									}
-									a->position_track_interpolate(i, (double)a->get_length(), &loc[1]);
-									t->loc += (loc[1] - loc[0]) * blend;
-									prev_time = 0;
-								}
-							} else {
-								if (prev_time < time) {
-									Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+
+									a->position_track_interpolate(i, time, &loc[1]);
+									Vector3 v = loc[1] - loc[0];
+									if (a->track_is_retarget(i) && retarget_is_valid) {
+										int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+										if (bone_idx == -1) {
+											continue;
+										}
+										if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+											v = rtg_sk->global_retarget_position_to_local_pose(bone_idx, v);
+										} else if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+											v = rtg_sk->local_retarget_position_to_local_pose(bone_idx, v);
+										}
+									}
+									t->loc += v * blend;
+									prev_time = !backward ? 0 : (double)a->get_length();
+
+								} else {
+									Vector3 loc;
+
+									Error err = a->position_track_interpolate(i, time, &loc);
 									if (err != OK) {
 										continue;
 									}
-									a->position_track_interpolate(i, 0, &loc[1]);
-									t->loc += (loc[1] - loc[0]) * blend;
-									prev_time = 0;
+
+									if (a->track_is_retarget(i) && retarget_is_valid) {
+										int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+										if (bone_idx == -1) {
+											continue;
+										}
+										if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+											loc = rtg_sk->global_retarget_position_to_local_pose(bone_idx, loc);
+										} else if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+											loc = rtg_sk->local_retarget_position_to_local_pose(bone_idx, loc);
+										}
+									}
+
+									t->loc += (loc - t->init_loc) * blend;
 								}
-							}
-
-							Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
-							if (err != OK) {
-								continue;
-							}
-
-							a->position_track_interpolate(i, time, &loc[1]);
-							t->loc += (loc[1] - loc[0]) * blend;
-							prev_time = !backward ? 0 : (double)a->get_length();
-
-						} else {
-							Vector3 loc;
-
-							Error err = a->position_track_interpolate(i, time, &loc);
-							if (err != OK) {
-								continue;
-							}
-
-							t->loc += (loc - t->init_loc) * blend;
-						}
 #endif // _3D_DISABLED
-					} break;
-					case Animation::TYPE_ROTATION_3D: {
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
 #ifndef _3D_DISABLED
-						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->loc = t->init_loc;
-							t->rot = t->init_rot;
-							t->scale = t->init_scale;
-						}
-						if (track->root_motion) {
-							double prev_time = time - delta;
-							if (!backward) {
-								if (prev_time < 0) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
+								TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+								if (t->process_pass != process_pass) {
+									t->process_pass = process_pass;
+									t->loc = t->init_loc;
+									t->rot = t->init_rot;
+									t->scale = t->init_scale;
+								}
+								if (track->root_motion) {
+									double prev_time = time - delta;
+									if (!backward) {
+										if (prev_time < 0) {
+											switch (a->get_loop_mode()) {
+												case Animation::LOOP_NONE: {
+													prev_time = 0;
+												} break;
+												case Animation::LOOP_LINEAR: {
+													prev_time = Math::fposmod(prev_time, (double)a->get_length());
+												} break;
+												case Animation::LOOP_PINGPONG: {
+													prev_time = Math::pingpong(prev_time, (double)a->get_length());
+												} break;
+												default:
+													break;
+											}
+										}
+									} else {
+										if (prev_time > a->get_length()) {
+											switch (a->get_loop_mode()) {
+												case Animation::LOOP_NONE: {
+													prev_time = (double)a->get_length();
+												} break;
+												case Animation::LOOP_LINEAR: {
+													prev_time = Math::fposmod(prev_time, (double)a->get_length());
+												} break;
+												case Animation::LOOP_PINGPONG: {
+													prev_time = Math::pingpong(prev_time, (double)a->get_length());
+												} break;
+												default:
+													break;
+											}
+										}
+									}
+
+									Quaternion rot[2];
+
+									if (!backward) {
+										if (prev_time > time) {
+											Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+											if (err != OK) {
+												continue;
+											}
+											a->rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
+											Quaternion q = (rot[1].log() - rot[0].log()) * blend;
+											if (a->track_is_retarget(i) && retarget_is_valid) {
+												int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+												if (bone_idx == -1) {
+													continue;
+												}
+												if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+													q = rtg_sk->global_retarget_rotation_to_local_pose(bone_idx, q.exp()).log();
+												} else if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+													q = rtg_sk->local_retarget_rotation_to_local_pose(bone_idx, q.exp()).log();
+												}
+											}
+											t->rot += q.log();
 											prev_time = 0;
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
+										}
+									} else {
+										if (prev_time < time) {
+											Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+											if (err != OK) {
+												continue;
+											}
+											a->rotation_track_interpolate(i, 0, &rot[1]);
+											Quaternion q = (rot[1].log() - rot[0].log()) * blend;
+											if (a->track_is_retarget(i) && retarget_is_valid) {
+												int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+												if (bone_idx == -1) {
+													continue;
+												}
+												if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+													q = rtg_sk->global_retarget_rotation_to_local_pose(bone_idx, q.exp()).log();
+												} else if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+													q = rtg_sk->local_retarget_rotation_to_local_pose(bone_idx, q.exp()).log();
+												}
+											}
+											t->rot += q;
+											prev_time = 0;
+										}
 									}
-								}
-							} else {
-								if (prev_time > a->get_length()) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = (double)a->get_length();
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							}
-
-							Quaternion rot[2];
-
-							if (!backward) {
-								if (prev_time > time) {
 									Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
 									if (err != OK) {
 										continue;
 									}
-									a->rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
-									t->rot += (rot[1].log() - rot[0].log()) * blend;
-									prev_time = 0;
-								}
-							} else {
-								if (prev_time < time) {
-									Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+
+									a->rotation_track_interpolate(i, time, &rot[1]);
+									Quaternion q = (rot[1].log() - rot[0].log()) * blend;
+									if (a->track_is_retarget(i) && retarget_is_valid) {
+										int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+										if (bone_idx == -1) {
+											continue;
+										}
+										if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+											q = rtg_sk->global_retarget_rotation_to_local_pose(bone_idx, q.exp()).log();
+										} else if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+											q = rtg_sk->local_retarget_rotation_to_local_pose(bone_idx, q.exp()).log();
+										}
+									}
+									t->rot += q;
+									prev_time = !backward ? 0 : (double)a->get_length();
+
+								} else {
+									Quaternion rot;
+
+									Error err = a->rotation_track_interpolate(i, time, &rot);
 									if (err != OK) {
 										continue;
 									}
-									a->rotation_track_interpolate(i, 0, &rot[1]);
-									t->rot += (rot[1].log() - rot[0].log()) * blend;
-									prev_time = 0;
+
+									if (a->track_is_retarget(i) && retarget_is_valid) {
+										int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+										if (bone_idx == -1) {
+											continue;
+										}
+										if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+											rot = rtg_sk->global_retarget_rotation_to_local_pose(bone_idx, rot);
+										} else if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+											rot = rtg_sk->local_retarget_rotation_to_local_pose(bone_idx, rot);
+										}
+									}
+									if (signbit(rot.dot(t->ref_rot))) {
+										rot = -rot;
+									}
+									t->rot += (rot.log() - t->init_rot) * blend;
 								}
-							}
-
-							Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
-							if (err != OK) {
-								continue;
-							}
-
-							a->rotation_track_interpolate(i, time, &rot[1]);
-							t->rot += (rot[1].log() - rot[0].log()) * blend;
-							prev_time = !backward ? 0 : (double)a->get_length();
-
-						} else {
-							Quaternion rot;
-
-							Error err = a->rotation_track_interpolate(i, time, &rot);
-							if (err != OK) {
-								continue;
-							}
-
-							if (signbit(rot.dot(t->ref_rot))) {
-								rot = -rot;
-							}
-							t->rot += (rot.log() - t->init_rot) * blend;
-						}
 #endif // _3D_DISABLED
-					} break;
-					case Animation::TYPE_SCALE_3D: {
+							} break;
+							case Animation::TYPE_SCALE_3D: {
 #ifndef _3D_DISABLED
-						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->loc = t->init_loc;
-							t->rot = t->init_rot;
-							t->scale = t->init_scale;
-						}
-						if (track->root_motion) {
-							double prev_time = time - delta;
-							if (!backward) {
-								if (prev_time < 0) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
+								TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+								if (t->process_pass != process_pass) {
+									t->process_pass = process_pass;
+									t->loc = t->init_loc;
+									t->rot = t->init_rot;
+									t->scale = t->init_scale;
+								}
+								if (track->root_motion) {
+									double prev_time = time - delta;
+									if (!backward) {
+										if (prev_time < 0) {
+											switch (a->get_loop_mode()) {
+												case Animation::LOOP_NONE: {
+													prev_time = 0;
+												} break;
+												case Animation::LOOP_LINEAR: {
+													prev_time = Math::fposmod(prev_time, (double)a->get_length());
+												} break;
+												case Animation::LOOP_PINGPONG: {
+													prev_time = Math::pingpong(prev_time, (double)a->get_length());
+												} break;
+												default:
+													break;
+											}
+										}
+									} else {
+										if (prev_time > a->get_length()) {
+											switch (a->get_loop_mode()) {
+												case Animation::LOOP_NONE: {
+													prev_time = (double)a->get_length();
+												} break;
+												case Animation::LOOP_LINEAR: {
+													prev_time = Math::fposmod(prev_time, (double)a->get_length());
+												} break;
+												case Animation::LOOP_PINGPONG: {
+													prev_time = Math::pingpong(prev_time, (double)a->get_length());
+												} break;
+												default:
+													break;
+											}
+										}
+									}
+
+									Vector3 scale[2];
+
+									if (!backward) {
+										if (prev_time > time) {
+											Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+											if (err != OK) {
+												continue;
+											}
+											a->scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
+											Vector3 v = scale[1] - scale[0];
+											if (a->track_is_retarget(i) && retarget_is_valid) {
+												int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+												if (bone_idx == -1) {
+													continue;
+												}
+												if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+													v = rtg_sk->global_retarget_scale_to_local_pose(bone_idx, v);
+												} else if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+													v = rtg_sk->local_retarget_scale_to_local_pose(bone_idx, v);
+												}
+											}
+											t->scale += v * blend;
 											prev_time = 0;
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
+										}
+									} else {
+										if (prev_time < time) {
+											Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+											if (err != OK) {
+												continue;
+											}
+											a->scale_track_interpolate(i, 0, &scale[1]);
+											Vector3 v = scale[1] - scale[0];
+											if (a->track_is_retarget(i) && retarget_is_valid) {
+												int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+												if (bone_idx == -1) {
+													continue;
+												}
+												if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+													v = rtg_sk->global_retarget_scale_to_local_pose(bone_idx, v);
+												} else if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+													v = rtg_sk->local_retarget_scale_to_local_pose(bone_idx, v);
+												}
+											}
+											t->scale += v * blend;
+											prev_time = 0;
+										}
 									}
-								}
-							} else {
-								if (prev_time > a->get_length()) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = (double)a->get_length();
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							}
 
-							Vector3 scale[2];
-
-							if (!backward) {
-								if (prev_time > time) {
 									Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
 									if (err != OK) {
 										continue;
 									}
-									a->scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
-									t->scale += (scale[1] - scale[0]) * blend;
-									prev_time = 0;
-								}
-							} else {
-								if (prev_time < time) {
-									Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+
+									a->scale_track_interpolate(i, time, &scale[1]);
+									Vector3 v = scale[1] - scale[0];
+									if (a->track_is_retarget(i) && retarget_is_valid) {
+										int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+										if (bone_idx == -1) {
+											continue;
+										}
+										if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+											v = rtg_sk->global_retarget_scale_to_local_pose(bone_idx, v);
+										} else if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+											v = rtg_sk->local_retarget_scale_to_local_pose(bone_idx, v);
+										}
+									}
+									t->scale += v * blend;
+									prev_time = !backward ? 0 : (double)a->get_length();
+
+								} else {
+									Vector3 scale;
+
+									Error err = a->scale_track_interpolate(i, time, &scale);
 									if (err != OK) {
 										continue;
 									}
-									a->scale_track_interpolate(i, 0, &scale[1]);
-									t->scale += (scale[1] - scale[0]) * blend;
-									prev_time = 0;
+
+									if (a->track_is_retarget(i) && retarget_is_valid) {
+										int bone_idx = rtg_sk->find_bone(path.get_subname(0));
+										if (bone_idx == -1) {
+											continue;
+										}
+										if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+											scale = rtg_sk->global_retarget_scale_to_local_pose(bone_idx, scale);
+										} else if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+											scale = rtg_sk->local_retarget_scale_to_local_pose(bone_idx, scale);
+										}
+									}
+
+									t->scale += (scale - t->init_scale) * blend;
 								}
-							}
-
-							Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
-							if (err != OK) {
-								continue;
-							}
-
-							a->scale_track_interpolate(i, time, &scale[1]);
-							t->scale += (scale[1] - scale[0]) * blend;
-							prev_time = !backward ? 0 : (double)a->get_length();
-
-						} else {
-							Vector3 scale;
-
-							Error err = a->scale_track_interpolate(i, time, &scale);
-							if (err != OK) {
-								continue;
-							}
-
-							t->scale += (scale - t->init_scale) * blend;
-						}
 #endif // _3D_DISABLED
+							} break;
+							default: {
+							} break;
+						}
 					} break;
 					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
@@ -1243,35 +1460,50 @@ void AnimationTree::_process_graph(double p_delta) {
 					} break;
 					case Animation::TYPE_VALUE: {
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+						switch (a->track_get_type(i)) {
+							case Animation::TYPE_VALUE: {
+								Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
-						Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
+								if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) { //delta == 0 means seek
 
-						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) { //delta == 0 means seek
+									Variant value = a->value_track_interpolate(i, time);
 
-							Variant value = a->value_track_interpolate(i, time);
+									if (value == Variant()) {
+										continue;
+									}
 
-							if (value == Variant()) {
-								continue;
-							}
+									if (t->process_pass != process_pass) {
+										t->process_pass = process_pass;
+										t->value = value;
+										t->value.zero();
+									}
 
-							if (t->process_pass != process_pass) {
-								t->process_pass = process_pass;
-								t->value = value;
-								t->value.zero();
-							}
+									Variant::blend(t->value, value, blend, t->value);
+								} else {
+									if (blend < CMP_EPSILON) {
+										continue; //nothing to blend
+									}
+									List<int> indices;
+									a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
 
-							Variant::blend(t->value, value, blend, t->value);
-						} else {
-							if (blend < CMP_EPSILON) {
-								continue; //nothing to blend
-							}
-							List<int> indices;
-							a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+									for (int &F : indices) {
+										Variant value = a->track_get_key_value(i, F);
+										t->object->set_indexed(t->subpath, value);
+									}
+								}
+							} break;
+							case Animation::TYPE_BEZIER: {
+								Variant bezier = a->bezier_track_interpolate(i, time);
 
-							for (int &F : indices) {
-								Variant value = a->track_get_key_value(i, F);
-								t->object->set_indexed(t->subpath, value);
-							}
+								if (t->process_pass != process_pass) {
+									t->process_pass = process_pass;
+									bezier = 0;
+								}
+
+								Variant::blend(t->value, bezier, blend, t->value);
+							} break;
+							default: {
+							} break;
 						}
 
 					} break;
@@ -1295,18 +1527,6 @@ void AnimationTree::_process_graph(double p_delta) {
 								_call_object(t->object, method, params, true);
 							}
 						}
-					} break;
-					case Animation::TYPE_BEZIER: {
-						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
-
-						real_t bezier = a->bezier_track_interpolate(i, time);
-
-						if (t->process_pass != process_pass) {
-							t->process_pass = process_pass;
-							t->value = 0;
-						}
-
-						t->value += bezier * blend;
 					} break;
 					case Animation::TYPE_AUDIO: {
 						if (blend < CMP_EPSILON) {
@@ -1384,7 +1604,7 @@ void AnimationTree::_process_graph(double p_delta) {
 									t->start = time;
 								}
 							} else if (t->playing) {
-								bool loop = a->get_loop_mode() != Animation::LoopMode::LOOP_NONE;
+								bool loop = a->get_loop_mode() != Animation::LOOP_NONE;
 
 								bool stop = false;
 
@@ -1415,11 +1635,13 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						}
 
-						real_t db = Math::linear2db(MAX(blend, 0.00001));
-						if (t->object->has_method(SNAME("set_unit_db"))) {
-							t->object->call(SNAME("set_unit_db"), db);
-						} else {
-							t->object->call(SNAME("set_volume_db"), db);
+						if (a->audio_track_get_auto_volume(i)) {
+							real_t db = Math::linear2db(MAX(blend, 0.00001));
+							if (t->object->has_method(SNAME("set_unit_db"))) {
+								t->object->call(SNAME("set_unit_db"), db);
+							} else {
+								t->object->call(SNAME("set_volume_db"), db);
+							}
 						}
 					} break;
 					case Animation::TYPE_ANIMATION: {
@@ -1453,13 +1675,13 @@ void AnimationTree::_process_graph(double p_delta) {
 							double at_anim_pos = 0.0;
 
 							switch (anim->get_loop_mode()) {
-								case Animation::LoopMode::LOOP_NONE: {
+								case Animation::LOOP_NONE: {
 									at_anim_pos = MAX((double)anim->get_length(), time - pos); //seek to end
 								} break;
-								case Animation::LoopMode::LOOP_LINEAR: {
+								case Animation::LOOP_LINEAR: {
 									at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
 								} break;
-								case Animation::LoopMode::LOOP_PINGPONG: {
+								case Animation::LOOP_PINGPONG: {
 									at_anim_pos = Math::pingpong(time - pos, (double)a->get_length());
 								} break;
 								default:
@@ -1498,6 +1720,8 @@ void AnimationTree::_process_graph(double p_delta) {
 						}
 
 					} break;
+					default: {
+					} break;
 				}
 			}
 		}
@@ -1507,71 +1731,76 @@ void AnimationTree::_process_graph(double p_delta) {
 		// finally, set the tracks
 		const NodePath *K = nullptr;
 		while ((K = track_cache.next(K))) {
-			TrackCache *track = track_cache[*K];
-			if (track->process_pass != process_pass) {
-				continue; //not processed, ignore
-			}
+			Vector<TrackCache *> &tcs = track_cache[*K];
+			int tracks_len = tcs.size();
+			for (int i = 0; i < tracks_len; i++) {
+				TrackCache *track = tcs.get(i);
 
-			switch (track->type) {
-				case Animation::TYPE_POSITION_3D: {
+				if (!track) {
+					continue; //may happen should not
+				}
+
+				if (track->process_pass != process_pass) {
+					continue; //not processed, ignore
+				}
+
+				switch (track->type) {
+					case Animation::TYPE_POSITION_3D:
+					case Animation::TYPE_ROTATION_3D:
+					case Animation::TYPE_SCALE_3D: {
 #ifndef _3D_DISABLED
-					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
-					t->rot = t->rot.exp();
+						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+						t->rot = t->rot.exp();
 
-					if (t->root_motion) {
-						Transform3D xform;
-						xform.origin = t->loc;
-						xform.basis.set_quaternion_scale(t->rot, t->scale);
+						if (t->root_motion) {
+							Transform3D xform;
+							xform.origin = t->loc;
+							xform.basis.set_quaternion_scale(t->rot, t->scale);
 
-						root_motion_transform = xform;
+							root_motion_transform = xform;
 
-					} else if (t->skeleton && t->bone_idx >= 0) {
-						if (t->loc_used) {
-							t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);
-						}
-						if (t->rot_used) {
-							t->skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
-						}
-						if (t->scale_used) {
-							t->skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
-						}
+						} else if (t->skeleton && t->bone_idx >= 0) {
+							if (t->loc_used) {
+								t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+							}
+							if (t->rot_used) {
+								t->skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
+							}
+							if (t->scale_used) {
+								t->skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
+							}
 
-					} else if (!t->skeleton) {
-						if (t->loc_used) {
-							t->node_3d->set_position(t->loc);
+						} else if (!t->skeleton) {
+							if (t->loc_used) {
+								t->node_3d->set_position(t->loc);
+							}
+							if (t->rot_used) {
+								t->node_3d->set_rotation(t->rot.get_euler());
+							}
+							if (t->scale_used) {
+								t->node_3d->set_scale(t->scale);
+							}
 						}
-						if (t->rot_used) {
-							t->node_3d->set_rotation(t->rot.get_euler());
-						}
-						if (t->scale_used) {
-							t->node_3d->set_scale(t->scale);
-						}
-					}
 #endif // _3D_DISABLED
-				} break;
-				case Animation::TYPE_BLEND_SHAPE: {
+					} break;
+					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
-					TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
+						TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
 
-					if (t->mesh_3d) {
-						t->mesh_3d->set_blend_shape_value(t->shape_index, t->value);
-					}
+						if (t->mesh_3d) {
+							t->mesh_3d->set_blend_shape_value(t->shape_index, t->value);
+						}
 #endif // _3D_DISABLED
-				} break;
-				case Animation::TYPE_VALUE: {
-					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+					} break;
+					case Animation::TYPE_VALUE: {
+						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+						t->object->set_indexed(t->subpath, t->value);
 
-				} break;
-				case Animation::TYPE_BEZIER: {
-					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
-
-					t->object->set_indexed(t->subpath, t->value);
-
-				} break;
-				default: {
-				} //the rest don't matter
+					} break;
+					default: {
+					} //the rest don't matter
+				}
 			}
 		}
 	}

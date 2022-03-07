@@ -61,7 +61,13 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
 		TOOL_PASTE_ANIM_REF,
-		TOOL_EDIT_RESOURCE
+		TOOL_EDIT_RESOURCE,
+#ifndef _3D_DISABLED
+		TOOL_MAKE_REATRGET_TRACKS,
+		TOOL_RESTORE_REATRGET_TRACKS,
+		TOOL_DELETE_REATRGET_TRACKS,
+		TOOL_DELETE_NOT_REATRGET_TRACKS,
+#endif // _3D_DISABLED
 	};
 
 	enum {
@@ -219,6 +225,14 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _stop_onion_skinning();
 
 	void _pin_pressed();
+
+#ifndef _3D_DISABLED
+	void _make_retarget_tracks();
+	void _restore_retarget_tracks();
+	void _delete_retarget_tracks();
+	void _delete_not_retarget_tracks();
+	void _delete_confrict_tracks();
+#endif // _3D_DISABLED
 
 	~AnimationPlayerEditor();
 

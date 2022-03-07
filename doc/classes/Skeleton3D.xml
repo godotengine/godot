@@ -60,6 +60,62 @@
 				Executes all the modifications on the [SkeletonModificationStack3D], if the Skeleton3D has one assigned.
 			</description>
 		</method>
+		<method name="extract_global_retarget_position">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose position used by global retarget without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_global_retarget_rotation">
+			<return type="Quaternion" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose rotation used by global retarget without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_global_retarget_scale">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose scale used by global retarget without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_global_retarget_transform">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose used by global retarget for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_local_retarget_position">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose position used by local retarget without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_local_retarget_rotation">
+			<return type="Quaternion" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose rotation used by local retarget without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_local_retarget_scale">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose scale used by local retarget without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="extract_local_retarget_transform">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose used by local retarget for [code]bone_idx[/code].
+			</description>
+		</method>
 		<method name="find_bone" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="name" type="String" />
@@ -93,6 +149,13 @@
 				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
+		<method name="get_bone_final_pose" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the final transform of the specified bone, if pose is overridden, it take that into account.
+			</description>
+		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -108,6 +171,13 @@
 			</description>
 		</method>
 		<method name="get_bone_global_pose_override" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the [code]bone_global_pose_override[/code] for a bone [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_bone_global_rest" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
@@ -146,18 +216,21 @@
 			<return type="Vector3" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the bone pose position for a bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_pose_rotation" qualifiers="const">
 			<return type="Quaternion" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the bone pose rotation for a bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_pose_scale" qualifiers="const">
 			<return type="Vector3" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the bone pose scale for a bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_rest" qualifiers="const">
@@ -205,6 +278,38 @@
 				This is helper function to make using [method Transform3D.looking_at] easier with bone poses.
 			</description>
 		</method>
+		<method name="global_retarget_position_to_local_pose">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
+				Takes the passed-in global retarget position and converts it to local pose position.
+			</description>
+		</method>
+		<method name="global_retarget_rotation_to_local_pose">
+			<return type="Quaternion" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="rotation" type="Quaternion" />
+			<description>
+				Takes the passed-in global retarget rotation and converts it to local pose rotation.
+			</description>
+		</method>
+		<method name="global_retarget_scale_to_local_pose">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="scale" type="Vector3" />
+			<description>
+				Takes the passed-in global retarget scale and converts it to local pose scale.
+			</description>
+		</method>
+		<method name="global_retarget_transform_to_local_pose">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="transform" type="Transform3D" />
+			<description>
+				Takes the passed-in global retarget transform and converts it to local pose.
+			</description>
+		</method>
 		<method name="is_bone_enabled" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -219,6 +324,38 @@
 			<description>
 				Converts the passed-in local pose to a global pose relative to the inputted bone, [code]bone_idx[/code].
 				This could be used to convert [method get_bone_pose] for use with the [method set_bone_global_pose_override] function.
+			</description>
+		</method>
+		<method name="local_retarget_position_to_local_pose">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
+				Takes the passed-in local retarget position and converts it to local pose position.
+			</description>
+		</method>
+		<method name="local_retarget_rotation_to_local_pose">
+			<return type="Quaternion" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="rotation" type="Quaternion" />
+			<description>
+				Takes the passed-in local retarget rotation and converts it to local pose rotation.
+			</description>
+		</method>
+		<method name="local_retarget_scale_to_local_pose">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="scale" type="Vector3" />
+			<description>
+				Takes the passed-in local retarget scale and converts it to local pose scale.
+			</description>
+		</method>
+		<method name="local_retarget_transform_to_local_pose">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="transform" type="Transform3D" />
+			<description>
+				Takes the passed-in local retarget transform and converts it to local pose.
 			</description>
 		</method>
 		<method name="localize_rests">
@@ -318,6 +455,7 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<argument index="1" name="name" type="String" />
 			<description>
+				Sets the bone name for bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="set_bone_parent">
@@ -334,6 +472,7 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<argument index="1" name="position" type="Vector3" />
 			<description>
+				Sets the bone pose position for bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="set_bone_pose_rotation">
@@ -341,6 +480,7 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<argument index="1" name="rotation" type="Quaternion" />
 			<description>
+				Sets the bone pose rotation for bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="set_bone_pose_scale">
@@ -348,6 +488,7 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<argument index="1" name="scale" type="Vector3" />
 			<description>
+				Sets the bone pose scale for bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="set_bone_rest">
@@ -391,6 +532,7 @@
 		<signal name="bone_enabled_changed">
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				This signal is emitted when the [code]bone_enabled[/code] have changed.
 			</description>
 		</signal>
 		<signal name="bone_pose_changed">
@@ -401,10 +543,12 @@
 		</signal>
 		<signal name="pose_updated">
 			<description>
+				This signal is emitted when the bone's dirty flag have solved by calculation with iterate all bones.
 			</description>
 		</signal>
 		<signal name="show_rest_only_changed">
 			<description>
+				This signal is emitted when the [code]show_rest_only[/code] have changed.
 			</description>
 		</signal>
 	</signals>

@@ -101,7 +101,7 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 		}
 	}
 
-	if (anim->get_loop_mode() == Animation::LoopMode::LOOP_PINGPONG) {
+	if (anim->get_loop_mode() == Animation::LOOP_PINGPONG) {
 		if (anim_size) {
 			if ((int)Math::floor(abs(time - prev_time) / anim_size) % 2 == 0) {
 				if (prev_time > 0 && time <= 0) {
@@ -116,7 +116,7 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 			time = Math::pingpong(time, anim_size);
 		}
 	} else {
-		if (anim->get_loop_mode() == Animation::LoopMode::LOOP_LINEAR) {
+		if (anim->get_loop_mode() == Animation::LOOP_LINEAR) {
 			if (anim_size) {
 				time = Math::fposmod(time, anim_size);
 			}

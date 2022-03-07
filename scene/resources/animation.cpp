@@ -127,6 +127,26 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 			return true;
+#ifndef _3D_DISABLED
+		} else if (what == "retarget_mode") {
+			if (track_is_retarget(track)) {
+				if (track_get_type(track) == TYPE_POSITION_3D) {
+					position_track_set_retarget_mode(track, RetargetMode(p_value.operator int()));
+				} else if (track_get_type(track) == TYPE_ROTATION_3D) {
+					rotation_track_set_retarget_mode(track, RetargetMode(p_value.operator int()));
+				} else if (track_get_type(track) == TYPE_SCALE_3D) {
+					scale_track_set_retarget_mode(track, RetargetMode(p_value.operator int()));
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+#endif // _3D_DISABLED
+		} else if (what == "auto_volume") {
+			if (track_get_type(track) == TYPE_AUDIO) {
+				audio_track_set_auto_volume(track, p_value);
+			}
 		} else if (what == "interp") {
 			track_set_interpolation_type(track, InterpolationType(p_value.operator int()));
 		} else if (what == "loop_wrap") {
@@ -520,7 +540,26 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 
 			return true;
-
+#ifndef _3D_DISABLED
+		} else if (what == "retarget_mode") {
+			if (track_is_retarget(track)) {
+				if (track_get_type(track) == TYPE_POSITION_3D) {
+					r_ret = position_track_get_retarget_mode(track);
+				} else if (track_get_type(track) == TYPE_ROTATION_3D) {
+					r_ret = rotation_track_get_retarget_mode(track);
+				} else if (track_get_type(track) == TYPE_SCALE_3D) {
+					r_ret = scale_track_get_retarget_mode(track);
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+#endif // _3D_DISABLED
+		} else if (what == "auto_volume") {
+			if (track_get_type(track) == TYPE_AUDIO) {
+				r_ret = audio_track_get_auto_volume(track);
+			}
 		} else if (what == "interp") {
 			r_ret = track_get_interpolation_type(track);
 		} else if (what == "loop_wrap") {
@@ -815,6 +854,14 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
+		if (track_get_type(i) == TYPE_AUDIO) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/auto_volume", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		}
+#ifndef _3D_DISABLED
+		if (track_is_retarget(i)) {
+			p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/retarget_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		}
+#endif // _3D_DISABLED
 	}
 }
 
@@ -1089,6 +1136,24 @@ Error Animation::position_track_interpolate(int p_track, double p_time, Vector3 
 	return OK;
 }
 
+#ifndef _3D_DISABLED
+void Animation::position_track_set_retarget_mode(int p_track, RetargetMode p_retarget_mode) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_POSITION_3D);
+	PositionTrack *tt = static_cast<PositionTrack *>(t);
+	tt->retarget_mode = p_retarget_mode;
+}
+
+Animation::RetargetMode Animation::position_track_get_retarget_mode(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), Animation::RETARGET_MODE_ABSOLUTE);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_POSITION_3D, Animation::RETARGET_MODE_ABSOLUTE);
+	PositionTrack *tt = static_cast<PositionTrack *>(t);
+	return tt->retarget_mode;
+}
+#endif // _3D_DISABLED
+
 ////
 
 int Animation::rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation) {
@@ -1161,6 +1226,24 @@ Error Animation::rotation_track_interpolate(int p_track, double p_time, Quaterni
 	return OK;
 }
 
+#ifndef _3D_DISABLED
+void Animation::rotation_track_set_retarget_mode(int p_track, RetargetMode p_retarget_mode) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_ROTATION_3D);
+	RotationTrack *rt = static_cast<RotationTrack *>(t);
+	rt->retarget_mode = p_retarget_mode;
+}
+
+Animation::RetargetMode Animation::rotation_track_get_retarget_mode(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), Animation::RETARGET_MODE_ABSOLUTE);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_ROTATION_3D, Animation::RETARGET_MODE_ABSOLUTE);
+	RotationTrack *rt = static_cast<RotationTrack *>(t);
+	return rt->retarget_mode;
+}
+#endif // _3D_DISABLED
+
 ////
 
 int Animation::scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale) {
@@ -1232,6 +1315,26 @@ Error Animation::scale_track_interpolate(int p_track, double p_time, Vector3 *r_
 	*r_interpolation = tk;
 	return OK;
 }
+
+#ifndef _3D_DISABLED
+void Animation::scale_track_set_retarget_mode(int p_track, RetargetMode p_retarget_mode) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_SCALE_3D);
+	ScaleTrack *st = static_cast<ScaleTrack *>(t);
+	st->retarget_mode = p_retarget_mode;
+}
+
+Animation::RetargetMode Animation::scale_track_get_retarget_mode(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), Animation::RETARGET_MODE_ABSOLUTE);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_SCALE_3D, Animation::RETARGET_MODE_ABSOLUTE);
+	ScaleTrack *st = static_cast<ScaleTrack *>(t);
+	return st->retarget_mode;
+}
+#endif // _3D_DISABLED
+
+////
 
 int Animation::blend_shape_track_insert_key(int p_track, double p_time, float p_blend_shape) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
@@ -2079,6 +2182,24 @@ bool Animation::track_is_compressed(int p_track) const {
 	}
 
 	ERR_FAIL_V(false);
+}
+
+bool Animation::track_is_retarget(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	Track *t = tracks[p_track];
+	if (track_get_path(p_track).get_name_count() == 0 && track_get_path(p_track).get_subname_count() == 1) {
+		switch (t->type) {
+			case TYPE_POSITION_3D:
+			case TYPE_ROTATION_3D:
+			case TYPE_SCALE_3D: {
+				return true;
+			} break;
+			default: {
+				return false;
+			} break;
+		}
+	}
+	return false;
 }
 
 void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p_value) {
@@ -3568,6 +3689,27 @@ real_t Animation::audio_track_get_key_end_offset(int p_track, int p_key) const {
 	return at->values[p_key].value.end_offset;
 }
 
+void Animation::audio_track_set_auto_volume(int p_track, bool p_enable) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_AUDIO);
+
+	AudioTrack *at = static_cast<AudioTrack *>(t);
+
+	at->auto_volume = p_enable;
+	emit_changed();
+}
+
+bool Animation::audio_track_get_auto_volume(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, false);
+
+	AudioTrack *at = static_cast<AudioTrack *>(t);
+
+	return at->auto_volume;
+}
+
 //
 
 int Animation::animation_track_insert_key(int p_track, double p_time, const StringName &p_animation) {
@@ -3756,6 +3898,15 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scale_track_insert_key", "track_idx", "time", "scale"), &Animation::scale_track_insert_key);
 	ClassDB::bind_method(D_METHOD("blend_shape_track_insert_key", "track_idx", "time", "amount"), &Animation::blend_shape_track_insert_key);
 
+#ifndef _3D_DISABLED
+	ClassDB::bind_method(D_METHOD("position_track_set_retarget_mode", "track_idx", "retarget_mode"), &Animation::position_track_set_retarget_mode);
+	ClassDB::bind_method(D_METHOD("rotation_track_set_retarget_mode", "track_idx", "retarget_mode"), &Animation::rotation_track_set_retarget_mode);
+	ClassDB::bind_method(D_METHOD("scale_track_set_retarget_mode", "track_idx", "retarget_mode"), &Animation::scale_track_set_retarget_mode);
+	ClassDB::bind_method(D_METHOD("position_track_get_retarget_mode", "track_idx"), &Animation::position_track_get_retarget_mode);
+	ClassDB::bind_method(D_METHOD("rotation_track_get_retarget_mode", "track_idx"), &Animation::rotation_track_get_retarget_mode);
+	ClassDB::bind_method(D_METHOD("scale_track_get_retarget_mode", "track_idx"), &Animation::scale_track_get_retarget_mode);
+#endif // _3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
 	ClassDB::bind_method(D_METHOD("track_remove_key_at_time", "track_idx", "time"), &Animation::track_remove_key_at_time);
@@ -3806,6 +3957,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_stream", "track_idx", "key_idx"), &Animation::audio_track_get_key_stream);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_start_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_start_offset);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_end_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_set_auto_volume", "track_idx", "enable"), &Animation::audio_track_set_auto_volume);
+	ClassDB::bind_method(D_METHOD("audio_track_get_auto_volume", "track_idx"), &Animation::audio_track_get_auto_volume);
 
 	ClassDB::bind_method(D_METHOD("bezier_track_set_key_handle_mode", "track_idx", "key_idx", "key_handle_mode", "balanced_value_time_ratio"), &Animation::bezier_track_set_key_handle_mode, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("bezier_track_get_key_handle_mode", "track_idx", "key_idx"), &Animation::bezier_track_get_key_handle_mode);
@@ -3859,6 +4012,10 @@ void Animation::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(HANDLE_MODE_FREE);
 	BIND_ENUM_CONSTANT(HANDLE_MODE_BALANCED);
+
+	BIND_ENUM_CONSTANT(RETARGET_MODE_GLOBAL);
+	BIND_ENUM_CONSTANT(RETARGET_MODE_LOCAL);
+	BIND_ENUM_CONSTANT(RETARGET_MODE_ABSOLUTE);
 }
 
 void Animation::clear() {

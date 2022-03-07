@@ -144,7 +144,9 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
 		MENU_KEY_ADD_RESET,
-		MENU_KEY_DELETE
+		MENU_KEY_DELETE,
+		MENU_AUTO_VOLUME_DISABLE,
+		MENU_AUTO_VOLUME_ENABLE
 	};
 	AnimationTimelineEdit *timeline;
 	UndoRedo *undo_redo;
@@ -170,6 +172,7 @@ class AnimationTrackEdit : public Control {
 	Ref<Texture2D> selected_icon;
 
 	PopupMenu *menu;
+	bool read_only = false;
 
 	bool clicking_on_name = false;
 
@@ -240,6 +243,8 @@ public:
 	void cancel_drop();
 
 	void set_in_group(bool p_enable);
+	void set_read_only(bool p_read_only);
+	bool get_read_only();
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
 	AnimationTrackEdit();
@@ -475,12 +480,13 @@ class AnimationTrackEditor : public VBoxContainer {
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
-		Animation::TrackType track_type = Animation::TrackType::TYPE_ANIMATION;
-		Animation::InterpolationType interp_type = Animation::InterpolationType::INTERPOLATION_CUBIC;
-		Animation::UpdateMode update_mode = Animation::UpdateMode::UPDATE_CAPTURE;
-		Animation::LoopMode loop_mode = Animation::LoopMode::LOOP_LINEAR;
+		Animation::TrackType track_type = Animation::TYPE_ANIMATION;
+		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC;
+		Animation::UpdateMode update_mode = Animation::UPDATE_CAPTURE;
+		Animation::LoopMode loop_mode = Animation::LOOP_LINEAR;
 		bool loop_wrap = false;
 		bool enabled = false;
+		bool auto_volume = false;
 
 		struct Key {
 			float time = 0;

@@ -179,7 +179,7 @@ private:
 		bool root_motion = false;
 		uint64_t setup_pass = 0;
 		uint64_t process_pass = 0;
-		Animation::TrackType type = Animation::TrackType::TYPE_ANIMATION;
+		Animation::TrackType type = Animation::TYPE_ANIMATION;
 		Object *object = nullptr;
 		ObjectID object_id;
 
@@ -220,19 +220,13 @@ private:
 	struct TrackCacheValue : public TrackCache {
 		Variant value;
 		Vector<StringName> subpath;
-		TrackCacheValue() { type = Animation::TYPE_VALUE; }
+		TrackCacheValue() {
+			type = Animation::TYPE_VALUE;
+		}
 	};
 
 	struct TrackCacheMethod : public TrackCache {
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
-	};
-
-	struct TrackCacheBezier : public TrackCache {
-		real_t value = 0.0;
-		Vector<StringName> subpath;
-		TrackCacheBezier() {
-			type = Animation::TYPE_BEZIER;
-		}
 	};
 
 	struct TrackCacheAudio : public TrackCache {
@@ -253,7 +247,7 @@ private:
 		}
 	};
 
-	HashMap<NodePath, TrackCache *> track_cache;
+	HashMap<NodePath, Vector<TrackCache *>> track_cache;
 	Set<TrackCache *> playing_caches;
 
 	Ref<AnimationNode> root;

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RetargetProfile" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that defines the intermediate bones for retarget.
+	</brief_description>
+	<description>
+		This resource is special since it is only used in the editor. It does not have any effect on the retargeting calculation.
+		The [RetargetBoneMap] is needed for each skeleton with a different bone name, but the keys must be the same. Therefore, to make it easier to generate the same keys in those, [RetargetProfile] lists the keys as intermediate bones.
+		You need a [RetargetProfile] when you register a key to [RetargetBoneMap] or [RetargetBoneOption] in the editor. However, once you register the keys in them, you can discard the [RetargetProfile] if you don't need it. Also, you can register keys in them with the script always.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_intermediate_bone">
+			<return type="void" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<argument index="1" name="to_index" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="find_intermediate_bone">
+			<return type="int" />
+			<argument index="0" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intermediate_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intermediate_bones_size">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_intermediate_bone">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_intermediate_bone_name">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="intermediate_bone_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="intermediate_bone_updated">
+			<description>
+			</description>
+		</signal>
+		<signal name="profile_updated">
+			<description>
+			</description>
+		</signal>
+		<signal name="redraw_needed">
+			<description>
+				Emitted when the drawing on the inspector needs to be updated, it is enable only when [code]tools[/code] is enabled.
+			</description>
+		</signal>
+	</signals>
+</class>

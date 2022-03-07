@@ -1592,6 +1592,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), idx);
 								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", idx, track_np);
 								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_interpolation_type", idx, anim->track_get_interpolation_type(i));
+								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_interpolation_loop_wrap", idx, anim->track_get_interpolation_loop_wrap(i));
 								for (int j = 0; j < anim->track_get_key_count(i); j++) {
 									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_insert_key", idx, anim->track_get_key_time(i, j), anim->track_get_key_value(i, j), anim->track_get_key_transition(i, j));
 								}

@@ -36,6 +36,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
+#include "skeleton_retarget.h"
 
 #ifdef TOOLS_ENABLED
 class AnimatedValuesBackup : public RefCounted {
@@ -229,6 +230,13 @@ private:
 	bool processing = false;
 	bool active = true;
 
+#ifndef _3D_DISABLED
+	Ref<RetargetProfile> retarget_profile;
+	Ref<RetargetBoneOption> retarget_option;
+	NodePath retarget_skeleton_path;
+	Ref<RetargetBoneMap> retarget_map;
+#endif // _3D_DISABLED
+
 	NodePath root;
 
 	void _animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false, int p_pingponged = 0);
@@ -261,6 +269,12 @@ private:
 	void _set_process(bool p_process, bool p_force = false);
 
 	bool playing = false;
+
+#ifndef _3D_DISABLED
+#ifdef TOOLS_ENABLED
+	void _redraw_retarget_settings();
+#endif // TOOLS_ENABLED
+#endif // _3D_DISABLED
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -321,6 +335,17 @@ public:
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
 
+#ifndef _3D_DISABLED
+	void set_retarget_skeleton(const NodePath &p_skeleton);
+	NodePath get_retarget_skeleton() const;
+	void set_retarget_profile(const Ref<RetargetProfile> &p_retarget_profile);
+	Ref<RetargetProfile> get_retarget_profile() const;
+	void set_retarget_option(const Ref<RetargetBoneOption> &p_retarget_option);
+	Ref<RetargetBoneOption> get_retarget_option() const;
+	void set_retarget_map(const Ref<RetargetBoneMap> &p_retarget_map);
+	Ref<RetargetBoneMap> get_retarget_map() const;
+#endif // _3D_DISABLED
+
 	void seek(double p_time, bool p_update = false);
 	void seek_delta(double p_time, float p_delta);
 	float get_current_animation_position() const;
@@ -331,7 +356,7 @@ public:
 	void set_root(const NodePath &p_root);
 	NodePath get_root() const;
 
-	void clear_caches(); ///< must be called by hand if an animation was modified after added
+	void clear_caches(bool p_emit_signal = false); ///< must be called by hand if an animation was modified after added
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 

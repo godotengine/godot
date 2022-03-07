@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonRetarget" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Transfer the transforms between the two [Skeleton3D]s.
+	</brief_description>
+	<description>
+		[RetargetProfile] provides the intermediate bones. The source skeleton and target skeleton bones are mapped to each other through intermediate bones using [RetargetBoneMap].
+		The transfer value is calculated differently by [code]RetargetMode[/code]. The default mode is [code]RETARGET_MODE_GLOBAL[/code]. You can set it for each intermediate bone using [RetargetBoneOption].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="retarget_option" type="RetargetBoneOption" setter="set_retarget_option" getter="get_retarget_option">
+		</member>
+		<member name="retarget_position" type="bool" setter="set_retarget_position" getter="is_retarget_position" default="false">
+		</member>
+		<member name="retarget_profile" type="RetargetProfile" setter="set_retarget_profile" getter="get_retarget_profile">
+		</member>
+		<member name="retarget_rotation" type="bool" setter="set_retarget_rotation" getter="is_retarget_rotation" default="true">
+		</member>
+		<member name="retarget_scale" type="bool" setter="set_retarget_scale" getter="is_retarget_scale" default="false">
+		</member>
+		<member name="source_map" type="RetargetBoneMap" setter="set_source_map" getter="get_source_map">
+		</member>
+		<member name="source_skeleton" type="NodePath" setter="set_source_skeleton" getter="get_source_skeleton" default="NodePath(&quot;&quot;)">
+		</member>
+		<member name="target_map" type="RetargetBoneMap" setter="set_target_map" getter="get_target_map">
+		</member>
+		<member name="target_skeleton" type="NodePath" setter="set_target_skeleton" getter="get_target_skeleton" default="NodePath(&quot;&quot;)">
+		</member>
+	</members>
+</class>

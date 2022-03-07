@@ -42,6 +42,8 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/animation/animation_player.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
@@ -155,6 +157,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_RENAME_ANIM, "Rename");
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
 			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
+			ITEM_ICON(TOOL_MAKE_REATRGET_TRACKS, "SkeletonRetarget");
+			ITEM_ICON(TOOL_RESTORE_REATRGET_TRACKS, "SkeletonRetarget");
+			ITEM_ICON(TOOL_DELETE_REATRGET_TRACKS, "Remove");
+			ITEM_ICON(TOOL_DELETE_NOT_REATRGET_TRACKS, "Remove");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
 
 			_update_animation_list_icons();
@@ -840,6 +846,10 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_DISABLED(TOOL_EDIT_TRANSITIONS, animlist.size() == 0);
 	ITEM_DISABLED(TOOL_COPY_ANIM, animlist.size() == 0);
 	ITEM_DISABLED(TOOL_REMOVE_ANIM, animlist.size() == 0);
+	ITEM_DISABLED(TOOL_MAKE_REATRGET_TRACKS, animlist.size() == 0);
+	ITEM_DISABLED(TOOL_RESTORE_REATRGET_TRACKS, animlist.size() == 0);
+	ITEM_DISABLED(TOOL_DELETE_REATRGET_TRACKS, animlist.size() == 0);
+	ITEM_DISABLED(TOOL_DELETE_NOT_REATRGET_TRACKS, animlist.size() == 0);
 
 	stop->set_disabled(animlist.size() == 0);
 	play->set_disabled(animlist.size() == 0);
@@ -1215,6 +1225,20 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			Ref<Animation> anim2 = player->get_animation(current2);
 			EditorNode::get_singleton()->edit_resource(anim2);
 		} break;
+#ifndef _3D_DISABLED
+		case TOOL_MAKE_REATRGET_TRACKS: {
+			_make_retarget_tracks();
+		} break;
+		case TOOL_RESTORE_REATRGET_TRACKS: {
+			_restore_retarget_tracks();
+		} break;
+		case TOOL_DELETE_REATRGET_TRACKS: {
+			_delete_retarget_tracks();
+		} break;
+		case TOOL_DELETE_NOT_REATRGET_TRACKS: {
+			_delete_not_retarget_tracks();
+		} break;
+#endif // _3D_DISABLED
 	}
 }
 
@@ -1469,7 +1493,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 		float pos = cpos + step_off * anim->get_step();
 
-		bool valid = anim->get_loop_mode() != Animation::LoopMode::LOOP_NONE || (pos >= 0 && pos <= anim->get_length());
+		bool valid = anim->get_loop_mode() != Animation::LOOP_NONE || (pos >= 0 && pos <= anim->get_length());
 		onion.captures_valid.write[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);
@@ -1532,6 +1556,422 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 void AnimationPlayerEditor::_pin_pressed() {
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 }
+
+#ifndef _3D_DISABLED
+void AnimationPlayerEditor::_make_retarget_tracks() {
+	// Init.
+	player->stop();
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(player->get_node_or_null(player->get_retarget_skeleton()));
+	Ref<RetargetBoneMap> retarget_map = player->get_retarget_map();
+	Ref<RetargetBoneOption> retarget_option = player->get_retarget_option();
+	if (!skeleton || !retarget_map.is_valid()) {
+		ERR_FAIL_MSG("Retarget Skeleton and Source Setting are needed.");
+	}
+	skeleton->clear_bones_local_pose_override();
+	skeleton->clear_bones_global_pose_override();
+	undo_redo->create_action(TTR("Make Retarget Tracks"));
+	// Process.
+	Ref<Animation> anim = track_editor->get_current_animation();
+	int len = anim->get_track_count();
+	Node *root = player->get_node(player->get_root());
+	Vector<int> remove_queue;
+	int insert_count = 0;
+	for (int i = 0; i < len; i++) {
+		if (!anim->track_is_enabled(i)) {
+			continue;
+		}
+		Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(root->get_node_or_null(anim->track_get_path(i)));
+		if (track_skeleton && (track_skeleton->get_path() == skeleton->get_path())) {
+			if (anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
+				// Find intermediate bone.
+				String bone_name = anim->track_get_path(i).get_concatenated_subnames();
+				String imbone = retarget_map->find_key(bone_name);
+				if (imbone == "") {
+					continue; // Key not found or broken.
+				}
+				// Find skeleton bone.
+				int bone_id = skeleton->find_bone(bone_name);
+				if (bone_id == -1) {
+					continue; // Bone not found.
+				}
+				// Insert track.
+				int new_track = len + insert_count;
+				undo_redo->add_do_method(anim.ptr(), "add_track", anim->track_get_type(i), new_track);
+				undo_redo->add_do_method(anim.ptr(), "track_set_path", new_track, ":" + imbone);
+				undo_redo->add_do_method(anim.ptr(), "track_set_interpolation_type", new_track, anim->track_get_interpolation_type(i));
+				undo_redo->add_do_method(anim.ptr(), "track_set_interpolation_loop_wrap", new_track, anim->track_get_interpolation_loop_wrap(i));
+				insert_count++;
+				// Iterate keys.
+				int tr_len = anim->track_get_key_count(i);
+				Animation::RetargetMode retarget_mode = Animation::RETARGET_MODE_GLOBAL;
+				if (retarget_option.is_valid() && retarget_option->has_key(imbone)) {
+					retarget_mode = retarget_option->get_retarget_mode(imbone);
+				}
+				switch (retarget_mode) {
+					case Animation::RETARGET_MODE_GLOBAL: {
+						switch (anim->track_get_type(i)) {
+							case Animation::TYPE_POSITION_3D: {
+								undo_redo->add_do_method(anim.ptr(), "position_track_set_retarget_mode", new_track, Animation::RETARGET_MODE_GLOBAL);
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									skeleton->set_bone_pose_position(bone_id, anim->track_get_key_value(i, j));
+									skeleton->set_bone_pose_rotation(bone_id, Quaternion());
+									skeleton->set_bone_pose_scale(bone_id, Vector3(1, 1, 1));
+									undo_redo->add_do_method(anim.ptr(), "position_track_insert_key", new_track, time, skeleton->extract_global_retarget_position(bone_id));
+								}
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
+								undo_redo->add_do_method(anim.ptr(), "rotation_track_set_retarget_mode", new_track, Animation::RETARGET_MODE_GLOBAL);
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									skeleton->set_bone_pose_position(bone_id, Vector3());
+									skeleton->set_bone_pose_rotation(bone_id, anim->track_get_key_value(i, j));
+									skeleton->set_bone_pose_scale(bone_id, Vector3(1, 1, 1));
+									undo_redo->add_do_method(anim.ptr(), "rotation_track_insert_key", new_track, time, skeleton->extract_global_retarget_rotation(bone_id));
+								}
+							} break;
+							case Animation::TYPE_SCALE_3D: {
+								undo_redo->add_do_method(anim.ptr(), "scale_track_set_retarget_mode", new_track, Animation::RETARGET_MODE_GLOBAL);
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									skeleton->set_bone_pose_position(bone_id, Vector3());
+									skeleton->set_bone_pose_rotation(bone_id, Quaternion());
+									skeleton->set_bone_pose_scale(bone_id, anim->track_get_key_value(i, j));
+									undo_redo->add_do_method(anim.ptr(), "scale_track_insert_key", new_track, time, skeleton->extract_global_retarget_scale(bone_id));
+								}
+							} break;
+							default: {
+							} break;
+						}
+					} break;
+					case Animation::RETARGET_MODE_LOCAL: {
+						switch (anim->track_get_type(i)) {
+							case Animation::TYPE_POSITION_3D: {
+								undo_redo->add_do_method(anim.ptr(), "position_track_set_retarget_mode", new_track, Animation::RETARGET_MODE_LOCAL);
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									skeleton->set_bone_pose_position(bone_id, anim->track_get_key_value(i, j));
+									skeleton->set_bone_pose_rotation(bone_id, Quaternion());
+									skeleton->set_bone_pose_scale(bone_id, Vector3(1, 1, 1));
+									undo_redo->add_do_method(anim.ptr(), "position_track_insert_key", new_track, time, skeleton->extract_local_retarget_position(bone_id));
+								}
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
+								undo_redo->add_do_method(anim.ptr(), "rotation_track_set_retarget_mode", new_track, Animation::RETARGET_MODE_LOCAL);
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									skeleton->set_bone_pose_position(bone_id, Vector3());
+									skeleton->set_bone_pose_rotation(bone_id, anim->track_get_key_value(i, j));
+									skeleton->set_bone_pose_scale(bone_id, Vector3(1, 1, 1));
+									undo_redo->add_do_method(anim.ptr(), "rotation_track_insert_key", new_track, time, skeleton->extract_local_retarget_rotation(bone_id));
+								}
+							} break;
+							case Animation::TYPE_SCALE_3D: {
+								undo_redo->add_do_method(anim.ptr(), "scale_track_set_retarget_mode", new_track, Animation::RETARGET_MODE_LOCAL);
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									skeleton->set_bone_pose_position(bone_id, Vector3());
+									skeleton->set_bone_pose_rotation(bone_id, Quaternion());
+									skeleton->set_bone_pose_scale(bone_id, anim->track_get_key_value(i, j));
+									undo_redo->add_do_method(anim.ptr(), "scale_track_insert_key", new_track, time, skeleton->extract_local_retarget_scale(bone_id));
+								}
+							} break;
+							default: {
+							} break;
+						}
+					} break;
+					default: {
+						switch (anim->track_get_type(i)) {
+							case Animation::TYPE_POSITION_3D: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "position_track_insert_key", new_track, time, anim->track_get_key_value(i, j));
+								}
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "rotation_track_insert_key", new_track, time, anim->track_get_key_value(i, j));
+								}
+							} break;
+							case Animation::TYPE_SCALE_3D: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "scale_track_insert_key", new_track, time, anim->track_get_key_value(i, j));
+								}
+							} break;
+							default: {
+							} break;
+						}
+					} break;
+				}
+				// Init pose.
+				Transform3D rest = skeleton->get_bone_rest(bone_id);
+				skeleton->set_bone_pose_position(bone_id, rest.origin);
+				skeleton->set_bone_pose_rotation(bone_id, rest.basis.get_rotation_quaternion());
+				skeleton->set_bone_pose_scale(bone_id, rest.basis.get_scale());
+				// Queue delete source track.
+				remove_queue.push_back(i);
+				undo_redo->add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), i);
+				undo_redo->add_undo_method(anim.ptr(), "track_set_path", i, anim->track_get_path(i));
+				for (int j = 0; j < anim->track_get_key_count(i); j++) {
+					Variant v = anim->track_get_key_value(i, j);
+					float time = anim->track_get_key_time(i, j);
+					float trans = anim->track_get_key_transition(i, j);
+					undo_redo->add_undo_method(anim.ptr(), "track_insert_key", i, time, v);
+					undo_redo->add_undo_method(anim.ptr(), "track_set_key_transition", i, j, trans);
+				}
+				undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_type", i, anim->track_get_interpolation_type(i));
+				undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_loop_wrap", i, anim->track_get_interpolation_loop_wrap(i));
+			}
+		}
+	}
+	for (int i = len + insert_count - 1; i >= len; i--) {
+		undo_redo->add_undo_method(anim.ptr(), "remove_track", i);
+	}
+	remove_queue.reverse();
+	len = remove_queue.size();
+	for (int i = 0; i < len; i++) {
+		undo_redo->add_do_method(anim.ptr(), "remove_track", remove_queue[i]);
+	}
+	undo_redo->commit_action();
+	_update_player();
+}
+
+void AnimationPlayerEditor::_restore_retarget_tracks() {
+	// Init.
+	player->stop();
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(player->get_node_or_null(player->get_retarget_skeleton()));
+	Ref<RetargetBoneMap> retarget_map = player->get_retarget_map();
+	if (!skeleton || !retarget_map.is_valid()) {
+		ERR_FAIL_MSG("Retarget Skeleton and Target Setting are needed.");
+	}
+	skeleton->clear_bones_local_pose_override();
+	skeleton->clear_bones_global_pose_override();
+	undo_redo->create_action(TTR("Restore Retarget Tracks"));
+	// Process.
+	Ref<Animation> anim = track_editor->get_current_animation();
+	int len = anim->get_track_count();
+	Node *root = player->get_node(player->get_root());
+	Vector<int> remove_queue;
+	int insert_count = 0;
+	for (int i = 0; i < len; i++) {
+		if (anim->track_get_path(i).get_name_count() == 0 && anim->track_get_path(i).get_subname_count() == 1) {
+			if (anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
+				// Find intermediate bone.
+				String imbone = anim->track_get_path(i).get_concatenated_subnames();
+				if (!retarget_map->has_key(imbone)) {
+					continue; // Key not found or broken.
+				}
+				String bone_name = retarget_map->get_bone_name(imbone);
+				// Find skeleton bone.
+				int bone_id = skeleton->find_bone(bone_name);
+				if (bone_id == -1) {
+					continue; // Bone not found.
+				}
+				// Insert track.
+				int new_track = len + insert_count;
+				undo_redo->add_do_method(anim.ptr(), "add_track", anim->track_get_type(i), new_track);
+				undo_redo->add_do_method(anim.ptr(), "track_set_path", new_track, String(root->get_path_to(skeleton)) + ":" + bone_name);
+				undo_redo->add_do_method(anim.ptr(), "track_set_interpolation_type", new_track, anim->track_get_interpolation_type(i));
+				undo_redo->add_do_method(anim.ptr(), "track_set_interpolation_loop_wrap", new_track, anim->track_get_interpolation_loop_wrap(i));
+				insert_count++;
+				// Iterate keys.
+				int tr_len = anim->track_get_key_count(i);
+				switch (anim->track_get_type(i)) {
+					case Animation::TYPE_POSITION_3D: {
+						switch (anim->position_track_get_retarget_mode(i)) {
+							case Animation::RETARGET_MODE_GLOBAL: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "position_track_insert_key", new_track, time, skeleton->global_retarget_position_to_local_pose(bone_id, anim->track_get_key_value(i, j)));
+								}
+							} break;
+							case Animation::RETARGET_MODE_LOCAL: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "position_track_insert_key", new_track, time, skeleton->local_retarget_position_to_local_pose(bone_id, anim->track_get_key_value(i, j)));
+								}
+							} break;
+							case Animation::RETARGET_MODE_ABSOLUTE: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "position_track_insert_key", new_track, time, anim->track_get_key_value(i, j));
+								}
+							} break;
+							default: {
+							} break;
+						}
+					} break;
+					case Animation::TYPE_ROTATION_3D: {
+						switch (anim->rotation_track_get_retarget_mode(i)) {
+							case Animation::RETARGET_MODE_GLOBAL: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "rotation_track_insert_key", new_track, time, skeleton->global_retarget_rotation_to_local_pose(bone_id, anim->track_get_key_value(i, j)));
+								}
+							} break;
+							case Animation::RETARGET_MODE_LOCAL: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "rotation_track_insert_key", new_track, time, skeleton->local_retarget_rotation_to_local_pose(bone_id, anim->track_get_key_value(i, j)));
+								}
+							} break;
+							case Animation::RETARGET_MODE_ABSOLUTE: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "rotation_track_insert_key", new_track, time, anim->track_get_key_value(i, j));
+								}
+							} break;
+							default: {
+							} break;
+						}
+					} break;
+					case Animation::TYPE_SCALE_3D: {
+						switch (anim->scale_track_get_retarget_mode(i)) {
+							case Animation::RETARGET_MODE_GLOBAL: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "scale_track_insert_key", new_track, time, skeleton->global_retarget_scale_to_local_pose(bone_id, anim->track_get_key_value(i, j)));
+								}
+							} break;
+							case Animation::RETARGET_MODE_LOCAL: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "scale_track_insert_key", new_track, time, skeleton->local_retarget_scale_to_local_pose(bone_id, anim->track_get_key_value(i, j)));
+								}
+							} break;
+							case Animation::RETARGET_MODE_ABSOLUTE: {
+								for (int j = 0; j < tr_len; j++) {
+									double time = anim->track_get_key_time(i, j);
+									undo_redo->add_do_method(anim.ptr(), "scale_track_insert_key", new_track, time, anim->track_get_key_value(i, j));
+								}
+							} break;
+							default: {
+							} break;
+						}
+					} break;
+					default: {
+					} break;
+				}
+			}
+			// Queue delete source track.
+			remove_queue.push_back(i);
+			undo_redo->add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), i);
+			undo_redo->add_undo_method(anim.ptr(), "track_set_path", i, anim->track_get_path(i));
+			for (int j = 0; j < anim->track_get_key_count(i); j++) {
+				Variant v = anim->track_get_key_value(i, j);
+				float time = anim->track_get_key_time(i, j);
+				float trans = anim->track_get_key_transition(i, j);
+				undo_redo->add_undo_method(anim.ptr(), "track_insert_key", i, time, v);
+				undo_redo->add_undo_method(anim.ptr(), "track_set_key_transition", i, j, trans);
+			}
+			undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_type", i, anim->track_get_interpolation_type(i));
+			undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_loop_wrap", i, anim->track_get_interpolation_loop_wrap(i));
+			if (anim->track_get_type(i) == Animation::TYPE_POSITION_3D) {
+				undo_redo->add_undo_method(anim.ptr(), "position_track_set_retarget_mode", i, anim->position_track_get_retarget_mode(i));
+			}
+			if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
+				undo_redo->add_undo_method(anim.ptr(), "rotation_track_set_retarget_mode", i, anim->rotation_track_get_retarget_mode(i));
+			}
+			if (anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
+				undo_redo->add_undo_method(anim.ptr(), "scale_track_set_retarget_mode", i, anim->scale_track_get_retarget_mode(i));
+			}
+		}
+	}
+	for (int i = len + insert_count - 1; i >= len; i--) {
+		undo_redo->add_undo_method(anim.ptr(), "remove_track", i);
+	}
+	remove_queue.reverse();
+	len = remove_queue.size();
+	for (int i = 0; i < len; i++) {
+		undo_redo->add_do_method(anim.ptr(), "remove_track", remove_queue[i]);
+	}
+	undo_redo->commit_action();
+	_update_player();
+}
+
+void AnimationPlayerEditor::_delete_retarget_tracks() {
+	player->stop();
+	undo_redo->create_action(TTR("Delete Retarget Tracks"));
+	// Process.
+	Ref<Animation> anim = track_editor->get_current_animation();
+	int len = anim->get_track_count();
+	Vector<int> remove_queue;
+	for (int i = 0; i < len; i++) {
+		if (anim->track_get_path(i).get_name_count() == 0 && anim->track_get_path(i).get_subname_count() == 1) {
+			// Queue delete source track.
+			remove_queue.push_back(i);
+			undo_redo->add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), i);
+			undo_redo->add_undo_method(anim.ptr(), "track_set_path", i, anim->track_get_path(i));
+			for (int j = 0; j < anim->track_get_key_count(i); j++) {
+				Variant v = anim->track_get_key_value(i, j);
+				float time = anim->track_get_key_time(i, j);
+				float trans = anim->track_get_key_transition(i, j);
+				undo_redo->add_undo_method(anim.ptr(), "track_insert_key", i, time, v);
+				undo_redo->add_undo_method(anim.ptr(), "track_set_key_transition", i, j, trans);
+			}
+			undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_type", i, anim->track_get_interpolation_type(i));
+			undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_loop_wrap", i, anim->track_get_interpolation_loop_wrap(i));
+			if (anim->track_get_type(i) == Animation::TYPE_POSITION_3D) {
+				undo_redo->add_undo_method(anim.ptr(), "position_track_set_retarget_mode", i, anim->position_track_get_retarget_mode(i));
+			}
+			if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
+				undo_redo->add_undo_method(anim.ptr(), "rotation_track_set_retarget_mode", i, anim->rotation_track_get_retarget_mode(i));
+			}
+			if (anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
+				undo_redo->add_undo_method(anim.ptr(), "scale_track_set_retarget_mode", i, anim->scale_track_get_retarget_mode(i));
+			}
+		}
+	}
+	remove_queue.reverse();
+	len = remove_queue.size();
+	for (int i = 0; i < len; i++) {
+		undo_redo->add_do_method(anim.ptr(), "remove_track", remove_queue[i]);
+	}
+	undo_redo->commit_action();
+	_update_player();
+}
+
+void AnimationPlayerEditor::_delete_not_retarget_tracks() {
+	player->stop();
+	undo_redo->create_action(TTR("Delete Not Retarget Tracks"));
+	// Process.
+	Ref<Animation> anim = track_editor->get_current_animation();
+	int len = anim->get_track_count();
+	Vector<int> remove_queue;
+	for (int i = 0; i < len; i++) {
+		if (anim->track_get_path(i).get_name_count() != 0 || anim->track_get_path(i).get_subname_count() != 1) {
+			// Queue delete source track.
+			remove_queue.push_back(i);
+			undo_redo->add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), i);
+			undo_redo->add_undo_method(anim.ptr(), "track_set_path", i, anim->track_get_path(i));
+			for (int j = 0; j < anim->track_get_key_count(i); j++) {
+				Variant v = anim->track_get_key_value(i, j);
+				float time = anim->track_get_key_time(i, j);
+				float trans = anim->track_get_key_transition(i, j);
+				undo_redo->add_undo_method(anim.ptr(), "track_insert_key", i, time, v);
+				undo_redo->add_undo_method(anim.ptr(), "track_set_key_transition", i, j, trans);
+			}
+			undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_type", i, anim->track_get_interpolation_type(i));
+			undo_redo->add_undo_method(anim.ptr(), "track_set_interpolation_loop_wrap", i, anim->track_get_interpolation_loop_wrap(i));
+			if (anim->track_get_type(i) == Animation::TYPE_VALUE) {
+				undo_redo->add_undo_method(anim.ptr(), "value_track_set_update_mode", i, anim->value_track_get_update_mode(i));
+			}
+			if (anim->track_get_type(i) == Animation::TYPE_AUDIO) {
+				undo_redo->add_undo_method(anim.ptr(), "audio_track_set_auto_volume", i, anim->audio_track_get_auto_volume(i));
+			}
+		}
+	}
+	remove_queue.reverse();
+	len = remove_queue.size();
+	for (int i = 0; i < len; i++) {
+		undo_redo->add_do_method(anim.ptr(), "remove_track", remove_queue[i]);
+	}
+	undo_redo->commit_action();
+	_update_player();
+}
+#endif // _3D_DISABLED
 
 void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
@@ -1637,6 +2077,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTR("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTR("Open in Inspector")), TOOL_EDIT_RESOURCE);
 	tool_anim->get_popup()->add_separator();
+#ifndef _3D_DISABLED
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/make_retarget_tracks", TTR("Make Retarget Tracks")), TOOL_MAKE_REATRGET_TRACKS);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/restore_retarget_tracks", TTR("Restore Retarget Tracks")), TOOL_RESTORE_REATRGET_TRACKS);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/delete_retarget_tracks", TTR("Delete Retarget Tracks")), TOOL_DELETE_REATRGET_TRACKS);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/delete_not_retarget_tracks", TTR("Delete Not Retarget Tracks")), TOOL_DELETE_NOT_REATRGET_TRACKS);
+	tool_anim->get_popup()->add_separator();
+#endif // _3D_DISABLED
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
 	hb->add_child(tool_anim);
 

@@ -181,6 +181,7 @@
 #include "editor/plugins/skeleton_2d_editor_plugin.h"
 #include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
+#include "editor/plugins/skeleton_retarget_editor_plugin.h"
 #include "editor/plugins/sprite_2d_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
@@ -7019,6 +7020,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(Skeleton3DEditorPlugin));
 	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin));
 	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin));
+	add_editor_plugin(memnew(RetargetProfileEditorPlugin));
+	add_editor_plugin(memnew(RetargetBoneOptionEditorPlugin));
+	add_editor_plugin(memnew(RetargetBoneMapEditorPlugin));
 	add_editor_plugin(memnew(MeshEditorPlugin));
 	add_editor_plugin(memnew(MaterialEditorPlugin));
 	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));

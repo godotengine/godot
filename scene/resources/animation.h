@@ -77,6 +77,12 @@ public:
 		HANDLE_MODE_BALANCED,
 	};
 
+	enum RetargetMode {
+		RETARGET_MODE_GLOBAL,
+		RETARGET_MODE_LOCAL,
+		RETARGET_MODE_ABSOLUTE,
+	};
+
 private:
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
@@ -110,6 +116,7 @@ private:
 	struct PositionTrack : public Track {
 		Vector<TKey<Vector3>> positions;
 		int32_t compressed_track = -1;
+		RetargetMode retarget_mode = RETARGET_MODE_ABSOLUTE;
 		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
@@ -118,6 +125,7 @@ private:
 	struct RotationTrack : public Track {
 		Vector<TKey<Quaternion>> rotations;
 		int32_t compressed_track = -1;
+		RetargetMode retarget_mode = RETARGET_MODE_ABSOLUTE;
 		RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
 
@@ -126,6 +134,7 @@ private:
 	struct ScaleTrack : public Track {
 		Vector<TKey<Vector3>> scales;
 		int32_t compressed_track = -1;
+		RetargetMode retarget_mode = RETARGET_MODE_ABSOLUTE;
 		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
@@ -189,6 +198,7 @@ private:
 
 	struct AudioTrack : public Track {
 		Vector<TKey<AudioKey>> values;
+		bool auto_volume = false;
 
 		AudioTrack() {
 			type = TYPE_AUDIO;
@@ -404,6 +414,7 @@ public:
 	double track_get_key_time(int p_track, int p_key_idx) const;
 	real_t track_get_key_transition(int p_track, int p_key_idx) const;
 	bool track_is_compressed(int p_track) const;
+	bool track_is_retarget(int p_track) const;
 
 	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
 	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
@@ -416,6 +427,15 @@ public:
 	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
 	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
 	Error scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+
+#ifndef _3D_DISABLED
+	void position_track_set_retarget_mode(int p_track, RetargetMode p_retarget_mode);
+	void rotation_track_set_retarget_mode(int p_track, RetargetMode p_retarget_mode);
+	void scale_track_set_retarget_mode(int p_track, RetargetMode p_retarget_mode);
+	RetargetMode position_track_get_retarget_mode(int p_track) const;
+	RetargetMode rotation_track_get_retarget_mode(int p_track) const;
+	RetargetMode scale_track_get_retarget_mode(int p_track) const;
+#endif // _3D_DISABLED
 
 	int blend_shape_track_insert_key(int p_track, double p_time, float p_blend);
 	Error blend_shape_track_get_key(int p_track, int p_key, float *r_blend) const;
@@ -443,6 +463,8 @@ public:
 	RES audio_track_get_key_stream(int p_track, int p_key) const;
 	real_t audio_track_get_key_start_offset(int p_track, int p_key) const;
 	real_t audio_track_get_key_end_offset(int p_track, int p_key) const;
+	void audio_track_set_auto_volume(int p_track, bool p_enable);
+	bool audio_track_get_auto_volume(int p_track) const;
 
 	int animation_track_insert_key(int p_track, double p_time, const StringName &p_animation);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
@@ -487,5 +509,6 @@ VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
+VARIANT_ENUM_CAST(Animation::RetargetMode);
 
 #endif

@@ -258,8 +258,27 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		p_anim->node_cache.write[i] = nullptr;
 		RES resource;
 		Vector<StringName> leftover_path;
-		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
+		Node *child = nullptr;
+#ifndef _3D_DISABLED
+		// Special case for retarget tracks.
+		bool is_retarget_track = a->track_is_retarget(i);
+		if (is_retarget_track) {
+			if (!retarget_map.is_valid()) {
+				continue;
+			}
+			child = get_node_or_null(retarget_skeleton_path);
+			if (!child) {
+				continue;
+			}
+		} else {
+			child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
+			ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
+		}
+#endif // _3D_DISABLED
+#ifdef _3D_DISABLED
+		child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
 		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
+#endif // _3D_DISABLED
 		ObjectID id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 		int blend_shape_idx = -1;
@@ -267,7 +286,16 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 #ifndef _3D_DISABLED
 		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton3D>(child)) {
 			Skeleton3D *sk = Object::cast_to<Skeleton3D>(child);
-			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
+			if (is_retarget_track) {
+				String imbone = a->track_get_path(i).get_subname(0);
+				if (retarget_map->has_key(imbone)) {
+					bone_idx = sk->find_bone(retarget_map->get_bone_name(imbone));
+				} else {
+					continue;
+				}
+			} else {
+				bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
+			}
 			if (bone_idx == -1) {
 				continue;
 			}
@@ -328,9 +356,20 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 			node_cache->skeleton = Object::cast_to<Skeleton3D>(child);
 			if (node_cache->skeleton) {
 				if (a->track_get_path(i).get_subname_count() == 1) {
-					StringName bone_name = a->track_get_path(i).get_subname(0);
-
+					StringName bone_name;
+					// Special case for retarget tracks;
+					if (is_retarget_track) {
+						String imbone = a->track_get_path(i).get_subname(0);
+						if (retarget_map->has_key(imbone)) {
+							bone_name = retarget_map->get_bone_name(imbone);
+						} else {
+							continue;
+						}
+					} else {
+						bone_name = a->track_get_path(i).get_subname(0);
+					}
 					node_cache->bone_idx = node_cache->skeleton->find_bone(bone_name);
+
 					if (node_cache->bone_idx < 0) {
 						// broken track (nonexistent bone)
 						node_cache->skeleton = nullptr;
@@ -421,6 +460,11 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
+#ifndef _3D_DISABLED
+	Skeleton3D *rtg_sk = Object::cast_to<Skeleton3D>(get_node_or_null(retarget_skeleton_path));
+	bool retarget_is_valid = retarget_map.is_valid() && rtg_sk;
+#endif // _3D_DISABLED
+
 	Animation *a = p_anim->animation.operator->();
 	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 	bool backward = signbit(p_delta);
@@ -462,6 +506,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
+				if (a->track_is_retarget(i) && retarget_is_valid) {
+					if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+						loc = rtg_sk->global_retarget_position_to_local_pose(nc->bone_idx, loc);
+					} else if (a->position_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+						loc = rtg_sk->local_retarget_position_to_local_pose(nc->bone_idx, loc);
+					}
+				}
+
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
@@ -489,6 +541,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
+				if (a->track_is_retarget(i) && retarget_is_valid) {
+					if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+						rot = rtg_sk->global_retarget_rotation_to_local_pose(nc->bone_idx, rot);
+					} else if (a->rotation_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+						rot = rtg_sk->local_retarget_rotation_to_local_pose(nc->bone_idx, rot);
+					}
+				}
+
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
@@ -514,6 +574,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				if (err != OK) {
 					continue;
+				}
+
+				if (a->track_is_retarget(i) && retarget_is_valid) {
+					if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_GLOBAL) {
+						scale = rtg_sk->global_retarget_scale_to_local_pose(nc->bone_idx, scale);
+					} else if (a->scale_track_get_retarget_mode(i) == Animation::RETARGET_MODE_LOCAL) {
+						scale = rtg_sk->local_retarget_scale_to_local_pose(nc->bone_idx, scale);
+					}
 				}
 
 				if (nc->accum_pass != accum_pass) {
@@ -804,7 +872,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 							nc->audio_start = p_time;
 						}
 					} else if (nc->audio_playing) {
-						bool loop = a->get_loop_mode() != Animation::LoopMode::LOOP_NONE;
+						bool loop = a->get_loop_mode() != Animation::LOOP_NONE;
 
 						bool stop = false;
 
@@ -855,15 +923,15 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					double at_anim_pos = 0.0;
 
 					switch (anim->get_loop_mode()) {
-						case Animation::LoopMode::LOOP_NONE: {
+						case Animation::LOOP_NONE: {
 							at_anim_pos = MIN((double)anim->get_length(), p_time - pos); //seek to end
 						} break;
 
-						case Animation::LoopMode::LOOP_LINEAR: {
+						case Animation::LOOP_LINEAR: {
 							at_anim_pos = Math::fposmod(p_time - pos, (double)anim->get_length()); //seek to loop
 						} break;
 
-						case Animation::LoopMode::LOOP_PINGPONG: {
+						case Animation::LOOP_PINGPONG: {
 							at_anim_pos = Math::pingpong(p_time - pos, (double)anim->get_length());
 						} break;
 
@@ -916,7 +984,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 	int pingponged = 0;
 
 	switch (cd.from->animation->get_loop_mode()) {
-		case Animation::LoopMode::LOOP_NONE: {
+		case Animation::LOOP_NONE: {
 			if (next_pos < 0) {
 				next_pos = 0;
 			} else if (next_pos > len) {
@@ -941,7 +1009,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 			}
 		} break;
 
-		case Animation::LoopMode::LOOP_LINEAR: {
+		case Animation::LOOP_LINEAR: {
 			double looped_next_pos = Math::fposmod(next_pos, (double)len);
 			if (looped_next_pos == 0 && next_pos != 0) {
 				// Loop multiples of the length to it, rather than 0
@@ -952,7 +1020,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 			}
 		} break;
 
-		case Animation::LoopMode::LOOP_PINGPONG: {
+		case Animation::LOOP_PINGPONG: {
 			if ((int)Math::floor(abs(next_pos - cd.pos) / len) % 2 == 0) {
 				if (next_pos < 0 && cd.pos >= 0) {
 					cd.speed_scale *= -1.0;
@@ -1009,7 +1077,6 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 
 void AnimationPlayer::_animation_update_transforms() {
 	{
-		Transform3D t;
 		for (int i = 0; i < cache_update_size; i++) {
 			TrackNodeCache *nc = cache_update[i];
 
@@ -1025,7 +1092,6 @@ void AnimationPlayer::_animation_update_transforms() {
 				if (nc->scale_used) {
 					nc->skeleton->set_bone_pose_scale(nc->bone_idx, nc->scale_accum);
 				}
-
 			} else if (nc->node_blend_shape) {
 				nc->node_blend_shape->set_blend_shape_value(nc->blend_shape_idx, nc->blend_shape_accum);
 			} else if (nc->node_3d) {
@@ -1039,7 +1105,6 @@ void AnimationPlayer::_animation_update_transforms() {
 					nc->node_3d->set_scale(nc->scale_accum);
 				}
 			}
-
 #endif // _3D_DISABLED
 		}
 	}
@@ -1523,8 +1588,7 @@ float AnimationPlayer::get_current_animation_length() const {
 }
 
 void AnimationPlayer::_animation_changed() {
-	clear_caches();
-	emit_signal(SNAME("caches_cleared"));
+	clear_caches(true);
 	if (is_playing()) {
 		playback.seeked = true; //need to restart stuff, like audio
 	}
@@ -1551,7 +1615,7 @@ void AnimationPlayer::_node_removed(Node *p_node) {
 	clear_caches(); // nodes contained here are being removed, clear the caches
 }
 
-void AnimationPlayer::clear_caches() {
+void AnimationPlayer::clear_caches(bool p_emit_signal) {
 	_stop_playing_caches();
 
 	node_cache_map.clear();
@@ -1563,6 +1627,10 @@ void AnimationPlayer::clear_caches() {
 	cache_update_size = 0;
 	cache_update_prop_size = 0;
 	cache_update_bezier_size = 0;
+
+	if (p_emit_signal) {
+		emit_signal(SNAME("caches_cleared"));
+	}
 }
 
 void AnimationPlayer::set_active(bool p_active) {
@@ -1634,6 +1702,71 @@ void AnimationPlayer::set_method_call_mode(AnimationMethodCallMode p_mode) {
 AnimationPlayer::AnimationMethodCallMode AnimationPlayer::get_method_call_mode() const {
 	return method_call_mode;
 }
+
+#ifndef _3D_DISABLED
+void AnimationPlayer::set_retarget_skeleton(const NodePath &p_skeleton) {
+	retarget_skeleton_path = p_skeleton;
+	clear_caches(true);
+	notify_property_list_changed();
+}
+
+NodePath AnimationPlayer::get_retarget_skeleton() const {
+	return retarget_skeleton_path;
+}
+
+void AnimationPlayer::set_retarget_profile(const Ref<RetargetProfile> &p_retarget_profile) {
+#ifdef TOOLS_ENABLED
+	if (retarget_profile.is_valid() && retarget_profile->is_connected("profile_updated", callable_mp(this, &AnimationPlayer::_redraw_retarget_settings))) {
+		retarget_profile->disconnect("profile_updated", callable_mp(this, &AnimationPlayer::_redraw_retarget_settings));
+	}
+#endif // TOOLS_ENABLED
+	retarget_profile = p_retarget_profile;
+#ifdef TOOLS_ENABLED
+	if (retarget_profile.is_valid() && !retarget_profile->is_connected("profile_updated", callable_mp(this, &AnimationPlayer::_redraw_retarget_settings))) {
+		retarget_profile->connect("profile_updated", callable_mp(this, &AnimationPlayer::_redraw_retarget_settings));
+	}
+#endif // TOOLS_ENABLED
+	notify_property_list_changed();
+}
+
+Ref<RetargetProfile> AnimationPlayer::get_retarget_profile() const {
+	return retarget_profile;
+}
+
+void AnimationPlayer::set_retarget_option(const Ref<RetargetBoneOption> &p_retarget_option) {
+	retarget_option = p_retarget_option;
+}
+
+Ref<RetargetBoneOption> AnimationPlayer::get_retarget_option() const {
+	return retarget_option;
+}
+
+void AnimationPlayer::set_retarget_map(const Ref<RetargetBoneMap> &p_retarget_map) {
+	if (retarget_map.is_valid() && retarget_map->is_connected("retarget_map_updated", callable_mp(this, &AnimationPlayer::clear_caches))) {
+		retarget_map->disconnect("retarget_map_updated", callable_mp(this, &AnimationPlayer::clear_caches));
+	}
+	retarget_map = p_retarget_map;
+	if (retarget_map.is_valid() && !retarget_map->is_connected("retarget_map_updated", callable_mp(this, &AnimationPlayer::clear_caches))) {
+		retarget_map->connect("retarget_map_updated", callable_mp(this, &AnimationPlayer::clear_caches), varray(true));
+	}
+	clear_caches(true);
+}
+
+Ref<RetargetBoneMap> AnimationPlayer::get_retarget_map() const {
+	return retarget_map;
+}
+
+#ifdef TOOLS_ENABLED
+void AnimationPlayer::_redraw_retarget_settings() {
+	if (retarget_option.is_valid()) {
+		retarget_option->redraw();
+	}
+	if (retarget_map.is_valid()) {
+		retarget_map->redraw();
+	}
+}
+#endif // TOOLS_ENABLED
+#endif // _3D_DISABLED
 
 void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 	if (processing == p_process && !p_force) {
@@ -1839,13 +1972,24 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationPlayer::find_animation);
 
-	ClassDB::bind_method(D_METHOD("clear_caches"), &AnimationPlayer::clear_caches);
+	ClassDB::bind_method(D_METHOD("clear_caches", "p_emit_signal"), &AnimationPlayer::clear_caches, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_process_callback", "mode"), &AnimationPlayer::set_process_callback);
 	ClassDB::bind_method(D_METHOD("get_process_callback"), &AnimationPlayer::get_process_callback);
 
 	ClassDB::bind_method(D_METHOD("set_method_call_mode", "mode"), &AnimationPlayer::set_method_call_mode);
 	ClassDB::bind_method(D_METHOD("get_method_call_mode"), &AnimationPlayer::get_method_call_mode);
+
+#ifndef _3D_DISABLED
+	ClassDB::bind_method(D_METHOD("set_retarget_skeleton", "retarget_skeleton_path"), &AnimationPlayer::set_retarget_skeleton);
+	ClassDB::bind_method(D_METHOD("get_retarget_skeleton"), &AnimationPlayer::get_retarget_skeleton);
+	ClassDB::bind_method(D_METHOD("set_retarget_profile", "retarget_profile"), &AnimationPlayer::set_retarget_profile);
+	ClassDB::bind_method(D_METHOD("get_retarget_profile"), &AnimationPlayer::get_retarget_profile);
+	ClassDB::bind_method(D_METHOD("set_retarget_option", "retarget_option"), &AnimationPlayer::set_retarget_option);
+	ClassDB::bind_method(D_METHOD("get_retarget_option"), &AnimationPlayer::get_retarget_option);
+	ClassDB::bind_method(D_METHOD("set_retarget_map", "retarget_map"), &AnimationPlayer::set_retarget_map);
+	ClassDB::bind_method(D_METHOD("get_retarget_map"), &AnimationPlayer::get_retarget_map);
+#endif // _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
@@ -1868,6 +2012,14 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");
 
+#ifndef _3D_DISABLED
+	ADD_GROUP("Retarget Options", "retarget_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "retarget_profile", PROPERTY_HINT_RESOURCE_TYPE, "RetargetProfile"), "set_retarget_profile", "get_retarget_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "retarget_option", PROPERTY_HINT_RESOURCE_TYPE, "RetargetBoneOption"), "set_retarget_option", "get_retarget_option");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "retarget_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_retarget_skeleton", "get_retarget_skeleton");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "retarget_map", PROPERTY_HINT_RESOURCE_TYPE, "RetargetBoneMap"), "set_retarget_map", "get_retarget_map");
+#endif // _3D_DISABLED
+
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
@@ -1886,4 +2038,14 @@ AnimationPlayer::AnimationPlayer() {
 }
 
 AnimationPlayer::~AnimationPlayer() {
+#ifndef _3D_DISABLED
+#ifdef TOOLS_ENABLED
+	if (retarget_profile.is_valid() && retarget_profile->is_connected("profile_updated", callable_mp(this, &AnimationPlayer::_redraw_retarget_settings))) {
+		retarget_profile->disconnect("profile_updated", callable_mp(this, &AnimationPlayer::_redraw_retarget_settings));
+	}
+#endif // TOOLS_ENABLED
+	if (retarget_map.is_valid() && retarget_map->is_connected("retarget_map_updated", callable_mp(this, &AnimationPlayer::clear_caches))) {
+		retarget_map->disconnect("retarget_map_updated", callable_mp(this, &AnimationPlayer::clear_caches));
+	}
+#endif // _3D_DISABLED
 }
