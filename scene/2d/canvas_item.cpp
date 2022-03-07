@@ -350,19 +350,40 @@ Transform2D CanvasItem::_edit_get_transform() const {
 #endif
 
 bool CanvasItem::is_visible_in_tree() const {
-	return visible && parent_visible_in_tree;
+	if (!is_inside_tree()) {
+		return false;
+	}
+
+	const CanvasItem *p = this;
+
+	while (p) {
+		if (!p->visible) {
+			return false;
+		}
+		p = p->get_parent_item();
+	}
+
+	const Node *n = get_parent();
+	while (n) {
+		const CanvasLayer *c = Object::cast_to<CanvasLayer>(n);
+		if (c && !c->is_visible()) {
+			return false;
+		}
+		n = n->get_parent();
+	}
+
+	return true;
 }
 
-void CanvasItem::_propagate_visibility_changed(bool p_visible, bool p_was_visible) {
+void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	if (p_visible && first_draw) { //avoid propagating it twice
 		first_draw = false;
 	}
-	parent_visible_in_tree = p_visible;
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (visible && p_visible) {
-		update();
-	} else if (!p_visible && (visible || p_was_visible)) {
+	if (p_visible) {
+		update(); // Todo optimize.
+	} else {
 		emit_signal(SceneStringNames::get_singleton()->hide);
 	}
 	_block();
@@ -390,7 +411,7 @@ void CanvasItem::set_visible(bool p_visible) {
 		return;
 	}
 
-	_propagate_visibility_changed(p_visible, !p_visible);
+	_propagate_visibility_changed(p_visible);
 	_change_notify("visible");
 }
 
@@ -419,7 +440,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree()) {
+	if (is_visible_in_tree()) { // Todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -545,15 +566,7 @@ void CanvasItem::_notification(int p_what) {
 			if (parent) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 				if (ci) {
-					parent_visible_in_tree = ci->is_visible_in_tree();
 					C = ci->children_items.push_back(this);
-				} else {
-					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
-					if (cl) {
-						parent_visible_in_tree = cl->is_visible();
-					} else {
-						parent_visible_in_tree = true;
-					}
 				}
 			}
 			_enter_canvas();
@@ -585,7 +598,6 @@ void CanvasItem::_notification(int p_what) {
 				C = nullptr;
 			}
 			global_invalid = true;
-			parent_visible_in_tree = false;
 		} break;
 		case NOTIFICATION_DRAW:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -1251,7 +1263,6 @@ CanvasItem::CanvasItem() :
 		xform_change(this) {
 	canvas_item = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 	visible = true;
-	parent_visible_in_tree = false;
 	pending_update = false;
 	modulate = Color(1, 1, 1, 1);
 	self_modulate = Color(1, 1, 1, 1);
