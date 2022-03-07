@@ -743,6 +743,17 @@ Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
 	return bones[p_bone].pose_cache;
 }
 
+Transform3D Skeleton3D::get_bone_final_pose(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
+	((Skeleton3D *)this)->bones.write[p_bone].update_pose_cache();
+	if (bones[p_bone].local_pose_override_amount >= CMP_EPSILON || bones[p_bone].global_pose_override_amount >= CMP_EPSILON) {
+		return ((Skeleton3D *)this)->global_pose_to_local_pose(p_bone, get_bone_global_pose(p_bone));
+	} else {
+		return bones[p_bone].pose_cache;
+	}
+}
+
 void Skeleton3D::_make_dirty() {
 	if (dirty) {
 		return;
@@ -1216,6 +1227,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_bones"), &Skeleton3D::clear_bones);
 
 	ClassDB::bind_method(D_METHOD("get_bone_pose", "bone_idx"), &Skeleton3D::get_bone_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_final_pose", "bone_idx"), &Skeleton3D::get_bone_final_pose);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_position", "bone_idx", "position"), &Skeleton3D::set_bone_pose_position);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_rotation", "bone_idx", "rotation"), &Skeleton3D::set_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_scale", "bone_idx", "scale"), &Skeleton3D::set_bone_pose_scale);

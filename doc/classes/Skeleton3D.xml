@@ -93,6 +93,13 @@
 				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
+		<method name="get_bone_final_pose" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the final transform of the specified bone, if pose is overridden, it take that into account.
+			</description>
+		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />

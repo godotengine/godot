@@ -215,6 +215,7 @@ public:
 	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
 
 	Transform3D get_bone_pose(int p_bone) const;
+	Transform3D get_bone_final_pose(int p_bone) const;
 
 	Vector3 get_bone_pose_position(int p_bone) const;
 	Quaternion get_bone_pose_rotation(int p_bone) const;
