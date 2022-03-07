@@ -77,7 +77,7 @@ GLint ShaderGLES2::get_uniform_location(int p_index) const {
 }
 
 bool ShaderGLES2::bind() {
-	if (active != this || !version || new_conditional_version.key != conditional_version.key) {
+	if (active != this || !version || !(new_conditional_version == conditional_version)) {
 		conditional_version = new_conditional_version;
 		version = get_current_version();
 	} else {
