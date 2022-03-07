@@ -51,17 +51,10 @@ void CanvasLayer::set_visible(bool p_visible) {
 	visible = p_visible;
 	emit_signal("visibility_changed");
 
-	for (int i = 0; i < get_child_count(); i++) {
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
-		if (c) {
-			VisualServer::get_singleton()->canvas_item_set_visible(c->get_canvas_item(), p_visible && c->is_visible());
-
-			if (c->is_visible()) {
-				c->_propagate_visibility_changed(p_visible);
-			} else {
-				c->notification(CanvasItem::NOTIFICATION_VISIBILITY_CHANGED);
-			}
-		}
+	// For CanvasItems that is explicitly top level or has non-CanvasItem parents.
+	if (is_inside_tree()) {
+		const String group = "root_canvas" + itos(canvas.get_id());
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_visibility_changed", p_visible);
 	}
 }
 
