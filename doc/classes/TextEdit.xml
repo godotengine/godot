@@ -239,6 +239,18 @@
 				Returns the total width of all gutters and internal padding.
 			</description>
 		</method>
+		<method name="get_total_visible_rows" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of lines that could be drawn.
+			</description>
+		</method>
+		<method name="get_visible_rows" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of visible lines, including wrapped text.
+			</description>
+		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
 			<return type="String" />
 			<description>
