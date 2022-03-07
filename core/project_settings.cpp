@@ -509,11 +509,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 bool ProjectSettings::has_setting(String p_var) const {
 	_THREAD_SAFE_METHOD_
 
-	StringName name = p_var;
-	if (!disable_feature_overrides && feature_overrides.has(name)) {
-		name = feature_overrides[name];
-	}
-	return props.has(name);
+	return props.has(p_var);
 }
 
 void ProjectSettings::set_registering_order(bool p_enable) {
