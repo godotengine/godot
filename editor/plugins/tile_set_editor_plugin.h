@@ -230,6 +230,7 @@ private:
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_reset();
+	void _zoom_on_position(float p_zoom, const Vector2 &p_position);
 
 	void draw_highlight_current_tile();
 	void draw_highlight_subtile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());

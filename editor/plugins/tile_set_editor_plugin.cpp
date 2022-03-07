@@ -1227,11 +1227,11 @@ void TileSetEditor::_on_scroll_container_input(const Ref<InputEvent> &p_event) {
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
 		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
-			_zoom_in();
+			_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
 			accept_event();
 		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
-			_zoom_out();
+			_zoom_on_position(1 / scale_ratio, mb->get_position());
 			// Don't scroll down after zooming out.
 			accept_event();
 		}
@@ -2416,27 +2416,31 @@ void TileSetEditor::_undo_tile_removal(int p_id) {
 }
 
 void TileSetEditor::_zoom_in() {
-	float scale = workspace->get_scale().x;
-	if (scale < max_scale) {
-		scale *= scale_ratio;
-		workspace->set_scale(Vector2(scale, scale));
-		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
-		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
-	}
+	_zoom_on_position(scale_ratio, Vector2());
 }
+
 void TileSetEditor::_zoom_out() {
-	float scale = workspace->get_scale().x;
-	if (scale > min_scale) {
-		scale /= scale_ratio;
-		workspace->set_scale(Vector2(scale, scale));
-		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
-		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
-	}
+	_zoom_on_position(1 / scale_ratio, Vector2());
 }
+
 void TileSetEditor::_zoom_reset() {
 	workspace->set_scale(Vector2(1, 1));
 	workspace_container->set_custom_minimum_size(workspace->get_rect().size);
 	workspace_overlay->set_custom_minimum_size(workspace->get_rect().size);
+}
+
+void TileSetEditor::_zoom_on_position(float p_zoom, const Vector2 &p_position) {
+	const float old_scale = workspace->get_scale().x;
+	const float new_scale = CLAMP(old_scale * p_zoom, min_scale, max_scale);
+
+	workspace->set_scale(Vector2(new_scale, new_scale));
+	workspace_container->set_custom_minimum_size(workspace->get_rect().size * new_scale);
+	workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * new_scale);
+
+	Vector2 offset = Vector2(scroll->get_h_scroll(), scroll->get_v_scroll());
+	offset = (offset + p_position) / old_scale * new_scale - p_position;
+	scroll->set_h_scroll(offset.x);
+	scroll->set_v_scroll(offset.y);
 }
 
 void TileSetEditor::draw_highlight_current_tile() {
