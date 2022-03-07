@@ -2327,6 +2327,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 
 	// Node3D, Vertex
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "vertex", "VERTEX" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "vertex_id", "VERTEX_ID" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "normal", "NORMAL" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "tangent", "TANGENT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "binormal", "BINORMAL" },
@@ -2348,6 +2349,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_2D, "viewport_size", "VIEWPORT_SIZE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_BOOLEAN, "output_is_srgb", "OUTPUT_IS_SRGB" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_right", "VIEW_RIGHT" },
 
 	// Node3D, Fragment
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "fragcoord", "FRAGCOORD.xyz" },
@@ -2374,6 +2378,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "screen_texture", "SCREEN_TEXTURE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "normal_roughness_texture", "NORMAL_ROUGHNESS_TEXTURE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "depth_texture", "DEPTH_TEXTURE" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_right", "VIEW_RIGHT" },
 
 	// Node3D, Light
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "fragcoord", "FRAGCOORD.xyz" },
@@ -2384,6 +2391,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "light", "LIGHT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "light_color", "LIGHT_COLOR" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "attenuation", "ATTENUATION" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "shadow_attenuation", "SHADOW_ATTENUATION" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "albedo", "ALBEDO" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "backlight", "BACKLIGHT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "diffuse", "DIFFUSE_LIGHT" },
@@ -2415,6 +2423,8 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_BOOLEAN, "at_light_pass", "AT_LIGHT_PASS" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "instance_custom", "INSTANCE_CUSTOM.rgb" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "instance_custom_alpha", "INSTANCE_CUSTOM.a" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "instance_id", "INSTANCE_ID" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "vertex_id", "VERTEX_ID" },
 
 	// Canvas Item, Fragment
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "fragcoord", "FRAGCOORD.xyz" },
@@ -3144,6 +3154,7 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "color", "COLOR.rgb" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "roughness", "ROUGHNESS" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "point_size", "POINT_SIZE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "model_view_matrix", "MODELVIEW_MATRIX" },
 	////////////////////////////////////////////////////////////////////////
 	// Node3D, Fragment.
@@ -3155,6 +3166,7 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "specular", "SPECULAR" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "emission", "EMISSION" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "ao", "AO" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "ao_light_affect", "AO_LIGHT_AFFECT" },
 
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "normal", "NORMAL" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "normal_map", "NORMAL_MAP" },
@@ -3170,7 +3182,10 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "backlight", "BACKLIGHT" },
 
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha_scissor_threshold", "ALPHA_SCISSOR_THRESHOLD" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "ao_light_affect", "AO_LIGHT_AFFECT" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha_hash_scale", "ALPHA_HASH_SCALE" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha_aa_edge", "ALPHA_ANTIALIASING_EDGE" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "alpha_uv", "ALPHA_TEXTURE_COORDINATE" },
+
 	////////////////////////////////////////////////////////////////////////
 	// Node3D, Light.
 	////////////////////////////////////////////////////////////////////////
@@ -3294,7 +3309,7 @@ bool VisualShaderNodeOutput::is_port_separator(int p_index) const {
 	}
 	if (shader_mode == Shader::MODE_SPATIAL && shader_type == VisualShader::TYPE_FRAGMENT) {
 		String name = get_input_port_name(p_index);
-		return bool(name == "Normal" || name == "Rim" || name == "Alpha Scissor Threshold");
+		return bool(name == "Ao" || name == "Normal" || name == "Rim" || name == "Clearcoat" || name == "Anisotropy" || name == "Subsurf Scatter" || name == "Alpha Scissor Threshold");
 	}
 	return false;
 }
