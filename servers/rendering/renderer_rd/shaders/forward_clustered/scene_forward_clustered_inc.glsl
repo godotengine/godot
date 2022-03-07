@@ -105,20 +105,24 @@ bool sc_use_lightmap_bicubic_filter() {
 	return ((sc_packed_0() >> 7) & 1U) != 0;
 }
 
+bool sc_use_material_debanding() {
+	return ((sc_packed_0() >> 8) & 1U) != 0;
+}
+
 uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 8) & 63U;
+	return (sc_packed_0() >> 12) & 63U;
 }
 
 uint sc_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 14) & 63U;
+	return (sc_packed_0() >> 18) & 63U;
 }
 
 uint sc_directional_soft_shadow_samples() {
-	return (sc_packed_0() >> 20) & 63U;
+	return (sc_packed_0() >> 24) & 63U;
 }
 
 uint sc_directional_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 26) & 63U;
+	return (sc_packed_0() >> 30) & 63U;
 }
 
 bool sc_multimesh() {

@@ -2216,6 +2216,18 @@ void main() {
 	out_color.rgb = mix(out_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
+	if (sc_use_material_debanding()) {
+		// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+		// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+		// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+		vec3 dither = vec3(dot(vec2(171.0, 231.0), gl_FragCoord.xy));
+		dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+		// Subtract 0.5 to avoid slightly brightening the whole viewport.
+		// Apply debanding before dividing by the luminance multiplier to prevent debanding from being too strong.
+		frag_color.rgb += (dither.rgb - 0.5) / 255.0;
+	}
+
 	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
 	// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
 	out_color.rgb = out_color.rgb / sc_luminance_multiplier();

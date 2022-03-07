@@ -760,6 +760,7 @@ protected:
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	bool lightmap_bicubic_upscale = false;
+	bool material_use_debanding = false;
 
 	/* Sky */
 

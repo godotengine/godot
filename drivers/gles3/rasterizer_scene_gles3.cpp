@@ -3403,6 +3403,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					}
 				}
 
+				if (material_use_debanding) {
+					spec_constants |= SceneShaderGLES3::USE_MATERIAL_DEBANDING;
+				}
+
 				if (uses_additive_lighting) {
 					spec_constants |= SceneShaderGLES3::USE_ADDITIVE_LIGHTING;
 
@@ -3448,6 +3452,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						} else if (scene_state.directional_shadow_quality >= RS::SHADOW_QUALITY_SOFT_LOW) {
 							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_5;
 						}
+					}
+
+					if (material_use_debanding) {
+						// Additive lighting also needs to use debanding.
+						spec_constants |= SceneShaderGLES3::USE_MATERIAL_DEBANDING;
 					}
 				}
 			}
@@ -4289,7 +4298,7 @@ void RasterizerSceneGLES3::lightmaps_set_bicubic_filter(bool p_enable) {
 }
 
 void RasterizerSceneGLES3::material_set_use_debanding(bool p_enable) {
-	// Material debanding not yet implemented.
+	material_use_debanding = p_enable;
 }
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
@@ -4306,6 +4315,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 	positional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"));
 	directional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
+	material_set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
 
 	{
 		// Setup Lights

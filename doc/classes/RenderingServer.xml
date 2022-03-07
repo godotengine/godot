@@ -2364,8 +2364,8 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				When using the Mobile renderer, [method material_set_use_debanding] can be used to enable or disable the debanding feature of 3D materials ([BaseMaterial3D] and [ShaderMaterial]).
-				[method material_set_use_debanding] has no effect when using the Compatibility or Forward+ renderer. In Forward+, [Viewport] debanding can be used instead.
+				When using the Mobile and Compatibility renderers, [method material_set_use_debanding] can be used to enable or disable the debanding feature of 3D materials ([BaseMaterial3D] and [ShaderMaterial]).
+				[method material_set_use_debanding] has no effect when using the Forward+ renderer. In Forward+, [Viewport] debanding can be used instead.
 				See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] and [method RenderingServer.viewport_set_use_debanding].
 			</description>
 		</method>
