@@ -1335,8 +1335,13 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
-	allocInfo.pool = p_size <= SMALL_ALLOCATION_MAX_SIZE ? small_allocs_pool : nullptr;
+	allocInfo.pool = nullptr;
 	allocInfo.pUserData = nullptr;
+	if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
+		uint32_t mem_type_index = 0;
+		vmaFindMemoryTypeIndexForBufferInfo(allocator, &bufferInfo, &allocInfo, &mem_type_index);
+		allocInfo.pool = _find_or_create_small_allocs_pool(mem_type_index);
+	}
 
 	VkResult err = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &p_buffer->buffer, &p_buffer->allocation, nullptr);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
@@ -1843,12 +1848,17 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	VmaAllocationCreateInfo allocInfo;
 	allocInfo.flags = 0;
-	allocInfo.pool = image_size <= SMALL_ALLOCATION_MAX_SIZE ? small_allocs_pool : nullptr;
+	allocInfo.pool = nullptr;
 	allocInfo.usage = p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
 	allocInfo.pUserData = nullptr;
+	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
+		uint32_t mem_type_index = 0;
+		vmaFindMemoryTypeIndexForImageInfo(allocator, &image_create_info, &allocInfo, &mem_type_index);
+		allocInfo.pool = _find_or_create_small_allocs_pool(mem_type_index);
+	}
 
 	Texture texture;
 
@@ -2114,6 +2124,124 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
 	_add_dependency(id, p_with_texture);
+
+	return id;
+}
+
+RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) {
+	_THREAD_SAFE_METHOD_
+	// This method creates a texture object using a VkImage created by an extension, module or other external source (OpenXR uses this).
+	VkImage image = (VkImage)p_image;
+
+	Texture texture;
+	texture.image = image;
+	// if we leave texture.allocation as a nullptr, would that be enough to detect we don't "own" the image?
+	// also leave texture.allocation_info alone
+	// we'll set texture.view later on
+	texture.type = p_type;
+	texture.format = p_format;
+	texture.samples = p_samples;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.depth = p_depth;
+	texture.layers = p_layers;
+	texture.mipmaps = 0; // maybe make this settable too?
+	texture.usage_flags = p_flags;
+	texture.base_mipmap = 0;
+	texture.base_layer = 0;
+	texture.allowed_shared_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
+	texture.allowed_shared_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
+
+	// Do we need to do something with texture.layout ?
+
+	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		texture.barrier_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		// if (format_has_stencil(p_format.format)) {
+		// 	texture.barrier_aspect_mask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		// }
+	} else {
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		texture.barrier_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	// Create a view for us to use
+
+	VkImageViewCreateInfo image_view_create_info;
+	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	image_view_create_info.pNext = nullptr;
+	image_view_create_info.flags = 0;
+	image_view_create_info.image = texture.image;
+
+	static const VkImageViewType view_types[TEXTURE_TYPE_MAX] = {
+		VK_IMAGE_VIEW_TYPE_1D,
+		VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_VIEW_TYPE_3D,
+		VK_IMAGE_VIEW_TYPE_CUBE,
+		VK_IMAGE_VIEW_TYPE_1D_ARRAY,
+		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
+		VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
+	};
+
+	image_view_create_info.viewType = view_types[texture.type];
+	image_view_create_info.format = vulkan_formats[texture.format];
+
+	static const VkComponentSwizzle component_swizzles[TEXTURE_SWIZZLE_MAX] = {
+		VK_COMPONENT_SWIZZLE_IDENTITY,
+		VK_COMPONENT_SWIZZLE_ZERO,
+		VK_COMPONENT_SWIZZLE_ONE,
+		VK_COMPONENT_SWIZZLE_R,
+		VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B,
+		VK_COMPONENT_SWIZZLE_A
+	};
+
+	// hardcode for now, maybe make this settable from outside..
+	image_view_create_info.components.r = component_swizzles[TEXTURE_SWIZZLE_R];
+	image_view_create_info.components.g = component_swizzles[TEXTURE_SWIZZLE_G];
+	image_view_create_info.components.b = component_swizzles[TEXTURE_SWIZZLE_B];
+	image_view_create_info.components.a = component_swizzles[TEXTURE_SWIZZLE_A];
+
+	image_view_create_info.subresourceRange.baseMipLevel = 0;
+	image_view_create_info.subresourceRange.levelCount = texture.mipmaps;
+	image_view_create_info.subresourceRange.baseArrayLayer = 0;
+	image_view_create_info.subresourceRange.layerCount = texture.layers;
+	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	} else {
+		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	VkResult err = vkCreateImageView(device, &image_view_create_info, nullptr, &texture.view);
+
+	if (err) {
+		// vmaDestroyImage(allocator, texture.image, texture.allocation);
+		ERR_FAIL_V_MSG(RID(), "vkCreateImageView failed with error " + itos(err) + ".");
+	}
+
+	//barrier to set layout
+	{
+		VkImageMemoryBarrier image_memory_barrier;
+		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		image_memory_barrier.pNext = nullptr;
+		image_memory_barrier.srcAccessMask = 0;
+		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		image_memory_barrier.newLayout = texture.layout;
+		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.image = texture.image;
+		image_memory_barrier.subresourceRange.aspectMask = texture.barrier_aspect_mask;
+		image_memory_barrier.subresourceRange.baseMipLevel = 0;
+		image_memory_barrier.subresourceRange.levelCount = texture.mipmaps;
+		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
+		image_memory_barrier.subresourceRange.layerCount = texture.layers;
+
+		vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+	}
+
+	RID id = texture_owner.make_rid(texture);
 
 	return id;
 }
@@ -4635,19 +4763,22 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 					for (uint32_t j = 0; j < sc_count; j++) {
 						int32_t existing = -1;
 						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst;
-						sconst.constant_id = spec_constants[j]->constant_id;
-						switch (spec_constants[j]->constant_type) {
+						SpvReflectSpecializationConstant *spc = spec_constants[j];
+
+						sconst.constant_id = spc->constant_id;
+						sconst.int_value = 0.0; // clear previous value JIC
+						switch (spc->constant_type) {
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-								sconst.bool_value = spec_constants[j]->default_value.int_bool_value != 0;
+								sconst.bool_value = spc->default_value.int_bool_value != 0;
 							} break;
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_INT: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-								sconst.int_value = spec_constants[j]->default_value.int_bool_value;
+								sconst.int_value = spc->default_value.int_bool_value;
 							} break;
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
-								sconst.float_value = spec_constants[j]->default_value.float_value;
+								sconst.float_value = spc->default_value.float_value;
 							} break;
 						}
 						sconst.stage_flags = 1 << p_spirv[i].shader_stage;
@@ -5501,18 +5632,18 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 		switch (uniform.uniform_type) {
 			case UNIFORM_TYPE_SAMPLER: {
-				if (uniform.ids.size() != set_uniform.length) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "Sampler (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler elements, so it should be provided equal number of sampler IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Sampler (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler elements, so it should be provided equal number of sampler IDs to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "Sampler (binding: " + itos(uniform.binding) + ") should provide one ID referencing a sampler (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Sampler (binding: " + itos(uniform.binding) + ") should provide one ID referencing a sampler (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
 				Vector<VkDescriptorImageInfo> image_info;
 
-				for (int j = 0; j < uniform.ids.size(); j++) {
-					VkSampler *sampler = sampler_owner.get_or_null(uniform.ids[j]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
+					VkSampler *sampler = sampler_owner.get_or_null(uniform.get_id(j));
 					ERR_FAIL_COND_V_MSG(!sampler, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
 
 					VkDescriptorImageInfo img_info;
@@ -5524,31 +5655,31 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size();
+				write.descriptorCount = uniform.get_id_count();
 				write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
 				write.pBufferInfo = nullptr;
 				write.pTexelBufferView = nullptr;
 
-				type_size = uniform.ids.size();
+				type_size = uniform.get_id_count();
 
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
-				if (uniform.ids.size() != set_uniform.length * 2) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length * 2) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "SamplerTexture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler&texture elements, so it should provided twice the amount of IDs (sampler,texture pairs) to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerTexture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler&texture elements, so it should provided twice the amount of IDs (sampler,texture pairs) to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "SamplerTexture (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerTexture (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
 				Vector<VkDescriptorImageInfo> image_info;
 
-				for (int j = 0; j < uniform.ids.size(); j += 2) {
-					VkSampler *sampler = sampler_owner.get_or_null(uniform.ids[j + 0]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
+					VkSampler *sampler = sampler_owner.get_or_null(uniform.get_id(j + 0));
 					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
-					Texture *texture = texture_owner.get_or_null(uniform.ids[j + 1]);
+					Texture *texture = texture_owner.get_or_null(uniform.get_id(j + 1));
 					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
@@ -5561,7 +5692,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
 						UniformSet::AttachableTexture attachable_texture;
 						attachable_texture.bind = set_uniform.binding;
-						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.ids[j + 1];
+						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.get_id(j + 1);
 						attachable_textures.push_back(attachable_texture);
 					}
 
@@ -5580,28 +5711,28 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size() / 2;
+				write.descriptorCount = uniform.get_id_count() / 2;
 				write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
 				write.pBufferInfo = nullptr;
 				write.pTexelBufferView = nullptr;
 
-				type_size = uniform.ids.size() / 2;
+				type_size = uniform.get_id_count() / 2;
 
 			} break;
 			case UNIFORM_TYPE_TEXTURE: {
-				if (uniform.ids.size() != set_uniform.length) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
 				Vector<VkDescriptorImageInfo> image_info;
 
-				for (int j = 0; j < uniform.ids.size(); j++) {
-					Texture *texture = texture_owner.get_or_null(uniform.ids[j]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
+					Texture *texture = texture_owner.get_or_null(uniform.get_id(j));
 					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
@@ -5614,7 +5745,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
 						UniformSet::AttachableTexture attachable_texture;
 						attachable_texture.bind = set_uniform.binding;
-						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.ids[j];
+						attachable_texture.texture = texture->owner.is_valid() ? texture->owner : uniform.get_id(j);
 						attachable_textures.push_back(attachable_texture);
 					}
 
@@ -5634,27 +5765,27 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size();
+				write.descriptorCount = uniform.get_id_count();
 				write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
 				write.pBufferInfo = nullptr;
 				write.pTexelBufferView = nullptr;
 
-				type_size = uniform.ids.size();
+				type_size = uniform.get_id_count();
 			} break;
 			case UNIFORM_TYPE_IMAGE: {
-				if (uniform.ids.size() != set_uniform.length) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "Image (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Image (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "Image (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Image (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
 				Vector<VkDescriptorImageInfo> image_info;
 
-				for (int j = 0; j < uniform.ids.size(); j++) {
-					Texture *texture = texture_owner.get_or_null(uniform.ids[j]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
+					Texture *texture = texture_owner.get_or_null(uniform.get_id(j));
 
 					ERR_FAIL_COND_V_MSG(!texture, RID(),
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
@@ -5682,29 +5813,29 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size();
+				write.descriptorCount = uniform.get_id_count();
 				write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
 				write.pBufferInfo = nullptr;
 				write.pTexelBufferView = nullptr;
 
-				type_size = uniform.ids.size();
+				type_size = uniform.get_id_count();
 
 			} break;
 			case UNIFORM_TYPE_TEXTURE_BUFFER: {
-				if (uniform.ids.size() != set_uniform.length) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "Buffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") texture buffer elements, so it should be provided equal number of texture buffer IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Buffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") texture buffer elements, so it should be provided equal number of texture buffer IDs to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "Buffer (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture buffer (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Buffer (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture buffer (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
 				Vector<VkDescriptorBufferInfo> buffer_info;
 				Vector<VkBufferView> buffer_view;
 
-				for (int j = 0; j < uniform.ids.size(); j++) {
-					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.ids[j]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
+					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.get_id(j));
 					ERR_FAIL_COND_V_MSG(!buffer, RID(), "Texture Buffer (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture buffer.");
 
 					buffer_info.push_back(buffer->buffer.buffer_info);
@@ -5712,21 +5843,21 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size();
+				write.descriptorCount = uniform.get_id_count();
 				write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
 				write.pImageInfo = nullptr;
 				write.pBufferInfo = buffer_infos.push_back(buffer_info)->get().ptr();
 				write.pTexelBufferView = buffer_views.push_back(buffer_view)->get().ptr();
 
-				type_size = uniform.ids.size();
+				type_size = uniform.get_id_count();
 
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER: {
-				if (uniform.ids.size() != set_uniform.length * 2) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length * 2) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler buffer elements, so it should provided twice the amount of IDs (sampler,buffer pairs) to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler buffer elements, so it should provided twice the amount of IDs (sampler,buffer pairs) to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture buffer (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture buffer (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
@@ -5734,11 +5865,11 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkDescriptorBufferInfo> buffer_info;
 				Vector<VkBufferView> buffer_view;
 
-				for (int j = 0; j < uniform.ids.size(); j += 2) {
-					VkSampler *sampler = sampler_owner.get_or_null(uniform.ids[j + 0]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
+					VkSampler *sampler = sampler_owner.get_or_null(uniform.get_id(j + 0));
 					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
-					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.ids[j + 1]);
+					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.get_id(j + 1));
 
 					VkDescriptorImageInfo img_info;
 					img_info.sampler = *sampler;
@@ -5754,23 +5885,23 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size() / 2;
+				write.descriptorCount = uniform.get_id_count() / 2;
 				write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
 				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
 				write.pBufferInfo = buffer_infos.push_back(buffer_info)->get().ptr();
 				write.pTexelBufferView = buffer_views.push_back(buffer_view)->get().ptr();
 
-				type_size = uniform.ids.size() / 2;
+				type_size = uniform.get_id_count() / 2;
 			} break;
 			case UNIFORM_TYPE_IMAGE_BUFFER: {
 				//todo
 
 			} break;
 			case UNIFORM_TYPE_UNIFORM_BUFFER: {
-				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, RID(),
-						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
+				ERR_FAIL_COND_V_MSG(uniform.get_id_count() != 1, RID(),
+						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.get_id_count()) + " provided).");
 
-				Buffer *buffer = uniform_buffer_owner.get_or_null(uniform.ids[0]);
+				Buffer *buffer = uniform_buffer_owner.get_or_null(uniform.get_id(0));
 				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
@@ -5785,15 +5916,15 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
-				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, RID(),
-						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
+				ERR_FAIL_COND_V_MSG(uniform.get_id_count() != 1, RID(),
+						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.get_id_count()) + " provided).");
 
 				Buffer *buffer = nullptr;
 
-				if (storage_buffer_owner.owns(uniform.ids[0])) {
-					buffer = storage_buffer_owner.get_or_null(uniform.ids[0]);
-				} else if (vertex_buffer_owner.owns(uniform.ids[0])) {
-					buffer = vertex_buffer_owner.get_or_null(uniform.ids[0]);
+				if (storage_buffer_owner.owns(uniform.get_id(0))) {
+					buffer = storage_buffer_owner.get_or_null(uniform.get_id(0));
+				} else if (vertex_buffer_owner.owns(uniform.get_id(0))) {
+					buffer = vertex_buffer_owner.get_or_null(uniform.get_id(0));
 
 					ERR_FAIL_COND_V_MSG(!(buffer->usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
 				}
@@ -5813,18 +5944,18 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 			case UNIFORM_TYPE_INPUT_ATTACHMENT: {
 				ERR_FAIL_COND_V_MSG(shader->is_compute, RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") supplied for compute shader (this is not allowed).");
 
-				if (uniform.ids.size() != set_uniform.length) {
+				if (uniform.get_id_count() != (uint32_t)set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
 				Vector<VkDescriptorImageInfo> image_info;
 
-				for (int j = 0; j < uniform.ids.size(); j++) {
-					Texture *texture = texture_owner.get_or_null(uniform.ids[j]);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
+					Texture *texture = texture_owner.get_or_null(uniform.get_id(j));
 
 					ERR_FAIL_COND_V_MSG(!texture, RID(),
 							"InputAttachment (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
@@ -5847,13 +5978,13 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 
 				write.dstArrayElement = 0;
-				write.descriptorCount = uniform.ids.size();
+				write.descriptorCount = uniform.get_id_count();
 				write.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
 				write.pBufferInfo = nullptr;
 				write.pTexelBufferView = nullptr;
 
-				type_size = uniform.ids.size();
+				type_size = uniform.get_id_count();
 			} break;
 			default: {
 			}
@@ -5903,10 +6034,9 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	_add_dependency(id, p_shader);
 	for (uint32_t i = 0; i < uniform_count; i++) {
 		const Uniform &uniform = uniforms[i];
-		int id_count = uniform.ids.size();
-		const RID *ids = uniform.ids.ptr();
+		int id_count = uniform.get_id_count();
 		for (int j = 0; j < id_count; j++) {
-			_add_dependency(id, ids[j]);
+			_add_dependency(id, uniform.get_id(j));
 		}
 	}
 
@@ -8596,6 +8726,30 @@ void RenderingDeviceVulkan::sync() {
 	local_device_processing = false;
 }
 
+VmaPool RenderingDeviceVulkan::_find_or_create_small_allocs_pool(uint32_t p_mem_type_index) {
+	if (small_allocs_pools.has(p_mem_type_index)) {
+		return small_allocs_pools[p_mem_type_index];
+	}
+
+	print_verbose("Creating VMA small objects pool for memory type index " + itos(p_mem_type_index));
+
+	VmaPoolCreateInfo pci;
+	pci.memoryTypeIndex = p_mem_type_index;
+	pci.flags = 0;
+	pci.blockSize = 0;
+	pci.minBlockCount = 0;
+	pci.maxBlockCount = SIZE_MAX;
+	pci.priority = 0.5f;
+	pci.minAllocationAlignment = 0;
+	pci.pMemoryAllocateNext = nullptr;
+	VmaPool pool = VK_NULL_HANDLE;
+	VkResult res = vmaCreatePool(allocator, &pci, &pool);
+	small_allocs_pools[p_mem_type_index] = pool; // Don't try to create it again if failed the first time
+	ERR_FAIL_COND_V_MSG(res, pool, "vmaCreatePool failed with error " + itos(res) + ".");
+
+	return pool;
+}
+
 void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 	//free in dependency usage order, so nothing weird happens
 	//pipelines
@@ -8716,9 +8870,9 @@ uint64_t RenderingDeviceVulkan::get_memory_usage(MemoryType p_type) const {
 	} else if (p_type == MEMORY_TEXTURES) {
 		return image_memory;
 	} else {
-		VmaStats stats;
-		vmaCalculateStats(allocator, &stats);
-		return stats.total.usedBytes;
+		VmaTotalStatistics stats;
+		vmaCalculateStatistics(allocator, &stats);
+		return stats.total.statistics.allocationBytes;
 	}
 }
 
@@ -8815,18 +8969,6 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		allocatorInfo.device = device;
 		allocatorInfo.instance = p_context->get_instance();
 		vmaCreateAllocator(&allocatorInfo, &allocator);
-	}
-
-	{ //create pool for small objects
-		VmaPoolCreateInfo pci;
-		pci.flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT;
-		pci.blockSize = 0;
-		pci.minBlockCount = 0;
-		pci.maxBlockCount = SIZE_MAX;
-		pci.priority = 0.5f;
-		pci.minAllocationAlignment = 0;
-		pci.pMemoryAllocateNext = nullptr;
-		vmaCreatePool(allocator, &pci, &small_allocs_pool);
 	}
 
 	frames = memnew_arr(Frame, frame_count);
@@ -9297,7 +9439,11 @@ void RenderingDeviceVulkan::finalize() {
 	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
 	}
-	vmaDestroyPool(allocator, small_allocs_pool);
+	while (small_allocs_pools.size()) {
+		Map<uint32_t, VmaPool>::Element *E = small_allocs_pools.front();
+		vmaDestroyPool(allocator, E->get());
+		small_allocs_pools.erase(E);
+	}
 	vmaDestroyAllocator(allocator);
 
 	while (vertex_formats.size()) {

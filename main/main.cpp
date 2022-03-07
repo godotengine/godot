@@ -425,6 +425,7 @@ Error Main::test_setup() {
 	ResourceLoader::load_path_remaps();
 
 	register_scene_types();
+	register_driver_types();
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -435,7 +436,6 @@ Error Main::test_setup() {
 	register_platform_apis();
 
 	register_module_types();
-	register_driver_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -458,13 +458,13 @@ void Main::test_cleanup() {
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
-	unregister_driver_types();
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
 
 	unregister_module_types();
 	unregister_platform_apis();
+	unregister_driver_types();
 	unregister_scene_types();
 	unregister_server_types();
 
@@ -487,6 +487,7 @@ void Main::test_cleanup() {
 	}
 
 	unregister_core_driver_types();
+	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -634,7 +635,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
-
 		List<String>::Element *N = I->next();
 
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
@@ -1157,6 +1157,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
 
+	register_core_extensions(); // core extensions must be registered after globals setup and before display
+
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
 
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
@@ -1272,7 +1274,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
-	register_core_extensions(); //before display
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
 	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
@@ -1529,6 +1530,7 @@ error:
 	}
 
 	unregister_core_driver_types();
+	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -1888,6 +1890,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_scene_types();
 
+	MAIN_PRINT("Main: Load Driver Types");
+
+	register_driver_types();
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
@@ -1923,13 +1929,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	camera_server = CameraServer::create();
 
-	MAIN_PRINT("Main: Load Physics, Drivers, Scripts");
+	MAIN_PRINT("Main: Load Physics");
 
 	initialize_physics();
 	initialize_navigation_server();
 	register_server_singletons();
-
-	register_driver_types();
 
 	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
@@ -1959,6 +1963,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Done");
 
 	return OK;
+}
+
+String Main::get_rendering_driver_name() {
+	return rendering_driver;
 }
 
 // everything the main loop needs to know about frame timings
@@ -2810,8 +2818,6 @@ void Main::cleanup(bool p_force) {
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
 
-	unregister_driver_types();
-
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
@@ -2820,6 +2826,7 @@ void Main::cleanup(bool p_force) {
 
 	unregister_module_types();
 	unregister_platform_apis();
+	unregister_driver_types();
 	unregister_scene_types();
 	unregister_server_types();
 
@@ -2888,6 +2895,7 @@ void Main::cleanup(bool p_force) {
 	memdelete(message_queue);
 
 	unregister_core_driver_types();
+	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();

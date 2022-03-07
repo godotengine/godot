@@ -344,7 +344,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_filedialog_refresh",                         TTRC("Refresh") },
     { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
     { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
-    { "",                                              TTRC("")}
+    { "",                                              ""}
 	/* clang-format on */
 };
 

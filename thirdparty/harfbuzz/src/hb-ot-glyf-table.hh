@@ -936,7 +936,7 @@ struct glyf
 	return;
       short_offset = 0 == head.indexToLocFormat;
 
-      loca_table = hb_sanitize_context_t ().reference_table<loca> (face);
+      loca_table = face->table.loca.get_blob (); // Needs no destruct!
       glyf_table = hb_sanitize_context_t ().reference_table<glyf> (face);
 #ifndef HB_NO_VAR
       gvar = face->table.gvar;
@@ -951,7 +951,6 @@ struct glyf
     }
     ~accelerator_t ()
     {
-      loca_table.destroy ();
       glyf_table.destroy ();
     }
 
@@ -1152,11 +1151,10 @@ struct glyf
       return operation_count;
     }
 
-#ifdef HB_EXPERIMENTAL_API
     struct path_builder_t
     {
       hb_font_t *font;
-      draw_helper_t *draw_helper;
+      hb_draw_session_t *draw_session;
 
       struct optional_point_t
       {
@@ -1171,10 +1169,10 @@ struct glyf
 	{ return optional_point_t (x + t * (p.x - x), y + t * (p.y - y)); }
       } first_oncurve, first_offcurve, last_offcurve;
 
-      path_builder_t (hb_font_t *font_, draw_helper_t &draw_helper_)
+      path_builder_t (hb_font_t *font_, hb_draw_session_t &draw_session_)
       {
 	font = font_;
-	draw_helper = &draw_helper_;
+	draw_session = &draw_session_;
 	first_oncurve = first_offcurve = last_offcurve = optional_point_t ();
       }
 
@@ -1184,10 +1182,6 @@ struct glyf
 	 * https://stackoverflow.com/a/20772557 */
       void consume_point (const contour_point_t &point)
       {
-	/* Skip empty contours */
-	if (unlikely (point.is_end_point && !first_oncurve.has_data && !first_offcurve.has_data))
-	  return;
-
 	bool is_on_curve = point.flag & Glyph::FLAG_ON_CURVE;
 	optional_point_t p (point.x, point.y);
 	if (!first_oncurve.has_data)
@@ -1195,7 +1189,7 @@ struct glyf
 	  if (is_on_curve)
 	  {
 	    first_oncurve = p;
-	    draw_helper->move_to (font->em_scalef_x (p.x), font->em_scalef_y (p.y));
+	    draw_session->move_to (font->em_fscalef_x (p.x), font->em_fscalef_y (p.y));
 	  }
 	  else
 	  {
@@ -1204,7 +1198,7 @@ struct glyf
 	      optional_point_t mid = first_offcurve.lerp (p, .5f);
 	      first_oncurve = mid;
 	      last_offcurve = p;
-	      draw_helper->move_to (font->em_scalef_x (mid.x), font->em_scalef_y (mid.y));
+	      draw_session->move_to (font->em_fscalef_x (mid.x), font->em_fscalef_y (mid.y));
 	    }
 	    else
 	      first_offcurve = p;
@@ -1216,22 +1210,22 @@ struct glyf
 	  {
 	    if (is_on_curve)
 	    {
-	      draw_helper->quadratic_to (font->em_scalef_x (last_offcurve.x), font->em_scalef_y (last_offcurve.y),
-					 font->em_scalef_x (p.x), font->em_scalef_y (p.y));
+	      draw_session->quadratic_to (font->em_fscalef_x (last_offcurve.x), font->em_fscalef_y (last_offcurve.y),
+					 font->em_fscalef_x (p.x), font->em_fscalef_y (p.y));
 	      last_offcurve = optional_point_t ();
 	    }
 	    else
 	    {
 	      optional_point_t mid = last_offcurve.lerp (p, .5f);
-	      draw_helper->quadratic_to (font->em_scalef_x (last_offcurve.x), font->em_scalef_y (last_offcurve.y),
-					 font->em_scalef_x (mid.x), font->em_scalef_y (mid.y));
+	      draw_session->quadratic_to (font->em_fscalef_x (last_offcurve.x), font->em_fscalef_y (last_offcurve.y),
+					 font->em_fscalef_x (mid.x), font->em_fscalef_y (mid.y));
 	      last_offcurve = p;
 	    }
 	  }
 	  else
 	  {
 	    if (is_on_curve)
-	      draw_helper->line_to (font->em_scalef_x (p.x), font->em_scalef_y (p.y));
+	      draw_session->line_to (font->em_fscalef_x (p.x), font->em_fscalef_y (p.y));
 	    else
 	      last_offcurve = p;
 	  }
@@ -1242,24 +1236,30 @@ struct glyf
 	  if (first_offcurve.has_data && last_offcurve.has_data)
 	  {
 	    optional_point_t mid = last_offcurve.lerp (first_offcurve, .5f);
-	    draw_helper->quadratic_to (font->em_scalef_x (last_offcurve.x), font->em_scalef_y (last_offcurve.y),
-				       font->em_scalef_x (mid.x), font->em_scalef_y (mid.y));
+	    draw_session->quadratic_to (font->em_fscalef_x (last_offcurve.x), font->em_fscalef_y (last_offcurve.y),
+				       font->em_fscalef_x (mid.x), font->em_fscalef_y (mid.y));
 	    last_offcurve = optional_point_t ();
 	    /* now check the rest */
 	  }
 
 	  if (first_offcurve.has_data && first_oncurve.has_data)
-	    draw_helper->quadratic_to (font->em_scalef_x (first_offcurve.x), font->em_scalef_y (first_offcurve.y),
-				       font->em_scalef_x (first_oncurve.x), font->em_scalef_y (first_oncurve.y));
+	    draw_session->quadratic_to (font->em_fscalef_x (first_offcurve.x), font->em_fscalef_y (first_offcurve.y),
+				       font->em_fscalef_x (first_oncurve.x), font->em_fscalef_y (first_oncurve.y));
 	  else if (last_offcurve.has_data && first_oncurve.has_data)
-	    draw_helper->quadratic_to (font->em_scalef_x (last_offcurve.x), font->em_scalef_y (last_offcurve.y),
-				       font->em_scalef_x (first_oncurve.x), font->em_scalef_y (first_oncurve.y));
+	    draw_session->quadratic_to (font->em_fscalef_x (last_offcurve.x), font->em_fscalef_y (last_offcurve.y),
+				       font->em_fscalef_x (first_oncurve.x), font->em_fscalef_y (first_oncurve.y));
 	  else if (first_oncurve.has_data)
-	    draw_helper->line_to (font->em_scalef_x (first_oncurve.x), font->em_scalef_y (first_oncurve.y));
+	    draw_session->line_to (font->em_fscalef_x (first_oncurve.x), font->em_fscalef_y (first_oncurve.y));
+	  else if (first_offcurve.has_data)
+	  {
+	    float x = font->em_fscalef_x (first_offcurve.x), y = font->em_fscalef_x (first_offcurve.y);
+	    draw_session->move_to (x, y);
+	    draw_session->quadratic_to (x, y, x, y);
+	  }
 
 	  /* Getting ready for the next contour */
 	  first_oncurve = first_offcurve = last_offcurve = optional_point_t ();
-	  draw_helper->end_path ();
+	  draw_session->close_path ();
 	}
       }
       void points_end () {}
@@ -1269,9 +1269,8 @@ struct glyf
     };
 
     bool
-    get_path (hb_font_t *font, hb_codepoint_t gid, draw_helper_t &draw_helper) const
-    { return get_points (font, gid, path_builder_t (font, draw_helper)); }
-#endif
+    get_path (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session) const
+    { return get_points (font, gid, path_builder_t (font, draw_session)); }
 
 #ifndef HB_NO_VAR
     const gvar_accelerator_t *gvar;

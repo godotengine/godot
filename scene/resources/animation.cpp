@@ -2413,7 +2413,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	real_t c = 0.0;
 	// prepare for all cases of interpolation
 
-	if ((loop_mode == LOOP_LINEAR || loop_mode == LOOP_PINGPONG) && p_loop_wrap) {
+	if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
 		// loop
 		if (!p_backward) {
 			// no backward
@@ -2567,11 +2567,19 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		case INTERPOLATION_CUBIC: {
 			int pre = idx - 1;
 			if (pre < 0) {
-				pre = 0;
+				if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+					pre = len - 1;
+				} else {
+					pre = 0;
+				}
 			}
 			int post = next + 1;
 			if (post >= len) {
-				post = next;
+				if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+					post = 0;
+				} else {
+					post = next;
+				}
 			}
 
 			return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
@@ -4339,7 +4347,7 @@ struct AnimationCompressionDataState {
 		if (temp_packets.size() == 0) {
 			return; //nohing to do
 		}
-#define DEBUG_PACKET_PUSH
+//#define DEBUG_PACKET_PUSH
 #ifdef DEBUG_PACKET_PUSH
 #ifndef _MSC_VER
 #warning Debugging packet push, disable this code in production to gain a bit more import performance.
@@ -4370,7 +4378,7 @@ struct AnimationCompressionDataState {
 			header_bytes += 2;
 		}
 
-		while (header_bytes % 4 != 0) {
+		while (header_bytes < 8 && header_bytes % 4 != 0) { // First cond needed to silence wrong GCC warning.
 			header[header_bytes++] = 0;
 		}
 

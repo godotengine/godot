@@ -92,6 +92,12 @@ void EditorAudioBus::_notification(int p_what) {
 			audio_value_preview_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("TooltipLabel")));
 			audio_value_preview_label->add_theme_color_override("font_shadow_color", get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
 			audio_value_preview_box->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
+
+			for (int i = 0; i < effect_options->get_item_count(); i++) {
+				String class_name = effect_options->get_item_metadata(i);
+				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(class_name);
+				effect_options->set_item_icon(i, icon);
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -917,11 +923,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 			continue;
 		}
 
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(E);
 		String name = E.operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
 		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E);
-		effect_options->set_item_icon(effect_options->get_item_count() - 1, icon);
 	}
 
 	bus_options = memnew(MenuButton);
@@ -1328,7 +1332,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
 	for (const String &E : ext) {
-		file_dialog->add_filter("*." + E + "; Audio Bus Layout");
+		file_dialog->add_filter(vformat("*.%s; %s", E, TTR("Audio Bus Layout")));
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));

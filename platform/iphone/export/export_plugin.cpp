@@ -389,6 +389,36 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String value = value_format.format(value_dictionary, "$_");
 
 			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
+		} else if (lines[i].find("$pbx_locale_file_reference") != -1) {
+			String locale_files;
+			Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+			if (translations.size() > 0) {
+				int index = 0;
+				for (const String &E : translations) {
+					Ref<Translation> tr = ResourceLoader::load(E);
+					if (tr.is_valid()) {
+						String lang = tr->get_locale();
+						locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };";
+					}
+					index++;
+				}
+			}
+			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
+		} else if (lines[i].find("$pbx_locale_build_reference") != -1) {
+			String locale_files;
+			Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+			if (translations.size() > 0) {
+				int index = 0;
+				for (const String &E : translations) {
+					Ref<Translation> tr = ResourceLoader::load(E);
+					if (tr.is_valid()) {
+						String lang = tr->get_locale();
+						locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */,";
+					}
+					index++;
+				}
+			}
+			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -1591,6 +1621,29 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		ERR_PRINT("Requested template library '" + library_to_use + "' not found. It might be missing from your template archive.");
 		memdelete(tmp_app_path);
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+	if (translations.size() > 0) {
+		{
+			String fname = dest_dir + binary_name + "/en.lproj";
+			tmp_app_path->make_dir_recursive(fname);
+			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+		}
+
+		for (const String &E : translations) {
+			Ref<Translation> tr = ResourceLoader::load(E);
+			if (tr.is_valid()) {
+				String fname = dest_dir + binary_name + "/" + tr->get_locale() + ".lproj";
+				tmp_app_path->make_dir_recursive(fname);
+				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				String prop = "application/config/name_" + tr->get_locale();
+				if (ProjectSettings::get_singleton()->has_setting(prop)) {
+					f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
+				}
+			}
+		}
 	}
 
 	// Copy project static libs to the project

@@ -470,6 +470,7 @@ private:
 	VBoxContainer *controls_vb;
 	EditorZoomWidget *zoom_widget;
 	void _update_zoom(real_t p_zoom);
+	void _shortcut_zoom_set(real_t p_zoom);
 	void _zoom_on_position(real_t p_zoom, Point2 p_position = Point2());
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);

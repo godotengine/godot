@@ -39,6 +39,12 @@
 				Returns the length of the audio stream in seconds.
 			</description>
 		</method>
+		<method name="instance_playback">
+			<return type="AudioStreamPlayback" />
+			<description>
+				Returns an AudioStreamPlayback. Useful for when you want to extend `_instance_playback` but call `instance_playback` from an internally held AudioStream subresource. An example of this can be found in the source files for `AudioStreamRandomPitch::instance_playback`.
+			</description>
+		</method>
 		<method name="is_monophonic" qualifiers="const">
 			<return type="bool" />
 			<description>

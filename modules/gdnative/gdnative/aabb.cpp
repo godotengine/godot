@@ -31,6 +31,7 @@
 #include "gdnative/aabb.h"
 
 #include "core/math/aabb.h"
+#include "core/os/memory.h"
 
 static_assert(sizeof(godot_aabb) == sizeof(AABB), "AABB size mismatch");
 

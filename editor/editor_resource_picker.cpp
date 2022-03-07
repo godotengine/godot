@@ -149,7 +149,7 @@ void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
 	Rect2 gt = edit_button->get_screen_rect();
-	edit_menu->set_as_minsize();
+	edit_menu->reset_size();
 	int ms = edit_menu->get_contents_minimum_size().width;
 	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
 	edit_menu->set_position(popup_pos);
@@ -337,7 +337,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			// Ensure that the FileSystem dock is visible.
 			TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-			tab_container->set_current_tab(file_system_dock->get_index());
+			tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
 		} break;
 
 		default: {
@@ -476,7 +476,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();
-			edit_menu->set_as_minsize();
+			edit_menu->reset_size();
 			edit_menu->set_position(pos);
 			edit_menu->popup();
 		}
@@ -905,7 +905,12 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	menu_node->add_icon_item(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
-	menu_node->add_icon_item(get_theme_icon(SNAME("ScriptExtend"), SNAME("EditorIcons")), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+	if (script_owner) {
+		Ref<Script> script = script_owner->get_script();
+		if (script.is_valid()) {
+			menu_node->add_icon_item(get_theme_icon(SNAME("ScriptExtend"), SNAME("EditorIcons")), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+		}
+	}
 	menu_node->add_separator();
 }
 

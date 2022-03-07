@@ -79,6 +79,7 @@ void CapsuleShape3D::_update_shape() {
 }
 
 void CapsuleShape3D::set_radius(float p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CapsuleShape3D radius cannot be negative.");
 	radius = p_radius;
 	if (radius > height * 0.5) {
 		height = radius * 2.0;
@@ -92,6 +93,7 @@ float CapsuleShape3D::get_radius() const {
 }
 
 void CapsuleShape3D::set_height(float p_height) {
+	ERR_FAIL_COND_MSG(p_height < 0, "CapsuleShape3D height cannot be negative.");
 	height = p_height;
 	if (radius > height * 0.5) {
 		radius = height * 0.5;

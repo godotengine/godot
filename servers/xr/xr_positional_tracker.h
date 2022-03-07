@@ -62,10 +62,6 @@ private:
 	Map<StringName, Ref<XRPose>> poses;
 	Map<StringName, Variant> inputs;
 
-	int joy_id; // if we also have a related joystick entity, the id of the joystick
-	Ref<Mesh> mesh; // when available, a mesh that can be used to render this tracker
-	real_t rumble; // rumble strength, 0.0 is off, 1.0 is maximum, note that we only record here, xr_interface is responsible for execution
-
 protected:
 	static void _bind_methods();
 
@@ -86,10 +82,6 @@ public:
 
 	Variant get_input(const StringName &p_action_name) const;
 	void set_input(const StringName &p_action_name, const Variant &p_value);
-
-	// TODO replace by new implementation
-	real_t get_rumble() const;
-	void set_rumble(real_t p_rumble);
 
 	XRPositionalTracker();
 	~XRPositionalTracker() {}

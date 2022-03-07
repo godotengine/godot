@@ -1163,25 +1163,25 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
 			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 32.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 32.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 16.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 16.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 8.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 8.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 4.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 4.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 2.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 2.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->matches_event(p_event)) {
-				_update_zoom(1.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->matches_event(p_event)) {
-				_update_zoom(2.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(2.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->matches_event(p_event)) {
-				_update_zoom(4.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(4.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->matches_event(p_event)) {
-				_update_zoom(8.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(8.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->matches_event(p_event)) {
-				_update_zoom(16.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(16.0);
 			}
 		}
 	}
@@ -3510,7 +3510,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		return;
 	}
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-	if (canvas_item && !canvas_item->is_visible()) {
+	if (canvas_item && !canvas_item->is_visible_in_tree()) {
 		return;
 	}
 
@@ -4008,6 +4008,10 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 
 void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 	_zoom_on_position(p_zoom, viewport_scrollable->get_size() / 2.0);
+}
+
+void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
+	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport->get_local_mouse_position());
 }
 
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
@@ -5500,16 +5504,18 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), path, new_name);
 	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + new_name));
 
-	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
-	if (parent_ci) {
+	CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
+	if (instance_ci) {
 		Vector2 target_pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(p_point);
 		target_pos = canvas_item_editor->snap_point(target_pos);
-		target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
-		// Preserve instance position of the original scene.
-		CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
-		if (instance_ci) {
-			target_pos += instance_ci->_edit_get_position();
+
+		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
+		if (parent_ci) {
+			target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
 		}
+		// Preserve instance position of the original scene.
+		target_pos += instance_ci->_edit_get_position();
+
 		editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_position", target_pos);
 	}
 

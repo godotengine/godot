@@ -1,69 +1,35 @@
 // Functions related to lighting
 
-// This returns the G_GGX function divided by 2 cos_theta_m, where in practice cos_theta_m is either N.L or N.V.
-// We're dividing this factor off because the overall term we'll end up looks like
-// (see, for example, the first unnumbered equation in B. Burley, "Physically Based Shading at Disney", SIGGRAPH 2012):
-//
-//   F(L.V) D(N.H) G(N.L) G(N.V) / (4 N.L N.V)
-//
-// We're basically regouping this as
-//
-//   F(L.V) D(N.H) [G(N.L)/(2 N.L)] [G(N.V) / (2 N.V)]
-//
-// and thus, this function implements the [G(N.m)/(2 N.m)] part with m = L or V.
-//
-// The contents of the D and G (G1) functions (GGX) are taken from
-// E. Heitz, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs", J. Comp. Graph. Tech. 3 (2) (2014).
-// Eqns 71-72 and 85-86 (see also Eqns 43 and 80).
-
-float G_GGX_2cos(float cos_theta_m, float alpha) {
-	// Schlick's approximation
-	// C. Schlick, "An Inexpensive BRDF Model for Physically-based Rendering", Computer Graphics Forum. 13 (3): 233 (1994)
-	// Eq. (19), although see Heitz (2014) the about the problems with his derivation.
-	// It nevertheless approximates GGX well with k = alpha/2.
-	float k = 0.5 * alpha;
-	return 0.5 / (cos_theta_m * (1.0 - k) + k);
-
-	// float cos2 = cos_theta_m * cos_theta_m;
-	// float sin2 = (1.0 - cos2);
-	// return 1.0 / (cos_theta_m + sqrt(cos2 + alpha * alpha * sin2));
-}
-
 float D_GGX(float cos_theta_m, float alpha) {
 	float alpha2 = alpha * alpha;
 	float d = 1.0 + (alpha2 - 1.0) * cos_theta_m * cos_theta_m;
 	return alpha2 / (M_PI * d * d);
 }
 
-float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
-	float cos2 = cos_theta_m * cos_theta_m;
-	float sin2 = (1.0 - cos2);
-	float s_x = alpha_x * cos_phi;
-	float s_y = alpha_y * sin_phi;
-	return 1.0 / max(cos_theta_m + sqrt(cos2 + (s_x * s_x + s_y * s_y) * sin2), 0.001);
+// From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
+float V_GGX(float NdotL, float NdotV, float alpha) {
+	return 0.5 / mix(2.0 * NdotL * NdotV, NdotL + NdotV, alpha);
 }
 
 float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
-	float cos2 = cos_theta_m * cos_theta_m;
-	float sin2 = (1.0 - cos2);
-	float r_x = cos_phi / alpha_x;
-	float r_y = sin_phi / alpha_y;
-	float d = cos2 + sin2 * (r_x * r_x + r_y * r_y);
-	return 1.0 / max(M_PI * alpha_x * alpha_y * d * d, 0.001);
+	float alpha2 = alpha_x * alpha_y;
+	highp vec3 v = vec3(alpha_y * cos_phi, alpha_x * sin_phi, alpha2 * cos_theta_m);
+	highp float v2 = dot(v, v);
+	float w2 = alpha2 / v2;
+	float D = alpha2 * w2 * w2 * (1.0 / M_PI);
+	return D;
+}
+
+float V_GGX_anisotropic(float alpha_x, float alpha_y, float TdotV, float TdotL, float BdotV, float BdotL, float NdotV, float NdotL) {
+	float Lambda_V = NdotL * length(vec3(alpha_x * TdotV, alpha_y * BdotV, NdotV));
+	float Lambda_L = NdotV * length(vec3(alpha_x * TdotL, alpha_y * BdotL, NdotL));
+	return 0.5 / (Lambda_V + Lambda_L);
 }
 
 float SchlickFresnel(float u) {
 	float m = 1.0 - u;
 	float m2 = m * m;
 	return m2 * m2 * m; // pow(m,5)
-}
-
-float GTR1(float NdotH, float a) {
-	if (a >= 1.0)
-		return 1.0 / M_PI;
-	float a2 = a * a;
-	float t = 1.0 + (a2 - 1.0) * NdotH * NdotH;
-	return (a2 - 1.0) / (M_PI * log(a2) * t);
 }
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
@@ -87,7 +53,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-		float clearcoat, float clearcoat_gloss,
+		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
@@ -113,13 +79,13 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 	float NdotL = min(A + dot(N, L), 1.0);
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
 	float NdotV = dot(N, V);
-	float cNdotV = max(NdotV, 0.0);
+	float cNdotV = max(NdotV, 1e-4);
 
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	vec3 H = normalize(V + L);
 #endif
 
-#if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
+#if defined(SPECULAR_SCHLICK_GGX)
 	float cNdotH = clamp(A + dot(N, H), 0.0, 1.0);
 #endif
 
@@ -203,26 +169,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 		// D
 
-#if defined(SPECULAR_BLINN)
-
-		//normalized blinn
-		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess);
-		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
-
-		specular_light += light_color * attenuation * specular_amount * blinn * f0 * orms_unpacked.w;
-
-#elif defined(SPECULAR_PHONG)
-
-		vec3 R = normalize(-reflect(L, N));
-		float cRdotV = clamp(A + dot(R, V), 0.0, 1.0);
-		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI));
-
-		specular_light += light_color * attenuation * specular_amount * phong * f0 * orms_unpacked.w;
-
-#elif defined(SPECULAR_TOON)
+#if defined(SPECULAR_TOON)
 
 		vec3 R = normalize(-reflect(L, N));
 		float RdotV = dot(R, V);
@@ -236,24 +183,21 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 #elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
-
+		float alpha_ggx = roughness * roughness;
 #if defined(LIGHT_ANISOTROPY_USED)
 
-		float alpha_ggx = roughness * roughness;
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
 		float ax = alpha_ggx / aspect;
 		float ay = alpha_ggx * aspect;
 		float XdotH = dot(T, H);
 		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
-		float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
-
-#else
-		float alpha_ggx = roughness * roughness;
+		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
+#else // LIGHT_ANISOTROPY_USED
 		float D = D_GGX(cNdotH, alpha_ggx);
-		float G = G_GGX_2cos(cNdotL, alpha_ggx) * G_GGX_2cos(cNdotV, alpha_ggx);
-#endif
-		// F
+		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
+#endif // LIGHT_ANISOTROPY_USED
+	   // F
 		float cLdotH5 = SchlickFresnel(cLdotH);
 		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
 
@@ -263,18 +207,23 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #endif
 
 #if defined(LIGHT_CLEARCOAT_USED)
+		// Clearcoat ignores normal_map, use vertex normal instead
+		float ccNdotL = max(min(A + dot(vertex_normal, L), 1.0), 0.0);
+		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
+		float ccNdotV = max(dot(vertex_normal, V), 1e-4);
 
 #if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
+		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
+		float Gr = 0.25 / (cLdotH * cLdotH);
 		float Fr = mix(.04, 1.0, cLdotH5);
-		float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
-
-		float clearcoat_specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
+		float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
 
 		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
-#endif
+		// TODO: Clearcoat adds light to the scene right now (it is non-energy conserving), both diffuse and specular need to be scaled by (1.0 - FR)
+		// but to do so we need to rearrange this entire function
+#endif // LIGHT_CLEARCOAT_USED
 	}
 
 #ifdef USE_SHADOW_TO_OPACITY
@@ -587,7 +536,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-		float clearcoat, float clearcoat_gloss,
+		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 binormal, vec3 tangent, float anisotropy,
@@ -711,7 +660,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			rim * omni_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_gloss,
+			clearcoat, clearcoat_roughness, vertex_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
@@ -827,7 +776,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-		float clearcoat, float clearcoat_gloss,
+		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 binormal, vec3 tangent, float anisotropy,
@@ -912,7 +861,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			rim * spot_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_gloss,
+			clearcoat, clearcoat_roughness, vertex_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,

@@ -37,7 +37,7 @@
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
 
 void Basis::from_z(const Vector3 &p_z) {
-	if (Math::abs(p_z.z) > Math_SQRT12) {
+	if (Math::abs(p_z.z) > (real_t)Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = p_z[1] * p_z[1] + p_z[2] * p_z[2];
 		real_t k = 1.0f / Math::sqrt(a);
@@ -153,7 +153,7 @@ Basis Basis::diagonalize() {
 
 	int ite = 0;
 	Basis acc_rot;
-	while (off_matrix_norm_2 > CMP_EPSILON2 && ite++ < ite_max) {
+	while (off_matrix_norm_2 > (real_t)CMP_EPSILON2 && ite++ < ite_max) {
 		real_t el01_2 = elements[0][1] * elements[0][1];
 		real_t el02_2 = elements[0][2] * elements[0][2];
 		real_t el12_2 = elements[1][2] * elements[1][2];
@@ -463,8 +463,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			Vector3 euler;
 			real_t sy = elements[0][2];
-			if (sy < (1.0f - CMP_EPSILON)) {
-				if (sy > -(1.0f - CMP_EPSILON)) {
+			if (sy < (1.0f - (real_t)CMP_EPSILON)) {
+				if (sy > -(1.0f - (real_t)CMP_EPSILON)) {
 					// is this a pure Y rotation?
 					if (elements[1][0] == 0 && elements[0][1] == 0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
@@ -498,8 +498,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			Vector3 euler;
 			real_t sz = elements[0][1];
-			if (sz < (1.0f - CMP_EPSILON)) {
-				if (sz > -(1.0f - CMP_EPSILON)) {
+			if (sz < (1.0f - (real_t)CMP_EPSILON)) {
+				if (sz > -(1.0f - (real_t)CMP_EPSILON)) {
 					euler.x = Math::atan2(elements[2][1], elements[1][1]);
 					euler.y = Math::atan2(elements[0][2], elements[0][0]);
 					euler.z = Math::asin(-sz);
@@ -529,8 +529,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			real_t m12 = elements[1][2];
 
-			if (m12 < (1 - CMP_EPSILON)) {
-				if (m12 > -(1 - CMP_EPSILON)) {
+			if (m12 < (1 - (real_t)CMP_EPSILON)) {
+				if (m12 > -(1 - (real_t)CMP_EPSILON)) {
 					// is this a pure X rotation?
 					if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
@@ -565,8 +565,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			Vector3 euler;
 			real_t sz = elements[1][0];
-			if (sz < (1.0f - CMP_EPSILON)) {
-				if (sz > -(1.0f - CMP_EPSILON)) {
+			if (sz < (1.0f - (real_t)CMP_EPSILON)) {
+				if (sz > -(1.0f - (real_t)CMP_EPSILON)) {
 					euler.x = Math::atan2(-elements[1][2], elements[1][1]);
 					euler.y = Math::atan2(-elements[2][0], elements[0][0]);
 					euler.z = Math::asin(sz);
@@ -593,8 +593,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			//        -cx*sy            sx                    cx*cy
 			Vector3 euler;
 			real_t sx = elements[2][1];
-			if (sx < (1.0f - CMP_EPSILON)) {
-				if (sx > -(1.0f - CMP_EPSILON)) {
+			if (sx < (1.0f - (real_t)CMP_EPSILON)) {
+				if (sx > -(1.0f - (real_t)CMP_EPSILON)) {
 					euler.x = Math::asin(sx);
 					euler.y = Math::atan2(-elements[2][0], elements[2][2]);
 					euler.z = Math::atan2(-elements[0][1], elements[1][1]);
@@ -621,8 +621,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			//        -sy               cy*sx                 cy*cx
 			Vector3 euler;
 			real_t sy = elements[2][0];
-			if (sy < (1.0f - CMP_EPSILON)) {
-				if (sy > -(1.0f - CMP_EPSILON)) {
+			if (sy < (1.0f - (real_t)CMP_EPSILON)) {
+				if (sy > -(1.0f - (real_t)CMP_EPSILON)) {
 					euler.x = Math::atan2(elements[2][1], elements[2][2]);
 					euler.y = Math::asin(-sy);
 					euler.z = Math::atan2(elements[1][0], elements[0][0]);

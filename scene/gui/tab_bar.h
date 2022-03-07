@@ -126,7 +126,6 @@ protected:
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
-	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 public:
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
@@ -156,13 +155,15 @@ public:
 	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
+	int get_tab_idx_at_point(const Point2 &p_point) const;
+
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
-	void move_tab(int from, int to);
+	void move_tab(int p_from, int p_to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 	CloseButtonDisplayPolicy get_tab_close_display_policy() const;

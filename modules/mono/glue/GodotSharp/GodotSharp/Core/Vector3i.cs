@@ -97,6 +97,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Helper method for deconstruction into a tuple.
+        /// </summary>
+        public void Deconstruct(out int x, out int y, out int z)
+        {
+            x = this.x;
+            y = this.y;
+            z = this.z;
+        }
+
+        /// <summary>
         /// Returns a new vector with all components in absolute values (i.e. positive).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Abs(int)"/> called on each component.</returns>

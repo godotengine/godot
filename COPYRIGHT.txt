@@ -361,10 +361,14 @@ Comment: Multi-channel signed distance field generator
 Copyright: 2016, Viktor Chlumsky
 License: MIT
 
-
 Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
 Copyright: 2009-2019, Intel Corporation
+License: Apache-2.0
+
+Files: ./thirdparty/openxr/
+Comment: OpenXR Loader
+Copyright: 2020-2022, The Khronos Group Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/pcre2/

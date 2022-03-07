@@ -121,10 +121,10 @@
 			Takes the left pixels of the texture and renders it over the whole line.
 		</constant>
 		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
-			Tiles the texture over the line. The texture must be imported with [b]Repeat[/b] enabled for it to work properly.
+			Tiles the texture over the line. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_ENABLED] or [constant CanvasItem.TEXTURE_REPEAT_MIRROR] for it to work properly.
 		</constant>
 		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
-			Stretches the texture across the line. Import the texture with [b]Repeat[/b] disabled for best results.
+			Stretches the texture across the line. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_DISABLED] for best results.
 		</constant>
 	</constants>
 </class>

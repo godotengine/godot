@@ -1304,7 +1304,7 @@ void ColorPickerButton::pressed() {
 
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
-	popup->set_as_minsize();
+	popup->reset_size();
 	picker->_update_presets();
 
 	Rect2i usable_rect = popup->get_usable_parent_rect();
@@ -1429,7 +1429,8 @@ void ColorPickerButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }
 
-ColorPickerButton::ColorPickerButton() {
+ColorPickerButton::ColorPickerButton(const String &p_text) :
+		Button(p_text) {
 	set_toggle_mode(true);
 }
 

@@ -317,7 +317,6 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 }
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
 	mesh_library_editor = memnew(MeshLibraryEditor);
 
 	EditorNode::get_singleton()->get_main_control()->add_child(mesh_library_editor);

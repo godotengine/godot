@@ -1980,7 +1980,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		rb->ssr.normal_scaled = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
 
-	if (ssr_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED && !rb->ssr.blur_radius[0].is_valid()) {
+	if (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED && !rb->ssr.blur_radius[0].is_valid()) {
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R8_UNORM;
 		tf.width = rb->internal_width / 2;
@@ -3440,8 +3440,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					continue;
 				}
 
+				const real_t distance = camera_plane.distance_to(li->transform.origin);
+
+				if (storage->light_is_distance_fade_enabled(li->light)) {
+					const float fade_begin = storage->light_get_distance_fade_begin(li->light);
+					const float fade_length = storage->light_get_distance_fade_length(li->light);
+
+					if (distance > fade_begin) {
+						if (distance > fade_begin + fade_length) {
+							// Out of range, don't draw this light to improve performance.
+							continue;
+						}
+					}
+				}
+
 				cluster.omni_light_sort[cluster.omni_light_count].instance = li;
-				cluster.omni_light_sort[cluster.omni_light_count].depth = camera_plane.distance_to(li->transform.origin);
+				cluster.omni_light_sort[cluster.omni_light_count].depth = distance;
 				cluster.omni_light_count++;
 			} break;
 			case RS::LIGHT_SPOT: {
@@ -3449,8 +3463,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					continue;
 				}
 
+				const real_t distance = camera_plane.distance_to(li->transform.origin);
+
+				if (storage->light_is_distance_fade_enabled(li->light)) {
+					const float fade_begin = storage->light_get_distance_fade_begin(li->light);
+					const float fade_length = storage->light_get_distance_fade_length(li->light);
+
+					if (distance > fade_begin) {
+						if (distance > fade_begin + fade_length) {
+							// Out of range, don't draw this light to improve performance.
+							continue;
+						}
+					}
+				}
+
 				cluster.spot_light_sort[cluster.spot_light_count].instance = li;
-				cluster.spot_light_sort[cluster.spot_light_count].depth = camera_plane.distance_to(li->transform.origin);
+				cluster.spot_light_sort[cluster.spot_light_count].depth = distance;
 				cluster.spot_light_count++;
 			} break;
 		}
@@ -3494,7 +3522,24 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 		light_data.attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
 
-		float energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
+		// Reuse fade begin, fade length and distance for shadow LOD determination later.
+		float fade_begin = 0.0;
+		float fade_length = 0.0;
+		real_t distance = 0.0;
+
+		float fade = 1.0;
+		if (storage->light_is_distance_fade_enabled(li->light)) {
+			fade_begin = storage->light_get_distance_fade_begin(li->light);
+			fade_length = storage->light_get_distance_fade_length(li->light);
+			distance = camera_plane.distance_to(li->transform.origin);
+
+			if (distance > fade_begin) {
+				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+				fade = Math::smoothstep(0.0f, 1.0f, 1.0f - float(distance - fade_begin) / fade_length);
+			}
+		}
+
+		float energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI * fade;
 
 		light_data.color[0] = linear_col.r * energy;
 		light_data.color[1] = linear_col.g * energy;
@@ -3555,7 +3600,17 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.projector_rect[3] = 0;
 		}
 
-		if (shadow_atlas && shadow_atlas->shadow_owners.has(li->self)) {
+		const bool needs_shadow = shadow_atlas && shadow_atlas->shadow_owners.has(li->self);
+
+		bool in_shadow_range = true;
+		if (needs_shadow && storage->light_is_distance_fade_enabled(li->light)) {
+			if (distance > storage->light_get_distance_fade_shadow(li->light)) {
+				// Out of range, don't draw shadows to improve performance.
+				in_shadow_range = false;
+			}
+		}
+
+		if (needs_shadow && in_shadow_range) {
 			// fill in the shadow information
 
 			light_data.shadow_enabled = true;
@@ -4064,7 +4119,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		return;
 	}
 
-	RENDER_TIMESTAMP(">Volumetric Fog");
+	RENDER_TIMESTAMP("> Volumetric Fog");
 	RD::get_singleton()->draw_command_begin_label("Volumetric Fog");
 
 	if (env && env->volumetric_fog_enabled && !rb->volumetric_fog) {
@@ -4126,7 +4181,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.binding = 0;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.ids.push_back(rb->volumetric_fog->fog_map);
+			u.append_id(rb->volumetric_fog->fog_map);
 			uniforms.push_back(u);
 		}
 
@@ -4136,7 +4191,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	if (p_fog_volumes.size() > 0) {
 		RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog Volumes");
 
-		RENDER_TIMESTAMP("Render Fog Volumes");
+		RENDER_TIMESTAMP("Render FogVolumes");
 
 		VolumetricFogShader::VolumeUBO params;
 
@@ -4191,7 +4246,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 #endif
 				u.binding = 1;
-				u.ids.push_back(rb->volumetric_fog->emissive_map);
+				u.append_id(rb->volumetric_fog->emissive_map);
 				uniforms.push_back(u);
 			}
 
@@ -4199,7 +4254,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(volumetric_fog.volume_ubo);
+				u.append_id(volumetric_fog.volume_ubo);
 				uniforms.push_back(u);
 			}
 
@@ -4211,7 +4266,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 #endif
 				u.binding = 3;
-				u.ids.push_back(rb->volumetric_fog->density_map);
+				u.append_id(rb->volumetric_fog->density_map);
 				uniforms.push_back(u);
 			}
 
@@ -4223,7 +4278,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 #endif
 				u.binding = 4;
-				u.ids.push_back(rb->volumetric_fog->light_map);
+				u.append_id(rb->volumetric_fog->light_map);
 				uniforms.push_back(u);
 			}
 
@@ -4344,9 +4399,9 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.binding = 1;
 			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
 			if (shadow_atlas == nullptr || shadow_atlas->depth.is_null()) {
-				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
 			} else {
-				u.ids.push_back(shadow_atlas->depth);
+				u.append_id(shadow_atlas->depth);
 			}
 
 			uniforms.push_back(u);
@@ -4358,9 +4413,9 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
 			if (directional_shadow.depth.is_valid()) {
-				u.ids.push_back(directional_shadow.depth);
+				u.append_id(directional_shadow.depth);
 			} else {
-				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
 			}
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -4370,7 +4425,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.ids.push_back(get_omni_light_buffer());
+			u.append_id(get_omni_light_buffer());
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4378,7 +4433,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 4;
-			u.ids.push_back(get_spot_light_buffer());
+			u.append_id(get_spot_light_buffer());
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4387,7 +4442,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 5;
-			u.ids.push_back(get_directional_light_buffer());
+			u.append_id(get_directional_light_buffer());
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4396,7 +4451,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 6;
-			u.ids.push_back(rb->cluster_builder->get_cluster_buffer());
+			u.append_id(rb->cluster_builder->get_cluster_buffer());
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4405,7 +4460,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 7;
-			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4414,7 +4469,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 8;
-			u.ids.push_back(rb->volumetric_fog->light_density_map);
+			u.append_id(rb->volumetric_fog->light_density_map);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4423,7 +4478,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 9;
-			u.ids.push_back(rb->volumetric_fog->fog_map);
+			u.append_id(rb->volumetric_fog->fog_map);
 			uniforms.push_back(u);
 		}
 
@@ -4431,7 +4486,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 9;
-			u.ids.push_back(rb->volumetric_fog->prev_light_density_map);
+			u.append_id(rb->volumetric_fog->prev_light_density_map);
 			copy_uniforms.push_back(u);
 		}
 
@@ -4439,7 +4494,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 10;
-			u.ids.push_back(shadow_sampler);
+			u.append_id(shadow_sampler);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4448,7 +4503,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 11;
-			u.ids.push_back(render_buffers_get_voxel_gi_buffer(p_render_buffers));
+			u.append_id(render_buffers_get_voxel_gi_buffer(p_render_buffers));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4458,7 +4513,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 12;
 			for (int i = 0; i < RendererSceneGIRD::MAX_VOXEL_GI_INSTANCES; i++) {
-				u.ids.push_back(rb->gi.voxel_gi_textures[i]);
+				u.append_id(rb->gi.voxel_gi_textures[i]);
 			}
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -4467,7 +4522,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 13;
-			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4475,7 +4530,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 14;
-			u.ids.push_back(volumetric_fog.params_ubo);
+			u.append_id(volumetric_fog.params_ubo);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
@@ -4483,7 +4538,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 15;
-			u.ids.push_back(rb->volumetric_fog->prev_light_density_map);
+			u.append_id(rb->volumetric_fog->prev_light_density_map);
 			uniforms.push_back(u);
 		}
 		{
@@ -4494,7 +4549,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 #endif
 			u.binding = 16;
-			u.ids.push_back(rb->volumetric_fog->density_map);
+			u.append_id(rb->volumetric_fog->density_map);
 			uniforms.push_back(u);
 		}
 		{
@@ -4505,7 +4560,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 #endif
 			u.binding = 17;
-			u.ids.push_back(rb->volumetric_fog->light_map);
+			u.append_id(rb->volumetric_fog->light_map);
 			uniforms.push_back(u);
 		}
 
@@ -4517,7 +4572,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 #endif
 			u.binding = 18;
-			u.ids.push_back(rb->volumetric_fog->emissive_map);
+			u.append_id(rb->volumetric_fog->emissive_map);
 			uniforms.push_back(u);
 		}
 
@@ -4527,7 +4582,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.binding = 19;
 			RID radiance_texture = storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 			RID sky_texture = env->sky.is_valid() ? sky.sky_get_radiance_texture_rd(env->sky) : RID();
-			u.ids.push_back(sky_texture.is_valid() ? sky_texture : radiance_texture);
+			u.append_id(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);
 		}
 
@@ -4535,7 +4590,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		rb->volumetric_fog->process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY), 0);
 
-		SWAP(uniforms.write[7].ids.write[0], uniforms.write[8].ids.write[0]);
+		RID aux7 = uniforms.write[7].get_id(0);
+		RID aux8 = uniforms.write[8].get_id(0);
+
+		uniforms.write[7].set_id(0, aux8);
+		uniforms.write[8].set_id(0, aux7);
 
 		rb->volumetric_fog->process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, 0), 0);
 	}
@@ -4550,7 +4609,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(gi.sdfgi_ubo);
+				u.append_id(gi.sdfgi_ubo);
 				uniforms.push_back(u);
 			}
 
@@ -4558,7 +4617,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
-				u.ids.push_back(rb->sdfgi->ambient_texture);
+				u.append_id(rb->sdfgi->ambient_texture);
 				uniforms.push_back(u);
 			}
 
@@ -4566,7 +4625,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
-				u.ids.push_back(rb->sdfgi->occlusion_texture);
+				u.append_id(rb->sdfgi->occlusion_texture);
 				uniforms.push_back(u);
 			}
 
@@ -4730,7 +4789,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER);
 
-	RENDER_TIMESTAMP("<Volumetric Fog");
+	RENDER_TIMESTAMP("< Volumetric Fog");
 	RD::get_singleton()->draw_command_end_label();
 	RD::get_singleton()->draw_command_end_label();
 
@@ -4819,7 +4878,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	bool render_gi = p_render_data->render_buffers.is_valid() && p_use_gi;
 
 	if (render_shadows && render_gi) {
-		RENDER_TIMESTAMP("Render GI + Render Shadows (parallel)");
+		RENDER_TIMESTAMP("Render GI + Render Shadows (Parallel)");
 	} else if (render_shadows) {
 		RENDER_TIMESTAMP("Render Shadows");
 	} else if (render_gi) {
@@ -5699,11 +5758,9 @@ void fog() {
 			Vector<RD::Uniform> uniforms;
 
 			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.binding = 1;
-				u.ids.resize(12);
-				RID *ids_ptr = u.ids.ptrw();
+				Vector<RID> ids;
+				ids.resize(12);
+				RID *ids_ptr = ids.ptrw();
 				ids_ptr[0] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 				ids_ptr[1] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 				ids_ptr[2] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -5716,6 +5773,8 @@ void fog() {
 				ids_ptr[9] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 				ids_ptr[10] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 				ids_ptr[11] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+
+				RD::Uniform u(RD::UNIFORM_TYPE_SAMPLER, 1, ids);
 				uniforms.push_back(u);
 			}
 
@@ -5723,7 +5782,7 @@ void fog() {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(storage->global_variables_get_storage_buffer());
+				u.append_id(storage->global_variables_get_storage_buffer());
 				uniforms.push_back(u);
 			}
 

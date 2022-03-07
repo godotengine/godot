@@ -436,8 +436,12 @@ void Window::set_visible(bool p_visible) {
 	//update transient exclusive
 	if (transient_parent) {
 		if (exclusive && visible) {
-			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
-			transient_parent->exclusive_child = this;
+#ifdef TOOLS_ENABLED
+			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+				ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+				transient_parent->exclusive_child = this;
+			}
+#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -951,7 +955,7 @@ bool Window::_can_consume_input_events() const {
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (EngineDebugger::is_active()) {
-		//quit from game window using F8
+		// Quit from game window using F8.
 		Ref<InputEventKey> k = p_ev;
 		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::F8) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
@@ -959,15 +963,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
-		/*
-		Window *focus_target = exclusive_child;
-		focus_target->grab_focus();
-		while (focus_target->exclusive_child != nullptr) {
-			focus_target = focus_target->exclusive_child;
-			focus_target->grab_focus();
-		}*/
-
-		if (!is_embedding_subwindows()) { //not embedding, no need for event
+		if (!is_embedding_subwindows()) { // Not embedding, no need for event.
 			return;
 		}
 	}
@@ -1587,6 +1583,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
@@ -1630,6 +1627,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_ALWAYS_ON_TOP);
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
+	BIND_ENUM_CONSTANT(FLAG_POPUP);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);

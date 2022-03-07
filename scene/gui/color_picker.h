@@ -231,7 +231,7 @@ public:
 	ColorPicker *get_picker();
 	PopupPanel *get_popup();
 
-	ColorPickerButton();
+	ColorPickerButton(const String &p_text = String());
 };
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);

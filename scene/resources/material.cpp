@@ -330,7 +330,7 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->rim = "rim";
 	shader_names->rim_tint = "rim_tint";
 	shader_names->clearcoat = "clearcoat";
-	shader_names->clearcoat_gloss = "clearcoat_gloss";
+	shader_names->clearcoat_roughness = "clearcoat_roughness";
 	shader_names->anisotropy = "anisotropy_ratio";
 	shader_names->heightmap_scale = "heightmap_scale";
 	shader_names->subsurface_scattering_strength = "subsurface_scattering_strength";
@@ -541,12 +541,6 @@ void BaseMaterial3D::_update_shader() {
 		case SPECULAR_SCHLICK_GGX:
 			code += ",specular_schlick_ggx";
 			break;
-		case SPECULAR_BLINN:
-			code += ",specular_blinn";
-			break;
-		case SPECULAR_PHONG:
-			code += ",specular_phong";
-			break;
 		case SPECULAR_TOON:
 			code += ",specular_toon";
 			break;
@@ -690,7 +684,7 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (features[FEATURE_CLEARCOAT]) {
 		code += "uniform float clearcoat : hint_range(0,1);\n";
-		code += "uniform float clearcoat_gloss : hint_range(0,1);\n";
+		code += "uniform float clearcoat_roughness : hint_range(0,1);\n";
 		code += "uniform sampler2D texture_clearcoat : hint_white," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_ANISOTROPY]) {
@@ -1166,7 +1160,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "	vec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xy;\n";
 		}
 		code += "	CLEARCOAT = clearcoat*clearcoat_tex.x;";
-		code += "	CLEARCOAT_GLOSS = clearcoat_gloss*clearcoat_tex.y;\n";
+		code += "	CLEARCOAT_ROUGHNESS = clearcoat_roughness*clearcoat_tex.y;\n";
 	}
 
 	if (features[FEATURE_ANISOTROPY]) {
@@ -1408,13 +1402,13 @@ float BaseMaterial3D::get_clearcoat() const {
 	return clearcoat;
 }
 
-void BaseMaterial3D::set_clearcoat_gloss(float p_clearcoat_gloss) {
-	clearcoat_gloss = p_clearcoat_gloss;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat_gloss, p_clearcoat_gloss);
+void BaseMaterial3D::set_clearcoat_roughness(float p_clearcoat_roughness) {
+	clearcoat_roughness = p_clearcoat_roughness;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat_roughness, p_clearcoat_roughness);
 }
 
-float BaseMaterial3D::get_clearcoat_gloss() const {
-	return clearcoat_gloss;
+float BaseMaterial3D::get_clearcoat_roughness() const {
+	return clearcoat_roughness;
 }
 
 void BaseMaterial3D::set_anisotropy(float p_anisotropy) {
@@ -2271,8 +2265,8 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clearcoat", "clearcoat"), &BaseMaterial3D::set_clearcoat);
 	ClassDB::bind_method(D_METHOD("get_clearcoat"), &BaseMaterial3D::get_clearcoat);
 
-	ClassDB::bind_method(D_METHOD("set_clearcoat_gloss", "clearcoat_gloss"), &BaseMaterial3D::set_clearcoat_gloss);
-	ClassDB::bind_method(D_METHOD("get_clearcoat_gloss"), &BaseMaterial3D::get_clearcoat_gloss);
+	ClassDB::bind_method(D_METHOD("set_clearcoat_roughness", "clearcoat_roughness"), &BaseMaterial3D::set_clearcoat_roughness);
+	ClassDB::bind_method(D_METHOD("get_clearcoat_roughness"), &BaseMaterial3D::get_clearcoat_roughness);
 
 	ClassDB::bind_method(D_METHOD("set_anisotropy", "anisotropy"), &BaseMaterial3D::set_anisotropy);
 	ClassDB::bind_method(D_METHOD("get_anisotropy"), &BaseMaterial3D::get_anisotropy);
@@ -2438,7 +2432,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Shading", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Blinn,Phong,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 
 	ADD_GROUP("Vertex Color", "vertex_color");
@@ -2486,7 +2480,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Clearcoat", "clearcoat_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "clearcoat_enabled"), "set_feature", "get_feature", FEATURE_CLEARCOAT);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat", "get_clearcoat");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat_gloss", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat_gloss", "get_clearcoat_gloss");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat_roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat_roughness", "get_clearcoat_roughness");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clearcoat_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_CLEARCOAT);
 
 	ADD_GROUP("Anisotropy", "anisotropy_");
@@ -2693,8 +2687,6 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIFFUSE_TOON);
 
 	BIND_ENUM_CONSTANT(SPECULAR_SCHLICK_GGX);
-	BIND_ENUM_CONSTANT(SPECULAR_BLINN);
-	BIND_ENUM_CONSTANT(SPECULAR_PHONG);
 	BIND_ENUM_CONSTANT(SPECULAR_TOON);
 	BIND_ENUM_CONSTANT(SPECULAR_DISABLED);
 
@@ -2732,7 +2724,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_rim(1.0);
 	set_rim_tint(0.5);
 	set_clearcoat(1);
-	set_clearcoat_gloss(0.5);
+	set_clearcoat_roughness(0.5);
 	set_anisotropy(0);
 	set_heightmap_scale(0.05);
 	set_subsurface_scattering_strength(0);

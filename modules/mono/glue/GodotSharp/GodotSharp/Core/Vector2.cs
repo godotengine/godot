@@ -81,6 +81,15 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Helper method for deconstruction into a tuple.
+        /// </summary>
+        public void Deconstruct(out real_t x, out real_t y)
+        {
+            x = this.x;
+            y = this.y;
+        }
+
         internal void Normalize()
         {
             real_t lengthsq = LengthSquared();

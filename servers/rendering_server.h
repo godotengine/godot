@@ -443,6 +443,7 @@ public:
 	virtual void light_set_projector(RID p_light, RID p_texture) = 0;
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
+	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 
 	enum LightBakeMode {
@@ -1009,10 +1010,10 @@ public:
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
 
 	enum EnvironmentSSRRoughnessQuality {
-		ENV_SSR_ROUGNESS_QUALITY_DISABLED,
-		ENV_SSR_ROUGNESS_QUALITY_LOW,
-		ENV_SSR_ROUGNESS_QUALITY_MEDIUM,
-		ENV_SSR_ROUGNESS_QUALITY_HIGH,
+		ENV_SSR_ROUGHNESS_QUALITY_DISABLED,
+		ENV_SSR_ROUGHNESS_QUALITY_LOW,
+		ENV_SSR_ROUGHNESS_QUALITY_MEDIUM,
+		ENV_SSR_ROUGHNESS_QUALITY_HIGH,
 	};
 
 	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;

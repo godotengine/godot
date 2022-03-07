@@ -43,6 +43,7 @@ void CircleShape2D::_update_shape() {
 }
 
 void CircleShape2D::set_radius(real_t p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CircleShape2D radius cannot be negative.");
 	radius = p_radius;
 	_update_shape();
 }

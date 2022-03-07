@@ -128,8 +128,8 @@ public:
 	~ImageTexture();
 };
 
-class StreamTexture2D : public Texture2D {
-	GDCLASS(StreamTexture2D, Texture2D);
+class CompressedTexture2D : public Texture2D {
+	GDCLASS(CompressedTexture2D, Texture2D);
 
 public:
 	enum DataFormat {
@@ -174,8 +174,8 @@ protected:
 public:
 	static Ref<Image> load_image_from_file(FileAccess *p_file, int p_size_limit);
 
-	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture2D> &);
-	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
+	typedef void (*TextureFormatRequestCallback)(const Ref<CompressedTexture2D> &);
+	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<CompressedTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
 
 	static TextureFormatRequestCallback request_3d_callback;
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
@@ -200,11 +200,11 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	StreamTexture2D();
-	~StreamTexture2D();
+	CompressedTexture2D();
+	~CompressedTexture2D();
 };
 
-class ResourceFormatLoaderStreamTexture2D : public ResourceFormatLoader {
+class ResourceFormatLoaderCompressedTexture2D : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -380,8 +380,8 @@ public:
 			ImageTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
 };
 
-class StreamTextureLayered : public TextureLayered {
-	GDCLASS(StreamTextureLayered, TextureLayered);
+class CompressedTextureLayered : public TextureLayered {
+	GDCLASS(CompressedTextureLayered, TextureLayered);
 
 public:
 	enum DataFormat {
@@ -433,34 +433,34 @@ public:
 
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
 
-	StreamTextureLayered(LayeredType p_layered_type);
-	~StreamTextureLayered();
+	CompressedTextureLayered(LayeredType p_layered_type);
+	~CompressedTextureLayered();
 };
 
-class StreamTexture2DArray : public StreamTextureLayered {
-	GDCLASS(StreamTexture2DArray, StreamTextureLayered)
+class CompressedTexture2DArray : public CompressedTextureLayered {
+	GDCLASS(CompressedTexture2DArray, CompressedTextureLayered)
 public:
-	StreamTexture2DArray() :
-			StreamTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
+	CompressedTexture2DArray() :
+			CompressedTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
 };
 
-class StreamCubemap : public StreamTextureLayered {
-	GDCLASS(StreamCubemap, StreamTextureLayered);
-
-public:
-	StreamCubemap() :
-			StreamTextureLayered(LAYERED_TYPE_CUBEMAP) {}
-};
-
-class StreamCubemapArray : public StreamTextureLayered {
-	GDCLASS(StreamCubemapArray, StreamTextureLayered);
+class CompressedCubemap : public CompressedTextureLayered {
+	GDCLASS(CompressedCubemap, CompressedTextureLayered);
 
 public:
-	StreamCubemapArray() :
-			StreamTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
+	CompressedCubemap() :
+			CompressedTextureLayered(LAYERED_TYPE_CUBEMAP) {}
 };
 
-class ResourceFormatLoaderStreamTextureLayered : public ResourceFormatLoader {
+class CompressedCubemapArray : public CompressedTextureLayered {
+	GDCLASS(CompressedCubemapArray, CompressedTextureLayered);
+
+public:
+	CompressedCubemapArray() :
+			CompressedTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
+};
+
+class ResourceFormatLoaderCompressedTextureLayered : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -520,8 +520,8 @@ public:
 	~ImageTexture3D();
 };
 
-class StreamTexture3D : public Texture3D {
-	GDCLASS(StreamTexture3D, Texture3D);
+class CompressedTexture3D : public Texture3D {
+	GDCLASS(CompressedTexture3D, Texture3D);
 
 public:
 	enum DataFormat {
@@ -571,11 +571,11 @@ public:
 
 	virtual Vector<Ref<Image>> get_data() const override;
 
-	StreamTexture3D();
-	~StreamTexture3D();
+	CompressedTexture3D();
+	~CompressedTexture3D();
 };
 
-class ResourceFormatLoaderStreamTexture3D : public ResourceFormatLoader {
+class ResourceFormatLoaderCompressedTexture3D : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

@@ -115,7 +115,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	virtual void ok_pressed() override;
 	void _create_new();
 	void _load_exist();
-	Vector<String> get_hierarchy(String p_object) const;
 	void _msg_script_valid(bool valid, const String &p_msg = String());
 	void _msg_path_valid(bool valid, const String &p_msg = String());
 	void _update_template_menu();

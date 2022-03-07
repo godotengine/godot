@@ -250,42 +250,41 @@ Transform2D Control::_get_internal_transform() const {
 
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	// Prefixes "custom_*" are supported for compatibility with 3.x.
-	if (!name.begins_with("theme_override") && !name.begins_with("custom")) {
+	if (!name.begins_with("theme_override")) {
 		return false;
 	}
 
 	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
-		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
+		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
 				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_styles/") || name.begins_with("custom_styles/")) {
+		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
 				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_fonts/") || name.begins_with("custom_fonts/")) {
+		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
 				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_font_sizes/") || name.begins_with("custom_font_sizes/")) {
+		} else if (name.begins_with("theme_override_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			data.font_size_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_colors/") || name.begins_with("custom_colors/")) {
+		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_constants/") || name.begins_with("custom_constants/")) {
+		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
@@ -294,22 +293,22 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 	} else {
-		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
+		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_icon_override(dname, p_value);
-		} else if (name.begins_with("theme_override_styles/") || name.begins_with("custom_styles/")) {
+		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_style_override(dname, p_value);
-		} else if (name.begins_with("theme_override_fonts/") || name.begins_with("custom_fonts/")) {
+		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_override(dname, p_value);
-		} else if (name.begins_with("theme_override_font_sizes/") || name.begins_with("custom_font_sizes/")) {
+		} else if (name.begins_with("theme_override_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_size_override(dname, p_value);
-		} else if (name.begins_with("theme_override_colors/") || name.begins_with("custom_colors/")) {
+		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_color_override(dname, p_value);
-		} else if (name.begins_with("theme_override_constants/") || name.begins_with("custom_constants/")) {
+		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
 		} else {

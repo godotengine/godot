@@ -68,6 +68,10 @@
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->mouse_process_popups(true);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}

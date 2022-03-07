@@ -65,7 +65,7 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	script.instantiate();
 	String processed_template = p_template;
 #ifdef TOOLS_ENABLED
-	if (!EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
+	if (!EDITOR_GET("text_editor/completion/add_type_hints")) {
 		processed_template = processed_template.replace(": int", "")
 									 .replace(": String", "")
 									 .replace(": float", "")
@@ -1198,6 +1198,27 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
 static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type);
 
+static bool _is_expression_named_identifier(const GDScriptParser::ExpressionNode *p_expression, const StringName &p_name) {
+	if (p_expression) {
+		switch (p_expression->type) {
+			case GDScriptParser::Node::IDENTIFIER: {
+				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(p_expression);
+				if (id->name == p_name) {
+					return true;
+				}
+			} break;
+			case GDScriptParser::Node::CAST: {
+				const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
+				return _is_expression_named_identifier(cn->operand, p_name);
+			} break;
+			default:
+				break;
+		}
+	}
+
+	return false;
+}
+
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
 
@@ -1904,6 +1925,14 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 										return true;
 									} else if (init->start_line == p_context.current_line) {
 										return false;
+										// Detects if variable is assigned to itself
+									} else if (_is_expression_named_identifier(init, member.variable->identifier->name)) {
+										if (member.variable->initializer->get_datatype().is_set()) {
+											r_type.type = member.variable->initializer->get_datatype();
+										} else if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
+											r_type.type = member.variable->get_datatype();
+										}
+										return true;
 									} else if (_guess_expression_type(p_context, init, r_type)) {
 										return true;
 									} else if (init->get_datatype().is_set() && !init->get_datatype().is_variant()) {
@@ -2742,10 +2771,10 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/behavior/indent/type", false);
+		bool use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
 		if (use_space_indentation) {
-			int indent_size = EDITOR_DEF("text_editor/behavior/indent/size", 4);
+			int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
 
 			String space_indent = "";
 			for (int i = 0; i < indent_size; i++) {

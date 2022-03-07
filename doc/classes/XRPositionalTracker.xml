@@ -72,9 +72,6 @@
 			- [code]left_hand[/code] identifies the controller held in the players left hand
 			- [code]right_hand[/code] identifies the controller held in the players right hand
 		</member>
-		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
-			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
-		</member>
 		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
 			The type of tracker.
 		</member>

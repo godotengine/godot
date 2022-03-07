@@ -337,8 +337,8 @@ public:
 	};
 	bool move_and_slide();
 
-	const Vector2 &get_motion_velocity() const;
-	void set_motion_velocity(const Vector2 &p_velocity);
+	const Vector2 &get_velocity() const;
+	void set_velocity(const Vector2 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_floor_only() const;
@@ -378,7 +378,7 @@ private:
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
-	Vector2 motion_velocity;
+	Vector2 velocity;
 
 	Vector2 floor_normal;
 	Vector2 platform_velocity;
