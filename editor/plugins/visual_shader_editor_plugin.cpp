@@ -5398,10 +5398,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Expression", "Special", "", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, uniforms and constants.")));
 	add_options.push_back(AddOption("UniformRef", "Special", "", "VisualShaderNodeUniformRef", TTR("A reference to an existing uniform.")));
-	add_options.push_back(AddOption("VaryingGet", "Special", "", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
-	add_options.push_back(AddOption("VaryingSet", "Special", "", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
-	add_options.push_back(AddOption("VaryingGet", "Special", "", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
-	add_options.push_back(AddOption("VaryingSet", "Special", "", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_CANVAS_ITEM));
+	add_options.push_back(AddOption("VaryingGetter", "Special", "", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("VaryingSetter", "Special", "", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("VaryingGetter", "Special", "", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+	add_options.push_back(AddOption("VaryingSetter", "Special", "", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_CANVAS_ITEM));
 
 	custom_node_option_idx = add_options.size();
 
@@ -5914,8 +5914,8 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 				undo_redo->add_undo_method(visual_shader.ptr(), "add_varying", var->name, var->mode, var->type);
 			}
 
-			undo_redo->add_do_method(this, "_update_varyings");
-			undo_redo->add_undo_method(this, "_update_varyings");
+			undo_redo->add_do_method(editor, "_update_varyings");
+			undo_redo->add_undo_method(editor, "_update_varyings");
 		}
 	}
 
