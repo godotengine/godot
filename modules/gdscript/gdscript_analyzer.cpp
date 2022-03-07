@@ -1154,7 +1154,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		GDScriptParser::DataType return_type = resolve_datatype(p_function->return_type);
 		p_function->set_datatype(return_type);
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
 		// Not for the constructor which can vary in signature.
 		GDScriptParser::DataType base_type = parser->current_class->base_type;
