@@ -155,7 +155,12 @@ Error Expression::_get_token(Token &r_token) {
 				return OK;
 			}
 			case '*': {
-				r_token.type = TK_OP_MUL;
+				if (expression[str_ofs] == '*') {
+					r_token.type = TK_OP_POW;
+					str_ofs++;
+				} else {
+					r_token.type = TK_OP_MUL;
+				}
 				return OK;
 			}
 			case '%': {
@@ -542,6 +547,7 @@ const char *Expression::token_name[TK_MAX] = {
 	"OP MUL",
 	"OP DIV",
 	"OP MOD",
+	"OP POW",
 	"OP SHIFT LEFT",
 	"OP SHIFT RIGHT",
 	"OP BIT AND",
@@ -1013,6 +1019,9 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_OP_MOD:
 				op = Variant::OP_MODULE;
 				break;
+			case TK_OP_POW:
+				op = Variant::OP_POWER;
+				break;
 			case TK_OP_SHIFT_LEFT:
 				op = Variant::OP_SHIFT_LEFT;
 				break;
@@ -1066,35 +1075,38 @@ Expression::ENode *Expression::_parse_expression() {
 			bool unary = false;
 
 			switch (expression[i].op) {
-				case Variant::OP_BIT_NEGATE:
+				case Variant::OP_POWER:
 					priority = 0;
+					break;
+				case Variant::OP_BIT_NEGATE:
+					priority = 1;
 					unary = true;
 					break;
 				case Variant::OP_NEGATE:
-					priority = 1;
+					priority = 2;
 					unary = true;
 					break;
 				case Variant::OP_MULTIPLY:
 				case Variant::OP_DIVIDE:
 				case Variant::OP_MODULE:
-					priority = 2;
+					priority = 3;
 					break;
 				case Variant::OP_ADD:
 				case Variant::OP_SUBTRACT:
-					priority = 3;
+					priority = 4;
 					break;
 				case Variant::OP_SHIFT_LEFT:
 				case Variant::OP_SHIFT_RIGHT:
-					priority = 4;
-					break;
-				case Variant::OP_BIT_AND:
 					priority = 5;
 					break;
-				case Variant::OP_BIT_XOR:
+				case Variant::OP_BIT_AND:
 					priority = 6;
 					break;
-				case Variant::OP_BIT_OR:
+				case Variant::OP_BIT_XOR:
 					priority = 7;
+					break;
+				case Variant::OP_BIT_OR:
+					priority = 8;
 					break;
 				case Variant::OP_LESS:
 				case Variant::OP_LESS_EQUAL:
@@ -1102,20 +1114,20 @@ Expression::ENode *Expression::_parse_expression() {
 				case Variant::OP_GREATER_EQUAL:
 				case Variant::OP_EQUAL:
 				case Variant::OP_NOT_EQUAL:
-					priority = 8;
+					priority = 9;
 					break;
 				case Variant::OP_IN:
-					priority = 10;
+					priority = 11;
 					break;
 				case Variant::OP_NOT:
-					priority = 11;
+					priority = 12;
 					unary = true;
 					break;
 				case Variant::OP_AND:
-					priority = 12;
+					priority = 13;
 					break;
 				case Variant::OP_OR:
-					priority = 13;
+					priority = 14;
 					break;
 				default: {
 					_set_error("Parser bug, invalid operator in expression: " + itos(expression[i].op));
