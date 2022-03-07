@@ -137,7 +137,7 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
+Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
 	return ::ResourceSaver::save(p_path, p_resource, p_flags);
 }
@@ -156,9 +156,10 @@ Vector<String> ResourceSaver::get_recognized_extensions(const RES &p_resource) {
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 
+	BIND_ENUM_CONSTANT(FLAG_NONE);
 	BIND_ENUM_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_ENUM_CONSTANT(FLAG_BUNDLE_RESOURCES);
 	BIND_ENUM_CONSTANT(FLAG_CHANGE_PATH);
