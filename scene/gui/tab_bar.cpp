@@ -71,7 +71,7 @@ Size2 TabBar::get_minimum_size() const {
 
 		Ref<Texture2D> tex = tabs[i].icon;
 		if (tex.is_valid()) {
-			ms.height = MAX(ms.height, tex->get_size().height);
+			ms.height = MAX(ms.height, tex->get_size().height + y_margin);
 			ms.width += tex->get_size().width + hseparation;
 		}
 
@@ -91,13 +91,13 @@ Size2 TabBar::get_minimum_size() const {
 				ms.width += button_highlight->get_margin(SIDE_LEFT) + rb->get_width() + hseparation;
 			}
 
-			ms.height = MAX(rb->get_height() + style->get_minimum_size().height, ms.height);
+			ms.height = MAX(ms.height, rb->get_height() + y_margin);
 		}
 
 		if (close_visible) {
 			ms.width += button_highlight->get_margin(SIDE_LEFT) + close->get_width() + hseparation;
 
-			ms.height = MAX(close->get_height() + style->get_minimum_size().height, ms.height);
+			ms.height = MAX(ms.height, close->get_height() + y_margin);
 		}
 
 		if (ms.width - ofs > style->get_minimum_size().width) {
