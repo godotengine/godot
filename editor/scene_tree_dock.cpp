@@ -1535,7 +1535,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 		}
 	}
 
-	bool autorename_animation_tracks = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
+	bool autorename_animation_tracks = bool(EDITOR_GET("editors/animation/autorename_animation_tracks"));
 
 	if (autorename_animation_tracks && Object::cast_to<AnimationPlayer>(p_base)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_base);
