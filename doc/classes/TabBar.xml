@@ -223,7 +223,7 @@
 		<member name="select_with_rmb" type="bool" setter="set_select_with_rmb" getter="get_select_with_rmb" default="false">
 			If [code]true[/code], enables selecting a tab with the right mouse button.
 		</member>
-		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="1">
+		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			Sets the position at which tabs will be placed. See [enum AlignmentMode] for details.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
