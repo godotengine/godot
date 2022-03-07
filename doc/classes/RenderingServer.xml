@@ -2346,6 +2346,13 @@
 				Sets a shader material's shader.
 			</description>
 		</method>
+		<method name="material_set_use_debanding">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], enables debanding on materials. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_material_debanding].
+			</description>
+		</method>
 		<method name="mesh_add_surface">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />

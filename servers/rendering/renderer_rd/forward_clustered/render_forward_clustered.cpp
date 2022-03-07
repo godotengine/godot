@@ -4848,6 +4848,7 @@ void RenderForwardClustered::_update_shader_quality_settings() {
 	specialization.directional_soft_shadow_samples = directional_soft_shadow_samples_get();
 	specialization.directional_penumbra_shadow_samples = directional_penumbra_shadow_samples_get();
 	specialization.use_lightmap_bicubic_filter = lightmap_filter_bicubic_get();
+	specialization.use_material_debanding = material_is_using_debanding();
 	scene_shader.set_default_specialization(specialization);
 
 	base_uniforms_changed(); //also need this
