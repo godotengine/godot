@@ -2435,6 +2435,11 @@ void EditorInspector::update_tree() {
 	}
 
 	String filter = search_box ? search_box->get_text() : "";
+	if (is_capitalize_paths_enabled()) {
+		filter = filter.replace("_", " ");
+	} else {
+		filter = filter.replace(" ", "_");
+	}
 	String group;
 	String group_base;
 	String subgroup;
