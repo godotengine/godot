@@ -931,7 +931,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.binding = 1;
-		u.ids.push_back(state.canvas_state_buffer);
+		u.append_id(state.canvas_state_buffer);
 		uniforms.push_back(u);
 	}
 
@@ -939,7 +939,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.binding = 2;
-		u.ids.push_back(state.lights_uniform_buffer);
+		u.append_id(state.lights_uniform_buffer);
 		uniforms.push_back(u);
 	}
 
@@ -947,7 +947,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 3;
-		u.ids.push_back(storage->decal_atlas_get_texture());
+		u.append_id(storage->decal_atlas_get_texture());
 		uniforms.push_back(u);
 	}
 
@@ -955,7 +955,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 4;
-		u.ids.push_back(state.shadow_texture);
+		u.append_id(state.shadow_texture);
 		uniforms.push_back(u);
 	}
 
@@ -963,7 +963,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 		u.binding = 5;
-		u.ids.push_back(state.shadow_sampler);
+		u.append_id(state.shadow_sampler);
 		uniforms.push_back(u);
 	}
 
@@ -980,7 +980,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 				screen = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 			}
 		}
-		u.ids.push_back(screen);
+		u.append_id(screen);
 		uniforms.push_back(u);
 	}
 
@@ -989,17 +989,15 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 7;
 		RID sdf = storage->render_target_get_sdf_texture(p_to_render_target);
-		u.ids.push_back(sdf);
+		u.append_id(sdf);
 		uniforms.push_back(u);
 	}
 
 	{
 		//needs samplers for the material (uses custom textures) create them
-		RD::Uniform u;
-		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-		u.binding = 8;
-		u.ids.resize(12);
-		RID *ids_ptr = u.ids.ptrw();
+		Vector<RID> ids;
+		ids.resize(12);
+		RID *ids_ptr = ids.ptrw();
 		ids_ptr[0] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 		ids_ptr[1] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 		ids_ptr[2] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -1012,6 +1010,9 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		ids_ptr[9] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 		ids_ptr[10] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 		ids_ptr[11] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+
+		RD::Uniform u(RD::UNIFORM_TYPE_SAMPLER, 8, ids);
+
 		uniforms.push_back(u);
 	}
 
@@ -1019,7 +1020,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		u.binding = 9;
-		u.ids.push_back(storage->global_variables_get_storage_buffer());
+		u.append_id(storage->global_variables_get_storage_buffer());
 		uniforms.push_back(u);
 	}
 
@@ -2567,7 +2568,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(storage->get_default_rd_storage_buffer());
+			u.append_id(storage->get_default_rd_storage_buffer());
 			uniforms.push_back(u);
 		}
 

@@ -1765,7 +1765,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(multimesh->buffer);
+			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
 			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1780,7 +1780,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(multimesh->buffer);
+			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
 			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1818,7 +1818,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(skeleton->buffer);
+			u.append_id(skeleton->buffer);
 			uniforms.push_back(u);
 			skeleton->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -2276,7 +2276,7 @@ public:
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(particles->particle_instance_buffer);
+				u.append_id(particles->particle_instance_buffer);
 				uniforms.push_back(u);
 			}
 

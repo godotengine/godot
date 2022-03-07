@@ -39,9 +39,11 @@
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
+	UniformSetCacheRD *uniform_set_cache;
 	RendererCanvasRenderRD *canvas;
 	RendererStorageRD *storage;
 	RendererSceneRenderRD *scene;

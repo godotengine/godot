@@ -1320,10 +1320,10 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 
 			t = texture_owner.get_or_null(ct->diffuse);
 			if (!t) {
-				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
 				ct->size_cache = Size2i(1, 1);
 			} else {
-				u.ids.push_back(t->rd_texture);
+				u.append_id(t->rd_texture);
 				ct->size_cache = Size2i(t->width_2d, t->height_2d);
 			}
 			uniforms.push_back(u);
@@ -1335,10 +1335,10 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 
 			t = texture_owner.get_or_null(ct->normal_map);
 			if (!t) {
-				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
+				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
 				ct->use_normal_cache = false;
 			} else {
-				u.ids.push_back(t->rd_texture);
+				u.append_id(t->rd_texture);
 				ct->use_normal_cache = true;
 			}
 			uniforms.push_back(u);
@@ -1350,10 +1350,10 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 
 			t = texture_owner.get_or_null(ct->specular);
 			if (!t) {
-				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
 				ct->use_specular_cache = false;
 			} else {
-				u.ids.push_back(t->rd_texture);
+				u.append_id(t->rd_texture);
 				ct->use_specular_cache = true;
 			}
 			uniforms.push_back(u);
@@ -1362,7 +1362,7 @@ bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::Canvas
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 3;
-			u.ids.push_back(sampler_rd_get_default(filter, repeat));
+			u.append_id(sampler_rd_get_default(filter, repeat));
 			uniforms.push_back(u);
 		}
 
@@ -2933,7 +2933,7 @@ bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<St
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(uniform_buffer);
+			u.append_id(uniform_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -2946,10 +2946,10 @@ bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<St
 			u.binding = 1 + k;
 			if (array_size > 0) {
 				for (int j = 0; j < array_size; j++) {
-					u.ids.push_back(textures[k++]);
+					u.append_id(textures[k++]);
 				}
 			} else {
-				u.ids.push_back(textures[k++]);
+				u.append_id(textures[k++]);
 			}
 			uniforms.push_back(u);
 		}
@@ -3155,7 +3155,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 			RD::Uniform u;
 			u.binding = 0;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.ids.push_back(s->vertex_buffer);
+			u.append_id(s->vertex_buffer);
 			uniforms.push_back(u);
 		}
 		{
@@ -3163,9 +3163,9 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 			u.binding = 1;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			if (s->skin_buffer.is_valid()) {
-				u.ids.push_back(s->skin_buffer);
+				u.append_id(s->skin_buffer);
 			} else {
-				u.ids.push_back(default_rd_storage_buffer);
+				u.append_id(default_rd_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -3174,9 +3174,9 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 			u.binding = 2;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			if (s->blend_shape_buffer.is_valid()) {
-				u.ids.push_back(s->blend_shape_buffer);
+				u.append_id(s->blend_shape_buffer);
 			} else {
-				u.ids.push_back(default_rd_storage_buffer);
+				u.append_id(default_rd_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -3618,7 +3618,7 @@ void RendererStorageRD::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh,
 			RD::Uniform u;
 			u.binding = 1;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.ids.push_back(s.vertex_buffer);
+			u.append_id(s.vertex_buffer);
 			uniforms.push_back(u);
 		}
 		{
@@ -3626,9 +3626,9 @@ void RendererStorageRD::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh,
 			u.binding = 2;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			if (mi->blend_weights_buffer.is_valid()) {
-				u.ids.push_back(mi->blend_weights_buffer);
+				u.append_id(mi->blend_weights_buffer);
 			} else {
-				u.ids.push_back(default_rd_storage_buffer);
+				u.append_id(default_rd_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -4953,14 +4953,14 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(p_particles->frame_params_buffer);
+			u.append_id(p_particles->frame_params_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
-			u.ids.push_back(p_particles->particle_buffer);
+			u.append_id(p_particles->particle_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -4969,9 +4969,9 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
 			if (p_particles->emission_storage_buffer.is_valid()) {
-				u.ids.push_back(p_particles->emission_storage_buffer);
+				u.append_id(p_particles->emission_storage_buffer);
 			} else {
-				u.ids.push_back(default_rd_storage_buffer);
+				u.append_id(default_rd_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -4984,9 +4984,9 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 				if (sub_emitter->emission_buffer == nullptr) { //no emission buffer, allocate emission buffer
 					_particles_allocate_emission_buffer(sub_emitter);
 				}
-				u.ids.push_back(sub_emitter->emission_storage_buffer);
+				u.append_id(sub_emitter->emission_storage_buffer);
 			} else {
-				u.ids.push_back(default_rd_storage_buffer);
+				u.append_id(default_rd_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -5257,7 +5257,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 					if (rd_tex == RID()) {
 						rd_tex = default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE];
 					}
-					u.ids.push_back(rd_tex);
+					u.append_id(rd_tex);
 				}
 				uniforms.push_back(u);
 			}
@@ -5266,9 +5266,9 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
 				if (collision_heightmap_texture.is_valid()) {
-					u.ids.push_back(collision_heightmap_texture);
+					u.append_id(collision_heightmap_texture);
 				} else {
-					u.ids.push_back(default_rd_textures[DEFAULT_RD_TEXTURE_BLACK]);
+					u.append_id(default_rd_textures[DEFAULT_RD_TEXTURE_BLACK]);
 				}
 				uniforms.push_back(u);
 			}
@@ -5402,7 +5402,7 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(particles->particles_sort_buffer);
+				u.append_id(particles->particles_sort_buffer);
 				uniforms.push_back(u);
 			}
 
@@ -5522,14 +5522,14 @@ void RendererStorageRD::_particles_update_buffers(Particles *particles) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 1;
-				u.ids.push_back(particles->particle_buffer);
+				u.append_id(particles->particle_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(particles->particle_instance_buffer);
+				u.append_id(particles->particle_instance_buffer);
 				uniforms.push_back(u);
 			}
 
@@ -5627,9 +5627,9 @@ void RendererStorageRD::update_particles() {
 					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 0;
 					if (particles->trail_bind_pose_buffer.is_valid()) {
-						u.ids.push_back(particles->trail_bind_pose_buffer);
+						u.append_id(particles->trail_bind_pose_buffer);
 					} else {
-						u.ids.push_back(default_rd_storage_buffer);
+						u.append_id(default_rd_storage_buffer);
 					}
 					uniforms.push_back(u);
 				}
@@ -6315,7 +6315,7 @@ void RendererStorageRD::skeleton_allocate_data(RID p_skeleton, int p_bones, bool
 				RD::Uniform u;
 				u.binding = 0;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.ids.push_back(skeleton->buffer);
+				u.append_id(skeleton->buffer);
 				uniforms.push_back(u);
 			}
 			skeleton->uniform_set_mi = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);
@@ -7146,21 +7146,21 @@ void RendererStorageRD::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 1;
-				u.ids.push_back(voxel_gi->octree_buffer);
+				u.append_id(voxel_gi->octree_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(voxel_gi->data_buffer);
+				u.append_id(voxel_gi->data_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 3;
-				u.ids.push_back(shared_tex);
+				u.append_id(shared_tex);
 				uniforms.push_back(u);
 			}
 
@@ -8008,33 +8008,36 @@ void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 1;
-			u.ids.push_back(rt->sdf_buffer_write);
+			u.append_id(rt->sdf_buffer_write);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 2;
-			u.ids.push_back(rt->sdf_buffer_read);
+			u.append_id(rt->sdf_buffer_read);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 3;
-			u.ids.push_back(rt->sdf_buffer_process[0]);
+			u.append_id(rt->sdf_buffer_process[0]);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 4;
-			u.ids.push_back(rt->sdf_buffer_process[1]);
+			u.append_id(rt->sdf_buffer_process[1]);
 			uniforms.push_back(u);
 		}
 
 		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
-		SWAP(uniforms.write[2].ids.write[0], uniforms.write[3].ids.write[0]);
+		RID aux2 = uniforms.write[2].get_id(0);
+		RID aux3 = uniforms.write[3].get_id(0);
+		uniforms.write[2].set_id(0, aux3);
+		uniforms.write[3].set_id(0, aux2);
 		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
 	}
 }
@@ -10074,11 +10077,9 @@ void process() {
 		Vector<RD::Uniform> uniforms;
 
 		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 1;
-			u.ids.resize(12);
-			RID *ids_ptr = u.ids.ptrw();
+			Vector<RID> ids;
+			ids.resize(12);
+			RID *ids_ptr = ids.ptrw();
 			ids_ptr[0] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 			ids_ptr[1] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 			ids_ptr[2] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -10091,6 +10092,8 @@ void process() {
 			ids_ptr[9] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 			ids_ptr[10] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 			ids_ptr[11] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+
+			RD::Uniform u(RD::UNIFORM_TYPE_SAMPLER, 1, ids);
 			uniforms.push_back(u);
 		}
 
@@ -10098,7 +10101,7 @@ void process() {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
-			u.ids.push_back(global_variables_get_storage_buffer());
+			u.append_id(global_variables_get_storage_buffer());
 			uniforms.push_back(u);
 		}
 
@@ -10167,7 +10170,7 @@ void process() {
 				RD::Uniform u;
 				u.binding = 0;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.ids.push_back(default_rd_storage_buffer);
+				u.append_id(default_rd_storage_buffer);
 				uniforms.push_back(u);
 			}
 			skeleton_shader.default_skeleton_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);

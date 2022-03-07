@@ -287,21 +287,21 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 1;
-			u.ids.push_back(state_uniform);
+			u.append_id(state_uniform);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
-			u.ids.push_back(element_buffer);
+			u.append_id(element_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.ids.push_back(cluster_render_buffer);
+			u.append_id(cluster_render_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -314,14 +314,14 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
-			u.ids.push_back(cluster_render_buffer);
+			u.append_id(cluster_render_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
-			u.ids.push_back(cluster_buffer);
+			u.append_id(cluster_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -329,7 +329,7 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.ids.push_back(element_buffer);
+			u.append_id(element_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -342,14 +342,14 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
-			u.ids.push_back(cluster_buffer);
+			u.append_id(cluster_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 2;
-			u.ids.push_back(p_color_buffer);
+			u.append_id(p_color_buffer);
 			uniforms.push_back(u);
 		}
 
@@ -357,14 +357,14 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 3;
-			u.ids.push_back(p_depth_buffer);
+			u.append_id(p_depth_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 4;
-			u.ids.push_back(p_depth_buffer_sampler);
+			u.append_id(p_depth_buffer_sampler);
 			uniforms.push_back(u);
 		}
 
