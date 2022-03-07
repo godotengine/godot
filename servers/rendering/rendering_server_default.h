@@ -853,6 +853,7 @@ public:
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 	FUNC1(lightmaps_set_bicubic_filter, bool);
+	FUNC1(material_set_use_debanding, bool);
 
 	/* CAMERA ATTRIBUTES */
 
