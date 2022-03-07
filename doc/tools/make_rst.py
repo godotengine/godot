@@ -1409,6 +1409,8 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
         clear_name = "div"
     elif clear_name == "%":
         clear_name = "mod"
+    elif clear_name == "**":
+        clear_name = "pow"
 
     elif clear_name == "unary+":
         clear_name = "unplus"

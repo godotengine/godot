@@ -78,6 +78,7 @@ public:
 			PLUS,
 			MINUS,
 			STAR,
+			STAR_STAR,
 			SLASH,
 			PERCENT,
 			// Assignment
@@ -85,6 +86,7 @@ public:
 			PLUS_EQUAL,
 			MINUS_EQUAL,
 			STAR_EQUAL,
+			STAR_STAR_EQUAL,
 			SLASH_EQUAL,
 			PERCENT_EQUAL,
 			LESS_LESS_EQUAL,

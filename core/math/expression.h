@@ -85,6 +85,7 @@ private:
 		TK_OP_MUL,
 		TK_OP_DIV,
 		TK_OP_MOD,
+		TK_OP_POW,
 		TK_OP_SHIFT_LEFT,
 		TK_OP_SHIFT_RIGHT,
 		TK_OP_BIT_AND,

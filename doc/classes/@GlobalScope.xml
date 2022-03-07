@@ -2799,40 +2799,43 @@
 		<constant name="OP_MODULE" value="12" enum="Variant.Operator">
 			Remainder/modulo operator ([code]%[/code]).
 		</constant>
-		<constant name="OP_SHIFT_LEFT" value="13" enum="Variant.Operator">
+		<constant name="OP_POWER" value="13" enum="Variant.Operator">
+			Power operator ([code]**[/code]).
+		</constant>
+		<constant name="OP_SHIFT_LEFT" value="14" enum="Variant.Operator">
 			Left shift operator ([code]&lt;&lt;[/code]).
 		</constant>
-		<constant name="OP_SHIFT_RIGHT" value="14" enum="Variant.Operator">
+		<constant name="OP_SHIFT_RIGHT" value="15" enum="Variant.Operator">
 			Right shift operator ([code]&gt;&gt;[/code]).
 		</constant>
-		<constant name="OP_BIT_AND" value="15" enum="Variant.Operator">
+		<constant name="OP_BIT_AND" value="16" enum="Variant.Operator">
 			Bitwise AND operator ([code]&amp;[/code]).
 		</constant>
-		<constant name="OP_BIT_OR" value="16" enum="Variant.Operator">
+		<constant name="OP_BIT_OR" value="17" enum="Variant.Operator">
 			Bitwise OR operator ([code]|[/code]).
 		</constant>
-		<constant name="OP_BIT_XOR" value="17" enum="Variant.Operator">
+		<constant name="OP_BIT_XOR" value="18" enum="Variant.Operator">
 			Bitwise XOR operator ([code]^[/code]).
 		</constant>
-		<constant name="OP_BIT_NEGATE" value="18" enum="Variant.Operator">
+		<constant name="OP_BIT_NEGATE" value="19" enum="Variant.Operator">
 			Bitwise NOT operator ([code]~[/code]).
 		</constant>
-		<constant name="OP_AND" value="19" enum="Variant.Operator">
+		<constant name="OP_AND" value="20" enum="Variant.Operator">
 			Logical AND operator ([code]and[/code] or [code]&amp;&amp;[/code]).
 		</constant>
-		<constant name="OP_OR" value="20" enum="Variant.Operator">
+		<constant name="OP_OR" value="21" enum="Variant.Operator">
 			Logical OR operator ([code]or[/code] or [code]||[/code]).
 		</constant>
-		<constant name="OP_XOR" value="21" enum="Variant.Operator">
+		<constant name="OP_XOR" value="22" enum="Variant.Operator">
 			Logical XOR operator (not implemented in GDScript).
 		</constant>
-		<constant name="OP_NOT" value="22" enum="Variant.Operator">
+		<constant name="OP_NOT" value="23" enum="Variant.Operator">
 			Logical NOT operator ([code]not[/code] or [code]![/code]).
 		</constant>
-		<constant name="OP_IN" value="23" enum="Variant.Operator">
+		<constant name="OP_IN" value="24" enum="Variant.Operator">
 			Logical IN operator ([code]in[/code]).
 		</constant>
-		<constant name="OP_MAX" value="24" enum="Variant.Operator">
+		<constant name="OP_MAX" value="25" enum="Variant.Operator">
 			Represents the size of the [enum Variant.Operator] enum.
 		</constant>
 	</constants>
