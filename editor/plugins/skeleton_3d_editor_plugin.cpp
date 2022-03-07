@@ -537,13 +537,12 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 	}
 	const int b_idx = path.get_slicec('/', 1).to_int();
 	const String bone_path = "bones/" + itos(b_idx) + "/";
-	if (!pose_editor) {
-		return;
+	if (pose_editor) {
+		pose_editor->set_target(bone_path);
+		pose_editor->set_keyable(keyable);
+		pose_editor->set_visible(selected);
 	}
-	pose_editor->set_target(bone_path);
-	pose_editor->set_keyable(keyable);
 	selected_bone = b_idx;
-	pose_editor->set_visible(selected);
 	set_bone_options_enabled(selected);
 	_update_properties();
 	_update_gizmo_visible();
