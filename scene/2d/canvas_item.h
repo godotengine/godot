@@ -193,7 +193,6 @@ private:
 
 	bool first_draw;
 	bool visible;
-	bool parent_visible_in_tree;
 	bool pending_update;
 	bool toplevel;
 	bool drawing;
@@ -209,8 +208,9 @@ private:
 	mutable bool global_invalid;
 
 	void _toplevel_raise_self();
+	void _toplevel_visibility_changed(bool p_visible);
 
-	void _propagate_visibility_changed(bool p_visible, bool p_is_source = false);
+	void _propagate_visibility_changed(bool p_visible);
 
 	void _update_callback();
 
