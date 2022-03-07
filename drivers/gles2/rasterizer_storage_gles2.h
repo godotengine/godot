@@ -1225,7 +1225,6 @@ public:
 			GLuint color;
 			GLuint depth;
 			bool depth_owned;
-			RID texture;
 
 			External() :
 					fbo(0),
