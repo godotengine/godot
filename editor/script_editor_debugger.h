@@ -159,6 +159,7 @@ private:
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
+	LineEdit *search;
 	EditorInspector *inspector;
 
 	Ref<TCP_Server> server;
