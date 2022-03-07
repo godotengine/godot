@@ -5554,30 +5554,34 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 				}
 
+				String track_type;
 				switch (animation->track_get_type(i)) {
 					case Animation::TYPE_POSITION_3D:
-						text += " (Position)";
+						track_type = TTR("Position");
 						break;
 					case Animation::TYPE_ROTATION_3D:
-						text += " (Rotation)";
+						track_type = TTR("Rotation");
 						break;
 					case Animation::TYPE_SCALE_3D:
-						text += " (Scale)";
+						track_type = TTR("Scale");
 						break;
 					case Animation::TYPE_BLEND_SHAPE:
-						text += " (BlendShape)";
+						track_type = TTR("BlendShape");
 						break;
 					case Animation::TYPE_METHOD:
-						text += " (Methods)";
+						track_type = TTR("Methods");
 						break;
 					case Animation::TYPE_BEZIER:
-						text += " (Bezier)";
+						track_type = TTR("Bezier");
 						break;
 					case Animation::TYPE_AUDIO:
-						text += " (Audio)";
+						track_type = TTR("Audio");
 						break;
 					default: {
 					};
+				}
+				if (!track_type.is_empty()) {
+					text += vformat(" (%s)", track_type);
 				}
 
 				TreeItem *it = track_copy_select->create_item(troot);
