@@ -59,10 +59,12 @@ struct _NO_DISCARD_ Vector3 {
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ real_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
