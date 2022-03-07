@@ -109,7 +109,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				continue; // nope
 			}
 			int idx = menu->get_item_count();
-			menu->add_item(vformat("Add %s", name), idx);
+			menu->add_item(vformat(TTR("Add %s"), name), idx);
 			menu->set_item_metadata(idx, E->get());
 		}
 
