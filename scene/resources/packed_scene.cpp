@@ -1653,7 +1653,7 @@ void PackedScene::recreate_state() {
 #endif
 }
 
-Ref<SceneState> PackedScene::get_state() {
+Ref<SceneState> PackedScene::get_state() const {
 	return state;
 }
 

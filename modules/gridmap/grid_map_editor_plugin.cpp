@@ -63,17 +63,6 @@ void GridMapEditor::_menu_option(int p_option) {
 			floor->set_value(floor->get_value() + 1);
 		} break;
 
-		case MENU_OPTION_CLIP_DISABLED:
-		case MENU_OPTION_CLIP_ABOVE:
-		case MENU_OPTION_CLIP_BELOW: {
-			clip_mode = ClipMode(p_option - MENU_OPTION_CLIP_DISABLED);
-			for (int i = 0; i < 3; i++) {
-				int index = options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED + i);
-				options->get_popup()->set_item_checked(index, i == clip_mode);
-			}
-
-			_update_clip();
-		} break;
 		case MENU_OPTION_X_AXIS:
 		case MENU_OPTION_Y_AXIS:
 		case MENU_OPTION_Z_AXIS: {
@@ -98,7 +87,6 @@ void GridMapEditor::_menu_option(int p_option) {
 			}
 			edit_axis = Vector3::Axis(new_axis);
 			update_grid();
-			_update_clip();
 
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
@@ -835,7 +823,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
-	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
 	mesh_library_palette->clear();
@@ -943,22 +931,10 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	set_process(true);
 
-	clip_mode = p_gridmap->has_meta("_editor_clip_") ? ClipMode(p_gridmap->get_meta("_editor_clip_").operator int()) : CLIP_DISABLED;
-
 	_draw_grids(node->get_cell_size());
 	update_grid();
-	_update_clip();
 
 	node->connect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
-}
-
-void GridMapEditor::_update_clip() {
-	node->set_meta("_editor_clip_", clip_mode);
-	if (clip_mode == CLIP_DISABLED) {
-		node->set_clip(false);
-	} else {
-		node->set_clip(true, clip_mode == CLIP_ABOVE, edit_floor[edit_axis], edit_axis);
-	}
 }
 
 void GridMapEditor::update_grid() {
@@ -1147,7 +1123,6 @@ void GridMapEditor::_floor_changed(float p_value) {
 	edit_floor[edit_axis] = p_value;
 	node->set_meta("_editor_floor_", Vector3(edit_floor[0], edit_floor[1], edit_floor[2]));
 	update_grid();
-	_update_clip();
 	_update_selection_transform();
 }
 
@@ -1198,11 +1173,6 @@ GridMapEditor::GridMapEditor() {
 	options->get_popup()->add_item(TTR("Previous Floor"), MENU_OPTION_PREV_LEVEL, Key::Q);
 	options->get_popup()->add_item(TTR("Next Floor"), MENU_OPTION_NEXT_LEVEL, Key::E);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_radio_check_item(TTR("Clip Disabled"), MENU_OPTION_CLIP_DISABLED);
-	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED), true);
-	options->get_popup()->add_radio_check_item(TTR("Clip Above"), MENU_OPTION_CLIP_ABOVE);
-	options->get_popup()->add_radio_check_item(TTR("Clip Below"), MENU_OPTION_CLIP_BELOW);
-	options->get_popup()->add_separator();
 	options->get_popup()->add_radio_check_item(TTR("Edit X Axis"), MENU_OPTION_X_AXIS, Key::Z);
 	options->get_popup()->add_radio_check_item(TTR("Edit Y Axis"), MENU_OPTION_Y_AXIS, Key::X);
 	options->get_popup()->add_radio_check_item(TTR("Edit Z Axis"), MENU_OPTION_Z_AXIS, Key::C);
@@ -1237,7 +1207,7 @@ GridMapEditor::GridMapEditor() {
 	settings_pick_distance->set_max(10000.0f);
 	settings_pick_distance->set_min(500.0f);
 	settings_pick_distance->set_step(1.0f);
-	settings_pick_distance->set_value(EDITOR_DEF("editors/grid_map/pick_distance", 5000.0));
+	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));

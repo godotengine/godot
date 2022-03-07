@@ -137,7 +137,11 @@ typedef struct hb_glyph_info_t {
  * 				   clusters.
  * 				   The #HB_GLYPH_FLAG_UNSAFE_TO_BREAK flag will
  * 				   always imply this flag.
- * 				   Since: 3.3.0
+ *				   To use this flag, you must enable the buffer flag
+ *				   @HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT during
+ *				   shaping, otherwise the buffer flag will not be
+ *				   reliably produced.
+ * 				   Since: 4.0.0
  * @HB_GLYPH_FLAG_DEFINED: All the currently defined flags.
  *
  * Flags for #hb_glyph_info_t.
@@ -356,7 +360,19 @@ hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
  * @HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE:
  *                      flag indicating that a dotted circle should
  *                      not be inserted in the rendering of incorrect
- *                      character sequences (such at <0905 093E>). Since: 2.4
+ *                      character sequences (such at <0905 093E>). Since: 2.4.0
+ * @HB_BUFFER_FLAG_VERIFY:
+ *                      flag indicating that the hb_shape() call and its variants
+ *                      should perform various verification processes on the results
+ *                      of the shaping operation on the buffer.  If the verification
+ *                      fails, then either a buffer message is sent, if a message
+ *                      handler is installed on the buffer, or a message is written
+ *                      to standard error.  In either case, the shaping result might
+ *                      be modified to show the failed output. Since: 3.4.0
+ * @HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT:
+ *                      flag indicating that the @HB_GLYPH_FLAG_UNSAFE_TO_CONCAT
+ *                      glyph-flag should be produced by the shaper. By default
+ *                      it will not be produced since it incurs a cost. Since: 4.0.0
  *
  * Flags for #hb_buffer_t.
  *
@@ -368,7 +384,9 @@ typedef enum { /*< flags >*/
   HB_BUFFER_FLAG_EOT				= 0x00000002u, /* End-of-text */
   HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES	= 0x00000004u,
   HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES	= 0x00000008u,
-  HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE	= 0x00000010u
+  HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE	= 0x00000010u,
+  HB_BUFFER_FLAG_VERIFY				= 0x00000020u,
+  HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT	= 0x00000040u
 } hb_buffer_flags_t;
 
 HB_EXTERN void
@@ -522,7 +540,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
 
 HB_EXTERN void
 hb_buffer_append (hb_buffer_t *buffer,
-		  hb_buffer_t *source,
+		  const hb_buffer_t *source,
 		  unsigned int start,
 		  unsigned int end);
 
@@ -619,24 +637,24 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 
 HB_EXTERN unsigned int
 hb_buffer_serialize_unicode (hb_buffer_t *buffer,
-					unsigned int start,
-					unsigned int end,
-					char *buf,
-					unsigned int buf_size,
-					unsigned int *buf_consumed,
-					hb_buffer_serialize_format_t format,
-					hb_buffer_serialize_flags_t flags);
+			     unsigned int start,
+			     unsigned int end,
+			     char *buf,
+			     unsigned int buf_size,
+			     unsigned int *buf_consumed,
+			     hb_buffer_serialize_format_t format,
+			     hb_buffer_serialize_flags_t flags);
 
 HB_EXTERN unsigned int
 hb_buffer_serialize (hb_buffer_t *buffer,
-					unsigned int start,
-					unsigned int end,
-					char *buf,
-					unsigned int buf_size,
-					unsigned int *buf_consumed,
-					hb_font_t *font,
-					hb_buffer_serialize_format_t format,
-					hb_buffer_serialize_flags_t flags);
+		     unsigned int start,
+		     unsigned int end,
+		     char *buf,
+		     unsigned int buf_size,
+		     unsigned int *buf_consumed,
+		     hb_font_t *font,
+		     hb_buffer_serialize_format_t format,
+		     hb_buffer_serialize_flags_t flags);
 
 HB_EXTERN hb_bool_t
 hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
@@ -648,10 +666,10 @@ hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
 
 HB_EXTERN hb_bool_t
 hb_buffer_deserialize_unicode (hb_buffer_t *buffer,
-            const char *buf,
-            int buf_len,
-            const char **end_ptr,
-            hb_buffer_serialize_format_t format);
+			       const char *buf,
+			       int buf_len,
+			       const char **end_ptr,
+			       hb_buffer_serialize_format_t format);
 
 
 

@@ -946,7 +946,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (menu->get_item_count()) {
-				menu->set_as_minsize();
+				menu->reset_size();
 				menu->set_position(popup_pos);
 				menu->popup();
 			}

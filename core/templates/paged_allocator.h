@@ -86,10 +86,10 @@ public:
 		}
 		p_mem->~T();
 		available_pool[allocs_available >> page_shift][allocs_available & page_mask] = p_mem;
+		allocs_available++;
 		if (thread_safe) {
 			spin_lock.unlock();
 		}
-		allocs_available++;
 	}
 
 	void reset(bool p_allow_unfreed = false) {

@@ -200,6 +200,7 @@ bool AudioStream::is_monophonic() const {
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
+	ClassDB::bind_method(D_METHOD("instance_playback"), &AudioStream::instance_playback);
 	GDVIRTUAL_BIND(_instance_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);

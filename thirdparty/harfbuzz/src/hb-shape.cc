@@ -126,12 +126,30 @@ hb_shape_full (hb_font_t          *font,
 	       unsigned int        num_features,
 	       const char * const *shaper_list)
 {
+  hb_buffer_t *text_buffer = nullptr;
+  if (buffer->flags & HB_BUFFER_FLAG_VERIFY)
+  {
+    text_buffer = hb_buffer_create ();
+    hb_buffer_append (text_buffer, buffer, 0, -1);
+  }
+
   hb_shape_plan_t *shape_plan = hb_shape_plan_create_cached2 (font->face, &buffer->props,
 							      features, num_features,
 							      font->coords, font->num_coords,
 							      shaper_list);
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
   hb_shape_plan_destroy (shape_plan);
+
+  if (text_buffer)
+  {
+    if (res && !buffer->verify (text_buffer,
+				font,
+				features,
+				num_features,
+				shaper_list))
+      res = false;
+    hb_buffer_destroy (text_buffer);
+  }
 
   return res;
 }

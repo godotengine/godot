@@ -477,9 +477,9 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 				class_desc->add_text(" ");
 				class_desc->push_color(comment_color);
 				if (p_classdoc.is_script_doc) {
-					class_desc->append_text(TTR("There is currently no description for this " + p_method_type + "."));
+					class_desc->append_text(vformat(TTR("There is currently no description for this %s."), p_method_type));
 				} else {
-					class_desc->append_text(TTR("There is currently no description for this " + p_method_type + ". Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(vformat(TTR("There is currently no description for this %s. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), p_method_type).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
 				class_desc->pop();
 			}

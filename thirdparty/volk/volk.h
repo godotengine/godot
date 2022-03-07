@@ -15,7 +15,7 @@
 #endif
 
 /* VOLK_GENERATE_VERSION_DEFINE */
-#define VOLK_HEADER_VERSION 190
+#define VOLK_HEADER_VERSION 204
 /* VOLK_GENERATE_VERSION_DEFINE */
 
 #ifndef VK_NO_PROTOTYPES
@@ -285,6 +285,44 @@ struct VolkDeviceTable
 	PFN_vkSignalSemaphore vkSignalSemaphore;
 	PFN_vkWaitSemaphores vkWaitSemaphores;
 #endif /* defined(VK_VERSION_1_2) */
+#if defined(VK_VERSION_1_3)
+	PFN_vkCmdBeginRendering vkCmdBeginRendering;
+	PFN_vkCmdBindVertexBuffers2 vkCmdBindVertexBuffers2;
+	PFN_vkCmdBlitImage2 vkCmdBlitImage2;
+	PFN_vkCmdCopyBuffer2 vkCmdCopyBuffer2;
+	PFN_vkCmdCopyBufferToImage2 vkCmdCopyBufferToImage2;
+	PFN_vkCmdCopyImage2 vkCmdCopyImage2;
+	PFN_vkCmdCopyImageToBuffer2 vkCmdCopyImageToBuffer2;
+	PFN_vkCmdEndRendering vkCmdEndRendering;
+	PFN_vkCmdPipelineBarrier2 vkCmdPipelineBarrier2;
+	PFN_vkCmdResetEvent2 vkCmdResetEvent2;
+	PFN_vkCmdResolveImage2 vkCmdResolveImage2;
+	PFN_vkCmdSetCullMode vkCmdSetCullMode;
+	PFN_vkCmdSetDepthBiasEnable vkCmdSetDepthBiasEnable;
+	PFN_vkCmdSetDepthBoundsTestEnable vkCmdSetDepthBoundsTestEnable;
+	PFN_vkCmdSetDepthCompareOp vkCmdSetDepthCompareOp;
+	PFN_vkCmdSetDepthTestEnable vkCmdSetDepthTestEnable;
+	PFN_vkCmdSetDepthWriteEnable vkCmdSetDepthWriteEnable;
+	PFN_vkCmdSetEvent2 vkCmdSetEvent2;
+	PFN_vkCmdSetFrontFace vkCmdSetFrontFace;
+	PFN_vkCmdSetPrimitiveRestartEnable vkCmdSetPrimitiveRestartEnable;
+	PFN_vkCmdSetPrimitiveTopology vkCmdSetPrimitiveTopology;
+	PFN_vkCmdSetRasterizerDiscardEnable vkCmdSetRasterizerDiscardEnable;
+	PFN_vkCmdSetScissorWithCount vkCmdSetScissorWithCount;
+	PFN_vkCmdSetStencilOp vkCmdSetStencilOp;
+	PFN_vkCmdSetStencilTestEnable vkCmdSetStencilTestEnable;
+	PFN_vkCmdSetViewportWithCount vkCmdSetViewportWithCount;
+	PFN_vkCmdWaitEvents2 vkCmdWaitEvents2;
+	PFN_vkCmdWriteTimestamp2 vkCmdWriteTimestamp2;
+	PFN_vkCreatePrivateDataSlot vkCreatePrivateDataSlot;
+	PFN_vkDestroyPrivateDataSlot vkDestroyPrivateDataSlot;
+	PFN_vkGetDeviceBufferMemoryRequirements vkGetDeviceBufferMemoryRequirements;
+	PFN_vkGetDeviceImageMemoryRequirements vkGetDeviceImageMemoryRequirements;
+	PFN_vkGetDeviceImageSparseMemoryRequirements vkGetDeviceImageSparseMemoryRequirements;
+	PFN_vkGetPrivateData vkGetPrivateData;
+	PFN_vkQueueSubmit2 vkQueueSubmit2;
+	PFN_vkSetPrivateData vkSetPrivateData;
+#endif /* defined(VK_VERSION_1_3) */
 #if defined(VK_AMD_buffer_marker)
 	PFN_vkCmdWriteBufferMarkerAMD vkCmdWriteBufferMarkerAMD;
 #endif /* defined(VK_AMD_buffer_marker) */
@@ -375,6 +413,9 @@ struct VolkDeviceTable
 	PFN_vkCmdDrawMultiEXT vkCmdDrawMultiEXT;
 	PFN_vkCmdDrawMultiIndexedEXT vkCmdDrawMultiIndexedEXT;
 #endif /* defined(VK_EXT_multi_draw) */
+#if defined(VK_EXT_pageable_device_local_memory)
+	PFN_vkSetDeviceMemoryPriorityEXT vkSetDeviceMemoryPriorityEXT;
+#endif /* defined(VK_EXT_pageable_device_local_memory) */
 #if defined(VK_EXT_private_data)
 	PFN_vkCreatePrivateDataSlotEXT vkCreatePrivateDataSlotEXT;
 	PFN_vkDestroyPrivateDataSlotEXT vkDestroyPrivateDataSlotEXT;
@@ -401,6 +442,13 @@ struct VolkDeviceTable
 #if defined(VK_EXT_vertex_input_dynamic_state)
 	PFN_vkCmdSetVertexInputEXT vkCmdSetVertexInputEXT;
 #endif /* defined(VK_EXT_vertex_input_dynamic_state) */
+#if defined(VK_FUCHSIA_buffer_collection)
+	PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIA;
+	PFN_vkDestroyBufferCollectionFUCHSIA vkDestroyBufferCollectionFUCHSIA;
+	PFN_vkGetBufferCollectionPropertiesFUCHSIA vkGetBufferCollectionPropertiesFUCHSIA;
+	PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA vkSetBufferCollectionBufferConstraintsFUCHSIA;
+	PFN_vkSetBufferCollectionImageConstraintsFUCHSIA vkSetBufferCollectionImageConstraintsFUCHSIA;
+#endif /* defined(VK_FUCHSIA_buffer_collection) */
 #if defined(VK_FUCHSIA_external_memory)
 	PFN_vkGetMemoryZirconHandleFUCHSIA vkGetMemoryZirconHandleFUCHSIA;
 	PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA vkGetMemoryZirconHandlePropertiesFUCHSIA;
@@ -496,6 +544,10 @@ struct VolkDeviceTable
 	PFN_vkCmdDrawIndexedIndirectCountKHR vkCmdDrawIndexedIndirectCountKHR;
 	PFN_vkCmdDrawIndirectCountKHR vkCmdDrawIndirectCountKHR;
 #endif /* defined(VK_KHR_draw_indirect_count) */
+#if defined(VK_KHR_dynamic_rendering)
+	PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR;
+	PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR;
+#endif /* defined(VK_KHR_dynamic_rendering) */
 #if defined(VK_KHR_external_fence_fd)
 	PFN_vkGetFenceFdKHR vkGetFenceFdKHR;
 	PFN_vkImportFenceFdKHR vkImportFenceFdKHR;
@@ -534,6 +586,11 @@ struct VolkDeviceTable
 #if defined(VK_KHR_maintenance3)
 	PFN_vkGetDescriptorSetLayoutSupportKHR vkGetDescriptorSetLayoutSupportKHR;
 #endif /* defined(VK_KHR_maintenance3) */
+#if defined(VK_KHR_maintenance4)
+	PFN_vkGetDeviceBufferMemoryRequirementsKHR vkGetDeviceBufferMemoryRequirementsKHR;
+	PFN_vkGetDeviceImageMemoryRequirementsKHR vkGetDeviceImageMemoryRequirementsKHR;
+	PFN_vkGetDeviceImageSparseMemoryRequirementsKHR vkGetDeviceImageSparseMemoryRequirementsKHR;
+#endif /* defined(VK_KHR_maintenance4) */
 #if defined(VK_KHR_performance_query)
 	PFN_vkAcquireProfilingLockKHR vkAcquireProfilingLockKHR;
 	PFN_vkReleaseProfilingLockKHR vkReleaseProfilingLockKHR;
@@ -872,6 +929,45 @@ extern PFN_vkResetQueryPool vkResetQueryPool;
 extern PFN_vkSignalSemaphore vkSignalSemaphore;
 extern PFN_vkWaitSemaphores vkWaitSemaphores;
 #endif /* defined(VK_VERSION_1_2) */
+#if defined(VK_VERSION_1_3)
+extern PFN_vkCmdBeginRendering vkCmdBeginRendering;
+extern PFN_vkCmdBindVertexBuffers2 vkCmdBindVertexBuffers2;
+extern PFN_vkCmdBlitImage2 vkCmdBlitImage2;
+extern PFN_vkCmdCopyBuffer2 vkCmdCopyBuffer2;
+extern PFN_vkCmdCopyBufferToImage2 vkCmdCopyBufferToImage2;
+extern PFN_vkCmdCopyImage2 vkCmdCopyImage2;
+extern PFN_vkCmdCopyImageToBuffer2 vkCmdCopyImageToBuffer2;
+extern PFN_vkCmdEndRendering vkCmdEndRendering;
+extern PFN_vkCmdPipelineBarrier2 vkCmdPipelineBarrier2;
+extern PFN_vkCmdResetEvent2 vkCmdResetEvent2;
+extern PFN_vkCmdResolveImage2 vkCmdResolveImage2;
+extern PFN_vkCmdSetCullMode vkCmdSetCullMode;
+extern PFN_vkCmdSetDepthBiasEnable vkCmdSetDepthBiasEnable;
+extern PFN_vkCmdSetDepthBoundsTestEnable vkCmdSetDepthBoundsTestEnable;
+extern PFN_vkCmdSetDepthCompareOp vkCmdSetDepthCompareOp;
+extern PFN_vkCmdSetDepthTestEnable vkCmdSetDepthTestEnable;
+extern PFN_vkCmdSetDepthWriteEnable vkCmdSetDepthWriteEnable;
+extern PFN_vkCmdSetEvent2 vkCmdSetEvent2;
+extern PFN_vkCmdSetFrontFace vkCmdSetFrontFace;
+extern PFN_vkCmdSetPrimitiveRestartEnable vkCmdSetPrimitiveRestartEnable;
+extern PFN_vkCmdSetPrimitiveTopology vkCmdSetPrimitiveTopology;
+extern PFN_vkCmdSetRasterizerDiscardEnable vkCmdSetRasterizerDiscardEnable;
+extern PFN_vkCmdSetScissorWithCount vkCmdSetScissorWithCount;
+extern PFN_vkCmdSetStencilOp vkCmdSetStencilOp;
+extern PFN_vkCmdSetStencilTestEnable vkCmdSetStencilTestEnable;
+extern PFN_vkCmdSetViewportWithCount vkCmdSetViewportWithCount;
+extern PFN_vkCmdWaitEvents2 vkCmdWaitEvents2;
+extern PFN_vkCmdWriteTimestamp2 vkCmdWriteTimestamp2;
+extern PFN_vkCreatePrivateDataSlot vkCreatePrivateDataSlot;
+extern PFN_vkDestroyPrivateDataSlot vkDestroyPrivateDataSlot;
+extern PFN_vkGetDeviceBufferMemoryRequirements vkGetDeviceBufferMemoryRequirements;
+extern PFN_vkGetDeviceImageMemoryRequirements vkGetDeviceImageMemoryRequirements;
+extern PFN_vkGetDeviceImageSparseMemoryRequirements vkGetDeviceImageSparseMemoryRequirements;
+extern PFN_vkGetPhysicalDeviceToolProperties vkGetPhysicalDeviceToolProperties;
+extern PFN_vkGetPrivateData vkGetPrivateData;
+extern PFN_vkQueueSubmit2 vkQueueSubmit2;
+extern PFN_vkSetPrivateData vkSetPrivateData;
+#endif /* defined(VK_VERSION_1_3) */
 #if defined(VK_AMD_buffer_marker)
 extern PFN_vkCmdWriteBufferMarkerAMD vkCmdWriteBufferMarkerAMD;
 #endif /* defined(VK_AMD_buffer_marker) */
@@ -1006,6 +1102,9 @@ extern PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT;
 extern PFN_vkCmdDrawMultiEXT vkCmdDrawMultiEXT;
 extern PFN_vkCmdDrawMultiIndexedEXT vkCmdDrawMultiIndexedEXT;
 #endif /* defined(VK_EXT_multi_draw) */
+#if defined(VK_EXT_pageable_device_local_memory)
+extern PFN_vkSetDeviceMemoryPriorityEXT vkSetDeviceMemoryPriorityEXT;
+#endif /* defined(VK_EXT_pageable_device_local_memory) */
 #if defined(VK_EXT_private_data)
 extern PFN_vkCreatePrivateDataSlotEXT vkCreatePrivateDataSlotEXT;
 extern PFN_vkDestroyPrivateDataSlotEXT vkDestroyPrivateDataSlotEXT;
@@ -1036,6 +1135,13 @@ extern PFN_vkMergeValidationCachesEXT vkMergeValidationCachesEXT;
 #if defined(VK_EXT_vertex_input_dynamic_state)
 extern PFN_vkCmdSetVertexInputEXT vkCmdSetVertexInputEXT;
 #endif /* defined(VK_EXT_vertex_input_dynamic_state) */
+#if defined(VK_FUCHSIA_buffer_collection)
+extern PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIA;
+extern PFN_vkDestroyBufferCollectionFUCHSIA vkDestroyBufferCollectionFUCHSIA;
+extern PFN_vkGetBufferCollectionPropertiesFUCHSIA vkGetBufferCollectionPropertiesFUCHSIA;
+extern PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA vkSetBufferCollectionBufferConstraintsFUCHSIA;
+extern PFN_vkSetBufferCollectionImageConstraintsFUCHSIA vkSetBufferCollectionImageConstraintsFUCHSIA;
+#endif /* defined(VK_FUCHSIA_buffer_collection) */
 #if defined(VK_FUCHSIA_external_memory)
 extern PFN_vkGetMemoryZirconHandleFUCHSIA vkGetMemoryZirconHandleFUCHSIA;
 extern PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA vkGetMemoryZirconHandlePropertiesFUCHSIA;
@@ -1152,6 +1258,10 @@ extern PFN_vkCreateSharedSwapchainsKHR vkCreateSharedSwapchainsKHR;
 extern PFN_vkCmdDrawIndexedIndirectCountKHR vkCmdDrawIndexedIndirectCountKHR;
 extern PFN_vkCmdDrawIndirectCountKHR vkCmdDrawIndirectCountKHR;
 #endif /* defined(VK_KHR_draw_indirect_count) */
+#if defined(VK_KHR_dynamic_rendering)
+extern PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR;
+extern PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR;
+#endif /* defined(VK_KHR_dynamic_rendering) */
 #if defined(VK_KHR_external_fence_capabilities)
 extern PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR vkGetPhysicalDeviceExternalFencePropertiesKHR;
 #endif /* defined(VK_KHR_external_fence_capabilities) */
@@ -1219,6 +1329,11 @@ extern PFN_vkTrimCommandPoolKHR vkTrimCommandPoolKHR;
 #if defined(VK_KHR_maintenance3)
 extern PFN_vkGetDescriptorSetLayoutSupportKHR vkGetDescriptorSetLayoutSupportKHR;
 #endif /* defined(VK_KHR_maintenance3) */
+#if defined(VK_KHR_maintenance4)
+extern PFN_vkGetDeviceBufferMemoryRequirementsKHR vkGetDeviceBufferMemoryRequirementsKHR;
+extern PFN_vkGetDeviceImageMemoryRequirementsKHR vkGetDeviceImageMemoryRequirementsKHR;
+extern PFN_vkGetDeviceImageSparseMemoryRequirementsKHR vkGetDeviceImageSparseMemoryRequirementsKHR;
+#endif /* defined(VK_KHR_maintenance4) */
 #if defined(VK_KHR_performance_query)
 extern PFN_vkAcquireProfilingLockKHR vkAcquireProfilingLockKHR;
 extern PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR;

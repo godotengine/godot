@@ -153,7 +153,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			RES res = ResourceLoader::load_threaded_get(path);
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
-					error = ERR_FILE_CORRUPT;
+					error = ERR_FILE_MISSING_DEPENDENCIES;
 					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
 					_printerr();
 					return error;
@@ -165,7 +165,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 				r_res = res;
 			}
 		} else {
-			error = ERR_FILE_CORRUPT;
+			error = ERR_FILE_MISSING_DEPENDENCIES;
 			error_text = "[ext_resource] referenced non-loaded resource at: " + path;
 			_printerr();
 			return error;
@@ -265,7 +265,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
 
 				if (error) {
-					if (error != ERR_FILE_EOF) {
+					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
+						// Resource loading error, just skip it.
+					} else if (error != ERR_FILE_EOF) {
 						_printerr();
 						return Ref<PackedScene>();
 					} else {

@@ -30,59 +30,9 @@
 
 #include "editor_atlas_packer.h"
 
+#include "core/math/geometry_2d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
-
-void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices) {
-	int width = p_bitmap->get_size().width;
-	int height = p_bitmap->get_size().height;
-	int x[3];
-	int y[3];
-
-	for (int j = 0; j < 3; j++) {
-		x[j] = vertices[j].x;
-		y[j] = vertices[j].y;
-	}
-
-	// sort the points vertically
-	if (y[1] > y[2]) {
-		SWAP(x[1], x[2]);
-		SWAP(y[1], y[2]);
-	}
-	if (y[0] > y[1]) {
-		SWAP(x[0], x[1]);
-		SWAP(y[0], y[1]);
-	}
-	if (y[1] > y[2]) {
-		SWAP(x[1], x[2]);
-		SWAP(y[1], y[2]);
-	}
-
-	double dx_far = double(x[2] - x[0]) / (y[2] - y[0] + 1);
-	double dx_upper = double(x[1] - x[0]) / (y[1] - y[0] + 1);
-	double dx_low = double(x[2] - x[1]) / (y[2] - y[1] + 1);
-	double xf = x[0];
-	double xt = x[0] + dx_upper; // if y[0] == y[1], special case
-	for (int yi = y[0]; yi <= (y[2] > height - 1 ? height - 1 : y[2]); yi++) {
-		if (yi >= 0) {
-			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
-				//pixels[int(x + y * width)] = color;
-
-				p_bitmap->set_bit(Point2(xi, yi), true);
-			}
-
-			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
-				p_bitmap->set_bit(Point2(xi, yi), true);
-			}
-		}
-		xf += dx_far;
-		if (yi < y[1]) {
-			xt += dx_upper;
-		} else {
-			xt += dx_low;
-		}
-	}
-}
 
 void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_height, int p_atlas_max_size, int p_cell_resolution) {
 	int divide_by = MIN(64, p_cell_resolution);
@@ -122,10 +72,18 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 				Vector2 vtx = chart.vertices[chart.faces[j].vertex[k]];
 				vtx -= aabb.position;
 				vtx /= divide_by;
+				vtx.x = MIN(vtx.x, w - 1);
+				vtx.y = MIN(vtx.y, h - 1);
 				v[k] = vtx;
 			}
 
-			_plot_triangle(src_bitmap, v);
+			for (int k = 0; k < 3; k++) {
+				int l = k == 0 ? 2 : k - 1;
+				Vector<Point2i> points = Geometry2D::bresenham_line(v[k], v[l]);
+				for (Point2i point : points) {
+					src_bitmap->set_bit(point, true);
+				}
+			}
 		}
 
 		//src_bitmap->convert_to_image()->save_png("bitmap" + itos(i) + ".png");

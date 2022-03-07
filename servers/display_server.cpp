@@ -399,6 +399,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delete_sub_window", "window_id"), &DisplayServer::delete_sub_window);
 
 	ClassDB::bind_method(D_METHOD("window_get_native_handle", "handle_type", "window_id"), &DisplayServer::window_get_native_handle, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_active_popup"), &DisplayServer::window_get_active_popup);
+	ClassDB::bind_method(D_METHOD("window_set_popup_safe_rect", "window", "rect"), &DisplayServer::window_set_popup_safe_rect);
+	ClassDB::bind_method(D_METHOD("window_get_popup_safe_rect", "window"), &DisplayServer::window_get_popup_safe_rect);
 
 	ClassDB::bind_method(D_METHOD("window_set_title", "title", "window_id"), &DisplayServer::window_set_title, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough", "region", "window_id"), &DisplayServer::window_set_mouse_passthrough, DEFVAL(MAIN_WINDOW_ID));
@@ -552,6 +555,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_ALWAYS_ON_TOP);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_NO_FOCUS);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_POPUP);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);

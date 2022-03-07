@@ -39,6 +39,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
+#include "scene/resources/packed_scene.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
@@ -60,7 +61,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
 	add_child(tabs);
@@ -141,11 +142,22 @@ void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p
 }
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
-	const String file = p_debugger->get_stack_script_file();
+	String file = p_debugger->get_stack_script_file();
 	if (file.is_empty()) {
 		return;
 	}
-	stack_script = ResourceLoader::load(file);
+	if (file.is_resource_file()) {
+		stack_script = ResourceLoader::load(file);
+	} else {
+		// If the script is built-in, it can be opened only if the scene is loaded in memory.
+		int i = file.find("::");
+		int j = file.rfind("(", i);
+		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
+			file = file.substr(j + 1, file.find(")", i) - j - 1);
+		}
+		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
+		stack_script = ResourceLoader::load(file);
+	}
 	const int line = p_debugger->get_stack_script_line() - 1;
 	emit_signal(SNAME("goto_script_line"), stack_script, line);
 	emit_signal(SNAME("set_execution"), stack_script, line);

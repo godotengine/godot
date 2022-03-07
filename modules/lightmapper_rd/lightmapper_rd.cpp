@@ -618,14 +618,14 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 0;
-			u.ids.push_back(dest_light_tex);
+			u.append_id(dest_light_tex);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
-			u.ids.push_back(source_light_tex);
+			u.append_id(source_light_tex);
 			uniforms.push_back(u);
 		}
 	}
@@ -856,70 +856,70 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
-			u.ids.push_back(vertex_buffer);
+			u.append_id(vertex_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
-			u.ids.push_back(triangle_buffer);
+			u.append_id(triangle_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.ids.push_back(triangle_cell_indices_buffer);
+			u.append_id(triangle_cell_indices_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 4;
-			u.ids.push_back(lights_buffer);
+			u.append_id(lights_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 5;
-			u.ids.push_back(seams_buffer);
+			u.append_id(seams_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 6;
-			u.ids.push_back(probe_positions_buffer);
+			u.append_id(probe_positions_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 7;
-			u.ids.push_back(grid_texture);
+			u.append_id(grid_texture);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 8;
-			u.ids.push_back(albedo_array_tex);
+			u.append_id(albedo_array_tex);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 9;
-			u.ids.push_back(emission_array_tex);
+			u.append_id(emission_array_tex);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 10;
-			u.ids.push_back(sampler);
+			u.append_id(sampler);
 			base_uniforms.push_back(u);
 		}
 	}
@@ -1057,14 +1057,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
-				u.ids.push_back(position_tex);
+				u.append_id(position_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
-				u.ids.push_back(unocclude_tex); //will be unused
+				u.append_id(unocclude_tex); //will be unused
 				uniforms.push_back(u);
 			}
 		}
@@ -1097,42 +1097,42 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
-				u.ids.push_back(light_source_tex);
+				u.append_id(light_source_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
-				u.ids.push_back(light_dest_tex); //will be unused
+				u.append_id(light_dest_tex); //will be unused
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
-				u.ids.push_back(position_tex);
+				u.append_id(position_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 3;
-				u.ids.push_back(normal_tex);
+				u.append_id(normal_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 4;
-				u.ids.push_back(light_accum_tex);
+				u.append_id(light_accum_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 5;
-				u.ids.push_back(light_primary_dynamic_tex);
+				u.append_id(light_primary_dynamic_tex);
 				uniforms.push_back(u);
 			}
 		}
@@ -1176,57 +1176,57 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
-				u.ids.push_back(light_dest_tex);
+				u.append_id(light_dest_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
-				u.ids.push_back(light_source_tex);
+				u.append_id(light_source_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
-				u.ids.push_back(position_tex);
+				u.append_id(position_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 3;
-				u.ids.push_back(normal_tex);
+				u.append_id(normal_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 4;
-				u.ids.push_back(light_accum_tex);
+				u.append_id(light_accum_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 5;
-				u.ids.push_back(unocclude_tex); //reuse unocclude tex
+				u.append_id(unocclude_tex); //reuse unocclude tex
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 6;
-				u.ids.push_back(light_environment_tex);
+				u.append_id(light_environment_tex);
 				uniforms.push_back(u);
 			}
 		}
 
 		RID secondary_uniform_set[2];
 		secondary_uniform_set[0] = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
-		uniforms.write[0].ids.write[0] = light_source_tex;
-		uniforms.write[1].ids.write[0] = light_dest_tex;
+		uniforms.write[0].set_id(0, light_source_tex);
+		uniforms.write[1].set_id(0, light_dest_tex);
 		secondary_uniform_set[1] = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
 
 		switch (p_quality) {
@@ -1332,28 +1332,28 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(light_probe_buffer);
+				u.append_id(light_probe_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 1;
-				u.ids.push_back(light_dest_tex);
+				u.append_id(light_dest_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
-				u.ids.push_back(light_primary_dynamic_tex);
+				u.append_id(light_primary_dynamic_tex);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 3;
-				u.ids.push_back(light_environment_tex);
+				u.append_id(light_environment_tex);
 				uniforms.push_back(u);
 			}
 		}
@@ -1531,7 +1531,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
-				u.ids.push_back(light_accum_tex2);
+				u.append_id(light_accum_tex2);
 				uniforms.push_back(u);
 			}
 		}

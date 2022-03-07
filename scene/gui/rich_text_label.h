@@ -620,7 +620,7 @@ public:
 	void set_fixed_size_to_width(int p_width);
 	virtual Size2 get_minimum_size() const override;
 
-	RichTextLabel();
+	RichTextLabel(const String &p_text = String());
 	~RichTextLabel();
 };
 

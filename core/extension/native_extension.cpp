@@ -295,9 +295,10 @@ NativeExtension::InitializationLevel NativeExtension::get_minimum_library_initia
 	ERR_FAIL_COND_V(library == nullptr, INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
 }
+
 void NativeExtension::initialize_library(InitializationLevel p_level) {
 	ERR_FAIL_COND(library == nullptr);
-	ERR_FAIL_COND(p_level <= int32_t(level_initialized));
+	ERR_FAIL_COND_MSG(p_level <= int32_t(level_initialized), vformat("Level '%d' must be higher than the current level '%d'", p_level, level_initialized));
 
 	level_initialized = int32_t(p_level);
 
@@ -324,6 +325,7 @@ void NativeExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_CORE);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SERVERS);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SCENE);
+	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_DRIVER);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_EDITOR);
 }
 

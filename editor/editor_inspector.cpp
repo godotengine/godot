@@ -691,15 +691,11 @@ void EditorProperty::unhandled_key_input(const Ref<InputEvent> &p_event) {
 }
 
 const Color *EditorProperty::_get_property_colors() {
-	const Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	const float saturation = base.get_s() * 0.75;
-	const float value = base.get_v();
-
 	static Color c[4];
-	c[0].set_hsv(0.0 / 3.0 + 0.05, saturation, value);
-	c[1].set_hsv(1.0 / 3.0 + 0.05, saturation, value);
-	c[2].set_hsv(2.0 / 3.0 + 0.05, saturation, value);
-	c[3].set_hsv(1.5 / 3.0 + 0.05, saturation, value);
+	c[0] = get_theme_color(SNAME("property_color_x"), SNAME("Editor"));
+	c[1] = get_theme_color(SNAME("property_color_y"), SNAME("Editor"));
+	c[2] = get_theme_color(SNAME("property_color_z"), SNAME("Editor"));
+	c[3] = get_theme_color(SNAME("property_color_w"), SNAME("Editor"));
 	return c;
 }
 
@@ -3514,7 +3510,9 @@ void EditorInspector::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_inspector_bg();
 
-			update_tree();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				update_tree();
+			}
 		} break;
 	}
 }

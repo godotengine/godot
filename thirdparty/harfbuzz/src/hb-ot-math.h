@@ -50,14 +50,18 @@ HB_BEGIN_DECLS
 #define HB_OT_TAG_MATH HB_TAG('M','A','T','H')
 
 /**
- * HB_OT_MATH_SCRIPT:
+ * HB_OT_TAG_MATH_SCRIPT:
  *
- * OpenType script tag for math shaping, for use with
- * Use with hb_buffer_set_script().
+ * OpenType script tag, `math`, for features specific to math shaping.
  *
- * Since: 1.3.3
+ * <note>#HB_OT_TAG_MATH_SCRIPT is not a valid #hb_script_t and should only be
+ * used with functions that accept raw OpenType script tags, such as
+ * #hb_ot_layout_collect_features. In other cases, #HB_SCRIPT_MATH should be
+ * used instead.</note>
+ *
+ * Since: 3.4.0
  */
-#define HB_OT_MATH_SCRIPT HB_TAG('m','a','t','h')
+#define HB_OT_TAG_MATH_SCRIPT HB_TAG('m','a','t','h')
 
 /* Types */
 
@@ -205,6 +209,20 @@ typedef enum {
 } hb_ot_math_kern_t;
 
 /**
+ * hb_ot_math_kern_entry_t:
+ * @max_correction_height: The maximum height at which this entry should be used
+ * @kern_value: The kern value of the entry
+ *
+ * Data type to hold math kerning (cut-in) information for a glyph.
+ *
+ * Since: 3.4.0
+ */
+typedef struct {
+  hb_position_t max_correction_height;
+  hb_position_t kern_value;
+} hb_ot_math_kern_entry_t;
+
+/**
  * hb_ot_math_glyph_variant_t:
  * @glyph: The glyph index of the variant
  * @advance: The advance width of the variant
@@ -279,6 +297,14 @@ hb_ot_math_get_glyph_kerning (hb_font_t *font,
 			      hb_codepoint_t glyph,
 			      hb_ot_math_kern_t kern,
 			      hb_position_t correction_height);
+
+HB_EXTERN unsigned int
+hb_ot_math_get_glyph_kernings (hb_font_t *font,
+			       hb_codepoint_t glyph,
+			       hb_ot_math_kern_t kern,
+			       unsigned int start_offset,
+			       unsigned int *entries_count, /* IN/OUT */
+			       hb_ot_math_kern_entry_t *kern_entries /* OUT */);
 
 HB_EXTERN unsigned int
 hb_ot_math_get_glyph_variants (hb_font_t *font,

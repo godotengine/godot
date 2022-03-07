@@ -542,7 +542,7 @@ void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &
 		filters.push_back(f);
 	}
 
-	DirAccess *da = DirAccess::open("res://");
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	ERR_FAIL_NULL(da);
 	_edit_files_with_filter(da, filters, r_list, exclude);
 	memdelete(da);

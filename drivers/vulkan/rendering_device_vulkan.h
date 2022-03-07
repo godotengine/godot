@@ -1016,7 +1016,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _free_pending_resources(int p_frame);
 
 	VmaAllocator allocator = nullptr;
-	VmaPool small_allocs_pool = nullptr;
+	Map<uint32_t, VmaPool> small_allocs_pools;
+	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
 	VulkanContext *context = nullptr;
 
@@ -1037,6 +1038,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
+	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);

@@ -306,6 +306,8 @@
 			Set's the window's current mode.
 			[b]Note:[/b] Fullscreen mode is not exclusive fullscreen on Windows and Linux.
 		</member>
+		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
 		</member>
@@ -346,6 +348,7 @@
 		<signal name="files_dropped">
 			<argument index="0" name="files" type="PackedStringArray" />
 			<description>
+				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 			</description>
 		</signal>
 		<signal name="focus_entered">
@@ -416,7 +419,9 @@
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="5" enum="Flags">
+		<constant name="FLAG_POPUP" value="5" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="6" enum="Flags">
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
 		</constant>

@@ -180,7 +180,7 @@ public:
 		return p_other->collision_layer & collision_mask;
 	}
 
-	_FORCE_INLINE_ bool interacts_with(GodotCollisionObject2D *p_other) const {
+	_FORCE_INLINE_ bool interacts_with(const GodotCollisionObject2D *p_other) const {
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 

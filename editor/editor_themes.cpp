@@ -411,9 +411,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Colors
 	bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
-	const Color dark_color_1 = base_color.lerp(Color(0, 0, 0, 1), contrast);
-	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5);
-	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2);
+	// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
+	// Some places in the editor use 8-bit integer colors.
+	const Color dark_color_1 = base_color.lerp(Color(0, 0, 0, 1), contrast).clamp();
+	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5).clamp();
+	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2).clamp();
 
 	const Color background_color = dark_color_2;
 
@@ -433,7 +435,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color disabled_color = mono_color.inverted().lerp(base_color, 0.7);
 	const Color disabled_bg_color = mono_color.inverted().lerp(base_color, 0.9);
 
-	Color icon_hover_color = Color(1, 1, 1) * (dark_theme ? 1.15 : 1.45);
+	const Color icon_normal_color = Color(1, 1, 1);
+	Color icon_hover_color = icon_normal_color * (dark_theme ? 1.15 : 1.45);
 	icon_hover_color.a = 1.0;
 	Color icon_focus_color = icon_hover_color;
 	// Make the pressed icon color overbright because icons are not completely white on a dark theme.
@@ -463,6 +466,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("axis_x_color", "Editor", Color(0.96, 0.20, 0.32));
 	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
 	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
+
+	const float prop_color_saturation = accent_color.get_s() * 0.75;
+	const float prop_color_value = accent_color.get_v();
+
+	theme->set_color("property_color_x", "Editor", Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_y", "Editor", Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_z", "Editor", Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_w", "Editor", Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
@@ -686,6 +697,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "Button", font_focus_color);
 	theme->set_color("font_pressed_color", "Button", accent_color);
 	theme->set_color("font_disabled_color", "Button", font_disabled_color);
+	theme->set_color("icon_normal_color", "Button", icon_normal_color);
 	theme->set_color("icon_hover_color", "Button", icon_hover_color);
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
@@ -863,6 +875,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
 	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
+
+	// EditorSpinSlider.
+	theme->set_color("label_color", "EditorSpinSlider", font_color);
+	theme->set_color("read_only_label_color", "EditorSpinSlider", font_readonly_color);
 
 	Ref<StyleBoxFlat> style_property_bg = style_default->duplicate();
 	style_property_bg->set_bg_color(highlight_color);
@@ -1156,7 +1172,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
 	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
-	theme->set_constant("line_spacing", "CodeEdit", EDITOR_DEF("text_editor/appearance/whitespace/line_spacing", 6));
+	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon(SNAME("GuiVsplitBg"), SNAME("EditorIcons")), 1, 1, 1, 1));

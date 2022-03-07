@@ -65,10 +65,6 @@ void XRPositionalTracker::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("input_value_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("input_axis_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "vector")));
-
-	ClassDB::bind_method(D_METHOD("get_rumble"), &XRPositionalTracker::get_rumble);
-	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRPositionalTracker::set_rumble);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble"), "set_rumble", "get_rumble");
 };
 
 void XRPositionalTracker::set_tracker_type(XRServer::TrackerType p_type) {
@@ -206,21 +202,8 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 	}
 }
 
-real_t XRPositionalTracker::get_rumble() const {
-	return rumble;
-};
-
-void XRPositionalTracker::set_rumble(real_t p_rumble) {
-	if (p_rumble > 0.0) {
-		rumble = p_rumble;
-	} else {
-		rumble = 0.0;
-	};
-};
-
 XRPositionalTracker::XRPositionalTracker() {
 	type = XRServer::TRACKER_UNKNOWN;
 	name = "Unknown";
 	hand = TRACKER_HAND_UNKNOWN;
-	rumble = 0.0;
 };

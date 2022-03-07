@@ -2037,14 +2037,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
-			begin_transform(TRANSFORM_TRANSLATE, true);
-		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
-			begin_transform(TRANSFORM_ROTATE, true);
-		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
-			begin_transform(TRANSFORM_SCALE, true);
+		if (!is_freelook_active()) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
+				begin_transform(TRANSFORM_TRANSLATE, true);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
+				begin_transform(TRANSFORM_ROTATE, true);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
+				begin_transform(TRANSFORM_SCALE, true);
+			}
 		}
 
 		// Freelook doesn't work in orthogonal mode.
@@ -2284,7 +2286,7 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 
 Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
-	if (bool(EDITOR_DEF("editors/3d/navigation/warped_mouse_panning", false))) {
+	if (bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
@@ -6920,19 +6922,19 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 }
 
 void Node3DEditor::_update_theme() {
-	tool_button[Node3DEditor::TOOL_MODE_SELECT]->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_MOVE]->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_ROTATE]->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_SCALE]->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_LIST_SELECT]->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_LOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_UNLOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_GROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_SELECT]->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_MOVE]->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_ROTATE]->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_SCALE]->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
+	tool_button[TOOL_LOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")));
+	tool_button[TOOL_UNLOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
+	tool_button[TOOL_GROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
 
-	tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
-	tool_option_button[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
-	tool_option_button[Node3DEditor::TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
 
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_theme_icon(SNAME("Panels1"), SNAME("EditorIcons")));
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_theme_icon(SNAME("Panels2"), SNAME("EditorIcons")));

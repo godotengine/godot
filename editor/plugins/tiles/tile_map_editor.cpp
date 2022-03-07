@@ -1347,7 +1347,12 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			}
 
 			if (picked_source >= 0) {
-				sources_list->set_current(picked_source);
+				for (int i = 0; i < sources_list->get_item_count(); i++) {
+					if (int(sources_list->get_item_metadata(i)) == picked_source) {
+						sources_list->set_current(i);
+						break;
+					}
+				}
 				sources_list->ensure_current_is_visible();
 				TilesEditorPlugin::get_singleton()->set_sources_lists_current(picked_source);
 			}
@@ -4019,7 +4024,7 @@ TileMapEditor::TileMapEditor() {
 	// Layer selector.
 	layers_selection_popup = memnew(PopupMenu);
 	layers_selection_popup->connect("id_pressed", callable_mp(this, &TileMapEditor::_layers_selection_id_pressed));
-	layers_selection_popup->set_close_on_parent_focus(false);
+	layers_selection_popup->set_flag(Window::FLAG_POPUP, false);
 
 	layers_selection_button = memnew(Button);
 	layers_selection_button->set_toggle_mode(true);

@@ -60,7 +60,7 @@ RID EffectsRD::_get_uniform_set_from_image(RID p_image) {
 	RD::Uniform u;
 	u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 	u.binding = 0;
-	u.ids.push_back(p_image);
+	u.append_id(p_image);
 	uniforms.push_back(u);
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 1);
@@ -82,7 +82,7 @@ RID EffectsRD::_get_uniform_set_for_input(RID p_texture) {
 	RD::Uniform u;
 	u.uniform_type = RD::UNIFORM_TYPE_INPUT_ATTACHMENT;
 	u.binding = 0;
-	u.ids.push_back(p_texture);
+	u.append_id(p_texture);
 	uniforms.push_back(u);
 	// This is specific to our subpass shader
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, TONEMAP_MODE_SUBPASS), 0);
@@ -104,8 +104,8 @@ RID EffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) 
 	RD::Uniform u;
 	u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u.binding = 0;
-	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-	u.ids.push_back(p_texture);
+	u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+	u.append_id(p_texture);
 	uniforms.push_back(u);
 	// anything with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 0);
@@ -132,16 +132,16 @@ RID EffectsRD::_get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
-		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-		u.ids.push_back(p_texture1);
+		u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.append_id(p_texture1);
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 1;
-		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-		u.ids.push_back(p_texture2);
+		u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.append_id(p_texture2);
 		uniforms.push_back(u);
 	}
 	// anything with the same configuration (one texture in binding 0 for set 0), is good
@@ -164,8 +164,8 @@ RID EffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bool p_use_m
 	RD::Uniform u;
 	u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u.binding = 0;
-	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-	u.ids.push_back(p_texture);
+	u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+	u.append_id(p_texture);
 	uniforms.push_back(u);
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 0);
@@ -191,8 +191,8 @@ RID EffectsRD::_get_compute_uniform_set_from_texture_and_sampler(RID p_texture, 
 	RD::Uniform u;
 	u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u.binding = 0;
-	u.ids.push_back(p_sampler);
-	u.ids.push_back(p_texture);
+	u.append_id(p_sampler);
+	u.append_id(p_texture);
 	uniforms.push_back(u);
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.blur_shader.version_get_shader(ssao.blur_shader_version, 0), 0);
@@ -219,16 +219,16 @@ RID EffectsRD::_get_compute_uniform_set_from_texture_pair(RID p_texture1, RID p_
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
-		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-		u.ids.push_back(p_texture1);
+		u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.append_id(p_texture1);
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 1;
-		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-		u.ids.push_back(p_texture2);
+		u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.append_id(p_texture2);
 		uniforms.push_back(u);
 	}
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
@@ -256,14 +256,14 @@ RID EffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1, RID p_te
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = 0;
-		u.ids.push_back(p_texture1);
+		u.append_id(p_texture1);
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = 1;
-		u.ids.push_back(p_texture2);
+		u.append_id(p_texture2);
 		uniforms.push_back(u);
 	}
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
@@ -332,7 +332,7 @@ void EffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 }
 
-void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary) {
+void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary, bool p_multiview) {
 	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
 	if (p_flip_y) {
@@ -348,10 +348,18 @@ void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer,
 		copy_to_fb.push_constant.srgb = true;
 	}
 
+	CopyToFBMode mode;
+	if (p_multiview) {
+		mode = p_secondary.is_valid() ? COPY_TO_FB_MULTIVIEW_WITH_DEPTH : COPY_TO_FB_MULTIVIEW;
+	} else {
+		mode = p_secondary.is_valid() ? COPY_TO_FB_COPY2 : COPY_TO_FB_COPY;
+	}
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[p_secondary.is_valid() ? COPY_TO_FB_COPY2 : COPY_TO_FB_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
 	if (p_secondary.is_valid()) {
+		// TODO may need to do this differently when reading from depth buffer for multiview
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_secondary), 1);
 	}
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
@@ -638,13 +646,13 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr.push_constant.metallic_mask[3] = CLAMP(p_metallic_mask.a * 255.0, 0, 255);
 		store_camera(p_camera, ssr.push_constant.projection);
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[(p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[(p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL]);
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssr.push_constant, sizeof(ScreenSpaceReflectionPushConstant));
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output_blur, p_scale_depth), 0);
 
-		if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
+		if (p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output, p_blur_radius), 1);
 		} else {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_output), 1);
@@ -655,7 +663,7 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.width, p_screen_size.height, 1);
 	}
 
-	if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
+	if (p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
 		//blur
 
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -667,10 +675,10 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr_filter.push_constant.proj_info[2] = (1.0f - p_camera.matrix[0][2]) / p_camera.matrix[0][0];
 		ssr_filter.push_constant.proj_info[3] = (1.0f + p_camera.matrix[1][2]) / p_camera.matrix[1][1];
 		ssr_filter.push_constant.vertical = 0;
-		if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_LOW) {
+		if (p_roughness_quality == RS::ENV_SSR_ROUGHNESS_QUALITY_LOW) {
 			ssr_filter.push_constant.steps = p_max_steps / 3;
 			ssr_filter.push_constant.increment = 3;
-		} else if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_MEDIUM) {
+		} else if (p_roughness_quality == RS::ENV_SSR_ROUGHNESS_QUALITY_MEDIUM) {
 			ssr_filter.push_constant.steps = p_max_steps / 2;
 			ssr_filter.push_constant.increment = 2;
 		} else {
@@ -1381,28 +1389,28 @@ void EffectsRD::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 0;
-			u.ids.push_back(p_depth_mipmaps[depth_index + 1]);
+			u.append_id(p_depth_mipmaps[depth_index + 1]);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 1;
-			u.ids.push_back(p_depth_mipmaps[depth_index + 2]);
+			u.append_id(p_depth_mipmaps[depth_index + 2]);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 2;
-			u.ids.push_back(p_depth_mipmaps[depth_index + 3]);
+			u.append_id(p_depth_mipmaps[depth_index + 3]);
 			uniforms.push_back(u);
 		}
 		if (use_full_mips) {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 3;
-			u.ids.push_back(p_depth_mipmaps[4]);
+			u.append_id(p_depth_mipmaps[4]);
 			uniforms.push_back(u);
 		}
 		ss_effects.downsample_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ss_effects.downsample_shader.version_get_shader(ss_effects.downsample_shader_version, use_full_mips ? 6 : 2), 2);
@@ -1529,22 +1537,22 @@ void EffectsRD::generate_ssao(RID p_normal_buffer, RID p_depth_mipmaps_texture, 
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 				u.binding = 0;
-				u.ids.push_back(default_sampler);
-				u.ids.push_back(p_depth_mipmaps_texture);
+				u.append_id(default_sampler);
+				u.append_id(p_depth_mipmaps_texture);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
-				u.ids.push_back(p_normal_buffer);
+				u.append_id(p_normal_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(ss_effects.gather_constants_buffer);
+				u.append_id(ss_effects.gather_constants_buffer);
 				uniforms.push_back(u);
 			}
 			r_gather_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 0), 0);
@@ -1556,22 +1564,22 @@ void EffectsRD::generate_ssao(RID p_normal_buffer, RID p_depth_mipmaps_texture, 
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
-				u.ids.push_back(p_ao_pong);
+				u.append_id(p_ao_pong);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 				u.binding = 1;
-				u.ids.push_back(default_sampler);
-				u.ids.push_back(p_importance_map);
+				u.append_id(default_sampler);
+				u.append_id(p_importance_map);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(ssao.importance_map_load_counter);
+				u.append_id(ssao.importance_map_load_counter);
 				uniforms.push_back(u);
 			}
 			r_importance_map_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 2), 1);
@@ -1803,15 +1811,15 @@ void EffectsRD::screen_space_indirect_lighting(RID p_diffuse, RID p_destination,
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 				u.binding = 0;
-				u.ids.push_back(default_mipmap_sampler);
-				u.ids.push_back(p_diffuse);
+				u.append_id(default_mipmap_sampler);
+				u.append_id(p_diffuse);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 1;
-				u.ids.push_back(ssil.projection_uniform_buffer);
+				u.append_id(ssil.projection_uniform_buffer);
 				uniforms.push_back(u);
 			}
 			r_projection_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssil.gather_shader.version_get_shader(ssil.gather_shader_version, 0), 3);
@@ -1823,22 +1831,22 @@ void EffectsRD::screen_space_indirect_lighting(RID p_diffuse, RID p_destination,
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 				u.binding = 0;
-				u.ids.push_back(default_sampler);
-				u.ids.push_back(p_depth_mipmaps_texture);
+				u.append_id(default_sampler);
+				u.append_id(p_depth_mipmaps_texture);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 1;
-				u.ids.push_back(p_normal_buffer);
+				u.append_id(p_normal_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(ss_effects.gather_constants_buffer);
+				u.append_id(ss_effects.gather_constants_buffer);
 				uniforms.push_back(u);
 			}
 			r_gather_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssil.gather_shader.version_get_shader(ssil.gather_shader_version, 0), 0);
@@ -1850,22 +1858,22 @@ void EffectsRD::screen_space_indirect_lighting(RID p_diffuse, RID p_destination,
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
-				u.ids.push_back(p_ssil_pong);
+				u.append_id(p_ssil_pong);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 				u.binding = 1;
-				u.ids.push_back(default_sampler);
-				u.ids.push_back(p_importance_map);
+				u.append_id(default_sampler);
+				u.append_id(p_importance_map);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(ssil.importance_map_load_counter);
+				u.append_id(ssil.importance_map_load_counter);
 				uniforms.push_back(u);
 			}
 			r_importance_map_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssil.gather_shader.version_get_shader(ssil.gather_shader_version, 2), 1);
@@ -2032,7 +2040,7 @@ void EffectsRD::cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, u
 	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
-	roughness.push_constant.roughness = p_roughness;
+	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
 	roughness.push_constant.sample_count = p_sample_count;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
 	roughness.push_constant.face_size = p_size;
@@ -2060,7 +2068,7 @@ void EffectsRD::cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_fra
 	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id;
-	roughness.push_constant.roughness = p_roughness;
+	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
 	roughness.push_constant.sample_count = p_sample_count;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
 	roughness.push_constant.face_size = p_size;
@@ -2123,7 +2131,7 @@ void EffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap,
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = i;
-		u.ids.push_back(p_dest_cubemap[i]);
+		u.append_id(p_dest_cubemap[i]);
 		uniforms.push_back(u);
 	}
 	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
@@ -2367,15 +2375,26 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n");
 		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n");
 		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n");
+		copy_modes.push_back("\n#define MULTIVIEW\n");
+		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n");
 
 		copy_to_fb.shader.initialize(copy_modes);
+
+		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+			copy_to_fb.shader.set_variant_enabled(COPY_TO_FB_MULTIVIEW, false);
+			copy_to_fb.shader.set_variant_enabled(COPY_TO_FB_MULTIVIEW_WITH_DEPTH, false);
+		}
 
 		copy_to_fb.shader_version = copy_to_fb.shader.version_create();
 
 		//use additive
 
 		for (int i = 0; i < COPY_TO_FB_MAX; i++) {
-			copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			if (copy_to_fb.shader.is_variant_enabled(i)) {
+				copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			} else {
+				copy_to_fb.pipelines[i].clear();
+			}
 		}
 	}
 
@@ -2632,7 +2651,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 					RD::Uniform u;
 					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 					u.binding = 0;
-					u.ids.push_back(ssao.importance_map_load_counter);
+					u.append_id(ssao.importance_map_load_counter);
 					uniforms.push_back(u);
 				}
 				ssao.counter_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.importance_map_shader.version_get_shader(ssao.importance_map_shader_version, 2), 2);
@@ -2747,7 +2766,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(filter.coefficient_buffer);
+				u.append_id(filter.coefficient_buffer);
 				uniforms.push_back(u);
 			}
 			filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.raster_shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
@@ -2765,7 +2784,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(filter.coefficient_buffer);
+				u.append_id(filter.coefficient_buffer);
 				uniforms.push_back(u);
 			}
 			filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.compute_shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
@@ -2902,7 +2921,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(ssil.importance_map_load_counter);
+				u.append_id(ssil.importance_map_load_counter);
 				uniforms.push_back(u);
 			}
 			ssil.counter_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssil.importance_map_shader.version_get_shader(ssil.importance_map_shader_version, 2), 2);

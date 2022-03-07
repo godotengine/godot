@@ -56,32 +56,19 @@ Transform2D CanvasItem::_edit_get_transform() const {
 #endif
 
 bool CanvasItem::is_visible_in_tree() const {
-	return visible && visible_in_tree;
+	return visible && parent_visible_in_tree;
 }
 
-void CanvasItem::_propagate_visibility_changed(bool p_visible, bool p_was_visible) {
-	if (p_visible && first_draw) { //avoid propagating it twice
+void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
+	parent_visible_in_tree = p_parent_visible_in_tree;
+	if (!visible) {
+		return;
+	}
+	if (p_parent_visible_in_tree && first_draw) { // Avoid propagating it twice.
 		first_draw = false;
 	}
-	visible_in_tree = p_visible;
-	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (visible && p_visible) {
-		update();
-	} else if (!p_visible && (visible || p_was_visible)) {
-		emit_signal(SceneStringNames::get_singleton()->hidden);
-	}
-	_block();
-
-	for (int i = 0; i < get_child_count(); i++) {
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
-
-		if (c && c->visible) { //should the top_levels stop propagation? i think so but..
-			c->_propagate_visibility_changed(p_visible);
-		}
-	}
-
-	_unblock();
+	_handle_visibility_change(p_parent_visible_in_tree);
 }
 
 void CanvasItem::set_visible(bool p_visible) {
@@ -90,13 +77,34 @@ void CanvasItem::set_visible(bool p_visible) {
 	}
 
 	visible = p_visible;
-	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 
-	if (!is_inside_tree()) {
+	if (!parent_visible_in_tree) {
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
 		return;
 	}
 
-	_propagate_visibility_changed(p_visible, !p_visible);
+	_handle_visibility_change(p_visible);
+}
+
+void CanvasItem::_handle_visibility_change(bool p_visible) {
+	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
+	notification(NOTIFICATION_VISIBILITY_CHANGED);
+
+	if (p_visible) {
+		update();
+	} else {
+		emit_signal(SceneStringNames::get_singleton()->hidden);
+	}
+
+	_block();
+	for (int i = 0; i < get_child_count(); i++) {
+		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
+
+		if (c) { // Should the top_levels stop propagation? I think so, but...
+			c->_propagate_visibility_changed(p_visible);
+		}
+	}
+	_unblock();
 }
 
 void CanvasItem::show() {
@@ -264,13 +272,13 @@ void CanvasItem::_notification(int p_what) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 
 				if (ci) {
-					visible_in_tree = ci->is_visible_in_tree();
+					parent_visible_in_tree = ci->is_visible_in_tree();
 					C = ci->children_items.push_back(this);
 				} else {
 					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
 
 					if (cl) {
-						visible_in_tree = cl->is_visible();
+						parent_visible_in_tree = cl->is_visible();
 					} else {
 						// Look for a window.
 						Viewport *viewport = nullptr;
@@ -288,9 +296,9 @@ void CanvasItem::_notification(int p_what) {
 						window = Object::cast_to<Window>(viewport);
 						if (window) {
 							window->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
-							visible_in_tree = window->is_visible();
+							parent_visible_in_tree = window->is_visible();
 						} else {
-							visible_in_tree = true;
+							parent_visible_in_tree = true;
 						}
 					}
 				}
@@ -333,7 +341,7 @@ void CanvasItem::_notification(int p_what) {
 				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
 			}
 			global_invalid = true;
-			visible_in_tree = false;
+			parent_visible_in_tree = false;
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

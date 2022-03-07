@@ -2692,12 +2692,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 		}
 	}
 
-	attribute->is_attribute = true;
 	attribute->base = p_previous_operand;
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier after "." for attribute access.)")) {
 		return attribute;
 	}
+
+	attribute->is_attribute = true;
 	attribute->attribute = parse_identifier();
 
 	return attribute;

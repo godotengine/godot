@@ -955,6 +955,10 @@ CSGBrush *CSGSphere3D::_build_brush() {
 				double u0 = double(j) / radial_segments;
 
 				double longitude1 = longitude_step * (j + 1);
+				if (j == radial_segments - 1) {
+					longitude1 = 0;
+				}
+
 				double x1 = Math::sin(longitude1);
 				double z1 = Math::cos(longitude1);
 				double u1 = double(j + 1) / radial_segments;
@@ -1271,6 +1275,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 			for (int i = 0; i < sides; i++) {
 				float inc = float(i) / sides;
 				float inc_n = float((i + 1)) / sides;
+				if (i == sides - 1) {
+					inc_n = 0;
+				}
 
 				float ang = inc * Math_TAU;
 				float ang_n = inc_n * Math_TAU;

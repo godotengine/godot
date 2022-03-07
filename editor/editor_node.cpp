@@ -313,6 +313,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	}
 }
 
+// TODO: This REALLY should be done in a better way than replacing all tabs after almost EVERY action.
 void EditorNode::_update_scene_tabs() {
 	bool show_rb = EditorSettings::get_singleton()->get("interface/scene_tabs/show_script_button");
 
@@ -329,6 +330,9 @@ void EditorNode::_update_scene_tabs() {
 	}
 
 	disambiguate_filenames(full_path_names, disambiguated_scene_names);
+
+	// Workaround to ignore the tab_changed signal from the first added tab.
+	scene_tabs->disconnect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 
 	scene_tabs->clear_tabs();
 	Ref<Texture2D> script_icon = gui_base->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
@@ -388,6 +392,9 @@ void EditorNode::_update_scene_tabs() {
 			scene_tab_add->set_position(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y));
 		}
 	}
+
+	// Reconnect after everything is done.
+	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 }
 
 void EditorNode::_version_control_menu_option(int p_idx) {
@@ -694,22 +701,29 @@ void EditorNode::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? TabBar::CLOSE_BUTTON_SHOW_ALWAYS : TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-			theme = create_custom_theme(theme_base->get_theme());
 
-			theme_base->set_theme(theme);
-			gui_base->set_theme(theme);
+			bool theme_changed =
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme");
 
-			gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
-			scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
-			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
-			scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox(SNAME("SceneTabFG"), SNAME("EditorStyles")));
-			scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
+			if (theme_changed) {
+				theme = create_custom_theme(theme_base->get_theme());
 
-			file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
-			project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
-			debug_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
-			settings_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
-			help_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+				theme_base->set_theme(theme);
+				gui_base->set_theme(theme);
+
+				gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
+				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+				scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox(SNAME("SceneTabFG"), SNAME("EditorStyles")));
+				scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
+
+				file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+				project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+				debug_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+				settings_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+				help_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+			}
 
 			if (EDITOR_GET("interface/scene_tabs/resize_if_many_tabs")) {
 				scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
@@ -718,7 +732,7 @@ void EditorNode::_notification(int p_what) {
 			}
 			_update_scene_tabs();
 
-			recent_scenes->set_as_minsize();
+			recent_scenes->reset_size();
 
 			// debugger area
 			if (EditorDebuggerNode::get_singleton()->is_visible()) {
@@ -3777,7 +3791,7 @@ void EditorNode::_update_recent_scenes() {
 
 	recent_scenes->add_separator();
 	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTR("Clear Recent Scenes")));
-	recent_scenes->set_as_minsize();
+	recent_scenes->reset_size();
 }
 
 void EditorNode::_quick_opened() {
@@ -4226,7 +4240,7 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 
 	p_control->get_parent()->remove_child(p_control);
 	dock_slot[window_slot]->add_child(p_control);
-	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_child_count()));
+	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_tab_count()));
 	dock_slot[window_slot]->set_current_tab(window->get_meta("dock_index"));
 
 	window->queue_delete();
@@ -4466,13 +4480,13 @@ void EditorNode::_dock_select_draw() {
 
 		if (i == dock_select_rect_over) {
 			dock_select->draw_rect(r, used_selected);
-		} else if (dock_slot[i]->get_child_count() == 0) {
+		} else if (dock_slot[i]->get_tab_count() == 0) {
 			dock_select->draw_rect(r, unused);
 		} else {
 			dock_select->draw_rect(r, used);
 		}
 
-		for (int j = 0; j < MIN(3, dock_slot[i]->get_child_count()); j++) {
+		for (int j = 0; j < MIN(3, dock_slot[i]->get_tab_count()); j++) {
 			int xofs = (r.size.width / 3) * j;
 			Color c = used;
 			if (i == dock_popup_selected && (dock_slot[i]->get_current_tab() > 3 || dock_slot[i]->get_current_tab() == j)) {
@@ -4584,7 +4598,7 @@ void EditorNode::_update_dock_slots_visibility() {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 			int tabs_visible = 0;
 			for (int j = 0; j < dock_slot[i]->get_tab_count(); j++) {
-				if (!dock_slot[i]->get_tab_hidden(j)) {
+				if (!dock_slot[i]->is_tab_hidden(j)) {
 					tabs_visible++;
 				}
 			}
@@ -5418,7 +5432,7 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 				memdelete(n);
 			}
 			tool_menu->remove_item(i);
-			tool_menu->set_as_minsize();
+			tool_menu->reset_size();
 			return;
 		}
 	}
@@ -5648,11 +5662,11 @@ void EditorNode::_feature_profile_changed() {
 	TabContainer *node_tabs = cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
 	TabContainer *fs_tabs = cast_to<TabContainer>(FileSystemDock::get_singleton()->get_parent());
 	if (profile.is_valid()) {
-		node_tabs->set_tab_hidden(NodeDock::get_singleton()->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
+		node_tabs->set_tab_hidden(node_tabs->get_tab_idx_from_control(NodeDock::get_singleton()), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
 		// The Import dock is useless without the FileSystem dock. Ensure the configuration is valid.
 		bool fs_dock_disabled = profile->is_feature_disabled(EditorFeatureProfile::FEATURE_FILESYSTEM_DOCK);
-		fs_tabs->set_tab_hidden(FileSystemDock::get_singleton()->get_index(), fs_dock_disabled);
-		import_tabs->set_tab_hidden(ImportDock::get_singleton()->get_index(), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
+		fs_tabs->set_tab_hidden(fs_tabs->get_tab_idx_from_control(FileSystemDock::get_singleton()), fs_dock_disabled);
+		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
@@ -5665,9 +5679,9 @@ void EditorNode::_feature_profile_changed() {
 			_editor_select(EDITOR_2D);
 		}
 	} else {
-		import_tabs->set_tab_hidden(ImportDock::get_singleton()->get_index(), false);
-		node_tabs->set_tab_hidden(NodeDock::get_singleton()->get_index(), false);
-		fs_tabs->set_tab_hidden(FileSystemDock::get_singleton()->get_index(), false);
+		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), false);
+		node_tabs->set_tab_hidden(node_tabs->get_tab_idx_from_control(NodeDock::get_singleton()), false);
+		fs_tabs->set_tab_hidden(fs_tabs->get_tab_idx_from_control(FileSystemDock::get_singleton()), false);
 		ImportDock::get_singleton()->set_visible(true);
 		NodeDock::get_singleton()->set_visible(true);
 		FileSystemDock::get_singleton()->set_visible(true);
@@ -6016,18 +6030,10 @@ EditorNode::EditorNode() {
 
 	// defs here, use EDITOR_GET in logic
 	EDITOR_DEF_RST("interface/scene_tabs/always_show_close_button", false);
-	EDITOR_DEF_RST("interface/scene_tabs/resize_if_many_tabs", true);
-	EDITOR_DEF_RST("interface/scene_tabs/minimum_width", 50);
-	EDITOR_DEF("run/output/always_clear_output_on_play", true);
-	EDITOR_DEF("run/output/always_open_output_on_play", true);
-	EDITOR_DEF("run/output/always_close_output_on_stop", true);
-	EDITOR_DEF("run/auto_save/save_before_running", true);
 	EDITOR_DEF("interface/editor/save_on_focus_loss", false);
-	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
 	EDITOR_DEF("interface/editor/show_update_spinner", false);
 	EDITOR_DEF("interface/editor/update_continuously", false);
 	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", true);
-	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
 	EDITOR_DEF_RST("interface/inspector/default_float_step", 0.001);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));
@@ -6041,7 +6047,6 @@ EditorNode::EditorNode() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle", PROPERTY_USAGE_DEFAULT));
-	EDITOR_DEF("run/auto_save/save_before_running", true);
 
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTR("Pan View"), Key::SPACE);
 
@@ -6197,7 +6202,7 @@ EditorNode::EditorNode() {
 
 	dock_vb->add_child(dock_float);
 
-	dock_select_popup->set_as_minsize();
+	dock_select_popup->reset_size();
 	dock_select_rect_over = -1;
 	dock_popup_selected = -1;
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
@@ -6205,7 +6210,7 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", callable_mp(this, &EditorNode::_dock_pre_popup), varray(i));
-		dock_slot[i]->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+		dock_slot[i]->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 		dock_slot[i]->set_drag_to_rearrange_enabled(true);
 		dock_slot[i]->set_tabs_rearrange_group(1);
 		dock_slot[i]->connect("tab_changed", callable_mp(this, &EditorNode::_dock_tab_changed));
@@ -6249,8 +6254,8 @@ EditorNode::EditorNode() {
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
-	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? TabBar::CLOSE_BUTTON_SHOW_ALWAYS : TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
+	scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? TabBar::CLOSE_BUTTON_SHOW_ALWAYS : TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+	scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));
@@ -6714,23 +6719,23 @@ EditorNode::EditorNode() {
 
 	// Scene: Top left
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(SceneTreeDock::get_singleton());
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(SceneTreeDock::get_singleton()->get_index(), TTR("Scene"));
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_UR]->get_tab_idx_from_control(SceneTreeDock::get_singleton()), TTR("Scene"));
 
 	// Import: Top left, behind Scene
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(ImportDock::get_singleton());
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(ImportDock::get_singleton()->get_index(), TTR("Import"));
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_UR]->get_tab_idx_from_control(ImportDock::get_singleton()), TTR("Import"));
 
 	// FileSystem: Bottom left
 	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(FileSystemDock::get_singleton());
-	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(FileSystemDock::get_singleton()->get_index(), TTR("FileSystem"));
+	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_BR]->get_tab_idx_from_control(FileSystemDock::get_singleton()), TTR("FileSystem"));
 
 	// Inspector: Full height right
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(InspectorDock::get_singleton());
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(InspectorDock::get_singleton()->get_index(), TTR("Inspector"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(dock_slot[DOCK_SLOT_RIGHT_UL]->get_tab_idx_from_control(InspectorDock::get_singleton()), TTR("Inspector"));
 
 	// Node: Full height right, behind Inspector
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(NodeDock::get_singleton());
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(NodeDock::get_singleton()->get_index(), TTR("Node"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(dock_slot[DOCK_SLOT_RIGHT_UL]->get_tab_idx_from_control(NodeDock::get_singleton()), TTR("Node"));
 
 	// Hide unused dock slots and vsplits
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();
