@@ -116,32 +116,36 @@ bool sc_use_lightmap_bicubic_filter() {
 	return ((sc_packed_0() >> 10) & 1U) != 0;
 }
 
-bool sc_multimesh() {
+bool sc_use_material_debanding() {
 	return ((sc_packed_0() >> 11) & 1U) != 0;
 }
 
-bool sc_multimesh_format_2d() {
+bool sc_multimesh() {
 	return ((sc_packed_0() >> 12) & 1U) != 0;
 }
 
-bool sc_multimesh_has_color() {
+bool sc_multimesh_format_2d() {
 	return ((sc_packed_0() >> 13) & 1U) != 0;
 }
 
-bool sc_multimesh_has_custom_data() {
+bool sc_multimesh_has_color() {
 	return ((sc_packed_0() >> 14) & 1U) != 0;
 }
 
-bool sc_scene_use_ambient_cubemap() {
+bool sc_multimesh_has_custom_data() {
 	return ((sc_packed_0() >> 15) & 1U) != 0;
 }
 
-bool sc_scene_use_reflection_cubemap() {
+bool sc_scene_use_ambient_cubemap() {
 	return ((sc_packed_0() >> 16) & 1U) != 0;
 }
 
-bool sc_scene_roughness_limiter_enabled() {
+bool sc_scene_use_reflection_cubemap() {
 	return ((sc_packed_0() >> 17) & 1U) != 0;
+}
+
+bool sc_scene_roughness_limiter_enabled() {
+	return ((sc_packed_0() >> 18) & 1U) != 0;
 }
 
 uint sc_soft_shadow_samples() {

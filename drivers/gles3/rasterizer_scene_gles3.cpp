@@ -4288,6 +4288,10 @@ void RasterizerSceneGLES3::lightmaps_set_bicubic_filter(bool p_enable) {
 	lightmap_bicubic_upscale = p_enable;
 }
 
+void RasterizerSceneGLES3::material_set_use_debanding(bool p_enable) {
+	// Material debanding not yet implemented.
+}
+
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 	singleton = this;
 
