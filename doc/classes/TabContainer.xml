@@ -121,7 +121,7 @@
 			<argument index="0" name="tab_idx" type="int" />
 			<argument index="1" name="title" type="String" />
 			<description>
-				Sets a custom title for the tab at index [code]tab_idx[/code] (tab titles default to the name of the indexed child node). Set it to blank to make it the child's name again.
+				Sets a custom title for the tab at index [code]tab_idx[/code] (tab titles default to the name of the indexed child node). Set it back to the child's name to make the tab default to it again.
 			</description>
 		</method>
 	</methods>
