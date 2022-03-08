@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ZIPPacker" inherits="Reference" version="4.0">
+<class name="ZIPPacker" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Class for creating zip archives
 	</brief_description>
@@ -17,56 +17,43 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="close">
+			<return type="int" enum="Error" />
+			<description>
+				Closes the zip file and flushes the data to the disk.
+			</description>
+		</method>
+		<method name="close_file">
+			<return type="int" enum="Error" />
+			<description>
+				Closes the file that was opened with [method start_file].
+			</description>
+		</method>
 		<method name="open">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="append" type="int" enum="ZIPPacker.ZipAppend" default="0">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="append" type="int" enum="ZIPPacker.ZipAppend" default="0" />
 			<description>
 				Opens a zip file to start writing. What happens if the file already exists is determined by [code]append[/code].
 			</description>
 		</method>
 		<method name="start_file">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Starts a new file in the zip archive. Subsequent calls to [method write_file] will write to this file.
 				If the file at the given path already exists, a duplicate entry will be created.
 			</description>
 		</method>
 		<method name="write_file">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="data" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="data" type="PackedByteArray" />
 			<description>
 				Writes data to a file in the archive. Which file is written to is determined by the latest call to [method start_file].
 				If the file has already been written to, the data will be appended.
 			</description>
 		</method>
-		<method name="close_file">
-			<return type="int" enum="Error">
-			</return>
-			<description>
-				Closes the file that was opened with [method start_file].
-			</description>
-		</method>
-		<method name="close">
-			<return type="int" enum="Error">
-			</return>
-			<description>
-				Closes the zip file and flushes the data to the disk.
-			</description>
-		</method>
 	</methods>
-	<members>
-	</members>
-	<signals>
-	</signals>
 	<constants>
 		<constant name="APPEND_CREATE" value="0" enum="ZipAppend">
 			The file will be created if it does not exist, or overwritten if it does exist.

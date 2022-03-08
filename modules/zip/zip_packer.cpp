@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,9 +58,9 @@ Error ZIPPacker::start_file(String path) {
 
 	zipfi.tmz_date.tm_hour = time.hour;
 	zipfi.tmz_date.tm_mday = date.day;
-	zipfi.tmz_date.tm_min = time.min;
+	zipfi.tmz_date.tm_min = time.minute;
 	zipfi.tmz_date.tm_mon = date.month - 1;
-	zipfi.tmz_date.tm_sec = time.sec;
+	zipfi.tmz_date.tm_sec = time.second;
 	zipfi.tmz_date.tm_year = date.year;
 	zipfi.dosDate = 0;
 	zipfi.external_fa = 0;
