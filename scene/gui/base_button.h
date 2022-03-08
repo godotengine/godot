@@ -80,7 +80,7 @@ protected:
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 
-	bool _is_focus_owner_in_shorcut_context() const;
+	bool _is_focus_owner_in_shortcut_context() const;
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)
