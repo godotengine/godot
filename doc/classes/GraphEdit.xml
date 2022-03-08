@@ -198,6 +198,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.
 		</member>
@@ -217,7 +218,6 @@
 		<member name="panning_scheme" type="int" setter="set_panning_scheme" getter="get_panning_scheme" enum="GraphEdit.PanningScheme" default="0">
 			Defines the control scheme for panning with mouse wheel.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>

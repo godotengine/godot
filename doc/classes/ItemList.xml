@@ -366,6 +366,7 @@
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
 			The width all columns will be adjusted to.
 			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
@@ -393,7 +394,6 @@
 			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
 			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
 			Whether all columns will have the same width.
 			If [code]true[/code], the width is equal to the largest column width of all columns.

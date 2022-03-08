@@ -190,10 +190,10 @@ String Control::properties_managed_by_container[] = {
 	"anchor_top",
 	"anchor_right",
 	"anchor_bottom",
-	"rect_position",
-	"rect_rotation",
-	"rect_scale",
-	"rect_size"
+	"position",
+	"rotation",
+	"scale",
+	"size"
 };
 
 void Control::accept_event() {
@@ -490,7 +490,7 @@ void Control::_validate_property(PropertyInfo &property) const {
 	} else if (Object::cast_to<Container>(parent_node)) {
 		// If the parent is a container, display only container-related properties.
 		if (property.name.begins_with("anchor_") || property.name.begins_with("offset_") || property.name.begins_with("grow_") || property.name == "anchors_preset" ||
-				(property.name.begins_with("rect_") && property.name != "rect_min_size" && property.name != "rect_clip_content" && property.name != "rect_global_position")) {
+				property.name == "position" || property.name == "rotation" || property.name == "scale" || property.name == "size" || property.name == "pivot_offset") {
 			property.usage ^= PROPERTY_USAGE_EDITOR;
 
 		} else if (property.name == "layout_mode") {
@@ -3342,8 +3342,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
 
 	ADD_GROUP("Layout", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimum_size"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
@@ -3372,15 +3372,13 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Left,Right,Both"), "set_h_grow_direction", "get_h_grow_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Top,Bottom,Both"), "set_v_grow_direction", "get_v_grow_direction");
 
-	ADD_SUBGROUP("Rectangle", "rect_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
-
-	ADD_SUBGROUP("Transform", "rect_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
+	ADD_SUBGROUP("Transform", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset"), "set_pivot_offset", "get_pivot_offset");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");
