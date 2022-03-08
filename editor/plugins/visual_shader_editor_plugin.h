@@ -262,6 +262,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();
 
+	void _update_nodes();
 	void _update_graph();
 
 	struct AddOption {
@@ -394,6 +395,7 @@ class VisualShaderEditor : public VBoxContainer {
 		String group_inputs;
 		String group_outputs;
 		String expression;
+		bool disabled = false;
 	};
 
 	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<VisualShader::Connection> &r_connections);
@@ -476,7 +478,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_custom_nodes();
+	void update_nodes();
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
