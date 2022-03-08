@@ -6555,12 +6555,6 @@ void RendererStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
 	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
-void RendererStorageRD::light_set_shadow_color(RID p_light, const Color &p_color) {
-	Light *light = light_owner.get_or_null(p_light);
-	ERR_FAIL_COND(!light);
-	light->shadow_color = p_color;
-}
-
 void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light);
