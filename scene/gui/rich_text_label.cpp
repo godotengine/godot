@@ -3250,6 +3250,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_paragraph(HORIZONTAL_ALIGNMENT_FILL);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "left") {
+			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
 		} else if (tag == "right") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT);
 			pos = brk_end + 1;
