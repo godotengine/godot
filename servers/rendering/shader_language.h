@@ -38,6 +38,7 @@
 #include "core/templates/rb_map.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
+#include "scene/resources/shader_include.h"
 
 #ifdef DEBUG_ENABLED
 #include "shader_warnings.h"
@@ -776,6 +777,7 @@ public:
 	static uint32_t get_datatype_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
+	static void get_preprocessor_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
@@ -1070,7 +1072,8 @@ private:
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
+	Error _preprocess_shader(const String &p_code, String &r_result, int *r_completion_type = nullptr);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types, bool p_is_include);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1091,6 +1094,8 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
+	static void get_shader_dependencies(const String &p_code, HashSet<Ref<ShaderInclude>> *r_dependencies);
+	static String get_shader_type_and_dependencies(const String &p_code, HashSet<Ref<ShaderInclude>> *r_dependencies);
 
 	struct ShaderCompileInfo {
 		HashMap<StringName, FunctionInfo> functions;
@@ -1098,6 +1103,7 @@ public:
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
 		HashSet<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
+		bool is_include = false;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);

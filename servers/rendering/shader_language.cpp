@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering_server.h"
+#include "shader_preprocessor.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
@@ -4118,6 +4119,10 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 	}
 }
 
+void ShaderLanguage::get_preprocessor_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords) {
+	ShaderPreprocessor::get_keyword_list(r_keywords, p_include_shader_keywords);
+}
+
 bool ShaderLanguage::is_control_flow_keyword(String p_keyword) {
 	return p_keyword == "break" ||
 			p_keyword == "case" ||
@@ -7677,35 +7682,60 @@ Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_preci
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
-	Token tk = _get_token();
+Error ShaderLanguage::_preprocess_shader(const String &p_code, String &r_result, int *r_completion_type) {
+	Error error = OK;
+
+	ShaderPreprocessor processor(p_code);
+	processor.preprocess(r_result);
+
+	ShaderPreprocessor::State *state = processor.get_state();
+	if (!state->error.is_empty()) {
+		error_line = state->error_line;
+		error_set = true;
+		error_str = state->error;
+		error = FAILED;
+	}
+
+	if (r_completion_type != nullptr) {
+		*r_completion_type = (int)state->completion_type;
+	}
+
+	return error;
+}
+
+Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types, bool p_is_include) {
+	Token tk;
 	TkPos prev_pos;
 	Token next;
 
-	if (tk.type != TK_SHADER_TYPE) {
-		_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
+	if (!p_is_include) {
+		tk = _get_token();
+
+		if (tk.type != TK_SHADER_TYPE) {
+			_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
 #ifdef DEBUG_ENABLED
-	keyword_completion_context = CF_UNSPECIFIED;
+		keyword_completion_context = CF_UNSPECIFIED;
 #endif // DEBUG_ENABLED
 
-	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
-	if (shader_type_identifier == StringName()) {
-		_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
-	if (!p_shader_types.has(shader_type_identifier)) {
-		_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
-	prev_pos = _get_tkpos();
-	tk = _get_token();
+		_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
+		if (shader_type_identifier == StringName()) {
+			_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
+		if (!p_shader_types.has(shader_type_identifier)) {
+			_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
+		prev_pos = _get_tkpos();
+		tk = _get_token();
 
-	if (tk.type != TK_SEMICOLON) {
-		_set_tkpos(prev_pos);
-		_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
-		return ERR_PARSE_ERROR;
+		if (tk.type != TK_SEMICOLON) {
+			_set_tkpos(prev_pos);
+			_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
+			return ERR_PARSE_ERROR;
+		}
 	}
 
 #ifdef DEBUG_ENABLED
@@ -9470,6 +9500,97 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	return String();
 }
 
+void ShaderLanguage::get_shader_dependencies(const String &p_code, HashSet<Ref<ShaderInclude>> *r_dependencies) {
+	bool reading_inc = false;
+	String cur_identifier;
+
+	for (int i = _get_first_ident_pos(p_code); i < p_code.length(); i++) {
+		if (p_code[i] == ';') {
+			continue;
+
+		} else if (p_code[i] <= 32) {
+			if (cur_identifier == "#include") {
+				reading_inc = true;
+				cur_identifier = String();
+			} else {
+				if (reading_inc) {
+					String path = cur_identifier;
+					if (path.begins_with("\"") && path.ends_with("\"")) {
+						path = path.substr(1, path.length() - 2);
+						if (!path.begins_with("res://")) {
+							path = path.insert(0, "res://");
+						}
+						Ref<ShaderInclude> inc = ResourceLoader::load(path);
+						if (inc.is_valid()) {
+							r_dependencies->insert(inc);
+						}
+					}
+					reading_inc = false;
+				}
+			}
+		} else {
+			cur_identifier += String::chr(p_code[i]);
+		}
+	}
+}
+
+String ShaderLanguage::get_shader_type_and_dependencies(const String &p_code, HashSet<Ref<ShaderInclude>> *r_dependencies) {
+	bool read_type = true;
+	bool reading_type = false;
+	bool reading_inc = false;
+	String type;
+
+	String cur_identifier;
+
+	for (int i = _get_first_ident_pos(p_code); i < p_code.length(); i++) {
+		if (p_code[i] == ';') {
+			continue;
+
+		} else if (p_code[i] <= 32) {
+			if (!cur_identifier.is_empty()) {
+				if (read_type) {
+					if (!reading_type) {
+						if (cur_identifier == "shader_type") {
+							reading_type = true;
+							cur_identifier = String();
+						}
+					} else {
+						type = cur_identifier;
+						read_type = false;
+						cur_identifier = String();
+					}
+				} else if (cur_identifier == "#include") {
+					reading_inc = true;
+					cur_identifier = String();
+				} else {
+					if (reading_inc) {
+						String path = cur_identifier;
+						if (path.begins_with("\"") && path.ends_with("\"")) {
+							path = path.substr(1, path.length() - 2);
+							if (!path.begins_with("res://")) {
+								path = path.insert(0, "res://");
+							}
+							Ref<ShaderInclude> inc = ResourceLoader::load(path);
+							if (inc.is_valid()) {
+								r_dependencies->insert(inc);
+							}
+						}
+						reading_inc = false;
+					}
+				}
+			}
+		} else {
+			cur_identifier += String::chr(p_code[i]);
+		}
+	}
+
+	if (reading_type) {
+		return type;
+	}
+
+	return String();
+}
+
 #ifdef DEBUG_ENABLED
 void ShaderLanguage::_check_warning_accums() {
 	for (const KeyValue<ShaderWarning::Code, HashMap<StringName, HashMap<StringName, Usage>> *> &E : warnings_check_map2) {
@@ -9509,14 +9630,21 @@ uint32_t ShaderLanguage::get_warning_flags() const {
 Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_info) {
 	clear();
 
-	code = p_code;
+	Error err = _preprocess_shader(p_code, code);
+	if (err != OK) {
+		return err;
+	}
+
+	// Clear after preprocessing. Because preprocess uses the resource loader, it means if this instance is held in a singleton, it can have a changed state after.
+	clear();
+
 	global_var_get_type_func = p_info.global_variable_type_func;
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types, p_info.is_include);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -9533,14 +9661,51 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
 
-	code = p_code;
+	int preprocessor_completion_type;
+	Error error = _preprocess_shader(p_code, code, &preprocessor_completion_type);
+
+	switch (preprocessor_completion_type) {
+		case ShaderPreprocessor::COMPLETION_TYPE_DIRECTIVE: {
+			static List<String> options;
+
+			if (options.is_empty()) {
+				ShaderPreprocessor::get_keyword_list(&options, true);
+			}
+
+			for (const String &E : options) {
+				ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			}
+
+			return OK;
+		} break;
+		case ShaderPreprocessor::COMPLETION_TYPE_PRAGMA: {
+			static List<String> options;
+
+			if (options.is_empty()) {
+				ShaderPreprocessor::get_pragma_list(&options);
+			}
+
+			for (const String &E : options) {
+				ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			}
+
+			return OK;
+		} break;
+	}
+
+	if (error != OK) {
+		return error;
+	}
+
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 	global_var_get_type_func = p_info.global_variable_type_func;
 
 	shader = alloc_node<ShaderNode>();
-	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types, p_info.is_include);
 
 #ifdef DEBUG_ENABLED
 	// Adds context keywords.
