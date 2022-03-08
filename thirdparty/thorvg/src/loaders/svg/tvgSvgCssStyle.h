@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,41 +19,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef _TVG_SVG_LOADER_H_
-#define _TVG_SVG_LOADER_H_
 
-#include "tvgTaskScheduler.h"
+#ifndef _TVG_SVG_CSS_STYLE_H_
+#define _TVG_SVG_CSS_STYLE_H_
+
 #include "tvgSvgLoaderCommon.h"
 
-class SvgLoader : public LoadModule, public Task
-{
-public:
-    string filePath;
-    string svgPath = "";
-    const char* content = nullptr;
-    uint32_t size = 0;
+void cssCopyStyleAttr(SvgNode* to, const SvgNode* from);
+SvgNode* cssFindStyleNode(const SvgNode* style, const char* title, SvgNodeType type);
+SvgNode* cssFindStyleNode(const SvgNode* style, const char* title);
+void cssUpdateStyle(SvgNode* doc, SvgNode* style);
+void cssApplyStyleToPostponeds(Array<SvgNodeIdPair>& postponeds, SvgNode* style);
 
-    SvgLoaderData loaderData;
-    unique_ptr<Scene> root;
-
-    bool copy = false;
-
-    SvgLoader();
-    ~SvgLoader();
-
-    using LoadModule::open;
-    bool open(const string& path) override;
-    bool open(const char* data, uint32_t size, bool copy) override;
-    bool resize(Paint* paint, float w, float h) override;
-    bool read() override;
-    bool close() override;
-    unique_ptr<Paint> paint() override;
-
-private:
-    bool header();
-    void clear();
-    void run(unsigned tid) override;
-};
-
-
-#endif //_TVG_SVG_LOADER_H_
+#endif //_TVG_SVG_CSS_STYLE_H_
