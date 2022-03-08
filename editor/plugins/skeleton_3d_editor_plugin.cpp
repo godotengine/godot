@@ -528,22 +528,25 @@ void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_se
 
 void Skeleton3DEditor::_joint_tree_selection_changed() {
 	TreeItem *selected = joint_tree->get_selected();
-	if (!selected) {
-		return;
+	if (selected) {
+		const String path = selected->get_metadata(0);
+		if (!path.begins_with("bones/")) {
+			return;
+		}
+		const int b_idx = path.get_slicec('/', 1).to_int();
+		selected_bone = b_idx;
+		if (pose_editor) {
+			const String bone_path = "bones/" + itos(b_idx) + "/";
+			pose_editor->set_target(bone_path);
+			pose_editor->set_keyable(keyable);
+		}
 	}
-	const String path = selected->get_metadata(0);
-	if (!path.begins_with("bones/")) {
-		return;
-	}
-	const int b_idx = path.get_slicec('/', 1).to_int();
-	selected_bone = b_idx;
-	if (pose_editor) {
-		const String bone_path = "bones/" + itos(b_idx) + "/";
-		pose_editor->set_target(bone_path);
-		pose_editor->set_keyable(keyable);
+
+	if (pose_editor && pose_editor->is_inside_tree()) {
 		pose_editor->set_visible(selected);
 	}
 	set_bone_options_enabled(selected);
+
 	_update_properties();
 	_update_gizmo_visible();
 }
