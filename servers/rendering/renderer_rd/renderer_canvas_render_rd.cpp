@@ -694,9 +694,9 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				_bind_canvas_texture(p_draw_list, RID(), current_filter, current_repeat, last_texture, push_constant, texpixel_size);
 
-				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3, primitive->point_count) - 1]);
+				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3u, primitive->point_count) - 1]);
 
-				for (uint32_t j = 0; j < MIN(3, primitive->point_count); j++) {
+				for (uint32_t j = 0; j < MIN(3u, primitive->point_count); j++) {
 					push_constant.points[j * 2 + 0] = primitive->points[j].x;
 					push_constant.points[j * 2 + 1] = primitive->points[j].y;
 					push_constant.uvs[j * 2 + 0] = primitive->uvs[j].x;

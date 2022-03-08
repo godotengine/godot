@@ -225,8 +225,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), RES());
 
 		for (uint32_t i = 1; i < mipmaps; i++) {
-			w = MAX(1, w >> 1);
-			h = MAX(1, h >> 1);
+			w = MAX(1u, w >> 1);
+			h = MAX(1u, h >> 1);
 			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
 			//printf("%i x %i - block: %i\n",w,h,bsize);
 			size += bsize;

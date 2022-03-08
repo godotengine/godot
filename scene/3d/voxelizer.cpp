@@ -872,7 +872,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 			if (d == 0) {
 				w[i] = 0;
 			} else {
-				w[i] = MIN(d, 254) + 1;
+				w[i] = MIN(d, 254u) + 1;
 			}
 		}
 	}

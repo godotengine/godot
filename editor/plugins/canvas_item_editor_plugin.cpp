@@ -60,12 +60,12 @@
 
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.
-#define MIN_ZOOM 1. / 128
-#define MAX_ZOOM 128
+constexpr real_t MIN_ZOOM = 1. / 128;
+constexpr real_t MAX_ZOOM = 128;
 
 #define RULER_WIDTH (15 * EDSCALE)
-#define SCALE_HANDLE_DISTANCE 25
-#define MOVE_HANDLE_DISTANCE 25
+constexpr real_t SCALE_HANDLE_DISTANCE = 25;
+constexpr real_t MOVE_HANDLE_DISTANCE = 25;
 
 class SnapDialog : public ConfirmationDialog {
 	GDCLASS(SnapDialog, ConfirmationDialog);

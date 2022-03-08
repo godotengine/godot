@@ -1244,7 +1244,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			} break;
 		}
 
-		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
+		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
 
 		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
@@ -1375,7 +1375,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 
 		push_constant.atlas_size[0] = probe_positions.size();
-		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
+		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
 
 		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
 		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;

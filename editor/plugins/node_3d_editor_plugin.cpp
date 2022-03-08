@@ -56,31 +56,31 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 
-#define DISTANCE_DEFAULT 4
+constexpr real_t DISTANCE_DEFAULT = 4;
 
-#define GIZMO_ARROW_SIZE 0.35
-#define GIZMO_RING_HALF_WIDTH 0.1
-#define GIZMO_PLANE_SIZE 0.2
-#define GIZMO_PLANE_DST 0.3
-#define GIZMO_CIRCLE_SIZE 1.1
-#define GIZMO_SCALE_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
-#define GIZMO_ARROW_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
+constexpr real_t GIZMO_ARROW_SIZE = 0.35;
+constexpr real_t GIZMO_RING_HALF_WIDTH = 0.1;
+constexpr real_t GIZMO_PLANE_SIZE = 0.2;
+constexpr real_t GIZMO_PLANE_DST = 0.3;
+constexpr real_t GIZMO_CIRCLE_SIZE = 1.1;
+constexpr real_t GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
+constexpr real_t GIZMO_ARROW_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
 
-#define ZOOM_FREELOOK_MIN 0.01
-#define ZOOM_FREELOOK_MULTIPLIER 1.08
-#define ZOOM_FREELOOK_INDICATOR_DELAY_S 1.5
+constexpr real_t ZOOM_FREELOOK_MIN = 0.01;
+constexpr real_t ZOOM_FREELOOK_MULTIPLIER = 1.08;
+constexpr real_t ZOOM_FREELOOK_INDICATOR_DELAY_S = 1.5;
 
 #ifdef REAL_T_IS_DOUBLE
-#define ZOOM_FREELOOK_MAX 1'000'000'000'000
+constexpr double ZOOM_FREELOOK_MAX = 1'000'000'000'000;
 #else
-#define ZOOM_FREELOOK_MAX 10'000
+constexpr float ZOOM_FREELOOK_MAX = 10'000;
 #endif
 
-#define MIN_Z 0.01
-#define MAX_Z 1000000.0
+constexpr real_t MIN_Z = 0.01;
+constexpr real_t MAX_Z = 1000000.0;
 
-#define MIN_FOV 0.01
-#define MAX_FOV 179
+constexpr real_t MIN_FOV = 0.01;
+constexpr real_t MAX_FOV = 179;
 
 void ViewportRotationControl::_notification(int p_what) {
 	switch (p_what) {
