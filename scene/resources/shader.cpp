@@ -40,8 +40,28 @@ Shader::Mode Shader::get_mode() const {
 	return mode;
 }
 
+void Shader::_dependency_changed() {
+	RenderingServer::get_singleton()->shader_set_code(shader, RenderingServer::get_singleton()->shader_get_code(shader));
+	params_cache_dirty = true;
+
+	emit_changed();
+}
+
 void Shader::set_code(const String &p_code) {
-	String type = ShaderLanguage::get_shader_type(p_code);
+	HashSet<Ref<ShaderInclude>> new_include_dependencies;
+
+	for (Ref<ShaderInclude> E : include_dependencies) {
+		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+	}
+
+	String type = ShaderLanguage::get_shader_type_and_dependencies(p_code, &new_include_dependencies);
+
+	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
+	include_dependencies = new_include_dependencies;
+
+	for (Ref<ShaderInclude> E : include_dependencies) {
+		E->connect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+	}
 
 	if (type == "canvas_item") {
 		mode = MODE_CANVAS_ITEM;
