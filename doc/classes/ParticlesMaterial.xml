@@ -86,10 +86,10 @@
 			Each particle's angular velocity (rotation speed) will vary along this [CurveTexture] over its lifetime.
 		</member>
 		<member name="angular_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
+			Maximum initial angular velocity (rotation speed) applied to each particle in [i]radians[/i] per second.
 		</member>
 		<member name="angular_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
+			Minimum initial angular velocity (rotation speed) applied to each particle in [i]radians[/i] per second.
 		</member>
 		<member name="anim_offset_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's animation offset will vary along this [CurveTexture].
@@ -246,8 +246,8 @@
 		<member name="scale_min" type="float" setter="set_param_min" getter="get_param_min" default="1.0">
 			Minimum scale.
 		</member>
-		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="0.785398">
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] [i]radians[/i]. In 3D, this is applied to the X/Z plane and Y/Z planes.
 		</member>
 		<member name="sub_emitter_amount_at_end" type="int" setter="set_sub_emitter_amount_at_end" getter="get_sub_emitter_amount_at_end">
 		</member>

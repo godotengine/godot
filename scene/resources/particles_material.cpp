@@ -320,7 +320,6 @@ void ParticlesMaterial::_update_shader() {
 		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
 	}
 	code += "	float pi = 3.14159;\n";
-	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
 
 	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
@@ -340,7 +339,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	float tex_anim_offset = 1.0;\n";
 	}
 
-	code += "	float spread_rad = spread * degree_to_rad;\n";
+	code += "	float spread_rad = spread;\n";
 
 	code += "	if (RESTART_VELOCITY) {\n";
 
@@ -383,7 +382,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	}\n";
 
 	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, angle_rand);\n";
-	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
+	code += "	CUSTOM.x = base_angle;\n"; // angle
 	code += "	CUSTOM.y = 0.0;\n"; // phase
 	code += "	CUSTOM.w = (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
 	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, anim_offset_rand);\n"; // animation offset (0-1)
@@ -475,7 +474,6 @@ void ParticlesMaterial::_update_shader() {
 	}
 
 	code += "	float pi = 3.14159;\n";
-	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
 
 	code += "	CUSTOM.y += DELTA / LIFETIME;\n";
@@ -595,7 +593,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	}\n";
 	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, rand_from_seed(alt_seed));\n";
 	code += "	base_angle += CUSTOM.y * LIFETIME * (tex_angular_velocity) * mix(angular_velocity_min,angular_velocity_max, rand_from_seed(alt_seed));\n";
-	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
+	code += "	CUSTOM.x = base_angle;\n"; // angle
 	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, rand_from_seed(alt_seed)) + tv * tex_anim_speed * mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n"; // angle
 
 	// apply color
@@ -1405,7 +1403,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
 	ADD_GROUP("Direction", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01,radians"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
 	ADD_GROUP("Gravity", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity"), "set_gravity", "get_gravity");
@@ -1413,8 +1411,8 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_min", PROPERTY_HINT_RANGE, "0,1000,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_max", PROPERTY_HINT_RANGE, "0,1000,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_GROUP("Angular Velocity", "angular_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_min", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_ANGULAR_VELOCITY);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_max", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param_max", "get_param_max", PARAM_ANGULAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_min", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater,radians"), "set_param_min", "get_param_min", PARAM_ANGULAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_max", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater,radians"), "set_param_max", "get_param_max", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angular_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANGULAR_VELOCITY);
 	ADD_GROUP("Orbit Velocity", "orbit_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "orbit_velocity_min", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_lesser,or_greater"), "set_param_min", "get_param_min", PARAM_ORBIT_VELOCITY);
@@ -1512,7 +1510,7 @@ void ParticlesMaterial::_bind_methods() {
 ParticlesMaterial::ParticlesMaterial() :
 		element(this) {
 	set_direction(Vector3(1, 0, 0));
-	set_spread(45);
+	set_spread(0.125 * Math_TAU); // 45 degrees
 	set_flatness(0);
 	set_param_min(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param_min(PARAM_ANGULAR_VELOCITY, 0);

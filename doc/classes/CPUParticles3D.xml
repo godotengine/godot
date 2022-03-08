@@ -99,10 +99,10 @@
 			Each particle's angular velocity (rotation speed) will vary along this [Curve] over its lifetime.
 		</member>
 		<member name="angular_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
+			Maximum initial angular velocity (rotation speed) applied to each particle in [i]radians[/i] per second.
 		</member>
 		<member name="angular_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
+			Minimum initial angular velocity (rotation speed) applied to each particle in [i]radians[/i] per second.
 		</member>
 		<member name="anim_offset_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's animation offset will vary along this [Curve].
@@ -290,8 +290,8 @@
 		<member name="split_scale" type="bool" setter="set_split_scale" getter="get_split_scale" default="false">
 			If set to true, three different scale curves can be specified, one per scale axis.
 		</member>
-		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="0.785398">
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] [i]radians[/i]. This is applied to the X/Z plane and Y/Z planes.
 		</member>
 		<member name="tangential_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's tangential acceleration will vary along this [Curve].

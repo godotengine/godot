@@ -237,8 +237,8 @@
 		</member>
 		<member name="split_scale" type="bool" setter="set_split_scale" getter="get_split_scale" default="false">
 		</member>
-		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="0.785398">
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] [i]radians[/i].
 		</member>
 		<member name="tangential_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's tangential acceleration will vary along this [Curve].

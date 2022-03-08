@@ -152,7 +152,7 @@ private:
 	////////
 
 	Vector3 direction = Vector3(1, 0, 0);
-	real_t spread = 45.0;
+	real_t spread = 0.125 * Math_TAU; // 45 degrees
 	real_t flatness = 0.0;
 
 	real_t parameters_min[PARAM_MAX];

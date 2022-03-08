@@ -149,7 +149,7 @@ private:
 	////////
 
 	Vector2 direction = Vector2(1, 0);
-	real_t spread = 45.0;
+	real_t spread = 0.125 * Math_TAU; // 45 degrees
 
 	real_t parameters_min[PARAM_MAX];
 	real_t parameters_max[PARAM_MAX];
