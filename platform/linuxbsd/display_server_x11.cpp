@@ -2094,7 +2094,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
-			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Pupup flag can't changed while window is opened.");
+			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			wd.is_popup = p_enabled;
 		} break;
 		default: {
@@ -3660,10 +3660,14 @@ void DisplayServerX11::process_events() {
 
 				const WindowData &wd = windows[window_id];
 
+				XWindowAttributes xwa;
+				XSync(x11_display, False);
+				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+
 				// Set focus when menu window is re-used.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if (!wd.no_focus && !wd.is_popup) {
+				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
 					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 				}
 
