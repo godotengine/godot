@@ -75,7 +75,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1)">
+		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray([Color.WHITE, Color.BLACK])">
 			Gradient's colors returned as a [PackedColorArray].
 		</member>
 		<member name="interpolation_mode" type="int" setter="set_interpolation_mode" getter="get_interpolation_mode" enum="Gradient.InterpolationMode" default="0">
