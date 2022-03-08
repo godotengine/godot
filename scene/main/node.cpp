@@ -1350,35 +1350,47 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
+	bool valid = true;
 	for (int i = 0; i < ccount; i++) {
-		if (p_owned && !cptr[i]->data.owner) {
-			continue;
-		}
+		valid = true;
 
-		if (!p_mask.is_empty()) {
-			if (!cptr[i]->data.name.operator String().match(p_mask)) {
-				continue;
-			} else if (p_type.is_empty()) {
-				ret.append(cptr[i]);
+		if (p_owned && valid) {
+			valid = false;
+			if (cptr[i]->data.owner) {
+				valid = true;
 			}
 		}
 
-		if (cptr[i]->is_class(p_type)) {
-			ret.append(cptr[i]);
-		} else if (cptr[i]->get_script_instance()) {
-			Ref<Script> script = cptr[i]->get_script_instance()->get_script();
-			while (script.is_valid()) {
-				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
-					ret.append(cptr[i]);
-					break;
+		if (!p_mask.is_empty() && valid) {
+			valid = false;
+			if (cptr[i]->data.name.operator String().match(p_mask)) {
+				valid = true;
+			}
+		}
+
+		if (!p_type.is_empty() && valid) {
+			valid = false;
+			if (cptr[i]->is_class(p_type)) {
+				valid = true;
+			} else if (cptr[i]->get_script_instance()) {
+				Ref<Script> script = cptr[i]->get_script_instance()->get_script();
+				while (script.is_valid()) {
+					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
+						valid = true;
+						break;
+					}
+
+					script = script->get_base_script();
 				}
-
-				script = script->get_base_script();
 			}
+		}
+
+		if (valid) {
+			ret.append(cptr[i]);
 		}
 
 		if (p_recursive) {
-			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
+			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, p_recursive, p_owned));
 		}
 	}
 
