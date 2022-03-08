@@ -311,6 +311,13 @@ public:
 		CODE_COMPLETION_KIND_MAX
 	};
 
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
+	};
+
 	struct CodeCompletionOption {
 		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
 		String display;
@@ -319,13 +326,15 @@ public:
 		RES icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
+		int location = LOCATION_OTHER;
 
 		CodeCompletionOption() {}
 
-		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind) {
+		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER) {
 			display = p_text;
 			insert_text = p_text;
 			kind = p_kind;
+			location = p_location;
 		}
 	};
 
