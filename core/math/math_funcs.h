@@ -322,7 +322,7 @@ public:
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
-	static int range_step_decimals(double p_step);
+	static int range_step_decimals(double p_step); // For editor use only.
 	static double snapped(double p_value, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
