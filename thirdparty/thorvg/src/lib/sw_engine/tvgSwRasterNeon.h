@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@
 
 static inline uint8x8_t ALPHA_BLEND(uint8x8_t c, uint8x8_t a)
 {
-	uint16x8_t t = vmull_u8(c, a);
-	return vshrn_n_u16(t, 8);
+    uint16x8_t t = vmull_u8(c, a);
+    return vshrn_n_u16(t, 8);
 }
 
 

@@ -399,7 +399,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2021, Samsung Electronics Co., Ltd.
+Copyright: 2020-2022, Samsung Electronics Co., Ltd.
 License: Expat
 
 Files: ./thirdparty/tinyexr/

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,8 +79,8 @@ static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, 
 
         viewport.x = static_cast<int32_t>(v1.x);
         viewport.y = static_cast<int32_t>(v1.y);
-        viewport.w = static_cast<int32_t>(v2.x - v1.x + 0.5f);
-        viewport.h = static_cast<int32_t>(v2.y - v1.y + 0.5f);
+        viewport.w = static_cast<int32_t>(ceil(v2.x - viewport.x));
+        viewport.h = static_cast<int32_t>(ceil(v2.y - viewport.y));
 
         if (viewport.w < 0) viewport.w = 0;
         if (viewport.h < 0) viewport.h = 0;
