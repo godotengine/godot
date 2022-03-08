@@ -82,6 +82,8 @@ private:
 	};
 	Map<Control *, Toast> toasts;
 
+	bool is_processing_error = false; // Makes sure that we don't handle errors that are triggered within the EditorToaster error processing.
+
 	const double default_message_duration = 5.0;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
