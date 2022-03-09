@@ -2487,7 +2487,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->register_text_enter(search);
 		inspector->set_use_filter(true);
 		inspector_vbox->add_child(inspector);
-		sc->add_child(inspector);
 
 		server.instance();
 
