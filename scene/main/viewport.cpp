@@ -1467,8 +1467,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		gui.last_mouse_pos = mpos;
 		if (mb->is_pressed()) {
 			Size2 pos = mpos;
-			if (gui.mouse_focus_mask != MouseButton::NONE) {
-				// Do not steal mouse focus and stuff while a focus mask exists.
+			if (gui.mouse_focus_mask != MouseButton::NONE && gui.mouse_focus_mask != mouse_button_to_mask(mb->get_button_index())) {
+				// Do not steal mouse focus and stuff while a focus mask different from the pressed button exists.
 				gui.mouse_focus_mask |= mouse_button_to_mask(mb->get_button_index());
 			} else {
 				gui.mouse_focus = gui_find_control(pos);
