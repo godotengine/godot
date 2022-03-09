@@ -39,14 +39,14 @@
 			<return type="bool" />
 			<argument index="0" name="frames" type="PackedVector2Array" />
 			<description>
-				Pushes several audio data frames to the buffer. This is usually more efficient than [method push_frame] in C# and compiled languages via GDNative, but [method push_buffer] may be [i]less[/i] efficient in GDScript.
+				Pushes several audio data frames to the buffer. This is usually more efficient than [method push_frame] in C# and compiled languages via GDExtension, but [method push_buffer] may be [i]less[/i] efficient in GDScript.
 			</description>
 		</method>
 		<method name="push_frame">
 			<return type="bool" />
 			<argument index="0" name="frame" type="Vector2" />
 			<description>
-				Pushes a single audio data frame to the buffer. This is usually less efficient than [method push_buffer] in C# and compiled languages via GDNative, but [method push_frame] may be [i]more[/i] efficient in GDScript.
+				Pushes a single audio data frame to the buffer. This is usually less efficient than [method push_buffer] in C# and compiled languages via GDExtension, but [method push_frame] may be [i]more[/i] efficient in GDScript.
 			</description>
 		</method>
 	</methods>

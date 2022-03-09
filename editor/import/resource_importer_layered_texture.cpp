@@ -544,5 +544,5 @@ void ResourceImporterLayeredTexture::_check_compress_stex(Ref<LayeredTextureImpo
 		}
 		return;
 	}
-	EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
+	EditorNode::add_io_error(TTR("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC."));
 }

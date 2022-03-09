@@ -1186,7 +1186,7 @@ void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Vari
 	if (!p_item) {
 		return;
 	}
-	p_item->call(p_method, p_args, p_argcount, r_error);
+	p_item->callp(p_method, p_args, p_argcount, r_error);
 	TreeItem *c = p_item->get_first_child();
 	while (c) {
 		recursive_call_aux(c, p_method, p_args, p_argcount, r_error);

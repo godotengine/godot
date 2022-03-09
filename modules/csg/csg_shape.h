@@ -52,13 +52,14 @@ public:
 
 private:
 	Operation operation = OPERATION_UNION;
-	CSGShape3D *parent = nullptr;
+	CSGShape3D *parent_shape = nullptr;
 
 	CSGBrush *brush = nullptr;
 
 	AABB node_aabb;
 
 	bool dirty = false;
+	bool last_visible = false;
 	float snap = 0.001;
 
 	bool use_collision = false;
@@ -104,11 +105,12 @@ private:
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _update_shape();
+	void _update_collision_faces();
 
 protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
-	void _make_dirty();
+	void _make_dirty(bool p_parent_removing = false);
 
 	static void _bind_methods();
 

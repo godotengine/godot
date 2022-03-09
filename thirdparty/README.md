@@ -627,7 +627,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/Samsung/thorvg
-- Version: 0.7.1 (d53eb2a880002cb770ace1c1ace9c5dfcfc28252, 2022)
+- Version: 0.8.0 (41093c17b3cac440bdcc53f8b69abeb5734696b5, 2022)
 - License: MIT
 
 Files extracted from upstream source:

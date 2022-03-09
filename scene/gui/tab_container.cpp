@@ -624,7 +624,7 @@ void TabContainer::set_all_tabs_in_front(bool p_in_front) {
 	all_tabs_in_front = p_in_front;
 
 	remove_child(tab_bar);
-	add_child(tab_bar, false, all_tabs_in_front ? INTERNAL_MODE_BACK : INTERNAL_MODE_FRONT);
+	add_child(tab_bar, false, all_tabs_in_front ? INTERNAL_MODE_FRONT : INTERNAL_MODE_BACK);
 }
 
 bool TabContainer::is_all_tabs_in_front() const {
@@ -635,14 +635,13 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
 	ERR_FAIL_COND(!child);
 
-	if (p_title.is_empty()) {
-		tab_bar->set_tab_title(p_tab, String(child->get_name()));
+	tab_bar->set_tab_title(p_tab, p_title);
 
+	if (p_title == child->get_name()) {
 		if (child->has_meta("_tab_name")) {
 			child->remove_meta("_tab_name");
 		}
 	} else {
-		tab_bar->set_tab_title(p_tab, p_title);
 		child->set_meta("_tab_name", p_title);
 	}
 

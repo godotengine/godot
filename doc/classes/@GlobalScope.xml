@@ -791,12 +791,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="range_step_decimals">
-			<return type="int" />
-			<argument index="0" name="x" type="float" />
-			<description>
-			</description>
-		</method>
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>

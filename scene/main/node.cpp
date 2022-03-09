@@ -211,7 +211,7 @@ void Node::_propagate_enter_tree() {
 	if (data.parent) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signal(SNAME("child_entered_tree"), &cptr, 1);
+		data.parent->emit_signalp(SNAME("child_entered_tree"), &cptr, 1);
 	}
 
 	data.blocked++;
@@ -287,7 +287,7 @@ void Node::_propagate_exit_tree() {
 	if (data.parent) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signal(SNAME("child_exited_tree"), &cptr, 1);
+		data.parent->emit_signalp(SNAME("child_exited_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -581,34 +581,6 @@ uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc
 }
 
 /***** RPC FUNCTIONS ********/
-
-void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	rpcp(0, p_method, argptr, argc);
-}
-
-void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	rpcp(p_peer_id, p_method, argptr, argc);
-}
 
 Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
@@ -2387,42 +2359,6 @@ void Node::_replace_connections_target(Node *p_new_target) {
 			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.binds, c.flags);
 		}
 	}
-}
-
-Vector<Variant> Node::make_binds(VARIANT_ARG_DECLARE) {
-	Vector<Variant> ret;
-
-	if (p_arg1.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg1);
-	}
-
-	if (p_arg2.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg2);
-	}
-
-	if (p_arg3.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg3);
-	}
-
-	if (p_arg4.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg4);
-	}
-
-	if (p_arg5.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg5);
-	}
-
-	return ret;
 }
 
 bool Node::has_node_and_resource(const NodePath &p_path) const {

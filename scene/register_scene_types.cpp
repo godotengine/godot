@@ -1016,7 +1016,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
-	ClassDB::add_compatibility_class("CompressedTexture", "CompressedTexture2D");
+	ClassDB::add_compatibility_class("StreamTexture", "CompressedTexture2D");
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
@@ -1046,6 +1046,14 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("World", "World3D");
+
+	// Renamed during 4.0 alpha, added to ease transition between alphas.
+	ClassDB::add_compatibility_class("StreamCubemap", "CompressedCubemap");
+	ClassDB::add_compatibility_class("StreamCubemapArray", "CompressedCubemapArray");
+	ClassDB::add_compatibility_class("StreamTexture2D", "CompressedTexture2D");
+	ClassDB::add_compatibility_class("StreamTexture2DArray", "CompressedTexture2DArray");
+	ClassDB::add_compatibility_class("StreamTexture3D", "CompressedTexture3D");
+	ClassDB::add_compatibility_class("StreamTextureLayered", "CompressedTextureLayered");
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init

@@ -1064,18 +1064,16 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 	return last_path_id;
 }
 
-void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
+void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!p_base || !live_debug || !is_session_active() || !EditorNode::get_singleton()->get_edited_scene()) {
 		return;
 	}
 
 	Node *node = Object::cast_to<Node>(p_base);
 
-	VARIANT_ARGPTRS
-
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+	for (int i = 0; i < p_argcount; i++) {
 		//no pointers, sorry
-		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::RID)) {
+		if (p_args[i]->get_type() == Variant::OBJECT || p_args[i]->get_type() == Variant::RID) {
 			return;
 		}
 	}
@@ -1087,9 +1085,9 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		Array msg;
 		msg.push_back(pathid);
 		msg.push_back(p_name);
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
-			msg.push_back(*argptr[i]);
+			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_node_call", msg);
 
@@ -1105,9 +1103,9 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		Array msg;
 		msg.push_back(pathid);
 		msg.push_back(p_name);
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
-			msg.push_back(*argptr[i]);
+			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_res_call", msg);
 

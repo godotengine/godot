@@ -938,7 +938,7 @@ const Vector<Multiplayer::RPCConfig> GDScript::get_rpc_methods() const {
 	return rpc_functions;
 }
 
-Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *top = this;
 	while (top) {
 		Map<StringName, GDScriptFunction *>::Element *E = top->member_functions.find(p_method);
@@ -952,7 +952,7 @@ Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p
 
 	//none found, regular
 
-	return Script::call(p_method, p_args, p_argcount, r_error);
+	return Script::callp(p_method, p_args, p_argcount, r_error);
 }
 
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
@@ -1273,7 +1273,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			if (member->setter) {
 				const Variant *val = &p_value;
 				Callable::CallError err;
-				call(member->setter, &val, 1, err);
+				callp(member->setter, &val, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {
 					return true; //function exists, call was successful
 				} else {
@@ -1335,7 +1335,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			if (E) {
 				if (E->get().getter) {
 					Callable::CallError err;
-					r_ret = const_cast<GDScriptInstance *>(this)->call(E->get().getter, nullptr, 0, err);
+					r_ret = const_cast<GDScriptInstance *>(this)->callp(E->get().getter, nullptr, 0, err);
 					if (err.error == Callable::CallError::CALL_OK) {
 						return true;
 					}
@@ -1520,7 +1520,7 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 	return false;
 }
 
-Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *sptr = script.ptr();
 	while (sptr) {
 		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
@@ -1555,7 +1555,7 @@ void GDScriptInstance::notification(int p_notification) {
 String GDScriptInstance::to_string(bool *r_valid) {
 	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
 		Callable::CallError ce;
-		Variant ret = call(CoreStringNames::get_singleton()->_to_string, nullptr, 0, ce);
+		Variant ret = callp(CoreStringNames::get_singleton()->_to_string, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid) {

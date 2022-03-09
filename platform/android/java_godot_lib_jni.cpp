@@ -446,7 +446,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 	}
 
 	Callable::CallError err;
-	obj->call(str_method, (const Variant **)vptr, count, err);
+	obj->callp(str_method, (const Variant **)vptr, count, err);
 	// something
 
 	env->PopLocalFrame(nullptr);
@@ -462,18 +462,20 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	String str_method = jstring_to_string(method, env);
 
 	int count = env->GetArrayLength(params);
-	Variant args[VARIANT_ARG_MAX];
 
-	for (int i = 0; i < MIN(count, VARIANT_ARG_MAX); i++) {
+	Variant *args = (Variant *)alloca(sizeof(Variant) * count);
+	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * count);
+
+	for (int i = 0; i < count; i++) {
 		jobject obj = env->GetObjectArrayElement(params, i);
 		if (obj) {
 			args[i] = _jobject_to_variant(env, obj);
 		}
 		env->DeleteLocalRef(obj);
+		argptrs[i] = &args[i];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	obj->call_deferred(str_method, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+	MessageQueue::get_singleton()->push_callp(obj, str_method, (const Variant **)argptrs, count);
 	// something
 	env->PopLocalFrame(nullptr);
 }
