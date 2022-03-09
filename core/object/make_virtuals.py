@@ -8,7 +8,7 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	if (script_instance) {\\
 		Callable::CallError ce; \\
 		$CALLSIARGS\\
-		$CALLSIBEGINscript_instance->call(_gdvirtual_##m_name##_sn, $CALLSIARGPASS, ce);\\
+		$CALLSIBEGINscript_instance->callp(_gdvirtual_##m_name##_sn, $CALLSIARGPASS, ce);\\
 		if (ce.error == Callable::CallError::CALL_OK) {\\
 			$CALLSIRET\\
 			return true;\\

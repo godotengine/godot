@@ -1447,7 +1447,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const StringName native_type = _global_names_ptr[native_type_idx];
 
 				Array array;
-				array.set_typed(builtin_type, native_type, script_type);
+				array.set_typed(builtin_type, native_type, *script_type);
 				array.resize(argc);
 
 				for (int i = 0; i < argc; i++) {
@@ -1517,7 +1517,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 				if (call_ret) {
 					GET_INSTRUCTION_ARG(ret, argc + 1);
-					base->call(*methodname, (const Variant **)argptrs, argc, *ret, err);
+					base->callp(*methodname, (const Variant **)argptrs, argc, *ret, err);
 #ifdef DEBUG_ENABLED
 					if (!call_async && ret->get_type() == Variant::OBJECT) {
 						// Check if getting a function state without await.
@@ -1536,7 +1536,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 				} else {
 					Variant ret;
-					base->call(*methodname, (const Variant **)argptrs, argc, ret, err);
+					base->callp(*methodname, (const Variant **)argptrs, argc, ret, err);
 				}
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
@@ -2340,7 +2340,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 
 				Array array;
-				array.set_typed(builtin_type, native_type, script_type);
+				array.set_typed(builtin_type, native_type, *script_type);
 
 #ifdef DEBUG_ENABLED
 				bool valid = array.typed_assign(*VariantInternal::get_array(r));
@@ -2810,7 +2810,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				args[0] = &vref;
 
 				Callable::CallError ce;
-				Variant has_next = obj->call(CoreStringNames::get_singleton()->_iter_init, (const Variant **)args, 1, ce);
+				Variant has_next = obj->callp(CoreStringNames::get_singleton()->_iter_init, (const Variant **)args, 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ce.error != Callable::CallError::CALL_OK) {
@@ -2824,7 +2824,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_INSTRUCTION_ARG(iterator, 2);
-					*iterator = obj->call(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
+					*iterator = obj->callp(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
@@ -3141,7 +3141,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				args[0] = &vref;
 
 				Callable::CallError ce;
-				Variant has_next = obj->call(CoreStringNames::get_singleton()->_iter_next, (const Variant **)args, 1, ce);
+				Variant has_next = obj->callp(CoreStringNames::get_singleton()->_iter_next, (const Variant **)args, 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ce.error != Callable::CallError::CALL_OK) {
@@ -3155,7 +3155,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_INSTRUCTION_ARG(iterator, 2);
-					*iterator = obj->call(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
+					*iterator = obj->callp(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);

@@ -420,7 +420,11 @@ public:
 	void set_scene_instance_load_placeholder(bool p_enable);
 	bool get_scene_instance_load_placeholder() const;
 
-	static Vector<Variant> make_binds(VARIANT_ARG_LIST);
+	template <typename... VarArgs>
+	Vector<Variant> make_binds(VarArgs... p_args) {
+		Vector<Variant> binds = { p_args... };
+		return binds;
+	}
 
 	void replace_by(Node *p_node, bool p_keep_data = false);
 
@@ -472,8 +476,26 @@ public:
 	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local = false, Multiplayer::TransferMode p_transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0); // config a local method for RPC
 	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;
 
-	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel
-	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); // RPC to specific peer(s), honors RPCMode, TransferMode, channel
+	template <typename... VarArgs>
+	void rpc(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		rpcp(0, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename... VarArgs>
+	void rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
 	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;

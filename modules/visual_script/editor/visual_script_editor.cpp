@@ -1621,7 +1621,7 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 	conn_map.get_key_list(&keys);
 	for (const int &E : keys) {
 		for (const Set<int>::Element *F = conn_map[E].front(); F; F = F->next()) {
-			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E, F);
+			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E, F->get());
 		}
 	}
 

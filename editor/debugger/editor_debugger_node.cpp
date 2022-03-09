@@ -610,12 +610,12 @@ void EditorDebuggerNode::_save_node_requested(ObjectID p_id, const String &p_fil
 }
 
 // Remote inspector/edit.
-void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
+void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!singleton) {
 		return;
 	}
 	_for_all(singleton->tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->_method_changed(p_base, p_name, VARIANT_ARG_PASS);
+		dbg->_method_changed(p_base, p_name, p_args, p_argcount);
 	});
 }
 

@@ -176,8 +176,20 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
-	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST);
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
+
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
+
+	template <typename... VarArgs>
+	Variant call(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		Callable::CallError cerr;
+		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+	}
+
 	virtual void notification(int p_notification) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {
@@ -419,8 +431,8 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST) { return Variant(); }
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
