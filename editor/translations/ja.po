@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-14 22:08+0000\n"
+"PO-Revision-Date: 2022-03-08 08:59+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -51,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1508,6 +1508,11 @@ msgstr "デフォルトのバスレイアウトを読み込む。"
 msgid "Create a new Bus Layout."
 msgstr "新規バスレイアウトを作成。"
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "オーディオバスのレイアウトを開く"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "無効な名前です。"
@@ -2947,7 +2952,7 @@ msgstr "集中モードを切り替える。"
 msgid "Add a new scene."
 msgstr "新規シーンを追加する。"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "シーン"
 
@@ -3117,7 +3122,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr "コリジョン形状の表示"
+msgstr "コリジョン形状を表示"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3129,7 +3134,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr "ナビゲーションの表示"
+msgstr "ナビゲーションを表示"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3141,7 +3146,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Force Shader Fallbacks"
-msgstr ""
+msgstr "シェーダーフォールバックを強制"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3152,10 +3157,16 @@ msgid ""
 "Asynchronous shader compilation must be enabled in the project settings for "
 "this option to make a difference."
 msgstr ""
+"このオプションを有効にすると、すべての実行時にシェーダーがフォールバック形式 "
+"(ubershaderで表示するか非表示) で使用されます。\n"
+"これは、通常は簡素に表示されるフォールバックの、見た目と性能を確認するために"
+"役立ちます。\n"
+"このオプションを機能させるには、プロジェクト設定で非同期シェーダーコンパイル"
+"を有効にする必要があります。"
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
-msgstr "シーンの変更を同期"
+msgstr "シーン変更を同期"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3171,7 +3182,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Script Changes"
-msgstr "スクリプトの変更を同期"
+msgstr "スクリプト変更を同期"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4097,6 +4108,11 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"このファイル拡張子はエディターによって認識されません。\n"
+"それでも名前を変更したい場合は、オペレーティングシステムのファイルマネー"
+"ジャーを使用してください。\n"
+"不明な拡張子へと名前を変更すると、そのファイルはエディターに表示されなくなり"
+"ます。"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5707,6 +5723,10 @@ msgid "Bake Lightmaps"
 msgstr "ライトマップを焼き込む"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "ライトマップベイクファイルを選択:"
 
@@ -5801,11 +5821,11 @@ msgstr "Control \"%s\" を (%d, %d) にリサイズします"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale %d CanvasItems"
-msgstr "%d 個の CanvasItem を拡大 / 縮小"
+msgstr "%d 個の CanvasItem を拡大縮小"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "CanvasItem \"%s\" を (%s, %s) に拡大 / 縮小"
+msgstr "CanvasItem \"%s\" を (%s, %s) に拡大縮小"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move %d CanvasItems"
@@ -6052,7 +6072,7 @@ msgstr "スケールモード"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
-msgstr ""
+msgstr "Shift: 比率を保って拡大縮小。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8190,7 +8210,13 @@ msgid "Cinematic Preview"
 msgstr "シネマティックプレビュー"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "GLES2レンダラーの場合は利用できません。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8430,23 +8456,23 @@ msgstr "設定..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
-msgstr "スナップの設定"
+msgstr "スナップ設定"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "スナップの移動:"
+msgstr "移動スナップ:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr "スナップの回転(度):"
+msgstr "回転スナップ (度):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr "スナップの拡大/縮小(%):"
+msgstr "拡大 / 縮小スナップ (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
-msgstr "ビューポートの設定"
+msgstr "ビューポート設定"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
@@ -8454,15 +8480,15 @@ msgstr "視野角(度):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Z-Near:"
-msgstr "Z-Nearの表示:"
+msgstr "ビューのZ-Near:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Z-Far:"
-msgstr "Z-Farの表示:"
+msgstr "ビューのZ-Far:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Change"
-msgstr "トランスフォームの変更"
+msgstr "トランスフォーム変更"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
@@ -9084,6 +9110,11 @@ msgid "Select Another Theme Resource:"
 msgstr "他のテーマリソースの選択:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "リソース名を変更"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "他のテーマ"
 
@@ -9132,8 +9163,22 @@ msgstr ""
 "てのこのタイプのStyleBoxで同じプロパティが更新されます。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "アイテムのタイプを追加"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "変数の型を設定"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "基底型を変更"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
-msgstr "デフォルトの表示"
+msgstr "デフォルトを表示"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show default type items alongside items that have been overridden."
@@ -9149,8 +9194,19 @@ msgid "Override all default type items."
 msgstr "すべてのデフォルトタイプのアイテムをオーバーライドする。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "アイテムのタイプを追加"
+#, fuzzy
+msgid "Base Type"
+msgstr "基底型を変更"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9857,18 +9913,6 @@ msgstr "コミットリスト"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "コミットリストサイズ"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12604,6 +12648,11 @@ msgid "Stack Frames"
 msgstr "スタックフレーム"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "タイルを絞り込む"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "プロファイラー"
 
@@ -13944,9 +13993,10 @@ msgstr "無効なパッケージ名:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"「android/modules」に含まれる「GodotPaymentV3」モジュールのプロジェクト設定が"
-"無効です (Godot 3.2.2 にて変更)。\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

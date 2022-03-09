@@ -1486,6 +1486,11 @@ msgstr "載入預設匯流排配置。"
 msgid "Create a new Bus Layout."
 msgstr "建立新匯流排配置。"
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "開啟音訊匯流排配置"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "無效的名稱。"
@@ -2885,7 +2890,7 @@ msgstr "切換／取消專注模式。"
 msgid "Add a new scene."
 msgstr "新增場景。"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "場景"
 
@@ -5592,6 +5597,10 @@ msgid "Bake Lightmaps"
 msgstr "烘焙光照圖"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "選擇光照圖烘焙檔案："
 
@@ -8054,7 +8063,13 @@ msgid "Cinematic Preview"
 msgstr "效果預覽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "使用 GLES2 算繪引擎時無法使用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8943,6 +8958,11 @@ msgid "Select Another Theme Resource:"
 msgstr "選擇其他主題資源："
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "重新命名資源"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "其他主題"
 
@@ -8993,6 +9013,20 @@ msgstr ""
 "釘選該樣式盒為主要樣式。編輯其屬性將更新所有其他同類別的樣式盒之相同屬性。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "新增項目類型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "設定變數型別"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "更改基礎型別"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "顯示預設"
 
@@ -9009,8 +9043,19 @@ msgid "Override all default type items."
 msgstr "複寫所有預設類別項目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "新增項目類型"
+#, fuzzy
+msgid "Base Type"
+msgstr "更改基礎型別"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9715,18 +9760,6 @@ msgstr "提交"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12401,6 +12434,11 @@ msgid "Stack Frames"
 msgstr "堆疊框"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "篩選圖塊"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "分析工具"
 
@@ -13725,9 +13763,10 @@ msgstr "無效的套件名稱："
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"「andoird/modules」專案設定中包含了無效的「GodotPaymentV3」模組（更改於 "
-"Godot 3.2.2）。\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

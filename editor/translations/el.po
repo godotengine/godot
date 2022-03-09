@@ -1511,6 +1511,11 @@ msgstr "Φόρτωση προεπιλεγμένης διάταξης διαύλ�
 msgid "Create a new Bus Layout."
 msgstr "Δημιουργία νέας διάταξης διαύλων ήχου."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Άνοιγμα διάταξης διαύλων ήχου"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Μη έγκυρο όνομα."
@@ -2976,7 +2981,7 @@ msgstr "Εναλλαγή λειτουργίας χωρίς περισπασμο�
 msgid "Add a new scene."
 msgstr "Προσθήκη νέας σκηνής."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Σκηνή"
 
@@ -5792,6 +5797,10 @@ msgid "Bake Lightmaps"
 msgstr "Προετοιμασία Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Επιλογή Αρχείου Προτύπων:"
 
@@ -8356,7 +8365,13 @@ msgid "Cinematic Preview"
 msgstr "Κινηματογραφική Προεπισκόπηση"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Δεν είναι διαθέσιμο στην απόδοση GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9304,6 +9319,11 @@ msgstr "Διαγραφή πόρου"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Μετονομασία πόρου"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Εισαγωγή θέματος"
 
@@ -9358,6 +9378,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Προσθήκη στοιχείου"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Ορισμός τύπου μεταβλητής"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Αλλαγή βασικού τύπου"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Φόρτωση προεπιλογής"
 
@@ -9376,8 +9411,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Προσθήκη στοιχείου"
+msgid "Base Type"
+msgstr "Αλλαγή βασικού τύπου"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -10102,18 +10147,6 @@ msgstr "Υποβολή"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12882,6 +12915,11 @@ msgid "Stack Frames"
 msgstr "Στοίβαξη καρέ"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Φιλτράρισμα πλακιδίων"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Πρόγραμμα Δημιουργίας Προφίλ"
 
@@ -14270,9 +14308,10 @@ msgstr "Άκυρο όνομα πακέτου:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Εσφαλμένη λειτουργική μονάδα «GodotPaymentV3» στην ρύθμιση εργου «Android/"
-"Modules» (άλλαξε στην Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

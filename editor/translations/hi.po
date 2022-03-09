@@ -1490,6 +1490,11 @@ msgstr "प्रायिक बस लेआउट लोड कीजिय�
 msgid "Create a new Bus Layout."
 msgstr "नई बस लेआउट बनाइये."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "ऑडियो बस लेआउट खोलिये"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "अमान्य नाम."
@@ -2915,7 +2920,7 @@ msgstr "व्याकुलता मुक्त मोड टॉगल।"
 msgid "Add a new scene."
 msgstr "एक नया दृश्य जोड़ें।"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "दृश्य"
 
@@ -5659,6 +5664,10 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid "Select lightmap bake file:"
 msgstr "टेम्पलेट फ़ाइल का चयन करें"
@@ -8141,7 +8150,12 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9073,6 +9087,11 @@ msgid "Select Another Theme Resource:"
 msgstr "खोज रिप्लेसमेंट संसाधन:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "संसाधन"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr ""
 
@@ -9123,6 +9142,18 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Set Variation Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Set Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Show Default"
 msgstr "प्रायिक लोड कीजिये"
@@ -9141,7 +9172,18 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
+#, fuzzy
+msgid "Base Type"
+msgstr "%s का टाइप बदले"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -9864,18 +9906,6 @@ msgstr "समुदाय"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12503,6 +12533,11 @@ msgid "Stack Frames"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "स्क्रीनिंग सिग्नल"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr ""
 
@@ -13843,6 +13878,9 @@ msgstr "गलत फॉण्ट का आकार |"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp

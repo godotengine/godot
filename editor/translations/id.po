@@ -24,7 +24,7 @@
 # Modeus Darksono <garuga17@gmail.com>, 2019.
 # Akhmad Zulfikar <azuldegratz@gmail.com>, 2020.
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
-# zephyroths <ridho.hikaru@gmail.com>, 2020, 2021.
+# zephyroths <ridho.hikaru@gmail.com>, 2020, 2021, 2022.
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # yusuf afandi <afandi.yusuf.04@gmail.com>, 2020.
 # Habib Rohman <revolusi147id@gmail.com>, 2020.
@@ -40,8 +40,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-19 08:43+0000\n"
-"Last-Translator: Brian <brian@brianthe.dev>\n"
+"PO-Revision-Date: 2022-02-23 17:54+0000\n"
+"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -49,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -352,9 +352,8 @@ msgid "Duplicate Key(s)"
 msgstr "Duplikat Key"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add RESET Value(s)"
-msgstr "Tambah %d Frame"
+msgstr "Tambahkan Nilai RESET"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -1506,6 +1505,11 @@ msgstr "Muat default Layout Bus."
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
 msgstr "Buat Layout Bus Baru."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Buka Layout Suara Bus"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2956,7 +2960,7 @@ msgstr "Toggle mode tanpa gangguan."
 msgid "Add a new scene."
 msgstr "Tambah skena baru."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Skena"
 
@@ -5706,6 +5710,10 @@ msgid "Bake Lightmaps"
 msgstr "Panggang Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Pilih berkas lightmap bake:"
 
@@ -8201,7 +8209,13 @@ msgid "Cinematic Preview"
 msgstr "Pratinjau Sinematik"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Tidak tersedia ketika menggunakan perender GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9135,6 +9149,11 @@ msgstr "Pilih Tema Lain Aset:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Ubah Nama Resource"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Impor Tema"
 
@@ -9189,6 +9208,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Tambah Item"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Atur Jenis variabel"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Ubah Tipe Basis"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Muat Default"
 
@@ -9207,8 +9241,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Tambah Item"
+msgid "Base Type"
+msgstr "Ubah Tipe Basis"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9925,18 +9969,6 @@ msgstr "Komit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12699,6 +12731,11 @@ msgid "Stack Frames"
 msgstr "Stack Frame"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filter tile"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Profiler(debugger/pemantauan)"
 
@@ -14059,9 +14096,10 @@ msgstr "Nama paket tidak valid:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Modul \"GodotPaymentV3\" tidak valid yang dimasukkan dalam pengaturan proyek "
-"\"android/modules\" (diubah di Godot 3.2.2)\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

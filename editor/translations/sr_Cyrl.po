@@ -1607,6 +1607,11 @@ msgstr "Учитај уобичајен бас распоред."
 msgid "Create a new Bus Layout."
 msgstr "Направи нови бас распоред."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Отвори распоред звучног баса"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Неважеће име."
@@ -3157,7 +3162,7 @@ msgstr "Укљ./Искљ. режим без сметње."
 msgid "Add a new scene."
 msgstr "Додај нову сцену."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Сцена"
 
@@ -6190,6 +6195,10 @@ msgid "Bake Lightmaps"
 msgstr "Изпеци МапеСенчења"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid "Select lightmap bake file:"
 msgstr "Одабери шаблонску датотеку"
@@ -8961,8 +8970,13 @@ msgid "Cinematic Preview"
 msgstr "Направи приказ мрежа"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Not available when using the GLES2 renderer."
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Недоступно кад користиш GLES2 изцртавање."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9955,6 +9969,11 @@ msgstr "Обриши ресурс"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Преименуј ресурс"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Увези тему"
 
@@ -10009,6 +10028,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Додај ствар"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Постави Врсту Променљиве"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Измени уобичајен тип"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Учитај уобичајено"
 
@@ -10027,8 +10061,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Додај ствар"
+msgid "Base Type"
+msgstr "Промени Тип"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -10847,18 +10891,6 @@ msgstr "Заједница"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -14106,6 +14138,11 @@ msgstr "Наслага Фрејмова"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
+msgid "Filter stack variables"
+msgstr "Филтрирај датотеке..."
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Profiler"
 msgstr "Осматрач"
 
@@ -15630,6 +15667,9 @@ msgstr "Неважеће име паковања:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp

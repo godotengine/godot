@@ -1505,6 +1505,11 @@ msgstr "Carrega el disseny del Bus predeterminat."
 msgid "Create a new Bus Layout."
 msgstr "Crea un nou Disseny de Bus."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Obre un Disseny de Bus d'Àudio"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Nom no vàlid."
@@ -2970,7 +2975,7 @@ msgstr "Commutar el Mode Lliure de Distraccions."
 msgid "Add a new scene."
 msgstr "Afegeix una escena nova."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Escena"
 
@@ -5795,6 +5800,10 @@ msgid "Bake Lightmaps"
 msgstr "Precalcular Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid "Select lightmap bake file:"
 msgstr "Seleccioneu un Fitxer de Plantilla:"
@@ -8365,7 +8374,13 @@ msgid "Cinematic Preview"
 msgstr "Previsualització Cinemàtica"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "No disponible quan s'utilitza el renderitzador GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9311,6 +9326,11 @@ msgstr "Elimina el Recurs:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Reanomena el Recurs"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Importa un Tema"
 
@@ -9365,6 +9385,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Afegeix un Element"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Estableix el Tipus de Variable"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Modifica el Tipus de Base"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Carrega Valors predeterminats"
 
@@ -9383,8 +9418,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Afegeix un Element"
+msgid "Base Type"
+msgstr "Modifica el Tipus de Base"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -10132,18 +10177,6 @@ msgstr "Comunitat"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12991,6 +13024,11 @@ msgid "Stack Frames"
 msgstr "Fotogrames de la Pila"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filtrar tiles"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Perfilador"
 
@@ -14406,6 +14444,9 @@ msgstr "El nom del paquet no és vàlid:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp

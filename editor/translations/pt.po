@@ -1493,6 +1493,11 @@ msgstr "Carregar o Modelo predefinido de barramento."
 msgid "Create a new Bus Layout."
 msgstr "Criar um novo Modelo de Barramento."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Abrir Modelo de barramento de áudio"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Nome inválido."
@@ -2934,7 +2939,7 @@ msgstr "Alternar modo livre de distrações."
 msgid "Add a new scene."
 msgstr "Adicionar nova cena."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Cena"
 
@@ -5705,6 +5710,10 @@ msgid "Bake Lightmaps"
 msgstr "Consolidar Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Selecionar ficheiro de consolidação de lightmap:"
 
@@ -8184,7 +8193,13 @@ msgid "Cinematic Preview"
 msgstr "Pré-visualização Cinemática"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Não disponível para o renderizador GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9079,6 +9094,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Selecionar Outro Recurso Tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Renomear recurso"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "Outro Tema"
 
@@ -9127,6 +9147,20 @@ msgstr ""
 "atualizar as mesmas em todos os StyleBoxes deste tipo."
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Adicionar Tipo de Item"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Definir tipo de variável"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Mudar tipo base"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Mostrar Predefinição"
 
@@ -9144,8 +9178,19 @@ msgid "Override all default type items."
 msgstr "Sobrepõe todos os itens de tipo predefinido."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Adicionar Tipo de Item"
+#, fuzzy
+msgid "Base Type"
+msgstr "Mudar tipo base"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9845,18 +9890,6 @@ msgstr "Gravar Lista"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "Gravar tamanho da lista"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12598,6 +12631,11 @@ msgid "Stack Frames"
 msgstr "Empilhar Frames"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filtrar Tiles"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Analisador"
 
@@ -13917,9 +13955,10 @@ msgstr "Nome de pacote inválido:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Módulo inválido \"GodotPaymentV3\" incluído na configuração do projeto "
-"\"android/modules\" (alterado em Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

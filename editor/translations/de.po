@@ -76,13 +76,14 @@
 # Tim <tim14speckenwirth@gmail.com>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
 # ‎ <artism90@googlemail.com>, 2022.
+# Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-16 08:44+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2022-03-02 18:39+0000\n"
+"Last-Translator: Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -90,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.11.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1556,6 +1557,11 @@ msgstr "Standard Bus-Layout laden."
 msgid "Create a new Bus Layout."
 msgstr "Neues Audiobus-Layout erstellen."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Öffne Audiobus-Layout"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Ungültiger Name."
@@ -2235,7 +2241,7 @@ msgstr "Stile"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Aufzählungstypen"
+msgstr "Aufzählungen"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -3020,7 +3026,7 @@ msgstr "Ablenkungsfreien Modus umschalten."
 msgid "Add a new scene."
 msgstr "Eine neue Szene hinzufügen."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Szene"
 
@@ -3396,14 +3402,12 @@ msgid "Update Continuously"
 msgstr "Fortlaufend aktualisieren"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "Bei Änderungen aktualisieren"
+msgstr "Bei allen Änderungen aktualisieren"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Vital Changes"
-msgstr "Materialänderungen:"
+msgstr "Nur bei wichtigen Änderungen aktualisieren"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -4181,6 +4185,11 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"Diese Dateiendung wird nicht vom Editor erkannt.\n"
+"Zum Durchführen der Umbenennung muss ein anderer Dateimanager genutzt "
+"werden.\n"
+"Dateien mit unbekannten Dateiendungen werden daraufhin nicht mehr im Editor "
+"angezeigt."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5800,6 +5809,10 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Lightmaps vorrendern"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8299,7 +8312,13 @@ msgid "Cinematic Preview"
 msgstr "Cinematische Vorschau"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Nicht verfügbar wenn der GLES2–Renderer genutzt wird."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9199,6 +9218,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Andere Thema-Ressource auswählen:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Ressource umbenennen"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "Anderes Design"
 
@@ -9247,6 +9271,20 @@ msgstr ""
 "StyleBox werden ebenfalls in allen StyleBoxen des gleichen Typs geändert."
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Elementtyp hinzufügen"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Variablentyp festlegen"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Basistyp ändern"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Standard anzeigen"
 
@@ -9263,8 +9301,19 @@ msgid "Override all default type items."
 msgstr "Alle Standard-Typelemente überbrücken."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Elementtyp hinzufügen"
+#, fuzzy
+msgid "Base Type"
+msgstr "Basistyp ändern"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9970,18 +10019,6 @@ msgstr "Commit-Liste"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "Größe der Commit-Liste"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12745,6 +12782,11 @@ msgid "Stack Frames"
 msgstr "Aufrufsverlauf"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Kacheln filtern"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Profiler"
 
@@ -12918,14 +12960,12 @@ msgid "Set Occluder Sphere Position"
 msgstr "Occluder-Sphärenposition festlegen"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Polygon Point Position"
-msgstr "Portal-Point-Position festlegen"
+msgstr "Position von Occluder-Polygon-Punkt festlegen"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Hole Point Position"
-msgstr "Kurvenpunktposition festlegen"
+msgstr "Position von Occluder-Loch-Punkt festlegen"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -14072,9 +14112,10 @@ msgstr "Ungültiger Paketname:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Ungültiges „GodotPaymentV3“-Modul eingebunden in den „android/modules“-"
-"Projekteinstellungen (wurde in Godot 3.2.2 geändert).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -14341,166 +14382,167 @@ msgstr "Fehler beim Starten des HTTP-Servers:"
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't get filesystem access."
-msgstr ""
+msgstr "Dateisystemzugriff fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to get Info.plist hash."
-msgstr ""
+msgstr "Lesen von Info.plist-Hash fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid Info.plist, no exe name."
-msgstr "Ungültiger Projektname."
+msgstr "Ungültige Info.plist, kein exe-Name."
 
 #: platform/osx/export/codesign.cpp
 msgid "Invalid Info.plist, no bundle id."
-msgstr ""
+msgstr "Ungültige Info.plist, keine bundle-id."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid Info.plist, can't load."
-msgstr "Ungültige Geometrie, Polygon kann nicht erzeugt werden."
+msgstr "Ungültige Info.plist, kann nicht geladen werden."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to create \"%s\" subfolder."
-msgstr "Ordner konnte nicht erstellt werden."
+msgstr "Erzeugen von Unterordner „%s“ fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to extract thin binary."
-msgstr ""
+msgstr "Entpacken von thin binary fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid binary format."
-msgstr "Ungültiger Basispfad."
+msgstr "Ungültiges Binärformat."
 
 #: platform/osx/export/codesign.cpp
 msgid "Already signed!"
-msgstr ""
+msgstr "Bereits signiert!"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to process nested resources."
-msgstr "Laden der Ressource gescheitert."
+msgstr "Verarbeiten verschachtelter Ressourcen fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to create _CodeSignature subfolder."
-msgstr ""
+msgstr "Erzeugen von _CodeSignature-Unterordner fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to get CodeResources hash."
-msgstr "Laden der Ressource gescheitert."
+msgstr "Erhalten von CodeResources-Hash fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid entitlements file."
-msgstr "Ungültige Dateiendung."
+msgstr "Ungültige entitlements-Datei."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid executable file."
-msgstr "Ungültige Dateiendung."
+msgstr "Ungültige ausführbare Datei."
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't resize signature load command."
-msgstr ""
+msgstr "Signatur-Lade-Kommando kann nicht vergrößert/verkleinert werden."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to create fat binary."
-msgstr ""
+msgstr "Erstellen von fat binary fehlgeschlagen."
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown bundle type."
-msgstr ""
+msgstr "Unbekannter bundle-Typ."
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown object type."
-msgstr ""
+msgstr "Unbekannter Objekttyp."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Note: The notarization process generally takes less than an hour. When the "
 "process is completed, you'll receive an email."
 msgstr ""
+"Hinweis: Der Beglaubigungsprozess dauert gewöhnlich weniger als eine Stunde. "
+"Nach Ablauf wird eine Bestätigungsmail versandt."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
 msgstr ""
+"Der Fortschritt kann manuell mithilfe des folgenden Befehls in der Konsole "
+"überprüft werden:"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
+"Mit folgendem Befehl kann die Beglaubigungsbescheinigung an die exportierte "
+"Anwendung geheftet werden (optional):"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "No identity found."
-msgstr "Keine Symbole gefunden."
+msgstr "Keine Identität gefunden."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Creating app bundle"
-msgstr "Erzeuge Miniaturansicht"
+msgstr "Erzeuge App-Bundle"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export:"
-msgstr ""
-"Konnte keine APK-Vorlage zum Exportieren finden:\n"
-"%s"
+msgstr "Es konnte keine Vorlagen-App zum Exportieren gefunden werden:"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Relative symlinks are not supported on this OS, the exported project might "
 "be broken!"
 msgstr ""
+"Relative symbolische Links werden von diesem Betriebssystem nicht "
+"unterstützt, das exportierte Projekt könnte fehlerhaft sein!"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Requested template binary '%s' not found. It might be missing from your "
 "template archive."
 msgstr ""
+"Benötigte Vorlagen-Binary ‚%s‘ nicht gefunden. Es könnte im Vorlagen-Archiv "
+"fehlen."
 
 #: platform/osx/export/export.cpp
 msgid "Making PKG"
-msgstr ""
+msgstr "Erzeuge PKG"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Ad-hoc signed applications require the 'Disable Library Validation' "
 "entitlement to load dynamic libraries."
 msgstr ""
+"Ad-hoc signierte Anwendungen benötigen die ‚Disable Library Validation‘-"
+"Berechtigung um dynamische Bibliotheken zu laden."
 
 #: platform/osx/export/export.cpp
 msgid "Code signing bundle"
-msgstr ""
+msgstr "Codesignierungs-Bundle"
 
 #: platform/osx/export/export.cpp
 msgid "Making DMG"
-msgstr ""
+msgstr "Erstelle DMG"
 
 #: platform/osx/export/export.cpp
 msgid "Code signing DMG"
-msgstr ""
+msgstr "Codesignierendes DMG"
 
 #: platform/osx/export/export.cpp
 msgid "Making ZIP"
-msgstr ""
+msgstr "Erstelle ZIP"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Notarization requires the app to be archived first, select the DMG or ZIP "
 "export format instead."
 msgstr ""
+"Der Beglaubigungsprozess setzt voraus dass die Anwendung archiviert wurde. "
+"Das DMG- oder ZIP-Exportformat sollte stattdessen ausgewählt werden."
 
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
-msgstr ""
+msgstr "Sende Archiv zur Beglaubigung"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -14511,31 +14553,36 @@ msgid ""
 "Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
 "signing is limited to ad-hoc signature only."
 msgstr ""
+"Warnung: Das eingebettete „codesign“ ist in den Editoreinstellungen "
+"ausgewählt. Codesignierung ist eingeschränkt auf Ad-hoc-Signaturen."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Warning: Xcode command line tools are not installed, using built-in "
 "\"codesign\". Code signing is limited to ad-hoc signature only."
 msgstr ""
+"Warnung: Die Xcode-Kommandozeilenprogramme sind nicht installiert, verwende "
+"eingebautes „codesign“. Codesignierung ist eingeschränkt auf Ad-hoc-"
+"Signaturen."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Notarization with an ad-hoc signature is not supported."
 msgstr ""
+"Beglaubigung: Beglaubigungen von Ad-hoc-Signaturen werden nicht erstellt."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization: Code signing is required for notarization."
-msgstr "Beglaubigung: Code-Signierung wird benötigt."
+msgstr "Beglaubigung: Code-Signierung wird zur Beglaubigung benötigt."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization: Hardened runtime is required for notarization."
-msgstr "Beglaubigung: Abgehärtete Ausführungsumgebung wird benötigt."
+msgstr ""
+"Beglaubigung: Abgehärtete Ausführungsumgebung wird zur Beglaubigung benötigt."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization: Timestamp runtime is required for notarization."
-msgstr "Beglaubigung: Abgehärtete Ausführungsumgebung wird benötigt."
+msgstr ""
+"Beglaubigung: Zeitstempel-Ausführungsumgebung wird für Beglaubigung benötigt."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
@@ -14550,63 +14597,87 @@ msgid ""
 "Warning: Notarization is disabled. The exported project will be blocked by "
 "Gatekeeper if it's downloaded from an unknown source."
 msgstr ""
+"Warnung: Beglaubigungen sind deaktiviert. Das exportierte Projekt wird von "
+"Gatekeeper geblockt werden, falls es von einer unbekannten Quelle "
+"heruntergeladen wird."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Code signing is disabled. The exported project will not run on Macs with "
 "enabled Gatekeeper and Apple Silicon powered Macs."
 msgstr ""
+"Code-Signierung ist deaktiviert. Das exportierte Projekt wird sich nicht auf "
+"Macs mit aktiviertem Gatekeeper oder Apple-Silicon-Macs ausführen lassen."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Hardened Runtime is not compatible with ad-hoc signature, and will be "
 "disabled!"
 msgstr ""
+"Die abgehärtete Laufzeitumgebung ist nicht mit Ad-hoc-Signaturen kompatibel, "
+"und wird deaktiviert!"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Timestamping is not compatible with ad-hoc signature, and will be disabled!"
 msgstr ""
+"Zeitstempel sind nicht mit Ad-hoc-Signaturen kompatibel, und werden "
+"deaktiviert!"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Warning: Notarization is not supported from this OS. The exported project "
 "will be blocked by Gatekeeper if it's downloaded from an unknown source."
 msgstr ""
+"Warnung: Beglaubigungen werden von diesem Betriebssystem nicht unterstützt. "
+"Das exportierte Projekt wird von Gatekeeper blockiert, falls es aus einer "
+"unbekannten Quelle geladen wurde."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Microphone access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"Privatsphäre: Mikrophonzugriff ist aktiviert, aber keine "
+"Nutzungsbeschreibung angegeben."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Camera access is enabled, but usage description is not specified."
 msgstr ""
+"Privatsphäre: Kamerazugriff ist aktiviert, aber keine Nutzungsbeschreibung "
+"angegeben."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Location information access is enabled, but usage description is "
 "not specified."
 msgstr ""
+"Privatsphäre: Standortzugriff ist aktiviert, aber keine Nutzungsbeschreibung "
+"angegeben."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Address book access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"Privatsphäre: Adressbuchzugriff ist aktiviert, aber keine "
+"Nutzungsbeschreibung angegeben."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Calendar access is enabled, but usage description is not specified."
 msgstr ""
+"Privatsphäre: Kalenderzugriff ist aktiviert, aber keine Nutzungsbeschreibung "
+"angegeben."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Photo library access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"Privatsphäre: Photobibliothekszugriff ist aktiviert, aber keine "
+"Nutzungsbeschreibung angegeben."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14665,21 +14736,21 @@ msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
 msgstr ""
+"Das Rcedit-Werkzeug muss in den Editoreinstellungen (Export > Windows > "
+"Rcedit) festgelegt werden um Icon- oder Anwendungsinformation festlegen zu "
+"können."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid icon path:"
-msgstr "Ungültiger Pfad."
+msgstr "Ungültiger Icon-Pfad:"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid file version:"
-msgstr "Ungültige Dateiendung."
+msgstr "Ungültige Dateiversion:"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid product version:"
-msgstr "Ungültige Produkt-GUID."
+msgstr "Ungültige Produktversion:"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -15443,14 +15514,13 @@ msgstr ""
 "AnimationTree."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "Farbe: #%s\n"
-"LMT: Farbe festlegen\n"
+"LMT: Farbe anwenden\n"
 "RMT: Voreinstellung entfernen"
 
 #: scene/gui/color_picker.cpp

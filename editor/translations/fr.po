@@ -40,7 +40,7 @@
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
 # Xananax <xananax@yelostudio.com>, 2017-2018.
-# Perrier Mathis <mathis.perrier73@gmail.com>, 2018.
+# Perrier Mathis <mathis.perrier73@gmail.com>, 2018, 2022.
 # Ewan Lehnebach <ewan.lehnebach@gmail.com>, 2018.
 # Hugo Locurcio <hugo.locurcio@hugo.pro>, 2018, 2019, 2020, 2021.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
@@ -70,7 +70,7 @@
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2019.
 # Pierre Caye <pierrecaye@laposte.net>, 2020, 2021, 2022.
-# Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020.
+# Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020, 2022.
 # LaurentOngaro <laurent@gameamea.com>, 2020.
 # Julien Humbert <julroy67@gmail.com>, 2020.
 # Nathan <bonnemainsnathan@gmail.com>, 2020, 2021, 2022.
@@ -88,13 +88,14 @@
 # Maxime Leroy <lisacintosh@gmail.com>, 2022.
 # Adi-df <adidf-web@laposte.net>, 2022.
 # MinusKube <minuskube@gmail.com>, 2022.
+# Alexandre <alexandre.blanquero00@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-10 07:50+0000\n"
-"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
+"PO-Revision-Date: 2022-03-04 08:19+0000\n"
+"Last-Translator: Alexandre <alexandre.blanquero00@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -102,7 +103,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.11.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1571,6 +1572,11 @@ msgstr "Charger l'agencement de transport par défaut."
 msgid "Create a new Bus Layout."
 msgstr "Créer une nouvel agencement de tranport."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Ouvrir une disposition de bus audio"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Nom invalide."
@@ -3036,7 +3042,7 @@ msgstr "Basculer en mode sans distraction."
 msgid "Add a new scene."
 msgstr "Ajouter une nouvelle scène."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Scène"
 
@@ -3414,14 +3420,13 @@ msgid "Update Continuously"
 msgstr "Mettre à jour en continu"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "Mettre à jour quand modifié"
+msgstr "Mettre à jour les changements"
 
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Update Vital Changes"
-msgstr "Changements de matériau :"
+msgstr "Changements de matériau"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -4206,6 +4211,11 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"Cette extension de fichier n'est pas reconnue par l'éditeur.\n"
+"Si vous voulez quand même le renommer, utilisez le gestionnaire de fichiers "
+"de votre système d'exploitation.\n"
+"Après avoir été renommé avec une extension inconnue, le fichier ne sera plus "
+"affiché dans l'éditeur."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -4848,7 +4858,7 @@ msgstr "Supprimer le polygone et le point"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr "Ajouter une animation"
+msgstr "Ajouter une Animation"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -5829,6 +5839,10 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Précalculer les lightmaps"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8334,7 +8348,13 @@ msgid "Cinematic Preview"
 msgstr "Aperçu cinématographique"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Non disponible quand le moteur de rendu GLES2 est utilisé."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9239,6 +9259,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Sélectionnez une autre ressource Theme :"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Renommer une ressource"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "Autre thème"
 
@@ -9288,6 +9313,20 @@ msgstr ""
 "appartenant à ce type."
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Ajouter un item de type"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Définir type de variable"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Changer le type de base"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Afficher par défaut"
 
@@ -9305,8 +9344,19 @@ msgid "Override all default type items."
 msgstr "Surcharge tous les items de type par défaut."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Ajouter un item de type"
+#, fuzzy
+msgid "Base Type"
+msgstr "Changer le type de base"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -10011,18 +10061,6 @@ msgstr "Liste des commits"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "Valider la taille des listes"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12793,6 +12831,11 @@ msgid "Stack Frames"
 msgstr "Pile des appels"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filtrer les tuiles"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Profileur"
 
@@ -14128,9 +14171,10 @@ msgstr "Nom de paquet invalide :"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Module \"GodotPaymentV3\" invalide inclus dans le paramétrage du projet "
-"\"android/modules\" (modifié dans Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -14403,43 +14447,40 @@ msgstr "Erreur de démarrage du serveur HTTP :"
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't get filesystem access."
-msgstr ""
+msgstr "Le système de fichiers ne peut être accédé."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to get Info.plist hash."
-msgstr ""
+msgstr "Le hachage de « Info.plist » n'a pu être récupéré."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid Info.plist, no exe name."
-msgstr "Nom du projet invalide."
+msgstr "« Info.plist » invalide, aucun nom d'exécutable."
 
 #: platform/osx/export/codesign.cpp
+#, fuzzy
 msgid "Invalid Info.plist, no bundle id."
-msgstr ""
+msgstr "« Info.plist » invalide, aucun identifiant de bundle."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid Info.plist, can't load."
-msgstr "Géométrie invalide, impossible de créer le polygone."
+msgstr "« Info.plist » invalide, n'a pu être chargé."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to create \"%s\" subfolder."
-msgstr "Impossible de créer le dossier."
+msgstr "Échec de création du sous-dossier « %s »."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to extract thin binary."
 msgstr ""
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid binary format."
-msgstr "Chemin de base invalide."
+msgstr "Format binaire invalide."
 
 #: platform/osx/export/codesign.cpp
 msgid "Already signed!"
-msgstr ""
+msgstr "Déjà signé !"
 
 #: platform/osx/export/codesign.cpp
 #, fuzzy
@@ -14461,9 +14502,8 @@ msgid "Invalid entitlements file."
 msgstr "Extension invalide."
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid executable file."
-msgstr "Extension invalide."
+msgstr "Fichier exécutable invalide."
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't resize signature load command."
@@ -14479,7 +14519,7 @@ msgstr ""
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown object type."
-msgstr ""
+msgstr "Type d'objet inconnu."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -14500,9 +14540,8 @@ msgid ""
 msgstr ""
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "No identity found."
-msgstr "Pas d'icônes trouvées."
+msgstr "Aucune identité trouvée."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -14530,7 +14569,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Making PKG"
-msgstr ""
+msgstr "Création du PKG"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -14544,7 +14583,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Making DMG"
-msgstr ""
+msgstr "Création du DMG"
 
 #: platform/osx/export/export.cpp
 msgid "Code signing DMG"
@@ -14552,7 +14591,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Making ZIP"
-msgstr ""
+msgstr "Création du ZIP"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -14641,34 +14680,46 @@ msgid ""
 "Privacy: Microphone access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"Confidentialité : L'accès au microphone est actif, mais son usage n'a pas "
+"été spécifié."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Camera access is enabled, but usage description is not specified."
 msgstr ""
+"Confidentialité : L'accès à la caméra est actif, mais son usage n'a pas été "
+"spécifié."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Location information access is enabled, but usage description is "
 "not specified."
 msgstr ""
+"Confidentialité : L'accès au informations de positionnement est actif, mais "
+"son usage n'a pas été spécifié."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Address book access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"Confidentialité : L'accès au carnet d'adresses est actif, mais son usage n'a "
+"pas été spécifié."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Calendar access is enabled, but usage description is not specified."
 msgstr ""
+"Confidentialité : L'accès au calendrier est actif, mais son usage n'a pas "
+"été spécifié."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Photo library access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"Confidentialité : L'accès à la bibliothèque de photos est actif, mais son "
+"usage n'a pas été spécifié."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14740,21 +14791,21 @@ msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
 msgstr ""
+"L'outil « rcedit » doit être configuré dans les préférences de l'éditeur "
+"(Exporter > Windows > Rcedit) for modifier l'icône ou les informations de "
+"l'application."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid icon path:"
-msgstr "Chemin invalide."
+msgstr "Chemin d'icône invalide :"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid file version:"
-msgstr "Extension invalide."
+msgstr "Version de fichier invalide :"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid product version:"
-msgstr "GUID produit invalide."
+msgstr "Version du produit invalide :"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -15508,14 +15559,13 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Ce nœud est désormais déprécié. Utilisez AnimationTree à la place."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "Couleur : #%s\n"
-"Clic gauche : Définir la couleur\n"
+"Clic gauche : Appliquer la couleur\n"
 "Clic droit : Supprimer le préréglage"
 
 #: scene/gui/color_picker.cpp
