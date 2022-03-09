@@ -455,32 +455,69 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	for (int i = 0; i < get_output_port_count(); i++) {
 		output_vars.push_back(p_output_vars[i]);
 	}
-	String code = "	{\n";
+
 	String _code;
 	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, p_mode, p_type, _code);
-	bool nend = _code.ends_with("\n");
-	_code = _code.insert(0, "		");
-	_code = _code.replace("\n", "\n		");
-	code += _code;
-	if (!nend) {
-		code += "\n	}";
-	} else {
-		code.remove_at(code.size() - 1);
-		code += "}";
-	}
-	code += "\n";
-	return code;
-}
-
-String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
-	String ret;
-	if (GDVIRTUAL_CALL(_get_global_code, p_mode, ret)) {
-		String code = "// " + get_caption() + "\n";
-		code += ret;
+	if (_is_valid_code(_code)) {
+		String code = "	{\n";
+		bool nend = _code.ends_with("\n");
+		_code = _code.insert(0, "		");
+		_code = _code.replace("\n", "\n		");
+		code += _code;
+		if (!nend) {
+			code += "\n	}";
+		} else {
+			code.remove_at(code.size() - 1);
+			code += "}";
+		}
 		code += "\n";
 		return code;
 	}
-	return "";
+	return String();
+}
+
+String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
+	String _code;
+	if (GDVIRTUAL_CALL(_get_global_code, p_mode, _code)) {
+		if (_is_valid_code(_code)) {
+			String code = "// " + get_caption() + "\n";
+			code += _code;
+			code += "\n";
+			return code;
+		}
+	}
+	return String();
+}
+
+String VisualShaderNodeCustom::generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String _code;
+	if (GDVIRTUAL_CALL(_get_func_code, p_mode, p_type, _code)) {
+		if (_is_valid_code(_code)) {
+			bool nend = _code.ends_with("\n");
+			String code = "// " + get_caption() + "\n";
+			code += "	{\n";
+			_code = _code.insert(0, "	");
+			_code = _code.replace("\n", "\n		");
+			code += _code;
+			if (!nend) {
+				code += "\n	}";
+			} else {
+				code.remove_at(code.size() - 1);
+				code += "}";
+			}
+			code += "\n";
+			return code;
+		}
+	}
+	return String();
+}
+
+bool VisualShaderNodeCustom::is_available(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_available, p_mode, p_type, ret)) {
+		return ret;
+	}
+	return true;
 }
 
 void VisualShaderNodeCustom::set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value) {
@@ -511,6 +548,13 @@ void VisualShaderNodeCustom::_set_input_port_default_value(int p_port, const Var
 	VisualShaderNode::set_input_port_default_value(p_port, p_value);
 }
 
+bool VisualShaderNodeCustom::_is_valid_code(const String &p_code) const {
+	if (p_code.is_empty() || p_code == "null") {
+		return false;
+	}
+	return true;
+}
+
 bool VisualShaderNodeCustom::_is_initialized() {
 	return is_initialized;
 }
@@ -531,8 +575,10 @@ void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_output_port_type, "port");
 	GDVIRTUAL_BIND(_get_output_port_name, "port");
 	GDVIRTUAL_BIND(_get_code, "input_vars", "output_vars", "mode", "type");
+	GDVIRTUAL_BIND(_get_func_code, "mode", "type");
 	GDVIRTUAL_BIND(_get_global_code, "mode");
 	GDVIRTUAL_BIND(_is_highend);
+	GDVIRTUAL_BIND(_is_available, "mode", "type");
 
 	ClassDB::bind_method(D_METHOD("_set_initialized", "enabled"), &VisualShaderNodeCustom::_set_initialized);
 	ClassDB::bind_method(D_METHOD("_is_initialized"), &VisualShaderNodeCustom::_is_initialized);

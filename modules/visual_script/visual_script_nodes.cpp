@@ -3174,7 +3174,7 @@ public:
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return 0;
 		}
-		*p_outputs[0] = subcall->call(VisualScriptLanguage::singleton->_subcall, p_inputs, input_args, r_error);
+		*p_outputs[0] = subcall->callp(VisualScriptLanguage::singleton->_subcall, p_inputs, input_args, r_error);
 		return 0;
 	}
 };

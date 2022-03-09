@@ -278,7 +278,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 
 	Callable::CallError ce;
 
-	p_node->call(config.name, (const Variant **)argp.ptr(), argc, ce);
+	p_node->callp(config.name, (const Variant **)argp.ptr(), argc, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		String error = Variant::get_call_error_text(p_node, config.name, (const Variant **)argp.ptr(), argc, ce);
 		error = "RPC - " + error;
@@ -480,7 +480,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 		Callable::CallError ce;
 
 		multiplayer->set_remote_sender_override(peer->get_unique_id());
-		node->call(p_method, p_arg, p_argcount, ce);
+		node->callp(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
 		if (ce.error != Callable::CallError::CALL_OK) {
@@ -496,7 +496,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 		ce.error = Callable::CallError::CALL_OK;
 
 		multiplayer->set_remote_sender_override(peer->get_unique_id());
-		node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		node->get_script_instance()->callp(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
 		if (ce.error != Callable::CallError::CALL_OK) {

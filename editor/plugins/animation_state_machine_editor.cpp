@@ -108,7 +108,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				continue; // nope
 			}
 			int idx = menu->get_item_count();
-			menu->add_item(vformat("Add %s", name), idx);
+			menu->add_item(vformat(TTR("Add %s"), name), idx);
 			menu->set_item_metadata(idx, E);
 		}
 		Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();

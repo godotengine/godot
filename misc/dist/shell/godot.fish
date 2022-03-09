@@ -84,5 +84,4 @@ complete -c godot -l export-pack -d "Same as --export, but only export the game 
 complete -c godot -l doctool -d "Dump the engine API reference to the given path in XML format, merging if existing files are found" -r
 complete -c godot -l no-docbase -d "Disallow dumping the base types (used with --doctool)"
 complete -c godot -l build-solutions -d "Build the scripting solutions (e.g. for C# projects)"
-complete -c godot -l gdnative-generate-json-api -d "Generate JSON dump of the Godot API for GDNative bindings"
 complete -c godot -l test -d "Run a unit test" -x

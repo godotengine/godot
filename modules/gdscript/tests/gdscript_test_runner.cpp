@@ -573,7 +573,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Call test function.
 	Callable::CallError call_err;
-	instance->call(GDScriptTestRunner::test_function_name, nullptr, 0, call_err);
+	instance->callp(GDScriptTestRunner::test_function_name, nullptr, 0, call_err);
 
 	// Tear down output handlers.
 	remove_print_handler(&_print_handler);

@@ -606,8 +606,7 @@ public:
 			} break;
 			case Animation::TYPE_METHOD: {
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-				static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
-				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
+				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
 
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND(!d.has("args"));
@@ -1287,8 +1286,8 @@ public:
 				} break;
 				case Animation::TYPE_METHOD: {
 					p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-					static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
-					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
+
+					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
 
 					Dictionary d = animation->track_get_key_value(first_track, first_key);
 					ERR_FAIL_COND(!d.has("args"));
@@ -3189,7 +3188,7 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_
 		};
 
 		Callable::CallError ce;
-		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->callp("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
 	}
 	return nullptr;
 }
@@ -5554,30 +5553,34 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 				}
 
+				String track_type;
 				switch (animation->track_get_type(i)) {
 					case Animation::TYPE_POSITION_3D:
-						text += " (Position)";
+						track_type = TTR("Position");
 						break;
 					case Animation::TYPE_ROTATION_3D:
-						text += " (Rotation)";
+						track_type = TTR("Rotation");
 						break;
 					case Animation::TYPE_SCALE_3D:
-						text += " (Scale)";
+						track_type = TTR("Scale");
 						break;
 					case Animation::TYPE_BLEND_SHAPE:
-						text += " (BlendShape)";
+						track_type = TTR("BlendShape");
 						break;
 					case Animation::TYPE_METHOD:
-						text += " (Methods)";
+						track_type = TTR("Methods");
 						break;
 					case Animation::TYPE_BEZIER:
-						text += " (Bezier)";
+						track_type = TTR("Bezier");
 						break;
 					case Animation::TYPE_AUDIO:
-						text += " (Audio)";
+						track_type = TTR("Audio");
 						break;
 					default: {
 					};
+				}
+				if (!track_type.is_empty()) {
+					text += vformat(" (%s)", track_type);
 				}
 
 				TreeItem *it = track_copy_select->create_item(troot);

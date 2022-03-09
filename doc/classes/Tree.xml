@@ -323,6 +323,7 @@
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], a right mouse button click can select items.
 		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">
 			If [code]true[/code], column titles are visible.
 		</member>
@@ -340,7 +341,6 @@
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden" default="false">
 			If [code]true[/code], the tree's root is hidden.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_h_scroll_enabled" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.
 		</member>

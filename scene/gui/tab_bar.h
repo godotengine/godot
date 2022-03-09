@@ -98,7 +98,7 @@ private:
 	CloseButtonDisplayPolicy cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
 
 	int hover = -1; // Hovered tab.
-	int min_width = 0;
+	int max_width = 0;
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
 	bool scroll_to_selected = true;
@@ -198,7 +198,9 @@ public:
 	bool get_select_with_rmb() const;
 
 	void ensure_tab_visible(int p_idx);
-	void set_min_width(int p_width);
+
+	void set_max_tab_width(int p_width);
+	int get_max_tab_width() const;
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;

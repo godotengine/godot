@@ -171,7 +171,7 @@ public:
 
 	// Remote inspector/edit.
 	void request_remote_tree();
-	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
+	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
 	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	// LiveDebug

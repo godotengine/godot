@@ -383,14 +383,20 @@ protected:
 	GDVIRTUAL1RC(int, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
 	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL2RC(String, _get_func_code, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
 	GDVIRTUAL0RC(bool, _is_highend)
+	GDVIRTUAL2RC(bool, _is_available, Shader::Mode, VisualShader::Type)
+
+	bool _is_valid_code(const String &p_code) const;
 
 protected:
 	void _set_input_port_default_value(int p_port, const Variant &p_value);
 
+	bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
+	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
 	static void _bind_methods();
 

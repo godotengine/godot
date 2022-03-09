@@ -1082,6 +1082,10 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	}
 }
 
+void VisualShaderEditor::update_nodes() {
+	_update_nodes();
+}
+
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
 	if (plugins.has(p_plugin)) {
 		return;
@@ -1165,10 +1169,7 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 	return (p_mode == -1 || (p_mode & current_mode) != 0);
 }
 
-void VisualShaderEditor::update_custom_nodes() {
-	if (members_dialog->is_visible()) {
-		return;
-	}
+void VisualShaderEditor::_update_nodes() {
 	clear_custom_types();
 	List<StringName> class_list;
 	ScriptServer::get_global_class_list(&class_list);
@@ -1184,6 +1185,9 @@ void VisualShaderEditor::update_custom_nodes() {
 			Ref<VisualShaderNodeCustom> ref;
 			ref.instantiate();
 			ref->set_script(script);
+			if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+				continue;
+			}
 
 			String name;
 			if (ref->has_method("_get_name")) {
@@ -1237,6 +1241,32 @@ void VisualShaderEditor::update_custom_nodes() {
 			key = category + "/" + name;
 
 			added[key] = dict;
+		}
+	}
+
+	// Disables not-supported copied items.
+	{
+		for (CopyItem &item : copy_items_buffer) {
+			Ref<VisualShaderNodeCustom> custom = Object::cast_to<VisualShaderNodeCustom>(item.node.ptr());
+
+			if (custom.is_valid()) {
+				if (!custom->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+					item.disabled = true;
+				} else {
+					item.disabled = false;
+				}
+			} else {
+				for (int i = 0; i < add_options.size(); i++) {
+					if (add_options[i].type == item.node->get_class_name()) {
+						if ((add_options[i].func != visual_shader->get_mode() && add_options[i].func != -1) || !_is_available(add_options[i].mode)) {
+							item.disabled = true;
+						} else {
+							item.disabled = false;
+						}
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -3370,15 +3400,23 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			selected_float_constant = -1;
 		}
 
-		if (to_change.is_empty() && copy_items_buffer.is_empty()) {
+		bool copy_buffer_empty = true;
+		for (const CopyItem &item : copy_items_buffer) {
+			if (!item.disabled) {
+				copy_buffer_empty = false;
+				break;
+			}
+		}
+
+		if (to_change.is_empty() && copy_buffer_empty) {
 			_show_members_dialog(true);
 		} else {
 			popup_menu->set_item_disabled(NodeMenuOptions::CUT, to_change.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_items_buffer.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_buffer_empty);
 			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_items_buffer.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_buffer_empty);
 
 			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
 			if (temp != -1) {
@@ -3715,6 +3753,17 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 	if (p_duplicate) {
 		undo_redo->create_action(TTR("Duplicate VisualShader Node(s)"));
 	} else {
+		bool copy_buffer_empty = true;
+		for (const CopyItem &item : copy_items_buffer) {
+			if (!item.disabled) {
+				copy_buffer_empty = false;
+				break;
+			}
+		}
+		if (copy_buffer_empty) {
+			return;
+		}
+
 		undo_redo->create_action(TTR("Paste VisualShader Node(s)"));
 	}
 
@@ -3727,16 +3776,7 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 	Set<int> added_set;
 
 	for (CopyItem &item : r_items) {
-		bool unsupported = false;
-		for (int i = 0; i < add_options.size(); i++) {
-			if (add_options[i].type == item.node->get_class_name()) {
-				if (!_is_available(add_options[i].mode)) {
-					unsupported = true;
-				}
-				break;
-			}
-		}
-		if (unsupported) {
+		if (item.disabled) {
 			unsupported_set.insert(item.id);
 			continue;
 		}
@@ -3777,7 +3817,10 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 	}
 
 	id_from = base_id;
-	for (int i = 0; i < r_items.size(); i++) {
+	for (const CopyItem &item : r_items) {
+		if (item.disabled) {
+			continue;
+		}
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
 		undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_from);
 		id_from++;
@@ -3878,7 +3921,7 @@ void VisualShaderEditor::_mode_selected(int p_id) {
 	}
 
 	visual_shader->set_shader_type(VisualShader::Type(p_id + offset));
-	_update_options_menu();
+	_update_nodes();
 	_update_graph();
 
 	graph->grab_focus();
@@ -4465,8 +4508,8 @@ void VisualShaderEditor::_visibility_changed() {
 }
 
 void VisualShaderEditor::_bind_methods() {
+	ClassDB::bind_method("_update_nodes", &VisualShaderEditor::_update_nodes);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
-	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
 	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
@@ -5439,7 +5482,7 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->animation_panel_make_visible(true);
 		button->show();
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(visual_shader_editor);
-		visual_shader_editor->update_custom_nodes();
+		visual_shader_editor->update_nodes();
 		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
@@ -5919,8 +5962,8 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 		}
 	}
 
-	undo_redo->add_do_method(editor, "_update_options_menu");
-	undo_redo->add_undo_method(editor, "_update_options_menu");
+	undo_redo->add_do_method(editor, "_update_nodes");
+	undo_redo->add_undo_method(editor, "_update_nodes");
 
 	undo_redo->add_do_method(editor, "_update_graph");
 	undo_redo->add_undo_method(editor, "_update_graph");

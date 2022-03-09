@@ -18,14 +18,14 @@
 # LetterC67 <hoangdeptoong@gmail.com>, 2020, 2021.
 # Rev <revolnoom7801@gmail.com>, 2021.
 # SyliawDeV <thanhlongstranger@gmail.com>, 2021.
-# IoeCmcomc <hopdaigia2004@gmail.com>, 2021.
+# IoeCmcomc <hopdaigia2004@gmail.com>, 2021, 2022.
 # Hung <hungthitkhia@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-15 00:46+0000\n"
+"PO-Revision-Date: 2022-02-26 10:27+0000\n"
 "Last-Translator: IoeCmcomc <hopdaigia2004@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
@@ -34,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.11.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -815,7 +815,7 @@ msgid ""
 "target node."
 msgstr ""
 "Phương thức không được tìm thấy. Chỉ định phương thức hợp lệ hoặc đính kèm "
-"tệp lệnh vào nút."
+"tập lệnh vào nút."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
@@ -1495,6 +1495,11 @@ msgstr "Nạp bố cục Bus mặc định."
 msgid "Create a new Bus Layout."
 msgstr "Tạo bố cục Bus mới."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Mở bố cục Bus âm thanh"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Tên không hợp lệ."
@@ -2103,7 +2108,7 @@ msgstr "Lớp:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Thừa kế:"
+msgstr "Kế thừa:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
@@ -2145,7 +2150,7 @@ msgstr "Màu"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
-msgstr "Hằng số"
+msgstr "Hằng"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -2924,7 +2929,7 @@ msgstr "Bật tắt chế độ tập trung."
 msgid "Add a new scene."
 msgstr "Thêm cảnh mới."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Cảnh"
 
@@ -5674,6 +5679,10 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid "Select lightmap bake file:"
 msgstr "Chọn tệp bake lightmap:"
@@ -8203,7 +8212,13 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Không khả dụng khi sử dụng trình kết xuất GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9145,6 +9160,11 @@ msgstr "Xóa tài nguyên"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Đổi tên tài nguyên"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Nhập Tông màu"
 
@@ -9199,6 +9219,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Thêm mục"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Đặt loại biến"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Thay đổi loại cơ sở"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Nạp mặc định"
 
@@ -9217,8 +9252,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Thêm mục"
+msgid "Base Type"
+msgstr "Thay đổi loại cơ sở"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9934,18 +9979,6 @@ msgid "Commit list size"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Branches"
 msgstr "Phù hợp:"
@@ -10056,7 +10089,7 @@ msgstr "Tỷ lệ"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
-msgstr "Vector"
+msgstr "Véc tơ"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -10178,11 +10211,11 @@ msgstr "hàm đen trắng"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
-msgstr "Chuyển vector màu HSV sang RGB tương ứng."
+msgstr "Chuyển véc tơ màu HSV sang RGB tương ứng."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr "Chuyển vector màu RGB sang HSV tương ứng."
+msgstr "Chuyển véc tơ màu RGB sang HSV tương ứng."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sepia function."
@@ -10622,16 +10655,16 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"Tính tích ngoài của một cặp vector.\n"
+"Tính tích ngoài của một cặp véc tơ.\n"
 "\n"
-"Tích ngoài đặt tham số 'c' đầu tiên làm vector dọc (ma trận 1 cột) và tham "
-"số 'h' thứ hai là vector ngang (ma trận 1 hàng) rồi thực hiện phép nhân ma "
-"trận tuyến tính 'c * h', tạo ra ma trận có số hàng bằng số phần tử trong 'h' "
-"và số cột bằng số phần tử trong 'c'."
+"Tích ngoài coi tham số 'c' đầu tiên là véc tơ dọc (ma trận 1 cột) và tham số "
+"'h' thứ hai là véc tơ ngang (ma trận 1 hàng) rồi thực hiện phép nhân ma trận "
+"tuyến tính 'c * h', tạo ra ma trận có số hàng bằng số phần tử trong 'h' và "
+"số cột bằng số phần tử trong 'c'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
-msgstr "Tạo phép biến đổi từ 4 vector."
+msgstr "Tạo phép biến đổi từ 4 véc tơ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes transform to four vectors."
@@ -10655,7 +10688,7 @@ msgstr "Nhân hai phép biến đổi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by transform."
-msgstr "Nhân vector với phép biến đổi."
+msgstr "Nhân véc tơ với phép biến đổi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform constant."
@@ -10668,11 +10701,11 @@ msgstr "Tạo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
-msgstr "Hàm Vector."
+msgstr "Hàm véc tơ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector operator."
-msgstr ""
+msgstr "Toán tử véc tơ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes vector from three scalars."
@@ -10680,7 +10713,7 @@ msgstr "Tạo vector từ ba giá trị vô hướng."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes vector to three scalars."
-msgstr "Tách vector thành ba giá trị vô hướng."
+msgstr "Tách véc tơ thành ba giá trị vô hướng."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
@@ -10692,7 +10725,7 @@ msgstr "Trả về khoảng cách giữa hai điểm."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr "Tính tích vô hướng của hai vector."
+msgstr "Tính tích vô hướng của hai véc tơ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10704,7 +10737,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
-msgstr "Tính chiều dài vector."
+msgstr "Tính chiều dài của một véc tơ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors."
@@ -10716,27 +10749,27 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
-msgstr "Tính tích chuẩn hóa của vector."
+msgstr "Tính tích chuẩn hóa của véc tơ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - vector"
-msgstr "1.0 - vector"
+msgstr "1.0 - véc tơ"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / vector"
-msgstr "1.0 / vector"
+msgstr "1.0 / véc tơ"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
-"Trả về vector chỉ hướng phản xạ ( a : vector tia tới, b : vector pháp "
+"Trả về véc tơ chỉ hướng phản xạ ( a : vector tia tới, b : vector pháp "
 "tuyến )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the vector that points in the direction of refraction."
-msgstr "Trả về vector chỉ hướng khúc xạ."
+msgstr "Trả về véc tơ chỉ theo hướng khúc xạ."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -11879,7 +11912,7 @@ msgstr "Tên nút"
 
 #: editor/rename_dialog.cpp
 msgid "Node's parent name, if available"
-msgstr "Tên cha mẹ của nút, nếu có sẵn"
+msgstr "Tên của nút mẹ, nếu có sẵn"
 
 #: editor/rename_dialog.cpp
 msgid "Node type"
@@ -11981,7 +12014,7 @@ msgstr "Tại kí tự %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Đổi cha mẹ của nút"
+msgstr "Đổi mẹ của nút"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
@@ -11993,7 +12026,7 @@ msgstr ""
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "Đổi nút cha"
+msgstr "Đổi nút mẹ"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -12063,11 +12096,11 @@ msgstr "Thao tác này không thể áp dụng lên gốc của cây."
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
-msgstr "Chuyển nút trong cha mẹ"
+msgstr "Di chuyển nút trong nút mẹ"
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr "Di chuyển các nút trong cha mẹ"
+msgstr "Di chuyển các nút trong nút mẹ"
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -12076,8 +12109,8 @@ msgstr "Nhân đôi các nút"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
-"Không thể đổi cha mẹ các nút trong cảnh kế thừa, thứ tự các nút không thể "
-"thay đổi."
+"Không thể đổi mẹ của các nút trong cảnh kế thừa, thứ tự các nút không thể "
+"được thay đổi."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -12285,7 +12318,7 @@ msgstr "Đổi Kiểu"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
-msgstr "Reparent đến nút mới"
+msgstr "Thay nút mẹ thành nút mới"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -12526,7 +12559,7 @@ msgstr "Tên Lớp không hợp lệ."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid inherited parent name or path."
-msgstr ""
+msgstr "Tên hoặc đường dẫn nút mẹ được kế thừa không hợp lệ."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12661,6 +12694,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Lọc ô"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -14026,9 +14064,10 @@ msgstr "Tên gói không hợp lệ:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Cài đặt dự án chứa module không hợp lệ \"GodotPaymentV3\" ở mục \"android/"
-"modules\" (đã thay đổi từ Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

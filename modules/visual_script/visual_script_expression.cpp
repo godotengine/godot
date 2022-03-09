@@ -1500,7 +1500,7 @@ public:
 					argp.write[i] = &arr[i];
 				}
 
-				base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+				base.callp(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
 					r_error_str = "On call to '" + String(call->method) + "':";
