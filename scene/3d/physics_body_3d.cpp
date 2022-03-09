@@ -1425,7 +1425,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					const PhysicsServer3D::MotionCollision &collision = result.collisions[0];
 
 					Vector3 slide_motion = result.remainder.slide(collision.normal);
-					if (collision_state.floor && !collision_state.wall) {
+					if (collision_state.floor && !collision_state.wall && !motion_slide_up.is_equal_approx(Vector3())) {
 						// Slide using the intersection between the motion plane and the floor plane,
 						// in order to keep the direction intact.
 						real_t motion_length = slide_motion.length();
