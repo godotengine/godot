@@ -52,13 +52,14 @@ public:
 
 private:
 	Operation operation;
-	CSGShape *parent;
+	CSGShape *parent_shape;
 
 	CSGBrush *brush;
 
 	AABB node_aabb;
 
 	bool dirty;
+	bool last_visible = false;
 	float snap;
 
 	bool use_collision;
@@ -104,11 +105,12 @@ private:
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _update_shape();
+	void _update_collision_faces();
 
 protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
-	void _make_dirty();
+	void _make_dirty(bool p_parent_removing = false);
 
 	static void _bind_methods();
 
