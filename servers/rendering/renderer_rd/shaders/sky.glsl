@@ -180,12 +180,11 @@ void main() {
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projections[ViewIndex].x)) / params.projections[ViewIndex].y;
 	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.projections[ViewIndex].z)) / params.projections[ViewIndex].w;
 	cube_normal = mat3(params.orientation) * cube_normal;
-	cube_normal.z = -cube_normal.z;
 	cube_normal = normalize(cube_normal);
 
 	vec2 uv = uv_interp * 0.5 + 0.5;
 
-	vec2 panorama_coords = vec2(atan(cube_normal.x, cube_normal.z), acos(cube_normal.y));
+	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
 
 	if (panorama_coords.x < 0.0) {
 		panorama_coords.x += M_PI * 2.0;
@@ -199,15 +198,12 @@ void main() {
 	vec4 quarter_res_color = vec4(1.0);
 	vec4 custom_fog = vec4(0.0);
 
-	vec3 eyedir = cube_normal;
-	eyedir.z *= -1.0;
-
 #ifdef USE_CUBEMAP_PASS
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), eyedir) * params.luminance_multiplier;
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal) * params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), eyedir) * params.luminance_multiplier;
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal) * params.luminance_multiplier;
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
