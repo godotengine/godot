@@ -49,7 +49,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 
 	String autoload_changed;
 
-	struct AutoLoadInfo {
+	struct AutoloadInfo {
 		String name;
 		String path;
 		bool is_singleton = false;
@@ -57,12 +57,12 @@ class EditorAutoloadSettings : public VBoxContainer {
 		int order = 0;
 		Node *node = nullptr;
 
-		bool operator==(const AutoLoadInfo &p_info) const {
+		bool operator==(const AutoloadInfo &p_info) const {
 			return order == p_info.order;
 		}
 	};
 
-	List<AutoLoadInfo> autoload_cache;
+	List<AutoloadInfo> autoload_cache;
 
 	bool updating_autoload;
 	int number_of_autoloads;

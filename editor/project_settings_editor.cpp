@@ -663,7 +663,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(localization_editor);
 
 	autoload_settings = memnew(EditorAutoloadSettings);
-	autoload_settings->set_name(TTR("AutoLoad"));
+	autoload_settings->set_name(TTR("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(autoload_settings);
 
