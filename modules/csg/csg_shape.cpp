@@ -138,7 +138,7 @@ float CSGShape3D::get_snap() const {
 
 void CSGShape3D::_make_dirty(bool p_parent_removing) {
 	if ((p_parent_removing || is_root_shape()) && !dirty) {
-		call_deferred("_update_shape"); // Must be deferred; otherwise, is_root_shape() will use the previous parent
+		call_deferred(SNAME("_update_shape")); // Must be deferred; otherwise, is_root_shape() will use the previous parent
 	}
 
 	if (!is_root_shape()) {
