@@ -92,7 +92,7 @@ private:
 
 	CommitNotifyCallback callback = nullptr;
 	void *callback_ud = nullptr;
-	void *method_callbck_ud = nullptr;
+	void *method_callback_ud = nullptr;
 	void *prop_callback_ud = nullptr;
 
 	MethodNotifyCallback method_callback = nullptr;
