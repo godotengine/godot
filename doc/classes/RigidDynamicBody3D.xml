@@ -227,7 +227,6 @@
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
 				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
-				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -241,7 +240,6 @@
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
 				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
-				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
