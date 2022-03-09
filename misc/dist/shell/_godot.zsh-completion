@@ -70,5 +70,4 @@ _arguments \
   '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory:_dirs' \
   '--no-docbase[disallow dumping the base types (used with --doctool)]' \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
-  '--gdnative-generate-json-api[generate JSON dump of the Godot API for GDNative bindings]' \
   '--test[run a unit test]:unit test name'
