@@ -452,11 +452,11 @@
 			<description>
 				Returns [code]true[/code] if this string contains a valid float. This is inclusive of integers, and also supports exponents:
 				[codeblock]
-				print("1.7".is_valid_float()) # Prints "true"
-				print("24".is_valid_float()) # Prints "true"
-				print("7e3".is_valid_float()) # Prints "true"
-				print("24".is_valid_float()) # Prints "true"
-				print("Hello".is_valid_float()) # Prints "false"
+				print("1.7".is_valid_float()) # Prints "True"
+				print("24".is_valid_float()) # Prints "True"
+				print("7e3".is_valid_float()) # Prints "True"
+				print("24".is_valid_float()) # Prints "True"
+				print("Hello".is_valid_float()) # Prints "False"
 				[/codeblock]
 			</description>
 		</method>
@@ -478,9 +478,9 @@
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 				[codeblock]
-				print("good_ident_1".is_valid_identifier()) # Prints "true"
-				print("1st_bad_ident".is_valid_identifier()) # Prints "false"
-				print("bad_ident_#2".is_valid_identifier()) # Prints "false"
+				print("good_ident_1".is_valid_identifier()) # Prints "True"
+				print("1st_bad_ident".is_valid_identifier()) # Prints "False"
+				print("bad_ident_#2".is_valid_identifier()) # Prints "False"
 				[/codeblock]
 			</description>
 		</method>
@@ -489,11 +489,11 @@
 			<description>
 				Returns [code]true[/code] if this string contains a valid integer.
 				[codeblock]
-				print("7".is_valid_int()) # Prints "true"
-				print("14.6".is_valid_int()) # Prints "false"
-				print("L".is_valid_int()) # Prints "false"
-				print("+3".is_valid_int()) # Prints "true"
-				print("-12".is_valid_int()) # Prints "true"
+				print("7".is_valid_int()) # Prints "True"
+				print("14.6".is_valid_int()) # Prints "False"
+				print("L".is_valid_int()) # Prints "False"
+				print("+3".is_valid_int()) # Prints "True"
+				print("-12".is_valid_int()) # Prints "True"
 				[/codeblock]
 			</description>
 		</method>
