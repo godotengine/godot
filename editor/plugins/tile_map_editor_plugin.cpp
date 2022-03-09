@@ -66,7 +66,7 @@ void TileMapEditor::_notification(int p_what) {
 			paint_button->set_icon(get_icon("Edit", "EditorIcons"));
 			bucket_fill_button->set_icon(get_icon("Bucket", "EditorIcons"));
 			picker_button->set_icon(get_icon("ColorPick", "EditorIcons"));
-			select_button->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			select_button->set_icon(get_icon("ToolSelect", "EditorIcons"));
 
 			rotate_left_button->set_icon(get_icon("RotateLeft", "EditorIcons"));
 			rotate_right_button->set_icon(get_icon("RotateRight", "EditorIcons"));
