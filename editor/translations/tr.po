@@ -1539,6 +1539,11 @@ msgstr "Varsayılan Bus Yerleşim Düzenini Yükle."
 msgid "Create a new Bus Layout."
 msgstr "Yeni bir Bus Yerleşim Düzeni oluştur."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Audio Bus Yerleşim Düzenini Aç"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Geçersiz ad."
@@ -2981,7 +2986,7 @@ msgstr "Dikkat-Dağıtmayan Kipine geç."
 msgid "Add a new scene."
 msgstr "Yeni bir sahne ekle."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Sahne"
 
@@ -5756,6 +5761,10 @@ msgid "Bake Lightmaps"
 msgstr "Işık-Haritalarını Pişir"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Işık Haritası pişirme dosyası seçiniz:"
 
@@ -8235,7 +8244,13 @@ msgid "Cinematic Preview"
 msgstr "Sinematik Önizleme"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "GLES2 işleyici kullanılırken kullanılamaz."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9130,6 +9145,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Başka Bir Tema Kaynağı Seçin:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Kaynağı Yeniden Adlandır"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "Başka Bir Tema"
 
@@ -9178,6 +9198,20 @@ msgstr ""
 "tipteki diğer tüm StyleBox'larda aynı özellikleri güncelleyecektir."
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Öğe Türü Ekle"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Değişken Tipini Ayarla"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Temel Tipi Değiştir"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Varsayılanı Göster"
 
@@ -9194,8 +9228,19 @@ msgid "Override all default type items."
 msgstr "Tüm varsayılan tür öğelerini geçersiz kıl."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Öğe Türü Ekle"
+#, fuzzy
+msgid "Base Type"
+msgstr "Temel Tipi Değiştir"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9897,18 +9942,6 @@ msgstr "İşlemler Listesi"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "İşlem listesi boyutu"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12642,6 +12675,11 @@ msgid "Stack Frames"
 msgstr "Çerçeveleri Yığ"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Döşemelerde Bul"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Kesitçi"
 
@@ -13963,9 +14001,10 @@ msgstr "Geçersiz paket ismi:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Geçersiz \"GodotPaymentV3\" modülü \"android/modüller\" proje ayarına dahil "
-"edildi (Godot 3.2.2'de değiştirildi).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

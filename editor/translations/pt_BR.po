@@ -9,7 +9,7 @@
 # Breno Caldeira <breno.caldeira@gmail.com>, 2018.
 # Francesco Perrotti-Garcia <fpg1503@gmail.com>, 2017.
 # George Marques <george@gmarqu.es>, 2016.
-# Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017, 2018, 2019.
+# Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017, 2018, 2019, 2022.
 # João Victor Lima <victordevtb@outlook.com>, 2018.
 # João Vitor de Oliveira Carlos <lopogax@gmail.com>, 2018.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016, 2019, 2020.
@@ -139,8 +139,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2022-02-14 22:08+0000\n"
-"Last-Translator: PauloFRs <paulofr1@hotmail.com>\n"
+"PO-Revision-Date: 2022-03-09 08:53+0000\n"
+"Last-Translator: Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -148,7 +148,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1607,6 +1607,11 @@ msgstr "Carregar o Layout de Canais padrão."
 msgid "Create a new Bus Layout."
 msgstr "Criar um novo Layout de Canais."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Abrir Layout de Canais de Áudio"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Nome Inválido."
@@ -2382,9 +2387,8 @@ msgid "Property:"
 msgstr "Propriedade:"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "Valor do pino"
+msgstr "Fixar valor"
 
 #: editor/editor_inspector.cpp
 msgid ""
@@ -3054,7 +3058,7 @@ msgstr "Alternar modo sem-distrações."
 msgid "Add a new scene."
 msgstr "Adicionar nova cena."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Cena"
 
@@ -5842,6 +5846,10 @@ msgid "Bake Lightmaps"
 msgstr "Faça mapas de luz"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Selecione o arquivo de lightmap bake:"
 
@@ -8327,7 +8335,13 @@ msgid "Cinematic Preview"
 msgstr "Pré-visualização Cinemática"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Não disponível ao usar o renderizador GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9223,6 +9237,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Selecionar Outro Recurso de Tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Renomear Recurso"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "Outro Tema"
 
@@ -9271,6 +9290,20 @@ msgstr ""
 "atualizará as mesmas propriedades em todos os outros StyleBoxes deste tipo."
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Adicionar Tipo de Item"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Definir o Tipo da Variável"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Mudar Tipo Base"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Mostrar Padrão"
 
@@ -9288,8 +9321,19 @@ msgid "Override all default type items."
 msgstr "Substituir todos os itens do modelo padrão."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Adicionar Tipo de Item"
+#, fuzzy
+msgid "Base Type"
+msgstr "Mudar Tipo Base"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9988,18 +10032,6 @@ msgstr "Lista de compromissos"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "Confirmar tamanho da lista"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12749,6 +12781,11 @@ msgid "Stack Frames"
 msgstr "Pilha de Quadros"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filtros do tile"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Profilador"
 
@@ -14105,9 +14142,10 @@ msgstr "Nome de pacote inválido:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Módulo \"GodotPaymentV3\" inválido incluido na configuração de projeto "
-"\"android/modules\" (alterado em Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
