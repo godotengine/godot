@@ -490,7 +490,7 @@ void AnimationTree::set_active(bool p_active) {
 	if (!active && is_inside_tree()) {
 		for (Set<TrackCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
 			if (ObjectDB::get_instance(E->get()->object_id)) {
-				E->get()->object->call("stop");
+				E->get()->object->call(SNAME("stop"));
 			}
 		}
 
@@ -796,6 +796,21 @@ void AnimationTree::_clear_caches() {
 	cache_valid = false;
 }
 
+static void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
+	// Separate function to use alloca() more efficiently
+	const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * p_params.size());
+	const Variant *args = p_params.ptr();
+	uint32_t argcount = p_params.size();
+	for (uint32_t i = 0; i < argcount; i++) {
+		argptrs[i] = &args[i];
+	}
+	if (p_deferred) {
+		MessageQueue::get_singleton()->push_callp(p_object, p_method, argptrs, argcount);
+	} else {
+		Callable::CallError ce;
+		p_object->callp(p_method, argptrs, argcount, ce);
+	}
+}
 void AnimationTree::_process_graph(double p_delta) {
 	_update_properties(); //if properties need updating, update them
 
@@ -1286,25 +1301,10 @@ void AnimationTree::_process_graph(double p_delta) {
 						for (int &F : indices) {
 							StringName method = a->method_track_get_name(i, F);
 							Vector<Variant> params = a->method_track_get_params(i, F);
-
-							int s = params.size();
-
-							static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-							ERR_CONTINUE(s > VARIANT_ARG_MAX);
 							if (can_call) {
-								t->object->call_deferred(
-										method,
-										s >= 1 ? params[0] : Variant(),
-										s >= 2 ? params[1] : Variant(),
-										s >= 3 ? params[2] : Variant(),
-										s >= 4 ? params[3] : Variant(),
-										s >= 5 ? params[4] : Variant(),
-										s >= 6 ? params[5] : Variant(),
-										s >= 7 ? params[6] : Variant(),
-										s >= 8 ? params[7] : Variant());
+								_call_object(t->object, method, params, true);
 							}
 						}
-
 					} break;
 					case Animation::TYPE_BEZIER: {
 						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
@@ -1331,7 +1331,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 							if (!stream.is_valid()) {
-								t->object->call("stop");
+								t->object->call(SNAME("stop"));
 								t->playing = false;
 								playing_caches.erase(t);
 							} else {
@@ -1341,14 +1341,14 @@ void AnimationTree::_process_graph(double p_delta) {
 								double len = stream->get_length();
 
 								if (start_ofs > len - end_ofs) {
-									t->object->call("stop");
+									t->object->call(SNAME("stop"));
 									t->playing = false;
 									playing_caches.erase(t);
 									continue;
 								}
 
-								t->object->call("set_stream", stream);
-								t->object->call("play", start_ofs);
+								t->object->call(SNAME("set_stream"), stream);
+								t->object->call(SNAME("play"), start_ofs);
 
 								t->playing = true;
 								playing_caches.insert(t);
@@ -1370,7 +1370,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 								Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 								if (!stream.is_valid()) {
-									t->object->call("stop");
+									t->object->call(SNAME("stop"));
 									t->playing = false;
 									playing_caches.erase(t);
 								} else {
@@ -1378,8 +1378,8 @@ void AnimationTree::_process_graph(double p_delta) {
 									double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 									double len = stream->get_length();
 
-									t->object->call("set_stream", stream);
-									t->object->call("play", start_ofs);
+									t->object->call(SNAME("set_stream"), stream);
+									t->object->call(SNAME("play"), start_ofs);
 
 									t->playing = true;
 									playing_caches.insert(t);
@@ -1416,7 +1416,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 								if (stop) {
 									//time to stop
-									t->object->call("stop");
+									t->object->call(SNAME("stop"));
 									t->playing = false;
 									playing_caches.erase(t);
 								}
@@ -1424,10 +1424,10 @@ void AnimationTree::_process_graph(double p_delta) {
 						}
 
 						real_t db = Math::linear2db(MAX(blend, 0.00001));
-						if (t->object->has_method("set_unit_db")) {
-							t->object->call("set_unit_db", db);
+						if (t->object->has_method(SNAME("set_unit_db"))) {
+							t->object->call(SNAME("set_unit_db"), db);
 						} else {
-							t->object->call("set_volume_db", db);
+							t->object->call(SNAME("set_volume_db"), db);
 						}
 					} break;
 					case Animation::TYPE_ANIMATION: {

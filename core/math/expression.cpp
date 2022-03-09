@@ -1440,7 +1440,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			Callable::CallError ce;
-			base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			base.callp(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_error_str = vformat(RTR("On call to '%s':"), String(call->method));

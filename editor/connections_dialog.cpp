@@ -180,9 +180,6 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX) {
-		return;
-	}
 	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;

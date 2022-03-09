@@ -175,13 +175,13 @@ void SceneTree::_flush_ugc() {
 	while (unique_group_calls.size()) {
 		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
 
-		Variant v[VARIANT_ARG_MAX];
+		const Variant **argptrs = (const Variant **)alloca(E->get().size() * sizeof(Variant *));
+
 		for (int i = 0; i < E->get().size(); i++) {
-			v[i] = E->get()[i];
+			argptrs[i] = &E->get()[i];
 		}
 
-		static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+		call_group_flagsp(GROUP_CALL_REALTIME, E->key().group, E->key().call, argptrs, E->get().size());
 
 		unique_group_calls.erase(E);
 	}
@@ -210,7 +210,7 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	g.changed = false;
 }
 
-void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
+void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
 		return;
@@ -231,14 +231,9 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			return;
 		}
 
-		VARIANT_ARGPTRS;
-
 		Vector<Variant> args;
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-			if (argptr[i]->get_type() == Variant::NIL) {
-				break;
-			}
-			args.push_back(*argptr[i]);
+		for (int i = 0; i < p_argcount; i++) {
+			args.push_back(*p_args[i]);
 		}
 
 		unique_group_calls[ug] = args;
@@ -260,9 +255,10 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				nodes[i]->call(p_function, VARIANT_ARG_PASS);
+				Callable::CallError ce;
+				nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
+				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 
@@ -273,9 +269,10 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				nodes[i]->call(p_function, VARIANT_ARG_PASS);
+				Callable::CallError ce;
+				nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
+				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 	}
@@ -386,10 +383,6 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	if (call_lock == 0) {
 		call_skip.clear();
 	}
-}
-
-void SceneTree::call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
-	call_group_flags(0, p_group, p_function, VARIANT_ARG_PASS);
 }
 
 void SceneTree::notify_group(const StringName &p_group, int p_notification) {
@@ -930,14 +923,8 @@ Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Cal
 	int flags = *p_args[0];
 	StringName group = *p_args[1];
 	StringName method = *p_args[2];
-	Variant v[VARIANT_ARG_MAX];
 
-	for (int i = 0; i < MIN(p_argcount - 3, 5); i++) {
-		v[i] = *p_args[i + 3];
-	}
-
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+	call_group_flagsp(flags, group, method, p_args + 3, p_argcount - 3);
 	return Variant();
 }
 
@@ -950,14 +937,8 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable:
 
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];
-	Variant v[VARIANT_ARG_MAX];
 
-	for (int i = 0; i < MIN(p_argcount - 2, 5); i++) {
-		v[i] = *p_args[i + 2];
-	}
-
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	call_group_flags(0, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+	call_group_flagsp(0, group, method, p_args + 2, p_argcount - 2);
 	return Variant();
 }
 

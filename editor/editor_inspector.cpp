@@ -99,7 +99,7 @@ void EditorProperty::emit_changed(const StringName &p_property, const Variant &p
 	const Variant *argptrs[4] = { &args[0], &args[1], &args[2], &args[3] };
 
 	cache[p_property] = p_value;
-	emit_signal(SNAME("property_changed"), (const Variant **)argptrs, 4);
+	emit_signalp(SNAME("property_changed"), (const Variant **)argptrs, 4);
 }
 
 void EditorProperty::_notification(int p_what) {
@@ -3314,7 +3314,7 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
 	const Variant args[3] = { p_path, object->get(p_path), p_advance };
 	const Variant *argp[3] = { &args[0], &args[1], &args[2] };
-	emit_signal(SNAME("property_keyed"), argp, 3);
+	emit_signalp(SNAME("property_keyed"), argp, 3);
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
@@ -3333,7 +3333,7 @@ void EditorInspector::_property_keyed_with_value(const String &p_path, const Var
 	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
 	const Variant args[3] = { p_path, p_value, p_advance };
 	const Variant *argp[3] = { &args[0], &args[1], &args[2] };
-	emit_signal(SNAME("property_keyed"), argp, 3);
+	emit_signalp(SNAME("property_keyed"), argp, 3);
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {

@@ -3059,7 +3059,7 @@ void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_prope
 	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
 	const Variant args[3] = { String(get_edited_property()) + ":" + p_property, p_value, p_advance };
 	const Variant *argp[3] = { &args[0], &args[1], &args[2] };
-	emit_signal(SNAME("property_keyed_with_value"), argp, 3);
+	emit_signalp(SNAME("property_keyed_with_value"), argp, 3);
 }
 
 void EditorPropertyResource::_sub_inspector_resource_selected(const RES &p_resource, const String &p_property) {
