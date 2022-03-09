@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_constraint_3d.h                                                */
+/*  common_pools.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,76 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_CONSTRAINT_3D_H
-#define GODOT_CONSTRAINT_3D_H
+#ifndef COMMON_POOLS_H
+#define COMMON_POOLS_H
 
-class GodotBody3D;
-class GodotSoftBody3D;
+#include "core/math/aabb.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/fixed_pool_allocator.h"
+#include "core/templates/paged_allocator.h"
+#include "core/variant/array_private.h"
+#include "servers/physics_2d/godot_area_pair_2d.h"
+#include "servers/physics_2d/godot_body_pair_2d.h"
+#include "servers/physics_3d/godot_area_pair_3d.h"
+#include "servers/physics_3d/godot_body_pair_3d.h"
 
-class GodotConstraint3D {
+class CommonPools {
+#ifdef DEV_ENABLED
 public:
-	enum ConstraintType {
-		CT_UNDEFINED,
-		CT_AREA_PAIR,
-		CT_AREA2_PAIR,
-		CT_BODY_PAIR,
-		CT_AREA_SOFTBODY_PAIR,
-		CT_BODY_SOFTBODY_PAIR,
-	};
+	// Only used for debugging purposes
+	void debug_update();
 
 private:
-	// Always 128 bits
-	uint64_t island_step;
-	RID self;
-
-	// 64 bit
-	GodotBody3D **_body_ptr;
-	int32_t _body_count;
-
-	// We could possibly combine priority and the other 2 below into 32 bits,
-	// but not sure what priority range is.
-	int32_t priority;
-
-	bool disabled_collisions_between_bodies : 8;
-
-protected:
-	ConstraintType constraint_type : 16;
-
-	GodotConstraint3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) {
-		_body_ptr = p_body_ptr;
-		_body_count = p_body_count;
-		island_step = 0;
-		priority = 1;
-		disabled_collisions_between_bodies = true;
-		constraint_type = CT_UNDEFINED;
-	}
+	uint64_t _next_debug_log_tick = 0;
+#endif
 
 public:
-	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
-	_FORCE_INLINE_ RID get_self() const { return self; }
+	static CommonPools &get_singleton() {
+		static CommonPools s;
+		return s;
+	}
 
-	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
-	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+	CommonPools(const CommonPools &) = delete;
+	CommonPools &operator=(const CommonPools &) = delete;
 
-	_FORCE_INLINE_ GodotBody3D **get_body_ptr() const { return _body_ptr; }
-	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
+	// Extended types in Variant
+	FixedPoolAllocator<Transform3D> pool_transform3ds;
+	FixedPoolAllocator<Transform2D> pool_transform2ds;
+	FixedPoolAllocator<AABB> pool_aabbs;
+	FixedPoolAllocator<Basis> pool_bases;
 
-	virtual GodotSoftBody3D *get_soft_body_ptr(int p_index) const { return nullptr; }
-	virtual int get_soft_body_count() const { return 0; }
+	// Pairing constraints in physics (may possibly get away without thread protection? NYI)
+	FixedPoolAllocator<GodotAreaPair3D> pool_area_pair;
+	FixedPoolAllocator<GodotArea2Pair3D> pool_area2_pair;
+	FixedPoolAllocator<GodotAreaSoftBodyPair3D, 512> pool_area_soft_body_pair;
+	FixedPoolAllocator<GodotBodySoftBodyPair3D, 512> pool_body_soft_body_pair;
+	FixedPoolAllocator<GodotBodyPair3D> pool_body_pair;
 
-	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
-	_FORCE_INLINE_ int get_priority() const { return priority; }
+	FixedPoolAllocator<GodotArea2Pair2D> pool_area2_pair_2d;
+	FixedPoolAllocator<GodotAreaPair2D> pool_area_pair_2d;
+	FixedPoolAllocator<GodotBodyPair2D> pool_body_pair_2d;
 
-	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
-	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
+	// Misc
+	PagedAllocator<ArrayPrivate, true> pool_array_private;
+	PagedAllocator<NodePath::Data, true> pool_nodepath_data;
+	PagedAllocator<StringName::_Data, true> pool_stringname_data;
 
-	ConstraintType get_constraint_type() const { return constraint_type; }
-
-	virtual bool setup(real_t p_step) = 0;
-	virtual bool pre_solve(real_t p_step) = 0;
-	virtual void solve(real_t p_step) = 0;
-
-	virtual ~GodotConstraint3D() {}
+private:
+	CommonPools() {}
+	~CommonPools() {}
 };
 
-#endif // GODOT_CONSTRAINT_3D_H
+#endif // COMMON_POOLS_H

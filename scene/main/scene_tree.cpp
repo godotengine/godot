@@ -40,6 +40,7 @@
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/pools/common_pools.h"
 #include "core/string/print_string.h"
 #include "node.h"
 #include "scene/animation/tween.h"
@@ -425,6 +426,10 @@ bool SceneTree::physics_process(double p_time) {
 
 	_flush_delete_queue();
 	_call_idle_callbacks();
+
+#ifdef DEV_ENABLED
+	CommonPools::get_singleton().debug_update();
+#endif
 
 	return _quit;
 }

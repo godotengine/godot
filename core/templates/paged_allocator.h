@@ -32,12 +32,23 @@
 #define PAGED_ALLOCATOR_H
 
 #include "core/os/memory.h"
-#include "core/os/spin_lock.h"
+#include "core/os/mutex.h"
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
 
 #include <type_traits>
 
-template <class T, bool thread_safe = false>
+// Uncomment this to replace PagedAllocator with malloc for testing
+// #define GODOT_PAGED_ALLOCATOR_FALLBACK_TO_MALLOC
+
+// Uncomment this to get printlines to monitor growth
+// #define GODOT_PAGED_ALLOCATOR_REPORT_GROWTH
+#ifdef GODOT_PAGED_ALLOCATOR_REPORT_GROWTH
+#include "core/os/os.h"
+#include "core/string/print_string.h"
+#endif
+
+template <class T, bool thread_safe = false, uint32_t DEFAULT_SIZE_UNITS = 4096>
 class PagedAllocator {
 	T **page_pool = nullptr;
 	T ***available_pool = nullptr;
@@ -47,15 +58,43 @@ class PagedAllocator {
 	uint32_t page_shift = 0;
 	uint32_t page_mask = 0;
 	uint32_t page_size = 0;
-	SpinLock spin_lock;
+
+#ifdef DEV_ENABLED
+	// Keep a running count in DEV builds just for statistics.
+	// No need to keep this thread safe.
+	int32_t total_allocs;
+#endif
+
+	Mutex mutex;
 
 public:
-	template <class... Args>
-	T *alloc(const Args &&...p_args) {
+	// Only call this version if you intend to call placement new yourself.
+	T *raw_alloc() {
+#ifdef DEV_ENABLED
+		total_allocs++;
+#endif
+
+#ifdef GODOT_PAGED_ALLOCATOR_FALLBACK_TO_MALLOC
+		return (T *)malloc(sizeof(T));
+#else
+
 		if (thread_safe) {
-			spin_lock.lock();
+			mutex.lock();
 		}
 		if (unlikely(allocs_available == 0)) {
+			// This deals with global order of construction issues,
+			// if a client object is constructed and calls alloc before
+			// the PagedAllocator is constructed.
+			if (!is_configured()) {
+				WARN_PRINT_ONCE("Benign - PagedAllocator order of construction may be incorrect.");
+				configure(DEFAULT_SIZE_UNITS);
+			}
+
+#ifdef GODOT_PAGED_ALLOCATOR_REPORT_GROWTH
+			if (OS::get_singleton()) {
+				print_line(String("PAGED_ALLOCATOR growing ") + String(typeid(T).name()));
+			}
+#endif
 			uint32_t pages_used = pages_allocated;
 
 			pages_allocated++;
@@ -74,22 +113,39 @@ public:
 		allocs_available--;
 		T *alloc = available_pool[allocs_available >> page_shift][allocs_available & page_mask];
 		if (thread_safe) {
-			spin_lock.unlock();
+			mutex.unlock();
 		}
+		return alloc;
+#endif
+	}
+
+	template <class... Args>
+	T *alloc(const Args &&...p_args) {
+		T *alloc = raw_alloc();
 		memnew_placement(alloc, T(p_args...));
 		return alloc;
 	}
 
 	void free(T *p_mem) {
+#ifdef DEV_ENABLED
+		total_allocs--;
+#endif
+
+#ifdef GODOT_PAGED_ALLOCATOR_FALLBACK_TO_MALLOC
+		p_mem->~T();
+		::free(p_mem);
+		return;
+#else
 		if (thread_safe) {
-			spin_lock.lock();
+			mutex.lock();
 		}
 		p_mem->~T();
 		available_pool[allocs_available >> page_shift][allocs_available & page_mask] = p_mem;
 		allocs_available++;
 		if (thread_safe) {
-			spin_lock.unlock();
+			mutex.unlock();
 		}
+#endif
 	}
 
 	void reset(bool p_allow_unfreed = false) {
@@ -113,6 +169,10 @@ public:
 		return page_size > 0;
 	}
 
+	uint64_t estimate_memory_use() const {
+		return ((uint64_t)pages_allocated * page_size * sizeof(T));
+	}
+
 	void configure(uint32_t p_page_size) {
 		ERR_FAIL_COND(page_pool != nullptr); //sanity check
 		ERR_FAIL_COND(p_page_size == 0);
@@ -121,12 +181,21 @@ public:
 		page_shift = get_shift_from_power_of_2(page_size);
 	}
 
-	PagedAllocator(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
+#ifdef DEV_ENABLED
+	int32_t get_total_allocs() const { return total_allocs; }
+#endif
+
+	PagedAllocator(uint32_t p_page_size = DEFAULT_SIZE_UNITS) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
 		configure(p_page_size);
 	}
 
 	~PagedAllocator() {
-		ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, "Pages in use exist at exit in PagedAllocator");
+		if (allocs_available < pages_allocated * page_size) {
+			if (Godot::g_leak_reporting_enabled) {
+				ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, String("Pages in use exist at exit in PagedAllocator: ") + String(typeid(T).name()));
+			}
+			return;
+		}
 		reset();
 	}
 };

@@ -47,18 +47,15 @@ class GodotBodyPair2D : public GodotConstraint2D {
 		GodotBody2D *_arr[2] = { nullptr, nullptr };
 	};
 
-	int shape_A = 0;
-	int shape_B = 0;
-
-	bool collide_A = false;
-	bool collide_B = false;
-
-	GodotSpace2D *space = nullptr;
-
 	struct Contact {
+		Contact() {
+			active = false;
+			used = false;
+		}
 		Vector2 position;
 		Vector2 normal;
 		Vector2 local_A, local_B;
+		Vector2 rA, rB;
 		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		real_t acc_tangent_impulse = 0.0; // accumulated tangent impulse (Pt)
 		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
@@ -67,21 +64,28 @@ class GodotBodyPair2D : public GodotConstraint2D {
 		real_t bias = 0.0;
 
 		real_t depth = 0.0;
-		bool active = false;
-		bool used = false;
-		Vector2 rA, rB;
 		real_t bounce = 0.0;
+		bool active : 1;
+		bool used : 1;
 	};
 
-	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
+	int32_t shape_A = 0;
+	int32_t shape_B = 0;
+	int32_t contact_count = 0;
 
+	bool collide_A : 1;
+	bool collide_B : 1;
+	bool collided : 1;
+	bool check_ccd : 1;
+	bool oneway_disabled : 1;
+	bool report_contacts_only : 1;
+
+	GodotSpace2D *space = nullptr;
+
+	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
 	Vector2 sep_axis;
+
 	Contact contacts[MAX_CONTACTS];
-	int contact_count = 0;
-	bool collided = false;
-	bool check_ccd = false;
-	bool oneway_disabled = false;
-	bool report_contacts_only = false;
 
 	bool _test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B);
 	void _validate_contacts();

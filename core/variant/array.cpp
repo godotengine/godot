@@ -30,22 +30,15 @@
 
 #include "array.h"
 
-#include "container_type_validate.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/pools/common_pools.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/search_array.h"
 #include "core/templates/vector.h"
+#include "core/variant/array_private.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
-
-class ArrayPrivate {
-public:
-	SafeRefCount refcount;
-	Vector<Variant> array;
-
-	ContainerTypeValidate typed;
-};
 
 void Array::_ref(const Array &p_from) const {
 	ArrayPrivate *_fp = p_from._p;
@@ -71,7 +64,7 @@ void Array::_unref() const {
 	}
 
 	if (_p->refcount.unref()) {
-		memdelete(_p);
+		CommonPools::get_singleton().pool_array_private.free(_p);
 	}
 	_p = nullptr;
 }
@@ -635,7 +628,7 @@ const void *Array::id() const {
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
-	_p = memnew(ArrayPrivate);
+	_p = CommonPools::get_singleton().pool_array_private.alloc();
 	_p->refcount.init();
 	set_typed(p_type, p_class_name, p_script);
 	_assign(p_from);
@@ -681,7 +674,7 @@ Array::Array(const Array &p_from) {
 }
 
 Array::Array() {
-	_p = memnew(ArrayPrivate);
+	_p = CommonPools::get_singleton().pool_array_private.alloc();
 	_p->refcount.init();
 }
 

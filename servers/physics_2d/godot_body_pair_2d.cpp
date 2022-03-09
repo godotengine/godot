@@ -573,6 +573,7 @@ void GodotBodyPair2D::solve(real_t p_step) {
 
 GodotBodyPair2D::GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p_B, int p_shape_B) :
 		GodotConstraint2D(_arr, 2) {
+	constraint_type = CT2D_BODY_PAIR;
 	A = p_A;
 	B = p_B;
 	shape_A = p_shape_A;
@@ -580,6 +581,13 @@ GodotBodyPair2D::GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p
 	space = A->get_space();
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
+
+	collide_A = false;
+	collide_B = false;
+	collided = false;
+	check_ccd = false;
+	oneway_disabled = false;
+	report_contacts_only = false;
 }
 
 GodotBodyPair2D::~GodotBodyPair2D() {

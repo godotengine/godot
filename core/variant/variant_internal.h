@@ -31,6 +31,7 @@
 #ifndef VARIANT_INTERNAL_H
 #define VARIANT_INTERNAL_H
 
+#include "core/pools/common_pools_wrapper.h"
 #include "variant.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
@@ -209,21 +210,25 @@ public:
 	}
 
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = memnew(Transform2D);
+		v->_data._transform2d = CommonPoolsWrapper::request_new_transform2d();
 		v->type = Variant::TRANSFORM2D;
 	}
+
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = memnew(AABB);
+		v->_data._aabb = CommonPoolsWrapper::request_new_aabb();
 		v->type = Variant::AABB;
 	}
+
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = memnew(Basis);
+		v->_data._basis = CommonPoolsWrapper::request_new_basis();
 		v->type = Variant::BASIS;
 	}
+
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform3d = memnew(Transform3D);
+		v->_data._transform3d = CommonPoolsWrapper::request_new_transform3d();
 		v->type = Variant::TRANSFORM3D;
 	}
+
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
 		v->type = Variant::STRING_NAME;

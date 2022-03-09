@@ -36,6 +36,12 @@
 
 static ErrorHandlerList *error_handler_list = nullptr;
 
+// This has to be accessible from low level headers,
+// and cannot be in Engine or OS to avoid circular includes.
+namespace Godot {
+bool g_leak_reporting_enabled = true;
+}
+
 void add_error_handler(ErrorHandlerList *p_handler) {
 	// If p_handler is already in error_handler_list
 	// we'd better remove it first then we can add it.
@@ -83,7 +89,12 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
-	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
+	OS *os = OS::get_singleton();
+	if (os) {
+		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
+	} else {
+		printf("%s %s %i %s %s\n", p_function, p_file, p_line, p_error, p_message);
+	}
 
 	_global_lock();
 	ErrorHandlerList *l = error_handler_list;

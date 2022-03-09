@@ -91,6 +91,7 @@ void GodotAreaPair3D::solve(real_t p_step) {
 }
 
 GodotAreaPair3D::GodotAreaPair3D(GodotBody3D *p_body, int p_body_shape, GodotArea3D *p_area, int p_area_shape) {
+	constraint_type = CT_AREA_PAIR;
 	body = p_body;
 	area = p_area;
 	body_shape = p_body_shape;
@@ -100,6 +101,10 @@ GodotAreaPair3D::GodotAreaPair3D(GodotBody3D *p_body, int p_body_shape, GodotAre
 	if (p_body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		p_body->set_active(true);
 	}
+
+	colliding = false;
+	process_collision = false;
+	has_space_override = false;
 }
 
 GodotAreaPair3D::~GodotAreaPair3D() {
@@ -173,6 +178,7 @@ void GodotArea2Pair3D::solve(real_t p_step) {
 }
 
 GodotArea2Pair3D::GodotArea2Pair3D(GodotArea3D *p_area_a, int p_shape_a, GodotArea3D *p_area_b, int p_shape_b) {
+	constraint_type = CT_AREA2_PAIR;
 	area_a = p_area_a;
 	area_b = p_area_b;
 	shape_a = p_shape_a;
@@ -181,6 +187,11 @@ GodotArea2Pair3D::GodotArea2Pair3D(GodotArea3D *p_area_a, int p_shape_a, GodotAr
 	area_b_monitorable = area_b->is_monitorable();
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
+
+	colliding_a = false;
+	colliding_b = false;
+	process_collision_a = false;
+	process_collision_b = false;
 }
 
 GodotArea2Pair3D::~GodotArea2Pair3D() {
@@ -266,12 +277,17 @@ void GodotAreaSoftBodyPair3D::solve(real_t p_step) {
 }
 
 GodotAreaSoftBodyPair3D::GodotAreaSoftBodyPair3D(GodotSoftBody3D *p_soft_body, int p_soft_body_shape, GodotArea3D *p_area, int p_area_shape) {
+	constraint_type = CT_AREA_SOFTBODY_PAIR;
 	soft_body = p_soft_body;
 	area = p_area;
 	soft_body_shape = p_soft_body_shape;
 	area_shape = p_area_shape;
 	soft_body->add_constraint(this);
 	area->add_constraint(this);
+
+	colliding = false;
+	process_collision = false;
+	has_space_override = false;
 }
 
 GodotAreaSoftBodyPair3D::~GodotAreaSoftBodyPair3D() {

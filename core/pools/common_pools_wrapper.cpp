@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_area_pair_2d.h                                                 */
+/*  common_pools_wrapper.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_AREA_PAIR_2D_H
-#define GODOT_AREA_PAIR_2D_H
+#include "common_pools_wrapper.h"
+#include "core/pools/common_pools.h"
 
-#include "godot_area_2d.h"
-#include "godot_body_2d.h"
-#include "godot_constraint_2d.h"
+Transform3D *CommonPoolsWrapper::request_new_transform3d() {
+	return CommonPools::get_singleton().pool_transform3ds.alloc();
+}
 
-class GodotAreaPair2D : public GodotConstraint2D {
-	GodotBody2D *body = nullptr;
-	GodotArea2D *area = nullptr;
-	int32_t body_shape = 0;
-	int32_t area_shape = 0;
-	bool colliding : 1;
-	bool has_space_override : 1;
-	bool process_collision : 1;
+Transform2D *CommonPoolsWrapper::request_new_transform2d() {
+	return CommonPools::get_singleton().pool_transform2ds.alloc();
+}
 
-public:
-	virtual bool setup(real_t p_step) override;
-	virtual bool pre_solve(real_t p_step) override;
-	virtual void solve(real_t p_step) override;
+AABB *CommonPoolsWrapper::request_new_aabb() {
+	return CommonPools::get_singleton().pool_aabbs.alloc();
+}
 
-	GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotArea2D *p_area, int p_area_shape);
-	~GodotAreaPair2D();
-};
-
-class GodotArea2Pair2D : public GodotConstraint2D {
-	GodotArea2D *area_a = nullptr;
-	GodotArea2D *area_b = nullptr;
-	int32_t shape_a = 0;
-	int32_t shape_b = 0;
-	bool colliding_a : 1;
-	bool colliding_b : 1;
-	bool process_collision_a : 1;
-	bool process_collision_b : 1;
-	bool area_a_monitorable : 1;
-	bool area_b_monitorable : 1;
-
-public:
-	virtual bool setup(real_t p_step) override;
-	virtual bool pre_solve(real_t p_step) override;
-	virtual void solve(real_t p_step) override;
-
-	GodotArea2Pair2D(GodotArea2D *p_area_a, int p_shape_a, GodotArea2D *p_area_b, int p_shape_b);
-	~GodotArea2Pair2D();
-};
-
-#endif // GODOT_AREA_PAIR_2D_H
+Basis *CommonPoolsWrapper::request_new_basis() {
+	return CommonPools::get_singleton().pool_bases.alloc();
+}

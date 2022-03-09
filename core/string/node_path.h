@@ -35,6 +35,9 @@
 #include "core/string/ustring.h"
 
 class NodePath {
+	// Access to Data struct
+	friend class CommonPools;
+
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;

@@ -40,32 +40,39 @@
 class GodotBodyContact3D : public GodotConstraint3D {
 protected:
 	struct Contact {
+		Contact() {
+			active = false;
+			used = false;
+		}
+		int32_t index_A = 0, index_B = 0;
+
 		Vector3 position;
 		Vector3 normal;
-		int index_A = 0, index_B = 0;
 		Vector3 local_A, local_B;
-		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		Vector3 acc_tangent_impulse; // accumulated tangent impulse (Pt)
+		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
+
+		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
 		real_t acc_bias_impulse_center_of_mass = 0.0; // accumulated normal impulse for position bias applied to com
 		real_t mass_normal = 0.0;
 		real_t bias = 0.0;
 		real_t bounce = 0.0;
-
 		real_t depth = 0.0;
-		bool active = false;
-		bool used = false;
-		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
+
+		bool active : 1;
+		bool used : 1;
 	};
 
-	Vector3 sep_axis;
-	bool collided = false;
-	bool check_ccd = false;
-
 	GodotSpace3D *space = nullptr;
+	Vector3 sep_axis;
+	bool collided : 1;
+	bool check_ccd : 1;
 
 	GodotBodyContact3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) :
 			GodotConstraint3D(p_body_ptr, p_body_count) {
+		collided = false;
+		check_ccd = false;
 	}
 };
 
@@ -83,18 +90,16 @@ class GodotBodyPair3D : public GodotBodyContact3D {
 		GodotBody3D *_arr[2] = { nullptr, nullptr };
 	};
 
-	int shape_A = 0;
-	int shape_B = 0;
-
-	bool collide_A = false;
-	bool collide_B = false;
-
-	bool report_contacts_only = false;
-
+	int32_t shape_A = 0;
+	int32_t shape_B = 0;
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection
 
+	bool collide_A : 1;
+	bool collide_B : 1;
+	bool report_contacts_only : 1;
+
 	Contact contacts[MAX_CONTACTS];
-	int contact_count = 0;
+	int32_t contact_count = 0;
 
 	static void _contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
@@ -116,12 +121,11 @@ class GodotBodySoftBodyPair3D : public GodotBodyContact3D {
 	GodotBody3D *body = nullptr;
 	GodotSoftBody3D *soft_body = nullptr;
 
-	int body_shape = 0;
+	int32_t body_shape = 0;
 
-	bool body_collides = false;
-	bool soft_body_collides = false;
-
-	bool report_contacts_only = false;
+	bool body_collides : 1;
+	bool soft_body_collides : 1;
+	bool report_contacts_only : 1;
 
 	LocalVector<Contact> contacts;
 

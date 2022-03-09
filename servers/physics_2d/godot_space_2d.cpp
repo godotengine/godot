@@ -34,6 +34,7 @@
 #include "godot_physics_server_2d.h"
 
 #include "core/os/os.h"
+#include "core/pools/common_pools.h"
 #include "core/templates/pair.h"
 
 #define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
@@ -1012,16 +1013,19 @@ void *GodotSpace2D::_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A
 		GodotArea2D *area = static_cast<GodotArea2D *>(A);
 		if (type_B == GodotCollisionObject2D::TYPE_AREA) {
 			GodotArea2D *area_b = static_cast<GodotArea2D *>(B);
-			GodotArea2Pair2D *area2_pair = memnew(GodotArea2Pair2D(area_b, p_subindex_B, area, p_subindex_A));
+			GodotArea2Pair2D *area2_pair = CommonPools::get_singleton().pool_area2_pair_2d.raw_alloc();
+			memnew_placement(area2_pair, GodotArea2Pair2D(area_b, p_subindex_B, area, p_subindex_A));
 			return area2_pair;
 		} else {
 			GodotBody2D *body = static_cast<GodotBody2D *>(B);
-			GodotAreaPair2D *area_pair = memnew(GodotAreaPair2D(body, p_subindex_B, area, p_subindex_A));
+			GodotAreaPair2D *area_pair = CommonPools::get_singleton().pool_area_pair_2d.raw_alloc();
+			memnew_placement(area_pair, GodotAreaPair2D(body, p_subindex_B, area, p_subindex_A));
 			return area_pair;
 		}
 
 	} else {
-		GodotBodyPair2D *b = memnew(GodotBodyPair2D((GodotBody2D *)A, p_subindex_A, (GodotBody2D *)B, p_subindex_B));
+		GodotBodyPair2D *b = CommonPools::get_singleton().pool_body_pair_2d.raw_alloc();
+		memnew_placement(b, GodotBodyPair2D((GodotBody2D *)A, p_subindex_A, (GodotBody2D *)B, p_subindex_B));
 		return b;
 	}
 
@@ -1036,7 +1040,23 @@ void GodotSpace2D::_broadphase_unpair(GodotCollisionObject2D *A, int p_subindex_
 	GodotSpace2D *self = (GodotSpace2D *)p_self;
 	self->collision_pairs--;
 	GodotConstraint2D *c = (GodotConstraint2D *)p_data;
-	memdelete(c);
+
+	switch (c->get_constraint_type()) {
+		default: {
+			// This should not happen, but just in case a constraint has been created elsewhere...
+			ERR_PRINT_ONCE("Unexpected constraint type.");
+			memdelete(c);
+		} break;
+		case GodotConstraint2D::CT2D_AREA2_PAIR: {
+			CommonPools::get_singleton().pool_area2_pair_2d.free((GodotArea2Pair2D *)c);
+		} break;
+		case GodotConstraint2D::CT2D_AREA_PAIR: {
+			CommonPools::get_singleton().pool_area_pair_2d.free((GodotAreaPair2D *)c);
+		} break;
+		case GodotConstraint2D::CT2D_BODY_PAIR: {
+			CommonPools::get_singleton().pool_body_pair_2d.free((GodotBodyPair2D *)c);
+		} break;
+	}
 }
 
 const SelfList<GodotBody2D>::List &GodotSpace2D::get_active_body_list() const {

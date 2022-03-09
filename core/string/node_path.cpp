@@ -30,6 +30,7 @@
 
 #include "node_path.h"
 
+#include "core/pools/common_pools.h"
 #include "core/string/print_string.h"
 
 void NodePath::_update_hash_cache() const {
@@ -94,7 +95,7 @@ StringName NodePath::get_subname(int p_idx) const {
 
 void NodePath::unref() {
 	if (data && data->refcount.unref()) {
-		memdelete(data);
+		CommonPools::get_singleton().pool_nodepath_data.free(data);
 	}
 	data = nullptr;
 }
@@ -320,7 +321,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 		return;
 	}
 
-	data = memnew(Data);
+	data = CommonPools::get_singleton().pool_nodepath_data.alloc();
 	data->refcount.init();
 	data->absolute = p_absolute;
 	data->path = p_path;
@@ -333,7 +334,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 		return;
 	}
 
-	data = memnew(Data);
+	data = CommonPools::get_singleton().pool_nodepath_data.alloc();
 	data->refcount.init();
 	data->absolute = p_absolute;
 	data->path = p_path;
@@ -401,7 +402,7 @@ NodePath::NodePath(const String &p_path) {
 		return;
 	}
 
-	data = memnew(Data);
+	data = CommonPools::get_singleton().pool_nodepath_data.alloc();
 	data->refcount.init();
 	data->absolute = absolute;
 	data->has_slashes = has_slashes;

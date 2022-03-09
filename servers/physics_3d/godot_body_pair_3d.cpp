@@ -547,6 +547,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 
 GodotBodyPair3D::GodotBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotBody3D *p_B, int p_shape_B) :
 		GodotBodyContact3D(_arr, 2) {
+	constraint_type = CT_BODY_PAIR;
 	A = p_A;
 	B = p_B;
 	shape_A = p_shape_A;
@@ -554,6 +555,10 @@ GodotBodyPair3D::GodotBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotBody3D *p
 	space = A->get_space();
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
+
+	collide_A = false;
+	collide_B = false;
+	report_contacts_only = false;
 }
 
 GodotBodyPair3D::~GodotBodyPair3D() {
@@ -921,12 +926,17 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 GodotBodySoftBodyPair3D::GodotBodySoftBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotSoftBody3D *p_B) :
 		GodotBodyContact3D(&body, 1) {
+	constraint_type = CT_BODY_SOFTBODY_PAIR;
 	body = p_A;
 	soft_body = p_B;
 	body_shape = p_shape_A;
 	space = p_A->get_space();
 	body->add_constraint(this, 0);
 	soft_body->add_constraint(this);
+
+	body_collides = false;
+	soft_body_collides = false;
+	report_contacts_only = false;
 }
 
 GodotBodySoftBodyPair3D::~GodotBodySoftBodyPair3D() {

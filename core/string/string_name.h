@@ -43,6 +43,9 @@ struct StaticCString {
 };
 
 class StringName {
+	// Allow access to _Data struct
+	friend class CommonPools;
+
 	enum {
 		STRING_TABLE_BITS = 16,
 		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,

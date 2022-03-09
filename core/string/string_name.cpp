@@ -31,6 +31,7 @@
 #include "string_name.h"
 
 #include "core/os/os.h"
+#include "core/pools/common_pools.h"
 #include "core/string/print_string.h"
 
 StaticCString StaticCString::create(const char *p_ptr) {
@@ -109,7 +110,7 @@ void StringName::cleanup() {
 			}
 
 			_table[i] = _table[i]->next;
-			memdelete(d);
+			CommonPools::get_singleton().pool_stringname_data.free(d);
 		}
 	}
 	if (lost_strings) {
@@ -143,7 +144,7 @@ void StringName::unref() {
 		if (_data->next) {
 			_data->next->prev = _data->prev;
 		}
-		memdelete(_data);
+		CommonPools::get_singleton().pool_stringname_data.free(_data);
 	}
 
 	_data = nullptr;
@@ -238,7 +239,8 @@ StringName::StringName(const char *p_name, bool p_static) {
 		return;
 	}
 
-	_data = memnew(_Data);
+	_data = CommonPools::get_singleton().pool_stringname_data.alloc();
+
 	_data->name = p_name;
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
@@ -298,7 +300,7 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 		}
 	}
 
-	_data = memnew(_Data);
+	_data = CommonPools::get_singleton().pool_stringname_data.alloc();
 
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
@@ -358,7 +360,8 @@ StringName::StringName(const String &p_name, bool p_static) {
 		}
 	}
 
-	_data = memnew(_Data);
+	_data = CommonPools::get_singleton().pool_stringname_data.alloc();
+
 	_data->name = p_name;
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);

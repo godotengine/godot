@@ -90,6 +90,7 @@ void GodotAreaPair2D::solve(real_t p_step) {
 }
 
 GodotAreaPair2D::GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotArea2D *p_area, int p_area_shape) {
+	constraint_type = CT2D_AREA_PAIR;
 	body = p_body;
 	area = p_area;
 	body_shape = p_body_shape;
@@ -99,6 +100,10 @@ GodotAreaPair2D::GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotAre
 	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) { //need to be active to process pair
 		p_body->set_active(true);
 	}
+
+	colliding = false;
+	has_space_override = false;
+	process_collision = false;
 }
 
 GodotAreaPair2D::~GodotAreaPair2D() {
@@ -172,6 +177,7 @@ void GodotArea2Pair2D::solve(real_t p_step) {
 }
 
 GodotArea2Pair2D::GodotArea2Pair2D(GodotArea2D *p_area_a, int p_shape_a, GodotArea2D *p_area_b, int p_shape_b) {
+	constraint_type = CT2D_AREA2_PAIR;
 	area_a = p_area_a;
 	area_b = p_area_b;
 	shape_a = p_shape_a;
@@ -180,6 +186,11 @@ GodotArea2Pair2D::GodotArea2Pair2D(GodotArea2D *p_area_a, int p_shape_a, GodotAr
 	area_b_monitorable = area_b->is_monitorable();
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
+
+	colliding_a = false;
+	colliding_b = false;
+	process_collision_a = false;
+	process_collision_b = false;
 }
 
 GodotArea2Pair2D::~GodotArea2Pair2D() {

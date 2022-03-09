@@ -34,17 +34,35 @@
 #include "godot_body_2d.h"
 
 class GodotConstraint2D {
-	GodotBody2D **_body_ptr;
-	int _body_count;
-	uint64_t island_step = 0;
-	bool disabled_collisions_between_bodies = true;
+public:
+	enum ConstraintType2D {
+		CT2D_UNDEFINED,
+		CT2D_AREA_PAIR,
+		CT2D_AREA2_PAIR,
+		CT2D_BODY_PAIR,
+	};
 
+private:
+	// Always 128 bits
+	uint64_t island_step = 0;
 	RID self;
+
+	// 64 bit
+	GodotBody2D **_body_ptr;
+
+	// 64 bits
+	int32_t _body_count;
+	bool disabled_collisions_between_bodies : 8;
+
+protected:
+	ConstraintType2D constraint_type : 16;
 
 protected:
 	GodotConstraint2D(GodotBody2D **p_body_ptr = nullptr, int p_body_count = 0) {
 		_body_ptr = p_body_ptr;
 		_body_count = p_body_count;
+		constraint_type = CT2D_UNDEFINED;
+		disabled_collisions_between_bodies = true;
 	}
 
 public:
@@ -59,6 +77,8 @@ public:
 
 	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
+
+	ConstraintType2D get_constraint_type() const { return constraint_type; }
 
 	virtual bool setup(real_t p_step) = 0;
 	virtual bool pre_solve(real_t p_step) = 0;

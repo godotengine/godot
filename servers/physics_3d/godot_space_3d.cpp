@@ -34,6 +34,7 @@
 #include "godot_physics_server_3d.h"
 
 #include "core/config/project_settings.h"
+#include "core/pools/common_pools.h"
 
 #define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
 #define TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR 0.05
@@ -1025,23 +1026,28 @@ void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A
 		GodotArea3D *area = static_cast<GodotArea3D *>(A);
 		if (type_B == GodotCollisionObject3D::TYPE_AREA) {
 			GodotArea3D *area_b = static_cast<GodotArea3D *>(B);
-			GodotArea2Pair3D *area2_pair = memnew(GodotArea2Pair3D(area_b, p_subindex_B, area, p_subindex_A));
+			GodotArea2Pair3D *area2_pair = CommonPools::get_singleton().pool_area2_pair.raw_alloc();
+			memnew_placement(area2_pair, GodotArea2Pair3D(area_b, p_subindex_B, area, p_subindex_A));
 			return area2_pair;
 		} else if (type_B == GodotCollisionObject3D::TYPE_SOFT_BODY) {
 			GodotSoftBody3D *softbody = static_cast<GodotSoftBody3D *>(B);
-			GodotAreaSoftBodyPair3D *soft_area_pair = memnew(GodotAreaSoftBodyPair3D(softbody, p_subindex_B, area, p_subindex_A));
+			GodotAreaSoftBodyPair3D *soft_area_pair = CommonPools::get_singleton().pool_area_soft_body_pair.raw_alloc();
+			memnew_placement(soft_area_pair, GodotAreaSoftBodyPair3D(softbody, p_subindex_B, area, p_subindex_A));
 			return soft_area_pair;
 		} else {
 			GodotBody3D *body = static_cast<GodotBody3D *>(B);
-			GodotAreaPair3D *area_pair = memnew(GodotAreaPair3D(body, p_subindex_B, area, p_subindex_A));
+			GodotAreaPair3D *area_pair = CommonPools::get_singleton().pool_area_pair.raw_alloc();
+			memnew_placement(area_pair, GodotAreaPair3D(body, p_subindex_B, area, p_subindex_A));
 			return area_pair;
 		}
 	} else if (type_A == GodotCollisionObject3D::TYPE_BODY) {
 		if (type_B == GodotCollisionObject3D::TYPE_SOFT_BODY) {
-			GodotBodySoftBodyPair3D *soft_pair = memnew(GodotBodySoftBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotSoftBody3D *)B));
+			GodotBodySoftBodyPair3D *soft_pair = CommonPools::get_singleton().pool_body_soft_body_pair.raw_alloc();
+			memnew_placement(soft_pair, GodotBodySoftBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotSoftBody3D *)B));
 			return soft_pair;
 		} else {
-			GodotBodyPair3D *b = memnew(GodotBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotBody3D *)B, p_subindex_B));
+			GodotBodyPair3D *b = CommonPools::get_singleton().pool_body_pair.raw_alloc();
+			memnew_placement(b, GodotBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotBody3D *)B, p_subindex_B));
 			return b;
 		}
 	} else {
@@ -1059,7 +1065,29 @@ void GodotSpace3D::_broadphase_unpair(GodotCollisionObject3D *A, int p_subindex_
 	GodotSpace3D *self = (GodotSpace3D *)p_self;
 	self->collision_pairs--;
 	GodotConstraint3D *c = (GodotConstraint3D *)p_data;
-	memdelete(c);
+
+	switch (c->get_constraint_type()) {
+		default: {
+			// This should not happen, but just in case a constraint has been created elsewhere...
+			ERR_PRINT_ONCE("Unexpected constraint type.");
+			memdelete(c);
+		} break;
+		case GodotConstraint3D::CT_AREA2_PAIR: {
+			CommonPools::get_singleton().pool_area2_pair.free((GodotArea2Pair3D *)c);
+		} break;
+		case GodotConstraint3D::CT_AREA_PAIR: {
+			CommonPools::get_singleton().pool_area_pair.free((GodotAreaPair3D *)c);
+		} break;
+		case GodotConstraint3D::CT_BODY_PAIR: {
+			CommonPools::get_singleton().pool_body_pair.free((GodotBodyPair3D *)c);
+		} break;
+		case GodotConstraint3D::CT_AREA_SOFTBODY_PAIR: {
+			CommonPools::get_singleton().pool_area_soft_body_pair.free((GodotAreaSoftBodyPair3D *)c);
+		} break;
+		case GodotConstraint3D::CT_BODY_SOFTBODY_PAIR: {
+			CommonPools::get_singleton().pool_body_soft_body_pair.free((GodotBodySoftBodyPair3D *)c);
+		} break;
+	}
 }
 
 const SelfList<GodotBody3D>::List &GodotSpace3D::get_active_body_list() const {

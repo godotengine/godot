@@ -48,6 +48,10 @@ enum ErrorHandlerType {
 // Parameters: userdata, function, file, line, error, explanation, type.
 typedef void (*ErrorHandlerFunc)(void *, const char *, const char *, int p_line, const char *, const char *, bool p_editor_notify, ErrorHandlerType p_type);
 
+namespace Godot {
+extern bool g_leak_reporting_enabled;
+}
+
 struct ErrorHandlerList {
 	ErrorHandlerFunc errfunc = nullptr;
 	void *userdata = nullptr;
