@@ -7298,6 +7298,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter"), &TextEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &TextEdit::is_drawing_fold_gutter);
 	ClassDB::bind_method(D_METHOD("get_total_gutter_width"), &TextEdit::get_total_gutter_width);
+	ClassDB::bind_method(D_METHOD("get_visible_rows"), &TextEdit::get_visible_rows);
+	ClassDB::bind_method(D_METHOD("get_total_visible_rows"), &TextEdit::get_total_visible_rows);
 
 	ClassDB::bind_method(D_METHOD("set_hiding_enabled", "enable"), &TextEdit::set_hiding_enabled);
 	ClassDB::bind_method(D_METHOD("is_hiding_enabled"), &TextEdit::is_hiding_enabled);
