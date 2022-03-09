@@ -280,7 +280,7 @@ void CSGShape3D::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const
 }
 
 void CSGShape3D::_update_shape() {
-	if (!is_root_shape() || !is_inside_tree()) {
+	if (!is_root_shape()) {
 		return;
 	}
 
