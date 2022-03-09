@@ -48,7 +48,9 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
-#include "openxr_interface.h"
+#include "extensions/openxr_htc_vive_tracker_extension.h"
+
+#include "modules/openxr/openxr_interface.h"
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 
@@ -1644,6 +1646,9 @@ OpenXRAPI::OpenXRAPI() {
 	// our android wrapper will initialize our android loader at this point
 	register_extension_wrapper(memnew(OpenXRAndroidExtension(this)));
 #endif
+
+	// register our other extensions
+	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {
