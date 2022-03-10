@@ -180,6 +180,8 @@ class AnimationTrackEdit : public Control {
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 
+	Ref<Texture> _get_key_type_icon() const;
+
 	mutable int dropping_at;
 	float insert_at_pos;
 	bool moving_selection_attempt;
