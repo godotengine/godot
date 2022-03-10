@@ -1370,7 +1370,7 @@ int AnimationTimelineEdit::get_name_limit() const {
 }
 
 void AnimationTimelineEdit::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		add_track->set_icon(get_icon("Add", "EditorIcons"));
 		loop->set_icon(get_icon("Loop", "EditorIcons"));
 		time_icon->set_texture(get_icon("Time", "EditorIcons"));
@@ -1841,6 +1841,16 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 ////////////////////////////////////
 
 void AnimationTrackEdit::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		if (animation.is_null()) {
+			return;
+		}
+		ERR_FAIL_INDEX(track, animation->get_track_count());
+
+		type_icon = _get_key_type_icon();
+		selected_icon = get_icon("KeySelected", "EditorIcons");
+	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 		if (animation.is_null()) {
 			return;
@@ -1858,14 +1868,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		Ref<Font> font = get_font("font", "Label");
 		Color color = get_color("font_color", "Label");
-		Ref<Texture> type_icons[6] = {
-			get_icon("KeyValue", "EditorIcons"),
-			get_icon("KeyXform", "EditorIcons"),
-			get_icon("KeyCall", "EditorIcons"),
-			get_icon("KeyBezier", "EditorIcons"),
-			get_icon("KeyAudio", "EditorIcons"),
-			get_icon("KeyAnimation", "EditorIcons")
-		};
 		int hsep = get_constant("hseparation", "ItemList");
 		Color linecolor = color;
 		linecolor.a = 0.2;
@@ -1881,7 +1883,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			draw_texture(check, check_rect.position);
 			ofs += check->get_width() + hsep;
 
-			Ref<Texture> type_icon = type_icons[animation->track_get_type(track)];
+			Ref<Texture> type_icon = _get_key_type_icon();
 			draw_texture(type_icon, Point2(ofs, int(get_size().height - type_icon->get_height()) / 2));
 			ofs += type_icon->get_width() + hsep;
 
@@ -2321,19 +2323,10 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	track = p_track;
 	update();
 
-	Ref<Texture> type_icons[6] = {
-		get_icon("KeyValue", "EditorIcons"),
-		get_icon("KeyXform", "EditorIcons"),
-		get_icon("KeyCall", "EditorIcons"),
-		get_icon("KeyBezier", "EditorIcons"),
-		get_icon("KeyAudio", "EditorIcons"),
-		get_icon("KeyAnimation", "EditorIcons")
-	};
-
 	ERR_FAIL_INDEX(track, animation->get_track_count());
 
 	node_path = animation->track_get_path(p_track);
-	type_icon = type_icons[animation->track_get_type(track)];
+	type_icon = _get_key_type_icon();
 	selected_icon = get_icon("KeySelected", "EditorIcons");
 }
 
@@ -2429,6 +2422,18 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 	}
 
 	return (!prop_exists || Variant::can_convert(p_key_value.get_type(), r_valid_type));
+}
+
+Ref<Texture> AnimationTrackEdit::_get_key_type_icon() const {
+	Ref<Texture> type_icons[6] = {
+		get_icon("KeyValue", "EditorIcons"),
+		get_icon("KeyXform", "EditorIcons"),
+		get_icon("KeyCall", "EditorIcons"),
+		get_icon("KeyBezier", "EditorIcons"),
+		get_icon("KeyAudio", "EditorIcons"),
+		get_icon("KeyAnimation", "EditorIcons")
+	};
+	return type_icons[animation->track_get_type(track)];
 }
 
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
