@@ -72,6 +72,9 @@
 			- [code]left_hand[/code] identifies the controller held in the players left hand
 			- [code]right_hand[/code] identifies the controller held in the players right hand
 		</member>
+		<member name="profile" type="String" setter="set_tracker_profile" getter="get_tracker_profile" default="&quot;&quot;">
+			The profile associated with this tracker, interface dependent but will indicate the type of controller being tracked.
+		</member>
 		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
 			The type of tracker.
 		</member>
@@ -107,6 +110,12 @@
 			<argument index="0" name="pose" type="XRPose" />
 			<description>
 				Emitted when the state of a pose tracked by this tracker changes.
+			</description>
+		</signal>
+		<signal name="profile_changed">
+			<argument index="0" name="role" type="String" />
+			<description>
+				Emitted when the profile of our tracker changes.
 			</description>
 		</signal>
 	</signals>

@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_value_changed(double) {
+void SpinBox::_value_changed(double p_value) {
 	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 	if (!prefix.is_empty()) {
 		value = prefix + " " + value;
@@ -48,6 +48,7 @@ void SpinBox::_value_changed(double) {
 		value += " " + suffix;
 	}
 	line_edit->set_text(value);
+	Range::_value_changed(p_value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {

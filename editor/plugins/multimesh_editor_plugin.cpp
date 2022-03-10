@@ -105,9 +105,9 @@ void MultiMeshEditor::_populate() {
 		return;
 	}
 
-	GeometryInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
+	MeshInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
-	if (!ss_instance) {
+	if (!ss_instance || !ss_instance->get_mesh().is_valid()) {
 		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
 		err_dialog->popup_centered();
 		return;
@@ -115,7 +115,7 @@ void MultiMeshEditor::_populate() {
 
 	Transform3D geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
-	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance3D::FACES_SOLID);
+	Vector<Face3> geometry = ss_instance->get_mesh()->get_faces();
 
 	if (geometry.size() == 0) {
 		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));

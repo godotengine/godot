@@ -338,13 +338,15 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			// Try go down tree
 			TreeItem *ti_next = ti->get_first_child();
-			// Try go across tree
+			// Try go to the next node via in-order traversal
 			if (!ti_next) {
-				ti_next = ti->get_next();
-			}
-			// Try go up tree, to next node
-			if (!ti_next) {
-				ti_next = ti->get_parent()->get_next();
+				ti_next = ti;
+				while (ti_next && !ti_next->get_next()) {
+					ti_next = ti_next->get_parent();
+				}
+				if (ti_next) {
+					ti_next = ti_next->get_next();
+				}
 			}
 
 			ti = ti_next;

@@ -433,10 +433,6 @@ AABB OccluderInstance3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> OccluderInstance3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	if (occluder == p_occluder) {
 		return;

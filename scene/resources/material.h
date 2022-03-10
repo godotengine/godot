@@ -51,11 +51,15 @@ class Material : public Resource {
 protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const { return false; }
-	virtual bool _can_use_render_priority() const { return false; }
+	virtual bool _can_do_next_pass() const;
+	virtual bool _can_use_render_priority() const;
 
 	void _validate_property(PropertyInfo &property) const override;
 
+	GDVIRTUAL0RC(RID, _get_shader_rid)
+	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
+	GDVIRTUAL0RC(bool, _can_do_next_pass)
+	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
 	enum {
 		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
@@ -68,9 +72,8 @@ public:
 	int get_render_priority() const;
 
 	virtual RID get_rid() const override;
-	virtual RID get_shader_rid() const = 0;
-
-	virtual Shader::Mode get_shader_mode() const = 0;
+	virtual RID get_shader_rid() const;
+	virtual Shader::Mode get_shader_mode() const;
 	Material();
 	virtual ~Material();
 };

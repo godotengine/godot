@@ -35,7 +35,12 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 void OpenXRInterface::_bind_methods() {
-	// todo
+	// lifecycle signals
+	ADD_SIGNAL(MethodInfo("session_begun"));
+	ADD_SIGNAL(MethodInfo("session_stopping"));
+	ADD_SIGNAL(MethodInfo("session_focussed"));
+	ADD_SIGNAL(MethodInfo("session_visible"));
+	ADD_SIGNAL(MethodInfo("pose_recentered"));
 }
 
 StringName OpenXRInterface::get_name() const {
@@ -45,6 +50,18 @@ StringName OpenXRInterface::get_name() const {
 uint32_t OpenXRInterface::get_capabilities() const {
 	return XRInterface::XR_VR + XRInterface::XR_STEREO;
 };
+
+PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
+	// These are hardcoded in OpenXR, note that they will only be available if added to our action map
+
+	PackedStringArray arr = {
+		"left_hand", // /user/hand/left is mapped to our defaults
+		"right_hand", // /user/hand/right is mapped to our defaults
+		"/user/treadmill"
+	};
+
+	return arr;
+}
 
 XRInterface::TrackingStatus OpenXRInterface::get_tracking_status() const {
 	return tracking_state;
@@ -64,8 +81,9 @@ void OpenXRInterface::_load_action_map() {
 	// This allow us to process the relevant actions each frame.
 
 	// just in case clean up
-	free_action_sets();
 	free_trackers();
+	free_interaction_profiles();
+	free_action_sets();
 
 	Ref<OpenXRActionMap> action_map;
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -95,7 +113,7 @@ void OpenXRInterface::_load_action_map() {
 
 	// process our action map
 	if (action_map.is_valid()) {
-		Map<Ref<OpenXRAction>, RID> action_rids;
+		Map<Ref<OpenXRAction>, Action *> xr_actions;
 
 		Array action_sets = action_map->get_action_sets();
 		for (int i = 0; i < action_sets.size(); i++) {
@@ -112,18 +130,16 @@ void OpenXRInterface::_load_action_map() {
 				Ref<OpenXRAction> xr_action = actions[j];
 
 				PackedStringArray toplevel_paths = xr_action->get_toplevel_paths();
-				Vector<RID> toplevel_rids;
 				Vector<Tracker *> trackers;
 
 				for (int k = 0; k < toplevel_paths.size(); k++) {
-					Tracker *tracker = get_tracker(toplevel_paths[k]);
+					Tracker *tracker = find_tracker(toplevel_paths[k], true);
 					if (tracker) {
-						toplevel_rids.push_back(tracker->path_rid);
 						trackers.push_back(tracker);
 					}
 				}
 
-				Action *action = create_action(action_set, xr_action->get_name(), xr_action->get_localized_name(), xr_action->get_action_type(), toplevel_rids);
+				Action *action = create_action(action_set, xr_action->get_name(), xr_action->get_localized_name(), xr_action->get_action_type(), trackers);
 				if (action) {
 					// we link our actions back to our trackers so we know which actions to check when we're processing our trackers
 					for (int t = 0; t < trackers.size(); t++) {
@@ -131,7 +147,7 @@ void OpenXRInterface::_load_action_map() {
 					}
 
 					// add this to our map for creating our interaction profiles
-					action_rids[xr_action] = action->action_rid;
+					xr_actions[xr_action] = action;
 				}
 			}
 		}
@@ -139,30 +155,38 @@ void OpenXRInterface::_load_action_map() {
 		// now do our suggestions
 		Array interaction_profiles = action_map->get_interaction_profiles();
 		for (int i = 0; i < interaction_profiles.size(); i++) {
-			Vector<OpenXRAPI::Binding> bindings;
 			Ref<OpenXRInteractionProfile> xr_interaction_profile = interaction_profiles[i];
+
+			// Note, we can only have one entry per interaction profile so if it already exists we clear it out
+			RID ip = openxr_api->interaction_profile_create(xr_interaction_profile->get_interaction_profile_path());
+			openxr_api->interaction_profile_clear_bindings(ip);
 
 			Array xr_bindings = xr_interaction_profile->get_bindings();
 			for (int j = 0; j < xr_bindings.size(); j++) {
 				Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
 				Ref<OpenXRAction> xr_action = xr_binding->get_action();
-				OpenXRAPI::Binding binding;
 
-				if (action_rids.has(xr_action)) {
-					binding.action = action_rids[xr_action];
+				Action *action = nullptr;
+				if (xr_actions.has(xr_action)) {
+					action = xr_actions[xr_action];
 				} else {
 					print_line("Action ", xr_action->get_name(), " isn't part of an action set!");
 					continue;
 				}
 
-				PackedStringArray xr_paths = xr_binding->get_paths();
-				for (int k = 0; k < xr_paths.size(); k++) {
-					binding.path = xr_paths[k];
-					bindings.push_back(binding);
+				PackedStringArray paths = xr_binding->get_paths();
+				for (int k = 0; k < paths.size(); k++) {
+					openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
 				}
 			}
 
-			openxr_api->suggest_bindings(xr_interaction_profile->get_interaction_profile_path(), bindings);
+			// Now submit our suggestions
+			openxr_api->interaction_profile_suggest_bindings(ip);
+
+			// And record it in our array so we can clean it up later on
+			if (interaction_profiles.has(ip)) {
+				interaction_profiles.push_back(ip);
+			}
 		}
 	}
 }
@@ -193,15 +217,16 @@ void OpenXRInterface::free_action_sets() {
 	for (int i = 0; i < action_sets.size(); i++) {
 		ActionSet *action_set = action_sets[i];
 
-		openxr_api->path_free(action_set->action_set_rid);
 		free_actions(action_set);
+
+		openxr_api->action_set_free(action_set->action_set_rid);
 
 		memfree(action_set);
 	}
 	action_sets.clear();
 }
 
-OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set, const String &p_action_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> p_toplevel_paths) {
+OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set, const String &p_action_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<Tracker *> p_trackers) {
 	ERR_FAIL_NULL_V(openxr_api, nullptr);
 
 	for (int i = 0; i < p_action_set->actions.size(); i++) {
@@ -211,10 +236,31 @@ OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set,
 		}
 	}
 
+	Vector<RID> tracker_rids;
+	for (int i = 0; i < p_trackers.size(); i++) {
+		tracker_rids.push_back(p_trackers[i]->tracker_rid);
+	}
+
 	Action *action = memnew(Action);
-	action->action_name = p_action_name;
+	if (p_action_type == OpenXRAction::OPENXR_ACTION_POSE) {
+		// We can't have dual action names in OpenXR hence we added _pose,
+		// but default, aim and grip and default pose action names in Godot so rename them on the tracker.
+		// NOTE need to decide on whether we should keep the naming convention or rename it on Godots side
+		if (p_action_name == "default_pose") {
+			action->action_name = "default";
+		} else if (p_action_name == "aim_pose") {
+			action->action_name = "aim";
+		} else if (p_action_name == "grip_pose") {
+			action->action_name = "grip";
+		} else {
+			action->action_name = p_action_name;
+		}
+	} else {
+		action->action_name = p_action_name;
+	}
+
 	action->action_type = p_action_type;
-	action->action_rid = openxr_api->action_create(p_action_set->action_set_rid, p_action_name, p_localized_name, p_action_type, p_toplevel_paths);
+	action->action_rid = openxr_api->action_create(p_action_set->action_set_rid, p_action_name, p_localized_name, p_action_type, tracker_rids);
 	p_action_set->actions.push_back(action);
 
 	return action;
@@ -248,7 +294,7 @@ void OpenXRInterface::free_actions(ActionSet *p_action_set) {
 	p_action_set->actions.clear();
 }
 
-OpenXRInterface::Tracker *OpenXRInterface::get_tracker(const String &p_path_name) {
+OpenXRInterface::Tracker *OpenXRInterface::find_tracker(const String &p_tracker_name, bool p_create) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, nullptr);
 	ERR_FAIL_NULL_V(openxr_api, nullptr);
@@ -256,52 +302,72 @@ OpenXRInterface::Tracker *OpenXRInterface::get_tracker(const String &p_path_name
 	Tracker *tracker = nullptr;
 	for (int i = 0; i < trackers.size(); i++) {
 		tracker = trackers[i];
-		if (tracker->path_name == p_path_name) {
+		if (tracker->tracker_name == p_tracker_name) {
 			return tracker;
 		}
 	}
+
+	if (!p_create) {
+		return nullptr;
+	}
+
+	// Create our RID
+	RID tracker_rid = openxr_api->tracker_create(p_tracker_name);
+	ERR_FAIL_COND_V(tracker_rid.is_null(), nullptr);
 
 	// create our positional tracker
 	Ref<XRPositionalTracker> positional_tracker;
 	positional_tracker.instantiate();
 
 	// We have standardised some names to make things nicer to the user so lets recognise the toplevel paths related to these.
-	if (p_path_name == "/user/hand/left") {
+	if (p_tracker_name == "/user/hand/left") {
 		positional_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 		positional_tracker->set_tracker_name("left_hand");
 		positional_tracker->set_tracker_desc("Left hand controller");
 		positional_tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_LEFT);
-	} else if (p_path_name == "/user/hand/right") {
+	} else if (p_tracker_name == "/user/hand/right") {
 		positional_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 		positional_tracker->set_tracker_name("right_hand");
 		positional_tracker->set_tracker_desc("Right hand controller");
 		positional_tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_RIGHT);
 	} else {
 		positional_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
-		positional_tracker->set_tracker_name(p_path_name);
-		positional_tracker->set_tracker_desc(p_path_name);
+		positional_tracker->set_tracker_name(p_tracker_name);
+		positional_tracker->set_tracker_desc(p_tracker_name);
 	}
+	positional_tracker->set_tracker_profile(INTERACTION_PROFILE_NONE);
 	xr_server->add_tracker(positional_tracker);
 
 	// create a new entry
 	tracker = memnew(Tracker);
-	tracker->path_name = p_path_name;
-	tracker->path_rid = openxr_api->path_create(p_path_name);
+	tracker->tracker_name = p_tracker_name;
+	tracker->tracker_rid = tracker_rid;
 	tracker->positional_tracker = positional_tracker;
+	tracker->interaction_profile = RID();
 	trackers.push_back(tracker);
 
 	return tracker;
 }
 
-OpenXRInterface::Tracker *OpenXRInterface::find_tracker(const String &p_positional_tracker_name) {
-	for (int i = 0; i < trackers.size(); i++) {
-		Tracker *tracker = trackers[i];
-		if (tracker->positional_tracker.is_valid() && tracker->positional_tracker->get_tracker_name() == p_positional_tracker_name) {
-			return tracker;
+void OpenXRInterface::tracker_profile_changed(RID p_tracker, RID p_interaction_profile) {
+	Tracker *tracker = nullptr;
+	for (int i = 0; i < trackers.size() && tracker == nullptr; i++) {
+		if (trackers[i]->tracker_rid == p_tracker) {
+			tracker = trackers[i];
 		}
 	}
+	ERR_FAIL_NULL(tracker);
 
-	return nullptr;
+	tracker->interaction_profile = p_interaction_profile;
+
+	if (p_interaction_profile.is_null()) {
+		print_verbose("OpenXR: Interaction profile for " + tracker->tracker_name + " changed to " + INTERACTION_PROFILE_NONE);
+		tracker->positional_tracker->set_tracker_profile(INTERACTION_PROFILE_NONE);
+	} else {
+		String name = openxr_api->interaction_profile_get_name(p_interaction_profile);
+		print_verbose("OpenXR: Interaction profile for " + tracker->tracker_name + " changed to " + name);
+		tracker->positional_tracker->set_tracker_profile(name);
+	}
 }
 
 void OpenXRInterface::link_action_to_tracker(Tracker *p_tracker, Action *p_action) {
@@ -314,40 +380,43 @@ void OpenXRInterface::handle_tracker(Tracker *p_tracker) {
 	ERR_FAIL_NULL(openxr_api);
 	ERR_FAIL_COND(p_tracker->positional_tracker.is_null());
 
-	// handle all the actions
+	// Note, which actions are actually bound to inputs are handled by our interaction profiles however interaction
+	// profiles are suggested bindings for controller types we know about. OpenXR runtimes can stray away from these
+	// and rebind them or even offer bindings to controllers that are not known to us.
+
+	// We don't really have a consistant way to detect whether a controller is active however as long as it is
+	// unbound it seems to be unavailable, so far unknown controller seem to mimic one of the profiles we've
+	// supplied.
+	if (p_tracker->interaction_profile.is_null()) {
+		return;
+	}
+
+	// We check all actions that are related to our tracker.
 	for (int i = 0; i < p_tracker->actions.size(); i++) {
 		Action *action = p_tracker->actions[i];
 		switch (action->action_type) {
 			case OpenXRAction::OPENXR_ACTION_BOOL: {
-				bool pressed = openxr_api->get_action_bool(action->action_rid, p_tracker->path_rid);
+				bool pressed = openxr_api->get_action_bool(action->action_rid, p_tracker->tracker_rid);
 				p_tracker->positional_tracker->set_input(action->action_name, Variant(pressed));
 			} break;
 			case OpenXRAction::OPENXR_ACTION_FLOAT: {
-				real_t value = openxr_api->get_action_float(action->action_rid, p_tracker->path_rid);
+				real_t value = openxr_api->get_action_float(action->action_rid, p_tracker->tracker_rid);
 				p_tracker->positional_tracker->set_input(action->action_name, Variant(value));
 			} break;
 			case OpenXRAction::OPENXR_ACTION_VECTOR2: {
-				Vector2 value = openxr_api->get_action_vector2(action->action_rid, p_tracker->path_rid);
+				Vector2 value = openxr_api->get_action_vector2(action->action_rid, p_tracker->tracker_rid);
 				p_tracker->positional_tracker->set_input(action->action_name, Variant(value));
 			} break;
 			case OpenXRAction::OPENXR_ACTION_POSE: {
 				Transform3D transform;
 				Vector3 linear, angular;
-				XRPose::TrackingConfidence confidence = openxr_api->get_action_pose(action->action_rid, p_tracker->path_rid, transform, linear, angular);
+
+				XRPose::TrackingConfidence confidence = openxr_api->get_action_pose(action->action_rid, p_tracker->tracker_rid, transform, linear, angular);
+
 				if (confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
-					String name;
-					// We can't have dual action names in OpenXR hence we added _pose, but default, aim and grip and default pose action names in Godot so rename them on the tracker.
-					// NOTE need to decide on whether we should keep the naming convention or rename it on Godots side
-					if (action->action_name == "default_pose") {
-						name = "default";
-					} else if (action->action_name == "aim_pose") {
-						name = "aim";
-					} else if (action->action_name == "grip_pose") {
-						name = "grip";
-					} else {
-						name = action->action_name;
-					}
-					p_tracker->positional_tracker->set_pose(name, transform, linear, angular, confidence);
+					p_tracker->positional_tracker->set_pose(action->action_name, transform, linear, angular, confidence);
+				} else {
+					p_tracker->positional_tracker->invalidate_pose(action->action_name);
 				}
 			} break;
 			default: {
@@ -368,7 +437,7 @@ void OpenXRInterface::trigger_haptic_pulse(const String &p_action_name, const St
 
 	XrDuration duration = XrDuration(p_duration_sec * 1000000000.0); // seconds -> nanoseconds
 
-	openxr_api->trigger_haptic_pulse(action->action_rid, tracker->path_rid, p_frequency, p_amplitude, duration);
+	openxr_api->trigger_haptic_pulse(action->action_rid, tracker->tracker_rid, p_frequency, p_amplitude, duration);
 }
 
 void OpenXRInterface::free_trackers() {
@@ -379,13 +448,22 @@ void OpenXRInterface::free_trackers() {
 	for (int i = 0; i < trackers.size(); i++) {
 		Tracker *tracker = trackers[i];
 
-		openxr_api->path_free(tracker->path_rid);
+		openxr_api->tracker_free(tracker->tracker_rid);
 		xr_server->remove_tracker(tracker->positional_tracker);
 		tracker->positional_tracker.unref();
 
 		memdelete(tracker);
 	}
 	trackers.clear();
+}
+
+void OpenXRInterface::free_interaction_profiles() {
+	ERR_FAIL_NULL(openxr_api);
+
+	for (int i = 0; i < interaction_profiles.size(); i++) {
+		openxr_api->interaction_profile_free(interaction_profiles[i]);
+	}
+	interaction_profiles.clear();
 }
 
 bool OpenXRInterface::initialise_on_startup() const {
@@ -447,14 +525,14 @@ void OpenXRInterface::uninitialize() {
 	// end the session if we need to?
 
 	// cleanup stuff
-	free_action_sets();
 	free_trackers();
+	free_interaction_profiles();
+	free_action_sets();
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server) {
 		if (head.is_valid()) {
 			xr_server->remove_tracker(head);
-
 			head.unref();
 		}
 	}
@@ -649,8 +727,31 @@ void OpenXRInterface::end_frame() {
 	}
 }
 
+void OpenXRInterface::on_state_ready() {
+	emit_signal(SNAME("session_begun"));
+}
+
+void OpenXRInterface::on_state_visible() {
+	emit_signal(SNAME("session_visible"));
+}
+
+void OpenXRInterface::on_state_focused() {
+	emit_signal(SNAME("session_focussed"));
+}
+
+void OpenXRInterface::on_state_stopping() {
+	emit_signal(SNAME("session_stopping"));
+}
+
+void OpenXRInterface::on_pose_recentered() {
+	emit_signal(SNAME("pose_recentered"));
+}
+
 OpenXRInterface::OpenXRInterface() {
 	openxr_api = OpenXRAPI::get_singleton();
+	if (openxr_api) {
+		openxr_api->set_xr_interface(this);
+	}
 
 	// while we don't have head tracking, don't put the headset on the floor...
 	_set_default_pos(head_transform, 1.0, 0);
@@ -659,5 +760,11 @@ OpenXRInterface::OpenXRInterface() {
 }
 
 OpenXRInterface::~OpenXRInterface() {
-	openxr_api = nullptr;
+	// should already have been called but just in case...
+	uninitialize();
+
+	if (openxr_api) {
+		openxr_api->set_xr_interface(nullptr);
+		openxr_api = nullptr;
+	}
 }

@@ -40,6 +40,9 @@ TypedArray<String> Range::get_configuration_warnings() const {
 	return warnings;
 }
 
+void Range::_value_changed(double p_value) {
+	GDVIRTUAL_CALL(_value_changed, p_value);
+}
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
 	emit_signal(SNAME("value_changed"), shared->val);
@@ -278,6 +281,8 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
+
+	GDVIRTUAL_BIND(_value_changed);
 
 	ADD_LINKED_PROPERTY("min_value", "value");
 	ADD_LINKED_PROPERTY("min_value", "max_value");

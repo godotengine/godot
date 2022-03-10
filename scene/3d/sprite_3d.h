@@ -137,7 +137,7 @@ public:
 	virtual Rect2 get_item_rect() const = 0;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
+
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 
 	SpriteBase3D();

@@ -149,7 +149,6 @@ public:
 	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	TypedArray<String> get_configuration_warnings() const override;
 

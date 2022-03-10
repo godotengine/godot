@@ -38,23 +38,61 @@
 #include "scene/resources/bit_map.h"
 #include "servers/camera/camera_feed.h"
 
+int Texture2D::get_width() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Texture2D::get_height() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
 Size2 Texture2D::get_size() const {
 	return Size2(get_width(), get_height());
 }
 
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret)) {
+		return ret;
+	}
+
+	return true;
+}
+bool Texture2D::has_alpha() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_alpha, ret)) {
+		return ret;
+	}
+
 	return true;
 }
 
 void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	if (GDVIRTUAL_CALL(_draw, p_canvas_item, p_pos, p_modulate, p_transpose)) {
+		return;
+	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose);
 }
 
 void Texture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+	if (GDVIRTUAL_CALL(_draw_rect, p_canvas_item, p_rect, p_tile, p_modulate, p_transpose)) {
+		return;
+	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose);
 }
 
 void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+	if (GDVIRTUAL_CALL(_draw_rect_region, p_canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv)) {
+		return;
+	}
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
@@ -75,6 +113,15 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_image"), &Texture2D::get_image);
 
 	ADD_GROUP("", "");
+
+	GDVIRTUAL_BIND(_get_width);
+	GDVIRTUAL_BIND(_get_height);
+	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y");
+	GDVIRTUAL_BIND(_has_alpha);
+
+	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
+	GDVIRTUAL_BIND(_draw_rect, "to_canvas_item", "rect", "tile", "modulate", "transpose")
+	GDVIRTUAL_BIND(_draw_rect_region, "tp_canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv");
 }
 
 Texture2D::Texture2D() {
@@ -740,7 +787,7 @@ String ResourceFormatLoaderCompressedTexture2D::get_resource_type(const String &
 
 ////////////////////////////////////
 
-TypedArray<Image> Texture3D::_get_data() const {
+TypedArray<Image> Texture3D::_get_datai() const {
 	Vector<Ref<Image>> data = get_data();
 
 	TypedArray<Image> ret;
@@ -751,13 +798,73 @@ TypedArray<Image> Texture3D::_get_data() const {
 	return ret;
 }
 
+Image::Format Texture3D::get_format() const {
+	Image::Format ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
+		return ret;
+	}
+	return Image::FORMAT_MAX;
+}
+
+int Texture3D::get_width() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Texture3D::get_height() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int Texture3D::get_depth() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_depth, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+bool Texture3D::has_mipmaps() const {
+	bool ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+Vector<Ref<Image>> Texture3D::get_data() const {
+	TypedArray<Image> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_data, ret)) {
+		Vector<Ref<Image>> data;
+		data.resize(ret.size());
+		for (int i = 0; i < data.size(); i++) {
+			data.write[i] = ret[i];
+		}
+		return data;
+	}
+	return Vector<Ref<Image>>();
+}
 void Texture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &Texture3D::get_format);
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture3D::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture3D::get_height);
 	ClassDB::bind_method(D_METHOD("get_depth"), &Texture3D::get_depth);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture3D::has_mipmaps);
-	ClassDB::bind_method(D_METHOD("get_data"), &Texture3D::_get_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &Texture3D::_get_datai);
+
+	GDVIRTUAL_BIND(_get_format);
+	GDVIRTUAL_BIND(_get_width);
+	GDVIRTUAL_BIND(_get_height);
+	GDVIRTUAL_BIND(_get_depth);
+	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_data);
 }
 //////////////////////////////////////////
 
@@ -2446,6 +2553,63 @@ AnimatedTexture::~AnimatedTexture() {
 
 ///////////////////////////////
 
+Image::Format TextureLayered::get_format() const {
+	Image::Format ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
+		return ret;
+	}
+	return Image::FORMAT_MAX;
+}
+
+TextureLayered::LayeredType TextureLayered::get_layered_type() const {
+	uint32_t ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_layered_type, ret)) {
+		return (LayeredType)ret;
+	}
+	return LAYERED_TYPE_2D_ARRAY;
+}
+
+int TextureLayered::get_width() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int TextureLayered::get_height() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+int TextureLayered::get_layers() const {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_layers, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+bool TextureLayered::has_mipmaps() const {
+	bool ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
+	Ref<Image> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_layer_data, p_layer, ret)) {
+		return ret;
+	}
+	return Ref<Image>();
+}
+
 void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &TextureLayered::get_format);
 	ClassDB::bind_method(D_METHOD("get_layered_type"), &TextureLayered::get_layered_type);
@@ -2458,6 +2622,14 @@ void TextureLayered::_bind_methods() {
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_2D_ARRAY);
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_CUBEMAP);
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_CUBEMAP_ARRAY);
+
+	GDVIRTUAL_BIND(_get_format);
+	GDVIRTUAL_BIND(_get_layered_type);
+	GDVIRTUAL_BIND(_get_width);
+	GDVIRTUAL_BIND(_get_height);
+	GDVIRTUAL_BIND(_get_layers);
+	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_layer_data, "layer_index");
 }
 
 ///////////////////////////////

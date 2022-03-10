@@ -118,6 +118,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool is_virtual = false;
 		Object *(*creation_func)() = nullptr;
 
 		ClassInfo() {}
@@ -156,20 +157,21 @@ public:
 	}
 
 	template <class T>
-	static void register_class() {
+	static void register_class(bool p_virtual = false) {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
+		t->is_virtual = p_virtual;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
 	template <class T>
-	static void register_virtual_class() {
+	static void register_abstract_class() {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -210,6 +212,7 @@ public:
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
+	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
@@ -436,9 +439,13 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
 		::ClassDB::register_class<m_class>();        \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)             \
-	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
-		::ClassDB::register_virtual_class<m_class>(); \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		::ClassDB::register_class<m_class>(true);    \
+	}
+#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {   \
+		::ClassDB::register_abstract_class<m_class>(); \
 	}
 
 #include "core/disabled_classes.gen.h"

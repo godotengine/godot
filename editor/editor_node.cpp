@@ -3858,18 +3858,18 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(EditorScript);
 	GDREGISTER_CLASS(EditorSelection);
 	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_VIRTUAL_CLASS(EditorSettings);
+	GDREGISTER_ABSTRACT_CLASS(EditorSettings);
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
-	GDREGISTER_VIRTUAL_CLASS(EditorResourcePreview);
+	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
 	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
-	GDREGISTER_VIRTUAL_CLASS(EditorFileSystem);
+	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
 	GDREGISTER_CLASS(EditorFileSystemDirectory);
 	GDREGISTER_CLASS(EditorVCSInterface);
-	GDREGISTER_VIRTUAL_CLASS(ScriptEditor);
-	GDREGISTER_VIRTUAL_CLASS(ScriptEditorBase);
+	GDREGISTER_ABSTRACT_CLASS(ScriptEditor);
+	GDREGISTER_ABSTRACT_CLASS(ScriptEditorBase);
 	GDREGISTER_CLASS(EditorSyntaxHighlighter);
-	GDREGISTER_VIRTUAL_CLASS(EditorInterface);
+	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
 	GDREGISTER_CLASS(EditorSceneFormatImporter);
@@ -3884,7 +3884,7 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(EditorResourcePicker);
 	GDREGISTER_CLASS(EditorScriptPicker);
 
-	GDREGISTER_VIRTUAL_CLASS(FileSystemDock);
+	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	GDREGISTER_CLASS(EditorScenePostImport);

@@ -10,6 +10,37 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_draw" qualifiers="virtual const">
+			<return type="void" />
+			<argument index="0" name="to_canvas_item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_center_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_draw_rect" qualifiers="virtual const">
+			<return type="Rect2" />
+			<argument index="0" name="rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_style_margin" qualifiers="virtual const">
+			<return type="float" />
+			<argument index="0" name="side" type="int" enum="Side" />
+			<description>
+			</description>
+		</method>
+		<method name="_test_mask" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="point" type="Vector2" />
+			<argument index="1" name="rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
 		<method name="draw" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="canvas_item" type="RID" />

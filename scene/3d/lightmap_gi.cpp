@@ -1263,10 +1263,6 @@ AABB LightmapGI::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> LightmapGI::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void LightmapGI::set_use_denoiser(bool p_enable) {
 	use_denoiser = p_enable;
 }
