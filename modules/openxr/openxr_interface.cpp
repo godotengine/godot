@@ -760,8 +760,9 @@ OpenXRInterface::OpenXRInterface() {
 }
 
 OpenXRInterface::~OpenXRInterface() {
-	// should already have been called but just in case...
-	uninitialize();
+	if (is_initialized()) {
+		uninitialize();
+	}
 
 	if (openxr_api) {
 		openxr_api->set_xr_interface(nullptr);
