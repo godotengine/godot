@@ -41,6 +41,7 @@
 		D0BCFE3418AEBDA2004A7AAE /* $binary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "$binary.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0BCFE4318AEBDA2004A7AAE /* $binary-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "$binary-Info.plist"; sourceTree = "<group>"; };
 		D0BCFE4518AEBDA2004A7AAE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		$pbx_locale_file_reference
 		D0BCFE7718AEBFEB004A7AAE /* $binary.pck */ = {isa = PBXFileReference; lastKnownFileType = file; path = "$binary.pck"; sourceTree = "<group>"; };
 		$pbx_launch_screen_file_reference
 /* End PBXFileReference section */
@@ -199,6 +200,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				D0BCFE4518AEBDA2004A7AAE /* en */,
+				$pbx_locale_build_reference
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";

@@ -87,8 +87,10 @@ void TextureRegionEditor::_region_draw() {
 	edit_draw->draw_texture(base_tex, Point2());
 	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
+	const Color color = get_color("mono_color", "Editor");
+
 	if (snap_mode == SNAP_GRID) {
-		Color grid_color = Color(1.0, 1.0, 1.0, 0.15);
+		const Color grid_color = Color(color.r, color.g, color.b, color.a * 0.15);
 		Size2 s = edit_draw->get_size();
 		int last_cell = 0;
 
@@ -175,7 +177,6 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(raw_endpoints[2]),
 		mtx.basis_xform(raw_endpoints[3])
 	};
-	Color color = get_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
 		int prev = (i + 3) % 4;
 		int next = (i + 1) % 4;

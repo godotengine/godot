@@ -560,7 +560,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 
 		if (!ok_on_pc) {
-			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
+			EditorNode::add_io_error(TTR("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC."));
 		}
 	} else {
 		//import normally

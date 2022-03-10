@@ -152,6 +152,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
 			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
+
+			_update_animation_list_icons();
 		} break;
 	}
 }
@@ -549,6 +551,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 				}
 			}
 			new_anim->set_path("");
+			new_anim->set_name(new_name);
 
 			undo_redo->create_action(TTR("Duplicate Animation"));
 			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
@@ -859,22 +862,13 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
-		Ref<Texture> icon;
-		if (E->get() == player->get_autoplay()) {
-			if (E->get() == "RESET") {
-				icon = autoplay_reset_icon;
-			} else {
-				icon = autoplay_icon;
-			}
-		} else if (E->get() == "RESET") {
-			icon = reset_icon;
-		}
-		animation->add_icon_item(icon, E->get());
+		animation->add_item(E->get());
 
 		if (player->get_assigned_animation() == E->get()) {
 			active_idx = animation->get_item_count() - 1;
 		}
 	}
+	_update_animation_list_icons();
 
 	updating = false;
 	if (active_idx != -1) {
@@ -901,6 +895,30 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	_update_animation();
+}
+
+void AnimationPlayerEditor::_update_animation_list_icons() {
+	List<StringName> animlist;
+	if (player) {
+		player->get_animation_list(&animlist);
+	}
+
+	for (int i = 0; i < animation->get_item_count(); i++) {
+		String name = animation->get_item_text(i);
+
+		Ref<Texture> icon;
+		if (name == player->get_autoplay()) {
+			if (name == "RESET") {
+				icon = autoplay_reset_icon;
+			} else {
+				icon = autoplay_icon;
+			}
+		} else if (name == "RESET") {
+			icon = reset_icon;
+		}
+
+		animation->set_item_icon(i, icon);
+	}
 }
 
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {

@@ -4364,8 +4364,10 @@ void TextEdit::_generate_context_menu() {
 	if (!readonly) {
 		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_V : 0);
 	}
-	menu->add_separator();
-	if (is_selecting_enabled()) {
+	if (selecting_enabled || !readonly) {
+		menu->add_separator();
+	}
+	if (selecting_enabled) {
 		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_A : 0);
 	}
 	if (!readonly) {
