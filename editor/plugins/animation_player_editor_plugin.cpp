@@ -898,11 +898,6 @@ void AnimationPlayerEditor::_update_player() {
 }
 
 void AnimationPlayerEditor::_update_animation_list_icons() {
-	List<StringName> animlist;
-	if (player) {
-		player->get_animation_list(&animlist);
-	}
-
 	for (int i = 0; i < animation->get_item_count(); i++) {
 		String name = animation->get_item_text(i);
 
