@@ -2062,6 +2062,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	tile_info->set_modulate(Color(1, 1, 1, 0.8));
 	tile_info->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	tile_info->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
+	tile_info->add_color_override("font_color", Color(1, 1, 1, 0.8)); // Overlay has a fixed dark background.
 	// The tile info is only displayed after a tile has been hovered.
 	tile_info->hide();
 	CanvasItemEditor::get_singleton()->add_control_to_info_overlay(tile_info);
