@@ -40,6 +40,7 @@ public:
 	static String get_reference_space_name(XrReferenceSpaceType p_reference_space);
 	static String get_structure_type_name(XrStructureType p_structure_type);
 	static String get_session_state_name(XrSessionState p_session_state);
+	static String get_action_type_name(XrActionType p_action_type);
 	static String make_xr_version_string(XrVersion p_version);
 };
 

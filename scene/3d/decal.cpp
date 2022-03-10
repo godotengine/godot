@@ -152,10 +152,6 @@ AABB Decal::get_aabb() const {
 	return aabb;
 }
 
-Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;

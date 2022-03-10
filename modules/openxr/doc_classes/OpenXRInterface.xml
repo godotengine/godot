@@ -10,4 +10,31 @@
 	<tutorials>
 		<link title="OpenXR documentation">$DOCS_URL/tutorials/vr/openxr/index.html</link>
 	</tutorials>
+	<signals>
+		<signal name="pose_recentered">
+			<description>
+				Informs the user queued a recenter of the player position.
+			</description>
+		</signal>
+		<signal name="session_begun">
+			<description>
+				Informs our OpenXR session has been started.
+			</description>
+		</signal>
+		<signal name="session_focussed">
+			<description>
+				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_stopping">
+			<description>
+				Informs our OpenXR session is stopping.
+			</description>
+		</signal>
+		<signal name="session_visible">
+			<description>
+				Informs our OpenXR session is now visible (output is being sent to the HMD).
+			</description>
+		</signal>
+	</signals>
 </class>

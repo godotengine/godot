@@ -62,7 +62,6 @@ public:
 	Ref<Material> get_material() const;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
 	TypedArray<String> get_configuration_warnings() const override;
 
 	FogVolume();

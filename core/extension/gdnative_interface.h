@@ -194,6 +194,7 @@ typedef void *GDExtensionClassInstancePtr;
 
 typedef GDNativeBool (*GDNativeExtensionClassSet)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value);
 typedef GDNativeBool (*GDNativeExtensionClassGet)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
+typedef uint64_t (*GDNativeExtensionClassGetRID)(GDExtensionClassInstancePtr p_instance);
 
 typedef struct {
 	uint32_t type;
@@ -228,6 +229,7 @@ typedef struct {
 	GDNativeExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassGetVirtual get_virtual_func;
+	GDNativeExtensionClassGetRID get_rid_func;
 	void *class_userdata;
 } GDNativeExtensionClassCreationInfo;
 

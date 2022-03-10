@@ -49,6 +49,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(AABB, _get_aabb)
 public:
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry
@@ -58,8 +59,7 @@ public:
 	};
 
 	RID get_instance() const;
-	virtual AABB get_aabb() const = 0;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const = 0;
+	virtual AABB get_aabb() const;
 
 	virtual AABB get_transformed_aabb() const; // helper
 

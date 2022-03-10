@@ -39,10 +39,6 @@ AABB CPUParticles3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> CPUParticles3D::get_faces(uint32_t p_usage_particle_flags) const {
-	return Vector<Face3>();
-}
-
 void CPUParticles3D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
 		return;

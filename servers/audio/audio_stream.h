@@ -81,10 +81,15 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 	uint64_t mix_offset;
 
 protected:
-	void _begin_resample();
+	void begin_resample();
 	// Returns the number of frames that were mixed.
-	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) = 0;
-	virtual float get_stream_sampling_rate() = 0;
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
+	virtual float get_stream_sampling_rate();
+
+	GDVIRTUAL2R(int, _mix_resampled, GDNativePtr<AudioFrame>, int)
+	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
+
+	static void _bind_methods();
 
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;

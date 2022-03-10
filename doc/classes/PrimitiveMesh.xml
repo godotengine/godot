@@ -9,6 +9,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_create_mesh_array" qualifiers="virtual const">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array" />
 			<description>

@@ -312,18 +312,18 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 		switch (op.type) {
 			case Operation::TYPE_METHOD: {
+				int argc = op.args.size();
 				Vector<const Variant *> argptrs;
-				argptrs.resize(op.args.size());
-				int argc = 0;
+				argptrs.resize(argc);
 
-				for (int i = 0; i < op.args.size(); i++) {
+				for (int i = 0; i < argc; i++) {
 					argptrs.write[i] = &op.args[i];
 				}
 
 				Callable::CallError ce;
 				obj->callp(op.name, (const Variant **)argptrs.ptr(), argc, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT("Error calling method from signal '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
+					ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
 				}
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
@@ -334,7 +334,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 #endif
 
 				if (method_callback) {
-					method_callback(method_callbck_ud, obj, op.name, (const Variant **)argptrs.ptr(), argc);
+					method_callback(method_callback_ud, obj, op.name, (const Variant **)argptrs.ptr(), argc);
 				}
 			} break;
 			case Operation::TYPE_PROPERTY: {
@@ -432,7 +432,7 @@ void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback, void 
 
 void UndoRedo::set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud) {
 	method_callback = p_method_callback;
-	method_callbck_ud = p_ud;
+	method_callback_ud = p_ud;
 }
 
 void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud) {

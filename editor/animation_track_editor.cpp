@@ -1458,7 +1458,8 @@ int AnimationTimelineEdit::get_name_limit() const {
 
 void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 			add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
@@ -1945,6 +1946,16 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 void AnimationTrackEdit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (animation.is_null()) {
+				return;
+			}
+			ERR_FAIL_INDEX(track, animation->get_track_count());
+
+			type_icon = _get_key_type_icon();
+			selected_icon = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (animation.is_null()) {
 				return;
@@ -1963,17 +1974,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-			Ref<Texture2D> type_icons[9] = {
-				get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyTrackScale"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyTrackBlendShape"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
-			};
 			int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
 			Color linecolor = color;
 			linecolor.a = 0.2;
@@ -1989,7 +1989,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				draw_texture(check, check_rect.position);
 				ofs += check->get_width() + hsep;
 
-				Ref<Texture2D> type_icon = type_icons[animation->track_get_type(track)];
+				Ref<Texture2D> type_icon = _get_key_type_icon();
 				draw_texture(type_icon, Point2(ofs, int(get_size().height - type_icon->get_height()) / 2));
 				ofs += type_icon->get_width() + hsep;
 
@@ -2425,22 +2425,10 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	track = p_track;
 	update();
 
-	Ref<Texture2D> type_icons[9] = {
-		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyXPosition"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyXRotation"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyXScale"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyBlendShape"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
-	};
-
 	ERR_FAIL_INDEX(track, animation->get_track_count());
 
 	node_path = animation->track_get_path(p_track);
-	type_icon = type_icons[animation->track_get_type(track)];
+	type_icon = _get_key_type_icon();
 	selected_icon = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
 }
 
@@ -2539,6 +2527,21 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 	}
 
 	return (!prop_exists || Variant::can_convert(p_key_value.get_type(), r_valid_type));
+}
+
+Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
+	Ref<Texture2D> type_icons[9] = {
+		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackScale"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackBlendShape"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
+	};
+	return type_icons[animation->track_get_type(track)];
 }
 
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {

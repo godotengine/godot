@@ -64,8 +64,9 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _create_mesh_array(Array &p_arr) const = 0;
+	virtual void _create_mesh_array(Array &p_arr) const {}
 	void _request_update();
+	GDVIRTUAL0RC(Array, _create_mesh_array)
 
 public:
 	virtual int get_surface_count() const override;

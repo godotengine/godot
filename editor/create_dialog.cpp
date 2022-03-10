@@ -130,8 +130,8 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 	}
 
 	if (ClassDB::class_exists(p_type)) {
-		if (!ClassDB::can_instantiate(p_type)) {
-			return true; // Can't create abstract class.
+		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
+			return true; // Can't create abstract or virtual class.
 		}
 
 		if (!ClassDB::is_parent_class(p_type, base_type)) {

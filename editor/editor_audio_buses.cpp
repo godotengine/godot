@@ -919,7 +919,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
 	effects.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : effects) {
-		if (!ClassDB::can_instantiate(E)) {
+		if (!ClassDB::can_instantiate(E) || ClassDB::is_virtual(E)) {
 			continue;
 		}
 

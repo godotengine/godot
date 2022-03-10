@@ -57,14 +57,23 @@ class Texture2D : public Texture {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(int, _get_width)
+	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL2RC(bool, _is_pixel_opaque, int, int)
+	GDVIRTUAL0RC(bool, _has_alpha)
+
+	GDVIRTUAL4C(_draw, RID, Point2, Color, bool)
+	GDVIRTUAL5C(_draw_rect, RID, Rect2, bool, Color, bool)
+	GDVIRTUAL6C(_draw_rect_region, RID, Rect2, Rect2, Color, bool, bool)
+
 public:
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
+	virtual int get_width() const;
+	virtual int get_height() const;
 	virtual Size2 get_size() const;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
 
-	virtual bool has_alpha() const = 0;
+	virtual bool has_alpha() const;
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
@@ -300,6 +309,13 @@ class TextureLayered : public Texture {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(Image::Format, _get_format)
+	GDVIRTUAL0RC(uint32_t, _get_layered_type)
+	GDVIRTUAL0RC(int, _get_width)
+	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL0RC(int, _get_layers)
+	GDVIRTUAL0RC(bool, _has_mipmaps)
+	GDVIRTUAL1RC(Ref<Image>, _get_layer_data, int)
 public:
 	enum LayeredType {
 		LAYERED_TYPE_2D_ARRAY,
@@ -307,13 +323,15 @@ public:
 		LAYERED_TYPE_CUBEMAP_ARRAY
 	};
 
-	virtual Image::Format get_format() const = 0;
-	virtual LayeredType get_layered_type() const = 0;
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
-	virtual int get_layers() const = 0;
-	virtual bool has_mipmaps() const = 0;
-	virtual Ref<Image> get_layer_data(int p_layer) const = 0;
+	virtual Image::Format get_format() const;
+	virtual LayeredType get_layered_type() const;
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual int get_layers() const;
+	virtual bool has_mipmaps() const;
+	virtual Ref<Image> get_layer_data(int p_layer) const;
+
+	TextureLayered() {}
 };
 
 VARIANT_ENUM_CAST(TextureLayered::LayeredType)
@@ -474,15 +492,21 @@ class Texture3D : public Texture {
 protected:
 	static void _bind_methods();
 
-	TypedArray<Image> _get_data() const;
+	TypedArray<Image> _get_datai() const;
 
+	GDVIRTUAL0RC(Image::Format, _get_format)
+	GDVIRTUAL0RC(int, _get_width)
+	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL0RC(int, _get_depth)
+	GDVIRTUAL0RC(bool, _has_mipmaps)
+	GDVIRTUAL0RC(TypedArray<Image>, _get_data)
 public:
-	virtual Image::Format get_format() const = 0;
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
-	virtual int get_depth() const = 0;
-	virtual bool has_mipmaps() const = 0;
-	virtual Vector<Ref<Image>> get_data() const = 0;
+	virtual Image::Format get_format() const;
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual int get_depth() const;
+	virtual bool has_mipmaps() const;
+	virtual Vector<Ref<Image>> get_data() const;
 };
 
 class ImageTexture3D : public Texture3D {
