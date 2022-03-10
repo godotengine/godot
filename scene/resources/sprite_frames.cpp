@@ -77,6 +77,7 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 	ERR_FAIL_COND_MSG(animations.has(p_anim), "SpriteFrames already has animation '" + p_anim + "'.");
 
 	animations[p_anim] = Anim();
+	emit_changed();
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
@@ -84,7 +85,9 @@ bool SpriteFrames::has_animation(const StringName &p_anim) const {
 }
 
 void SpriteFrames::remove_animation(const StringName &p_anim) {
-	animations.erase(p_anim);
+	if (animations.erase(p_anim)) {
+		emit_changed();
+	}
 }
 
 void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &p_next) {

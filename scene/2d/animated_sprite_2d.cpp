@@ -271,6 +271,10 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	frames = p_frames;
 	if (frames.is_valid()) {
 		frames->connect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
+		Vector<String> animation_names = frames->get_animation_names();
+		if (!animation_names.has(animation) && animation_names.size() != 0) {
+			set_animation(animation_names[0]);
+		}
 	}
 
 	if (frames.is_null()) {
@@ -378,7 +382,13 @@ bool AnimatedSprite2D::is_flipped_v() const {
 }
 
 void AnimatedSprite2D::_res_changed() {
-	set_frame(frame);
+	Vector<String> animation_names = frames->get_animation_names();
+	if (!animation_names.has(animation) && animation_names.size() != 0) {
+		set_animation(animation_names[0]);
+	}
+	else {
+		set_frame(frame);
+	}
 
 	queue_redraw();
 }
@@ -436,8 +446,9 @@ void AnimatedSprite2D::_reset_timeout() {
 }
 
 void AnimatedSprite2D::set_animation(const StringName &p_animation) {
-	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
+	if (frames.is_valid()) {
+		ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
+	}
 
 	if (animation == p_animation) {
 		return;
