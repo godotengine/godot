@@ -2225,7 +2225,19 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 void Control::set_default_cursor_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(int(p_shape), CURSOR_MAX);
 
+	if (data.default_cursor == p_shape) {
+		return;
+	}
 	data.default_cursor = p_shape;
+
+	if (!is_inside_tree()) {
+		return;
+	}
+	if (!get_global_rect().has_point(get_global_mouse_position())) {
+		return;
+	}
+
+	get_viewport()->get_base_window()->update_mouse_cursor_shape();
 }
 
 Control::CursorShape Control::get_default_cursor_shape() const {

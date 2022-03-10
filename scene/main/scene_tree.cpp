@@ -1085,6 +1085,7 @@ void SceneTree::_change_scene(Node *p_to) {
 	if (p_to) {
 		current_scene = p_to;
 		root->add_child(p_to);
+		root->update_mouse_cursor_shape();
 	}
 }
 
