@@ -34,6 +34,7 @@
 #include "core/io/json.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
@@ -617,7 +618,8 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 			property->set_editable(0, true);
 			property->set_selectable(0, true);
 			property->set_checked(0, !edited->is_class_property_disabled(class_name, name));
-			property->set_text(0, name.capitalize());
+			property->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(name));
+			property->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(name));
 			property->set_metadata(0, name);
 			String icon_type = Variant::get_type_name(E.type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));

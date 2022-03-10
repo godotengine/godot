@@ -37,6 +37,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/margin_container.h"
@@ -430,8 +431,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 		} else {
 			section = shortcuts->create_item(root);
 
-			String item_name = section_name.capitalize();
+			String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name);
 			section->set_text(0, item_name);
+			section->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(section_name));
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
 			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
