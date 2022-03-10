@@ -280,6 +280,70 @@ void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform) {
 
 // CSGBrushOperation
 
+void CSGBrushOperation::clean_brush(CSGBrush &p_brush, float p_vertex_snap) {
+	// Add faces to MeshMerge.
+	MeshMerge mesh_merge;
+	mesh_merge.vertex_snap = p_vertex_snap;
+
+	for (int i = 0; i < p_brush.faces.size(); i++) {
+		Ref<Material> material;
+		if (p_brush.faces[i].material != -1) {
+			material = p_brush.materials[p_brush.faces[i].material];
+		}
+
+		Vector3 points[3];
+		Vector2 uvs[3];
+		for (int j = 0; j < 3; j++) {
+			points[j] = p_brush.faces[i].vertices[j];
+			uvs[j] = p_brush.faces[i].uvs[j];
+		}
+		mesh_merge.add_face(points, uvs, p_brush.faces[i].smooth, p_brush.faces[i].invert, material, false);
+	}
+
+	// Mark faces that ended up inside the intersection.
+	mesh_merge.mark_inside_faces();
+
+	// Create new brush and fill with new faces.
+	p_brush.faces.clear();
+
+	int outside_count = 0;
+
+	for (int i = 0; i < mesh_merge.faces.size(); i++) {
+		if (mesh_merge.faces[i].inside) {
+			continue;
+		}
+		outside_count++;
+	}
+
+	p_brush.faces.resize(outside_count);
+
+	outside_count = 0;
+
+	for (int i = 0; i < mesh_merge.faces.size(); i++) {
+		if (mesh_merge.faces[i].inside) {
+			continue;
+		}
+
+		for (int j = 0; j < 3; j++) {
+			p_brush.faces.write[outside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+			p_brush.faces.write[outside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+		}
+
+		p_brush.faces.write[outside_count].smooth = mesh_merge.faces[i].smooth;
+		p_brush.faces.write[outside_count].invert = mesh_merge.faces[i].invert;
+		p_brush.faces.write[outside_count].material = mesh_merge.faces[i].material_idx;
+		outside_count++;
+	}
+
+	p_brush._regen_face_aabbs();
+
+	// Update the list of materials.
+	p_brush.materials.resize(mesh_merge.materials.size());
+	for (const KeyValue<Ref<Material>, int> &E : mesh_merge.materials) {
+		p_brush.materials.write[E.value] = E.key;
+	}
+}
+
 void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_brush_a, const CSGBrush &p_brush_b, CSGBrush &r_merged_brush, float p_vertex_snap) {
 	// Check for face collisions and add necessary faces.
 	Build2DFaceCollection build2DFaceCollection;

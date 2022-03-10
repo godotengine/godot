@@ -158,6 +158,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 		brush = nullptr;
 
 		CSGBrush *n = _build_brush();
+		int child_shape_count = 0;
 
 		for (int i = 0; i < get_child_count(); i++) {
 			CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
@@ -199,6 +200,14 @@ CSGBrush *CSGShape3D::_get_brush() {
 				memdelete(nn2);
 				n = nn;
 			}
+
+			child_shape_count++;
+		}
+
+		if (is_root_shape() && child_shape_count == 0) {
+			// Recalculate normals
+			CSGBrushOperation bop;
+			bop.clean_brush(*n, get_snap());
 		}
 
 		if (n) {
