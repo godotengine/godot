@@ -2686,10 +2686,13 @@ void SpatialEditorViewport::_notification(int p_what) {
 		fps_label->set_visible(show_fps);
 
 		if (show_fps) {
-			String text;
-			const float temp_fps = Engine::get_singleton()->get_frames_per_second();
-			text += vformat(TTR("FPS: %d (%s ms)"), temp_fps, rtos(1000.0f / temp_fps).pad_decimals(2));
-			fps_label->set_text(text);
+			const float fps = Engine::get_singleton()->get_frames_per_second();
+			fps_label->set_text(vformat(TTR("FPS: %d (%s ms)"), fps, rtos(1000.0f / fps).pad_decimals(2)));
+			// Middle point is at 60 FPS.
+			fps_label->add_color_override(
+					"font_color",
+					frame_time_gradient->get_color_at_offset(
+							Math::range_lerp(fps, 110, 10, 0, 1)));
 		}
 
 		bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
@@ -2747,6 +2750,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		cinema_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		locked_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+
+		frame_time_gradient->set_color(0, get_color("success_color", "Editor"));
+		frame_time_gradient->set_color(1, get_color("warning_color", "Editor"));
+		frame_time_gradient->set_color(2, get_color("error_color", "Editor"));
 	}
 }
 
@@ -4192,6 +4199,10 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
+	frame_time_gradient = memnew(Gradient);
+	// The color is set when the theme changes.
+	frame_time_gradient->add_point(0.5, Color());
+
 	fps_label = memnew(Label);
 	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
 	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
@@ -4224,6 +4235,10 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed", this, "update_transform_gizmo_view");
+}
+
+SpatialEditorViewport::~SpatialEditorViewport() {
+	memdelete(frame_time_gradient);
 }
 
 //////////////////////////////////////////////////////////////
