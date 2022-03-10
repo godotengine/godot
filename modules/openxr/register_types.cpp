@@ -75,9 +75,18 @@ void register_openxr_types() {
 
 void unregister_openxr_types() {
 	if (openxr_interface.is_valid()) {
+		// uninitialise just in case
+		if (openxr_interface->is_initialized()) {
+			openxr_interface->uninitialize();
+		}
+
 		// unregister our interface from the XR server
-		if (XRServer::get_singleton()) {
-			XRServer::get_singleton()->remove_interface(openxr_interface);
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server) {
+			if (xr_server->get_primary_interface() == openxr_interface) {
+				xr_server->set_primary_interface(Ref<XRInterface>());
+			}
+			xr_server->remove_interface(openxr_interface);
 		}
 
 		// and release

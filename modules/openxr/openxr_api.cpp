@@ -48,6 +48,8 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
+#include "modules/openxr/openxr_interface.h"
+
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 
 void OpenXRAPI::setup_global_defs() {
@@ -877,7 +879,9 @@ bool OpenXRAPI::on_state_ready() {
 		wrapper->on_state_ready();
 	}
 
-	// TODO emit signal
+	if (xr_interface) {
+		xr_interface->on_state_ready();
+	}
 
 	// TODO Tell android
 
@@ -888,6 +892,13 @@ bool OpenXRAPI::on_state_synchronized() {
 #ifdef DEBUG
 	print_line("On state synchronized");
 #endif
+
+	// Just in case, see if we already have active trackers...
+	List<RID> trackers;
+	tracker_owner.get_owned_list(&trackers);
+	for (int i = 0; i < trackers.size(); i++) {
+		tracker_check_profile(trackers[i]);
+	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_synchronized();
@@ -905,7 +916,9 @@ bool OpenXRAPI::on_state_visible() {
 		wrapper->on_state_visible();
 	}
 
-	// TODO emit signal
+	if (xr_interface) {
+		xr_interface->on_state_visible();
+	}
 
 	return true;
 }
@@ -919,7 +932,9 @@ bool OpenXRAPI::on_state_focused() {
 		wrapper->on_state_focused();
 	}
 
-	// TODO emit signal
+	if (xr_interface) {
+		xr_interface->on_state_focused();
+	}
 
 	return true;
 }
@@ -929,7 +944,9 @@ bool OpenXRAPI::on_state_stopping() {
 	print_line("On state stopping");
 #endif
 
-	// TODO emit signal
+	if (xr_interface) {
+		xr_interface->on_state_stopping();
+	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_stopping();
@@ -1081,6 +1098,10 @@ void OpenXRAPI::finish() {
 	destroy_instance();
 }
 
+void OpenXRAPI::set_xr_interface(OpenXRInterface *p_xr_interface) {
+	xr_interface = p_xr_interface;
+}
+
 void OpenXRAPI::register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
 	registered_extension_wrappers.push_back(p_extension_wrapper);
 }
@@ -1204,20 +1225,38 @@ bool OpenXRAPI::poll_events() {
 			handled |= wrapper->on_event_polled(runtimeEvent);
 		}
 		switch (runtimeEvent.type) {
-			// case XR_TYPE_EVENT_DATA_EVENTS_LOST: {
-			// } break;
-			// case XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR: {
-			// } break;
-			// case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
-			// } break;
+			case XR_TYPE_EVENT_DATA_EVENTS_LOST: {
+				XrEventDataEventsLost *event = (XrEventDataEventsLost *)&runtimeEvent;
+
+				// We probably didn't poll fast enough, just output warning
+				WARN_PRINT("OpenXR EVENT: " + itos(event->lostEventCount) + " event data lost!");
+			} break;
+			case XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR: {
+				// XrEventDataVisibilityMaskChangedKHR *event = (XrEventDataVisibilityMaskChangedKHR *)&runtimeEvent;
+
+				// TODO implement this in the future, we should call xrGetVisibilityMaskKHR to obtain a mask,
+				// this will allow us to prevent rendering the part of our view which is never displayed giving us
+				// a decent performance improvement.
+
+				print_verbose("OpenXR EVENT: STUB: visibility mask changed");
+			} break;
+			case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
+				XrEventDataInstanceLossPending *event = (XrEventDataInstanceLossPending *)&runtimeEvent;
+
+				// TODO We get this event if we're about to loose our OpenXR instance.
+				// We should queue exiting Godot at this point.
+
+				print_verbose("OpenXR EVENT: instance loss pending at " + itos(event->lossTime));
+				return false;
+			} break;
 			case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
 				XrEventDataSessionStateChanged *event = (XrEventDataSessionStateChanged *)&runtimeEvent;
 
 				session_state = event->state;
 				if (session_state >= XR_SESSION_STATE_MAX_ENUM) {
-					print_line("OpenXR EVENT: session state changed to UNKNOWN -", session_state);
+					print_verbose("OpenXR EVENT: session state changed to UNKNOWN - " + itos(session_state));
 				} else {
-					print_line("OpenXR EVENT: session state changed to", OpenXRUtil::get_session_state_name(session_state));
+					print_verbose("OpenXR EVENT: session state changed to " + OpenXRUtil::get_session_state_name(session_state));
 
 					switch (session_state) {
 						case XR_SESSION_STATE_IDLE:
@@ -1249,13 +1288,29 @@ bool OpenXRAPI::poll_events() {
 					}
 				}
 			} break;
-			// case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING: {
-			// } break;
-			// case XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED: {
-			// } break;
+			case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING: {
+				XrEventDataReferenceSpaceChangePending *event = (XrEventDataReferenceSpaceChangePending *)&runtimeEvent;
+
+				print_verbose("OpenXR EVENT: reference space type " + OpenXRUtil::get_reference_space_name(event->referenceSpaceType) + " change pending!");
+				if (event->poseValid && xr_interface) {
+					xr_interface->on_pose_recentered();
+				}
+			} break;
+			case XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED: {
+				print_verbose("OpenXR EVENT: interaction profile changed!");
+
+				XrEventDataInteractionProfileChanged *event = (XrEventDataInteractionProfileChanged *)&runtimeEvent;
+
+				List<RID> trackers;
+				tracker_owner.get_owned_list(&trackers);
+				for (int i = 0; i < trackers.size(); i++) {
+					tracker_check_profile(trackers[i], event->session);
+				}
+
+			} break;
 			default:
 				if (!handled) {
-					print_line("OpenXR Unhandled event type", OpenXRUtil::get_structure_type_name(runtimeEvent.type));
+					print_verbose("OpenXR Unhandled event type " + OpenXRUtil::get_structure_type_name(runtimeEvent.type));
 				}
 				break;
 		}
@@ -1348,7 +1403,19 @@ void OpenXRAPI::pre_render() {
 	XrResult result = xrWaitFrame(session, &frame_wait_info, &frame_state);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: xrWaitFrame() was not successful [", get_error_string(result), "]");
+
+		// reset just in case
+		frame_state.predictedDisplayTime = 0;
+		frame_state.predictedDisplayPeriod = 0;
+		frame_state.shouldRender = false;
+
 		return;
+	}
+
+	if (frame_state.predictedDisplayPeriod > 500000000) {
+		// display period more then 0.5 seconds? must be wrong data
+		print_verbose("OpenXR resetting invalid display period " + rtos(frame_state.predictedDisplayPeriod));
+		frame_state.predictedDisplayPeriod = 0;
 	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
@@ -1691,38 +1758,97 @@ void OpenXRAPI::parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_l
 	}
 }
 
-RID OpenXRAPI::path_create(const String p_name) {
+RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
+	List<RID> current;
+	tracker_owner.get_owned_list(&current);
+	for (int i = 0; i < current.size(); i++) {
+		Tracker *tracker = tracker_owner.get_or_null(current[i]);
+		if (tracker && tracker->toplevel_path == p_path) {
+			return current[i];
+		}
+	}
+
+	return RID();
+}
+
+RID OpenXRAPI::tracker_create(const String p_name) {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, RID());
 
-	// Encoding our path as a RID is probably overkill but it does future proof this
-	// Note that we only do this for XrPaths that we access from outside of this class!
+	Tracker new_tracker;
+	new_tracker.name = p_name;
+	new_tracker.toplevel_path = XR_NULL_PATH;
+	new_tracker.active_profile_rid = RID();
 
-	Path new_path;
-
-	print_line("Parsing path ", p_name);
-
-	XrResult result = xrStringToPath(instance, p_name.utf8().get_data(), &new_path.path);
+	XrResult result = xrStringToPath(instance, p_name.utf8().get_data(), &new_tracker.toplevel_path);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to get path for ", p_name, "! [", get_error_string(result), "]");
 		return RID();
 	}
 
-	return xr_path_owner.make_rid(new_path);
+	return tracker_owner.make_rid(new_tracker);
 }
 
-void OpenXRAPI::path_free(RID p_path) {
-	Path *path = xr_path_owner.get_or_null(p_path);
-	ERR_FAIL_NULL(path);
+String OpenXRAPI::tracker_get_name(RID p_tracker) {
+	if (p_tracker.is_null()) {
+		return String("None");
+	}
+
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL_V(tracker, String());
+
+	return tracker->name;
+}
+
+void OpenXRAPI::tracker_check_profile(RID p_tracker, XrSession p_session) {
+	if (p_session == XR_NULL_HANDLE) {
+		p_session = session;
+	}
+
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL(tracker);
+
+	if (tracker->toplevel_path == XR_NULL_PATH) {
+		// no path, how was this even created?
+		return;
+	}
+
+	XrInteractionProfileState profile_state = {
+		XR_TYPE_INTERACTION_PROFILE_STATE, // type
+		nullptr, // next
+		XR_NULL_PATH // interactionProfile
+	};
+
+	XrResult result = xrGetCurrentInteractionProfile(p_session, tracker->toplevel_path, &profile_state);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: Failed to get interaction profile for", itos(tracker->toplevel_path), "[", get_error_string(result), "]");
+		return;
+	}
+
+	XrPath new_profile = profile_state.interactionProfile;
+	XrPath was_profile = get_interaction_profile_path(tracker->active_profile_rid);
+	if (was_profile != new_profile) {
+		tracker->active_profile_rid = get_interaction_profile_rid(new_profile);
+
+		if (xr_interface) {
+			xr_interface->tracker_profile_changed(p_tracker, tracker->active_profile_rid);
+		}
+	}
+}
+
+void OpenXRAPI::tracker_free(RID p_tracker) {
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL(tracker);
 
 	// there is nothing to free here
 
-	xr_path_owner.free(p_path);
+	tracker_owner.free(p_tracker);
 }
 
 RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_name, const int p_priority) {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, RID());
 	ActionSet action_set;
 
+	action_set.name = p_name;
 	action_set.is_attached = false;
 
 	// create our action set...
@@ -1737,7 +1863,7 @@ RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_n
 	copy_string_to_char_buffer(p_name, action_set_info.actionSetName, XR_MAX_ACTION_SET_NAME_SIZE);
 	copy_string_to_char_buffer(p_localized_name, action_set_info.localizedActionSetName, XR_MAX_LOCALIZED_ACTION_SET_NAME_SIZE);
 
-	print_line("Creating action set ", action_set_info.actionSetName, " - ", action_set_info.localizedActionSetName, " (", itos(action_set_info.priority), ")");
+	// print_line("Creating action set ", action_set_info.actionSetName, " - ", action_set_info.localizedActionSetName, " (", itos(action_set_info.priority), ")");
 
 	XrResult result = xrCreateActionSet(instance, &action_set_info, &action_set.handle);
 	if (XR_FAILED(result)) {
@@ -1746,6 +1872,17 @@ RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_n
 	}
 
 	return action_set_owner.make_rid(action_set);
+}
+
+String OpenXRAPI::action_set_get_name(RID p_action_set) {
+	if (p_action_set.is_null()) {
+		return String("None");
+	}
+
+	ActionSet *action_set = action_set_owner.get_or_null(p_action_set);
+	ERR_FAIL_NULL_V(action_set, String());
+
+	return action_set->name;
 }
 
 bool OpenXRAPI::action_set_attach(RID p_action_set) {
@@ -1776,6 +1913,24 @@ bool OpenXRAPI::action_set_attach(RID p_action_set) {
 
 	action_set->is_attached = true;
 
+	/* For debugging:
+	print_verbose("Attached set " + action_set->name);
+	List<RID> action_rids;
+	action_owner.get_owned_list(&action_rids);
+	for (int i = 0; i < action_rids.size(); i++) {
+		Action * action = action_owner.get_or_null(action_rids[i]);
+		if (action && action->action_set_rid == p_action_set) {
+			print_verbose(" - Action " + action->name + ": " + OpenXRUtil::get_action_type_name(action->action_type));
+			for (int j = 0; j < action->trackers.size(); j++) {
+				Tracker * tracker = tracker_owner.get_or_null(action->trackers[j].tracker_rid);
+				if (tracker) {
+					print_verbose("    - " + tracker->name);
+				}
+			}
+		}
+	}
+	*/
+
 	return true;
 }
 
@@ -1790,14 +1945,29 @@ void OpenXRAPI::action_set_free(RID p_action_set) {
 	action_set_owner.free(p_action_set);
 }
 
-RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_toplevel_paths) {
+RID OpenXRAPI::get_action_rid(XrAction p_action) {
+	List<RID> current;
+	action_owner.get_owned_list(&current);
+	for (int i = 0; i < current.size(); i++) {
+		Action *action = action_owner.get_or_null(current[i]);
+		if (action && action->handle == p_action) {
+			return current[i];
+		}
+	}
+
+	return RID();
+}
+
+RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers) {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, RID());
 
 	Action action;
+	action.name = p_name;
 
 	ActionSet *action_set = action_set_owner.get_or_null(p_action_set);
 	ERR_FAIL_NULL_V(action_set, RID());
 	ERR_FAIL_COND_V(action_set->handle == XR_NULL_HANDLE, RID());
+	action.action_set_rid = p_action_set;
 
 	switch (p_action_type) {
 		case OpenXRAction::OPENXR_ACTION_BOOL:
@@ -1821,17 +1991,17 @@ RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String
 	}
 
 	Vector<XrPath> toplevel_paths;
-	for (int i = 0; i < p_toplevel_paths.size(); i++) {
-		Path *xr_path = xr_path_owner.get_or_null(p_toplevel_paths[i]);
-		if (xr_path != nullptr && xr_path->path != XR_NULL_PATH) {
-			PathWithSpace path_with_space = {
-				xr_path->path, // toplevel_path
+	for (int i = 0; i < p_trackers.size(); i++) {
+		Tracker *tracker = tracker_owner.get_or_null(p_trackers[i]);
+		if (tracker != nullptr && tracker->toplevel_path != XR_NULL_PATH) {
+			ActionTracker action_tracker = {
+				p_trackers[i], // tracker
 				XR_NULL_HANDLE, // space
 				false // was_location_valid
 			};
-			action.toplevel_paths.push_back(path_with_space);
+			action.trackers.push_back(action_tracker);
 
-			toplevel_paths.push_back(xr_path->path);
+			toplevel_paths.push_back(tracker->toplevel_path);
 		}
 	}
 
@@ -1848,7 +2018,7 @@ RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String
 	copy_string_to_char_buffer(p_name, action_info.actionName, XR_MAX_ACTION_NAME_SIZE);
 	copy_string_to_char_buffer(p_localized_name, action_info.localizedActionName, XR_MAX_LOCALIZED_ACTION_NAME_SIZE);
 
-	print_line("Creating action ", action_info.actionName, action_info.localizedActionName, action_info.countSubactionPaths);
+	// print_line("Creating action ", action_info.actionName, action_info.localizedActionName, action_info.countSubactionPaths);
 
 	XrResult result = xrCreateAction(action_set->handle, &action_info, &action.handle);
 	if (XR_FAILED(result)) {
@@ -1857,6 +2027,17 @@ RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String
 	}
 
 	return action_owner.make_rid(action);
+}
+
+String OpenXRAPI::action_get_name(RID p_action) {
+	if (p_action.is_null()) {
+		return String("None");
+	}
+
+	Action *action = action_owner.get_or_null(p_action);
+	ERR_FAIL_NULL_V(action, String());
+
+	return action->name;
 }
 
 void OpenXRAPI::action_free(RID p_action) {
@@ -1870,53 +2051,137 @@ void OpenXRAPI::action_free(RID p_action) {
 	action_owner.free(p_action);
 }
 
-bool OpenXRAPI::suggest_bindings(const String p_interaction_profile, const Vector<Binding> p_bindings) {
-	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
+RID OpenXRAPI::get_interaction_profile_rid(XrPath p_path) {
+	List<RID> current;
+	interaction_profile_owner.get_owned_list(&current);
+	for (int i = 0; i < current.size(); i++) {
+		InteractionProfile *ip = interaction_profile_owner.get_or_null(current[i]);
+		if (ip && ip->path == p_path) {
+			return current[i];
+		}
+	}
 
-	XrPath interaction_profile;
-	Vector<XrActionSuggestedBinding> bindings;
+	return RID();
+}
 
-	XrResult result = xrStringToPath(instance, p_interaction_profile.utf8().get_data(), &interaction_profile);
+XrPath OpenXRAPI::get_interaction_profile_path(RID p_interaction_profile) {
+	if (p_interaction_profile.is_null()) {
+		return XR_NULL_PATH;
+	}
+
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL_V(ip, XR_NULL_PATH);
+
+	return ip->path;
+}
+
+RID OpenXRAPI::interaction_profile_create(const String p_name) {
+	InteractionProfile new_interaction_profile;
+
+	XrResult result = xrStringToPath(instance, p_name.utf8().get_data(), &new_interaction_profile.path);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to get path for ", p_interaction_profile, "! [", get_error_string(result), "]");
+		print_line("OpenXR: failed to get path for ", p_name, "! [", get_error_string(result), "]");
+		return RID();
+	}
+
+	RID existing_ip = get_interaction_profile_rid(new_interaction_profile.path);
+	if (existing_ip.is_valid()) {
+		return existing_ip;
+	}
+
+	new_interaction_profile.name = p_name;
+	return interaction_profile_owner.make_rid(new_interaction_profile);
+}
+
+String OpenXRAPI::interaction_profile_get_name(RID p_interaction_profile) {
+	if (p_interaction_profile.is_null()) {
+		return String("None");
+	}
+
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL_V(ip, String());
+
+	return ip->name;
+}
+
+void OpenXRAPI::interaction_profile_clear_bindings(RID p_interaction_profile) {
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL(ip);
+
+	ip->bindings.clear();
+}
+
+bool OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path) {
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL_V(ip, false);
+
+	XrActionSuggestedBinding binding;
+
+	Action *action = action_owner.get_or_null(p_action);
+	ERR_FAIL_COND_V(action == nullptr || action->handle == XR_NULL_HANDLE, false);
+
+	binding.action = action->handle;
+
+	XrResult result = xrStringToPath(instance, p_path.utf8().get_data(), &binding.binding);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: failed to get path for ", p_path, "! [", get_error_string(result), "]");
 		return false;
 	}
 
-	for (int i = 0; i < p_bindings.size(); i++) {
-		XrActionSuggestedBinding binding;
+	ip->bindings.push_back(binding);
 
-		Action *action = action_owner.get_or_null(p_bindings[i].action);
-		if (action == nullptr || action->handle == XR_NULL_HANDLE) {
-			// just skip it
-			continue;
-		}
+	return true;
+}
 
-		binding.action = action->handle;
+bool OpenXRAPI::interaction_profile_suggest_bindings(RID p_interaction_profile) {
+	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 
-		result = xrStringToPath(instance, p_bindings[i].path.utf8().get_data(), &binding.binding);
-		if (XR_FAILED(result)) {
-			print_line("OpenXR: failed to get path for ", p_bindings[i].path, "! [", get_error_string(result), "]");
-			continue;
-		}
-
-		bindings.push_back(binding);
-	}
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL_V(ip, false);
 
 	const XrInteractionProfileSuggestedBinding suggested_bindings = {
 		XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING, // type
 		nullptr, // next
-		interaction_profile, // interactionProfile
-		uint32_t(bindings.size()), // countSuggestedBindings
-		bindings.ptr() // suggestedBindings
+		ip->path, // interactionProfile
+		uint32_t(ip->bindings.size()), // countSuggestedBindings
+		ip->bindings.ptr() // suggestedBindings
 	};
 
-	result = xrSuggestInteractionProfileBindings(instance, &suggested_bindings);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to suggest bindings for ", p_interaction_profile, "! [", get_error_string(result), "]");
+	XrResult result = xrSuggestInteractionProfileBindings(instance, &suggested_bindings);
+	if (result == XR_ERROR_PATH_UNSUPPORTED) {
+		// this is fine, not all runtimes support all devices.
+		print_verbose("OpenXR Interaction profile " + ip->name + " is not supported on this runtime");
+	} else if (XR_FAILED(result)) {
+		print_line("OpenXR: failed to suggest bindings for ", ip->name, "! [", get_error_string(result), "]");
 		// reporting is enough...
 	}
 
+	/* For debugging:
+	print_verbose("Suggested bindings for " + ip->name);
+	for (int i = 0; i < ip->bindings.size(); i++) {
+		uint32_t strlen;
+		char path[XR_MAX_PATH_LENGTH];
+
+		String action_name = action_get_name(get_action_rid(ip->bindings[i].action));
+
+		XrResult result = xrPathToString(instance, ip->bindings[i].binding, XR_MAX_PATH_LENGTH, &strlen, path);
+		if (XR_FAILED(result)) {
+			print_line("OpenXR: failed to retrieve bindings for ", action_name, "! [", get_error_string(result), "]");
+		}
+		print_verbose(" - " + action_name + " => " + String(path));
+	}
+	*/
+
 	return true;
+}
+
+void OpenXRAPI::interaction_profile_free(RID p_interaction_profile) {
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL(ip);
+
+	ip->bindings.clear();
+
+	interaction_profile_owner.free(p_interaction_profile);
 }
 
 bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
@@ -1955,12 +2220,12 @@ bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
 	return true;
 }
 
-bool OpenXRAPI::get_action_bool(RID p_action, RID p_path) {
+bool OpenXRAPI::get_action_bool(RID p_action, RID p_tracker) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL_V(action, false);
-	Path *path = xr_path_owner.get_or_null(p_path);
-	ERR_FAIL_NULL_V(path, false);
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL_V(tracker, false);
 
 	if (!running) {
 		return false;
@@ -1972,7 +2237,7 @@ bool OpenXRAPI::get_action_bool(RID p_action, RID p_path) {
 		XR_TYPE_ACTION_STATE_GET_INFO, // type
 		nullptr, // next
 		action->handle, // action
-		path->path // subactionPath
+		tracker->toplevel_path // subactionPath
 	};
 
 	XrActionStateBoolean result_state;
@@ -1987,12 +2252,12 @@ bool OpenXRAPI::get_action_bool(RID p_action, RID p_path) {
 	return result_state.isActive && result_state.currentState;
 }
 
-float OpenXRAPI::get_action_float(RID p_action, RID p_path) {
+float OpenXRAPI::get_action_float(RID p_action, RID p_tracker) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, 0.0);
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL_V(action, 0.0);
-	Path *path = xr_path_owner.get_or_null(p_path);
-	ERR_FAIL_NULL_V(path, 0.0);
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL_V(tracker, 0.0);
 
 	if (!running) {
 		return 0.0;
@@ -2004,7 +2269,7 @@ float OpenXRAPI::get_action_float(RID p_action, RID p_path) {
 		XR_TYPE_ACTION_STATE_GET_INFO, // type
 		nullptr, // next
 		action->handle, // action
-		path->path // subactionPath
+		tracker->toplevel_path // subactionPath
 	};
 
 	XrActionStateFloat result_state;
@@ -2019,12 +2284,12 @@ float OpenXRAPI::get_action_float(RID p_action, RID p_path) {
 	return result_state.isActive ? result_state.currentState : 0.0;
 }
 
-Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_path) {
+Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_tracker) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, Vector2());
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL_V(action, Vector2());
-	Path *path = xr_path_owner.get_or_null(p_path);
-	ERR_FAIL_NULL_V(path, Vector2());
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL_V(tracker, Vector2());
 
 	if (!running) {
 		return Vector2();
@@ -2036,7 +2301,7 @@ Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_path) {
 		XR_TYPE_ACTION_STATE_GET_INFO, // type
 		nullptr, // next
 		action->handle, // action
-		path->path // subactionPath
+		tracker->toplevel_path // subactionPath
 	};
 
 	XrActionStateVector2f result_state;
@@ -2051,12 +2316,12 @@ Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_path) {
 	return result_state.isActive ? Vector2(result_state.currentState.x, result_state.currentState.y) : Vector2();
 }
 
-XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_path, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity) {
+XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, XRPose::XR_TRACKING_CONFIDENCE_NONE);
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL_V(action, XRPose::XR_TRACKING_CONFIDENCE_NONE);
-	Path *path = xr_path_owner.get_or_null(p_path);
-	ERR_FAIL_NULL_V(path, XRPose::XR_TRACKING_CONFIDENCE_NONE);
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL_V(tracker, XRPose::XR_TRACKING_CONFIDENCE_NONE);
 
 	if (!running) {
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
@@ -2064,10 +2329,12 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_path, 
 
 	ERR_FAIL_COND_V(action->action_type != XR_ACTION_TYPE_POSE_INPUT, XRPose::XR_TRACKING_CONFIDENCE_NONE);
 
+	// print_verbose("Checking " + action->name + " => " + tracker->name + " (" + itos(tracker->toplevel_path) + ")");
+
 	uint64_t index = 0xFFFFFFFF;
-	uint64_t size = uint64_t(action->toplevel_paths.size());
+	uint64_t size = uint64_t(action->trackers.size());
 	for (uint64_t i = 0; i < size && index == 0xFFFFFFFF; i++) {
-		if (action->toplevel_paths[i].toplevel_path == path->path) {
+		if (action->trackers[i].tracker_rid == p_tracker) {
 			index = i;
 		}
 	}
@@ -2077,14 +2344,19 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_path, 
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	}
 
-	if (action->toplevel_paths[index].space == XR_NULL_HANDLE) {
+	XrTime display_time = get_next_frame_time();
+	if (display_time == 0) {
+		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
+	}
+
+	if (action->trackers[index].space == XR_NULL_HANDLE) {
 		// if this is a pose we need to define spaces
 
 		XrActionSpaceCreateInfo action_space_info = {
 			XR_TYPE_ACTION_SPACE_CREATE_INFO, // type
 			nullptr, // next
 			action->handle, // action
-			action->toplevel_paths[index].toplevel_path, // subactionPath
+			tracker->toplevel_path, // subactionPath
 			{
 					{ 0.0, 0.0, 0.0, 1.0 }, // orientation
 					{ 0.0, 0.0, 0.0 } // position
@@ -2098,10 +2370,8 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_path, 
 			return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 		}
 
-		action->toplevel_paths.ptrw()[index].space = space;
+		action->trackers.ptrw()[index].space = space;
 	}
-
-	XrTime display_time = get_next_frame_time();
 
 	XrSpaceVelocity velocity = {
 		XR_TYPE_SPACE_VELOCITY, // type
@@ -2121,7 +2391,7 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_path, 
 		} // pose
 	};
 
-	XrResult result = xrLocateSpace(action->toplevel_paths[index].space, play_space, display_time, &location);
+	XrResult result = xrLocateSpace(action->trackers[index].space, play_space, display_time, &location);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to locate space! [", get_error_string(result), "]");
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
@@ -2133,12 +2403,12 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_path, 
 	return confidence;
 }
 
-bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_path, float p_frequency, float p_amplitude, XrDuration p_duration_ns) {
+bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_frequency, float p_amplitude, XrDuration p_duration_ns) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL_V(action, false);
-	Path *path = xr_path_owner.get_or_null(p_path);
-	ERR_FAIL_NULL_V(path, false);
+	Tracker *tracker = tracker_owner.get_or_null(p_tracker);
+	ERR_FAIL_NULL_V(tracker, false);
 
 	if (!running) {
 		return false;
@@ -2150,7 +2420,7 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_path, float p_frequency
 		XR_TYPE_HAPTIC_ACTION_INFO, // type
 		nullptr, // next
 		action->handle, // action
-		path->path // subactionPath
+		tracker->toplevel_path // subactionPath
 	};
 
 	XrHapticVibration vibration = {
