@@ -9295,7 +9295,7 @@ String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) cons
 	return frames[frame].timestamp_result_names[p_index];
 }
 
-int RenderingDeviceVulkan::limit_get(Limit p_limit) {
+uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) {
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return limits.maxBoundDescriptorSets;

@@ -2257,7 +2257,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 
 		String global_defines;
 
-		uint32_t uniform_max_size = RD::get_singleton()->limit_get(RD::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+		uint64_t uniform_max_size = RD::get_singleton()->limit_get(RD::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
 		if (uniform_max_size < 65536) {
 			//Yes, you guessed right, ARM again
 			state.max_lights_per_render = 64;
