@@ -156,6 +156,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
 			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
+
+			_update_animation_list_icons();
 		} break;
 	}
 }
@@ -859,22 +861,13 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	for (const StringName &E : animlist) {
-		Ref<Texture2D> icon;
-		if (E == player->get_autoplay()) {
-			if (E == SceneStringNames::get_singleton()->RESET) {
-				icon = autoplay_reset_icon;
-			} else {
-				icon = autoplay_icon;
-			}
-		} else if (E == SceneStringNames::get_singleton()->RESET) {
-			icon = reset_icon;
-		}
-		animation->add_icon_item(icon, E);
+		animation->add_item(E);
 
 		if (player->get_assigned_animation() == E) {
 			active_idx = animation->get_item_count() - 1;
 		}
 	}
+	_update_animation_list_icons();
 
 	updating = false;
 	if (active_idx != -1) {
@@ -901,6 +894,30 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	_update_animation();
+}
+
+void AnimationPlayerEditor::_update_animation_list_icons() {
+	List<StringName> animlist;
+	if (player) {
+		player->get_animation_list(&animlist);
+	}
+
+	for (int i = 0; i < animation->get_item_count(); i++) {
+		String name = animation->get_item_text(i);
+
+		Ref<Texture2D> icon;
+		if (name == player->get_autoplay()) {
+			if (name == SceneStringNames::get_singleton()->RESET) {
+				icon = autoplay_reset_icon;
+			} else {
+				icon = autoplay_icon;
+			}
+		} else if (name == SceneStringNames::get_singleton()->RESET) {
+			icon = reset_icon;
+		}
+
+		animation->set_item_icon(i, icon);
+	}
 }
 
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
