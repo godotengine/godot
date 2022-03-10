@@ -108,6 +108,7 @@
 			<return type="void" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="tags" type="PackedStringArray" />
+			<argument index="2" name="target" type="String" />
 			<description>
 				Adds a shared object or a directory containing only shared objects with the given [code]tags[/code] and destination [code]path[/code].
 				[b]Note:[/b] In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.
