@@ -450,7 +450,19 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				}
 
 				members_cache.push_back(c->variables[i]._export);
-				member_default_values_cache[c->variables[i].identifier] = c->variables[i].default_value;
+
+				Variant::Type default_value_type = c->variables[i].default_value.get_type();
+				Variant::Type export_type = c->variables[i]._export.type;
+
+				// Convert the default value to the export type to avoid issues with the property editor and scene serialization.
+				// This is done only in the export side, the script itself will use the default value with no type change.
+				if (default_value_type != Variant::NIL && default_value_type != export_type) {
+					Variant::CallError ce;
+					const Variant *args = &c->variables[i].default_value;
+					member_default_values_cache[c->variables[i].identifier] = Variant::construct(export_type, &args, 1, ce);
+				} else {
+					member_default_values_cache[c->variables[i].identifier] = c->variables[i].default_value;
+				}
 			}
 
 			_signals.clear();
@@ -2014,6 +2026,10 @@ String GDScriptWarning::get_message() const {
 		case STANDALONE_TERNARY: {
 			return "Standalone ternary conditional operator: the return value is being discarded.";
 		}
+		case EXPORT_HINT_TYPE_MISTMATCH: {
+			CHECK_SYMBOLS(2);
+			return vformat("The type of the default value (%s) doesn't match the type of the export hint (%s). The type won't be coerced.", symbols[0], symbols[1]);
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -2057,6 +2073,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_CALL_ARGUMENT",
 		"DEPRECATED_KEYWORD",
 		"STANDALONE_TERNARY",
+		"EXPORT_HINT_TYPE_MISTMATCH",
 		nullptr
 	};
 

@@ -321,6 +321,9 @@
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
+		<member name="debug/gdscript/warnings/export_hint_type_mistmatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings when the type of the default value set to an exported variable is different than the specified export type.
+		</member>
 		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function is declared with the same name as a constant.
 		</member>
