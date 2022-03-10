@@ -1254,6 +1254,10 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
 
+	// Required to make the project setting appear even if the physics engine is GodotPhysics,
+	// while also making it appear in the ProjectSettings class documentation.
+	GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false);
+
 	GLOBAL_DEF("rendering/quality/filters/sharpen_intensity", 0.0);
 	custom_prop_info["rendering/quality/filters/sharpen_intensity"] = PropertyInfo(Variant::REAL, "rendering/quality/filters/sharpen_intensity", PROPERTY_HINT_RANGE, "0,1");
 
