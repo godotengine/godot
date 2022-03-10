@@ -1530,6 +1530,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 			for (int i = 0; i < sides; i++) {
 				float inci = float(i) / sides;
 				float inci_n = float((i + 1)) / sides;
+				if (i == sides - 1) {
+					inci_n = 0;
+				}
 
 				float angi = inci * Math_TAU;
 				float angi_n = inci_n * Math_TAU;
@@ -1540,6 +1543,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 				for (int j = 0; j < ring_sides; j++) {
 					float incj = float(j) / ring_sides;
 					float incj_n = float((j + 1)) / ring_sides;
+					if (j == ring_sides - 1) {
+						incj_n = 0;
+					}
 
 					float angj = incj * Math_TAU;
 					float angj_n = incj_n * Math_TAU;
