@@ -908,10 +908,9 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 		return ERR_CANT_CREATE;
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	da->remove(p_path);
 	da->rename(p_path + ".depren", p_path);
-	memdelete(da);
 
 	return OK;
 }

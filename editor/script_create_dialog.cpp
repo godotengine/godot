@@ -247,23 +247,22 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		return TTR("Path is not local.");
 	}
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (d->change_dir(p.get_base_dir()) != OK) {
-		memdelete(d);
-		return TTR("Base path is invalid.");
+	{
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->change_dir(p.get_base_dir()) != OK) {
+			return TTR("Base path is invalid.");
+		}
 	}
-	memdelete(d);
 
-	// Check if file exists.
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->dir_exists(p)) {
-		memdelete(f);
-		return TTR("A directory with the same name exists.");
-	} else if (p_file_must_exist && !f->file_exists(p)) {
-		memdelete(f);
-		return TTR("File does not exist.");
+	{
+		// Check if file exists.
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->dir_exists(p)) {
+			return TTR("A directory with the same name exists.");
+		} else if (p_file_must_exist && !da->file_exists(p)) {
+			return TTR("File does not exist.");
+		}
 	}
-	memdelete(f);
 
 	// Check file extension.
 	String extension = p.get_extension();
@@ -556,13 +555,12 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	}
 
 	// Check if file exists.
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
-	if (f->file_exists(p)) {
+	if (da->file_exists(p)) {
 		is_new_script_created = false;
 		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
-	memdelete(f);
 
 	is_path_valid = true;
 	_update_dialog();
@@ -838,7 +836,7 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 
 	String dir_path = p_dir.plus_file(p_object);
 
-	DirAccess *d = DirAccess::open(dir_path);
+	DirAccessRef d = DirAccess::open(dir_path);
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -849,7 +847,6 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 	}
 	return user_templates;
 }

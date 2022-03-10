@@ -1094,12 +1094,11 @@ void EditorFileSystem::_delete_internal_files(String p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (const String &E : paths) {
 			da->remove(E);
 		}
 		da->remove(p_file + ".import");
-		memdelete(da);
 	}
 }
 

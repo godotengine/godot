@@ -70,7 +70,6 @@ private:
 
 	Button *makedir;
 	Access access = ACCESS_RESOURCES;
-	//Button *action;
 	VBoxContainer *vbox;
 	FileMode mode;
 	LineEdit *dir;

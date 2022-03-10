@@ -2099,9 +2099,8 @@ bool Main::start() {
 				checked_paths.insert(path);
 
 				// Create the module documentation directory if it doesn't exist
-				DirAccess *da = DirAccess::create_for_path(path);
+				DirAccessRef da = DirAccess::create_for_path(path);
 				err = da->make_dir_recursive(path);
-				memdelete(da);
 				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
 				print_line("Loading docs from: " + path);
@@ -2112,9 +2111,8 @@ bool Main::start() {
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
-		DirAccess *da = DirAccess::create_for_path(index_path);
+		DirAccessRef da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
-		memdelete(da);
 		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
 		print_line("Loading classes from: " + index_path);
@@ -2452,15 +2450,13 @@ bool Main::start() {
 						int sep = local_game_path.rfind("/");
 
 						if (sep == -1) {
-							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							local_game_path = da->get_current_dir().plus_file(local_game_path);
-							memdelete(da);
 						} else {
-							DirAccess *da = DirAccess::open(local_game_path.substr(0, sep));
+							DirAccessRef da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da) {
 								local_game_path = da->get_current_dir().plus_file(
 										local_game_path.substr(sep + 1, local_game_path.length()));
-								memdelete(da);
 							}
 						}
 					}

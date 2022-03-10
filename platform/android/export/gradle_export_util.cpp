@@ -75,11 +75,10 @@ String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_or
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir) {
 	if (!DirAccess::exists(p_dir)) {
-		DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		DirAccessRef filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 		Error err = filesystem_da->make_dir_recursive(p_dir);
 		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
-		memdelete(filesystem_da);
 	}
 	return OK;
 }

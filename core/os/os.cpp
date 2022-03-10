@@ -328,17 +328,13 @@ void OS::yield() {
 
 void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
-	DirAccess *da = DirAccess::open(dd);
-	if (da) {
-		memdelete(da);
+	if (DirAccess::exists(dd)) {
 		return;
 	}
 
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
 	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
-
-	memdelete(da);
 }
 
 String OS::get_model_name() const {
