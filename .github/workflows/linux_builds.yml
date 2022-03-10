@@ -28,6 +28,7 @@ jobs:
             doc-test: true
             bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
             build-mono: true
+            proj-conv: true
             artifact: true
 
           - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
@@ -146,6 +147,17 @@ jobs:
           unzip swiftshader-ubuntu20.04-20211002.zip
           curr="$(pwd)/libvk_swiftshader.so"
           sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
+
+      # Test 3.x -> 4.x project converter
+      - name: Test project converter
+        if: ${{ matrix.proj-conv }}
+        run: |
+          mkdir converter_test
+          cd converter_test
+          touch project.godot
+          ../${{ matrix.bin }} --headless --audio-driver Dummy --validate-conversion-3to4
+          cd ..
+          rm converter_test -rf
 
       # Download and extract zip archive with project, folder is renamed to be able to easy change used project
       - name: Download test project
