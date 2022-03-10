@@ -907,7 +907,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 							}
 						}
 
-						if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
+						if (!is_custom_resource && (!ClassDB::can_instantiate(t) || ClassDB::is_virtual(t))) {
 							continue;
 						}
 

@@ -557,6 +557,19 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance));
 }
 
+bool ClassDB::is_virtual(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
+	}
+#endif
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance) && ti->is_virtual);
+}
+
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
 	OBJTYPE_WLOCK;
 

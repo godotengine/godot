@@ -44,7 +44,7 @@ void register_enet_types() {
 	}
 
 	GDREGISTER_CLASS(ENetMultiplayerPeer);
-	GDREGISTER_VIRTUAL_CLASS(ENetPacketPeer);
+	GDREGISTER_ABSTRACT_CLASS(ENetPacketPeer);
 	GDREGISTER_CLASS(ENetConnection);
 }
 

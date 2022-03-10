@@ -36,10 +36,6 @@ AABB GPUParticles3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void GPUParticles3D::set_emitting(bool p_emitting) {
 	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 

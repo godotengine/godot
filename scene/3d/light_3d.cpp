@@ -156,10 +156,6 @@ AABB Light3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> Light3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void Light3D::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
 	RS::get_singleton()->light_set_bake_mode(light, RS::LightBakeMode(p_mode));

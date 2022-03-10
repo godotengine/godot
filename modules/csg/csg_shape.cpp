@@ -491,10 +491,6 @@ Vector<Vector3> CSGShape3D::get_brush_faces() {
 	return faces;
 }
 
-Vector<Face3> CSGShape3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void CSGShape3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PARENTED: {
