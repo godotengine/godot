@@ -2397,7 +2397,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		r_arghint = _make_arguments_hint(info, p_argidx);
 		return;
 	} else if (GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
-		// Complete constructor
+		// Complete constructor.
 		List<MethodInfo> constructors;
 		Variant::get_constructor_list(GDScriptParser::get_builtin_type(call->function_name), &constructors);
 
@@ -2422,6 +2422,32 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		}
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
+
+		if (subscript->base != nullptr && subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+			const GDScriptParser::IdentifierNode *base_identifier = static_cast<const GDScriptParser::IdentifierNode *>(subscript->base);
+
+			Variant::Type method_type = GDScriptParser::get_builtin_type(base_identifier->name);
+			if (method_type < Variant::VARIANT_MAX) {
+				Variant v;
+				Callable::CallError err;
+				Variant::construct(method_type, v, nullptr, 0, err);
+				if (err.error != Callable::CallError::CALL_OK) {
+					return;
+				}
+				List<MethodInfo> methods;
+				v.get_method_list(&methods);
+
+				for (MethodInfo &E : methods) {
+					if (p_argidx >= E.arguments.size()) {
+						continue;
+					}
+					if (E.name == call->function_name) {
+						r_arghint += _make_arguments_hint(E, p_argidx);
+						return;
+					}
+				}
+			}
+		}
 
 		if (subscript->is_attribute) {
 			GDScriptCompletionIdentifier ci;
@@ -2485,17 +2511,36 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			_find_annotation_arguments(annotation, completion_context.current_argument, quote_style, options);
 			r_forced = true;
 		} break;
-		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
-			List<StringName> constants;
-			Variant::get_constants_for_type(completion_context.builtin_type, &constants);
-			for (const StringName &E : constants) {
-				ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
-				bool valid = false;
-				Variant default_value = Variant::get_constant_value(completion_context.builtin_type, E, &valid);
-				if (valid) {
-					option.default_value = default_value;
+		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD: {
+			// Constants.
+			{
+				List<StringName> constants;
+				Variant::get_constants_for_type(completion_context.builtin_type, &constants);
+				for (const StringName &E : constants) {
+					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+					bool valid = false;
+					Variant default_value = Variant::get_constant_value(completion_context.builtin_type, E, &valid);
+					if (valid) {
+						option.default_value = default_value;
+					}
+					options.insert(option.display, option);
 				}
-				options.insert(option.display, option);
+			}
+			// Methods.
+			{
+				List<StringName> methods;
+				Variant::get_builtin_method_list(completion_context.builtin_type, &methods);
+				for (const StringName &E : methods) {
+					if (Variant::is_builtin_method_static(completion_context.builtin_type, E)) {
+						ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+						if (Variant::get_builtin_method_argument_count(completion_context.builtin_type, E) > 0 || Variant::is_builtin_method_vararg(completion_context.builtin_type, E)) {
+							option.insert_text += "(";
+						} else {
+							option.insert_text += "()";
+						}
+						options.insert(option.display, option);
+					}
+				}
 			}
 		} break;
 		case GDScriptParser::COMPLETION_INHERIT_TYPE: {
@@ -3049,11 +3094,21 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	bool is_function = false;
 
 	switch (context.type) {
-		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
-			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-			r_result.class_name = Variant::get_type_name(context.builtin_type);
-			r_result.class_member = p_symbol;
-			return OK;
+		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD: {
+			if (!Variant::has_builtin_method(context.builtin_type, StringName(p_symbol))) {
+				// A constant.
+				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
+				r_result.class_name = Variant::get_type_name(context.builtin_type);
+				r_result.class_member = p_symbol;
+				return OK;
+			}
+			// A method.
+			GDScriptParser::DataType base_type;
+			base_type.kind = GDScriptParser::DataType::BUILTIN;
+			base_type.builtin_type = context.builtin_type;
+			if (_lookup_symbol_from_base(base_type, p_symbol, true, r_result) == OK) {
+				return OK;
+			}
 		} break;
 		case GDScriptParser::COMPLETION_SUPER_METHOD:
 		case GDScriptParser::COMPLETION_METHOD: {

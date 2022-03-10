@@ -2685,7 +2685,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 			const IdentifierNode *id = static_cast<const IdentifierNode *>(p_previous_operand);
 			Variant::Type builtin_type = get_builtin_type(id->name);
 			if (builtin_type < Variant::VARIANT_MAX) {
-				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT, builtin_type, true);
+				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, builtin_type, true);
 				is_builtin = true;
 			}
 		}
