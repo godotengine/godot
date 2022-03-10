@@ -44,8 +44,14 @@ class StyleBox : public Resource {
 	float margin[4];
 
 protected:
-	virtual float get_style_margin(Side p_side) const = 0;
+	virtual float get_style_margin(Side p_side) const;
 	static void _bind_methods();
+
+	GDVIRTUAL1RC(float, _get_style_margin, Side)
+	GDVIRTUAL2RC(bool, _test_mask, Point2, Rect2)
+	GDVIRTUAL0RC(Size2, _get_center_size)
+	GDVIRTUAL1RC(Rect2, _get_draw_rect, Rect2)
+	GDVIRTUAL2C(_draw, RID, Rect2)
 
 public:
 	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
@@ -56,7 +62,7 @@ public:
 	virtual Size2 get_center_size() const;
 
 	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const;
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const = 0;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	CanvasItem *get_current_item_drawn() const;
 

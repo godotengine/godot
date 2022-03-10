@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_value_changed" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="share">
 			<return type="void" />
 			<argument index="0" name="with" type="Node" />

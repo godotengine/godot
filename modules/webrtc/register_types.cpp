@@ -47,7 +47,7 @@ void register_webrtc_types() {
 	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
 	GDREGISTER_CLASS(WebRTCPeerConnectionExtension);
 
-	GDREGISTER_VIRTUAL_CLASS(WebRTCDataChannel);
+	GDREGISTER_ABSTRACT_CLASS(WebRTCDataChannel);
 	GDREGISTER_CLASS(WebRTCDataChannelExtension);
 
 	GDREGISTER_CLASS(WebRTCMultiplayerPeer);

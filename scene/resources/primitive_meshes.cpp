@@ -36,10 +36,16 @@
 */
 void PrimitiveMesh::_update() const {
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	_create_mesh_array(arr);
+	if (GDVIRTUAL_CALL(_create_mesh_array, arr)) {
+		ERR_FAIL_COND_MSG(arr.size() != RS::ARRAY_MAX, "_create_mesh_array must return an array of Mesh.ARRAY_MAX elements.");
+	} else {
+		arr.resize(RS::ARRAY_MAX);
+		_create_mesh_array(arr);
+	}
 
 	Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
+
+	ERR_FAIL_COND_MSG(points.size() == 0, "_create_mesh_array must return at least a vertex array.");
 
 	aabb = AABB();
 
@@ -210,6 +216,8 @@ void PrimitiveMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+
+	GDVIRTUAL_BIND(_create_mesh_array);
 }
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {

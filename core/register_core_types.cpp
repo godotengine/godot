@@ -141,7 +141,7 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Object);
 
-	GDREGISTER_VIRTUAL_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(Script);
 
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
@@ -149,12 +149,12 @@ void register_core_types() {
 	GDREGISTER_CLASS(Image);
 
 	GDREGISTER_CLASS(Shortcut);
-	GDREGISTER_VIRTUAL_CLASS(InputEvent);
-	GDREGISTER_VIRTUAL_CLASS(InputEventWithModifiers);
-	GDREGISTER_VIRTUAL_CLASS(InputEventFromWindow);
+	GDREGISTER_ABSTRACT_CLASS(InputEvent);
+	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
+	GDREGISTER_ABSTRACT_CLASS(InputEventFromWindow);
 	GDREGISTER_CLASS(InputEventKey);
 	GDREGISTER_CLASS(InputEventShortcut);
-	GDREGISTER_VIRTUAL_CLASS(InputEventMouse);
+	GDREGISTER_ABSTRACT_CLASS(InputEventMouse);
 	GDREGISTER_CLASS(InputEventMouseButton);
 	GDREGISTER_CLASS(InputEventMouseMotion);
 	GDREGISTER_CLASS(InputEventJoypadButton);
@@ -162,21 +162,21 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventScreenDrag);
 	GDREGISTER_CLASS(InputEventScreenTouch);
 	GDREGISTER_CLASS(InputEventAction);
-	GDREGISTER_VIRTUAL_CLASS(InputEventGesture);
+	GDREGISTER_ABSTRACT_CLASS(InputEventGesture);
 	GDREGISTER_CLASS(InputEventMagnifyGesture);
 	GDREGISTER_CLASS(InputEventPanGesture);
 	GDREGISTER_CLASS(InputEventMIDI);
 
 	// Network
-	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(IP);
 
-	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
 	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
-	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_ABSTRACT_CLASS(PacketPeer);
 	GDREGISTER_CLASS(PacketPeerExtension);
 	GDREGISTER_CLASS(PacketPeerStream);
 	GDREGISTER_CLASS(PacketPeerUDP);
@@ -200,7 +200,7 @@ void register_core_types() {
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
+	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
@@ -226,19 +226,19 @@ void register_core_types() {
 	GDREGISTER_CLASS(PCKPacker);
 
 	GDREGISTER_CLASS(PackedDataContainer);
-	GDREGISTER_VIRTUAL_CLASS(PackedDataContainerRef);
+	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
 	GDREGISTER_CLASS(AStar);
 	GDREGISTER_CLASS(AStar2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
-	GDREGISTER_VIRTUAL_CLASS(ResourceImporter);
+	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
 	GDREGISTER_CLASS(NativeExtension);
 
-	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
+	GDREGISTER_ABSTRACT_CLASS(NativeExtensionManager);
 
-	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
+	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
 	GDREGISTER_CLASS(EngineProfiler);
 
@@ -276,7 +276,7 @@ void register_core_settings() {
 
 void register_core_singletons() {
 	GDREGISTER_CLASS(ProjectSettings);
-	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(IP);
 	GDREGISTER_CLASS(core_bind::Geometry2D);
 	GDREGISTER_CLASS(core_bind::Geometry3D);
 	GDREGISTER_CLASS(core_bind::ResourceLoader);
@@ -286,7 +286,7 @@ void register_core_singletons() {
 	GDREGISTER_CLASS(core_bind::special::ClassDB);
 	GDREGISTER_CLASS(core_bind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
-	GDREGISTER_VIRTUAL_CLASS(Input);
+	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
 	GDREGISTER_CLASS(core_bind::EngineDebugger);

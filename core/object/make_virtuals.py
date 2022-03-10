@@ -3,6 +3,7 @@ proto = """
 StringName _gdvirtual_##m_name##_sn = #m_name;\\
 mutable bool _gdvirtual_##m_name##_initialized = false;\\
 mutable GDNativeExtensionClassCallVirtual _gdvirtual_##m_name = nullptr;\\
+template<bool required>\\
 _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	ScriptInstance *script_instance = ((Object*)(this))->get_script_instance();\\
 	if (script_instance) {\\
@@ -25,6 +26,10 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 		$CALLPTRRET\\
 		return true;\\
 	}\\
+	\\
+	if (required) {\\
+	        WARN_PRINT_ONCE("Required virtual method: "+get_class()+"::" + #m_name + " must be overriden before calling.");\\
+    }\\
 \\
     return false;\\
 }\\

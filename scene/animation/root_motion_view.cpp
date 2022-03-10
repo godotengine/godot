@@ -166,10 +166,6 @@ AABB RootMotionView::get_aabb() const {
 	return AABB(Vector3(-radius, 0, -radius), Vector3(radius * 2, 0.001, radius * 2));
 }
 
-Vector<Face3> RootMotionView::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 void RootMotionView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_path", "path"), &RootMotionView::set_animation_path);
 	ClassDB::bind_method(D_METHOD("get_animation_path"), &RootMotionView::get_animation_path);

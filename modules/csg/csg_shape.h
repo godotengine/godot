@@ -128,7 +128,6 @@ public:
 	virtual Vector<Vector3> get_brush_faces();
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;

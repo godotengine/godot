@@ -138,7 +138,6 @@ public:
 	Ref<Texture2D> get_projector() const;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	Light3D();
 	~Light3D();

@@ -47,7 +47,7 @@ class SpinBox : public Range {
 	void _release_mouse();
 
 	void _text_submitted(const String &p_string);
-	virtual void _value_changed(double) override;
+	virtual void _value_changed(double p_value) override;
 	void _text_changed(const String &p_string);
 
 	String prefix;
