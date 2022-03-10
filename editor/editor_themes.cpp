@@ -831,7 +831,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityXray"), SNAME("EditorIcons")));
 
-	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
+	// Force the vseparation to be even so that the spacing on top and bottom is even.
+	// If the vsep is odd and cannot be split into 2 even groups (of pixels), then it will be lopsided.
+	// We add 2 to the vsep to give it some extra spacing which looks a bit more modern (see Windows, for example)
+	int vsep_base = extra_spacing + default_margin_size + 2;
+	int force_even_vsep = vsep_base + (vsep_base % 2);
+	theme->set_constant("vseparation", "PopupMenu", force_even_vsep * EDSCALE);
 	theme->set_constant("item_start_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 	theme->set_constant("item_end_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 
