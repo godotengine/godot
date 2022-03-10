@@ -33,6 +33,7 @@
 #include "core/os/dir_access.h"
 #include "editor/editor_settings.h"
 #include "editor_node.h"
+#include "editor_property_name_processor.h"
 #include "editor_scale.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
@@ -617,7 +618,8 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 			property->set_editable(0, true);
 			property->set_selectable(0, true);
 			property->set_checked(0, !edited->is_class_property_disabled(class_name, name));
-			property->set_text(0, name.capitalize());
+			property->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(name));
+			property->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(name));
 			property->set_metadata(0, name);
 			String icon_type = Variant::get_type_name(E->get().type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));
