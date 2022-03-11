@@ -303,17 +303,19 @@ void CSGShape3D::_update_shape() {
 		ERR_CONTINUE(mat < -1 || mat >= face_count.size());
 		int idx = mat == -1 ? face_count.size() - 1 : mat;
 
-		Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
+		if (n->faces[i].smooth) {
+			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
 
-		for (int j = 0; j < 3; j++) {
-			Vector3 v = n->faces[i].vertices[j];
-			Vector3 add;
-			if (vec_map.lookup(v, add)) {
-				add += p.normal;
-			} else {
-				add = p.normal;
+			for (int j = 0; j < 3; j++) {
+				Vector3 v = n->faces[i].vertices[j];
+				Vector3 add;
+				if (vec_map.lookup(v, add)) {
+					add += p.normal;
+				} else {
+					add = p.normal;
+				}
+				vec_map.set(v, add);
 			}
-			vec_map.set(v, add);
 		}
 
 		face_count.write[idx]++;
