@@ -92,13 +92,10 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -139,8 +136,11 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_itunes_sharing"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/camera_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with Retina display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with Retina HD display
@@ -200,8 +200,6 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
 		} else if (lines[i].find("$name") != -1) {
 			strnew += lines[i].replace("$name", p_config.pkg_name) + "\n";
-		} else if (lines[i].find("$info") != -1) {
-			strnew += lines[i].replace("$info", p_preset->get("application/info")) + "\n";
 		} else if (lines[i].find("$bundle_identifier") != -1) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
@@ -210,8 +208,6 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$version", p_preset->get("application/version")) + "\n";
 		} else if (lines[i].find("$signature") != -1) {
 			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
-		} else if (lines[i].find("$copyright") != -1) {
-			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
 		} else if (lines[i].find("$team_id") != -1) {
 			strnew += lines[i].replace("$team_id", p_preset->get("application/app_store_team_id")) + "\n";
 		} else if (lines[i].find("$default_build_config") != -1) {
@@ -1470,9 +1466,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	print_line("Static framework: " + library_to_use);
 	String pkg_name;
-	if (p_preset->get("application/name") != "") {
-		pkg_name = p_preset->get("application/name"); // app_name
-	} else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
@@ -1623,24 +1617,45 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
+	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
+	Dictionary photolibrary_usage_descriptions = p_preset->get("privacy/photolibrary_usage_description_localized");
+
 	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
 	if (translations.size() > 0) {
 		{
 			String fname = dest_dir + binary_name + "/en.lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("/* Localized versions of Info.plist keys */");
+			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
 		}
 
 		for (const String &E : translations) {
 			Ref<Translation> tr = ResourceLoader::load(E);
 			if (tr.is_valid()) {
-				String fname = dest_dir + binary_name + "/" + tr->get_locale() + ".lproj";
+				String lang = tr->get_locale();
+				String fname = dest_dir + binary_name + "/" + lang + ".lproj";
 				tmp_app_path->make_dir_recursive(fname);
 				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-				String prop = "application/config/name_" + tr->get_locale();
-				if (ProjectSettings::get_singleton()->has_setting(prop)) {
-					f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
+				f->store_line("/* Localized versions of Info.plist keys */");
+				f->store_line("");
+				if (appnames.has(lang)) {
+					f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				}
+				if (camera_usage_descriptions.has(lang)) {
+					f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (microphone_usage_descriptions.has(lang)) {
+					f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (photolibrary_usage_descriptions.has(lang)) {
+					f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";");
 				}
 			}
 		}

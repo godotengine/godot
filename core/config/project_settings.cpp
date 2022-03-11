@@ -1199,6 +1199,8 @@ ProjectSettings::ProjectSettings() {
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
+	GLOBAL_DEF_BASIC("application/config/name_localized", Dictionary());
+	custom_prop_info["application/config/name_localized"] = PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING);
 	GLOBAL_DEF_BASIC("application/config/description", "");
 	custom_prop_info["application/config/description"] = PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT);
 	GLOBAL_DEF_BASIC("application/run/main_scene", "");

@@ -72,8 +72,6 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
@@ -81,18 +79,30 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/camera_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/location_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the location information"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/location_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/address_book_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the address book"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/address_book_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/calendar_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the calendar"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/calendar_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photos_library_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the photo library"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photos_library_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/desktop_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Desktop folder"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/desktop_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/documents_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Documents folder"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/documents_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/downloads_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Downloads folder"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/downloads_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/network_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use network volumes"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/network_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/removable_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
@@ -316,9 +326,7 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 		if (lines[i].find("$binary") != -1) {
 			strnew += lines[i].replace("$binary", p_binary) + "\n";
 		} else if (lines[i].find("$name") != -1) {
-			strnew += lines[i].replace("$name", p_binary) + "\n";
-		} else if (lines[i].find("$info") != -1) {
-			strnew += lines[i].replace("$info", p_preset->get("application/info")) + "\n";
+			strnew += lines[i].replace("$name", ProjectSettings::get_singleton()->get("application/config/name")) + "\n";
 		} else if (lines[i].find("$bundle_identifier") != -1) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
@@ -713,9 +721,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
 	String pkg_name;
-	if (p_preset->get("application/name") != "") {
-		pkg_name = p_preset->get("application/name"); // app_name
-	} else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
@@ -781,24 +787,112 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 	}
 
+	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
+	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
+	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
+	Dictionary address_book_usage_descriptions = p_preset->get("privacy/address_book_usage_description_localized");
+	Dictionary calendar_usage_descriptions = p_preset->get("privacy/calendar_usage_description_localized");
+	Dictionary photos_library_usage_descriptions = p_preset->get("privacy/photos_library_usage_description_localized");
+	Dictionary desktop_folder_usage_descriptions = p_preset->get("privacy/desktop_folder_usage_description_localized");
+	Dictionary documents_folder_usage_descriptions = p_preset->get("privacy/documents_folder_usage_description_localized");
+	Dictionary downloads_folder_usage_descriptions = p_preset->get("privacy/downloads_folder_usage_description_localized");
+	Dictionary network_volumes_usage_descriptions = p_preset->get("privacy/network_volumes_usage_description_localized");
+	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
+	Dictionary copyrights = p_preset->get("application/copyright_localized");
+
 	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
 	if (translations.size() > 0) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("/* Localized versions of Info.plist keys */");
+			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
+				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
+				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
+				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
+				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
+				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
+				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
+			}
+			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
 		}
 
 		for (const String &E : translations) {
 			Ref<Translation> tr = ResourceLoader::load(E);
 			if (tr.is_valid()) {
-				String fname = tmp_app_path_name + "/Contents/Resources/" + tr->get_locale() + ".lproj";
+				String lang = tr->get_locale();
+				String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 				tmp_app_dir->make_dir_recursive(fname);
 				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-				String prop = "application/config/name_" + tr->get_locale();
-				if (ProjectSettings::get_singleton()->has_setting(prop)) {
-					f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
+				f->store_line("/* Localized versions of Info.plist keys */");
+				f->store_line("");
+				if (appnames.has(lang)) {
+					f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				}
+				if (microphone_usage_descriptions.has(lang)) {
+					f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (camera_usage_descriptions.has(lang)) {
+					f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (location_usage_descriptions.has(lang)) {
+					f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (address_book_usage_descriptions.has(lang)) {
+					f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (calendar_usage_descriptions.has(lang)) {
+					f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (photos_library_usage_descriptions.has(lang)) {
+					f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (desktop_folder_usage_descriptions.has(lang)) {
+					f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (documents_folder_usage_descriptions.has(lang)) {
+					f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (downloads_folder_usage_descriptions.has(lang)) {
+					f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (network_volumes_usage_descriptions.has(lang)) {
+					f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (removable_volumes_usage_descriptions.has(lang)) {
+					f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (copyrights.has(lang)) {
+					f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
 				}
 			}
 		}
