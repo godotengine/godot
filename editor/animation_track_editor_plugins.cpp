@@ -1051,12 +1051,7 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 				len_resizing_index = i;
 			}
 		}
-
-		if (use_hsize_cursor) {
-			set_default_cursor_shape(CURSOR_HSIZE);
-		} else {
-			set_default_cursor_shape(CURSOR_ARROW);
-		}
+		over_drag_position = use_hsize_cursor;
 	}
 
 	if (len_resizing && mm.is_valid()) {
@@ -1068,7 +1063,7 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && get_default_cursor_shape() == CURSOR_HSIZE) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && over_drag_position) {
 		len_resizing = true;
 		len_resizing_start = mb->get_shift();
 		len_resizing_from_px = mb->get_position().x;
@@ -1103,6 +1098,14 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	AnimationTrackEdit::_gui_input(p_event);
+}
+
+Control::CursorShape AnimationTrackEditTypeAudio::get_cursor_shape(const Point2 &p_pos) const {
+	if (over_drag_position || len_resizing) {
+		return Control::CURSOR_HSIZE;
+	} else {
+		return get_default_cursor_shape();
+	}
 }
 
 ////////////////////

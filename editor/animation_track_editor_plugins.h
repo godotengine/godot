@@ -119,6 +119,7 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 	int len_resizing_index;
 	float len_resizing_from_px;
 	float len_resizing_rel;
+	bool over_drag_position = false;
 
 protected:
 	static void _bind_methods();
@@ -133,6 +134,8 @@ public:
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
 
 	AnimationTrackEditTypeAudio();
 };
