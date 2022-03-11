@@ -38,6 +38,15 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
 
+static float _lerp_fade(int total, int fade, float position) {
+	if (position < fade) {
+		return Math::inverse_lerp(0, fade, position);
+	} else if (position > (total - fade)) {
+		return Math::inverse_lerp(total, total - fade, position);
+	}
+	return 1.0;
+}
+
 void TileMapEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
@@ -441,12 +450,12 @@ void TileMapEditor::_update_palette() {
 		return;
 	}
 
-	float min_size = EDITOR_DEF("editors/tile_map/preview_size", 64);
+	float min_size = EDITOR_GET("editors/tile_map/preview_size");
 	min_size *= EDSCALE;
-	int hseparation = EDITOR_DEF("editors/tile_map/palette_item_hseparation", 8);
-	bool show_tile_names = bool(EDITOR_DEF("editors/tile_map/show_tile_names", true));
-	bool show_tile_ids = bool(EDITOR_DEF("editors/tile_map/show_tile_ids", false));
-	bool sort_by_name = bool(EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true));
+	int hseparation = EDITOR_GET("editors/tile_map/palette_item_hseparation");
+	bool show_tile_names = bool(EDITOR_GET("editors/tile_map/show_tile_names"));
+	bool show_tile_ids = bool(EDITOR_GET("editors/tile_map/show_tile_ids"));
+	bool sort_by_name = bool(EDITOR_GET("editors/tile_map/sort_tiles_by_name"));
 
 	palette->add_constant_override("hseparation", hseparation * EDSCALE);
 
@@ -792,6 +801,139 @@ void TileMapEditor::_erase_selection() {
 	for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 		for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
 			_set_cell(Point2i(j, i), invalid_cell, false, false, false);
+		}
+	}
+}
+
+void TileMapEditor::_draw_grid(Control *p_viewport, const Rect2 &p_rect) const {
+	if (!EDITOR_GET("editors/tile_map/display_grid")) {
+		return;
+	}
+
+	const Transform2D cell_xf = node->get_cell_transform();
+	const Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+
+	// Fade the grid when the rendered cell size is relatively small.
+	const float cell_area = xform.xform(Rect2(Point2(), node->get_cell_size())).get_area();
+	const float distance_fade = MIN(Math::inverse_lerp(4.0f, 64.0f, cell_area), 1.0f);
+	if (distance_fade <= 0) {
+		return;
+	}
+	const Color grid_color = Color(EDITOR_GET("editors/tile_map/grid_color")) * Color(1, 1, 1, distance_fade);
+	const Color axis_color = Color(EDITOR_GET("editors/tile_map/axis_color")) * Color(1, 1, 1, distance_fade);
+
+	const int fade = 5;
+	const Rect2i si = p_rect.grow(fade);
+
+	// When zoomed in, it's useful to clip the rendering.
+	Rect2i clipped;
+	{
+		const Transform2D xform_inv = xform.affine_inverse();
+		const Size2 screen_size = p_viewport->get_size();
+		Rect2 rect;
+		rect.position = node->world_to_map(xform_inv.xform(Vector2()));
+		rect.expand_to(node->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
+		rect.expand_to(node->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
+		rect.expand_to(node->world_to_map(xform_inv.xform(screen_size)));
+		clipped = rect.clip(si);
+	}
+	clipped.position -= si.position; // Relative to the fade rect, in grid unit.
+	const Point2i clipped_end = clipped.position + clipped.size;
+
+	if (clipped.has_no_area()) {
+		return;
+	}
+
+	Vector<Point2> points;
+	Vector<Color> colors;
+
+	// Vertical lines.
+	if (node->get_half_offset() != TileMap::HALF_OFFSET_X && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_X) {
+		points.resize(4);
+		colors.resize(4);
+
+		for (int x = clipped.position.x; x <= clipped_end.x; x++) {
+			points.write[0] = xform.xform(node->map_to_world(si.position + Vector2(x, 0)));
+			points.write[1] = xform.xform(node->map_to_world(si.position + Vector2(x, fade)));
+			points.write[2] = xform.xform(node->map_to_world(si.position + Vector2(x, si.size.y - fade)));
+			points.write[3] = xform.xform(node->map_to_world(si.position + Vector2(x, si.size.y)));
+
+			const Color color = (x + si.position.x == 0) ? axis_color : grid_color;
+			const float line_opacity = _lerp_fade(si.size.x, fade, x);
+
+			colors.write[0] = Color(color.r, color.g, color.b, 0.0);
+			colors.write[1] = Color(color.r, color.g, color.b, color.a * line_opacity);
+			colors.write[2] = Color(color.r, color.g, color.b, color.a * line_opacity);
+			colors.write[3] = Color(color.r, color.g, color.b, 0.0);
+
+			p_viewport->draw_polyline_colors(points, colors, 1);
+		}
+	} else {
+		const float half_offset = node->get_half_offset() == TileMap::HALF_OFFSET_X ? 0.5 : -0.5;
+		const int cell_count = clipped.size.y;
+		points.resize(cell_count * 2);
+		colors.resize(cell_count * 2);
+
+		for (int x = clipped.position.x; x <= clipped_end.x; x++) {
+			const Color color = (x + si.position.x == 0) ? axis_color : grid_color;
+			const float line_opacity = _lerp_fade(si.size.x, fade, x);
+
+			for (int y = clipped.position.y; y < cell_count; y++) {
+				Vector2 ofs;
+				if (ABS(si.position.y + y) & 1) {
+					ofs = cell_xf[0] * half_offset;
+				}
+				points.write[y * 2 + 0] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y), true));
+				points.write[y * 2 + 1] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y + 1), true));
+				colors.write[y * 2 + 0] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.y, fade, y));
+				colors.write[y * 2 + 1] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.y, fade, y + 1));
+			}
+			p_viewport->draw_multiline_colors(points, colors, 1);
+		}
+	}
+
+	// Horizontal lines.
+	if (node->get_half_offset() != TileMap::HALF_OFFSET_Y && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_Y) {
+		points.resize(4);
+		colors.resize(4);
+
+		for (int y = clipped.position.y; y <= clipped_end.y; y++) {
+			points.write[0] = xform.xform(node->map_to_world(si.position + Vector2(0, y)));
+			points.write[1] = xform.xform(node->map_to_world(si.position + Vector2(fade, y)));
+			points.write[2] = xform.xform(node->map_to_world(si.position + Vector2(si.size.x - fade, y)));
+			points.write[3] = xform.xform(node->map_to_world(si.position + Vector2(si.size.x, y)));
+
+			const Color color = (y + si.position.y == 0) ? axis_color : grid_color;
+			const float line_opacity = _lerp_fade(si.size.y, fade, y);
+
+			colors.write[0] = Color(color.r, color.g, color.b, 0.0);
+			colors.write[1] = Color(color.r, color.g, color.b, color.a * line_opacity);
+			colors.write[2] = Color(color.r, color.g, color.b, color.a * line_opacity);
+			colors.write[3] = Color(color.r, color.g, color.b, 0.0);
+
+			p_viewport->draw_polyline_colors(points, colors, 1);
+		}
+	} else {
+		const float half_offset = node->get_half_offset() == TileMap::HALF_OFFSET_Y ? 0.5 : -0.5;
+		const int cell_count = clipped.size.x;
+		points.resize(cell_count * 2);
+		colors.resize(cell_count * 2);
+
+		for (int y = clipped.position.y; y <= clipped_end.y; y++) {
+			const Color color = (y + si.position.y == 0) ? axis_color : grid_color;
+			const float line_opacity = _lerp_fade(si.size.y, fade, y);
+
+			for (int x = clipped.position.x; x < cell_count; x++) {
+				Vector2 ofs;
+				if (ABS(si.position.x + x) & 1) {
+					ofs = cell_xf[1] * half_offset;
+				}
+				points.write[x * 2 + 0] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y), true));
+				points.write[x * 2 + 1] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x + 1, y), true));
+				colors.write[x * 2 + 0] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.x, fade, x));
+				colors.write[x * 2 + 1] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.x, fade, x + 1));
+			}
+			p_viewport->draw_multiline_colors(points, colors, 1);
 		}
 	}
 }
@@ -1534,96 +1676,10 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		return;
 	}
 
-	Transform2D cell_xf = node->get_cell_transform();
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
-	Transform2D xform_inv = xform.affine_inverse();
+	_draw_grid(p_overlay, node->get_used_rect());
 
-	Size2 screen_size = p_overlay->get_size();
-	{
-		Rect2 aabb;
-		aabb.position = node->world_to_map(xform_inv.xform(Vector2()));
-		aabb.expand_to(node->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
-		aabb.expand_to(node->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
-		aabb.expand_to(node->world_to_map(xform_inv.xform(screen_size)));
-		Rect2i si = aabb.grow(1.0);
-
-		if (node->get_half_offset() != TileMap::HALF_OFFSET_X && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_X) {
-			int max_lines = 2000; //avoid crash if size too small
-
-			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
-				Vector2 from = xform.xform(node->map_to_world(Vector2(i, si.position.y)));
-				Vector2 to = xform.xform(node->map_to_world(Vector2(i, si.position.y + si.size.y + 1)));
-
-				Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-				p_overlay->draw_line(from, to, col, 1);
-				if (max_lines-- == 0) {
-					break;
-				}
-			}
-		} else {
-			int max_lines = 10000; //avoid crash if size too small
-
-			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
-				for (int j = (si.position.y) - 1; j <= (si.position.y + si.size.y); j++) {
-					Vector2 ofs;
-					if (ABS(j) & 1) {
-						ofs = cell_xf[0] * (node->get_half_offset() == TileMap::HALF_OFFSET_X ? 0.5 : -0.5);
-					}
-
-					Vector2 from = xform.xform(node->map_to_world(Vector2(i, j), true) + ofs);
-					Vector2 to = xform.xform(node->map_to_world(Vector2(i, j + 1), true) + ofs);
-
-					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-					p_overlay->draw_line(from, to, col, 1);
-
-					if (--max_lines == 0) {
-						break;
-					}
-				}
-				if (max_lines == 0) {
-					break;
-				}
-			}
-		}
-
-		int max_lines = 10000; //avoid crash if size too small
-
-		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_Y) {
-			for (int i = (si.position.y) - 1; i <= (si.position.y + si.size.y); i++) {
-				Vector2 from = xform.xform(node->map_to_world(Vector2(si.position.x, i)));
-				Vector2 to = xform.xform(node->map_to_world(Vector2(si.position.x + si.size.x + 1, i)));
-
-				Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-				p_overlay->draw_line(from, to, col, 1);
-
-				if (max_lines-- == 0) {
-					break;
-				}
-			}
-		} else {
-			for (int i = (si.position.y) - 1; i <= (si.position.y + si.size.y); i++) {
-				for (int j = (si.position.x) - 1; j <= (si.position.x + si.size.x); j++) {
-					Vector2 ofs;
-					if (ABS(j) & 1) {
-						ofs = cell_xf[1] * (node->get_half_offset() == TileMap::HALF_OFFSET_Y ? 0.5 : -0.5);
-					}
-
-					Vector2 from = xform.xform(node->map_to_world(Vector2(j, i), true) + ofs);
-					Vector2 to = xform.xform(node->map_to_world(Vector2(j + 1, i), true) + ofs);
-
-					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-					p_overlay->draw_line(from, to, col, 1);
-
-					if (--max_lines == 0) {
-						break;
-					}
-				}
-				if (max_lines == 0) {
-					break;
-				}
-			}
-		}
-	}
+	const Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+	const Transform2D cell_xf = node->get_cell_transform();
 
 	if (selection_active) {
 		Vector<Vector2> points;
@@ -1685,6 +1741,22 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				return;
 			}
 
+			// Making a Rect2i that encloses all the cells in paint_undo.
+			// I wonder if there is a cleaner way to do it.
+			const Point2i first_pos = paint_undo.front()->key();
+			int left = first_pos.x;
+			int right = first_pos.x;
+			int top = first_pos.y;
+			int bottom = first_pos.y;
+			for (Map<Point2i, CellOp>::Element *E = paint_undo.front()->next(); E; E = E->next()) {
+				const Point2i &pos = E->key();
+				left = MIN(pos.x, left);
+				right = MAX(pos.x, right);
+				top = MIN(pos.y, top);
+				bottom = MAX(pos.y, bottom);
+			}
+			_draw_grid(p_overlay, Rect2i(left, top, right - left + 1, bottom - top + 1));
+
 			for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
 				_draw_cell(p_overlay, ids[0], E->key(), flip_h, flip_v, transpose, autotile_coord, xform);
 			}
@@ -1695,6 +1767,8 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			if (ids.size() == 1 && ids[0] == TileMap::INVALID_CELL) {
 				return;
 			}
+
+			_draw_grid(p_overlay, rectangle);
 
 			for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 				for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
@@ -1746,6 +1820,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				return;
 			}
 
+			_draw_grid(p_overlay, Rect2(over_tile, Size2(1, 1)));
 			_draw_cell(p_overlay, st[0], over_tile, flip_h, flip_v, transpose, autotile_coord, xform);
 		}
 	}
@@ -1970,7 +2045,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	size_slider->connect("value_changed", this, "_icon_size_changed");
 	add_child(size_slider);
 
-	int mw = EDITOR_DEF("editors/tile_map/palette_min_width", 80);
+	int mw = EDITOR_GET("editors/tile_map/palette_min_width");
 
 	VSplitContainer *palette_container = memnew(VSplitContainer);
 	palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2172,12 +2247,16 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 
 TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("editors/tile_map/preview_size", 64);
+	EDITOR_DEF("editors/tile_map/palette_min_width", 80);
 	EDITOR_DEF("editors/tile_map/palette_item_hseparation", 8);
 	EDITOR_DEF("editors/tile_map/show_tile_names", true);
 	EDITOR_DEF("editors/tile_map/show_tile_ids", false);
 	EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true);
 	EDITOR_DEF("editors/tile_map/bucket_fill_preview", true);
 	EDITOR_DEF("editors/tile_map/editor_side", 1);
+	EDITOR_DEF("editors/tile_map/display_grid", true);
+	EDITOR_DEF("editors/tile_map/grid_color", Color(1, 0.3, 0.1, 0.2));
+	EDITOR_DEF("editors/tile_map/axis_color", Color(1, 0.8, 0.2, 0.5));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/tile_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
 	tile_map_editor = memnew(TileMapEditor(p_node));

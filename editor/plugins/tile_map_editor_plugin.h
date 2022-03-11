@@ -172,6 +172,7 @@ class TileMapEditor : public VBoxContainer {
 	void _select(const Point2i &p_from, const Point2i &p_to);
 	void _erase_selection();
 
+	void _draw_grid(Control *p_viewport, const Rect2 &p_rect) const;
 	void _draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform);
 	void _draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform);
 	void _clear_bucket_cache();
