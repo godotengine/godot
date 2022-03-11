@@ -277,10 +277,8 @@ void EditorAssetInstaller::ok_pressed() {
 					dirpath = dirpath.substr(0, dirpath.length() - 1);
 				}
 
-				DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
-				memdelete(da);
-
 			} else {
 				Vector<uint8_t> data;
 				data.resize(info.uncompressed_size);

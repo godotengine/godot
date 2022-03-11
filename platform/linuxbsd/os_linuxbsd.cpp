@@ -535,9 +535,8 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		// Issue an error if "mv" failed to move the given resource to the trash can.
 		if (err != OK || retval != 0) {
 			ERR_PRINT("move_to_trash: Could not move the resource \"" + path + "\" to the trash can \"" + trash_path + "/files\"");
-			DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			err = dir_access->rename(renamed_path, path);
-			memdelete(dir_access);
 			ERR_FAIL_COND_V_MSG(err != OK, err, "Could not rename \"" + renamed_path + "\" back to its original name: \"" + path + "\"");
 			return FAILED;
 		}

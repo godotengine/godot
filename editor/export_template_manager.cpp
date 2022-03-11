@@ -44,7 +44,7 @@
 
 void ExportTemplateManager::_update_template_status() {
 	// Fetch installed templates from the file system.
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	const String &templates_dir = EditorSettings::get_singleton()->get_templates_dir();
 
 	Error err = da->change_dir(templates_dir);
@@ -62,7 +62,6 @@ void ExportTemplateManager::_update_template_status() {
 		}
 	}
 	da->list_dir_end();
-	memdelete(da);
 
 	// Update the state of the current version.
 	String current_version = VERSION_FULL_CONFIG;

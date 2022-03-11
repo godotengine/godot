@@ -749,12 +749,11 @@ void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, List<String> &path
 }
 
 void OrphanResourcesDialog::_delete_confirm() {
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (const String &E : paths) {
 		da->remove(E);
 		EditorFileSystem::get_singleton()->update_file(E);
 	}
-	memdelete(da);
 	refresh();
 }
 

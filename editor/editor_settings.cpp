@@ -1222,7 +1222,7 @@ bool EditorSettings::is_dark_theme() {
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 
-	DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
+	DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
 	if (d) {
 		List<String> custom_themes;
 		d->list_dir_begin();
@@ -1234,7 +1234,6 @@ void EditorSettings::list_text_editor_themes() {
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 
 		custom_themes.sort();
 		for (const String &E : custom_themes) {
@@ -1289,10 +1288,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
+		DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
 		if (d) {
 			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
-			memdelete(d);
 			return true;
 		}
 	}
@@ -1342,7 +1340,7 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
-	DirAccess *d = DirAccess::open(template_dir);
+	DirAccessRef d = DirAccess::open(template_dir);
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1353,7 +1351,6 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 	}
 	return templates;
 }

@@ -414,8 +414,6 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_
 }
 
 bool DirAccess::exists(String p_dir) {
-	DirAccess *da = DirAccess::create_for_path(p_dir);
-	bool valid = da->change_dir(p_dir) == OK;
-	memdelete(da);
-	return valid;
+	DirAccessRef da = DirAccess::create_for_path(p_dir);
+	return da->change_dir(p_dir) == OK;
 }

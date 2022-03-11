@@ -1032,7 +1032,6 @@ RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_origi
 	String path = !p_original_path.is_empty() ? p_original_path : p_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 
 	err = loader.load();
@@ -1086,17 +1085,14 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
 Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
-	//Error error=OK;
-
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
-	FileAccess *fw = nullptr; //=FileAccess::open(p_path+".depren");
+	FileAccess *fw = nullptr;
 
 	String local_path = p_path.get_base_dir();
 
@@ -1158,10 +1154,12 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	if (ver_format < FORMAT_VERSION_CAN_RENAME_DEPS) {
 		memdelete(f);
 		memdelete(fw);
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		da->remove(p_path + ".depren");
-		memdelete(da);
-		//use the old approach
+		{
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			da->remove(p_path + ".depren");
+		}
+
+		// Use the old approach.
 
 		WARN_PRINT("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
 
@@ -1174,7 +1172,6 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 		loader.res_path = loader.local_path;
 		loader.remaps = p_map;
-		//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 		loader.open(f);
 
 		err = loader.load();
@@ -1304,10 +1301,9 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		return ERR_CANT_CREATE;
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	da->remove(p_path);
 	da->rename(p_path + ".depren", p_path);
-	memdelete(da);
 	return OK;
 }
 
@@ -1320,7 +1316,6 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
 }
@@ -1339,7 +1334,6 @@ ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_pat
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.open(f, true);
 	if (loader.error != OK) {
 		return ResourceUID::INVALID_ID; //could not read
