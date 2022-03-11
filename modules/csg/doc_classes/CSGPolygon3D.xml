@@ -14,9 +14,6 @@
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			When [member mode] is [constant MODE_DEPTH], the depth of the extrusion.
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material">
-			Material to use for the resulting mesh. The UV maps the top half of the material to the extruded shape (U along the length of the extrusions and V around the outline of the [member polygon]), the bottom-left quarter to the front end face, and the bottom-right quarter to the back end face.
-		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygon3D.Mode" default="0">
 			The [member mode] used to extrude the [member polygon].
 		</member>

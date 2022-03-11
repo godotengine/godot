@@ -14,5 +14,8 @@
 		<member name="invert_faces" type="bool" setter="set_invert_faces" getter="is_inverting_faces" default="false">
 			Invert the faces of the mesh.
 		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The [Material] used in drawing the CSG shape.
+		</member>
 	</members>
 </class>

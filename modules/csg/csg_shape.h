@@ -170,6 +170,8 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
+	Ref<Material> material;
+
 protected:
 	bool invert_faces;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
@@ -178,6 +180,9 @@ protected:
 public:
 	void set_invert_faces(bool p_invert);
 	bool is_inverting_faces();
+
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
 	CSGPrimitive3D();
 };
@@ -188,7 +193,6 @@ class CSGMesh3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Mesh> mesh;
-	Ref<Material> material;
 
 	void _mesh_changed();
 
@@ -198,133 +202,6 @@ protected:
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh();
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-};
-
-class CSGSphere3D : public CSGPrimitive3D {
-	GDCLASS(CSGSphere3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
-
-	Ref<Material> material;
-	bool smooth_faces;
-	float radius;
-	int radial_segments;
-	int rings;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_radius(const float p_radius);
-	float get_radius() const;
-
-	void set_radial_segments(const int p_radial_segments);
-	int get_radial_segments() const;
-
-	void set_rings(const int p_rings);
-	int get_rings() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
-	CSGSphere3D();
-};
-
-class CSGBox3D : public CSGPrimitive3D {
-	GDCLASS(CSGBox3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
-
-	Ref<Material> material;
-	Vector3 size = Vector3(1, 1, 1);
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_size(const Vector3 &p_size);
-	Vector3 get_size() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	CSGBox3D() {}
-};
-
-class CSGCylinder3D : public CSGPrimitive3D {
-	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
-
-	Ref<Material> material;
-	float radius;
-	float height;
-	int sides;
-	bool cone;
-	bool smooth_faces;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_radius(const float p_radius);
-	float get_radius() const;
-
-	void set_height(const float p_height);
-	float get_height() const;
-
-	void set_sides(const int p_sides);
-	int get_sides() const;
-
-	void set_cone(const bool p_cone);
-	bool is_cone() const;
-
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	CSGCylinder3D();
-};
-
-class CSGTorus3D : public CSGPrimitive3D {
-	GDCLASS(CSGTorus3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
-
-	Ref<Material> material;
-	float inner_radius;
-	float outer_radius;
-	int sides;
-	int ring_sides;
-	bool smooth_faces;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_inner_radius(const float p_inner_radius);
-	float get_inner_radius() const;
-
-	void set_outer_radius(const float p_outer_radius);
-	float get_outer_radius() const;
-
-	void set_sides(const int p_sides);
-	int get_sides() const;
-
-	void set_ring_sides(const int p_ring_sides);
-	int get_ring_sides() const;
-
-	void set_smooth_faces(bool p_smooth_faces);
-	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
-	CSGTorus3D();
 };
 
 class CSGPolygon3D : public CSGPrimitive3D {
@@ -352,7 +229,6 @@ private:
 	virtual CSGBrush *_build_brush() override;
 
 	Vector<Vector2> polygon;
-	Ref<Material> material;
 
 	Mode mode;
 
@@ -431,9 +307,6 @@ public:
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
 
 	CSGPolygon3D();
 };
