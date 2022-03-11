@@ -4469,7 +4469,11 @@ int TextEdit::get_visible_line_count() const {
 int TextEdit::get_visible_line_count_in_range(int p_from_line, int p_to_line) const {
 	ERR_FAIL_INDEX_V(p_from_line, text.size(), 0);
 	ERR_FAIL_INDEX_V(p_to_line, text.size(), 0);
-	ERR_FAIL_COND_V(p_from_line > p_to_line, 0);
+
+	// So we can handle inputs in whatever order
+	if (p_from_line > p_to_line) {
+		SWAP(p_from_line, p_to_line);
+	}
 
 	/* Returns the total number of (lines + wrapped - hidden). */
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
