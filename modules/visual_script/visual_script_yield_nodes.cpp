@@ -67,7 +67,7 @@ PropertyInfo VisualScriptYield::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptYield::get_caption() const {
-	return yield_mode == YIELD_RETURN ? TTR("Yield") : TTR("Wait");
+	return yield_mode == YIELD_RETURN ? RTR("Yield") : RTR("Wait");
 }
 
 String VisualScriptYield::get_text() const {
@@ -76,13 +76,13 @@ String VisualScriptYield::get_text() const {
 			return "";
 			break;
 		case YIELD_FRAME:
-			return TTR("Next Frame");
+			return RTR("Next Frame");
 			break;
 		case YIELD_PHYSICS_FRAME:
-			return TTR("Next Physics Frame");
+			return RTR("Next Physics Frame");
 			break;
 		case YIELD_WAIT:
-			return vformat(TTR("%s sec(s)"), rtos(wait_time));
+			return vformat(RTR("%s sec(s)"), rtos(wait_time));
 			break;
 	}
 
@@ -333,13 +333,18 @@ PropertyInfo VisualScriptYieldSignal::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptYieldSignal::get_caption() const {
-	static const char *cname[3] = {
-		TTRC("WaitSignal"),
-		TTRC("WaitNodeSignal"),
-		TTRC("WaitInstanceSignal"),
-	};
-
-	return TTRGET(cname[call_mode]);
+	switch (call_mode) {
+		case CALL_MODE_SELF: {
+			return RTR("WaitSignal");
+		} break;
+		case CALL_MODE_NODE_PATH: {
+			return RTR("WaitNodeSignal");
+		} break;
+		case CALL_MODE_INSTANCE: {
+			return RTR("WaitInstanceSignal");
+		} break;
+	}
+	return String();
 }
 
 String VisualScriptYieldSignal::get_text() const {

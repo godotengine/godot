@@ -172,7 +172,7 @@ PropertyInfo VisualScriptExpression::get_output_value_port_info(int p_idx) const
 }
 
 String VisualScriptExpression::get_caption() const {
-	return TTR("Expression");
+	return RTR("Expression");
 }
 String VisualScriptExpression::get_text() const {
 	return expression;
