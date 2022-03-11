@@ -138,7 +138,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName selected_transition_from;
 	StringName selected_transition_to;
 
-	bool over_text;
 	StringName over_node;
 	int over_node_what;
 
@@ -185,6 +184,7 @@ public:
 	static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	AnimationNodeStateMachineEditor();
 };
 

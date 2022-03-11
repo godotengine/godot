@@ -346,29 +346,21 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		state_machine_draw->update();
 	}
 
-	//put ibeam (text cursor) over names to make it clearer that they are editable
 	if (mm.is_valid()) {
 		state_machine_draw->grab_focus();
 
-		bool over_text_now = false;
 		String new_over_node = StringName();
 		int new_over_node_what = -1;
 		if (tool_select->is_pressed()) {
-			for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
-
-				if (node_rects[i].name.has_point(mm->get_position())) {
-					over_text_now = true;
-					break;
-				}
-
+			for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
 				if (node_rects[i].node.has_point(mm->get_position())) {
 					new_over_node = node_rects[i].node_name;
 					if (node_rects[i].play.has_point(mm->get_position())) {
 						new_over_node_what = 0;
-					}
-					if (node_rects[i].edit.has_point(mm->get_position())) {
+					} else if (node_rects[i].edit.has_point(mm->get_position())) {
 						new_over_node_what = 1;
 					}
+					break;
 				}
 			}
 		}
@@ -378,16 +370,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			over_node_what = new_over_node_what;
 			state_machine_draw->update();
 		}
-
-		if (over_text != over_text_now) {
-			if (over_text_now) {
-				state_machine_draw->set_default_cursor_shape(CURSOR_IBEAM);
-			} else {
-				state_machine_draw->set_default_cursor_shape(CURSOR_ARROW);
-			}
-
-			over_text = over_text_now;
-		}
 	}
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
@@ -395,6 +377,23 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
 	}
+}
+
+Control::CursorShape AnimationNodeStateMachineEditor::get_cursor_shape(const Point2 &p_pos) const {
+	// Put ibeam (text cursor) over names to make it clearer that they are editable.
+	Transform2D xform = panel->get_transform() * state_machine_draw->get_transform();
+	Point2 pos = xform.xform_inv(p_pos);
+	Control::CursorShape cursor_shape = get_default_cursor_shape();
+
+	for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
+		if (node_rects[i].node.has_point(pos)) {
+			if (node_rects[i].name.has_point(pos)) {
+				cursor_shape = Control::CURSOR_IBEAM;
+			}
+			break;
+		}
+	}
+	return cursor_shape;
 }
 
 void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
@@ -1287,6 +1286,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	panel = memnew(PanelContainer);
 	panel->set_clip_contents(true);
+	panel->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	add_child(panel);
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1295,6 +1295,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->connect("gui_input", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_gui_input));
 	state_machine_draw->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_draw));
 	state_machine_draw->set_focus_mode(FOCUS_ALL);
+	state_machine_draw->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
 	state_machine_play_pos = memnew(Control);
 	state_machine_draw->add_child(state_machine_play_pos);
@@ -1346,8 +1347,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeStateMachineEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
-
-	over_text = false;
 
 	over_node_what = -1;
 	dragging_selected_attempt = false;
