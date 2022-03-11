@@ -119,6 +119,8 @@ public:
 
 	void set_hscroll(HScrollBar *p_hscroll);
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+
 	AnimationTimelineEdit();
 };
 
