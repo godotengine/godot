@@ -89,17 +89,21 @@ void Environment::set_canvas_max_layer(int p_max_layer) {
 }
 void Environment::set_ambient_light_color(const Color &p_color) {
 	ambient_color = p_color;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution, ambient_sky_contribution_saturation);
 }
 void Environment::set_ambient_light_energy(float p_energy) {
 	ambient_energy = p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution, ambient_sky_contribution_saturation);
 }
 void Environment::set_ambient_light_sky_contribution(float p_energy) {
 	// Sky contribution values outside the [0.0; 1.0] range don't make sense and
 	// can result in negative colors.
 	ambient_sky_contribution = CLAMP(p_energy, 0.0, 1.0);
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution, ambient_sky_contribution_saturation);
+}
+void Environment::set_ambient_light_sky_contribution_saturation(float p_saturation) {
+	ambient_sky_contribution_saturation = p_saturation;
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution, ambient_sky_contribution_saturation);
 }
 
 void Environment::set_camera_feed_id(int p_camera_feed_id) {
@@ -148,6 +152,9 @@ float Environment::get_ambient_light_energy() const {
 }
 float Environment::get_ambient_light_sky_contribution() const {
 	return ambient_sky_contribution;
+}
+float Environment::get_ambient_light_sky_contribution_saturation() const {
+	return ambient_sky_contribution_saturation;
 }
 int Environment::get_camera_feed_id() const {
 	return camera_feed_id;
@@ -813,6 +820,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ambient_light_color", "color"), &Environment::set_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_energy", "energy"), &Environment::set_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_sky_contribution", "energy"), &Environment::set_ambient_light_sky_contribution);
+	ClassDB::bind_method(D_METHOD("set_ambient_light_sky_contribution_saturation", "energy"), &Environment::set_ambient_light_sky_contribution_saturation);
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "camera_feed_id"), &Environment::set_camera_feed_id);
 
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
@@ -827,6 +835,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ambient_light_color"), &Environment::get_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_energy"), &Environment::get_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
+	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution_saturation"), &Environment::get_ambient_light_sky_contribution_saturation);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &Environment::get_camera_feed_id);
 
 	ADD_GROUP("Background", "background_");
@@ -846,6 +855,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_sky_contribution", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ambient_light_sky_contribution", "get_ambient_light_sky_contribution");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_sky_contribution_saturation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ambient_light_sky_contribution_saturation", "get_ambient_light_sky_contribution_saturation");
 
 	ClassDB::bind_method(D_METHOD("set_fog_enabled", "enabled"), &Environment::set_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_fog_enabled"), &Environment::is_fog_enabled);
@@ -1186,6 +1196,7 @@ Environment::Environment() :
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;
 	//ambient_sky_contribution = 1.0;
+	ambient_sky_contribution_saturation = 1.0;
 	set_ambient_light_sky_contribution(1.0);
 	set_camera_feed_id(1);
 

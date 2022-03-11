@@ -2098,7 +2098,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_color", "env", "color"), &VisualServer::environment_set_bg_color);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &VisualServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &VisualServer::environment_set_canvas_max_layer);
-	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "energy", "sky_contibution"), &VisualServer::environment_set_ambient_light, DEFVAL(1.0), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "energy", "sky_contibution", "sky_contibution_saturation"), &VisualServer::environment_set_ambient_light, DEFVAL(1.0), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("environment_set_dof_blur_near", "env", "enable", "distance", "transition", "far_amount", "quality"), &VisualServer::environment_set_dof_blur_near);
 	ClassDB::bind_method(D_METHOD("environment_set_dof_blur_far", "env", "enable", "distance", "transition", "far_amount", "quality"), &VisualServer::environment_set_dof_blur_far);
 	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "bicubic_upscale", "high_quality"), &VisualServer::environment_set_glow);

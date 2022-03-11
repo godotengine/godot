@@ -167,7 +167,8 @@ public:
 		struct EnvironmentRadianceUBO {
 			float transform[16];
 			float ambient_contribution;
-			uint8_t padding[12];
+			float ambient_contribution_saturation;
+			uint8_t padding[8];
 
 		} env_radiance_data;
 
@@ -375,6 +376,7 @@ public:
 		Color ambient_color;
 		float ambient_energy;
 		float ambient_sky_contribution;
+		float ambient_sky_contribution_saturation;
 
 		int canvas_max_layer;
 
@@ -540,7 +542,7 @@ public:
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color);
 	virtual void environment_set_bg_energy(RID p_env, float p_energy);
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0);
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0, float p_sky_contribution_saturation = 0.0);
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id);
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);

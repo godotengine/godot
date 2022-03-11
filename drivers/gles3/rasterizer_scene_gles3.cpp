@@ -801,13 +801,14 @@ void RasterizerSceneGLES3::environment_set_canvas_max_layer(RID p_env, int p_max
 
 	env->canvas_max_layer = p_max_layer;
 }
-void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy, float p_sky_contribution) {
+void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy, float p_sky_contribution, float p_sky_contribution_saturation) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->ambient_color = p_color;
 	env->ambient_energy = p_energy;
 	env->ambient_sky_contribution = p_sky_contribution;
+	env->ambient_sky_contribution_saturation = p_sky_contribution_saturation;
 }
 void RasterizerSceneGLES3::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
 	Environment *env = environment_owner.getornull(p_env);
@@ -2519,6 +2520,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		sky_orientation = Transform(env->sky_orientation, Vector3(0.0, 0.0, 0.0)).affine_inverse();
 
 		state.env_radiance_data.ambient_contribution = env->ambient_sky_contribution;
+		state.env_radiance_data.ambient_contribution_saturation = env->ambient_sky_contribution_saturation;
 		state.ubo_data.ambient_occlusion_affect_light = env->ssao_light_affect;
 		state.ubo_data.ambient_occlusion_affect_ssao = env->ssao_ao_channel_affect;
 
@@ -2563,6 +2565,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.bg_color[3] = linear_ambient_color.a;
 
 		state.env_radiance_data.ambient_contribution = 0;
+		state.env_radiance_data.ambient_contribution_saturation = 0;
 		state.ubo_data.ambient_occlusion_affect_light = 0;
 
 		state.ubo_data.fog_color_enabled[3] = 0.0;

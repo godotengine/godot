@@ -343,6 +343,10 @@ godot.creator.*
 projects/
 platform/windows/godot_res.res
 
+# Sublime Text project and workspace files
+*.sublime-project
+*.sublime-workspace
+
 # Visual Studio 2017 and Visual Studio Code workspace folder
 /.vs
 /.vscode

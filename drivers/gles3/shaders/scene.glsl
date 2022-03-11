@@ -674,6 +674,7 @@ layout(std140) uniform Radiance { // ubo:2
 
 	mat4 radiance_inverse_xform;
 	float radiance_ambient_contribution;
+	float radiance_ambient_contribution_saturation;
 };
 
 #define RADIANCE_MAX_LOD 5.0
@@ -1945,7 +1946,11 @@ FRAGMENT_SHADER_CODE
 		vec3 env_ambient = texture(irradiance_map, norm.xy).rgb * bg_energy;
 		env_ambient *= 1.0 - F;
 
-		ambient_light = mix(ambient_light_color.rgb, env_ambient, radiance_ambient_contribution);
+		float env_ambient_luminosity = env_ambient.r * 0.2126 + env_ambient.g * 0.7152 + env_ambient.b * 0.0722;
+		vec3 env_ambient_gray = vec3(env_ambient_luminosity, env_ambient_luminosity, env_ambient_luminosity);
+		vec3 env_ambient_mix = mix(env_ambient_gray, env_ambient, radiance_ambient_contribution_saturation);
+
+		ambient_light = mix(ambient_light_color.rgb, env_ambient_mix, radiance_ambient_contribution);
 	}
 #endif
 #endif //AMBIENT_LIGHT_DISABLED

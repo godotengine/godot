@@ -734,13 +734,14 @@ void RasterizerSceneGLES2::environment_set_canvas_max_layer(RID p_env, int p_max
 	env->canvas_max_layer = p_max_layer;
 }
 
-void RasterizerSceneGLES2::environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy, float p_sky_contribution) {
+void RasterizerSceneGLES2::environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy, float p_sky_contribution, float p_sky_contribution_saturation) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->ambient_color = p_color;
 	env->ambient_energy = p_energy;
 	env->ambient_sky_contribution = p_sky_contribution;
+	env->ambient_sky_contribution_saturation = p_sky_contribution_saturation;
 }
 
 void RasterizerSceneGLES2::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
@@ -2486,7 +2487,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, p_env->bg_energy);
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, p_env->bg_color);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, p_env->ambient_sky_contribution);
-
+					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION_SATURATION, p_env->ambient_sky_contribution_saturation);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, p_env->ambient_color);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, p_env->ambient_energy);
 
@@ -2494,6 +2495,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, state.default_bg);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, 1.0);
+					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION_SATURATION, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, state.default_ambient);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, 1.0);
 				}

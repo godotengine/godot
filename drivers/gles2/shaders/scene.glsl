@@ -1025,6 +1025,7 @@ uniform vec4 bg_color;
 uniform float bg_energy;
 
 uniform float ambient_sky_contribution;
+uniform float ambient_sky_contribution_saturation;
 uniform vec4 ambient_color;
 uniform float ambient_energy;
 
@@ -1729,7 +1730,11 @@ FRAGMENT_SHADER_CODE
 		vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, 4.0).xyz * bg_energy;
 		env_ambient *= 1.0 - F;
 
-		ambient_light = mix(ambient_color.rgb, env_ambient, ambient_sky_contribution);
+		float env_ambient_luminosity = env_ambient.r * 0.2126 + env_ambient.g * 0.7152 + env_ambient.b * 0.0722;
+		vec3 env_ambient_gray = vec3(env_ambient_luminosity, env_ambient_luminosity, env_ambient_luminosity);
+		vec3 env_ambient_mix = mix(env_ambient_gray, env_ambient, ambient_sky_contribution_saturation);
+
+		ambient_light = mix(ambient_color.rgb, env_ambient_mix, ambient_sky_contribution);
 	}
 #endif
 

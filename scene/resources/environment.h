@@ -99,6 +99,7 @@ private:
 	Color ambient_color;
 	float ambient_energy;
 	float ambient_sky_contribution;
+	float ambient_sky_contribution_saturation;
 	int camera_feed_id;
 
 	ToneMapper tone_mapper;
@@ -195,6 +196,7 @@ public:
 	void set_ambient_light_color(const Color &p_color);
 	void set_ambient_light_energy(float p_energy);
 	void set_ambient_light_sky_contribution(float p_energy);
+	void set_ambient_light_sky_contribution_saturation(float p_occlusion);
 	void set_camera_feed_id(int p_camera_feed_id);
 
 	BGMode get_background() const;
@@ -209,6 +211,7 @@ public:
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
 	float get_ambient_light_sky_contribution() const;
+	float get_ambient_light_sky_contribution_saturation() const;
 	int get_camera_feed_id() const;
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
