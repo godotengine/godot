@@ -1954,6 +1954,12 @@ typedef struct {
 	int dpi;
 } EnumDpiData;
 
+typedef struct {
+	int count;
+	int screen;
+	float rate;
+} EnumRefreshRateData;
+
 static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumDpiData *data = (EnumDpiData *)dwData;
 	if (data->count == data->screen) {
@@ -1964,10 +1970,44 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 	return TRUE;
 }
 
+static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumRefreshRateData *data = (EnumRefreshRateData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFOEXW minfo;
+		memset(&minfo, 0, sizeof(minfo));
+		minfo.cbSize = sizeof(minfo);
+		GetMonitorInfoW(hMonitor, &minfo);
+
+		DEVMODEW dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+
+		data->rate = dm.dmDisplayFrequency;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
 int OS_Windows::get_screen_dpi(int p_screen) const {
-	EnumDpiData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, 72 };
+	EnumDpiData data = {
+		0,
+		p_screen == -1 ? get_current_screen() : p_screen,
+		72,
+	};
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
+}
+
+float OS_Windows::get_screen_refresh_rate(int p_screen) const {
+	EnumRefreshRateData data = {
+		0,
+		p_screen == -1 ? get_current_screen() : p_screen,
+		OS::get_singleton()->SCREEN_REFRESH_RATE_FALLBACK,
+	};
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
+	return data.rate;
 }
 
 Point2 OS_Windows::get_window_position() const {

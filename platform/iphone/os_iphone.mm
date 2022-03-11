@@ -565,6 +565,10 @@ int OSIPhone::get_screen_dpi(int p_screen) const {
 	}
 }
 
+float OSIPhone::get_screen_refresh_rate(int p_screen) const {
+	return [UIScreen mainScreen].maximumFramesPerSecond;
+}
+
 Rect2 OSIPhone::get_window_safe_area() const {
 	if (@available(iOS 11, *)) {
 		UIEdgeInsets insets = UIEdgeInsetsZero;

@@ -444,6 +444,10 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+float OS_Android::get_screen_refresh_rate(int p_screen) const {
+	return godot_io_java->get_screen_refresh_rate(OS::get_singleton()->SCREEN_REFRESH_RATE_FALLBACK);
+}
+
 String OS_Android::get_data_path() const {
 	return get_user_data_dir();
 }
