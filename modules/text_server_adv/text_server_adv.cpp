@@ -704,7 +704,7 @@ String TextServerAdvanced::tag_to_name(int32_t p_tag) const {
 /* Font Glyph Rendering                                                  */
 /*************************************************************************/
 
-_FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_texture_pos_for_glyph(FontDataForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height) const {
+_FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_texture_pos_for_glyph(FontDataForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const {
 	FontTexturePosition ret;
 	ret.index = -1;
 
@@ -769,8 +769,11 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		}
 
 		texsize = next_power_of_2(texsize);
-
-		texsize = MIN(texsize, 4096);
+		if (p_msdf) {
+			texsize = MIN(texsize, 2048);
+		} else {
+			texsize = MIN(texsize, 1024);
+		}
 
 		FontTexture tex;
 		tex.texture_w = texsize;
@@ -935,10 +938,10 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		int mw = w + p_rect_margin * 2;
 		int mh = h + p_rect_margin * 2;
 
-		ERR_FAIL_COND_V(mw > 4096, FontGlyph());
-		ERR_FAIL_COND_V(mh > 4096, FontGlyph());
+		ERR_FAIL_COND_V(mw > 1024, FontGlyph());
+		ERR_FAIL_COND_V(mh > 1024, FontGlyph());
 
-		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, Image::FORMAT_RGBA8, mw, mh);
+		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, Image::FORMAT_RGBA8, mw, mh, true);
 		ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
 		FontTexture &tex = p_data->textures.write[tex_pos.index];
 
@@ -1013,13 +1016,13 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	int mw = w + p_rect_margin * 2;
 	int mh = h + p_rect_margin * 2;
 
-	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
-	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
+	ERR_FAIL_COND_V(mw > 1024, FontGlyph());
+	ERR_FAIL_COND_V(mh > 1024, FontGlyph());
 
 	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
 	Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
 
-	FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh);
+	FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh, false);
 	ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
 
 	// Fit character in char texture.
@@ -1153,6 +1156,16 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontDataAdvanced *p_font_d
 				FT_Pos xshift = (int)((p_glyph >> 27) & 3) << 5;
 				FT_Outline_Translate(&fd->face->glyph->outline, xshift, 0);
 			}
+		}
+
+		if (p_font_data->embolden != 0.f) {
+			FT_Pos strength = p_font_data->embolden * p_size.x * 4; // 26.6 fractional units (1 / 64).
+			FT_Outline_Embolden(&fd->face->glyph->outline, strength);
+		}
+
+		if (p_font_data->transform != Transform2D()) {
+			FT_Matrix mat = { FT_Fixed(p_font_data->transform[0][0] * 65536), FT_Fixed(p_font_data->transform[0][1] * 65536), FT_Fixed(p_font_data->transform[1][0] * 65536), FT_Fixed(p_font_data->transform[1][1] * 65536) }; // 16.16 fractional units (1 / 65536).
+			FT_Outline_Transform(&fd->face->glyph->outline, &mat);
 		}
 
 		if (!outline) {
@@ -1872,6 +1885,44 @@ TextServer::SubpixelPositioning TextServerAdvanced::font_get_subpixel_positionin
 
 	MutexLock lock(fd->mutex);
 	return fd->subpixel_positioning;
+}
+
+void TextServerAdvanced::font_set_embolden(RID p_font_rid, float p_strength) {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->embolden != p_strength) {
+		_font_clear_cache(fd);
+		fd->embolden = p_strength;
+	}
+}
+
+float TextServerAdvanced::font_get_embolden(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	return fd->embolden;
+}
+
+void TextServerAdvanced::font_set_transform(RID p_font_rid, Transform2D p_transform) {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->transform != p_transform) {
+		_font_clear_cache(fd);
+		fd->transform = p_transform;
+	}
+}
+
+Transform2D TextServerAdvanced::font_get_transform(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Transform2D());
+
+	MutexLock lock(fd->mutex);
+	return fd->transform;
 }
 
 void TextServerAdvanced::font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) {

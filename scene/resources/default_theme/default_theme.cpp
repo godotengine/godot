@@ -103,7 +103,7 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margi
 	return style;
 }
 
-void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
+void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &bold_font, const Ref<Font> &bold_italics_font, const Ref<Font> &italics_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
 	scale = p_scale;
 
 	// Font colors
@@ -924,9 +924,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_stylebox("normal", "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("bold_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("italics_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("bold_italics_font", "RichTextLabel", Ref<Font>());
+	theme->set_font("bold_font", "RichTextLabel", bold_font);
+	theme->set_font("italics_font", "RichTextLabel", italics_font);
+	theme->set_font("bold_italics_font", "RichTextLabel", bold_italics_font);
 	theme->set_font("mono_font", "RichTextLabel", Ref<Font>());
 
 	theme->set_font_size("normal_font_size", "RichTextLabel", -1);
@@ -1025,6 +1025,9 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 	Ref<StyleBox> default_style;
 	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
+	Ref<Font> bold_font;
+	Ref<Font> bold_italics_font;
+	Ref<Font> italics_font;
 	float default_scale = CLAMP(p_scale, 0.5, 8.0);
 
 	if (p_font.is_valid()) {
@@ -1048,7 +1051,31 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		default_font = dynamic_font;
 	}
 
-	fill_default_theme(t, default_font, default_icon, default_style, default_scale);
+	if (default_font.is_valid()) {
+		bold_font.instantiate();
+		for (int i = 0; i < default_font->get_data_count(); i++) {
+			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			data->set_embolden(1.2);
+			bold_font->add_data(data);
+		}
+
+		bold_italics_font.instantiate();
+		for (int i = 0; i < default_font->get_data_count(); i++) {
+			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			data->set_embolden(1.2);
+			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			bold_italics_font->add_data(data);
+		}
+
+		italics_font.instantiate();
+		for (int i = 0; i < default_font->get_data_count(); i++) {
+			Ref<FontData> data = default_font->get_data(i)->duplicate();
+			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			italics_font->add_data(data);
+		}
+	}
+
+	fill_default_theme(t, default_font, bold_font, bold_italics_font, italics_font, default_icon, default_style, default_scale);
 
 	Theme::set_default(t);
 	Theme::set_fallback_base_scale(default_scale);
