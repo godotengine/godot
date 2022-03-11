@@ -176,6 +176,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_disabled");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("unshaded");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("disable_alpha");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_lambert");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_lambert_wrap");
