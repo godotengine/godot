@@ -1571,6 +1571,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 				}
 				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 				if (err == OK && display_server != nullptr) {
+					if (display_server->get_name() == "headless") {
+						// the headless server should only be used if explicitly requested
+						memdelete(display_server);
+						display_server = nullptr;
+						err = ERR_UNAVAILABLE;
+						continue;
+					}
 					break;
 				}
 			}
@@ -1578,6 +1585,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.");
+			// TODO: Remove this when all platforms can exit cleanly from a failed setup2().
+			// For now, let's just let Godot exit cleanly to the user's eyes in case of no GPU drivers.
+			exit(255);
 			return err;
 		}
 	}
