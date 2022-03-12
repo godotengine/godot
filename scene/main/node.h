@@ -180,7 +180,7 @@ private:
 	void _propagate_enter_tree();
 	void _propagate_ready();
 	void _propagate_exit_tree();
-	void _propagate_after_exit_tree();
+	void _propagate_after_exit_branch(bool p_exiting_tree);
 	void _propagate_physics_interpolated(bool p_interpolated);
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);

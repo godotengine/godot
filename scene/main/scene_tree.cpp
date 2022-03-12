@@ -707,7 +707,7 @@ void SceneTree::finish() {
 
 	if (root) {
 		root->_set_tree(nullptr);
-		root->_propagate_after_exit_tree();
+		root->_propagate_after_exit_branch(true);
 		memdelete(root); //delete root
 		root = nullptr;
 	}
@@ -2246,7 +2246,7 @@ SceneTree::SceneTree() {
 SceneTree::~SceneTree() {
 	if (root) {
 		root->_set_tree(nullptr);
-		root->_propagate_after_exit_tree();
+		root->_propagate_after_exit_branch(true);
 		memdelete(root);
 	}
 
