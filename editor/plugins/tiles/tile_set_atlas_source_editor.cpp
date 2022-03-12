@@ -1021,38 +1021,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 			Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
-			if (drag_type == DRAG_TYPE_NONE) {
-				if (selection.size() == 1) {
-					// Change the cursor depending on the hovered thing.
-					TileSelection selected = selection.front()->get();
-					if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS && selected.alternative == 0) {
-						Vector2 mouse_local_pos = tile_atlas_control->get_local_mouse_position();
-						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(selected.tile);
-						Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
-						Size2 zoomed_size = resize_handle->get_size() / tile_atlas_view->get_zoom();
-						Rect2 rect = region.grow_individual(zoomed_size.x, zoomed_size.y, 0, 0);
-						const Vector2i coords[] = { Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1) };
-						const Vector2i directions[] = { Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0) };
-						CursorShape cursor_shape = CURSOR_ARROW;
-						bool can_grow[4];
-						for (int i = 0; i < 4; i++) {
-							can_grow[i] = tile_set_atlas_source->has_room_for_tile(selected.tile + directions[i], tile_set_atlas_source->get_tile_size_in_atlas(selected.tile), tile_set_atlas_source->get_tile_animation_columns(selected.tile), tile_set_atlas_source->get_tile_animation_separation(selected.tile), tile_set_atlas_source->get_tile_animation_frames_count(selected.tile), selected.tile);
-							can_grow[i] |= (i % 2 == 0) ? size_in_atlas.y > 1 : size_in_atlas.x > 1;
-						}
-						for (int i = 0; i < 4; i++) {
-							Vector2 pos = rect.position + rect.size * coords[i];
-							if (can_grow[i] && can_grow[(i + 3) % 4] && Rect2(pos, zoomed_size).has_point(mouse_local_pos)) {
-								cursor_shape = (i % 2) ? CURSOR_BDIAGSIZE : CURSOR_FDIAGSIZE;
-							}
-							Vector2 next_pos = rect.position + rect.size * coords[(i + 1) % 4];
-							if (can_grow[i] && Rect2((pos + next_pos) / 2.0, zoomed_size).has_point(mouse_local_pos)) {
-								cursor_shape = (i % 2) ? CURSOR_HSIZE : CURSOR_VSIZE;
-							}
-						}
-						tile_atlas_control->set_default_cursor_shape(cursor_shape);
-					}
-				}
-			} else if (drag_type == DRAG_TYPE_CREATE_BIG_TILE) {
+			if (drag_type == DRAG_TYPE_CREATE_BIG_TILE) {
 				// Create big tile.
 				new_base_tiles_coords = new_base_tiles_coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
 
@@ -1243,7 +1212,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 								Rect2 rect = region.grow_individual(zoomed_size.x, zoomed_size.y, 0, 0);
 								const Vector2i coords[] = { Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1) };
 								const Vector2i directions[] = { Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0) };
-								CursorShape cursor_shape = CURSOR_ARROW;
 								bool can_grow[4];
 								for (int i = 0; i < 4; i++) {
 									can_grow[i] = tile_set_atlas_source->has_room_for_tile(selected.tile + directions[i], tile_set_atlas_source->get_tile_size_in_atlas(selected.tile), tile_set_atlas_source->get_tile_animation_columns(selected.tile), tile_set_atlas_source->get_tile_animation_separation(selected.tile), tile_set_atlas_source->get_tile_animation_frames_count(selected.tile), selected.tile);
@@ -1257,7 +1225,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 										drag_last_mouse_pos = drag_start_mouse_pos;
 										drag_current_tile = selected.tile;
 										drag_start_tile_shape = Rect2i(selected.tile, tile_set_atlas_source->get_tile_size_in_atlas(selected.tile));
-										cursor_shape = (i % 2) ? CURSOR_BDIAGSIZE : CURSOR_FDIAGSIZE;
 									}
 									Vector2 next_pos = rect.position + rect.size * coords[(i + 1) % 4];
 									if (can_grow[i] && Rect2((pos + next_pos) / 2.0, zoomed_size).has_point(mouse_local_pos)) {
@@ -1266,10 +1233,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 										drag_last_mouse_pos = drag_start_mouse_pos;
 										drag_current_tile = selected.tile;
 										drag_start_tile_shape = Rect2i(selected.tile, tile_set_atlas_source->get_tile_size_in_atlas(selected.tile));
-										cursor_shape = (i % 2) ? CURSOR_HSIZE : CURSOR_VSIZE;
 									}
 								}
-								tile_atlas_control->set_default_cursor_shape(cursor_shape);
 							}
 						}
 
@@ -1292,7 +1257,6 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 								drag_last_mouse_pos = drag_start_mouse_pos;
 								drag_current_tile = selected.tile;
 								drag_start_tile_shape = Rect2i(selected.tile, tile_set_atlas_source->get_tile_size_in_atlas(selected.tile));
-								tile_atlas_control->set_default_cursor_shape(CURSOR_MOVE);
 							} else {
 								// Start selection dragging.
 								drag_type = DRAG_TYPE_RECT_SELECT;
@@ -1543,7 +1507,67 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 
 	drag_modified_tiles.clear();
 	drag_type = DRAG_TYPE_NONE;
-	tile_atlas_control->set_default_cursor_shape(CURSOR_ARROW);
+	// Change mouse accordingly.
+}
+
+Control::CursorShape TileSetAtlasSourceEditor::get_cursor_shape(const Point2 &p_pos) const {
+	Control::CursorShape cursor_shape = get_default_cursor_shape();
+	if (drag_type == DRAG_TYPE_NONE) {
+		if (selection.size() == 1) {
+			// Change the cursor depending on the hovered thing.
+			TileSelection selected = selection.front()->get();
+			if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS && selected.alternative == 0) {
+				Transform2D xform = tile_atlas_control->get_global_transform().affine_inverse() * get_global_transform();
+				Vector2 mouse_local_pos = xform.xform(p_pos);
+				Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(selected.tile);
+				Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
+				Size2 zoomed_size = resize_handle->get_size() / tile_atlas_view->get_zoom();
+				Rect2 rect = region.grow_individual(zoomed_size.x, zoomed_size.y, 0, 0);
+				const Vector2i coords[] = { Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1) };
+				const Vector2i directions[] = { Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0) };
+				bool can_grow[4];
+				for (int i = 0; i < 4; i++) {
+					can_grow[i] = tile_set_atlas_source->has_room_for_tile(selected.tile + directions[i], tile_set_atlas_source->get_tile_size_in_atlas(selected.tile), tile_set_atlas_source->get_tile_animation_columns(selected.tile), tile_set_atlas_source->get_tile_animation_separation(selected.tile), tile_set_atlas_source->get_tile_animation_frames_count(selected.tile), selected.tile);
+					can_grow[i] |= (i % 2 == 0) ? size_in_atlas.y > 1 : size_in_atlas.x > 1;
+				}
+				for (int i = 0; i < 4; i++) {
+					Vector2 pos = rect.position + rect.size * coords[i];
+					if (can_grow[i] && can_grow[(i + 3) % 4] && Rect2(pos, zoomed_size).has_point(mouse_local_pos)) {
+						cursor_shape = (i % 2) ? CURSOR_BDIAGSIZE : CURSOR_FDIAGSIZE;
+					}
+					Vector2 next_pos = rect.position + rect.size * coords[(i + 1) % 4];
+					if (can_grow[i] && Rect2((pos + next_pos) / 2.0, zoomed_size).has_point(mouse_local_pos)) {
+						cursor_shape = (i % 2) ? CURSOR_HSIZE : CURSOR_VSIZE;
+					}
+				}
+			}
+		}
+	} else {
+		switch (drag_type) {
+			case DRAG_TYPE_RESIZE_TOP_LEFT:
+			case DRAG_TYPE_RESIZE_BOTTOM_RIGHT:
+				cursor_shape = CURSOR_FDIAGSIZE;
+				break;
+			case DRAG_TYPE_RESIZE_TOP:
+			case DRAG_TYPE_RESIZE_BOTTOM:
+				cursor_shape = CURSOR_VSIZE;
+				break;
+			case DRAG_TYPE_RESIZE_TOP_RIGHT:
+			case DRAG_TYPE_RESIZE_BOTTOM_LEFT:
+				cursor_shape = CURSOR_BDIAGSIZE;
+				break;
+			case DRAG_TYPE_RESIZE_LEFT:
+			case DRAG_TYPE_RESIZE_RIGHT:
+				cursor_shape = CURSOR_HSIZE;
+				break;
+			case DRAG_TYPE_MOVE_TILE:
+				cursor_shape = CURSOR_MOVE;
+				break;
+			default:
+				break;
+		}
+	}
+	return cursor_shape;
 }
 
 HashMap<Vector2i, List<const PropertyInfo *>> TileSetAtlasSourceEditor::_group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas) {
