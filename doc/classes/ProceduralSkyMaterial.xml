@@ -23,6 +23,12 @@
 		<member name="ground_horizon_color" type="Color" setter="set_ground_horizon_color" getter="get_ground_horizon_color" default="Color(0.6463, 0.6558, 0.6708, 1)">
 			Color of the ground at the horizon. Blends with [member ground_bottom_color].
 		</member>
+		<member name="sky_cover" type="Texture2D" setter="set_sky_cover" getter="get_sky_cover">
+			The sky cover texture to use. This texture must use an equirectangular projection (similar to [PanoramaSkyMaterial]). The texture's colors will be [i]added[/i] to the existing sky color, and will be multiplied by [member sky_energy] and [member sky_cover_modulate]. This is mainly suited to displaying stars at night, but it can also be used to display clouds at day or night (with a non-physically-accurate look).
+		</member>
+		<member name="sky_cover_modulate" type="Color" setter="set_sky_cover_modulate" getter="get_sky_cover_modulate" default="Color(1, 1, 1, 1)">
+			The tint to apply to the [member sky_cover] texture. This can be used to change the sky cover's colors or opacity independently of the sky energy, which is useful for day/night or weather transitions. Only effective if a texture is defined in [member sky_cover].
+		</member>
 		<member name="sky_curve" type="float" setter="set_sky_curve" getter="get_sky_curve" default="0.15">
 			How quickly the [member sky_horizon_color] fades into the [member sky_top_color].
 		</member>
