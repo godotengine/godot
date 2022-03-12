@@ -1170,7 +1170,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				if (connecting) {
 					force_connection_drag_end();
 				} else {
-					emit_signal(SNAME("popup_request"), get_screen_position() + b->get_position());
+					emit_signal(SNAME("popup_request"), b->get_position());
 				}
 			}
 		}
