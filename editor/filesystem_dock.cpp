@@ -2087,6 +2087,10 @@ void FileSystemDock::focus_on_filter() {
 	}
 }
 
+ScriptCreateDialog *FileSystemDock::get_script_create_dialog() const {
+	return make_script_dialog;
+}
+
 void FileSystemDock::set_file_list_display_mode(FileListDisplayMode p_mode) {
 	if (p_mode == file_list_display_mode) {
 		return;

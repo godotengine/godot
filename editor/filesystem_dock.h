@@ -320,6 +320,8 @@ public:
 	void navigate_to_path(const String &p_path);
 	void focus_on_filter();
 
+	ScriptCreateDialog *get_script_create_dialog() const;
+
 	void fix_dependencies(const String &p_for_file);
 
 	int get_split_offset() { return split_box->get_split_offset(); }

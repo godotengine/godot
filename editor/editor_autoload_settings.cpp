@@ -35,6 +35,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/filesystem_dock.h"
 #include "project_settings_editor.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -62,6 +63,28 @@ void EditorAutoloadSettings::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			FileSystemDock *dock = FileSystemDock::get_singleton();
+
+			if (dock != nullptr) {
+				ScriptCreateDialog *dialog = dock->get_script_create_dialog();
+
+				if (dialog != nullptr) {
+					Callable script_created = callable_mp(this, &EditorAutoloadSettings::_script_created);
+
+					if (is_visible_in_tree()) {
+						if (!dialog->is_connected(SNAME("script_created"), script_created)) {
+							dialog->connect("script_created", script_created);
+						}
+					} else {
+						if (dialog->is_connected(SNAME("script_created"), script_created)) {
+							dialog->disconnect("script_created", script_created);
+						}
+					}
+				}
+			}
 		} break;
 	}
 }
@@ -134,12 +157,22 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 }
 
 void EditorAutoloadSettings::_autoload_add() {
-	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
-		autoload_add_path->set_text("");
-	}
+	if (autoload_add_path->get_text().is_empty()) {
+		ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
+		String fpath = path;
+		if (!fpath.ends_with("/")) {
+			fpath = fpath.get_base_dir();
+		}
+		dialog->config("Node", fpath.plus_file(vformat("%s.gd", autoload_add_name->get_text().camelcase_to_underscore())), false, false);
+		dialog->popup_centered();
+	} else {
+		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
+			autoload_add_path->set_text("");
+		}
 
-	autoload_add_name->set_text("");
-	add_autoload->set_disabled(true);
+		autoload_add_name->set_text("");
+		add_autoload->set_disabled(true);
+	}
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
@@ -351,14 +384,13 @@ void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
 }
 
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
-	add_autoload->set_disabled(
-			p_path.is_empty() || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
+	add_autoload->set_disabled(!_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	String error_string;
 	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
-	add_autoload->set_disabled(autoload_add_path->get_text().is_empty() || !is_name_valid);
+	add_autoload->set_disabled(!is_name_valid);
 	error_message->set_text(error_string);
 	error_message->set_visible(!autoload_add_name->get_text().is_empty() && !is_name_valid);
 }
@@ -538,6 +570,14 @@ void EditorAutoloadSettings::update_autoload() {
 	}
 
 	updating_autoload = false;
+}
+
+void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
+	FileSystemDock::get_singleton()->get_script_create_dialog()->hide();
+	path = p_script->get_path().get_base_dir();
+	autoload_add_path->set_text(p_script->get_path());
+	autoload_add_name->set_text(p_script->get_path().get_file().get_basename().capitalize().replace(" ", ""));
+	_autoload_add();
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
@@ -833,11 +873,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 	}
 
-	autoload_changed = "autoload_changed";
-
-	updating_autoload = false;
-	selected_autoload = "";
-
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
@@ -854,6 +889,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	autoload_add_path->set_clear_button_enabled(true);
+	autoload_add_path->set_placeholder(vformat(TTR(R"(Set path or press "%s" to create a script.)"), TTR("Add")));
 	autoload_add_path->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
 
 	browse_button = memnew(Button);
