@@ -71,7 +71,7 @@ private:
 	CheckButton *runnable;
 
 	Button *button_export;
-	bool updating;
+	bool updating = false;
 
 	AcceptDialog *error_dialog;
 	ConfirmationDialog *delete_confirm;
@@ -152,8 +152,8 @@ private:
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);
 
-	bool updating_script_key;
-	bool updating_enc_filters;
+	bool updating_script_key = false;
+	bool updating_enc_filters = false;
 	void _enc_pck_changed(bool p_pressed);
 	void _enc_directory_changed(bool p_pressed);
 	void _enc_filters_changed(const String &p_text);

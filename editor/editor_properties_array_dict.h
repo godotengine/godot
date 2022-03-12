@@ -81,8 +81,8 @@ class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
 	PopupMenu *change_type;
-	bool updating;
-	bool dropping;
+	bool updating = false;
+	bool dropping = false;
 
 	Ref<EditorPropertyArrayObject> object;
 	int page_length = 20;
@@ -139,7 +139,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
 	PopupMenu *change_type;
-	bool updating;
+	bool updating = false;
 
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;

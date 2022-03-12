@@ -1660,8 +1660,6 @@ void EditorSettings::_bind_methods() {
 
 EditorSettings::EditorSettings() {
 	last_order = 0;
-	optimize_save = true;
-	save_changed_setting = true;
 
 	_load_defaults();
 }

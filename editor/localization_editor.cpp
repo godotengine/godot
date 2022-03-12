@@ -473,7 +473,6 @@ void LocalizationEditor::_bind_methods() {
 
 LocalizationEditor::LocalizationEditor() {
 	undo_redo = EditorNode::get_undo_redo();
-	updating_translations = false;
 	localization_changed = "localization_changed";
 
 	TabContainer *translations = memnew(TabContainer);

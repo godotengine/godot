@@ -43,7 +43,7 @@
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
-	bool updating;
+	bool updating = false;
 
 	TabContainer *tabs;
 	Control *tab_general;

@@ -175,8 +175,6 @@ void EditorDirDialog::_bind_methods() {
 }
 
 EditorDirDialog::EditorDirDialog() {
-	updating = false;
-
 	set_title(TTR("Choose a Directory"));
 	set_hide_on_ok(false);
 
@@ -206,6 +204,4 @@ EditorDirDialog::EditorDirDialog() {
 	add_child(mkdirerr);
 
 	get_ok_button()->set_text(TTR("Choose"));
-
-	must_reload = false;
 }

@@ -618,8 +618,6 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 	results_count = -1;
-	replace_all_mode = false;
-	preserve_cursor = false;
 
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
@@ -1887,8 +1885,6 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	error_button->connect("pressed", callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip(TTR("Errors"));
-
-	is_errors_panel_opened = false;
 	set_error_count(0);
 
 	// Warnings
@@ -1899,8 +1895,6 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip(TTR("Warnings"));
-
-	is_warnings_panel_opened = false;
 	set_warning_count(0);
 
 	// Line and column

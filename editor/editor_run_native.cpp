@@ -168,7 +168,6 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 
 EditorRunNative::EditorRunNative() {
 	set_process(true);
-	first = true;
 	resume_idx = 0;
 	resume_platform = 0;
 }

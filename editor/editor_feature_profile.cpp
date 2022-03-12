@@ -1010,7 +1010,5 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	update_timer->connect("timeout", callable_mp(this, &EditorFeatureProfileManager::_emit_current_profile_changed));
 	update_timer->set_one_shot(true);
 
-	updating_features = false;
-
 	singleton = this;
 }

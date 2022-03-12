@@ -81,7 +81,7 @@ class AnimationTrackEditSpriteFrame : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEdit);
 
 	ObjectID id;
-	bool is_coords;
+	bool is_coords = false;
 
 public:
 	virtual int get_key_height() const override;
@@ -92,7 +92,7 @@ public:
 	void set_node(Object *p_object);
 	void set_as_coords();
 
-	AnimationTrackEditSpriteFrame() { is_coords = false; }
+	AnimationTrackEditSpriteFrame() {}
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {
@@ -114,7 +114,7 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 
 	void _preview_changed(ObjectID p_which);
 
-	bool len_resizing;
+	bool len_resizing = false;
 	bool len_resizing_start;
 	int len_resizing_index;
 	float len_resizing_from_px;

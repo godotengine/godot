@@ -153,7 +153,6 @@ String EditorVCSInterface::get_vcs_name() {
 }
 
 EditorVCSInterface::EditorVCSInterface() {
-	is_initialized = false;
 }
 
 EditorVCSInterface::~EditorVCSInterface() {

@@ -1557,7 +1557,6 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
 	local_history_pos = 0;
-	disable_overwrite_warning = false;
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
@@ -1814,15 +1813,12 @@ EditorFileDialog::EditorFileDialog() {
 	set_hide_on_ok(false);
 	vbox = vbc;
 
-	invalidated = true;
 	if (register_func) {
 		register_func(this);
 	}
 
-	previews_enabled = true;
 	preview_wheel_timeout = 0;
 	preview_wheel_index = 0;
-	preview_waiting = false;
 }
 
 EditorFileDialog::~EditorFileDialog() {
