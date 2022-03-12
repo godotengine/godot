@@ -68,7 +68,7 @@ PropertyInfo VisualScriptReturn::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptReturn::get_caption() const {
-	return TTR("Return");
+	return RTR("Return");
 }
 
 String VisualScriptReturn::get_text() const {
@@ -197,11 +197,11 @@ PropertyInfo VisualScriptCondition::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptCondition::get_caption() const {
-	return TTR("Condition");
+	return RTR("Condition");
 }
 
 String VisualScriptCondition::get_text() const {
-	return TTR("if (cond) is:");
+	return RTR("if (cond) is:");
 }
 
 void VisualScriptCondition::_bind_methods() {
@@ -275,11 +275,11 @@ PropertyInfo VisualScriptWhile::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptWhile::get_caption() const {
-	return TTR("While");
+	return RTR("While");
 }
 
 String VisualScriptWhile::get_text() const {
-	return TTR("while (cond):");
+	return RTR("while (cond):");
 }
 
 void VisualScriptWhile::_bind_methods() {
@@ -354,11 +354,11 @@ PropertyInfo VisualScriptIterator::get_output_value_port_info(int p_idx) const {
 	return pinfo;
 }
 String VisualScriptIterator::get_caption() const {
-	return TTR("Iterator");
+	return RTR("Iterator");
 }
 
 String VisualScriptIterator::get_text() const {
-	return TTR("for (elem) in (input):");
+	return RTR("for (elem) in (input):");
 }
 
 void VisualScriptIterator::_bind_methods() {
@@ -465,11 +465,11 @@ PropertyInfo VisualScriptSequence::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(Variant::INT, "current");
 }
 String VisualScriptSequence::get_caption() const {
-	return TTR("Sequence");
+	return RTR("Sequence");
 }
 
 String VisualScriptSequence::get_text() const {
-	return TTR("in order:");
+	return RTR("in order:");
 }
 
 void VisualScriptSequence::set_steps(int p_steps) {
@@ -572,11 +572,11 @@ PropertyInfo VisualScriptSwitch::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSwitch::get_caption() const {
-	return TTR("Switch");
+	return RTR("Switch");
 }
 
 String VisualScriptSwitch::get_text() const {
-	return TTR("'input' is:");
+	return RTR("'input' is:");
 }
 
 class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
@@ -699,14 +699,14 @@ PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptTypeCast::get_caption() const {
-	return TTR("Type Cast");
+	return RTR("Type Cast");
 }
 
 String VisualScriptTypeCast::get_text() const {
 	if (script != String()) {
-		return vformat(TTR("Is %s?"), script.get_file());
+		return vformat(RTR("Is %s?"), script.get_file());
 	} else {
-		return vformat(TTR("Is %s?"), base_type);
+		return vformat(RTR("Is %s?"), base_type);
 	}
 }
 
