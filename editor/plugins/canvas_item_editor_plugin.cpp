@@ -1241,6 +1241,8 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					}
 				}
 			}
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
