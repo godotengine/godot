@@ -52,7 +52,6 @@ private:
 	mutable int index_array_len = 0;
 
 	Ref<Material> material;
-	bool flip_faces = false;
 
 	// make sure we do an update after we've finished constructing our object
 	mutable bool pending_request = true;
@@ -61,6 +60,9 @@ private:
 protected:
 	// assume primitive triangles as the type, correct for all but one and it will change this :)
 	Mesh::PrimitiveType primitive_type = Mesh::PRIMITIVE_TRIANGLES;
+
+	bool flip_faces = false;
+	bool smooth_faces = true;
 
 	static void _bind_methods();
 

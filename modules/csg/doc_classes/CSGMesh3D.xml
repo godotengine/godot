@@ -11,9 +11,6 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
-		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The [Material] used in drawing the CSG shape.
-		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource to use as a CSG shape.
 			[b]Note:[/b] When using an [ArrayMesh], avoid meshes with vertex normals unless a flat shader is required. By default, CSGMesh will ignore the mesh's vertex normals and use a smooth shader calculated using the faces' normals. If a flat shader is required, ensure that all faces' vertex normals are parallel.

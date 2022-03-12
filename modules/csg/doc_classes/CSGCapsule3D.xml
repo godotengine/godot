@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSGSphere3D" inherits="CSGPrimitive3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="CSGCapsule3D" inherits="CSGPrimitive3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		A CSG Sphere shape.
+		A CSG Capsule shape.
 	</brief_description>
 	<description>
-		This node allows you to create a sphere for use with the CSG system.
+		This node allows you to create a capsule for use with the CSG system.
 		[b]Note:[/b] CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.
 	</description>
 	<tutorials>
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
-			The height of the sphere.
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The height of the capsule.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="12">
-			Number of vertical slices for the sphere.
+			The number of sides of the capsule, the higher this number the more detail there will be in the capsule.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
-			Radius of the sphere.
+			The radius of the capsule.
 		</member>
-		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="6">
-			Number of horizontal slices for the sphere.
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="2">
+			Number of horizontal slices for the capsule.
 		</member>
 	</members>
 </class>

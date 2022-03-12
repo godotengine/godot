@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "csg_shape.h"
+#include "scene/resources/primitive_meshes.h"
 
 #include "core/math/geometry_2d.h"
 
@@ -690,34 +691,7 @@ CSGBrush *CSGPrimitive3D::_create_brush_from_arrays(const Vector<Vector3> &p_ver
 	return brush;
 }
 
-void CSGPrimitive3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
-	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
-}
-
-void CSGPrimitive3D::set_flip_faces(bool p_invert) {
-	if (flip_faces == p_invert) {
-		return;
-	}
-
-	flip_faces = p_invert;
-
-	_make_dirty();
-}
-
-bool CSGPrimitive3D::get_flip_faces() {
-	return flip_faces;
-}
-
-CSGPrimitive3D::CSGPrimitive3D() {
-	flip_faces = false;
-}
-
-/////////////////////
-
-CSGBrush *CSGMesh3D::_build_brush() {
+CSGBrush *CSGPrimitive3D::_build_brush() {
 	if (!mesh.is_valid()) {
 		return memnew(CSGBrush);
 	}
@@ -864,12 +838,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 	return _create_brush_from_arrays(vertices, uvs, smooth, materials);
 }
 
-void CSGMesh3D::_mesh_changed() {
-	_make_dirty();
-	update_gizmos();
-}
-
-void CSGMesh3D::set_material(const Ref<Material> &p_material) {
+void CSGPrimitive3D::set_material(const Ref<Material> &p_material) {
 	if (material == p_material) {
 		return;
 	}
@@ -877,19 +846,70 @@ void CSGMesh3D::set_material(const Ref<Material> &p_material) {
 	_make_dirty();
 }
 
-Ref<Material> CSGMesh3D::get_material() const {
+Ref<Material> CSGPrimitive3D::get_material() const {
 	return material;
+}
+
+void CSGPrimitive3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
+	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
+
+	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPrimitive3D::set_smooth_faces);
+	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPrimitive3D::get_smooth_faces);
+
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPrimitive3D::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &CSGPrimitive3D::get_material);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+}
+
+void CSGPrimitive3D::set_flip_faces(bool p_flip_faces) {
+	if (flip_faces == p_flip_faces) {
+		return;
+	}
+
+	flip_faces = p_flip_faces;
+
+	_make_dirty();
+}
+
+bool CSGPrimitive3D::get_flip_faces() const {
+	return flip_faces;
+}
+
+void CSGPrimitive3D::set_smooth_faces(const bool p_smooth_faces) {
+	if (smooth_faces == p_smooth_faces) {
+		return;
+	}
+
+	smooth_faces = p_smooth_faces;
+
+	_make_dirty();
+}
+
+bool CSGPrimitive3D::get_smooth_faces() const {
+	return smooth_faces;
+}
+
+CSGPrimitive3D::CSGPrimitive3D() {
+	flip_faces = false;
+	smooth_faces = true;
+}
+
+/////////////////////
+
+void CSGMesh3D::_mesh_changed() {
+	_make_dirty();
+	update_gizmos();
 }
 
 void CSGMesh3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &CSGMesh3D::get_mesh);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh3D::get_material);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -915,148 +935,34 @@ Ref<Mesh> CSGMesh3D::get_mesh() {
 ////////////////////////////////
 
 CSGBrush *CSGSphere3D::_build_brush() {
-	// set our bounding box
+	Ref<SphereMesh> sphere_mesh;
+	sphere_mesh.instantiate();
+	sphere_mesh->set_radius(radius);
+	sphere_mesh->set_height(height);
+	sphere_mesh->set_radial_segments(radial_segments);
+	sphere_mesh->set_rings(rings);
+	sphere_mesh->set_smooth_faces(smooth_faces);
 
-	CSGBrush *brush = memnew(CSGBrush);
+	mesh = sphere_mesh;
 
-	int face_count = rings * radial_segments * 2 - radial_segments * 2;
-
-	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
-
-	Vector<Vector3> faces;
-	Vector<Vector2> uvs;
-	Vector<bool> smooth;
-	Vector<Ref<Material>> materials;
-	Vector<bool> invert;
-
-	faces.resize(face_count * 3);
-	uvs.resize(face_count * 3);
-
-	smooth.resize(face_count);
-	materials.resize(face_count);
-	invert.resize(face_count);
-
-	{
-		Vector3 *facesw = faces.ptrw();
-		Vector2 *uvsw = uvs.ptrw();
-		bool *smoothw = smooth.ptrw();
-		Ref<Material> *materialsw = materials.ptrw();
-		bool *invertw = invert.ptrw();
-
-		// We want to follow an order that's convenient for UVs.
-		// For latitude step we start at the top and move down like in an image.
-		const double latitude_step = -Math_PI / rings;
-		const double longitude_step = Math_TAU / radial_segments;
-		int face = 0;
-		for (int i = 0; i < rings; i++) {
-			double latitude0 = latitude_step * i + Math_TAU / 4;
-			double cos0 = Math::cos(latitude0);
-			double sin0 = Math::sin(latitude0);
-			double v0 = double(i) / rings;
-
-			double latitude1 = latitude_step * (i + 1) + Math_TAU / 4;
-			double cos1 = Math::cos(latitude1);
-			double sin1 = Math::sin(latitude1);
-			double v1 = double(i + 1) / rings;
-
-			for (int j = 0; j < radial_segments; j++) {
-				double longitude0 = longitude_step * j;
-				// We give sin to X and cos to Z on purpose.
-				// This allows UVs to be CCW on +X so it maps to images well.
-				double x0 = Math::sin(longitude0);
-				double z0 = Math::cos(longitude0);
-				double u0 = double(j) / radial_segments;
-
-				double longitude1 = longitude_step * (j + 1);
-				if (j == radial_segments - 1) {
-					longitude1 = 0;
-				}
-
-				double x1 = Math::sin(longitude1);
-				double z1 = Math::cos(longitude1);
-				double u1 = double(j + 1) / radial_segments;
-
-				Vector3 v[4] = {
-					Vector3(x0 * cos0, sin0, z0 * cos0) * radius,
-					Vector3(x1 * cos0, sin0, z1 * cos0) * radius,
-					Vector3(x1 * cos1, sin1, z1 * cos1) * radius,
-					Vector3(x0 * cos1, sin1, z0 * cos1) * radius,
-				};
-
-				Vector2 u[4] = {
-					Vector2(u0, v0),
-					Vector2(u1, v0),
-					Vector2(u1, v1),
-					Vector2(u0, v1),
-				};
-
-				// Draw the first face, but skip this at the north pole (i == 0).
-				if (i > 0) {
-					facesw[face * 3 + 0] = v[0];
-					facesw[face * 3 + 1] = v[1];
-					facesw[face * 3 + 2] = v[2];
-
-					uvsw[face * 3 + 0] = u[0];
-					uvsw[face * 3 + 1] = u[1];
-					uvsw[face * 3 + 2] = u[2];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-
-					face++;
-				}
-
-				// Draw the second face, but skip this at the south pole (i == rings - 1).
-				if (i < rings - 1) {
-					facesw[face * 3 + 0] = v[2];
-					facesw[face * 3 + 1] = v[3];
-					facesw[face * 3 + 2] = v[0];
-
-					uvsw[face * 3 + 0] = u[2];
-					uvsw[face * 3 + 1] = u[3];
-					uvsw[face * 3 + 2] = u[0];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-
-					face++;
-				}
-			}
-		}
-
-		if (face != face_count) {
-			ERR_PRINT("Face mismatch bug! fix code");
-		}
-	}
-
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
-
-	return brush;
+	return CSGPrimitive3D::_build_brush();
 }
 
 void CSGSphere3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CSGSphere3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CSGSphere3D::get_radius);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &CSGSphere3D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &CSGSphere3D::get_height);
 
 	ClassDB::bind_method(D_METHOD("set_radial_segments", "radial_segments"), &CSGSphere3D::set_radial_segments);
 	ClassDB::bind_method(D_METHOD("get_radial_segments"), &CSGSphere3D::get_radial_segments);
 	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CSGSphere3D::set_rings);
 	ClassDB::bind_method(D_METHOD("get_rings"), &CSGSphere3D::get_rings);
 
-	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGSphere3D::set_smooth_faces);
-	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGSphere3D::get_smooth_faces);
-
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGSphere3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGSphere3D::get_material);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1"), "set_rings", "get_rings");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGSphere3D::set_radius(const float p_radius) {
@@ -1068,6 +974,16 @@ void CSGSphere3D::set_radius(const float p_radius) {
 
 float CSGSphere3D::get_radius() const {
 	return radius;
+}
+
+void CSGSphere3D::set_height(const float p_height) {
+	height = p_height;
+	_make_dirty();
+	update_gizmos();
+}
+
+float CSGSphere3D::get_height() const {
+	return height;
 }
 
 void CSGSphere3D::set_radial_segments(const int p_radial_segments) {
@@ -1090,143 +1006,31 @@ int CSGSphere3D::get_rings() const {
 	return rings;
 }
 
-void CSGSphere3D::set_smooth_faces(const bool p_smooth_faces) {
-	smooth_faces = p_smooth_faces;
-	_make_dirty();
-}
-
-bool CSGSphere3D::get_smooth_faces() const {
-	return smooth_faces;
-}
-
-void CSGSphere3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGSphere3D::get_material() const {
-	return material;
-}
-
 CSGSphere3D::CSGSphere3D() {
 	// defaults
 	radius = 0.5;
+	height = 1.0;
 	radial_segments = 12;
 	rings = 6;
-	smooth_faces = true;
 }
 
 ///////////////
 
 CSGBrush *CSGBox3D::_build_brush() {
-	// set our bounding box
+	Ref<BoxMesh> box_mesh;
+	box_mesh.instantiate();
+	box_mesh->set_size(size);
 
-	CSGBrush *brush = memnew(CSGBrush);
+	mesh = box_mesh;
 
-	int face_count = 12; //it's a cube..
-
-	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
-
-	Vector<Vector3> faces;
-	Vector<Vector2> uvs;
-	Vector<bool> smooth;
-	Vector<Ref<Material>> materials;
-	Vector<bool> invert;
-
-	faces.resize(face_count * 3);
-	uvs.resize(face_count * 3);
-
-	smooth.resize(face_count);
-	materials.resize(face_count);
-	invert.resize(face_count);
-
-	{
-		Vector3 *facesw = faces.ptrw();
-		Vector2 *uvsw = uvs.ptrw();
-		bool *smoothw = smooth.ptrw();
-		Ref<Material> *materialsw = materials.ptrw();
-		bool *invertw = invert.ptrw();
-
-		int face = 0;
-
-		Vector3 vertex_mul = size / 2;
-
-		{
-			for (int i = 0; i < 6; i++) {
-				Vector3 face_points[4];
-				float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
-
-				for (int j = 0; j < 4; j++) {
-					float v[3];
-					v[0] = 1.0;
-					v[1] = 1 - 2 * ((j >> 1) & 1);
-					v[2] = v[1] * (1 - 2 * (j & 1));
-
-					for (int k = 0; k < 3; k++) {
-						if (i < 3) {
-							face_points[j][(i + k) % 3] = v[k];
-						} else {
-							face_points[3 - j][(i + k) % 3] = -v[k];
-						}
-					}
-				}
-
-				Vector2 u[4];
-				for (int j = 0; j < 4; j++) {
-					u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
-				}
-
-				//face 1
-				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
-				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
-				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
-
-				uvsw[face * 3 + 0] = u[0];
-				uvsw[face * 3 + 1] = u[1];
-				uvsw[face * 3 + 2] = u[2];
-
-				smoothw[face] = false;
-				invertw[face] = invert_val;
-				materialsw[face] = material;
-
-				face++;
-				//face 2
-				facesw[face * 3 + 0] = face_points[2] * vertex_mul;
-				facesw[face * 3 + 1] = face_points[3] * vertex_mul;
-				facesw[face * 3 + 2] = face_points[0] * vertex_mul;
-
-				uvsw[face * 3 + 0] = u[2];
-				uvsw[face * 3 + 1] = u[3];
-				uvsw[face * 3 + 2] = u[0];
-
-				smoothw[face] = false;
-				invertw[face] = invert_val;
-				materialsw[face] = material;
-
-				face++;
-			}
-		}
-
-		if (face != face_count) {
-			ERR_PRINT("Face mismatch bug! fix code");
-		}
-	}
-
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
-
-	return brush;
+	return CSGPrimitive3D::_build_brush();
 }
 
 void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &CSGBox3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &CSGBox3D::get_size);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
-
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGBox3D::set_size(const Vector3 &p_size) {
@@ -1239,188 +1043,61 @@ Vector3 CSGBox3D::get_size() const {
 	return size;
 }
 
-void CSGBox3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-	update_gizmos();
-}
-
-Ref<Material> CSGBox3D::get_material() const {
-	return material;
-}
-
 ///////////////
 
 CSGBrush *CSGCylinder3D::_build_brush() {
-	// set our bounding box
+	Ref<CylinderMesh> cylinder_mesh;
+	cylinder_mesh.instantiate();
+	cylinder_mesh->set_top_radius(top_radius);
+	cylinder_mesh->set_bottom_radius(bottom_radius);
+	cylinder_mesh->set_height(height);
+	cylinder_mesh->set_radial_segments(radial_segments);
+	cylinder_mesh->set_rings(rings);
+	cylinder_mesh->set_smooth_faces(smooth_faces);
 
-	CSGBrush *brush = memnew(CSGBrush);
+	mesh = cylinder_mesh;
 
-	int face_count = sides * (cone ? 1 : 2) + sides + (cone ? 0 : sides);
-
-	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
-
-	Vector<Vector3> faces;
-	Vector<Vector2> uvs;
-	Vector<bool> smooth;
-	Vector<Ref<Material>> materials;
-	Vector<bool> invert;
-
-	faces.resize(face_count * 3);
-	uvs.resize(face_count * 3);
-
-	smooth.resize(face_count);
-	materials.resize(face_count);
-	invert.resize(face_count);
-
-	{
-		Vector3 *facesw = faces.ptrw();
-		Vector2 *uvsw = uvs.ptrw();
-		bool *smoothw = smooth.ptrw();
-		Ref<Material> *materialsw = materials.ptrw();
-		bool *invertw = invert.ptrw();
-
-		int face = 0;
-
-		Vector3 vertex_mul(radius, height * 0.5, radius);
-
-		{
-			for (int i = 0; i < sides; i++) {
-				float inc = float(i) / sides;
-				float inc_n = float((i + 1)) / sides;
-				if (i == sides - 1) {
-					inc_n = 0;
-				}
-
-				float ang = inc * Math_TAU;
-				float ang_n = inc_n * Math_TAU;
-
-				Vector3 base(Math::cos(ang), 0, Math::sin(ang));
-				Vector3 base_n(Math::cos(ang_n), 0, Math::sin(ang_n));
-
-				Vector3 face_points[4] = {
-					base + Vector3(0, -1, 0),
-					base_n + Vector3(0, -1, 0),
-					base_n * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
-					base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
-				};
-
-				Vector2 u[4] = {
-					Vector2(inc, 0),
-					Vector2(inc_n, 0),
-					Vector2(inc_n, 1),
-					Vector2(inc, 1),
-				};
-
-				//side face 1
-				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
-				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
-				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
-
-				uvsw[face * 3 + 0] = u[0];
-				uvsw[face * 3 + 1] = u[1];
-				uvsw[face * 3 + 2] = u[2];
-
-				smoothw[face] = smooth_faces;
-				invertw[face] = invert_val;
-				materialsw[face] = material;
-
-				face++;
-
-				if (!cone) {
-					//side face 2
-					facesw[face * 3 + 0] = face_points[2] * vertex_mul;
-					facesw[face * 3 + 1] = face_points[3] * vertex_mul;
-					facesw[face * 3 + 2] = face_points[0] * vertex_mul;
-
-					uvsw[face * 3 + 0] = u[2];
-					uvsw[face * 3 + 1] = u[3];
-					uvsw[face * 3 + 2] = u[0];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-					face++;
-				}
-
-				//bottom face 1
-				facesw[face * 3 + 0] = face_points[1] * vertex_mul;
-				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
-				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
-
-				uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
-
-				smoothw[face] = false;
-				invertw[face] = invert_val;
-				materialsw[face] = material;
-				face++;
-
-				if (!cone) {
-					//top face 1
-					facesw[face * 3 + 0] = face_points[3] * vertex_mul;
-					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
-					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
-
-					uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
-
-					smoothw[face] = false;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-					face++;
-				}
-			}
-		}
-
-		if (face != face_count) {
-			ERR_PRINT("Face mismatch bug! fix code");
-		}
-	}
-
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
-
-	return brush;
+	return CSGPrimitive3D::_build_brush();
 }
 
 void CSGCylinder3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CSGCylinder3D::set_radius);
-	ClassDB::bind_method(D_METHOD("get_radius"), &CSGCylinder3D::get_radius);
-
+	ClassDB::bind_method(D_METHOD("set_top_radius", "top_radius"), &CSGCylinder3D::set_top_radius);
+	ClassDB::bind_method(D_METHOD("get_top_radius"), &CSGCylinder3D::get_top_radius);
+	ClassDB::bind_method(D_METHOD("set_bottom_radius", "bottom_radius"), &CSGCylinder3D::set_bottom_radius);
+	ClassDB::bind_method(D_METHOD("get_bottom_radius"), &CSGCylinder3D::get_bottom_radius);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CSGCylinder3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CSGCylinder3D::get_height);
 
-	ClassDB::bind_method(D_METHOD("set_sides", "sides"), &CSGCylinder3D::set_sides);
-	ClassDB::bind_method(D_METHOD("get_sides"), &CSGCylinder3D::get_sides);
+	ClassDB::bind_method(D_METHOD("set_radial_segments", "radial_segments"), &CSGCylinder3D::set_radial_segments);
+	ClassDB::bind_method(D_METHOD("get_radial_segments"), &CSGCylinder3D::get_radial_segments);
+	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CSGCylinder3D::set_rings);
+	ClassDB::bind_method(D_METHOD("get_rings"), &CSGCylinder3D::get_rings);
 
-	ClassDB::bind_method(D_METHOD("set_cone", "cone"), &CSGCylinder3D::set_cone);
-	ClassDB::bind_method(D_METHOD("is_cone"), &CSGCylinder3D::is_cone);
-
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGCylinder3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGCylinder3D::get_material);
-
-	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder3D::set_smooth_faces);
-	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder3D::get_smooth_faces);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_top_radius", "get_top_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_bottom_radius", "get_bottom_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
 }
 
-void CSGCylinder3D::set_radius(const float p_radius) {
-	radius = p_radius;
+void CSGCylinder3D::set_top_radius(const float p_radius) {
+	top_radius = p_radius;
 	_make_dirty();
 	update_gizmos();
 }
 
-float CSGCylinder3D::get_radius() const {
-	return radius;
+float CSGCylinder3D::get_top_radius() const {
+	return top_radius;
+}
+
+void CSGCylinder3D::set_bottom_radius(const float p_radius) {
+	bottom_radius = p_radius;
+	_make_dirty();
+	update_gizmos();
+}
+
+float CSGCylinder3D::get_bottom_radius() const {
+	return bottom_radius;
 }
 
 void CSGCylinder3D::set_height(const float p_height) {
@@ -1433,209 +1110,145 @@ float CSGCylinder3D::get_height() const {
 	return height;
 }
 
-void CSGCylinder3D::set_sides(const int p_sides) {
-	ERR_FAIL_COND(p_sides < 3);
-	sides = p_sides;
+void CSGCylinder3D::set_radial_segments(const int p_segments) {
+	radial_segments = p_segments > 4 ? p_segments : 4;
 	_make_dirty();
 	update_gizmos();
 }
 
-int CSGCylinder3D::get_sides() const {
-	return sides;
+int CSGCylinder3D::get_radial_segments() const {
+	return radial_segments;
 }
 
-void CSGCylinder3D::set_cone(const bool p_cone) {
-	cone = p_cone;
+void CSGCylinder3D::set_rings(const int p_rings) {
+	rings = p_rings > 0 ? p_rings : 0;
 	_make_dirty();
 	update_gizmos();
 }
 
-bool CSGCylinder3D::is_cone() const {
-	return cone;
-}
-
-void CSGCylinder3D::set_smooth_faces(const bool p_smooth_faces) {
-	smooth_faces = p_smooth_faces;
-	_make_dirty();
-}
-
-bool CSGCylinder3D::get_smooth_faces() const {
-	return smooth_faces;
-}
-
-void CSGCylinder3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGCylinder3D::get_material() const {
-	return material;
+int CSGCylinder3D::get_rings() const {
+	return rings;
 }
 
 CSGCylinder3D::CSGCylinder3D() {
-	// defaults
+	top_radius = 0.5;
+	bottom_radius = 0.5;
+	height = 2.0;
+	radial_segments = 12;
+	rings = 3;
+}
+
+///////////////
+
+CSGBrush *CSGCapsule3D::_build_brush() {
+	Ref<CapsuleMesh> capsule_mesh;
+	capsule_mesh.instantiate();
+	capsule_mesh->set_radius(radius);
+	capsule_mesh->set_height(height);
+	capsule_mesh->set_radial_segments(radial_segments);
+	capsule_mesh->set_rings(rings);
+	capsule_mesh->set_smooth_faces(smooth_faces);
+
+	mesh = capsule_mesh;
+
+	return CSGPrimitive3D::_build_brush();
+}
+
+void CSGCapsule3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CSGCapsule3D::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &CSGCapsule3D::get_radius);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &CSGCapsule3D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &CSGCapsule3D::get_height);
+
+	ClassDB::bind_method(D_METHOD("set_radial_segments", "segments"), &CSGCapsule3D::set_radial_segments);
+	ClassDB::bind_method(D_METHOD("get_radial_segments"), &CSGCapsule3D::get_radial_segments);
+	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CSGCapsule3D::set_rings);
+	ClassDB::bind_method(D_METHOD("get_rings"), &CSGCapsule3D::get_rings);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+}
+
+void CSGCapsule3D::set_radius(const float p_radius) {
+	radius = p_radius;
+	_make_dirty();
+	update_gizmos();
+}
+
+float CSGCapsule3D::get_radius() const {
+	return radius;
+}
+
+void CSGCapsule3D::set_height(const float p_height) {
+	height = p_height;
+	_make_dirty();
+	update_gizmos();
+}
+
+float CSGCapsule3D::get_height() const {
+	return height;
+}
+
+void CSGCapsule3D::set_radial_segments(const int p_segments) {
+	radial_segments = p_segments > 4 ? p_segments : 4;
+	_make_dirty();
+	update_gizmos();
+}
+
+int CSGCapsule3D::get_radial_segments() const {
+	return radial_segments;
+}
+
+void CSGCapsule3D::set_rings(const int p_rings) {
+	rings = p_rings > 0 ? p_rings : 0;
+	_make_dirty();
+	update_gizmos();
+}
+
+int CSGCapsule3D::get_rings() const {
+	return rings;
+}
+
+CSGCapsule3D::CSGCapsule3D() {
 	radius = 0.5;
 	height = 2.0;
-	sides = 8;
-	cone = false;
-	smooth_faces = true;
+	radial_segments = 12;
+	rings = 2;
 }
 
 ///////////////
 
 CSGBrush *CSGTorus3D::_build_brush() {
-	// set our bounding box
+	Ref<TorusMesh> torus_mesh;
+	torus_mesh.instantiate();
+	torus_mesh->set_inner_radius(inner_radius);
+	torus_mesh->set_outer_radius(outer_radius);
+	torus_mesh->set_rings(rings);
+	torus_mesh->set_ring_segments(ring_segments);
+	torus_mesh->set_smooth_faces(smooth_faces);
 
-	float min_radius = inner_radius;
-	float max_radius = outer_radius;
+	mesh = torus_mesh;
 
-	if (min_radius == max_radius) {
-		return memnew(CSGBrush); //sorry, can't
-	}
-
-	if (min_radius > max_radius) {
-		SWAP(min_radius, max_radius);
-	}
-
-	float radius = (max_radius - min_radius) * 0.5;
-
-	CSGBrush *brush = memnew(CSGBrush);
-
-	int face_count = ring_sides * sides * 2;
-
-	bool invert_val = get_flip_faces();
-	Ref<Material> material = get_material();
-
-	Vector<Vector3> faces;
-	Vector<Vector2> uvs;
-	Vector<bool> smooth;
-	Vector<Ref<Material>> materials;
-	Vector<bool> invert;
-
-	faces.resize(face_count * 3);
-	uvs.resize(face_count * 3);
-
-	smooth.resize(face_count);
-	materials.resize(face_count);
-	invert.resize(face_count);
-
-	{
-		Vector3 *facesw = faces.ptrw();
-		Vector2 *uvsw = uvs.ptrw();
-		bool *smoothw = smooth.ptrw();
-		Ref<Material> *materialsw = materials.ptrw();
-		bool *invertw = invert.ptrw();
-
-		int face = 0;
-
-		{
-			for (int i = 0; i < sides; i++) {
-				float inci = float(i) / sides;
-				float inci_n = float((i + 1)) / sides;
-				if (i == sides - 1) {
-					inci_n = 0;
-				}
-
-				float angi = inci * Math_TAU;
-				float angi_n = inci_n * Math_TAU;
-
-				Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
-				Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
-
-				for (int j = 0; j < ring_sides; j++) {
-					float incj = float(j) / ring_sides;
-					float incj_n = float((j + 1)) / ring_sides;
-					if (j == ring_sides - 1) {
-						incj_n = 0;
-					}
-
-					float angj = incj * Math_TAU;
-					float angj_n = incj_n * Math_TAU;
-
-					Vector2 normalj = Vector2(Math::cos(angj), Math::sin(angj)) * radius + Vector2(min_radius + radius, 0);
-					Vector2 normalj_n = Vector2(Math::cos(angj_n), Math::sin(angj_n)) * radius + Vector2(min_radius + radius, 0);
-
-					Vector3 face_points[4] = {
-						Vector3(normali.x * normalj.x, normalj.y, normali.z * normalj.x),
-						Vector3(normali.x * normalj_n.x, normalj_n.y, normali.z * normalj_n.x),
-						Vector3(normali_n.x * normalj_n.x, normalj_n.y, normali_n.z * normalj_n.x),
-						Vector3(normali_n.x * normalj.x, normalj.y, normali_n.z * normalj.x)
-					};
-
-					Vector2 u[4] = {
-						Vector2(inci, incj),
-						Vector2(inci, incj_n),
-						Vector2(inci_n, incj_n),
-						Vector2(inci_n, incj),
-					};
-
-					// face 1
-					facesw[face * 3 + 0] = face_points[0];
-					facesw[face * 3 + 1] = face_points[2];
-					facesw[face * 3 + 2] = face_points[1];
-
-					uvsw[face * 3 + 0] = u[0];
-					uvsw[face * 3 + 1] = u[2];
-					uvsw[face * 3 + 2] = u[1];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-
-					face++;
-
-					//face 2
-					facesw[face * 3 + 0] = face_points[3];
-					facesw[face * 3 + 1] = face_points[2];
-					facesw[face * 3 + 2] = face_points[0];
-
-					uvsw[face * 3 + 0] = u[3];
-					uvsw[face * 3 + 1] = u[2];
-					uvsw[face * 3 + 2] = u[0];
-
-					smoothw[face] = smooth_faces;
-					invertw[face] = invert_val;
-					materialsw[face] = material;
-					face++;
-				}
-			}
-		}
-
-		if (face != face_count) {
-			ERR_PRINT("Face mismatch bug! fix code");
-		}
-	}
-
-	brush->build_from_faces(faces, uvs, smooth, materials, invert);
-
-	return brush;
+	return CSGPrimitive3D::_build_brush();
 }
 
 void CSGTorus3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inner_radius", "radius"), &CSGTorus3D::set_inner_radius);
 	ClassDB::bind_method(D_METHOD("get_inner_radius"), &CSGTorus3D::get_inner_radius);
-
 	ClassDB::bind_method(D_METHOD("set_outer_radius", "radius"), &CSGTorus3D::set_outer_radius);
 	ClassDB::bind_method(D_METHOD("get_outer_radius"), &CSGTorus3D::get_outer_radius);
 
-	ClassDB::bind_method(D_METHOD("set_sides", "sides"), &CSGTorus3D::set_sides);
-	ClassDB::bind_method(D_METHOD("get_sides"), &CSGTorus3D::get_sides);
-
-	ClassDB::bind_method(D_METHOD("set_ring_sides", "sides"), &CSGTorus3D::set_ring_sides);
-	ClassDB::bind_method(D_METHOD("get_ring_sides"), &CSGTorus3D::get_ring_sides);
-
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGTorus3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGTorus3D::get_material);
-
-	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGTorus3D::set_smooth_faces);
-	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGTorus3D::get_smooth_faces);
+	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CSGTorus3D::set_rings);
+	ClassDB::bind_method(D_METHOD("get_rings"), &CSGTorus3D::get_rings);
+	ClassDB::bind_method(D_METHOD("set_ring_segments", "ring_segments"), &CSGTorus3D::set_ring_segments);
+	ClassDB::bind_method(D_METHOD("get_ring_segments"), &CSGTorus3D::get_ring_segments);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inner_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_inner_radius", "get_inner_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outer_radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp"), "set_outer_radius", "get_outer_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ring_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_ring_sides", "get_ring_sides");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "3,64,1"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ring_segments", PROPERTY_HINT_RANGE, "3,64,1"), "set_ring_segments", "get_ring_segments");
 }
 
 void CSGTorus3D::set_inner_radius(const float p_inner_radius) {
@@ -1658,53 +1271,34 @@ float CSGTorus3D::get_outer_radius() const {
 	return outer_radius;
 }
 
-void CSGTorus3D::set_sides(const int p_sides) {
-	ERR_FAIL_COND(p_sides < 3);
-	sides = p_sides;
+void CSGTorus3D::set_rings(const int p_rings) {
+	ERR_FAIL_COND(p_rings < 3);
+	rings = p_rings;
 	_make_dirty();
 	update_gizmos();
 }
 
-int CSGTorus3D::get_sides() const {
-	return sides;
+int CSGTorus3D::get_rings() const {
+	return rings;
 }
 
-void CSGTorus3D::set_ring_sides(const int p_ring_sides) {
-	ERR_FAIL_COND(p_ring_sides < 3);
-	ring_sides = p_ring_sides;
+void CSGTorus3D::set_ring_segments(const int p_ring_segments) {
+	ERR_FAIL_COND(p_ring_segments < 3);
+	ring_segments = p_ring_segments;
 	_make_dirty();
 	update_gizmos();
 }
 
-int CSGTorus3D::get_ring_sides() const {
-	return ring_sides;
-}
-
-void CSGTorus3D::set_smooth_faces(const bool p_smooth_faces) {
-	smooth_faces = p_smooth_faces;
-	_make_dirty();
-}
-
-bool CSGTorus3D::get_smooth_faces() const {
-	return smooth_faces;
-}
-
-void CSGTorus3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGTorus3D::get_material() const {
-	return material;
+int CSGTorus3D::get_ring_segments() const {
+	return ring_segments;
 }
 
 CSGTorus3D::CSGTorus3D() {
 	// defaults
 	inner_radius = 0.5;
 	outer_radius = 1.0;
-	sides = 8;
-	ring_sides = 6;
-	smooth_faces = true;
+	rings = 12;
+	ring_segments = 6;
 }
 
 ///////////////
@@ -2124,12 +1718,6 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_joined", "enable"), &CSGPolygon3D::set_path_joined);
 	ClassDB::bind_method(D_METHOD("is_path_joined"), &CSGPolygon3D::is_path_joined);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPolygon3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGPolygon3D::get_material);
-
-	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPolygon3D::set_smooth_faces);
-	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPolygon3D::get_smooth_faces);
-
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CSGPolygon3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &CSGPolygon3D::_has_editable_3d_polygon_no_depth);
 
@@ -2147,8 +1735,6 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_u_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_path_u_distance", "get_path_u_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 
 	BIND_ENUM_CONSTANT(MODE_DEPTH);
 	BIND_ENUM_CONSTANT(MODE_SPIN);
@@ -2305,24 +1891,6 @@ bool CSGPolygon3D::is_path_joined() const {
 	return path_joined;
 }
 
-void CSGPolygon3D::set_smooth_faces(const bool p_smooth_faces) {
-	smooth_faces = p_smooth_faces;
-	_make_dirty();
-}
-
-bool CSGPolygon3D::get_smooth_faces() const {
-	return smooth_faces;
-}
-
-void CSGPolygon3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGPolygon3D::get_material() const {
-	return material;
-}
-
 bool CSGPolygon3D::_is_editable_3d_polygon() const {
 	return true;
 }
@@ -2341,7 +1909,6 @@ CSGPolygon3D::CSGPolygon3D() {
 	depth = 1.0;
 	spin_degrees = 360;
 	spin_sides = 8;
-	smooth_faces = false;
 	path_interval_type = PATH_INTERVAL_DISTANCE;
 	path_interval = 1.0;
 	path_simplify_angle = 0.0;
