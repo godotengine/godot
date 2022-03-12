@@ -847,7 +847,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 				at = at->get_atlas();
 			}
 
-			tree->set_item_tooltip(tree->get_item_count() - 1, tooltip);
+			tree->set_item_tooltip(-1, tooltip);
 		}
 		if (sel == i) {
 			tree->select(tree->get_item_count() - 1);
