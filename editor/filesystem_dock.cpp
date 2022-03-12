@@ -779,14 +779,14 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				icon = folder_icon;
 				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
 					files->add_item(text, icon, true);
-					files->set_item_metadata(files->get_item_count() - 1, favorite);
+					files->set_item_metadata(-1, favorite);
 				}
 			} else if (favorite.ends_with("/")) {
 				text = favorite.substr(0, favorite.length() - 1).get_file();
 				icon = folder_icon;
 				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
 					files->add_item(text, icon, true);
-					files->set_item_metadata(files->get_item_count() - 1, favorite);
+					files->set_item_metadata(-1, favorite);
 				}
 			} else {
 				int index;
@@ -840,9 +840,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 						bd += "/";
 					}
 
-					files->set_item_metadata(files->get_item_count() - 1, bd);
-					files->set_item_selectable(files->get_item_count() - 1, false);
-					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					files->set_item_metadata(-1, bd);
+					files->set_item_selectable(-1, false);
+					files->set_item_icon_modulate(-1, folder_color);
 				}
 
 				bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
@@ -852,8 +852,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					String dname = efd->get_subdir(i)->get_name();
 
 					files->add_item(dname, folder_icon, true);
-					files->set_item_metadata(files->get_item_count() - 1, directory.plus_file(dname) + "/");
-					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					files->set_item_metadata(-1, directory.plus_file(dname) + "/");
+					files->set_item_icon_modulate(-1, folder_color);
 
 					if (cselection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);

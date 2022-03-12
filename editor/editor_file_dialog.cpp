@@ -214,7 +214,7 @@ void EditorFileDialog::update_dir() {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
 			drives->add_item(RTR("Network"));
-			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->set_item_disabled(-1, true);
 			drives->select(drives->get_item_count() - 1);
 		} else {
 			drives->select(dir_access->get_current_drive());
@@ -314,8 +314,8 @@ void EditorFileDialog::_post_popup() {
 				recentd.remove_at(i--);
 			} else {
 				recent->add_item(name, folder);
-				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
-				recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+				recent->set_item_metadata(-1, recentd[i]);
+				recent->set_item_icon_modulate(-1, folder_color);
 			}
 		}
 		EditorSettings::get_singleton()->set_recent_dirs(recentd);
@@ -800,9 +800,9 @@ void EditorFileDialog::update_file_list() {
 		item_list->add_item(dir_name);
 
 		if (display_mode == DISPLAY_THUMBNAILS) {
-			item_list->set_item_icon(item_list->get_item_count() - 1, folder_thumbnail);
+			item_list->set_item_icon(-1, folder_thumbnail);
 		} else {
-			item_list->set_item_icon(item_list->get_item_count() - 1, folder);
+			item_list->set_item_icon(-1, folder);
 		}
 
 		Dictionary d;
@@ -810,8 +810,8 @@ void EditorFileDialog::update_file_list() {
 		d["path"] = cdir.plus_file(dir_name);
 		d["dir"] = true;
 
-		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
-		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
+		item_list->set_item_metadata(-1, d);
+		item_list->set_item_icon_modulate(-1, folder_color);
 
 		dirs.pop_front();
 	}
@@ -858,10 +858,10 @@ void EditorFileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(cdir.plus_file(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
-					item_list->set_item_icon(item_list->get_item_count() - 1, file_thumbnail);
-					item_list->set_item_tag_icon(item_list->get_item_count() - 1, icon);
+					item_list->set_item_icon(-1, file_thumbnail);
+					item_list->set_item_tag_icon(-1, icon);
 				} else {
-					item_list->set_item_icon(item_list->get_item_count() - 1, icon);
+					item_list->set_item_icon(-1, icon);
 				}
 			}
 
@@ -870,7 +870,7 @@ void EditorFileDialog::update_file_list() {
 			d["dir"] = false;
 			String fullpath = cdir.plus_file(files.front()->get());
 			d["path"] = fullpath;
-			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+			item_list->set_item_metadata(-1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
@@ -1321,8 +1321,8 @@ void EditorFileDialog::_update_favorites() {
 			continue; // We don't handle favorite files here.
 		}
 
-		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
-		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
+		favorites->set_item_metadata(-1, favorited[i]);
+		favorites->set_item_icon_modulate(-1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);

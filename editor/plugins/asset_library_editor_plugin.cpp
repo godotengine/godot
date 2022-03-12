@@ -1145,7 +1145,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					String name = cat["name"];
 					int id = cat["id"];
 					categories->add_item(name);
-					categories->set_item_metadata(categories->get_item_count() - 1, id);
+					categories->set_item_metadata(-1, id);
 					category_map[cat["id"]] = name;
 				}
 			}

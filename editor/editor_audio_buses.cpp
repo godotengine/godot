@@ -925,7 +925,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 		String name = E.operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
-		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E);
+		effect_options->set_item_metadata(-1, E);
 	}
 
 	bus_options = memnew(MenuButton);

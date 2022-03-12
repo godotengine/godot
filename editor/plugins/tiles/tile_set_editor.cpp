@@ -182,7 +182,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		}
 
 		sources_list->add_item(item_text, texture);
-		sources_list->set_item_metadata(sources_list->get_item_count() - 1, source_id);
+		sources_list->set_item_metadata(-1, source_id);
 	}
 
 	// Set again the current selected item if needed.

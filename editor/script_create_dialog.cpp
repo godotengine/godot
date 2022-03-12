@@ -641,7 +641,7 @@ void ScriptCreateDialog::_update_template_menu() {
 				if (!templates_found.is_empty()) {
 					if (!separator) {
 						template_menu->add_separator();
-						template_menu->set_item_text(template_menu->get_item_count() - 1, display_name);
+						template_menu->set_item_text(-1, display_name);
 						separator = true;
 					}
 					for (ScriptLanguage::ScriptTemplate &t : templates_found) {

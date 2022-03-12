@@ -2551,7 +2551,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
 				menu_properties->add_item(capitalize ? p.capitalize() : p);
-				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
+				menu_properties->set_item_metadata(-1, p);
 			}
 
 			menu_properties->reset_size();

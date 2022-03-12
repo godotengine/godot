@@ -241,7 +241,7 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 			if (texture.is_valid()) {
 				String item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
 				atlas_merging_atlases_list->add_item(item_text, texture);
-				atlas_merging_atlases_list->set_item_metadata(atlas_merging_atlases_list->get_item_count() - 1, source_id);
+				atlas_merging_atlases_list->set_item_metadata(-1, source_id);
 			}
 		}
 	}

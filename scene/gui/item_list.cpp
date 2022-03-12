@@ -83,6 +83,9 @@ int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 }
 
 void ItemList::set_item_text(int p_idx, const String &p_text) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].text = p_text;
@@ -97,6 +100,9 @@ String ItemList::get_item_text(int p_idx) const {
 }
 
 void ItemList::set_item_text_direction(int p_idx, Control::TextDirection p_text_direction) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (items[p_idx].text_direction != p_text_direction) {
@@ -119,6 +125,9 @@ void ItemList::clear_item_opentype_features(int p_idx) {
 }
 
 void ItemList::set_item_opentype_feature(int p_idx, const String &p_name, int p_value) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!items[p_idx].opentype_features.has(tag) || (int)items[p_idx].opentype_features[tag] != p_value) {
@@ -138,6 +147,9 @@ int ItemList::get_item_opentype_feature(int p_idx, const String &p_name) const {
 }
 
 void ItemList::set_item_language(int p_idx, const String &p_language) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 	if (items[p_idx].language != p_language) {
 		items.write[p_idx].language = p_language;
@@ -152,6 +164,9 @@ String ItemList::get_item_language(int p_idx) const {
 }
 
 void ItemList::set_item_tooltip_enabled(int p_idx, const bool p_enabled) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].tooltip_enabled = p_enabled;
 }
@@ -162,6 +177,9 @@ bool ItemList::is_item_tooltip_enabled(int p_idx) const {
 }
 
 void ItemList::set_item_tooltip(int p_idx, const String &p_tooltip) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].tooltip = p_tooltip;
@@ -175,6 +193,9 @@ String ItemList::get_item_tooltip(int p_idx) const {
 }
 
 void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].icon = p_icon;
@@ -189,6 +210,9 @@ Ref<Texture2D> ItemList::get_item_icon(int p_idx) const {
 }
 
 void ItemList::set_item_icon_transposed(int p_idx, const bool p_transposed) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].icon_transposed = p_transposed;
@@ -203,6 +227,9 @@ bool ItemList::is_item_icon_transposed(int p_idx) const {
 }
 
 void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].icon_region = p_region;
@@ -217,6 +244,9 @@ Rect2 ItemList::get_item_icon_region(int p_idx) const {
 }
 
 void ItemList::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].icon_modulate = p_modulate;
@@ -230,6 +260,9 @@ Color ItemList::get_item_icon_modulate(int p_idx) const {
 }
 
 void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].custom_bg = p_custom_bg_color;
@@ -243,6 +276,9 @@ Color ItemList::get_item_custom_bg_color(int p_idx) const {
 }
 
 void ItemList::set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].custom_fg = p_custom_fg_color;
@@ -256,6 +292,9 @@ Color ItemList::get_item_custom_fg_color(int p_idx) const {
 }
 
 void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].tag_icon = p_tag_icon;
@@ -270,6 +309,9 @@ Ref<Texture2D> ItemList::get_item_tag_icon(int p_idx) const {
 }
 
 void ItemList::set_item_selectable(int p_idx, bool p_selectable) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].selectable = p_selectable;
@@ -281,6 +323,9 @@ bool ItemList::is_item_selectable(int p_idx) const {
 }
 
 void ItemList::set_item_disabled(int p_idx, bool p_disabled) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].disabled = p_disabled;
@@ -293,6 +338,9 @@ bool ItemList::is_item_disabled(int p_idx) const {
 }
 
 void ItemList::set_item_metadata(int p_idx, const Variant &p_metadata) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.write[p_idx].metadata = p_metadata;

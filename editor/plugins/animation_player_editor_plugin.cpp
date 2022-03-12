@@ -1670,11 +1670,11 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->set_tooltip(TTR("Onion Skinning Options"));
 	onion_skinning->get_popup()->add_separator(TTR("Directions"));
 	onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
-	onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
+	onion_skinning->get_popup()->set_item_checked(-1, true);
 	onion_skinning->get_popup()->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
 	onion_skinning->get_popup()->add_separator(TTR("Depth"));
 	onion_skinning->get_popup()->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);
-	onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
+	onion_skinning->get_popup()->set_item_checked(-1, true);
 	onion_skinning->get_popup()->add_radio_check_item(TTR("2 steps"), ONION_SKINNING_2_STEPS);
 	onion_skinning->get_popup()->add_radio_check_item(TTR("3 steps"), ONION_SKINNING_3_STEPS);
 	onion_skinning->get_popup()->add_separator();
