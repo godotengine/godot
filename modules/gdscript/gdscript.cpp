@@ -827,10 +827,6 @@ Error GDScript::reload(bool p_keep_state) {
 	if (basedir.begins_with(EditorSettings::get_singleton()->get_project_script_templates_dir())) {
 		return OK;
 	}
-#else
-	if (source.contains("_BASE_")) {
-		return OK;
-	}
 #endif
 
 	{
