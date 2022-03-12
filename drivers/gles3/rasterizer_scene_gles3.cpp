@@ -1846,7 +1846,14 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		GIProbeInstance *gipi = gi_probe_instance_owner.getptr(ridp[0]);
 
 		float bias_scale = e->instance->baked_light ? 1 : 0;
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
+		// Normally, lightmapping uses the same texturing units than the GI probes; however, in the case of the ubershader
+		// that's not a good idea because some hardware/drivers (Android/Intel) may fail to render if a single texturing unit
+		// is used through multiple kinds of samplers in the same shader.
+		if (state.scene_shader.is_version_ubershader()) {
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 12);
+		} else {
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
+		}
 		glBindTexture(GL_TEXTURE_3D, gipi->tex_cache);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM1, gipi->transform_to_data * p_view_transform);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS1, gipi->bounds);
@@ -1858,7 +1865,11 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		if (gi_probe_count > 1) {
 			GIProbeInstance *gipi2 = gi_probe_instance_owner.getptr(ridp[1]);
 
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 11);
+			if (state.scene_shader.is_version_ubershader()) {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 13);
+			} else {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 11);
+			}
 			glBindTexture(GL_TEXTURE_3D, gipi2->tex_cache);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM2, gipi2->transform_to_data * p_view_transform);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS2, gipi2->bounds);

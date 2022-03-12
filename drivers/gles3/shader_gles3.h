@@ -399,6 +399,7 @@ public:
 	void free_custom_shader(uint32_t p_code_id);
 
 	uint32_t get_version() const { return new_conditional_version.version; }
+	bool is_version_ubershader() const { return (new_conditional_version.version & VersionKey::UBERSHADER_FLAG); }
 	_FORCE_INLINE_ bool is_version_valid() const { return version && version->compile_status == Version::COMPILE_STATUS_OK; }
 
 	virtual void init() = 0;
