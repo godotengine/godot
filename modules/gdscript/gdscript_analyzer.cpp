@@ -277,6 +277,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 			base = parser->get_parser()->head->get_datatype();
 		} else {
 			if (p_class->extends.is_empty()) {
+				push_error("Could not resolve an empty super class path.", p_class);
 				return ERR_PARSE_ERROR;
 			}
 			const StringName &name = p_class->extends[extends_index++];
