@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_gles3.h                                                   */
+/*  rasterizer_dummy.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,72 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_OPENGL_H
-#define RASTERIZER_OPENGL_H
+#ifndef RASTERIZER_DUMMY_H
+#define RASTERIZER_DUMMY_H
 
-#ifdef GLES3_ENABLED
-
-#include "rasterizer_canvas_gles3.h"
-#include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
+#include "core/templates/rid_owner.h"
+#include "core/templates/self_list.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering/dummy/rasterizer_canvas_dummy.h"
+#include "servers/rendering/dummy/rasterizer_scene_dummy.h"
+#include "servers/rendering/dummy/rasterizer_storage_dummy.h"
+#include "servers/rendering/dummy/storage/canvas_texture_storage.h"
+#include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "storage/canvas_texture_storage.h"
-#include "storage/config.h"
-#include "storage/render_target_storage.h"
-#include "storage/texture_storage.h"
+#include "servers/rendering_server.h"
 
-class RasterizerGLES3 : public RendererCompositor {
+class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
-	float delta = 0;
-
-	double time_total = 0.0;
+	double delta = 0;
 
 protected:
-	GLES3::Config config;
-	GLES3::CanvasTextureStorage canvas_texture_storage;
-	GLES3::TextureStorage texture_storage;
-	RasterizerStorageGLES3 storage;
-	RasterizerCanvasGLES3 canvas;
-	RasterizerSceneGLES3 scene;
-
-	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
+	RasterizerCanvasDummy canvas;
+	RendererDummy::CanvasTextureStorage canvas_texture_storage;
+	RendererDummy::TextureStorage texture_storage;
+	RasterizerStorageDummy storage;
+	RasterizerSceneDummy scene;
 
 public:
-	RendererCanvasTextureStorage *get_canvas_texture_storage() { return &canvas_texture_storage; }
-	RendererTextureStorage *get_texture_storage() { return &texture_storage; }
-	RendererStorage *get_storage() { return &storage; }
-	RendererCanvasRender *get_canvas() { return &canvas; }
-	RendererSceneRender *get_scene() { return &scene; }
+	RendererCanvasTextureStorage *get_canvas_texture_storage() override { return &canvas_texture_storage; };
+	RendererTextureStorage *get_texture_storage() override { return &texture_storage; };
+	RendererStorage *get_storage() override { return &storage; }
+	RendererCanvasRender *get_canvas() override { return &canvas; }
+	RendererSceneRender *get_scene() override { return &scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override {}
 
-	void initialize();
-	void begin_frame(double frame_step);
+	void initialize() override {}
+	void begin_frame(double frame_step) override {
+		frame++;
+		delta = frame_step;
+	}
 
-	void prepare_for_blitting_render_targets();
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	void prepare_for_blitting_render_targets() override {}
+	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) override {}
 
-	void end_frame(bool p_swap_buffers);
+	void end_frame(bool p_swap_buffers) override {
+		if (p_swap_buffers) {
+			DisplayServer::get_singleton()->swap_buffers();
+		}
+	}
 
-	void finalize() {}
+	void finalize() override {}
 
 	static RendererCompositor *_create_current() {
-		return memnew(RasterizerGLES3);
+		return memnew(RasterizerDummy);
 	}
 
 	static void make_current() {
 		_create_func = _create_current;
 	}
 
-	virtual bool is_low_end() const { return true; }
-	uint64_t get_frame_number() const { return frame; }
-	double get_frame_delta_time() const { return delta; }
+	bool is_low_end() const override { return true; }
+	uint64_t get_frame_number() const override { return frame; }
+	double get_frame_delta_time() const override { return delta; }
 
-	RasterizerGLES3();
-	~RasterizerGLES3() {}
+	RasterizerDummy() {}
+	~RasterizerDummy() {}
 };
 
-#endif // GLES3_ENABLED
-
-#endif
+#endif // RASTERIZER_DUMMY_H

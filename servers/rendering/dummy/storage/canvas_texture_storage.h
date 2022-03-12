@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  canvas_texture_storage.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifndef CANVAS_TEXTURE_STORAGE_DUMMY_H
+#define CANVAS_TEXTURE_STORAGE_DUMMY_H
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+namespace RendererDummy {
 
-class RenderingServerGlobals {
+class CanvasTextureStorage : public RendererCanvasTextureStorage {
 public:
-	static bool threaded;
+	virtual RID canvas_texture_allocate() override { return RID(); };
+	virtual void canvas_texture_initialize(RID p_rid) override{};
+	virtual void canvas_texture_free(RID p_rid) override{};
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override{};
+	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override{};
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
+	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override{};
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override{};
 };
 
-#define RSG RenderingServerGlobals
+} // namespace RendererDummy
 
-#endif // RENDERING_SERVER_GLOBALS_H
+#endif // !CANVAS_TEXTURE_STORAGE_DUMMY_H

@@ -37,6 +37,8 @@
 #include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "storage/canvas_texture_storage.h"
+#include "storage/texture_storage.h"
 
 #include "shaders/canvas.glsl.gen.h"
 
@@ -184,7 +186,7 @@ public:
 		RID current_tex = RID();
 		RID current_normal = RID();
 		RID current_specular = RID();
-		RasterizerStorageGLES3::Texture *current_tex_ptr;
+		GLES3::Texture *current_tex_ptr;
 		RID current_shader_version = RID();
 		RS::PrimitiveType current_primitive = RS::PRIMITIVE_MAX;
 		uint32_t current_primitive_points = 0;
@@ -217,6 +219,8 @@ public:
 
 	RasterizerSceneGLES3 *scene_render;
 
+	GLES3::CanvasTextureStorage *canvas_texture_storage;
+	GLES3::TextureStorage *texture_storage;
 	RasterizerStorageGLES3 *storage;
 
 	void _set_uniforms();
