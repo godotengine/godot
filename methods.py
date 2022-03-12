@@ -209,6 +209,18 @@ def get_version_info(module_version_string="", silent=False):
             githash = head
 
     version_info["git_hash"] = githash
+    # Fallback to 0 as a timestamp (will be treated as "unknown" in the engine).
+    version_info["git_timestamp"] = 0
+
+    # Get the UNIX timestamp of the build commit.
+    if os.path.exists(".git"):
+        try:
+            version_info["git_timestamp"] = subprocess.check_output(
+                ["git", "log", "-1", "--pretty=format:%ct", githash]
+            ).decode("utf-8")
+        except (subprocess.CalledProcessError, OSError):
+            # `git` not found in PATH.
+            pass
 
     return version_info
 
@@ -246,6 +258,7 @@ def generate_version_header(module_version_string=""):
         """/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "core/version.h"
 const char *const VERSION_HASH = "{git_hash}";
+const uint64_t VERSION_TIMESTAMP = {git_timestamp};
 """.format(
             **version_info
         )

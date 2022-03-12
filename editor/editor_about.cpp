@@ -33,6 +33,7 @@
 #include "core/authors.gen.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -206,7 +207,14 @@ EditorAbout::EditorAbout() {
 	// Set the text to copy in metadata as it slightly differs from the button's text.
 	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	version_btn->set_tooltip_text(TTR("Click to copy."));
+	String build_date;
+	if (VERSION_TIMESTAMP > 0) {
+		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
+	} else {
+		build_date = TTR("(unknown)");
+	}
+	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version number."), build_date));
+
 	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 

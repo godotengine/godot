@@ -393,6 +393,23 @@ void finalize_theme_db() {
 #define MAIN_PRINT(m_txt)
 #endif
 
+void Main::print_header(bool p_rich) {
+	if (VERSION_TIMESTAMP > 0) {
+		// Version timestamp available.
+		if (p_rich) {
+			print_line_rich("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC) - \u001b[4m" + String(VERSION_WEBSITE));
+		} else {
+			print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC) - " + String(VERSION_WEBSITE));
+		}
+	} else {
+		if (p_rich) {
+			print_line_rich("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(VERSION_WEBSITE));
+		} else {
+			print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+		}
+	}
+}
+
 /**
  * Prints a copyright notice in the command-line help with colored text. A newline is
  * automatically added at the end.
@@ -463,7 +480,7 @@ void Main::print_help_option(const char *p_option, const char *p_description, CL
 }
 
 void Main::print_help(const char *p_binary) {
-	print_line("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(VERSION_WEBSITE) + "\u001b[0m");
+	print_header(true);
 	print_help_copyright("Free and open source software under the terms of the MIT license.");
 	print_help_copyright("(c) 2014-present Godot Engine contributors. (c) 2007-present Juan Linietsky, Ariel Manzur.");
 
@@ -2468,8 +2485,8 @@ Error Main::setup2() {
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
-	// Print engine name and version
-	Engine::get_singleton()->print_header(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	// Don't use rich formatting to prevent ANSI escape codes from being written to log files.
+	print_header(false);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
