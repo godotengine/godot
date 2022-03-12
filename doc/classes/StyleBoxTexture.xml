@@ -56,6 +56,23 @@
 				Sets the margin to [param size] pixels for the specified [enum Side].
 			</description>
 		</method>
+		<method name="set_margin_size_all">
+			<return type="void" />
+			<param index="0" name="size" type="float" />
+			<description>
+				Sets the margin to [param size] pixels for all sides.
+			</description>
+		</method>
+		<method name="set_margin_size_individual">
+			<return type="void" />
+			<param index="0" name="size_left" type="float" />
+			<param index="1" name="size_top" type="float" />
+			<param index="2" name="size_right" type="float" />
+			<param index="3" name="size_bottom" type="float" />
+			<description>
+				Sets the margin for each side to [param size_left], [param size_top], [param size_right], and [param size_bottom] pixels.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">

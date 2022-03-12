@@ -41,6 +41,7 @@ float StyleBox::get_style_margin(Side p_side) const {
 	}
 	return 0;
 }
+
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
 	bool ret;
 	if (GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret)) {
@@ -60,6 +61,21 @@ void StyleBox::set_default_margin(Side p_side, float p_value) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
 	margin[p_side] = p_value;
+	emit_changed();
+}
+
+void StyleBox::set_default_margin_all(float p_value) {
+	for (int i = 0; i < 4; i++) {
+		margin[i] = p_value;
+	}
+	emit_changed();
+}
+
+void StyleBox::set_default_margin_individual(float p_left, float p_top, float p_right, float p_bottom) {
+	margin[SIDE_LEFT] = p_left;
+	margin[SIDE_TOP] = p_top;
+	margin[SIDE_RIGHT] = p_right;
+	margin[SIDE_BOTTOM] = p_bottom;
 	emit_changed();
 }
 
@@ -112,6 +128,8 @@ void StyleBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("test_mask", "point", "rect"), &StyleBox::test_mask);
 
 	ClassDB::bind_method(D_METHOD("set_default_margin", "margin", "offset"), &StyleBox::set_default_margin);
+	ClassDB::bind_method(D_METHOD("set_default_margin_all", "offset"), &StyleBox::set_default_margin_all);
+	ClassDB::bind_method(D_METHOD("set_default_margin_individual", "offset_left", "offset_top", "offset_right", "offset_bottom"), &StyleBox::set_default_margin_individual);
 	ClassDB::bind_method(D_METHOD("get_default_margin", "margin"), &StyleBox::get_default_margin);
 
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &StyleBox::get_margin);
@@ -162,6 +180,21 @@ void StyleBoxTexture::set_margin_size(Side p_side, float p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 
 	margin[p_side] = p_size;
+	emit_changed();
+}
+
+void StyleBoxTexture::set_margin_size_all(float p_size) {
+	for (int i = 0; i < 4; i++) {
+		margin[i] = p_size;
+	}
+	emit_changed();
+}
+
+void StyleBoxTexture::set_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
+	margin[SIDE_LEFT] = p_left;
+	margin[SIDE_TOP] = p_top;
+	margin[SIDE_RIGHT] = p_right;
+	margin[SIDE_BOTTOM] = p_bottom;
 	emit_changed();
 }
 
@@ -292,6 +325,8 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture"), &StyleBoxTexture::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_margin_size", "margin", "size"), &StyleBoxTexture::set_margin_size);
+	ClassDB::bind_method(D_METHOD("set_margin_size_all", "size"), &StyleBoxTexture::set_margin_size_all);
+	ClassDB::bind_method(D_METHOD("set_margin_size_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxTexture::set_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBoxTexture::set_expand_margin_size);

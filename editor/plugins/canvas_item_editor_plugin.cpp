@@ -3959,10 +3959,8 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
-			for (int i = 0; i < 4; i++) {
-				select_sb->set_margin_size(Side(i), 4);
-				select_sb->set_default_margin(Side(i), 4);
-			}
+			select_sb->set_margin_size_all(4);
+			select_sb->set_default_margin_all(4);
 
 			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
 			_keying_changed();
