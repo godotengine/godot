@@ -591,21 +591,24 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									}
 
-									if (p_font_color_shadow.a > 0) {
+									const Color char_color = selected && override_selected_font_color ? selection_fg : fx_color;
+									const Color shadow_color = p_font_color_shadow * Color(1, 1, 1, char_color.a);
+
+									if (shadow_color.a > 0) {
 										const Point2 shadow_base_pos = p_ofs + Point2(align_ofs + pofs, y + lh - line_descent);
-										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color);
 
 										if (p_shadow_as_outline) {
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
 										}
 									}
 
 									if (selected) {
-										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], override_selected_font_color ? selection_fg : fx_color);
+										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], char_color);
 									} else {
-										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], fx_color);
+										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], char_color);
 									}
 								} else if (previously_visible && c[i] != '\t') {
 									backtrack += font->get_char_size(fx_char, c[i + 1]).x;
