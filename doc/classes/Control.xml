@@ -417,6 +417,19 @@
 				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member position] and [member size].
 			</description>
 		</method>
+		<method name="get_screen_position" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the position of this [Control] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
+				Equals to [member global_position] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Example usage for showing a popup:
+				[codeblock]
+				popup_menu.position = get_screen_position() + get_local_mouse_position()
+				popup_menu.reset_size()
+				popup_menu.popup()
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
 			<argument index="0" name="name" type="StringName" />

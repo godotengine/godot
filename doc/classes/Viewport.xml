@@ -220,6 +220,7 @@
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
+			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.

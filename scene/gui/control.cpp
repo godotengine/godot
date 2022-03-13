@@ -3224,6 +3224,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
+	ClassDB::bind_method(D_METHOD("get_screen_position"), &Control::get_screen_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
