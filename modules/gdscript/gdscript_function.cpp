@@ -509,7 +509,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 						if (!nc) {
-							err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
+							if (obj_B) {
+								err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
+							} else {
+								err_text = "Right operand of 'is' is null.";
+							}
 							OPCODE_BREAK;
 						}
 #endif
