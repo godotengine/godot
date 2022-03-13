@@ -2033,6 +2033,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 }
 
+void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (!mb->is_pressed()) {
+			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
+		}
+	}
+}
+
 List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 	gui.roots_order_dirty = true;
 	return gui.roots.push_back(p_control);
@@ -2695,6 +2706,9 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	if (!is_input_handled()) {
 		_gui_input_event(ev);
+	} else {
+		// Cleanup internal GUI state after accepting event during _input().
+		_gui_cleanup_internal_state(ev);
 	}
 
 	event_count++;
