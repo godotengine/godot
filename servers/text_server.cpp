@@ -1267,11 +1267,11 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (ofs.x - p_pos.x > p_clip_r) {
+					if (ofs.x - p_pos.x + glyphs[i].advance > p_clip_r) {
 						return;
 					}
 				} else {
-					if (ofs.y - p_pos.y > p_clip_r) {
+					if (ofs.y - p_pos.y + glyphs[i].advance > p_clip_r) {
 						return;
 					}
 				}
@@ -1362,11 +1362,11 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (ofs.x - p_pos.x > p_clip_r) {
+					if (ofs.x - p_pos.x + glyphs[i].advance > p_clip_r) {
 						return;
 					}
 				} else {
-					if (ofs.y - p_pos.y > p_clip_r) {
+					if (ofs.y - p_pos.y + glyphs[i].advance > p_clip_r) {
 						return;
 					}
 				}
