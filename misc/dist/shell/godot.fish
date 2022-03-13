@@ -23,10 +23,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-function godot_video_driver_args
+function godot_rendering_driver_args
     # Use a function instead of a fixed string to customize the argument descriptions.
-    echo -e "Vulkan\tVulkan renderer"
-    echo -e "GLES2\tOpenGL ES 2.0 renderer"
+    echo -e "vulkan\tVulkan renderer"
+    echo -e "opengl3\tOpenGL ES 3.0 renderer"
+    echo -e "dummy\tDummy renderer"
 end
 
 # Erase existing completions for Godot.
@@ -50,7 +51,12 @@ complete -c godot -l render-thread -d "Set the render thread mode" -x -a "unsafe
 complete -c godot -l remote-fs -d "Use a remote filesystem (<host/IP>[:<port>] address)" -x
 complete -c godot -l remote-fs-password -d "Password for remote filesystem" -x
 complete -c godot -l audio-driver -d "Set the audio driver" -x
-complete -c godot -l video-driver -d "Set the video driver" -x -a "(godot_video_driver_args)"
+complete -c godot -l display-driver -d "Set the display driver" -x
+complete -c godot -l rendering-driver -d "Set the rendering driver" -x -a "(godot_rendering_driver_args)"
+complete -c godot -l gpu-index -d "Use a specific GPU (run with --verbose to get available device list)" -x
+complete -c godot -l text-driver -d "Set the text driver" -x
+complete -c godot -l tablet-driver -d "Set the pen tablet input driver" -x
+complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
 
 # Display options:
 complete -c godot -s f -l fullscreen -d "Request fullscreen mode"
@@ -60,11 +66,15 @@ complete -c godot -s t -l always-on-top -d "Request an always-on-top window"
 complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
+complete -c godot -l single-window -d "Use a single window (no separate subwindows)"
 
 # Debug options:
 complete -c godot -s d -l debug -d "Debug (local stdout debugger)"
 complete -c godot -s b -l breakpoints -d "Specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)" -x
 complete -c godot -l profiling -d "Enable profiling in the script debugger"
+complete -c godot -l gpu-profile -d "Show a GPU profile of the tasks that took the most time during frame rendering"
+complete -c godot -l vk-layers -d "Enable Vulkan validation layers for debugging"
+complete -c godot -l gpu-abort -d "Abort on GPU errors (usually validation layer errors)"
 complete -c godot -l remote-debug -d "Enable remote debugging"
 complete -c godot -l debug-collisions -d "Show collision shapes when running the scene"
 complete -c godot -l debug-navigation -d "Show navigation polygons when running the scene"
@@ -84,4 +94,5 @@ complete -c godot -l export-pack -d "Same as --export, but only export the game 
 complete -c godot -l doctool -d "Dump the engine API reference to the given path in XML format, merging if existing files are found" -r
 complete -c godot -l no-docbase -d "Disallow dumping the base types (used with --doctool)"
 complete -c godot -l build-solutions -d "Build the scripting solutions (e.g. for C# projects)"
-complete -c godot -l test -d "Run a unit test" -x
+complete -c godot -l dump-extension-api -d "Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder"
+complete -c godot -l test -d "Run all unit tests; run with '--test --help' for more information" -x
