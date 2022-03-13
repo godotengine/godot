@@ -1917,16 +1917,14 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	// TODO disabling for now
-	//context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	//TODO disabling for now
-	//return context_vulkan->get_vsync_mode(p_window);
+	return context_vulkan->get_vsync_mode(p_window);
 #endif
 	return DisplayServer::VSYNC_ENABLED;
 }
