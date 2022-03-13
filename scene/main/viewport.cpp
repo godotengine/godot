@@ -2058,9 +2058,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (gui.mouse_focus_mask == 0 && over != gui.mouse_over) {
-				if (gui.mouse_over) {
-					_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
-				}
+				_drop_mouse_over();
 
 				_gui_cancel_tooltip();
 
@@ -2177,9 +2175,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (over != gui.mouse_over) {
-			if (gui.mouse_over) {
-				_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
-			}
+			_drop_mouse_over();
 
 			_gui_cancel_tooltip();
 
@@ -2715,6 +2711,13 @@ void Viewport::_drop_mouse_focus() {
 	}
 }
 
+void Viewport::_drop_mouse_over() {
+	if (gui.mouse_over) {
+		_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+		gui.mouse_over = nullptr;
+	}
+}
+
 void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 	physics_has_last_mousepos = false;
 
@@ -2958,6 +2961,14 @@ bool Viewport::gui_has_modal_stack() const {
 }
 
 void Viewport::set_disable_input(bool p_disable) {
+	if (p_disable == disable_input) {
+		return;
+	}
+	if (p_disable && GLOBAL_GET("gui/common/drop_mouse_on_gui_input_disabled")) {
+		_drop_mouse_focus();
+		_drop_mouse_over();
+		_gui_cancel_tooltip();
+	}
 	disable_input = p_disable;
 }
 
