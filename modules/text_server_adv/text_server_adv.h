@@ -242,6 +242,8 @@ class TextServerAdvanced : public TextServer {
 		}
 	}
 
+	_FORCE_INLINE_ float _get_extra_advance(RID p_font_rid, int p_font_size) const;
+
 	// Shaped text cache data.
 
 	struct ShapedTextDataAdvanced : public ShapedTextData {

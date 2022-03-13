@@ -2326,6 +2326,20 @@ void TextServerAdvanced::font_remove_glyph(RID p_font_rid, const Vector2i &p_siz
 	fd->cache[size]->glyph_map.erase(p_glyph);
 }
 
+float TextServerAdvanced::_get_extra_advance(RID p_font_rid, int p_font_size) const {
+	const FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_font_size);
+
+	if (fd->embolden != 0.0) {
+		return fd->embolden * float(size.x) / 64.0;
+	} else {
+		return 0.0;
+	}
+}
+
 Vector2 TextServerAdvanced::font_get_glyph_advance(RID p_font_rid, int p_size, int32_t p_glyph) const {
 	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, Vector2());
@@ -2340,12 +2354,17 @@ Vector2 TextServerAdvanced::font_get_glyph_advance(RID p_font_rid, int p_size, i
 
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 
+	Vector2 ea;
+	if (fd->embolden != 0.0) {
+		ea.x = fd->embolden * float(size.x) / 64.0;
+	}
+
 	if (fd->msdf) {
-		return gl[p_glyph].advance * (float)p_size / (float)fd->msdf_source_size;
+		return (gl[p_glyph].advance + ea) * (float)p_size / (float)fd->msdf_source_size;
 	} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_DISABLED) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x > SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-		return gl[p_glyph].advance.round();
+		return (gl[p_glyph].advance + ea).round();
 	} else {
-		return gl[p_glyph].advance;
+		return gl[p_glyph].advance + ea;
 	}
 }
 
@@ -4471,9 +4490,9 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 		float scale = font_get_scale(p_font, p_font_size);
 		if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 			if (subpos) {
-				gl.advance = glyph_pos[0].x_advance / (64.0 / scale);
+				gl.advance = glyph_pos[0].x_advance / (64.0 / scale) + _get_extra_advance(p_font, p_font_size);
 			} else {
-				gl.advance = Math::round(glyph_pos[0].x_advance / (64.0 / scale));
+				gl.advance = Math::round(glyph_pos[0].x_advance / (64.0 / scale) + _get_extra_advance(p_font, p_font_size));
 			}
 		} else {
 			gl.advance = -Math::round(glyph_pos[0].y_advance / (64.0 / scale));
@@ -4550,6 +4569,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 	float scale = font_get_scale(f, fs);
 	float sp_sp = font_get_spacing(f, fs, SPACING_SPACE);
 	float sp_gl = font_get_spacing(f, fs, SPACING_GLYPH);
+	float ea = _get_extra_advance(f, fs);
 	bool subpos = (font_get_subpixel_positioning(f) == SUBPIXEL_POSITIONING_ONE_HALF) || (font_get_subpixel_positioning(f) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (font_get_subpixel_positioning(f) == SUBPIXEL_POSITIONING_AUTO && fs <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 	ERR_FAIL_COND(hb_font == nullptr);
 
@@ -4628,9 +4648,9 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			if (gl.index != 0) {
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					if (subpos) {
-						gl.advance = glyph_pos[i].x_advance / (64.0 / scale);
+						gl.advance = glyph_pos[i].x_advance / (64.0 / scale) + ea;
 					} else {
-						gl.advance = Math::round(glyph_pos[i].x_advance / (64.0 / scale));
+						gl.advance = Math::round(glyph_pos[i].x_advance / (64.0 / scale) + ea);
 					}
 				} else {
 					gl.advance = -Math::round(glyph_pos[i].y_advance / (64.0 / scale));
