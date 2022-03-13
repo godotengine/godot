@@ -64,8 +64,8 @@
 	m_name->add_data(FontTamilBold);      \
 	m_name->add_data(FontTeluguBold);     \
 	m_name->add_data(FontThaiBold);       \
-	m_name->add_data(FontJapanese);       \
-	m_name->add_data(FontFallback);
+	m_name->add_data(FontJapaneseBold);   \
+	m_name->add_data(FontFallbackBold);
 
 #define MAKE_DEFAULT_FONT(m_name, m_variations)                       \
 	Ref<Font> m_name;                                                 \
@@ -267,6 +267,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<FontData> FontFallback = load_cached_internal_font(_font_DroidSansFallback, _font_DroidSansFallback_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
 	Ref<FontData> FontJapanese = load_cached_internal_font(_font_DroidSansJapanese, _font_DroidSansJapanese_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
+
+	const float embolden_strength = 0.6;
+
+	Ref<FontData> FontFallbackBold = FontFallback->duplicate();
+	FontFallbackBold->set_embolden(embolden_strength);
+	Ref<FontData> FontJapaneseBold = FontJapanese->duplicate();
+	FontJapaneseBold->set_embolden(embolden_strength);
 
 	/* Hack */
 
