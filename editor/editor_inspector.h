@@ -64,6 +64,7 @@ private:
 	friend class EditorInspector;
 	Object *object;
 	StringName property;
+	String property_path;
 
 	int property_usage;
 

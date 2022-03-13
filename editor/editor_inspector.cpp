@@ -835,7 +835,7 @@ void EditorProperty::_menu_option(int p_option) {
 			emit_changed(property, EditorNode::get_singleton()->get_inspector()->get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
-			OS::get_singleton()->set_clipboard(property);
+			OS::get_singleton()->set_clipboard(property_path);
 		} break;
 	}
 }
@@ -1325,6 +1325,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 				if (F->get().properties.size() == 1) {
 					//since it's one, associate:
 					ep->property = F->get().properties[0];
+					ep->property_path = property_prefix + F->get().properties[0];
 					ep->property_usage = 0;
 				}
 
@@ -1705,6 +1706,7 @@ void EditorInspector::update_tree() {
 						if (F->get().properties.size() == 1) {
 							//since it's one, associate:
 							ep->property = F->get().properties[0];
+							ep->property_path = property_prefix + F->get().properties[0];
 							ep->property_usage = p.usage;
 							//and set label?
 						}
