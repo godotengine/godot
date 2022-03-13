@@ -881,7 +881,7 @@ void EditorProperty::menu_option(int p_option) {
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
-			DisplayServer::get_singleton()->clipboard_set(property);
+			DisplayServer::get_singleton()->clipboard_set(property_path);
 		} break;
 		case MENU_PIN_VALUE: {
 			emit_signal(SNAME("property_pinned"), property, !pinned);
@@ -2331,6 +2331,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 				if (F.properties.size() == 1) {
 					//since it's one, associate:
 					ep->property = F.properties[0];
+					ep->property_path = property_prefix + F.properties[0];
 					ep->property_usage = 0;
 				}
 
@@ -2889,6 +2890,7 @@ void EditorInspector::update_tree() {
 						if (F.properties.size() == 1) {
 							//since it's one, associate:
 							ep->property = F.properties[0];
+							ep->property_path = property_prefix + F.properties[0];
 							ep->property_usage = p.usage;
 							//and set label?
 						}
