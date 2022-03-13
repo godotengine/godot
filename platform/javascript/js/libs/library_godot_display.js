@@ -389,6 +389,7 @@ const GodotDisplay = {
 		GodotRuntime.setHeapValue(height, window.screen.height * scale, 'i32');
 	},
 
+	godot_js_display_window_size_get__sig: 'vii',
 	godot_js_display_window_size_get: function (p_width, p_height) {
 		GodotRuntime.setHeapValue(p_width, GodotConfig.canvas.width, 'i32');
 		GodotRuntime.setHeapValue(p_height, GodotConfig.canvas.height, 'i32');
