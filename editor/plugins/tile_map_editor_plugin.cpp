@@ -832,9 +832,12 @@ void TileMapEditor::_draw_grid(Control *p_viewport, const Rect2 &p_rect) const {
 		const Size2 screen_size = p_viewport->get_size();
 		Rect2 rect;
 		rect.position = node->world_to_map(xform_inv.xform(Vector2()));
-		rect.expand_to(node->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
-		rect.expand_to(node->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
-		rect.expand_to(node->world_to_map(xform_inv.xform(screen_size)));
+		rect.expand_to(node->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))) + Vector2(0, 1));
+		rect.expand_to(node->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))) + Vector2(1, 0));
+		rect.expand_to(node->world_to_map(xform_inv.xform(screen_size)) + Vector2(1, 1));
+		if (node->get_half_offset() != TileMap::HALF_OFFSET_DISABLED) {
+			rect.grow_by(1); // So it won't matter whether corners are on an odd or even row/column.
+		}
 		clipped = rect.clip(si);
 	}
 	clipped.position -= si.position; // Relative to the fade rect, in grid unit.
@@ -878,15 +881,16 @@ void TileMapEditor::_draw_grid(Control *p_viewport, const Rect2 &p_rect) const {
 			const Color color = (x + si.position.x == 0) ? axis_color : grid_color;
 			const float line_opacity = _lerp_fade(si.size.x, fade, x);
 
-			for (int y = clipped.position.y; y < cell_count; y++) {
+			for (int y = clipped.position.y; y < clipped_end.y; y++) {
 				Vector2 ofs;
 				if (ABS(si.position.y + y) & 1) {
 					ofs = cell_xf[0] * half_offset;
 				}
-				points.write[y * 2 + 0] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y), true));
-				points.write[y * 2 + 1] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y + 1), true));
-				colors.write[y * 2 + 0] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.y, fade, y));
-				colors.write[y * 2 + 1] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.y, fade, y + 1));
+				const int index = (y - clipped.position.y) * 2;
+				points.write[index + 0] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y), true));
+				points.write[index + 1] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y + 1), true));
+				colors.write[index + 0] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.y, fade, y));
+				colors.write[index + 1] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.y, fade, y + 1));
 			}
 			p_viewport->draw_multiline_colors(points, colors, 1);
 		}
@@ -923,15 +927,16 @@ void TileMapEditor::_draw_grid(Control *p_viewport, const Rect2 &p_rect) const {
 			const Color color = (y + si.position.y == 0) ? axis_color : grid_color;
 			const float line_opacity = _lerp_fade(si.size.y, fade, y);
 
-			for (int x = clipped.position.x; x < cell_count; x++) {
+			for (int x = clipped.position.x; x < clipped_end.x; x++) {
 				Vector2 ofs;
 				if (ABS(si.position.x + x) & 1) {
 					ofs = cell_xf[1] * half_offset;
 				}
-				points.write[x * 2 + 0] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y), true));
-				points.write[x * 2 + 1] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x + 1, y), true));
-				colors.write[x * 2 + 0] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.x, fade, x));
-				colors.write[x * 2 + 1] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.x, fade, x + 1));
+				const int index = (x - clipped.position.x) * 2;
+				points.write[index + 0] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x, y), true));
+				points.write[index + 1] = xform.xform(ofs + node->map_to_world(si.position + Vector2(x + 1, y), true));
+				colors.write[index + 0] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.x, fade, x));
+				colors.write[index + 1] = Color(color.r, color.g, color.b, color.a * line_opacity * _lerp_fade(si.size.x, fade, x + 1));
 			}
 			p_viewport->draw_multiline_colors(points, colors, 1);
 		}
