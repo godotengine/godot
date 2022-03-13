@@ -126,7 +126,11 @@ Vector<String> FileDialog::get_selected_files() const {
 };
 
 void FileDialog::update_dir() {
-	dir->set_text(dir_access->get_current_dir_without_drive());
+	if (root_prefix.empty()) {
+		dir->set_text(dir_access->get_current_dir_without_drive());
+	} else {
+		dir->set_text(dir_access->get_current_dir_without_drive().trim_prefix(root_prefix).trim_prefix("/"));
+	}
 
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
@@ -144,10 +148,8 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_entered(String p_dir) {
-	dir_access->change_dir(p_dir);
+	_change_dir(root_prefix.plus_file(p_dir));
 	file->set_text("");
-	invalidate();
-	update_dir();
 }
 
 void FileDialog::_file_entered(const String &p_file) {
@@ -318,9 +320,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 }
 
 void FileDialog::_go_up() {
-	dir_access->change_dir("..");
-	update_file_list();
-	update_dir();
+	_change_dir("..");
 }
 
 void FileDialog::deselect_items() {
@@ -376,12 +376,10 @@ void FileDialog::_tree_item_activated() {
 	Dictionary d = ti->get_metadata(0);
 
 	if (d["dir"]) {
-		dir_access->change_dir(d["name"]);
+		_change_dir(d["name"]);
 		if (mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES || mode == MODE_OPEN_DIR || mode == MODE_OPEN_ANY) {
 			file->set_text("");
 		}
-		call_deferred("_update_file_list");
-		call_deferred("_update_dir");
 	} else {
 		_action_pressed();
 	}
@@ -606,9 +604,7 @@ String FileDialog::get_current_path() const {
 	return dir->get_text().plus_file(file->get_text());
 }
 void FileDialog::set_current_dir(const String &p_dir) {
-	dir_access->change_dir(p_dir);
-	update_dir();
-	invalidate();
+	_change_dir(p_dir);
 }
 void FileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
@@ -635,6 +631,24 @@ void FileDialog::set_current_path(const String &p_path) {
 		set_current_dir(dir);
 		set_current_file(file);
 	}
+}
+
+void FileDialog::set_root_subfolder(const String &p_root) {
+	root_subfolder = p_root;
+	ERR_FAIL_COND_MSG(!dir_access->dir_exists(p_root), "root_subfolder must be an existing sub-directory.");
+
+	dir_access->change_dir(root_subfolder);
+	if (root_subfolder.empty()) {
+		root_prefix = "";
+	} else {
+		root_prefix = dir_access->get_current_dir();
+	}
+	invalidate();
+	update_dir();
+}
+
+String FileDialog::get_root_subfolder() const {
+	return root_subfolder;
 }
 
 void FileDialog::set_mode_overrides_title(bool p_override) {
@@ -716,6 +730,8 @@ void FileDialog::set_access(Access p_access) {
 		} break;
 	}
 	access = p_access;
+	root_prefix = "";
+	root_subfolder = "";
 	_update_drives();
 	invalidate();
 	update_filters();
@@ -738,10 +754,8 @@ FileDialog::Access FileDialog::get_access() const {
 void FileDialog::_make_dir_confirm() {
 	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text().strip_edges());
-		invalidate();
+		_change_dir(makedirname->get_text().strip_edges());
 		update_filters();
-		update_dir();
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250, 50));
 	}
@@ -755,8 +769,22 @@ void FileDialog::_make_dir() {
 
 void FileDialog::_select_drive(int p_idx) {
 	String d = drives->get_item_text(p_idx);
-	dir_access->change_dir(d);
+	_change_dir(d);
 	file->set_text("");
+}
+
+void FileDialog::_change_dir(const String &p_new_dir) {
+	if (root_prefix.empty()) {
+		dir_access->change_dir(p_new_dir);
+	} else {
+		String old_dir = dir_access->get_current_dir();
+		dir_access->change_dir(p_new_dir);
+		if (!dir_access->get_current_dir_without_drive().begins_with(root_prefix)) {
+			dir_access->change_dir(old_dir);
+			return;
+		}
+	}
+
 	invalidate();
 	update_dir();
 }
@@ -818,6 +846,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &FileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &FileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &FileDialog::get_access);
+	ClassDB::bind_method(D_METHOD("set_root_subfolder", "dir"), &FileDialog::set_root_subfolder);
+	ClassDB::bind_method(D_METHOD("get_root_subfolder"), &FileDialog::get_root_subfolder);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
 	ClassDB::bind_method(D_METHOD("_select_drive"), &FileDialog::_select_drive);
@@ -834,6 +864,7 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", 0), "set_current_dir", "get_current_dir");
