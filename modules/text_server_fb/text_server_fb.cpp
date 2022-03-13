@@ -1513,12 +1513,17 @@ Vector2 TextServerFallback::font_get_glyph_advance(RID p_font_rid, int p_size, i
 
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 
+	Vector2 ea;
+	if (fd->embolden != 0.0) {
+		ea.x = fd->embolden * float(size.x) / 64.0;
+	}
+
 	if (fd->msdf) {
-		return gl[p_glyph].advance * (float)p_size / (float)fd->msdf_source_size;
+		return (gl[p_glyph].advance + ea) * (float)p_size / (float)fd->msdf_source_size;
 	} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_DISABLED) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x > SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-		return gl[p_glyph].advance.round();
+		return (gl[p_glyph].advance + ea).round();
 	} else {
-		return gl[p_glyph].advance;
+		return gl[p_glyph].advance + ea;
 	}
 }
 
