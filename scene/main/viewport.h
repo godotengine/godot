@@ -600,8 +600,7 @@ public:
 
 	virtual DisplayServer::WindowID get_window_id() const = 0;
 
-	void set_embed_subwindows_hint(bool p_embed);
-	bool get_embed_subwindows_hint() const;
+	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
 
 	Viewport *get_parent_viewport() const;

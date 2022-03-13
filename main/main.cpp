@@ -2247,7 +2247,7 @@ bool Main::start() {
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
 		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows)) {
-			sml->get_root()->set_embed_subwindows_hint(true);
+			sml->get_root()->set_embedding_subwindows(true);
 		}
 		ResourceLoader::add_custom_loaders();
 		ResourceSaver::add_custom_savers();
@@ -2429,7 +2429,7 @@ bool Main::start() {
 					"interface/editor/single_window_mode");
 
 			if (editor_embed_subwindows) {
-				sml->get_root()->set_embed_subwindows_hint(true);
+				sml->get_root()->set_embedding_subwindows(true);
 			}
 		}
 #endif
