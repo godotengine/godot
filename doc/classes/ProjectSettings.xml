@@ -538,6 +538,12 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
+		<member name="gui/common/drop_mouse_on_gui_input_disabled" type="bool" setter="" getter="" default="false">
+			If enabled, the moment [member Viewport.gui_disable_input] is set to [code]false[/code] to disable GUI input in a viewport, current mouse over and mouse focus will be dropped.
+			That behavior helps to keep a robust GUI state, with no surprises when input is resumed regardless what has happened in the meantime.
+			If disabled, the legacy behavior is used, which consists in just not doing anything besides the GUI input disable itself.
+			[b]Note:[/b] This is set to [code]true[/code] by default for new projects and is the recommended setting.
+		</member>
 		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="">
 			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
