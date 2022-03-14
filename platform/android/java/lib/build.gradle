@@ -1,6 +1,13 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+ext {
+    PUBLISH_VERSION = getGodotPublishVersion()
+    PUBLISH_ARTIFACT_ID = 'godot'
+}
+
+apply from: "../scripts/publish-module.gradle"
+
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.androidxFragment
@@ -20,6 +27,8 @@ android {
 
         manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersion()]
     }
+
+    namespace = "org.godotengine.godot"
 
     compileOptions {
         sourceCompatibility versions.javaVersion
@@ -111,4 +120,12 @@ android {
         // Schedule the tasks so the generated libs are present before the aar file is packaged.
         tasks["merge${buildType}JniLibFolders"].dependsOn taskName
     }
+
+    // TODO: Enable when issues with AGP 7.1+ are resolved (https://github.com/GodotVR/godot_openxr/issues/187).
+//    publishing {
+//        singleVariant("release") {
+//            withSourcesJar()
+//            withJavadocJar()
+//        }
+//    }
 }
