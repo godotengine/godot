@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="window_id" type="int" setter="set_window_id" getter="get_window_id" default="0">
+		<member name="window_id" type="int" setter="set_window_id" getter="get_window_id">
 		</member>
 	</members>
 </class>

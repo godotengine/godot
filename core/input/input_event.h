@@ -205,12 +205,25 @@ public:
 	InputEventKey() {}
 };
 
-class InputEventMouse : public InputEventWithModifiers {
-	GDCLASS(InputEventMouse, InputEventWithModifiers);
-
-	MouseButton button_mask = MouseButton::NONE;
+class InputEventWithPosition : public InputEventWithModifiers {
+	GDCLASS(InputEventWithPosition, InputEventWithModifiers);
 
 	Vector2 pos;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
+
+	InputEventWithPosition() {}
+};
+
+class InputEventMouse : public InputEventWithPosition {
+	GDCLASS(InputEventMouse, InputEventWithPosition);
+
+	MouseButton button_mask = MouseButton::NONE;
 	Vector2 global_pos;
 
 protected:
@@ -219,9 +232,6 @@ protected:
 public:
 	void set_button_mask(MouseButton p_mask);
 	MouseButton get_button_mask() const;
-
-	void set_position(const Vector2 &p_pos);
-	Vector2 get_position() const;
 
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
@@ -357,10 +367,9 @@ public:
 	InputEventJoypadButton() {}
 };
 
-class InputEventScreenTouch : public InputEventFromWindow {
-	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
+class InputEventScreenTouch : public InputEventWithPosition {
+	GDCLASS(InputEventScreenTouch, InputEventWithPosition);
 	int index = 0;
-	Vector2 pos;
 	bool pressed = false;
 
 protected:
@@ -369,9 +378,6 @@ protected:
 public:
 	void set_index(int p_index);
 	int get_index() const;
-
-	void set_position(const Vector2 &p_pos);
-	Vector2 get_position() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
@@ -383,10 +389,9 @@ public:
 	InputEventScreenTouch() {}
 };
 
-class InputEventScreenDrag : public InputEventFromWindow {
-	GDCLASS(InputEventScreenDrag, InputEventFromWindow);
+class InputEventScreenDrag : public InputEventWithPosition {
+	GDCLASS(InputEventScreenDrag, InputEventWithPosition);
 	int index = 0;
-	Vector2 pos;
 	Vector2 relative;
 	Vector2 velocity;
 
@@ -396,9 +401,6 @@ protected:
 public:
 	void set_index(int p_index);
 	int get_index() const;
-
-	void set_position(const Vector2 &p_pos);
-	Vector2 get_position() const;
 
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
@@ -448,17 +450,8 @@ public:
 	InputEventAction() {}
 };
 
-class InputEventGesture : public InputEventWithModifiers {
-	GDCLASS(InputEventGesture, InputEventWithModifiers);
-
-	Vector2 pos;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_position(const Vector2 &p_pos);
-	Vector2 get_position() const;
+class InputEventGesture : public InputEventWithPosition {
+	GDCLASS(InputEventGesture, InputEventWithPosition);
 };
 
 class InputEventMagnifyGesture : public InputEventGesture {
