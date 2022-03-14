@@ -204,14 +204,21 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
-			_sheet_zoom_in();
+			_sheet_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
-			accept_event();
+			split_sheet_scroll->accept_event();
 		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
-			_sheet_zoom_out();
+			_sheet_zoom_on_position(1 / scale_ratio, mb->get_position());
 			// Don't scroll down after zooming out.
-			accept_event();
+			split_sheet_scroll->accept_event();
 		}
+	}
+
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
+		const Vector2 dragged = Input::get_singleton()->warp_mouse_motion(mm, split_sheet_scroll->get_global_rect());
+		split_sheet_scroll->set_h_scroll(split_sheet_scroll->get_h_scroll() - dragged.x);
+		split_sheet_scroll->set_v_scroll(split_sheet_scroll->get_v_scroll() - dragged.y);
 	}
 }
 
@@ -243,20 +250,25 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_sheet_zoom_on_position(float p_zoom, const Vector2 &p_position) {
+	const float old_zoom = sheet_zoom;
+	sheet_zoom = CLAMP(sheet_zoom * p_zoom, min_sheet_zoom, max_sheet_zoom);
+
+	const Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+
+	Vector2 offset = Vector2(split_sheet_scroll->get_h_scroll(), split_sheet_scroll->get_v_scroll());
+	offset = (offset + p_position) / old_zoom * sheet_zoom - p_position;
+	split_sheet_scroll->set_h_scroll(offset.x);
+	split_sheet_scroll->set_v_scroll(offset.y);
+}
+
 void SpriteFramesEditor::_sheet_zoom_in() {
-	if (sheet_zoom < max_sheet_zoom) {
-		sheet_zoom *= scale_ratio;
-		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
-	}
+	_sheet_zoom_on_position(scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_out() {
-	if (sheet_zoom > min_sheet_zoom) {
-		sheet_zoom /= scale_ratio;
-		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
-	}
+	_sheet_zoom_on_position(1 / scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
@@ -310,7 +322,8 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 
 void SpriteFramesEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			load->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
@@ -328,11 +341,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			split_sheet_zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-			[[fallthrough]];
-		}
-		case NOTIFICATION_THEME_CHANGED: {
 			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;
