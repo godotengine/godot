@@ -201,14 +201,21 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
 		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
-			_sheet_zoom_in();
+			_sheet_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
-			accept_event();
+			split_sheet_scroll->accept_event();
 		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
-			_sheet_zoom_out();
+			_sheet_zoom_on_position(1 / scale_ratio, mb->get_position());
 			// Don't scroll down after zooming out.
-			accept_event();
+			split_sheet_scroll->accept_event();
 		}
+	}
+
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
+		const Vector2 dragged = Input::get_singleton()->warp_mouse_motion(mm, split_sheet_scroll->get_global_rect());
+		split_sheet_scroll->set_h_scroll(split_sheet_scroll->get_h_scroll() - dragged.x);
+		split_sheet_scroll->set_v_scroll(split_sheet_scroll->get_v_scroll() - dragged.y);
 	}
 }
 
@@ -240,20 +247,25 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_sheet_zoom_on_position(float p_zoom, const Vector2 &p_position) {
+	const float old_zoom = sheet_zoom;
+	sheet_zoom = CLAMP(sheet_zoom * p_zoom, min_sheet_zoom, max_sheet_zoom);
+
+	const Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+
+	Vector2 offset = Vector2(split_sheet_scroll->get_h_scroll(), split_sheet_scroll->get_v_scroll());
+	offset = (offset + p_position) / old_zoom * sheet_zoom - p_position;
+	split_sheet_scroll->set_h_scroll(offset.x);
+	split_sheet_scroll->set_v_scroll(offset.y);
+}
+
 void SpriteFramesEditor::_sheet_zoom_in() {
-	if (sheet_zoom < max_sheet_zoom) {
-		sheet_zoom *= scale_ratio;
-		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
-	}
+	_sheet_zoom_on_position(scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_out() {
-	if (sheet_zoom > min_sheet_zoom) {
-		sheet_zoom /= scale_ratio;
-		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
-	}
+	_sheet_zoom_on_position(1 / scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
@@ -307,7 +319,8 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 
 void SpriteFramesEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			load->set_icon(get_icon("Load", "EditorIcons"));
 			load_sheet->set_icon(get_icon("SpriteSheet", "EditorIcons"));
 			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
@@ -325,11 +338,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 			split_sheet_zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			split_sheet_zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			split_sheet_zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
-			FALLTHROUGH;
-		}
-		case NOTIFICATION_THEME_CHANGED: {
 			split_sheet_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 		} break;
+
 		case NOTIFICATION_READY: {
 			add_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;
@@ -1248,7 +1259,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_preview = memnew(TextureRect);
 	split_sheet_preview->set_expand(true);
-	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
 	split_sheet_preview->connect("draw", this, "_sheet_preview_draw");
 	split_sheet_preview->connect("gui_input", this, "_sheet_preview_input");
 
@@ -1261,6 +1271,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	cc->add_child(split_sheet_preview);
 	cc->set_h_size_flags(SIZE_EXPAND_FILL);
 	cc->set_v_size_flags(SIZE_EXPAND_FILL);
+	cc->set_mouse_filter(MOUSE_FILTER_PASS);
 	split_sheet_scroll->add_child(cc);
 
 	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
