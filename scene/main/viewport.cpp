@@ -2665,6 +2665,12 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	window_ofs.set_origin(-gui.subwindow_focused->get_position());
 
 	Ref<InputEvent> ev = p_event->xformed_by(window_ofs);
+	if (ev->has_method("get_position")) {
+		Point2 pos = ev->call("get_position");
+		if (!gui.subwindow_focused->get_visible_rect().has_point(pos)) {
+			return false;
+		}
+	}
 
 	gui.subwindow_focused->_window_input(ev);
 
