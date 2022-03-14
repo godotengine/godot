@@ -1124,6 +1124,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
 
+#ifdef TOOLS_ENABLED
+	int default_value_count = 0;
+#endif // TOOLS_ENABLED
+
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
@@ -1133,8 +1137,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
 #endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
-		if (p_function->parameters[i]->default_value && p_function->parameters[i]->default_value->is_constant) {
-			p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+		if (p_function->parameters[i]->default_value) {
+			default_value_count++;
+
+			if (p_function->parameters[i]->default_value->is_constant) {
+				p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+			}
 		}
 #endif // TOOLS_ENABLED
 	}
@@ -1169,7 +1177,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			int par_count_diff = p_function->parameters.size() - parameters_types.size();
 			valid = valid && par_count_diff >= 0;
-			valid = valid && p_function->default_arg_values.size() >= default_par_count + par_count_diff;
+			valid = valid && default_value_count >= default_par_count + par_count_diff;
 
 			int i = 0;
 			for (const GDScriptParser::DataType &par_type : parameters_types) {
@@ -1203,7 +1211,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	parser->current_function = previous_function;
