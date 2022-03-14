@@ -2757,27 +2757,29 @@ void SpatialEditorViewport::_notification(int p_what) {
 	}
 }
 
-static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture> icon, const Ref<Font> font, const String &text) {
+static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Texture> p_icon, const Ref<Font> p_font, const String &p_text, const Color &p_color) {
 	// Adjust bar size from control height
-	const Vector2 surface_size = surface.get_size();
+	const Vector2 surface_size = p_surface.get_size();
 	const real_t h = surface_size.y / 2.0;
 	const real_t y = (surface_size.y - h) / 2.0;
 
 	const Rect2 r(10 * EDSCALE, y, 6 * EDSCALE, h);
-	const real_t sy = r.size.y * fill;
+	const real_t sy = r.size.y * p_fill;
 
 	// Note: because this bar appears over the viewport, it has to stay readable for any background color
 	// Draw both neutral dark and bright colors to account this
-	surface.draw_rect(r, Color(1, 1, 1, 0.2));
-	surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
-	surface.draw_rect(r.grow(1), Color(0, 0, 0, 0.7), false, Math::round(EDSCALE));
+	p_surface.draw_rect(r, p_color * Color(1, 1, 1, 0.2));
+	p_surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), p_color * Color(1, 1, 1, 0.6));
+	p_surface.draw_rect(r.grow(1), Color(0, 0, 0, 0.7), false, Math::round(EDSCALE));
 
-	const Vector2 icon_size = icon->get_size();
+	const Vector2 icon_size = p_icon->get_size();
 	const Vector2 icon_pos = Vector2(r.position.x - (icon_size.x - r.size.x) / 2, r.position.y + r.size.y + 2 * EDSCALE);
-	surface.draw_texture(icon, icon_pos);
+	p_surface.draw_texture(p_icon, icon_pos, p_color);
 
+	// Draw a shadow for the text to make it easier to read.
+	p_surface.draw_string(p_font, Vector2(icon_pos.x + EDSCALE, icon_pos.y + icon_size.y + 17 * EDSCALE), p_text, Color(0, 0, 0));
 	// Draw text below the bar (for speed/zoom information).
-	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text);
+	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, p_color);
 }
 
 void SpatialEditorViewport::_draw() {
@@ -2894,7 +2896,8 @@ void SpatialEditorViewport::_draw() {
 							1.0 - logscale_t,
 							get_icon("ViewportSpeed", "EditorIcons"),
 							get_font("font", "Label"),
-							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)));
+							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
+							Color(1.0, 0.95, 0.7));
 				}
 
 			} else {
@@ -2915,7 +2918,8 @@ void SpatialEditorViewport::_draw() {
 							logscale_t,
 							get_icon("ViewportZoom", "EditorIcons"),
 							get_font("font", "Label"),
-							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)));
+							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
+							Color(0.7, 0.95, 1.0));
 				}
 			}
 		}
