@@ -488,7 +488,11 @@ void Window::_make_transient() {
 		window->transient_children.insert(this);
 		if (is_inside_tree() && is_visible() && exclusive) {
 			if (transient_parent->exclusive_child == nullptr) {
-				transient_parent->exclusive_child = this;
+#ifdef TOOLS_ENABLED
+				if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+					transient_parent->exclusive_child = this;
+				}
+#endif
 			} else if (transient_parent->exclusive_child != this) {
 				ERR_PRINT("Making child transient exclusive, but parent has another exclusive child");
 			}
