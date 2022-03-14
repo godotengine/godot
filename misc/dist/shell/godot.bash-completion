@@ -36,6 +36,7 @@ _complete_godot_options() {
 --quiet
 --editor
 --project-manager
+--debug-server
 --quit
 --language
 --path

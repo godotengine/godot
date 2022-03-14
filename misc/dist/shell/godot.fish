@@ -37,12 +37,13 @@ complete -c godot -e
 complete -c godot -s h -l help -d "Display the full help message"
 complete -c godot -l version -d "Display the version string"
 complete -c godot -s v -l verbose -d "Use verbose stdout mode"
-complete -c godot -l quiet -d "Quiet mode, silences stdout messages (errors are still displayed)"
+complete -c godot -s q -l quiet -d "Quiet mode, silences stdout messages (errors are still displayed)"
 
 # Run options:
 complete -c godot -s e -l editor -d "Start the editor instead of running the scene"
 complete -c godot -s p -l project-manager -d "Start the project manager, even if a project is auto-detected"
-complete -c godot -s q -l quit -d "Quit after the first iteration"
+complete -c godot -l debug-server -d "Start the editor debug server (<protocol>://<host/IP>[:<port>] address)" -x
+complete -c godot -l quit -d "Quit after the first iteration"
 complete -c godot -s l -l language -d "Use a specific locale (<locale> being a two-letter code)" -x
 complete -c godot -l path -d "Path to a project (<directory> must contain a 'project.godot' file)" -r
 complete -c godot -s u -l upwards -d "Scan folders upwards for project.godot file"
