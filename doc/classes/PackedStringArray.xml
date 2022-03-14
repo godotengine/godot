@@ -155,11 +155,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="PackedStringArray" />
 			<description>
 			</description>
@@ -167,11 +162,6 @@
 		<operator name="operator +">
 			<return type="PackedStringArray" />
 			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>

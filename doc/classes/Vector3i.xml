@@ -140,11 +140,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Vector3i" />
 			<description>
 				Returns [code]true[/code] if the vectors are not equal.
@@ -256,11 +251,6 @@
 			<argument index="0" name="right" type="Vector3i" />
 			<description>
 				Compares two [Vector3i] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

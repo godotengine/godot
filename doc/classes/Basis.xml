@@ -225,11 +225,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Basis" />
 			<description>
 				Returns [code]true[/code] if the [Basis] matrices are not equal.
@@ -262,11 +257,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Basis], which scales it uniformly.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

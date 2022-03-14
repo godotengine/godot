@@ -685,6 +685,11 @@ void DocTools::generate(bool p_basic_types) {
 
 		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
 			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
+				// Prevent generating for comparison with null.
+				if (Variant::Type(k) == Variant::NIL && (Variant::Operator(j) == Variant::OP_EQUAL || Variant::Operator(j) == Variant::OP_NOT_EQUAL)) {
+					continue;
+				}
+
 				Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(j), Variant::Type(i), Variant::Type(k));
 				if (rt != Variant::NIL) { // Has operator.
 					// Skip String % operator as it's registered separately for each Variant arg type,
