@@ -702,6 +702,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 
+	// Variation for Editor Log filter buttons
+	theme->set_type_variation("EditorLogFilterButton", "Button");
+	// When pressed, don't tint the icons with the accent color, just leave them normal.
+	theme->set_color("icon_pressed_color", "EditorLogFilterButton", icon_normal_color);
+	// When unpressed, dim the icons.
+	theme->set_color("icon_normal_color", "EditorLogFilterButton", font_disabled_color);
+	// When pressed, add a small bottom border to the buttons to better show their active state,
+	// similar to active tabs.
+	Ref<StyleBoxFlat> editor_log_button_pressed = style_widget_pressed->duplicate();
+	editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
+	editor_log_button_pressed->set_border_color(accent_color);
+	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
+
 	// OptionButton
 	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
 
