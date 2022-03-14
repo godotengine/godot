@@ -254,7 +254,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, float global_scale) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -595,7 +595,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 
 			Surface::LOD lod;
-			lod.distance = MAX(mesh_error * scale, CMP_EPSILON2);
+			lod.distance = MAX(mesh_error * scale / global_scale, CMP_EPSILON2);
 			lod.indices = new_indices;
 			surfaces.write[i].lods.push_back(lod);
 			index_target = MAX(new_index_count, index_target) * 2;

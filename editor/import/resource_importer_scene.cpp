@@ -1682,7 +1682,12 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				}
 
 				if (generate_lods) {
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle);
+					// Calculate global scale not including the root scale
+					Vector3 global_scale = src_mesh_node->get_scale();
+					for (Node3D *parent = src_mesh_node->get_parent_node_3d(); parent->get_parent_node_3d() && !parent->is_set_as_top_level(); parent = parent->get_parent_node_3d()) {
+						global_scale *= parent->get_scale();
+					}
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, global_scale[0]);
 				}
 
 				if (create_shadow_meshes) {
