@@ -206,7 +206,8 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			break;
 	}
 
-	int default_font_size = int(EDITOR_GET("interface/editor/main_font_size")) * EDSCALE;
+	const int default_font_size = int(EDITOR_GET("interface/editor/main_font_size")) * EDSCALE;
+	const float embolden_strength = 0.6;
 
 	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	Ref<FontData> CustomFont;
@@ -224,6 +225,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		CustomFontBold = load_cached_external_font(custom_font_path_bold, font_hinting, font_antialiased, true, font_subpixel_positioning);
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
+	}
+
+	if (CustomFont.is_valid() && !CustomFontBold.is_valid()) {
+		CustomFontBold = CustomFont->duplicate();
+		CustomFontBold->set_embolden(embolden_strength);
 	}
 
 	/* Custom source code font */
@@ -267,8 +273,6 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<FontData> FontFallback = load_cached_internal_font(_font_DroidSansFallback, _font_DroidSansFallback_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
 	Ref<FontData> FontJapanese = load_cached_internal_font(_font_DroidSansJapanese, _font_DroidSansJapanese_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
-
-	const float embolden_strength = 0.6;
 
 	Ref<FontData> FontFallbackBold = FontFallback->duplicate();
 	FontFallbackBold->set_embolden(embolden_strength);
