@@ -316,6 +316,7 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 	void set_drag_preview(Control *p_control);
 	void force_drag(const Variant &p_data, Control *p_control);
+	bool is_drag_successful() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;

@@ -33,6 +33,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "label.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
@@ -1062,6 +1063,9 @@ void RichTextLabel::_notification(int p_what) {
 				update();
 			}
 		}
+		case Control::NOTIFICATION_DRAG_END: {
+			selection.drag_attempt = false;
+		} break;
 	}
 }
 
@@ -1144,6 +1148,9 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				Item *item = nullptr;
 
 				bool outside;
+
+				selection.drag_attempt = false;
+
 				_find_click(main, b->get_position(), &item, &line, &outside);
 
 				if (item) {
@@ -1153,13 +1160,18 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							selection.from = nullptr;
-							selection.from_char = '\0';
-							selection.to = nullptr;
-							selection.to_char = '\0';
-							selection.active = false;
+							if (_is_click_inside_selection()) {
+								selection.drag_attempt = true;
+								selection.click = nullptr;
+							} else {
+								selection.from = nullptr;
+								selection.from_char = '\0';
+								selection.to = nullptr;
+								selection.to_char = '\0';
+								selection.active = false;
 
-							update();
+								update();
+							}
 						}
 					}
 				}
@@ -1168,6 +1180,8 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				int line = 0;
 				Item *item = nullptr;
 				bool outside;
+
+				selection.drag_attempt = false;
 
 				_find_click(main, b->get_position(), &item, &line, &outside);
 
@@ -1189,6 +1203,25 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 					}
 				}
 			} else if (!b->is_pressed()) {
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					int line = 0;
+					Item *item = nullptr;
+					bool outside;
+					_find_click(main, b->get_position(), &item, &line, &outside);
+					selection.click = item;
+					selection.click_char = line;
+					if (_is_click_inside_selection()) {
+						selection.active = false;
+						selection.from = nullptr;
+						selection.from_char = '\0';
+						selection.to = nullptr;
+						selection.to_char = '\0';
+						selection.active = false;
+
+						update();
+					}
+				}
 				selection.click = nullptr;
 
 				if (!b->is_doubleclick() && !scroll_updated) {
@@ -2498,6 +2531,22 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 	}
 }
 
+Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
+	if (selection.drag_attempt && selection.enabled) {
+		String t = get_selected_text();
+		Label *l = memnew(Label);
+		l->set_text(t);
+		set_drag_preview(l);
+		return t;
+	}
+
+	return Variant();
+}
+
+bool RichTextLabel::_is_click_inside_selection() const {
+	return (selection.click->index >= selection.from->index && selection.click->index <= selection.to->index && (selection.click->index > selection.from->index || selection.click_char >= selection.from_char) && (selection.click->index < selection.to->index || selection.click_char <= selection.to_char));
+}
+
 bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous) {
 	ERR_FAIL_COND_V(!selection.enabled, false);
 	Item *it = main;
@@ -3007,6 +3056,7 @@ RichTextLabel::RichTextLabel() {
 	selection.click = nullptr;
 	selection.active = false;
 	selection.enabled = false;
+	selection.drag_attempt = false;
 
 	visible_characters = -1;
 	percent_visible = 1;

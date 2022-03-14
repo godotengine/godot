@@ -183,6 +183,7 @@ public:
 
 Viewport::GUI::GUI() {
 	dragging = false;
+	drag_successful = false;
 	mouse_focus = nullptr;
 	mouse_click_grabber = nullptr;
 	mouse_focus_mask = 0;
@@ -1978,8 +1979,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
 				//alternate drop use (when using force_drag(), as proposed by #5342
+				gui.drag_successful = false;
 				if (gui.mouse_focus) {
-					_gui_drop(gui.mouse_focus, pos, false);
+					gui.drag_successful = _gui_drop(gui.mouse_focus, pos, false);
 				}
 
 				gui.drag_data = Variant();
@@ -1997,11 +1999,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			_gui_cancel_tooltip();
 		} else {
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
+				gui.drag_successful = false;
 				if (gui.mouse_over) {
 					Size2 pos = mpos;
 					pos = gui.focus_inv_xform.xform(pos);
 
-					_gui_drop(gui.mouse_over, pos, false);
+					gui.drag_successful = _gui_drop(gui.mouse_over, pos, false);
 				}
 
 				Control *drag_preview = _gui_get_drag_preview();
@@ -3124,6 +3127,10 @@ bool Viewport::gui_is_dragging() const {
 	return gui.dragging;
 }
 
+bool Viewport::gui_is_drag_successful() const {
+	return gui.drag_successful;
+}
+
 void Viewport::set_input_as_handled() {
 	_drop_physics_mouseover();
 	if (handle_input_locally) {
@@ -3257,6 +3264,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
+	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);
 
 	ClassDB::bind_method(D_METHOD("get_modal_stack_top"), &Viewport::get_modal_stack_top);
 

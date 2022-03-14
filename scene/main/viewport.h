@@ -322,6 +322,7 @@ private:
 		List<Control *> roots;
 		int canvas_sort_index; //for sorting items with canvas as root
 		bool dragging;
+		bool drag_successful;
 
 		GUI();
 	} gui;
@@ -581,6 +582,7 @@ public:
 	bool is_handling_input_locally() const;
 
 	bool gui_is_dragging() const;
+	bool gui_is_drag_successful() const;
 
 	Viewport();
 	~Viewport();

@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
+#include "label.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
@@ -432,6 +433,7 @@ void TextEdit::_click_selection_held() {
 }
 
 void TextEdit::_update_selection_mode_pointer() {
+	selection.drag_attempt = false;
 	dragging_selection = true;
 	Point2 mp = get_local_mouse_position();
 
@@ -448,6 +450,7 @@ void TextEdit::_update_selection_mode_pointer() {
 }
 
 void TextEdit::_update_selection_mode_word() {
+	selection.drag_attempt = false;
 	dragging_selection = true;
 	Point2 mp = get_local_mouse_position();
 
@@ -505,6 +508,7 @@ void TextEdit::_update_selection_mode_word() {
 }
 
 void TextEdit::_update_selection_mode_line() {
+	selection.drag_attempt = false;
 	dragging_selection = true;
 	Point2 mp = get_local_mouse_position();
 
@@ -1504,7 +1508,7 @@ void TextEdit::_notification(int p_what) {
 								}
 							}
 							if (ime_text.length() == 0) {
-								if (draw_caret) {
+								if (draw_caret || drag_caret_force_displayed) {
 									if (insert_mode) {
 #ifdef TOOLS_ENABLED
 										int caret_h = (block_caret) ? 4 : 2 * EDSCALE;
@@ -1610,7 +1614,7 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 						if (ime_text.length() == 0) {
-							if (draw_caret) {
+							if (draw_caret || drag_caret_force_displayed) {
 								if (insert_mode) {
 									int char_w = cache.font->get_char_size(' ').width;
 #ifdef TOOLS_ENABLED
@@ -1892,6 +1896,37 @@ void TextEdit::_notification(int p_what) {
 				ime_selection = OS::get_singleton()->get_ime_selection();
 				update();
 			}
+		} break;
+		case Control::NOTIFICATION_DRAG_BEGIN: {
+			selection.selecting_mode = Selection::MODE_NONE;
+			drag_action = true;
+			dragging_minimap = false;
+			dragging_selection = false;
+			can_drag_minimap = false;
+			click_select_held->stop();
+		} break;
+		case Control::NOTIFICATION_DRAG_END: {
+			if (is_drag_successful()) {
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					if (!readonly && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+						_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+						cursor_set_line(selection.from_line, false);
+						cursor_set_column(selection.from_column);
+						selection.active = false;
+						selection.selecting_mode = Selection::MODE_NONE;
+						update();
+					}
+				}
+			} else {
+				selection.drag_attempt = false;
+			}
+			drag_action = false;
+			drag_caret_force_displayed = false;
+			dragging_minimap = false;
+			dragging_selection = false;
+			can_drag_minimap = false;
+			click_select_held->stop();
 		} break;
 	}
 }
@@ -2486,6 +2521,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				cursor_set_line(row, false, false);
 				cursor_set_column(col);
+				selection.drag_attempt = false;
 
 				if (mb->get_shift() && (cursor.column != prev_col || cursor.line != prev_line)) {
 					if (!selection.active) {
@@ -2531,7 +2567,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						update();
 					}
-
+				} else if (is_mouse_over_selection()) {
+					selection.selecting_mode = Selection::MODE_NONE;
+					selection.drag_attempt = true;
 				} else {
 					selection.active = false;
 					selection.selecting_mode = Selection::MODE_POINTER;
@@ -2595,6 +2633,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 			if (mb->get_button_index() == BUTTON_LEFT) {
+				if (selection.drag_attempt && selection.selecting_mode == Selection::MODE_NONE && is_mouse_over_selection()) {
+					selection.active = false;
+				}
 				if (mb->get_command() && highlighted_word != String()) {
 					int row, col;
 					_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
@@ -2607,6 +2648,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_selection = false;
 				can_drag_minimap = false;
 				click_select_held->stop();
+				if (!drag_action) {
+					selection.drag_attempt = false;
+				}
 			}
 
 			// Notify to show soft keyboard.
@@ -2675,6 +2719,22 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 			}
+		}
+
+		if (drag_action && can_drop_data(mm->get_position(), get_viewport()->gui_get_drag_data())) {
+			drag_caret_force_displayed = true;
+			Point2 mp = get_local_mouse_position();
+			int row, col;
+			_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
+			cursor_set_line(row, true);
+			cursor_set_column(col);
+			if (row <= get_first_visible_line()) {
+				_scroll_lines_up();
+			} else if (row >= get_last_full_visible_line()) {
+				_scroll_lines_down();
+			}
+			dragging_selection = true;
+			update();
 		}
 	}
 
@@ -4965,6 +5025,104 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 
 	_insert_text_at_cursor(p_text);
 	update();
+}
+
+Variant TextEdit::get_drag_data(const Point2 &p_point) {
+	if (selection.active && selection.drag_attempt) {
+		String t = get_selection_text();
+		Label *l = memnew(Label);
+		l->set_text(t);
+		set_drag_preview(l);
+		return t;
+	}
+
+	return Variant();
+}
+
+bool TextEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	bool drop_override = Control::can_drop_data(p_point, p_data); // In case user wants to drop custom data.
+	if (drop_override) {
+		return drop_override;
+	}
+
+	return !readonly && p_data.get_type() == Variant::STRING;
+}
+
+void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
+	Control::drop_data(p_point, p_data);
+
+	if (p_data.get_type() == Variant::STRING && !readonly) {
+		Point2 mp = get_local_mouse_position();
+		int caret_row_tmp, caret_column_tmp;
+		_get_mouse_pos(Point2i(mp.x, mp.y), caret_row_tmp, caret_column_tmp);
+		if (selection.drag_attempt) {
+			selection.drag_attempt = false;
+			if (!is_mouse_over_selection(!Input::get_singleton()->is_key_pressed(KEY_CONTROL))) {
+				begin_complex_operation();
+				if (!Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+					if (caret_row_tmp > selection.to_line) {
+						caret_row_tmp = caret_row_tmp - (selection.to_line - selection.from_line);
+					} else if (caret_row_tmp == selection.to_line && caret_column_tmp >= selection.to_column) {
+						caret_column_tmp = caret_column_tmp - (selection.to_column - selection.from_column);
+					}
+
+					_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+					cursor_set_line(selection.from_line, false);
+					cursor_set_column(selection.from_column);
+					selection.active = false;
+					selection.selecting_mode = Selection::MODE_NONE;
+				} else {
+					deselect();
+				}
+
+				cursor_set_line(caret_row_tmp, true, false);
+				cursor_set_column(caret_column_tmp);
+				insert_text_at_cursor(p_data);
+				end_complex_operation();
+			}
+		} else if (is_mouse_over_selection()) {
+			begin_complex_operation();
+			caret_row_tmp = selection.from_line;
+			caret_column_tmp = selection.from_column;
+
+			_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+			cursor_set_line(selection.from_line, false);
+			cursor_set_column(selection.from_column);
+			selection.active = false;
+			selection.selecting_mode = Selection::MODE_NONE;
+
+			cursor_set_line(caret_row_tmp, true, false);
+			cursor_set_column(caret_column_tmp);
+			insert_text_at_cursor(p_data);
+			end_complex_operation();
+			grab_focus();
+		} else {
+			deselect();
+			cursor_set_line(caret_row_tmp, true, false);
+			cursor_set_column(caret_column_tmp);
+			insert_text_at_cursor(p_data);
+			grab_focus();
+		}
+
+		if (caret_row_tmp != cursor.line || caret_column_tmp != cursor.column) {
+			select(caret_row_tmp, caret_column_tmp, cursor.line, cursor.column);
+		}
+	}
+}
+
+bool TextEdit::is_mouse_over_selection(bool p_edges) const {
+	if (!selection.active) {
+		return false;
+	}
+	Point2 mp = get_local_mouse_position();
+	int row, col;
+	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
+	if (p_edges) {
+		if ((row == selection.from_line && col == selection.from_column) || (row == selection.to_line && col == selection.to_column)) {
+			return true;
+		}
+	}
+	return (row >= selection.from_line && row <= selection.to_line && (row > selection.from_line || col > selection.from_column) && (row < selection.to_line || col < selection.to_column));
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
@@ -7278,6 +7436,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selection_to_line"), &TextEdit::get_selection_to_line);
 	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &TextEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("get_selection_text"), &TextEdit::get_selection_text);
+	ClassDB::bind_method(D_METHOD("is_mouse_over_selection", "edges"), &TextEdit::is_mouse_over_selection);
 	ClassDB::bind_method(D_METHOD("get_word_under_cursor"), &TextEdit::get_word_under_cursor);
 	ClassDB::bind_method(D_METHOD("search", "key", "flags", "from_line", "from_column"), &TextEdit::_search_bind);
 
