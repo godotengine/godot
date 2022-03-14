@@ -1,9 +1,9 @@
 // Functions related to lighting
 
 float D_GGX(float cos_theta_m, float alpha) {
-	float alpha2 = alpha * alpha;
-	float d = 1.0 + (alpha2 - 1.0) * cos_theta_m * cos_theta_m;
-	return alpha2 / (M_PI * d * d);
+	float a = cos_theta_m * alpha;
+	float k = alpha / (1.0 - cos_theta_m * cos_theta_m + a * a);
+	return k * k * (1.0 / M_PI);
 }
 
 // From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
