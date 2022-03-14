@@ -709,14 +709,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
 	}
 
-	Ref<InputEventGesture> ge = p_event;
-
-	if (ge.is_valid()) {
-		if (event_dispatch_function) {
-			event_dispatch_function(ge);
-		}
-	}
-
 	for (OrderedHashMap<StringName, InputMap::Action>::ConstElement E = InputMap::get_singleton()->get_action_map().front(); E; E = E.next()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key())) {
 			// If not echo and action pressed state has changed
