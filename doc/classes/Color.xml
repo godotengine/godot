@@ -915,11 +915,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Color" />
 			<description>
 				Returns [code]true[/code] if the colors are not equal.
@@ -980,11 +975,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Divides each component of the [Color] by the given [int].
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
