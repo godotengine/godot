@@ -147,7 +147,7 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 	}
 }
 
-void GodotSoftBody3D::update_rendering_server(RenderingServerHandler *p_rendering_server_handler) {
+void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
 	if (soft_mesh.is_null()) {
 		return;
 	}

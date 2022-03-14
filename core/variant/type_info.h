@@ -281,4 +281,38 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
 
+template <typename T>
+struct ZeroInitializer {
+	static void initialize(T &value) {} //no initialization by default
+};
+
+template <>
+struct ZeroInitializer<bool> {
+	static void initialize(bool &value) { value = false; }
+};
+
+template <typename T>
+struct ZeroInitializer<T *> {
+	static void initialize(T *&value) { value = nullptr; }
+};
+
+#define ZERO_INITIALIZER_NUMBER(m_type)                      \
+	template <>                                              \
+	struct ZeroInitializer<m_type> {                         \
+		static void initialize(m_type &value) { value = 0; } \
+	};
+
+ZERO_INITIALIZER_NUMBER(uint8_t)
+ZERO_INITIALIZER_NUMBER(int8_t)
+ZERO_INITIALIZER_NUMBER(uint16_t)
+ZERO_INITIALIZER_NUMBER(int16_t)
+ZERO_INITIALIZER_NUMBER(uint32_t)
+ZERO_INITIALIZER_NUMBER(int32_t)
+ZERO_INITIALIZER_NUMBER(uint64_t)
+ZERO_INITIALIZER_NUMBER(int64_t)
+ZERO_INITIALIZER_NUMBER(char16_t)
+ZERO_INITIALIZER_NUMBER(char32_t)
+ZERO_INITIALIZER_NUMBER(float)
+ZERO_INITIALIZER_NUMBER(double)
+
 #endif // TYPE_INFO_H
