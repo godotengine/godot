@@ -1348,12 +1348,12 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
-	if (magnify_gesture.is_valid()) {
-		set_zoom_custom(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+	Ref<InputEventGesturePinch> pinch_gesture = p_ev;
+	if (pinch_gesture.is_valid()) {
+		set_zoom_custom(zoom * pinch_gesture->get_factor(), pinch_gesture->get_position());
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_ev;
+	Ref<InputEventGesturePan> pan_gesture = p_ev;
 	if (pan_gesture.is_valid()) {
 		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);

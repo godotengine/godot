@@ -1822,16 +1822,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid()) {
+	Ref<InputEventGesturePinch> pinch_gesture = p_event;
+	if (pinch_gesture.is_valid()) {
 		if (is_freelook_active()) {
-			scale_freelook_speed(magnify_gesture->get_factor());
+			scale_freelook_speed(pinch_gesture->get_factor());
 		} else {
-			scale_cursor_distance(1.0 / magnify_gesture->get_factor());
+			scale_cursor_distance(1.0 / pinch_gesture->get_factor());
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
+	Ref<InputEventGesturePan> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 		NavigationMode nav_mode = NAVIGATION_NONE;

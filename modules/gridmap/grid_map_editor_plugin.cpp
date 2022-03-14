@@ -741,7 +741,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
+	Ref<InputEventGesturePan> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		if (pan_gesture->is_alt_pressed() && (pan_gesture->is_command_pressed() || pan_gesture->is_shift_pressed())) {
 			const real_t delta = pan_gesture->get_delta().y * 0.5;

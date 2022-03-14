@@ -1188,14 +1188,14 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid() && !p_already_accepted) {
+	Ref<InputEventGesturePinch> pinch_gesture = p_event;
+	if (pinch_gesture.is_valid() && !p_already_accepted) {
 		// Zoom gesture
-		_zoom_on_position(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+		_zoom_on_position(zoom * pinch_gesture->get_factor(), pinch_gesture->get_position());
 		return true;
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
+	Ref<InputEventGesturePan> pan_gesture = p_event;
 	if (pan_gesture.is_valid() && !p_already_accepted) {
 		// If ctrl key pressed, then zoom instead of pan.
 		if (pan_gesture->is_ctrl_pressed()) {

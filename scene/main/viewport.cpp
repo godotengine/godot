@@ -1287,7 +1287,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 					mb->get_button_index() == MouseButton::WHEEL_UP ||
 					mb->get_button_index() == MouseButton::WHEEL_LEFT ||
 					mb->get_button_index() == MouseButton::WHEEL_RIGHT));
-	Ref<InputEventPanGesture> pn = p_input;
+	Ref<InputEventGesturePan> pn = p_input;
 	cant_stop_me_now = pn.is_valid() || cant_stop_me_now;
 
 	bool ismouse = ev.is_valid() || Object::cast_to<InputEventMouseMotion>(*p_input) != nullptr;

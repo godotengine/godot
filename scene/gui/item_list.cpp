@@ -871,7 +871,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
+	Ref<InputEventGesturePan> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * pan_gesture->get_delta().y / 8);
 	}

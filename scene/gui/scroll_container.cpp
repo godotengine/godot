@@ -197,7 +197,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+	Ref<InputEventGesturePan> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		if (h_scroll->is_visible_in_tree()) {
 			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);

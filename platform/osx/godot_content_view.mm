@@ -464,7 +464,7 @@
 
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
 
-	Ref<InputEventMagnifyGesture> ev;
+	Ref<InputEventGesturePinch> ev;
 	ev.instantiate();
 	ev->set_window_id(window_id);
 	ds->get_key_modifier_state([event modifierFlags], ev);
@@ -713,7 +713,7 @@
 
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
 
-	Ref<InputEventPanGesture> pg;
+	Ref<InputEventGesturePan> pg;
 	pg.instantiate();
 
 	pg->set_window_id(window_id);

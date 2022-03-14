@@ -461,42 +461,6 @@ public:
 	Vector2 get_position() const;
 };
 
-class InputEventMagnifyGesture : public InputEventGesture {
-	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
-	real_t factor = 1.0;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_factor(real_t p_factor);
-	real_t get_factor() const;
-
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
-	virtual String as_text() const override;
-	virtual String to_string() override;
-
-	InputEventMagnifyGesture() {}
-};
-
-class InputEventPanGesture : public InputEventGesture {
-	GDCLASS(InputEventPanGesture, InputEventGesture);
-	Vector2 delta;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_delta(const Vector2 &p_delta);
-	Vector2 get_delta() const;
-
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
-	virtual String as_text() const override;
-	virtual String to_string() override;
-
-	InputEventPanGesture() {}
-};
-
 class InputEventGesturePan : public InputEventGesture {
 	GDCLASS(InputEventGesturePan, InputEventGesture);
 	Vector2 delta;

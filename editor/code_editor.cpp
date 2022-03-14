@@ -771,10 +771,10 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid()) {
+	Ref<InputEventGesturePinch> pinch_gesture = p_event;
+	if (pinch_gesture.is_valid()) {
 		font_size = text_editor->get_theme_font_size(SNAME("font_size"));
-		font_size *= powf(magnify_gesture->get_factor(), 0.25);
+		font_size *= powf(pinch_gesture->get_factor(), 0.25);
 
 		_add_font_size((int)font_size - text_editor->get_theme_font_size(SNAME("font_size")));
 		return;
