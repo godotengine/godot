@@ -4,7 +4,7 @@ ext.versions = [
     minSdk             : 19, // Also update 'platform/android/java/lib/AndroidManifest.xml#minSdkVersion' & 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
     targetSdk          : 30, // Also update 'platform/android/java/lib/AndroidManifest.xml#targetSdkVersion' & 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
     buildTools         : '30.0.3',
-    kotlinVersion      : '1.5.10',
+    kotlinVersion      : '1.6.10',
     fragmentVersion    : '1.3.6',
     javaVersion        : 11,
     ndkVersion         : '21.4.7075529' // Also update 'platform/android/detect.py#get_project_ndk_version()' when this is updated.
@@ -86,13 +86,12 @@ ext.getGodotEditorVersion = { ->
     return editorVersion
 }
 
-ext.getGodotLibraryVersion = { ->
+ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
     // Attempt to read the version from the `version.py` file.
     String libraryVersion = ""
 
     File versionFile = new File("../../../version.py")
     if (versionFile.isFile()) {
-        List<String> requiredKeys = ["major", "minor", "patch", "status", "module_config"]
         def map = [:]
 
         List<String> lines = versionFile.readLines()
@@ -119,6 +118,16 @@ ext.getGodotLibraryVersion = { ->
         libraryVersion = "custom_build"
     }
     return libraryVersion
+}
+
+ext.getGodotLibraryVersion = { ->
+    List<String> requiredKeys = ["major", "minor", "patch", "status", "module_config"]
+    return generateGodotLibraryVersion(requiredKeys)
+}
+
+ext.getGodotPublishVersion = { ->
+    List<String> requiredKeys = ["major", "minor", "patch", "status"]
+    return generateGodotLibraryVersion(requiredKeys)
 }
 
 final String VALUE_SEPARATOR_REGEX = "\\|"
