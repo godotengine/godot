@@ -69,7 +69,9 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// The map name and value definition format should be kept synced with the regex.
 	capitalize_string_remaps["2d"] = "2D";
 	capitalize_string_remaps["3d"] = "3D";
+	capitalize_string_remaps["Aa"] = "AA";
 	capitalize_string_remaps["Adb"] = "ADB";
+	capitalize_string_remaps["Ao"] = "AO";
 	capitalize_string_remaps["Bptc"] = "BPTC";
 	capitalize_string_remaps["Bvh"] = "BVH";
 	capitalize_string_remaps["Csg"] = "CSG";
@@ -81,21 +83,27 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["Fbx"] = "FBX";
 	capitalize_string_remaps["Fps"] = "FPS";
 	capitalize_string_remaps["Fov"] = "FOV";
+	capitalize_string_remaps["Fsr"] = "FSR";
 	capitalize_string_remaps["Fs"] = "FS";
 	capitalize_string_remaps["Fxaa"] = "FXAA";
 	capitalize_string_remaps["Ggx"] = "GGX";
+	capitalize_string_remaps["Gi"] = "GI";
 	capitalize_string_remaps["Gdscript"] = "GDScript";
 	capitalize_string_remaps["Gles 2"] = "GLES2";
 	capitalize_string_remaps["Gles 3"] = "GLES3";
-	capitalize_string_remaps["Gi Probe"] = "GI Probe";
+	capitalize_string_remaps["Gpu"] = "GPU";
+	capitalize_string_remaps["Gui"] = "GUI";
 	capitalize_string_remaps["Hdr"] = "HDR";
 	capitalize_string_remaps["Hidpi"] = "hiDPI";
+	capitalize_string_remaps["Http"] = "HTTP";
 	capitalize_string_remaps["Ik"] = "IK";
 	capitalize_string_remaps["Ios"] = "iOS";
 	capitalize_string_remaps["Kb"] = "KB";
+	capitalize_string_remaps["Lod"] = "LOD";
 	capitalize_string_remaps["Msaa"] = "MSAA";
 	capitalize_string_remaps["Macos"] = "macOS";
 	capitalize_string_remaps["Opentype"] = "OpenType";
+	capitalize_string_remaps["Openxr"] = "OpenXR";
 	capitalize_string_remaps["Png"] = "PNG";
 	capitalize_string_remaps["Pvs"] = "PVS";
 	capitalize_string_remaps["Pvrtc"] = "PVRTC";
@@ -104,16 +112,23 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["Srgb"] = "sRGB";
 	capitalize_string_remaps["Ssao"] = "SSAO";
 	capitalize_string_remaps["Ssl"] = "SSL";
+	capitalize_string_remaps["Ssil"] = "SSIL";
 	capitalize_string_remaps["Ssh"] = "SSH";
+	capitalize_string_remaps["Sdf"] = "SDF";
 	capitalize_string_remaps["Sdk"] = "SDK";
 	capitalize_string_remaps["Tcp"] = "TCP";
+	capitalize_string_remaps["Url"] = "URL";
 	capitalize_string_remaps["Uv 1"] = "UV1";
 	capitalize_string_remaps["Uv 2"] = "UV2";
+	capitalize_string_remaps["Uv"] = "UV";
+	capitalize_string_remaps["Uwp"] = "UWP";
 	capitalize_string_remaps["Vram"] = "VRAM";
 	capitalize_string_remaps["Vsync"] = "V-Sync";
 	capitalize_string_remaps["Vector 2"] = "Vector2";
+	capitalize_string_remaps["Webp"] = "WebP";
 	capitalize_string_remaps["Webrtc"] = "WebRTC";
 	capitalize_string_remaps["Websocket"] = "WebSocket";
+	capitalize_string_remaps["Xr"] = "XR";
 }
 
 EditorPropertyNameProcessor::~EditorPropertyNameProcessor() {
