@@ -75,6 +75,7 @@ private:
 	Point2 ime_selection;
 
 	bool selecting_enabled;
+	bool deselect_on_focus_loss_enabled;
 
 	bool context_menu_enabled;
 	PopupMenu *menu;
@@ -240,6 +241,9 @@ public:
 
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_right_icon(const Ref<Texture> &p_icon);
 	Ref<Texture> get_right_icon();
