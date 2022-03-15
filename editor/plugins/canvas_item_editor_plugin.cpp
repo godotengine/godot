@@ -2216,7 +2216,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (drag_type == DRAG_NONE) {
-		if (b.is_valid() &&
+		if (b.is_valid() && b->is_pressed() &&
 				((b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed() && tool == TOOL_SELECT) ||
 						(b->get_button_index() == MouseButton::LEFT && tool == TOOL_LIST_SELECT))) {
 			// Popup the selection menu list
