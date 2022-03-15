@@ -69,6 +69,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"inverse_lerp",
 	"range_lerp",
 	"move_toward",
+	"move_toward_angle",
 	"randomize",
 	"randi",
 	"randf",
@@ -209,6 +210,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP:
 		case MATH_MOVE_TOWARD:
+		case MATH_MOVE_TOWARD_ANGLE:
 		case MATH_WRAP:
 		case MATH_WRAPF:
 		case LOGIC_CLAMP:
@@ -357,7 +359,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::FLOAT, "ostop");
 			}
 		} break;
-		case MATH_MOVE_TOWARD: {
+		case MATH_MOVE_TOWARD:
+		case MATH_MOVE_TOWARD_ANGLE: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::FLOAT, "from");
 			} else if (p_idx == 1) {
@@ -546,6 +549,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_RANGE_LERP:
 		case MATH_SMOOTHSTEP:
 		case MATH_MOVE_TOWARD:
+		case MATH_MOVE_TOWARD_ANGLE:
 		case MATH_RANDOMIZE: {
 		} break;
 		case MATH_RANDI: {
@@ -850,6 +854,12 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::move_toward((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_MOVE_TOWARD_ANGLE: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::move_toward_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDOMIZE: {
 			Math::randomize();
@@ -1248,6 +1258,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
 	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
 	BIND_ENUM_CONSTANT(MATH_MOVE_TOWARD);
+	BIND_ENUM_CONSTANT(MATH_MOVE_TOWARD_ANGLE);
 	BIND_ENUM_CONSTANT(MATH_RANDOMIZE);
 	BIND_ENUM_CONSTANT(MATH_RANDI);
 	BIND_ENUM_CONSTANT(MATH_RANDF);
@@ -1340,6 +1351,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/range_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANGE_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/smoothstep", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SMOOTHSTEP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/move_toward", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_MOVE_TOWARD>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/move_toward_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_MOVE_TOWARD_ANGLE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randomize", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDOMIZE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF>);

@@ -446,6 +446,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Normalizes <paramref name="angle"/> between <c>-Mathf.Pi</c> and <c>Mathf.Pi</c>.
+        /// </summary>
+        /// <param name="angle">The Angle in radians.</param>
+        /// <returns>The normalized Angle.</returns>
+        public static real_t NormalizeAngle(real_t angle)
+        {
+            return angle - Round(angle / Tau) * Tau;
+        }
+
+        /// <summary>
+        /// Moves <paramref name="from"/> toward <paramref name="to"/>
+        /// by the <paramref name="delta"/> angle (in radians).
+        /// Use a negative <paramref name="delta"/> angle to move away.
+        /// Similar to <see cref="MoveToward"/> but for angles.
+        /// </summary>
+        /// <param name="from">The start Angle.</param>
+        /// <param name="to">The Angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The Angle after moving.</returns>
+        public static real_t MoveTowardAngle(real_t from, real_t to, real_t delta)
+        {
+            real_t diff = NormalizeAngle(to - from);
+            real_t sign = Sign(diff);
+            return NormalizeAngle(from + Min(delta, diff * sign) * sign);
+        }
+
+        /// <summary>
         /// Returns the nearest larger power of 2 for the integer <paramref name="value"/>.
         /// </summary>
         /// <param name="value">The input value.</param>

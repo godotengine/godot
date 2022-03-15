@@ -251,6 +251,10 @@ struct VariantUtilityFunctions {
 		return Math::move_toward(from, to, delta);
 	}
 
+	static inline double move_toward_angle(double from, double to, double delta) {
+		return Math::move_toward_angle(from, to, delta);
+	}
+
 	static inline double deg2rad(double angle_deg) {
 		return Math::deg2rad(angle_deg);
 	}
@@ -1210,6 +1214,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(move_toward_angle, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(deg2rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(rad2deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);

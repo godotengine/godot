@@ -565,6 +565,23 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="move_toward_angle">
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="delta" type="float" />
+			<description>
+				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] angle (in radians).
+				Use a negative [code]delta[/code] angle to move away.
+				Similar to [method move_toward] but for angles.
+				[codeblock]
+				move_toward_angle(0.1, 0.3, 0.1) # Returns 0.2
+				move_toward_angle(0.5, 0.2, 0.4) # Returns 0.2
+				move_toward_angle(0.1, -0.2, 0.2) # Returns -0.1
+				move_toward_angle(0.1, TAU - 0.2, -0.2) # Returns -0.1
+				[/codeblock]
+			</description>
+		</method>
 		<method name="nearest_po2">
 			<return type="int" />
 			<argument index="0" name="value" type="int" />

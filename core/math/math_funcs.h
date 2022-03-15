@@ -287,6 +287,20 @@ public:
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 
+	static _ALWAYS_INLINE_ double normalize_angle(double p_angle) { return p_angle - round(p_angle / Math_TAU) * Math_TAU; }
+	static _ALWAYS_INLINE_ float normalize_angle(float p_angle) { return p_angle - round(p_angle / (float)Math_TAU) * (float)Math_TAU; }
+
+	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
+		double diff = normalize_angle(p_to - p_from);
+		double sign = SIGN(diff);
+		return normalize_angle(p_from + fmin(p_delta, diff * sign) * sign);
+	}
+	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
+		float diff = normalize_angle(p_to - p_from);
+		float sign = SIGN(diff);
+		return normalize_angle(p_from + fmin(p_delta, diff * sign) * sign);
+	}
+
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
 
