@@ -780,7 +780,7 @@
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
 		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2( 0, 0 )">
-			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
+			By default, the node's pivot is its top-left corner. When you change its [member rect_rotation] or [member rect_scale], it will rotate or scale around this pivot. Set this property to [member rect_size] / 2 to pivot around the Control's center.
 		</member>
 		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2( 0, 0 )">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
