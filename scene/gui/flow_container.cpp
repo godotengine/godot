@@ -41,6 +41,11 @@ struct _LineData {
 };
 
 void FlowContainer::_resort() {
+	// Avoid resorting if invisible.
+	if (!is_visible_in_tree()) {
+		return;
+	}
+
 	int separation_horizontal = get_constant("hseparation");
 	int separation_vertical = get_constant("vseparation");
 
@@ -58,7 +63,7 @@ void FlowContainer::_resort() {
 	// First pass for line wrapping and minimum size calculation.
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible_in_tree()) {
+		if (!child || !child->is_visible()) {
 			continue;
 		}
 		if (child->is_set_as_toplevel()) {
@@ -128,7 +133,7 @@ void FlowContainer::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible_in_tree()) {
+		if (!child || !child->is_visible()) {
 			continue;
 		}
 		if (child->is_set_as_toplevel()) {
