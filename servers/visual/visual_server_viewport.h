@@ -81,7 +81,7 @@ public:
 			RID canvas;
 			bool operator<(const CanvasKey &p_canvas) const {
 				if (stacking == p_canvas.stacking) {
-					return canvas < p_canvas.canvas;
+					return canvas.get_id() < p_canvas.canvas.get_id();
 				}
 				return stacking < p_canvas.stacking;
 			}
