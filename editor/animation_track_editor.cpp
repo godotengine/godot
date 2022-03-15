@@ -606,8 +606,7 @@ public:
 			} break;
 			case Animation::TYPE_METHOD: {
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-				static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
-				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
+				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
 
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND(!d.has("args"));
@@ -1287,8 +1286,8 @@ public:
 				} break;
 				case Animation::TYPE_METHOD: {
 					p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-					static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
-					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
+
+					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
 
 					Dictionary d = animation->track_get_key_value(first_track, first_key);
 					ERR_FAIL_COND(!d.has("args"));
@@ -1458,198 +1457,202 @@ int AnimationTimelineEdit::get_name_limit() const {
 }
 
 void AnimationTimelineEdit::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
+			time_icon->set_texture(get_theme_icon(SNAME("Time"), SNAME("EditorIcons")));
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
-		time_icon->set_texture(get_theme_icon(SNAME("Time"), SNAME("EditorIcons")));
+			add_track->get_popup()->clear();
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")), TTR("Property Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXPosition"), SNAME("EditorIcons")), TTR("3D Position Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXRotation"), SNAME("EditorIcons")), TTR("3D Rotation Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXScale"), SNAME("EditorIcons")), TTR("3D Scale Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBlendShape"), SNAME("EditorIcons")), TTR("Blend Shape Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")), TTR("Call Method Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")), TTR("Bezier Curve Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")), TTR("Audio Playback Track"));
+			add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons")), TTR("Animation Playback Track"));
+		} break;
 
-		add_track->get_popup()->clear();
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")), TTR("Property Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXPosition"), SNAME("EditorIcons")), TTR("3D Position Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXRotation"), SNAME("EditorIcons")), TTR("3D Rotation Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXScale"), SNAME("EditorIcons")), TTR("3D Scale Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBlendShape"), SNAME("EditorIcons")), TTR("Blend Shape Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")), TTR("Call Method Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")), TTR("Bezier Curve Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")), TTR("Audio Playback Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons")), TTR("Animation Playback Track"));
-	}
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		} break;
 
-	if (p_what == NOTIFICATION_RESIZED) {
-		len_hb->set_position(Vector2(get_size().width - get_buttons_width(), 0));
-		len_hb->set_size(Size2(get_buttons_width(), get_size().height));
-	}
+		case NOTIFICATION_RESIZED: {
+			len_hb->set_position(Vector2(get_size().width - get_buttons_width(), 0));
+			len_hb->set_size(Size2(get_buttons_width(), get_size().height));
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		int key_range = get_size().width - get_buttons_width() - get_name_limit();
+		case NOTIFICATION_DRAW: {
+			int key_range = get_size().width - get_buttons_width() - get_name_limit();
 
-		if (!animation.is_valid()) {
-			return;
-		}
+			if (!animation.is_valid()) {
+				return;
+			}
 
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
-		int zoomw = key_range;
-		float scale = get_zoom_scale();
-		int h = get_size().height;
+			int zoomw = key_range;
+			float scale = get_zoom_scale();
+			int h = get_size().height;
 
-		float l = animation->get_length();
-		if (l <= 0) {
-			l = 0.001; // Avoid crashor.
-		}
+			float l = animation->get_length();
+			if (l <= 0) {
+				l = 0.001; // Avoid crashor.
+			}
 
-		Ref<Texture2D> hsize_icon = get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"));
-		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
-		draw_texture(hsize_icon, hsize_rect.position);
+			Ref<Texture2D> hsize_icon = get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"));
+			hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
+			draw_texture(hsize_icon, hsize_rect.position);
 
-		{
-			float time_min = 0;
-			float time_max = animation->get_length();
-			for (int i = 0; i < animation->get_track_count(); i++) {
-				if (animation->track_get_key_count(i) > 0) {
-					float beg = animation->track_get_key_time(i, 0);
+			{
+				float time_min = 0;
+				float time_max = animation->get_length();
+				for (int i = 0; i < animation->get_track_count(); i++) {
+					if (animation->track_get_key_count(i) > 0) {
+						float beg = animation->track_get_key_time(i, 0);
 
-					if (beg < time_min) {
-						time_min = beg;
+						if (beg < time_min) {
+							time_min = beg;
+						}
+
+						float end = animation->track_get_key_time(i, animation->track_get_key_count(i) - 1);
+
+						if (end > time_max) {
+							time_max = end;
+						}
+					}
+				}
+
+				float extra = (zoomw / scale) * 0.5;
+
+				time_max += extra;
+				set_min(time_min);
+				set_max(time_max);
+
+				if (zoomw / scale < (time_max - time_min)) {
+					hscroll->show();
+
+				} else {
+					hscroll->hide();
+				}
+			}
+
+			set_page(zoomw / scale);
+
+			int end_px = (l - get_value()) * scale;
+			int begin_px = -get_value() * scale;
+			Color notimecol = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
+			Color timecolor = color;
+			timecolor.a = 0.2;
+			Color linecolor = color;
+			linecolor.a = 0.2;
+
+			{
+				draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), notimecol);
+
+				if (begin_px < zoomw && end_px > 0) {
+					if (begin_px < 0) {
+						begin_px = 0;
+					}
+					if (end_px > zoomw) {
+						end_px = zoomw;
 					}
 
-					float end = animation->track_get_key_time(i, animation->track_get_key_count(i) - 1);
-
-					if (end > time_max) {
-						time_max = end;
-					}
+					draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px - 1, h)), timecolor);
 				}
 			}
 
-			float extra = (zoomw / scale) * 0.5;
-
-			time_max += extra;
-			set_min(time_min);
-			set_max(time_max);
-
-			if (zoomw / scale < (time_max - time_min)) {
-				hscroll->show();
-
-			} else {
-				hscroll->hide();
-			}
-		}
-
-		set_page(zoomw / scale);
-
-		int end_px = (l - get_value()) * scale;
-		int begin_px = -get_value() * scale;
-		Color notimecol = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
-		Color timecolor = color;
-		timecolor.a = 0.2;
-		Color linecolor = color;
-		linecolor.a = 0.2;
-
-		{
-			draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), notimecol);
-
-			if (begin_px < zoomw && end_px > 0) {
-				if (begin_px < 0) {
-					begin_px = 0;
-				}
-				if (end_px > zoomw) {
-					end_px = zoomw;
-				}
-
-				draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px - 1, h)), timecolor);
-			}
-		}
-
-		Color color_time_sec = color;
-		Color color_time_dec = color;
-		color_time_dec.a *= 0.5;
+			Color color_time_sec = color;
+			Color color_time_dec = color;
+			color_time_dec.a *= 0.5;
 #define SC_ADJ 100
-		int min = 30;
-		int dec = 1;
-		int step = 1;
-		int decimals = 2;
-		bool step_found = false;
+			int min = 30;
+			int dec = 1;
+			int step = 1;
+			int decimals = 2;
+			bool step_found = false;
 
-		const float period_width = font->get_char_size('.', 0, font_size).width;
-		float max_digit_width = font->get_char_size('0', 0, font_size).width;
-		for (int i = 1; i <= 9; i++) {
-			const float digit_width = font->get_char_size('0' + i, 0, font_size).width;
-			max_digit_width = MAX(digit_width, max_digit_width);
-		}
-		const int max_sc = int(Math::ceil(zoomw / scale));
-		const int max_sc_width = String::num(max_sc).length() * max_digit_width;
-
-		while (!step_found) {
-			min = max_sc_width;
-			if (decimals > 0) {
-				min += period_width + max_digit_width * decimals;
+			const float period_width = font->get_char_size('.', 0, font_size).width;
+			float max_digit_width = font->get_char_size('0', 0, font_size).width;
+			for (int i = 1; i <= 9; i++) {
+				const float digit_width = font->get_char_size('0' + i, 0, font_size).width;
+				max_digit_width = MAX(digit_width, max_digit_width);
 			}
+			const int max_sc = int(Math::ceil(zoomw / scale));
+			const int max_sc_width = String::num(max_sc).length() * max_digit_width;
 
-			static const int _multp[3] = { 1, 2, 5 };
-			for (int i = 0; i < 3; i++) {
-				step = (_multp[i] * dec);
-				if (step * scale / SC_ADJ > min) {
-					step_found = true;
+			while (!step_found) {
+				min = max_sc_width;
+				if (decimals > 0) {
+					min += period_width + max_digit_width * decimals;
+				}
+
+				static const int _multp[3] = { 1, 2, 5 };
+				for (int i = 0; i < 3; i++) {
+					step = (_multp[i] * dec);
+					if (step * scale / SC_ADJ > min) {
+						step_found = true;
+						break;
+					}
+				}
+				if (step_found) {
 					break;
 				}
+				dec *= 10;
+				decimals--;
+				if (decimals < 0) {
+					decimals = 0;
+				}
 			}
-			if (step_found) {
-				break;
-			}
-			dec *= 10;
-			decimals--;
-			if (decimals < 0) {
-				decimals = 0;
-			}
-		}
 
-		if (use_fps) {
-			float step_size = animation->get_step();
-			if (step_size > 0) {
-				int prev_frame_ofs = -10000000;
+			if (use_fps) {
+				float step_size = animation->get_step();
+				if (step_size > 0) {
+					int prev_frame_ofs = -10000000;
 
+					for (int i = 0; i < zoomw; i++) {
+						float pos = get_value() + double(i) / scale;
+						float prev = get_value() + (double(i) - 1.0) / scale;
+
+						int frame = pos / step_size;
+						int prev_frame = prev / step_size;
+
+						bool sub = Math::floor(prev) == Math::floor(pos);
+
+						if (frame != prev_frame && i >= prev_frame_ofs) {
+							draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
+
+							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
+							prev_frame_ofs = i + font->get_string_size(itos(frame), font_size).x + 5 * EDSCALE;
+						}
+					}
+				}
+
+			} else {
 				for (int i = 0; i < zoomw; i++) {
 					float pos = get_value() + double(i) / scale;
 					float prev = get_value() + (double(i) - 1.0) / scale;
 
-					int frame = pos / step_size;
-					int prev_frame = prev / step_size;
+					int sc = int(Math::floor(pos * SC_ADJ));
+					int prev_sc = int(Math::floor(prev * SC_ADJ));
+					bool sub = (sc % SC_ADJ);
 
-					bool sub = Math::floor(prev) == Math::floor(pos);
-
-					if (frame != prev_frame && i >= prev_frame_ofs) {
+					if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
+						int scd = sc < 0 ? prev_sc : sc;
 						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
-
-						draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
-						prev_frame_ofs = i + font->get_string_size(itos(frame), font_size).x + 5 * EDSCALE;
+						draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
 					}
 				}
 			}
 
-		} else {
-			for (int i = 0; i < zoomw; i++) {
-				float pos = get_value() + double(i) / scale;
-				float prev = get_value() + (double(i) - 1.0) / scale;
-
-				int sc = int(Math::floor(pos * SC_ADJ));
-				int prev_sc = int(Math::floor(prev * SC_ADJ));
-				bool sub = (sc % SC_ADJ);
-
-				if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
-					int scd = sc < 0 ? prev_sc : sc;
-					draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
-					draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
-				}
-			}
-		}
-
-		draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
+			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
+		} break;
 	}
 }
 
@@ -1811,13 +1814,6 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		if (hsize_rect.has_point(mm->get_position())) {
-			// Change the cursor to indicate that the track name column's width can be adjusted
-			set_default_cursor_shape(Control::CURSOR_HSIZE);
-		} else {
-			set_default_cursor_shape(Control::CURSOR_ARROW);
-		}
-
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
@@ -1830,6 +1826,15 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal(SNAME("timeline_changed"), ofs, false, mm->is_alt_pressed());
 		}
+	}
+}
+
+Control::CursorShape AnimationTimelineEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (dragging_hsize || hsize_rect.has_point(p_pos)) {
+		// Indicate that the track name column's width can be adjusted
+		return Control::CURSOR_HSIZE;
+	} else {
+		return get_default_cursor_shape();
 	}
 }
 
@@ -1881,8 +1886,6 @@ void AnimationTimelineEdit::_bind_methods() {
 }
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
-	use_fps = false;
-	editing = false;
 	name_limit = 150 * EDSCALE;
 	zoom = nullptr;
 	track_edit = nullptr;
@@ -1930,9 +1933,6 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_track->get_popup()->connect("index_pressed", callable_mp(this, &AnimationTimelineEdit::_track_added));
 	len_hb->hide();
 
-	dragging_timeline = false;
-	dragging_hsize = false;
-
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_scroll_callback), callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
 
@@ -1942,302 +1942,304 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 ////////////////////////////////////
 
 void AnimationTrackEdit::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		if (animation.is_null()) {
-			return;
-		}
-		ERR_FAIL_INDEX(track, animation->get_track_count());
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (animation.is_null()) {
+				return;
+			}
+			ERR_FAIL_INDEX(track, animation->get_track_count());
 
-		int limit = timeline->get_name_limit();
+			type_icon = _get_key_type_icon();
+			selected_icon = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
+		} break;
 
-		if (has_focus()) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			accent.a *= 0.7;
-			// Offside so the horizontal sides aren't cutoff.
-			draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
-		}
+		case NOTIFICATION_DRAW: {
+			if (animation.is_null()) {
+				return;
+			}
+			ERR_FAIL_INDEX(track, animation->get_track_count());
 
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		Ref<Texture2D> type_icons[9] = {
-			get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyTrackScale"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyTrackBlendShape"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
-			get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
-		};
-		int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
-		Color linecolor = color;
-		linecolor.a = 0.2;
+			int limit = timeline->get_name_limit();
 
-		// NAMES AND ICONS //
-
-		{
-			Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon(SNAME("checked"), SNAME("CheckBox")) : get_theme_icon(SNAME("unchecked"), SNAME("CheckBox"));
-
-			int ofs = in_group ? check->get_width() : 0; // Not the best reference for margin but..
-
-			check_rect = Rect2(Point2(ofs, int(get_size().height - check->get_height()) / 2), check->get_size());
-			draw_texture(check, check_rect.position);
-			ofs += check->get_width() + hsep;
-
-			Ref<Texture2D> type_icon = type_icons[animation->track_get_type(track)];
-			draw_texture(type_icon, Point2(ofs, int(get_size().height - type_icon->get_height()) / 2));
-			ofs += type_icon->get_width() + hsep;
-
-			NodePath path = animation->track_get_path(track);
-			Node *node = nullptr;
-			if (root && root->has_node(path)) {
-				node = root->get_node(path);
+			if (has_focus()) {
+				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				accent.a *= 0.7;
+				// Offside so the horizontal sides aren't cutoff.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
 			}
 
-			String text;
-			Color text_color = color;
-			if (node && EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-				text_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+			Color linecolor = color;
+			linecolor.a = 0.2;
+
+			// NAMES AND ICONS //
+
+			{
+				Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon(SNAME("checked"), SNAME("CheckBox")) : get_theme_icon(SNAME("unchecked"), SNAME("CheckBox"));
+
+				int ofs = in_group ? check->get_width() : 0; // Not the best reference for margin but..
+
+				check_rect = Rect2(Point2(ofs, int(get_size().height - check->get_height()) / 2), check->get_size());
+				draw_texture(check, check_rect.position);
+				ofs += check->get_width() + hsep;
+
+				Ref<Texture2D> type_icon = _get_key_type_icon();
+				draw_texture(type_icon, Point2(ofs, int(get_size().height - type_icon->get_height()) / 2));
+				ofs += type_icon->get_width() + hsep;
+
+				NodePath path = animation->track_get_path(track);
+				Node *node = nullptr;
+				if (root && root->has_node(path)) {
+					node = root->get_node(path);
+				}
+
+				String text;
+				Color text_color = color;
+				if (node && EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
+					text_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				}
+
+				if (in_group) {
+					if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+						text = TTR("Functions:");
+					} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+						text = TTR("Audio Clips:");
+					} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
+						text = TTR("Anim Clips:");
+					} else {
+						text += path.get_concatenated_subnames();
+					}
+					text_color.a *= 0.7;
+				} else if (node) {
+					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+
+					draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
+					icon_cache = icon;
+
+					text = String() + node->get_name() + ":" + path.get_concatenated_subnames();
+					ofs += hsep;
+					ofs += icon->get_width();
+
+				} else {
+					icon_cache = type_icon;
+
+					text = path;
+				}
+
+				path_cache = text;
+
+				path_rect = Rect2(ofs, 0, limit - ofs - hsep, get_size().height);
+
+				Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
+				string_pos = string_pos.floor();
+				draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - hsep, font_size, text_color);
+
+				draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
+			}
+
+			// KEYFRAMES //
+
+			draw_bg(limit, get_size().width - timeline->get_buttons_width());
+
+			{
+				float scale = timeline->get_zoom_scale();
+				int limit_end = get_size().width - timeline->get_buttons_width();
+
+				for (int i = 0; i < animation->track_get_key_count(track); i++) {
+					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
+						offset = editor->snap_time(offset + editor->get_moving_selection_offset(), true);
+					}
+					offset = offset * scale + limit;
+					if (i < animation->track_get_key_count(track) - 1) {
+						float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
+						if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
+							offset_n = editor->snap_time(offset_n + editor->get_moving_selection_offset());
+						}
+						offset_n = offset_n * scale + limit;
+
+						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
+					}
+
+					draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
+				}
+			}
+
+			draw_fg(limit, get_size().width - timeline->get_buttons_width());
+
+			// BUTTONS //
+
+			{
+				Ref<Texture2D> wrap_icon[2] = {
+					get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
+				};
+
+				Ref<Texture2D> interp_icon[3] = {
+					get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons"))
+				};
+				Ref<Texture2D> cont_icon[4] = {
+					get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons"))
+				};
+
+				int ofs = get_size().width - timeline->get_buttons_width();
+
+				Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
+
+				draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
+
+				ofs += hsep;
+				{
+					// Callmode.
+
+					Animation::UpdateMode update_mode;
+
+					if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
+						update_mode = animation->value_track_get_update_mode(track);
+					} else {
+						update_mode = Animation::UPDATE_CONTINUOUS;
+					}
+
+					Ref<Texture2D> update_icon = cont_icon[update_mode];
+
+					update_mode_rect.position.x = ofs;
+					update_mode_rect.position.y = int(get_size().height - update_icon->get_height()) / 2;
+					update_mode_rect.size = update_icon->get_size();
+
+					if (!animation->track_is_compressed(track) && animation->track_get_type(track) == Animation::TYPE_VALUE) {
+						draw_texture(update_icon, update_mode_rect.position);
+					}
+					// Make it easier to click.
+					update_mode_rect.position.y = 0;
+					update_mode_rect.size.y = get_size().height;
+
+					ofs += update_icon->get_width() + hsep / 2;
+					update_mode_rect.size.x += hsep / 2;
+
+					if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
+						draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
+						update_mode_rect.size.x += down_icon->get_width();
+					} else if (animation->track_get_type(track) == Animation::TYPE_BEZIER) {
+						Ref<Texture2D> bezier_icon = get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons"));
+						update_mode_rect.size.x += down_icon->get_width();
+
+						update_mode_rect = Rect2();
+					} else {
+						update_mode_rect = Rect2();
+					}
+
+					ofs += down_icon->get_width();
+					draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
+					ofs += hsep;
+				}
+
+				{
+					// Interp.
+
+					Animation::InterpolationType interp_mode = animation->track_get_interpolation_type(track);
+
+					Ref<Texture2D> icon = interp_icon[interp_mode];
+
+					interp_mode_rect.position.x = ofs;
+					interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
+					interp_mode_rect.size = icon->get_size();
+
+					if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
+						draw_texture(icon, interp_mode_rect.position);
+					}
+					// Make it easier to click.
+					interp_mode_rect.position.y = 0;
+					interp_mode_rect.size.y = get_size().height;
+
+					ofs += icon->get_width() + hsep / 2;
+					interp_mode_rect.size.x += hsep / 2;
+
+					if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
+						draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
+						interp_mode_rect.size.x += down_icon->get_width();
+					} else {
+						interp_mode_rect = Rect2();
+					}
+
+					ofs += down_icon->get_width();
+					draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
+					ofs += hsep;
+				}
+
+				{
+					// Loop.
+
+					bool loop_wrap = animation->track_get_interpolation_loop_wrap(track);
+
+					Ref<Texture2D> icon = wrap_icon[loop_wrap ? 1 : 0];
+
+					loop_wrap_rect.position.x = ofs;
+					loop_wrap_rect.position.y = int(get_size().height - icon->get_height()) / 2;
+					loop_wrap_rect.size = icon->get_size();
+
+					if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
+						draw_texture(icon, loop_wrap_rect.position);
+					}
+
+					loop_wrap_rect.position.y = 0;
+					loop_wrap_rect.size.y = get_size().height;
+
+					ofs += icon->get_width() + hsep / 2;
+					loop_wrap_rect.size.x += hsep / 2;
+
+					if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
+						draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
+						loop_wrap_rect.size.x += down_icon->get_width();
+					} else {
+						loop_wrap_rect = Rect2();
+					}
+
+					ofs += down_icon->get_width();
+					draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
+					ofs += hsep;
+				}
+
+				{
+					// Erase.
+
+					Ref<Texture2D> icon = get_theme_icon(animation->track_is_compressed(track) ? SNAME("Lock") : SNAME("Remove"), SNAME("EditorIcons"));
+
+					remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width());
+					remove_rect.position.y = int(get_size().height - icon->get_height()) / 2;
+					remove_rect.size = icon->get_size();
+
+					draw_texture(icon, remove_rect.position);
+				}
 			}
 
 			if (in_group) {
-				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-					text = TTR("Functions:");
-				} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
-					text = TTR("Audio Clips:");
-				} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
-					text = TTR("Anim Clips:");
-				} else {
-					text += path.get_concatenated_subnames();
-				}
-				text_color.a *= 0.7;
-			} else if (node) {
-				Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
-
-				draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
-				icon_cache = icon;
-
-				text = String() + node->get_name() + ":" + path.get_concatenated_subnames();
-				ofs += hsep;
-				ofs += icon->get_width();
-
+				draw_line(Vector2(timeline->get_name_limit(), get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 			} else {
-				icon_cache = type_icon;
-
-				text = path;
+				draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 			}
 
-			path_cache = text;
-
-			path_rect = Rect2(ofs, 0, limit - ofs - hsep, get_size().height);
-
-			Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
-			string_pos = string_pos.floor();
-			draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - hsep, font_size, text_color);
-
-			draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
-		}
-
-		// KEYFRAMES //
-
-		draw_bg(limit, get_size().width - timeline->get_buttons_width());
-
-		{
-			float scale = timeline->get_zoom_scale();
-			int limit_end = get_size().width - timeline->get_buttons_width();
-
-			for (int i = 0; i < animation->track_get_key_count(track); i++) {
-				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-				if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-					offset = editor->snap_time(offset + editor->get_moving_selection_offset(), true);
-				}
-				offset = offset * scale + limit;
-				if (i < animation->track_get_key_count(track) - 1) {
-					float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
-					if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
-						offset_n = editor->snap_time(offset_n + editor->get_moving_selection_offset());
-					}
-					offset_n = offset_n * scale + limit;
-
-					draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
-				}
-
-				draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
-			}
-		}
-
-		draw_fg(limit, get_size().width - timeline->get_buttons_width());
-
-		// BUTTONS //
-
-		{
-			Ref<Texture2D> wrap_icon[2] = {
-				get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
-			};
-
-			Ref<Texture2D> interp_icon[3] = {
-				get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons"))
-			};
-			Ref<Texture2D> cont_icon[4] = {
-				get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")),
-				get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons"))
-			};
-
-			int ofs = get_size().width - timeline->get_buttons_width();
-
-			Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
-
-			draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
-
-			ofs += hsep;
-			{
-				// Callmode.
-
-				Animation::UpdateMode update_mode;
-
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
-					update_mode = animation->value_track_get_update_mode(track);
+			if (dropping_at != 0) {
+				Color drop_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				if (dropping_at < 0) {
+					draw_line(Vector2(0, 0), Vector2(get_size().width, 0), drop_color, Math::round(EDSCALE));
 				} else {
-					update_mode = Animation::UPDATE_CONTINUOUS;
+					draw_line(Vector2(0, get_size().height), get_size(), drop_color, Math::round(EDSCALE));
 				}
-
-				Ref<Texture2D> update_icon = cont_icon[update_mode];
-
-				update_mode_rect.position.x = ofs;
-				update_mode_rect.position.y = int(get_size().height - update_icon->get_height()) / 2;
-				update_mode_rect.size = update_icon->get_size();
-
-				if (!animation->track_is_compressed(track) && animation->track_get_type(track) == Animation::TYPE_VALUE) {
-					draw_texture(update_icon, update_mode_rect.position);
-				}
-				// Make it easier to click.
-				update_mode_rect.position.y = 0;
-				update_mode_rect.size.y = get_size().height;
-
-				ofs += update_icon->get_width() + hsep / 2;
-				update_mode_rect.size.x += hsep / 2;
-
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
-					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
-					update_mode_rect.size.x += down_icon->get_width();
-				} else if (animation->track_get_type(track) == Animation::TYPE_BEZIER) {
-					Ref<Texture2D> bezier_icon = get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons"));
-					update_mode_rect.size.x += down_icon->get_width();
-
-					update_mode_rect = Rect2();
-				} else {
-					update_mode_rect = Rect2();
-				}
-
-				ofs += down_icon->get_width();
-				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
-				ofs += hsep;
 			}
+		} break;
 
-			{
-				// Interp.
-
-				Animation::InterpolationType interp_mode = animation->track_get_interpolation_type(track);
-
-				Ref<Texture2D> icon = interp_icon[interp_mode];
-
-				interp_mode_rect.position.x = ofs;
-				interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
-				interp_mode_rect.size = icon->get_size();
-
-				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
-					draw_texture(icon, interp_mode_rect.position);
-				}
-				// Make it easier to click.
-				interp_mode_rect.position.y = 0;
-				interp_mode_rect.size.y = get_size().height;
-
-				ofs += icon->get_width() + hsep / 2;
-				interp_mode_rect.size.x += hsep / 2;
-
-				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
-					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
-					interp_mode_rect.size.x += down_icon->get_width();
-				} else {
-					interp_mode_rect = Rect2();
-				}
-
-				ofs += down_icon->get_width();
-				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
-				ofs += hsep;
-			}
-
-			{
-				// Loop.
-
-				bool loop_wrap = animation->track_get_interpolation_loop_wrap(track);
-
-				Ref<Texture2D> icon = wrap_icon[loop_wrap ? 1 : 0];
-
-				loop_wrap_rect.position.x = ofs;
-				loop_wrap_rect.position.y = int(get_size().height - icon->get_height()) / 2;
-				loop_wrap_rect.size = icon->get_size();
-
-				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
-					draw_texture(icon, loop_wrap_rect.position);
-				}
-
-				loop_wrap_rect.position.y = 0;
-				loop_wrap_rect.size.y = get_size().height;
-
-				ofs += icon->get_width() + hsep / 2;
-				loop_wrap_rect.size.x += hsep / 2;
-
-				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
-					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
-					loop_wrap_rect.size.x += down_icon->get_width();
-				} else {
-					loop_wrap_rect = Rect2();
-				}
-
-				ofs += down_icon->get_width();
-				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
-				ofs += hsep;
-			}
-
-			{
-				// Erase.
-
-				Ref<Texture2D> icon = get_theme_icon(animation->track_is_compressed(track) ? SNAME("Lock") : SNAME("Remove"), SNAME("EditorIcons"));
-
-				remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width());
-				remove_rect.position.y = int(get_size().height - icon->get_height()) / 2;
-				remove_rect.size = icon->get_size();
-
-				draw_texture(icon, remove_rect.position);
-			}
-		}
-
-		if (in_group) {
-			draw_line(Vector2(timeline->get_name_limit(), get_size().height), get_size(), linecolor, Math::round(EDSCALE));
-		} else {
-			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
-		}
-
-		if (dropping_at != 0) {
-			Color drop_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			if (dropping_at < 0) {
-				draw_line(Vector2(0, 0), Vector2(get_size().width, 0), drop_color, Math::round(EDSCALE));
-			} else {
-				draw_line(Vector2(0, get_size().height), get_size(), drop_color, Math::round(EDSCALE));
-			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_MOUSE_EXIT || p_what == NOTIFICATION_DRAG_END) {
-		cancel_drop();
+		case NOTIFICATION_MOUSE_EXIT:
+		case NOTIFICATION_DRAG_END: {
+			cancel_drop();
+		} break;
 	}
 }
 
@@ -2420,22 +2422,10 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	track = p_track;
 	update();
 
-	Ref<Texture2D> type_icons[9] = {
-		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyXPosition"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyXRotation"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyXScale"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyBlendShape"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
-	};
-
 	ERR_FAIL_INDEX(track, animation->get_track_count());
 
 	node_path = animation->track_get_path(p_track);
-	type_icon = type_icons[animation->track_get_type(track)];
+	type_icon = _get_key_type_icon();
 	selected_icon = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
 }
 
@@ -2534,6 +2524,21 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 	}
 
 	return (!prop_exists || Variant::can_convert(p_key_value.get_type(), r_valid_type));
+}
+
+Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
+	Ref<Texture2D> type_icons[9] = {
+		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackScale"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyTrackBlendShape"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
+	};
+	return type_icons[animation->track_get_type(track)];
 }
 
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
@@ -2742,7 +2747,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			menu->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), TTR("Discrete"), MENU_CALL_MODE_DISCRETE);
 			menu->add_icon_item(get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")), TTR("Trigger"), MENU_CALL_MODE_TRIGGER);
 			menu->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), TTR("Capture"), MENU_CALL_MODE_CAPTURE);
-			menu->set_as_minsize();
+			menu->reset_size();
 
 			Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
 			menu->set_position(popup_pos);
@@ -2760,7 +2765,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			menu->add_icon_item(get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
 			menu->add_icon_item(get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
 			menu->add_icon_item(get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
-			menu->set_as_minsize();
+			menu->reset_size();
 
 			Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
 			menu->set_position(popup_pos);
@@ -2777,7 +2782,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			menu->clear();
 			menu->add_icon_item(get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")), TTR("Clamp Loop Interp"), MENU_LOOP_CLAMP);
 			menu->add_icon_item(get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
-			menu->set_as_minsize();
+			menu->reset_size();
 
 			Vector2 popup_pos = get_screen_position() + loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height);
 			menu->set_position(popup_pos);
@@ -2879,7 +2884,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_separator();
 				menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Key(s)"), MENU_KEY_DELETE);
 			}
-			menu->set_as_minsize();
+			menu->reset_size();
 
 			menu->set_position(get_screen_position() + get_local_mouse_position());
 			menu->popup();
@@ -3141,13 +3146,8 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	path = nullptr;
 	path_popup = nullptr;
 	menu = nullptr;
-	clicking_on_name = false;
 	dropping_at = 0;
 
-	in_group = false;
-
-	moving_selection_attempt = false;
-	moving_selection = false;
 	select_single_attempt = -1;
 
 	play_position_pos = 0;
@@ -3183,7 +3183,7 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_
 		};
 
 		Callable::CallError ce;
-		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->callp("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
 	}
 	return nullptr;
 }
@@ -3205,40 +3205,42 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 ///////////////////////////////////////
 
 void AnimationTrackEditGroup::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		int separation = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
-		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			int separation = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
-		if (root && root->has_node(node)) {
-			Node *n = root->get_node(node);
-			if (n && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
-				color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			if (root && root->has_node(node)) {
+				Node *n = root->get_node(node);
+				if (n && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
+					color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				}
 			}
-		}
 
-		Color bgcol = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
-		bgcol.a *= 0.6;
-		draw_rect(Rect2(Point2(), get_size()), bgcol);
-		Color linecolor = color;
-		linecolor.a = 0.2;
+			Color bgcol = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
+			bgcol.a *= 0.6;
+			draw_rect(Rect2(Point2(), get_size()), bgcol);
+			Color linecolor = color;
+			linecolor.a = 0.2;
 
-		draw_line(Point2(), Point2(get_size().width, 0), linecolor, Math::round(EDSCALE));
-		draw_line(Point2(timeline->get_name_limit(), 0), Point2(timeline->get_name_limit(), get_size().height), linecolor, Math::round(EDSCALE));
-		draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), linecolor, Math::round(EDSCALE));
+			draw_line(Point2(), Point2(get_size().width, 0), linecolor, Math::round(EDSCALE));
+			draw_line(Point2(timeline->get_name_limit(), 0), Point2(timeline->get_name_limit(), get_size().height), linecolor, Math::round(EDSCALE));
+			draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), linecolor, Math::round(EDSCALE));
 
-		int ofs = 0;
-		draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
-		ofs += separation + icon->get_width();
-		draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
+			int ofs = 0;
+			draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
+			ofs += separation + icon->get_width();
+			draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
 
-		int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
+			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 
-		if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
-		}
+			if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
+				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
+			}
+		} break;
 	}
 }
 
@@ -3580,7 +3582,7 @@ void AnimationTrackEditor::commit_insert_queue() {
 		}
 	}
 
-	if (bool(EDITOR_DEF("editors/animation/confirm_insert_track", true)) && num_tracks > 0) {
+	if (bool(EDITOR_GET("editors/animation/confirm_insert_track")) && num_tracks > 0) {
 		// Potentially a new key, does not exist.
 		if (num_tracks == 1) {
 			// TRANSLATORS: %s will be replaced by a phrase describing the target of track.
@@ -4516,27 +4518,33 @@ MenuButton *AnimationTrackEditor::get_edit_menu() {
 }
 
 void AnimationTrackEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-	}
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		} break;
 
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		zoom_icon->set_texture(get_theme_icon(SNAME("Zoom"), SNAME("EditorIcons")));
-		bezier_edit_icon->set_icon(get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons")));
-		snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
-		view_group->set_icon(get_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup"), SNAME("EditorIcons")));
-		selected_filter->set_icon(get_theme_icon(SNAME("AnimationFilter"), SNAME("EditorIcons")));
-		imported_anim_warning->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-		main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-		edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-	}
+		case NOTIFICATION_ENTER_TREE: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			zoom_icon->set_texture(get_theme_icon(SNAME("Zoom"), SNAME("EditorIcons")));
+			bezier_edit_icon->set_icon(get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons")));
+			snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+			view_group->set_icon(get_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup"), SNAME("EditorIcons")));
+			selected_filter->set_icon(get_theme_icon(SNAME("AnimationFilter"), SNAME("EditorIcons")));
+			imported_anim_warning->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+			main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		} break;
 
-	if (p_what == NOTIFICATION_READY) {
-		EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
-	}
+		case NOTIFICATION_READY: {
+			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		update_keying();
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			update_keying();
+		} break;
 	}
 }
 
@@ -5540,30 +5548,34 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 				}
 
+				String track_type;
 				switch (animation->track_get_type(i)) {
 					case Animation::TYPE_POSITION_3D:
-						text += " (Position)";
+						track_type = TTR("Position");
 						break;
 					case Animation::TYPE_ROTATION_3D:
-						text += " (Rotation)";
+						track_type = TTR("Rotation");
 						break;
 					case Animation::TYPE_SCALE_3D:
-						text += " (Scale)";
+						track_type = TTR("Scale");
 						break;
 					case Animation::TYPE_BLEND_SHAPE:
-						text += " (BlendShape)";
+						track_type = TTR("BlendShape");
 						break;
 					case Animation::TYPE_METHOD:
-						text += " (Methods)";
+						track_type = TTR("Methods");
 						break;
 					case Animation::TYPE_BEZIER:
-						text += " (Bezier)";
+						track_type = TTR("Bezier");
 						break;
 					case Animation::TYPE_AUDIO:
-						text += " (Audio)";
+						track_type = TTR("Audio");
 						break;
 					default: {
 					};
+				}
+				if (!track_type.is_empty()) {
+					text += vformat(" (%s)", track_type);
 				}
 
 				TreeItem *it = track_copy_select->create_item(troot);
@@ -6294,8 +6306,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_child(method_selector);
 	method_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_add_method_key));
 
-	insert_queue = false;
-
 	insert_confirm = memnew(ConfirmationDialog);
 	add_child(insert_confirm);
 	insert_confirm->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_confirm_insert_list));
@@ -6313,8 +6323,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_reset->set_text(TTR("Create RESET Track(s)", ""));
 	insert_confirm_reset->set_pressed(EDITOR_GET("editors/animation/default_create_reset_tracks"));
 	ichb->add_child(insert_confirm_reset);
-	keying = false;
-	moving_selection = false;
 	key_edit = nullptr;
 	multi_key_edit = nullptr;
 
@@ -6324,7 +6332,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect("draw", callable_mp(this, &AnimationTrackEditor::_box_selection_draw));
-	box_selecting = false;
 
 	// Default Plugins.
 
@@ -6421,7 +6428,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_hide_root(true);
 	track_vbox->add_child(track_copy_select);
 	track_copy_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_COPY_TRACKS_CONFIRM));
-	animation_changing_awaiting_update = false;
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {

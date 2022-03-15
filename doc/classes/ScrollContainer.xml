@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A ScrollContainer node meant to contain a [Control] child.
-		ScrollContainers will automatically create a scrollbar child ([HScrollBar], [VScrollBar], or both) when needed and will only draw the Control within the ScrollContainer area. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.rect_min_size] of the Control relative to the ScrollContainer.
+		ScrollContainers will automatically create a scrollbar child ([HScrollBar], [VScrollBar], or both) when needed and will only draw the Control within the ScrollContainer area. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.minimum_size] of the Control relative to the ScrollContainer.
 		Works great with a [Panel] control. You can set [code]EXPAND[/code] on the children's size flags, so they will upscale to the ScrollContainer's size if it's larger (scroll is invisible for the chosen dimension).
 	</description>
 	<tutorials>
@@ -40,13 +40,13 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">

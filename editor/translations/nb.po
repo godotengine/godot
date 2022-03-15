@@ -21,13 +21,14 @@
 # slasken06 <ask.skivdal@gmail.com>, 2021.
 # Daniel Skogly <daniel@klungo.no>, 2021.
 # Imre Kristoffer Eilertsen <imreeil42@gmail.com>, 2022.
+# Edvard Ekrem Sæther <edvardekrem@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
-"Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
+"PO-Revision-Date: 2022-01-24 02:05+0000\n"
+"Last-Translator: Edvard Ekrem Sæther <edvardekrem@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -339,7 +340,7 @@ msgstr "Dupliser Nøkler"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
-msgstr ""
+msgstr "Legg Til RESET-Verdi(er)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -395,9 +396,8 @@ msgstr "Kan ikke åpne '%s'."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animasjon"
+msgstr "animasjon"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -405,9 +405,8 @@ msgstr "AnimasjonAvspiller kan ikke animere seg selv, kun andre avspillere."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Egenskapen «%s» eksisterer ikke."
+msgstr "egenskap '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -524,8 +523,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -534,8 +533,8 @@ msgstr ""
 "\n"
 "For å legge til egendefinerte spor, gå til scenens importinstillinger og "
 "sett\n"
-"\"Animasjon > Lagring\" til \"Filer\", aktiver \"Animasjon > Behold egne spor"
-"\", og importer på nytt.\n"
+"\"Animasjon > Lagring\" til \"Filer\", aktiver \"Animasjon > Behold egne "
+"spor\", og importer på nytt.\n"
 "Alternativt, bruk et importoppsett som importerer animasjonen som separate "
 "filer."
 
@@ -544,9 +543,8 @@ msgid "Warning: Editing imported animation"
 msgstr "Advarsel: Redigerer importert animasjon"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "Velg en AnimationPlayer fra scenetreet for å endre animasjoner."
+msgstr "Velg en AnimationPlayer-node for å lage og redigere animasjoner."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -562,9 +560,8 @@ msgid "Snap:"
 msgstr "Steg:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Animasjonstre er gyldig."
+msgstr "Animasjonstrinnverdi."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -591,9 +588,8 @@ msgid "Animation properties."
 msgstr "Animasjon egenskaper."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "Kopier Parametre"
+msgstr "Kopier Spor"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -708,9 +704,8 @@ msgid "Copy"
 msgstr "Kopier"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Kutt Noder"
+msgstr "Velg Alle/Ingen"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -816,9 +811,8 @@ msgid "Method in target node must be specified."
 msgstr "Metode i målnoden må spesifiseres."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Navn er ikke en gyldig identifikator:"
+msgstr "Metodenavnet må være en gyldig identifikator."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1422,7 +1416,7 @@ msgid "Bus Options"
 msgstr "Bus valg"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Dupliser"
 
@@ -1528,6 +1522,11 @@ msgstr "Last standard Bus oppsettet."
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
 msgstr "Opprett et nytt Bus oppsett."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Åpne Audio Bus oppsett"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2264,8 +2263,8 @@ msgstr "Metodebeskrivelse:"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
 "Det finnes i øyeblikket ingen beskrivelse av denne metoden. Hjelp til ved å "
 "[colour=$color][url=$url]bidra med en[/url][/color]!"
@@ -3020,7 +3019,7 @@ msgstr "Vis/skjul distraksjonsfri modus."
 msgid "Add a new scene."
 msgstr "Legg til ny scene."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Scene"
 
@@ -3404,8 +3403,13 @@ msgstr "Kontinuerlig"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Update When Changed"
+msgid "Update All Changes"
 msgstr "Oppdater Endringer"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Update Vital Changes"
+msgstr "Forandre"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4198,6 +4202,14 @@ msgstr "Navn inneholder ugyldige tegn."
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4324,7 +4336,7 @@ msgstr ""
 msgid "Sort by First Modified"
 msgstr ""
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Duplicate..."
 msgstr "Duplisér"
@@ -5189,6 +5201,10 @@ msgid "Rename Animation"
 msgstr "Endre navn på Animasjon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "Dupliser Animasjon"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Blend Next Changed"
 msgstr "Blend Neste Endret"
@@ -5200,10 +5216,6 @@ msgstr "Endre Blend-Tid"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
 msgstr "Last Animasjon"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr "Dupliser Animasjon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
@@ -5887,6 +5899,10 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -8498,7 +8514,13 @@ msgid "Cinematic Preview"
 msgstr "Lager Forhåndsvisning av Mesh"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Ikke tilgjengelig ved bruk av GLES2-opptegner."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9447,6 +9469,11 @@ msgstr "Fjern Ressurs"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Gi nytt navn til Ressurs"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Importer Tema"
 
@@ -9501,6 +9528,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Legg til Element"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Rediger Variabel:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Endre %s type"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Last Standard"
 
@@ -9519,8 +9561,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Legg til Element"
+msgid "Base Type"
+msgstr "Endre %s type"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -10271,18 +10323,6 @@ msgstr "Sjekk inn"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12988,6 +13028,11 @@ msgid "Stack Frames"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filtrer Filer..."
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr ""
 
@@ -13164,6 +13209,16 @@ msgstr ""
 #: editor/spatial_editor_gizmos.cpp
 #, fuzzy
 msgid "Set Occluder Sphere Position"
+msgstr "Fjern Funksjon"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Polygon Point Position"
+msgstr "Fjern Funksjon"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Hole Point Position"
 msgstr "Fjern Funksjon"
 
 #: modules/csg/csg_gizmos.cpp
@@ -14369,6 +14424,9 @@ msgstr "Ugyldig navn."
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14571,10 +14629,6 @@ msgstr ""
 msgid "Invalid Identifier:"
 msgstr "Navn er ikke en gyldig identifikator:"
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr ""
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr ""
@@ -14622,17 +14676,197 @@ msgstr "Kunne ikke opprette mappe."
 msgid "Error starting HTTP server:"
 msgstr "Feil ved lagring av TextFile:"
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, no exe name."
+msgstr "Prosjektnavn:"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Kunne ikke opprette mappe."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid binary format."
+msgstr "Ugyldig Filsti."
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to process nested resources."
+msgstr "Kunne ikke laste ressurs."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to get CodeResources hash."
+msgstr "Kunne ikke laste ressurs."
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid entitlements file."
+msgstr "Må ha en gyldig filutvidelse."
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid executable file."
+msgstr "Må ha en gyldig filutvidelse."
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "No identity found."
+msgstr "Ikke funnet!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Creating app bundle"
+msgstr "Lager Thumbnail"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not find template app to export:"
+msgstr "Kunne ikke opprette mappe."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
+
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Invalid bundle identifier:"
 msgstr "Navn er ikke en gyldig identifikator:"
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -14641,6 +14875,69 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -14700,6 +14997,27 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid icon path:"
+msgstr "Ugyldig Filsti."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid file version:"
+msgstr "Må ha en gyldig filutvidelse."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid product version:"
+msgstr "Prosjektnavn:"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -15055,8 +15373,8 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -15300,7 +15618,7 @@ msgstr ""
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 

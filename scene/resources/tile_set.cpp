@@ -4432,6 +4432,10 @@ void TileSetAtlasSource::_update_padded_texture() {
 
 	Ref<Image> src = texture->get_image();
 
+	if (!src.is_valid()) {
+		return;
+	}
+
 	Ref<Image> image;
 	image.instantiate();
 	image->create(size.x, size.y, false, src->get_format());

@@ -542,7 +542,7 @@ void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &
 		filters.push_back(f);
 	}
 
-	DirAccess *da = DirAccess::open("res://");
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	ERR_FAIL_NULL(da);
 	_edit_files_with_filter(da, filters, r_list, exclude);
 	memdelete(da);
@@ -678,7 +678,6 @@ void EditorExportPlugin::_bind_methods() {
 }
 
 EditorExportPlugin::EditorExportPlugin() {
-	skipped = false;
 }
 
 EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset) {
@@ -1544,6 +1543,7 @@ void EditorExport::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			load_config();
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			update_export_presets();
 		} break;
@@ -1721,7 +1721,6 @@ EditorExport::EditorExport() {
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
 	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
-	block_save = false;
 
 	_export_presets_updated = "export_presets_updated";
 
@@ -1830,10 +1829,6 @@ List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExpor
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	if (!DirAccess::exists(p_path.get_base_dir())) {
-		return ERR_FILE_BAD_PATH;
-	}
-
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 
@@ -1862,9 +1857,9 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
-	memdelete(da);
 
 	if (err == OK) {
 		String pck_path;
@@ -1900,7 +1895,6 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 					err = sign_shared_object(p_preset, p_debug, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
 				}
 			}
-			memdelete(da);
 		}
 	}
 

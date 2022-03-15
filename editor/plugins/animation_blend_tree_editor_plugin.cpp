@@ -734,80 +734,95 @@ void AnimationNodeBlendTreeEditor::_removed_from_graph() {
 	}
 }
 
+void AnimationNodeBlendTreeEditor::_update_editor_settings() {
+	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+	graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
+}
+
+void AnimationNodeBlendTreeEditor::_update_theme() {
+	error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+}
+
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-		graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_update_editor_settings();
+			_update_theme();
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_editor_settings();
+		} break;
 
-		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
-			_update_graph();
-		}
-	}
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		String error;
-
-		if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
-			error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-		} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
-			error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
-		}
-
-		if (error != error_label->get_text()) {
-			error_label->set_text(error);
-			if (!error.is_empty()) {
-				error_panel->show();
-			} else {
-				error_panel->hide();
+			if (is_visible_in_tree()) {
+				_update_graph();
 			}
-		}
+		} break;
 
-		List<AnimationNodeBlendTree::NodeConnection> conns;
-		blend_tree->get_node_connections(&conns);
-		for (const AnimationNodeBlendTree::NodeConnection &E : conns) {
-			float activity = 0;
-			StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
-			if (AnimationTreeEditor::get_singleton()->get_tree() && !AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
-				activity = AnimationTreeEditor::get_singleton()->get_tree()->get_connection_activity(path, E.input_index);
+		case NOTIFICATION_PROCESS: {
+			String error;
+
+			if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
+				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
+			} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
+				error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
 			}
-			graph->set_connection_activity(E.output_node, 0, E.input_node, E.input_index, activity);
-		}
 
-		AnimationTree *graph_player = AnimationTreeEditor::get_singleton()->get_tree();
-		AnimationPlayer *player = nullptr;
-		if (graph_player->has_node(graph_player->get_animation_player())) {
-			player = Object::cast_to<AnimationPlayer>(graph_player->get_node(graph_player->get_animation_player()));
-		}
+			if (error != error_label->get_text()) {
+				error_label->set_text(error);
+				if (!error.is_empty()) {
+					error_panel->show();
+				} else {
+					error_panel->hide();
+				}
+			}
 
-		if (player) {
-			for (const KeyValue<StringName, ProgressBar *> &E : animations) {
-				Ref<AnimationNodeAnimation> an = blend_tree->get_node(E.key);
-				if (an.is_valid()) {
-					if (player->has_animation(an->get_animation())) {
-						Ref<Animation> anim = player->get_animation(an->get_animation());
-						if (anim.is_valid()) {
-							E.value->set_max(anim->get_length());
-							//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
-							StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/time";
-							E.value->set_value(AnimationTreeEditor::get_singleton()->get_tree()->get(time_path));
+			List<AnimationNodeBlendTree::NodeConnection> conns;
+			blend_tree->get_node_connections(&conns);
+			for (const AnimationNodeBlendTree::NodeConnection &E : conns) {
+				float activity = 0;
+				StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
+				if (AnimationTreeEditor::get_singleton()->get_tree() && !AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
+					activity = AnimationTreeEditor::get_singleton()->get_tree()->get_connection_activity(path, E.input_index);
+				}
+				graph->set_connection_activity(E.output_node, 0, E.input_node, E.input_index, activity);
+			}
+
+			AnimationTree *graph_player = AnimationTreeEditor::get_singleton()->get_tree();
+			AnimationPlayer *player = nullptr;
+			if (graph_player->has_node(graph_player->get_animation_player())) {
+				player = Object::cast_to<AnimationPlayer>(graph_player->get_node(graph_player->get_animation_player()));
+			}
+
+			if (player) {
+				for (const KeyValue<StringName, ProgressBar *> &E : animations) {
+					Ref<AnimationNodeAnimation> an = blend_tree->get_node(E.key);
+					if (an.is_valid()) {
+						if (player->has_animation(an->get_animation())) {
+							Ref<Animation> anim = player->get_animation(an->get_animation());
+							if (anim.is_valid()) {
+								E.value->set_max(anim->get_length());
+								//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
+								StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/time";
+								E.value->set_value(AnimationTreeEditor::get_singleton()->get_tree()->get(time_path));
+							}
 						}
 					}
 				}
 			}
-		}
 
-		for (int i = 0; i < visible_properties.size(); i++) {
-			visible_properties[i]->update_property();
-		}
-	}
+			for (int i = 0; i < visible_properties.size(); i++) {
+				visible_properties[i]->update_property();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		set_process(is_visible_in_tree());
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process(is_visible_in_tree());
+		} break;
 	}
 }
 

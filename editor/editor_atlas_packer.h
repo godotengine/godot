@@ -67,8 +67,6 @@ private:
 		}
 	};
 
-	static void _plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices);
-
 public:
 	static void chart_pack(Vector<Chart> &charts, int &r_width, int &r_height, int p_atlas_max_size = 2048, int p_cell_resolution = 4);
 };

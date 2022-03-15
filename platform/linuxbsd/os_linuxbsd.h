@@ -87,6 +87,7 @@ public:
 	virtual Error shell_open(String p_uri) override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

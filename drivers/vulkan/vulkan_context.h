@@ -45,6 +45,8 @@
 #include <vulkan/vulkan.h>
 #endif
 
+#include "vulkan_hooks.h"
+
 class VulkanContext {
 public:
 	struct SubgroupCapabilities {
@@ -69,10 +71,14 @@ public:
 
 	struct ShaderCapabilities {
 		bool shader_float16_is_supported;
+		bool shader_int8_is_supported;
 	};
 
 	struct StorageBufferCapabilities {
 		bool storage_buffer_16_bit_access_is_supported;
+		bool uniform_and_storage_buffer_16_bit_access_is_supported;
+		bool storage_push_constant_16_is_supported;
+		bool storage_input_output_16;
 	};
 
 private:
@@ -82,6 +88,7 @@ private:
 		FRAME_LAG = 2
 	};
 
+	static VulkanHooks *vulkan_hooks;
 	VkInstance inst = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
@@ -263,9 +270,12 @@ public:
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
 
+	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; };
+
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
 	int window_get_height(DisplayServer::WindowID p_window = 0);
+	bool window_is_valid_swapchain(DisplayServer::WindowID p_window = 0);
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	VkFramebuffer window_get_framebuffer(DisplayServer::WindowID p_window = 0);
 	VkRenderPass window_get_render_pass(DisplayServer::WindowID p_window = 0);

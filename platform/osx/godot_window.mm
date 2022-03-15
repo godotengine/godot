@@ -52,7 +52,7 @@
 	}
 
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
-	return !wd.no_focus;
+	return !wd.no_focus && !wd.is_popup;
 }
 
 - (BOOL)canBecomeMainWindow {
@@ -63,7 +63,7 @@
 	}
 
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
-	return !wd.no_focus;
+	return !wd.no_focus && !wd.is_popup;
 }
 
 @end

@@ -109,6 +109,8 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0.f));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::TRANSFORM2D, "transform"), Transform2D()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
@@ -186,6 +188,8 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
 	real_t oversampling = p_options["oversampling"];
+	real_t embolden = p_options["embolden"];
+	Transform2D transform = p_options["transform"];
 
 	// Load base font data.
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_source_file);
@@ -202,6 +206,8 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
+	font->set_embolden(embolden);
+	font->set_transform(transform);
 	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);
 

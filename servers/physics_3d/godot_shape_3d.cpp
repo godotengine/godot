@@ -1284,12 +1284,6 @@ Vector3 GodotConcavePolygonShape3D::get_support(const Vector3 &p_normal) const {
 void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
-	/*
-	if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
-		return; //test against whole AABB, which isn't very costly
-	*/
-
-	//printf("addr: %p\n",bvh);
 	if (!bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
 		return;
 	}

@@ -385,7 +385,9 @@ struct machine_index_t :
 			  typename Iter::item_t>
 {
   machine_index_t (const Iter& it) : it (it) {}
-  machine_index_t (const machine_index_t& o) : it (o.it) {}
+  machine_index_t (const machine_index_t& o) : hb_iter_with_fallback_t<machine_index_t<Iter>,
+								       typename Iter::item_t> (),
+					       it (o.it) {}
 
   static constexpr bool is_random_access_iterator = Iter::is_random_access_iterator;
   static constexpr bool is_sorted_iterator = Iter::is_sorted_iterator;

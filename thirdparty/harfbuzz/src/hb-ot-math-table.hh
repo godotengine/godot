@@ -369,6 +369,37 @@ struct MathKern
     return kernValue[i].get_x_value (font, this);
   }
 
+  unsigned int get_entries (unsigned int start_offset,
+			    unsigned int *entries_count, /* IN/OUT */
+			    hb_ot_math_kern_entry_t *kern_entries, /* OUT */
+			    hb_font_t *font) const
+  {
+    const MathValueRecord* correctionHeight = mathValueRecordsZ.arrayZ;
+    const MathValueRecord* kernValue = mathValueRecordsZ.arrayZ + heightCount;
+    const unsigned int entriesCount = heightCount + 1;
+
+    if (entries_count)
+    {
+      unsigned int start = hb_min (start_offset, entriesCount);
+      unsigned int end = hb_min (start + *entries_count, entriesCount);
+      *entries_count = end - start;
+
+      for (unsigned int i = 0; i < *entries_count; i++) {
+	unsigned int j = start + i;
+
+	hb_position_t max_height;
+	if (j == heightCount) {
+	  max_height = INT32_MAX;
+	} else {
+	  max_height = correctionHeight[j].get_y_value (font, this);
+	}
+
+	kern_entries[i] = {max_height, kernValue[j].get_x_value (font, this)};
+      }
+    }
+    return entriesCount;
+  }
+
   protected:
   HBUINT16	heightCount;
   UnsizedArrayOf<MathValueRecord>
@@ -423,6 +454,24 @@ struct MathKernInfoRecord
     return (base+mathKern[idx]).get_value (correction_height, font);
   }
 
+  unsigned int get_kernings (hb_ot_math_kern_t kern,
+			     unsigned int start_offset,
+			     unsigned int *entries_count, /* IN/OUT */
+			     hb_ot_math_kern_entry_t *kern_entries, /* OUT */
+			     hb_font_t *font,
+			     const void *base) const
+  {
+    unsigned int idx = kern;
+    if (unlikely (idx >= ARRAY_LENGTH (mathKern)) || !mathKern[idx]) {
+      if (entries_count) *entries_count = 0;
+      return 0;
+    }
+    return (base+mathKern[idx]).get_entries (start_offset,
+					     entries_count,
+					     kern_entries,
+					     font);
+  }
+
   protected:
   /* Offset to MathKern table for each corner -
    * from the beginning of MathKernInfo table.  May be NULL. */
@@ -471,6 +520,22 @@ struct MathKernInfo
   {
     unsigned int index = (this+mathKernCoverage).get_coverage (glyph);
     return mathKernInfoRecords[index].get_kerning (kern, correction_height, font, this);
+  }
+
+  unsigned int get_kernings (hb_codepoint_t glyph,
+			     hb_ot_math_kern_t kern,
+			     unsigned int start_offset,
+			     unsigned int *entries_count, /* IN/OUT */
+			     hb_ot_math_kern_entry_t *kern_entries, /* OUT */
+			     hb_font_t *font) const
+  {
+    unsigned int index = (this+mathKernCoverage).get_coverage (glyph);
+    return mathKernInfoRecords[index].get_kernings (kern,
+						    start_offset,
+						    entries_count,
+						    kern_entries,
+						    font,
+						    this);
   }
 
   protected:
@@ -544,6 +609,19 @@ struct MathGlyphInfo
 			     hb_position_t correction_height,
 			     hb_font_t *font) const
   { return (this+mathKernInfo).get_kerning (glyph, kern, correction_height, font); }
+
+  hb_position_t get_kernings (hb_codepoint_t glyph,
+			      hb_ot_math_kern_t kern,
+			      unsigned int start_offset,
+			      unsigned int *entries_count, /* IN/OUT */
+			      hb_ot_math_kern_entry_t *kern_entries, /* OUT */
+			      hb_font_t *font) const
+  { return (this+mathKernInfo).get_kernings (glyph,
+					     kern,
+					     start_offset,
+					     entries_count,
+					     kern_entries,
+					     font); }
 
   protected:
   /* Offset to MathItalicsCorrectionInfo table -

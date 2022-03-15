@@ -328,17 +328,13 @@ void OS::yield() {
 
 void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
-	DirAccess *da = DirAccess::open(dd);
-	if (da) {
-		memdelete(da);
+	if (DirAccess::exists(dd)) {
 		return;
 	}
 
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
 	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
-
-	memdelete(da);
 }
 
 String OS::get_model_name() const {
@@ -356,6 +352,10 @@ String OS::get_unique_id() const {
 
 int OS::get_processor_count() const {
 	return 1;
+}
+
+String OS::get_processor_name() const {
+	return "";
 }
 
 bool OS::can_use_threads() const {
@@ -387,16 +387,18 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 #else
-	if (p_feature == "release")
+	if (p_feature == "release") {
 		return true;
+	}
 #endif
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone")
+	if (p_feature == "standalone") {
 		return true;
+	}
 #endif
 
 	if (sizeof(void *) == 8 && p_feature == "64") {

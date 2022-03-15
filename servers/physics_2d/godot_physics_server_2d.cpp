@@ -1188,14 +1188,6 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 	} else if (body_owner.owns(p_rid)) {
 		GodotBody2D *body = body_owner.get_or_null(p_rid);
 
-		/*
-		if (body->get_state_query())
-			_clear_query(body->get_state_query());
-
-		if (body->get_direct_state_query())
-			_clear_query(body->get_direct_state_query());
-		*/
-
 		body_set_space(p_rid, RID());
 
 		while (body->get_shape_count()) {
@@ -1207,11 +1199,6 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 
 	} else if (area_owner.owns(p_rid)) {
 		GodotArea2D *area = area_owner.get_or_null(p_rid);
-
-		/*
-		if (area->get_monitor_query())
-			_clear_query(area->get_monitor_query());
-		*/
 
 		area->set_space(nullptr);
 

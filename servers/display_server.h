@@ -226,6 +226,7 @@ public:
 		WINDOW_FLAG_ALWAYS_ON_TOP,
 		WINDOW_FLAG_TRANSPARENT,
 		WINDOW_FLAG_NO_FOCUS,
+		WINDOW_FLAG_POPUP,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -235,12 +236,17 @@ public:
 		WINDOW_FLAG_BORDERLESS_BIT = (1 << WINDOW_FLAG_BORDERLESS),
 		WINDOW_FLAG_ALWAYS_ON_TOP_BIT = (1 << WINDOW_FLAG_ALWAYS_ON_TOP),
 		WINDOW_FLAG_TRANSPARENT_BIT = (1 << WINDOW_FLAG_TRANSPARENT),
-		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
+		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
+		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
+
+	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; };
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect){};
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); };
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
 

@@ -174,9 +174,9 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			AudioBuffer *abuf = &ioData->mBuffers[i];
 			memset(abuf->mData, 0, abuf->mDataByteSize);
-		};
+		}
 		return 0;
-	};
+	}
 
 	ad->start_counting_ticks();
 
@@ -195,14 +195,14 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 
 			frames_left -= frames;
 			out += frames * ad->channels;
-		};
-	};
+		}
+	}
 
 	ad->stop_counting_ticks();
 	ad->unlock();
 
 	return 0;
-};
+}
 
 OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
@@ -251,7 +251,7 @@ void AudioDriverCoreAudio::start() {
 			active = true;
 		}
 	}
-};
+}
 
 void AudioDriverCoreAudio::stop() {
 	if (active) {
@@ -266,19 +266,19 @@ void AudioDriverCoreAudio::stop() {
 
 int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
-};
+}
 
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
-};
+}
 
 void AudioDriverCoreAudio::lock() {
 	mutex.lock();
-};
+}
 
 void AudioDriverCoreAudio::unlock() {
 	mutex.unlock();
-};
+}
 
 bool AudioDriverCoreAudio::try_lock() {
 	return mutex.try_lock() == OK;
@@ -521,8 +521,9 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 		UInt32 channelCount = 0;
-		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
+		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++) {
 			channelCount += bufferList->mBuffers[j].mNumberChannels;
+		}
 
 		memfree(bufferList);
 
@@ -579,8 +580,9 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 			UInt32 channelCount = 0;
-			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
+			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++) {
 				channelCount += bufferList->mBuffers[j].mNumberChannels;
+			}
 
 			memfree(bufferList);
 

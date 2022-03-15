@@ -340,17 +340,20 @@ void BoneAttachment3D::_notification(int p_what) {
 			}
 			_check_bind();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_check_unbind();
 		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			_transform_changed();
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (_override_dirty) {
 				_override_dirty = false;
 			}
-		}
+		} break;
 	}
 }
 

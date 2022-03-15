@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 			first_arg = i + 2;
 		}
 		printf("%i: %s\n", i, argv[i]);
-	};
+	}
 
 #ifdef DEBUG_ENABLED
 	// Lets report the path we made current after all that.
@@ -84,4 +84,4 @@ int main(int argc, char **argv) {
 	Main::cleanup();
 
 	return os.get_exit_code();
-};
+}

@@ -11,12 +11,13 @@
 # Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
 # Stephen Gunawan Susilo <gunawanstephen@yahoo.com>, 2021.
 # Azizkhasyi 11 <azizkhasyi11@gmail.com>, 2021.
+# zephyroths <ridho.hikaru@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-11-30 04:38+0000\n"
-"Last-Translator: Azizkhasyi 11 <azizkhasyi11@gmail.com>\n"
+"PO-Revision-Date: 2022-02-22 15:52+0000\n"
+"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/id/>\n"
 "Language: id\n"
@@ -24,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -85,7 +86,7 @@ msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Default"
-msgstr ""
+msgstr "Bawaan"
 
 #: doc/tools/make_rst.py
 msgid "Setter"
@@ -3534,6 +3535,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
+"Hints that a string property can be an enumerated value to pick in a list "
+"specified via a hint string such as [code]\"Hello,Something,Else\"[/code].\n"
+"Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts "
+"arbitrary values and can be empty. The list of values serves to suggest "
+"possible values."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
 "Hints that a float property should be edited via an exponential easing "
 "function. The hint string can include [code]\"attenuation\"[/code] to flip "
 "the curve horizontally and/or [code]\"inout\"[/code] to also include in/out "
@@ -3592,8 +3602,8 @@ msgstr ""
 msgid ""
 "Hints that a string property is an absolute path to a file outside the "
 "project folder. Editing it will show a file dialog for picking the path. The "
-"hint string can be a set of filters with wildcards like [code]\"*.png,*.jpg"
-"\"[/code]."
+"hint string can be a set of filters with wildcards like [code]\"*.png,*."
+"jpg\"[/code]."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -3952,22 +3962,21 @@ msgid ""
 "integer coordinates."
 msgstr ""
 
-#: doc/classes/AABB.xml doc/classes/Basis.xml doc/classes/Plane.xml
-#: doc/classes/Rect2.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
+#: doc/classes/AABB.xml doc/classes/Basis.xml doc/classes/Rect2.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-msgid "$DOCS_URL/tutorials/math/index.html"
+msgid "Math tutorial index"
 msgstr ""
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
-msgid "$DOCS_URL/tutorials/math/vector_math.html"
+msgid "Vector math"
 msgstr ""
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/math/vectors_advanced.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgid "Advanced vector math"
+msgstr ""
 
 #: doc/classes/AABB.xml
 msgid "Constructs an [AABB] from a position and size."
@@ -4307,11 +4316,9 @@ msgid ""
 "code] will make it so the [code]run[/code] animation uses the normal map."
 msgstr ""
 
-#: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
-#: doc/classes/AnimationPlayer.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/2d/2d_sprite_animation.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
+#: doc/classes/AnimatedSprite.xml doc/classes/AnimationPlayer.xml
+msgid "2D Sprite animation"
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Area2D.xml
 #: doc/classes/AudioStreamPlayer.xml doc/classes/Button.xml
@@ -4320,9 +4327,8 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
 #: doc/classes/InputEventAction.xml doc/classes/Label.xml
 #: doc/classes/Particles2D.xml doc/classes/Timer.xml
 #: doc/classes/VisibilityNotifier2D.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/515"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Dodge The Creeps Demo"
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
@@ -4398,6 +4404,10 @@ msgstr ""
 msgid ""
 "Animations are created using a [SpriteFrames] resource, which can be "
 "configured in the editor via the SpriteFrames panel."
+msgstr ""
+
+#: doc/classes/AnimatedSprite3D.xml
+msgid "2D Sprite animation (also applies to 3D)"
 msgstr ""
 
 #: doc/classes/AnimatedSprite3D.xml
@@ -4533,10 +4543,6 @@ msgid ""
 "[AnimationPlayer] or [AnimationTreePlayer] to be played back. Animation "
 "tracks have different types, each with its own set of dedicated methods. "
 "Check [enum TrackType] to see available types."
-msgstr ""
-
-#: doc/classes/Animation.xml doc/classes/AnimationPlayer.xml
-msgid "$DOCS_URL/tutorials/animation/index.html"
 msgstr ""
 
 #: doc/classes/Animation.xml
@@ -4967,25 +4973,6 @@ msgid ""
 "otherwise [AnimationRootNode] should be used instead."
 msgstr ""
 
-#: doc/classes/AnimationNode.xml doc/classes/AnimationNodeAdd2.xml
-#: doc/classes/AnimationNodeAdd3.xml doc/classes/AnimationNodeAnimation.xml
-#: doc/classes/AnimationNodeBlend2.xml doc/classes/AnimationNodeBlend3.xml
-#: doc/classes/AnimationNodeBlendSpace1D.xml
-#: doc/classes/AnimationNodeBlendSpace2D.xml
-#: doc/classes/AnimationNodeBlendTree.xml doc/classes/AnimationNodeOneShot.xml
-#: doc/classes/AnimationNodeOutput.xml
-#: doc/classes/AnimationNodeStateMachine.xml
-#: doc/classes/AnimationNodeStateMachinePlayback.xml
-#: doc/classes/AnimationNodeStateMachineTransition.xml
-#: doc/classes/AnimationNodeTimeScale.xml doc/classes/AnimationNodeTimeSeek.xml
-#: doc/classes/AnimationNodeTransition.xml doc/classes/AnimationTree.xml
-#: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/animation/animation_tree.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html"
-
 #: doc/classes/AnimationNode.xml
 msgid ""
 "Adds an input to the node. This is only useful for nodes created for use in "
@@ -5067,8 +5054,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
-msgid "Returns [code]true[/code] whether a given path is filtered."
-msgstr ""
+#, fuzzy
+msgid "Returns whether the given path is filtered."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
 
 #: doc/classes/AnimationNode.xml
 msgid ""
@@ -5092,7 +5080,7 @@ msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Sets a custom parameter. These are used as local storage, because resources "
+"Sets a custom parameter. These are used as local memory, because resources "
 "can be reused across the tree or scenes."
 msgstr ""
 
@@ -5101,7 +5089,7 @@ msgid "If [code]true[/code], filtering is enabled."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
-msgid "Called when the node was removed from the graph."
+msgid "Emitted when the node was removed from the graph."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
@@ -5169,6 +5157,15 @@ msgstr ""
 #: doc/classes/AnimationNodeBlend2.xml
 #: doc/classes/AnimationNodeBlendSpace2D.xml
 #: doc/classes/AnimationNodeOneShot.xml doc/classes/AnimationNodeOutput.xml
+#: doc/classes/AnimationNodeTimeScale.xml
+#: doc/classes/AnimationNodeTransition.xml
+msgid "AnimationTree"
+msgstr ""
+
+#: doc/classes/AnimationNodeAdd3.xml doc/classes/AnimationNodeAnimation.xml
+#: doc/classes/AnimationNodeBlend2.xml
+#: doc/classes/AnimationNodeBlendSpace2D.xml
+#: doc/classes/AnimationNodeOneShot.xml doc/classes/AnimationNodeOutput.xml
 #: doc/classes/AnimationNodeTransition.xml doc/classes/AnimationPlayer.xml
 #: doc/classes/AnimationTree.xml doc/classes/AudioEffectReverb.xml
 #: doc/classes/Camera.xml doc/classes/CollisionShape.xml
@@ -5178,9 +5175,8 @@ msgstr ""
 #: doc/classes/Mesh.xml doc/classes/MeshInstance.xml doc/classes/Particles.xml
 #: doc/classes/Quat.xml doc/classes/Skeleton.xml doc/classes/SpotLight.xml
 #: doc/classes/StaticBody.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/678"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Third Person Shooter Demo"
+msgstr ""
 
 #: doc/classes/AnimationNodeAnimation.xml
 msgid "Input animation to use in an [AnimationNodeBlendTree]."
@@ -5201,9 +5197,8 @@ msgstr ""
 #: doc/classes/KinematicBody.xml doc/classes/Mesh.xml
 #: doc/classes/MeshInstance.xml doc/classes/MeshLibrary.xml
 #: doc/classes/ProjectSettings.xml doc/classes/Transform.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/125"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Platformer Demo"
+msgstr ""
 
 #: doc/classes/AnimationNodeAnimation.xml
 msgid ""
@@ -5849,6 +5844,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
+msgid "Animation tutorial index"
+msgstr ""
+
+#: doc/classes/AnimationPlayer.xml
 msgid ""
 "Adds [code]animation[/code] to the player accessible with the key "
 "[code]name[/code]."
@@ -6129,6 +6128,10 @@ msgid ""
 "[AnimationTree] and its constituent [AnimationNode](s). The "
 "[AnimationPlayer] node should be used solely for adding, deleting, and "
 "editing animations."
+msgstr ""
+
+#: doc/classes/AnimationTree.xml
+msgid "Using AnimationTree"
 msgstr ""
 
 #: doc/classes/AnimationTree.xml
@@ -6598,9 +6601,8 @@ msgstr ""
 
 #: doc/classes/Area.xml doc/classes/QuadMesh.xml doc/classes/Viewport.xml
 #: doc/classes/ViewportTexture.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/127"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "GUI in 3D Demo"
+msgstr ""
 
 #: doc/classes/Area.xml
 msgid ""
@@ -6835,23 +6837,19 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Area2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/physics/using_area_2d.html"
+msgid "Using Area2D"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html"
 
 #: doc/classes/Area2D.xml doc/classes/CollisionShape2D.xml
 #: doc/classes/RectangleShape2D.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/121"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Pong Demo"
+msgstr ""
 
 #: doc/classes/Area2D.xml doc/classes/Camera2D.xml
 #: doc/classes/KinematicBody2D.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/120"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Platformer Demo"
+msgstr ""
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -7237,9 +7235,12 @@ msgstr ""
 
 #: doc/classes/Array.xml
 msgid ""
-"Returns a hashed integer value representing the array and its contents.\n"
-"[b]Note:[/b] Arrays with equal contents can still produce different hashes. "
-"Only the exact same arrays will produce the same hashed integer value."
+"Returns a hashed 32-bit integer value representing the array and its "
+"contents.\n"
+"[b]Note:[/b] [Array]s with equal content will always produce identical hash "
+"values. However, the reverse is not true. Returning identical hash values "
+"does [i]not[/i] imply the arrays are equal, because different arrays can "
+"have identical hash values due to hash collisions."
 msgstr ""
 
 #: doc/classes/Array.xml
@@ -7434,13 +7435,6 @@ msgid ""
 "OpenGL/Face-culling]winding order[/url] for front faces of triangle "
 "primitive modes."
 msgstr ""
-
-#: doc/classes/ArrayMesh.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/procedural_geometry/arraymesh.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/"
-"arraymesh.html"
 
 #: doc/classes/ArrayMesh.xml
 msgid ""
@@ -7740,12 +7734,6 @@ msgid ""
 "ARVR Controller, the render thread has access to the most up-to-date "
 "tracking data of the HMD and the location of the ARVRCamera can lag a few "
 "milliseconds behind what is used for rendering as a result."
-msgstr ""
-
-#: doc/classes/ARVRCamera.xml doc/classes/ARVRController.xml
-#: doc/classes/ARVRInterface.xml doc/classes/ARVROrigin.xml
-#: doc/classes/ARVRPositionalTracker.xml doc/classes/ARVRServer.xml
-msgid "$DOCS_URL/tutorials/vr/index.html"
 msgstr ""
 
 #: doc/classes/ARVRController.xml
@@ -8869,9 +8857,8 @@ msgstr ""
 #: doc/classes/AudioEffect.xml doc/classes/AudioEffectRecord.xml
 #: doc/classes/AudioServer.xml doc/classes/AudioStream.xml
 #: doc/classes/AudioStreamPlayer.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/527"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Audio Mic Record Demo"
+msgstr ""
 
 #: doc/classes/AudioEffectAmplify.xml
 msgid ""
@@ -9165,10 +9152,8 @@ msgstr ""
 #: doc/classes/AudioEffectDistortion.xml doc/classes/AudioEffectFilter.xml
 #: doc/classes/AudioEffectHighShelfFilter.xml
 #: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/audio/audio_buses.html"
+msgid "Audio buses"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html"
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid "Distortion power. Value can range from 0 to 1."
@@ -9560,11 +9545,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioEffectRecord.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/audio/recording_with_microphone.html"
+msgid "Recording with microphone"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/"
-"recording_with_microphone.html"
 
 #: doc/classes/AudioEffectRecord.xml
 msgid "Returns the recorded sample."
@@ -9657,7 +9639,9 @@ msgid ""
 "See also [AudioStreamGenerator] for procedurally generating sounds."
 msgstr ""
 
-#: doc/classes/AudioEffectSpectrumAnalyzer.xml
+#: doc/classes/AudioEffectSpectrumAnalyzer.xml doc/classes/AudioServer.xml
+#: doc/classes/AudioStream.xml doc/classes/AudioStreamPlayer.xml
+#: doc/classes/CanvasItem.xml
 msgid "Audio Spectrum Demo"
 msgstr ""
 
@@ -9702,15 +9686,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml doc/classes/AudioStreamPlayer.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/525"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
-
-#: doc/classes/AudioServer.xml doc/classes/AudioStream.xml
-#: doc/classes/AudioStreamPlayer.xml doc/classes/CanvasItem.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/528"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Audio Device Changer Demo"
+msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Adds a bus at [code]at_position[/code]."
@@ -9723,17 +9700,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml
-msgid ""
-"Name of the current device for audio input (see [method "
-"capture_get_device_list])."
-msgstr ""
-
-#: doc/classes/AudioServer.xml
 msgid "Returns the names of all audio input devices detected on the system."
-msgstr ""
-
-#: doc/classes/AudioServer.xml
-msgid "Sets which audio input device is used for audio capture."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -9894,7 +9861,22 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid ""
-"Name of the current device for audio output (see [method get_device_list])."
+"Name of the current device for audio input (see [method get_device_list]). "
+"On systems with multiple audio inputs (such as analog, USB and HDMI audio), "
+"this can be used to select the audio input device. The value "
+"[code]\"Default\"[/code] will record audio on the system-wide default audio "
+"input. If an invalid device name is set, the value will be reverted back to "
+"[code]\"Default\"[/code]."
+msgstr ""
+
+#: doc/classes/AudioServer.xml
+msgid ""
+"Name of the current device for audio output (see [method get_device_list]). "
+"On systems with multiple audio outputs (such as analog, USB and HDMI audio), "
+"this can be used to select the audio output device. The value "
+"[code]\"Default\"[/code] will play audio on the system-wide default audio "
+"output. If an invalid device name is set, the value will be reverted back to "
+"[code]\"Default\"[/code]."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -9935,18 +9917,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioStream.xml doc/classes/AudioStreamPlayer.xml
-#: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/audio/audio_streams.html"
+msgid "Audio streams"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html"
 
 #: doc/classes/AudioStream.xml doc/classes/AudioStreamGenerator.xml
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 #: doc/classes/AudioStreamPlayback.xml doc/classes/AudioStreamPlayer.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/526"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Audio Generator Demo"
+msgstr ""
 
 #: doc/classes/AudioStream.xml
 msgid "Returns the length of the audio stream in seconds."
@@ -9984,12 +9962,12 @@ msgid ""
 "In games, common sample rates in use are [code]11025[/code], [code]16000[/"
 "code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and "
 "[code]48000[/code].\n"
-"According to the [url=https://en.wikipedia.org/wiki/Nyquist"
-"%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], "
-"there is no quality difference to human hearing when going past 40,000 Hz "
-"(since most humans can only hear up to ~20,000 Hz, often less). If you are "
-"generating lower-pitched sounds such as voices, lower sample rates such as "
-"[code]32000[/code] or [code]22050[/code] may be usable with no loss in "
+"According to the [url=https://en.wikipedia.org/wiki/"
+"Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/"
+"url], there is no quality difference to human hearing when going past 40,000 "
+"Hz (since most humans can only hear up to ~20,000 Hz, often less). If you "
+"are generating lower-pitched sounds such as voices, lower sample rates such "
+"as [code]32000[/code] or [code]22050[/code] may be usable with no loss in "
 "quality."
 msgstr ""
 
@@ -10194,8 +10172,13 @@ msgid ""
 "seconds."
 msgstr ""
 
-#: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
-msgid "Areas in which this sound plays."
+#: doc/classes/AudioStreamPlayer2D.xml
+msgid ""
+"Determines which [Area2D] layers affect the sound for reverb and audio bus "
+"effects. Areas can be used to redirect [AudioStream]s so that they play in a "
+"certain audio bus. An example of how you might use this is making a "
+"\"water\" area so that sounds played in the water are redirected through an "
+"audio bus to make them sound like they are being played underwater."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer2D.xml
@@ -10235,6 +10218,15 @@ msgstr ""
 msgid ""
 "Returns the [AudioStreamPlayback] object associated with this "
 "[AudioStreamPlayer3D]."
+msgstr ""
+
+#: doc/classes/AudioStreamPlayer3D.xml
+msgid ""
+"Determines which [Area] layers affect the sound for reverb and audio bus "
+"effects. Areas can be used to redirect [AudioStream]s so that they play in a "
+"certain audio bus. An example of how you might use this is making a "
+"\"water\" area so that sounds played in the water are redirected through an "
+"audio bus to make them sound like they are being played underwater."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
@@ -10450,11 +10442,11 @@ msgid ""
 "In games, common sample rates in use are [code]11025[/code], [code]16000[/"
 "code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and "
 "[code]48000[/code].\n"
-"According to the [url=https://en.wikipedia.org/wiki/Nyquist"
-"%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], "
-"there is no quality difference to human hearing when going past 40,000 Hz "
-"(since most humans can only hear up to ~20,000 Hz, often less). If you are "
-"using lower-pitched sounds such as voices, lower sample rates such as "
+"According to the [url=https://en.wikipedia.org/wiki/"
+"Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/"
+"url], there is no quality difference to human hearing when going past 40,000 "
+"Hz (since most humans can only hear up to ~20,000 Hz, often less). If you "
+"are using lower-pitched sounds such as voices, lower sample rates such as "
 "[code]32000[/code] or [code]22050[/code] may be usable with no loss in "
 "quality."
 msgstr ""
@@ -10561,12 +10553,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/baked_lightmaps.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
-
-#: doc/classes/BakedLightmap.xml
 msgid ""
 "Bakes the lightmap, scanning from the given [code]from_node[/code] root and "
 "saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If "
@@ -10625,7 +10611,7 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
-"Bias value to reduce the amount of light proagation in the captured octree."
+"Bias value to reduce the amount of light propagation in the captured octree."
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml
@@ -10692,9 +10678,9 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
-"Determines the amount of samples per texel used in indrect light baking. The "
-"amount of samples for each quality level can be configured in the project "
-"settings."
+"Determines the amount of samples per texel used in indirect light baking. "
+"The amount of samples for each quality level can be configured in the "
+"project settings."
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml
@@ -10997,23 +10983,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Basis.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/math/matrices_and_transforms.html"
+msgid "Matrices and transforms"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/math/"
-"matrices_and_transforms.html"
 
-#: doc/classes/Basis.xml doc/classes/Transform.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/using_transforms.html"
+#: doc/classes/Basis.xml doc/classes/Quat.xml doc/classes/Transform.xml
+msgid "Using 3D transforms"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html"
 
 #: doc/classes/Basis.xml doc/classes/Line2D.xml doc/classes/Transform.xml
 #: doc/classes/Transform2D.xml doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/584"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Matrix Transform Demo"
+msgstr ""
 
 #: doc/classes/Basis.xml doc/classes/CylinderShape.xml
 #: doc/classes/Dictionary.xml doc/classes/DynamicFont.xml
@@ -11024,15 +11004,13 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 #: doc/classes/SurfaceTool.xml doc/classes/TextureButton.xml
 #: doc/classes/TextureRect.xml doc/classes/Thread.xml
 #: doc/classes/VBoxContainer.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/676"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Voxel Demo"
+msgstr ""
 
 #: doc/classes/Basis.xml doc/classes/Line2D.xml doc/classes/Transform.xml
 #: doc/classes/Transform2D.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/583"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2.5D Demo"
+msgstr ""
 
 #: doc/classes/Basis.xml
 msgid "Constructs a pure rotation basis matrix from the given quaternion."
@@ -11219,6 +11197,14 @@ msgstr ""
 
 #: doc/classes/BitMap.xml
 msgid ""
+"Returns an image of the same size as the bitmap and with a [enum Image."
+"Format] of type [code]FORMAT_L8[/code]. [code]true[/code] bits of the bitmap "
+"are being converted into white pixels, and [code]false[/code] bits into "
+"black."
+msgstr ""
+
+#: doc/classes/BitMap.xml
+msgid ""
 "Creates a bitmap with the specified size, filled with [code]false[/code]."
 msgstr ""
 
@@ -11250,6 +11236,10 @@ msgid ""
 "is negative, erosion is applied to the bitmap. [code]rect[/code] defines the "
 "area where the morphological operation is applied. Pixels located outside "
 "the [code]rect[/code] are unaffected by [method grow_mask]."
+msgstr ""
+
+#: doc/classes/BitMap.xml
+msgid "Resizes the image to [code]new_size[/code]."
 msgstr ""
 
 #: doc/classes/BitMap.xml
@@ -11513,17 +11503,15 @@ msgstr ""
 #: doc/classes/CylinderShape.xml doc/classes/ProjectSettings.xml
 #: doc/classes/RigidBody.xml doc/classes/SphereShape.xml
 #: doc/classes/StaticBody.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/675"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Physics Tests Demo"
+msgstr ""
 
 #: doc/classes/BoxShape.xml doc/classes/CollisionShape.xml
 #: modules/gridmap/doc_classes/GridMap.xml doc/classes/KinematicBody.xml
 #: doc/classes/Mesh.xml doc/classes/MeshInstance.xml
 #: doc/classes/MeshLibrary.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/126"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Kinematic Character Demo"
+msgstr ""
 
 #: doc/classes/BoxShape.xml
 msgid ""
@@ -11565,9 +11553,8 @@ msgstr ""
 #: doc/classes/GridContainer.xml doc/classes/OS.xml
 #: doc/classes/PoolStringArray.xml doc/classes/ProjectSettings.xml
 #: doc/classes/ResourceLoader.xml doc/classes/RichTextLabel.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/677"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "OS Test Demo"
+msgstr ""
 
 #: doc/classes/Button.xml
 msgid ""
@@ -11598,6 +11585,13 @@ msgid ""
 "To edit margin and spacing of the icon, use [code]hseparation[/code] theme "
 "property of [Button] and [code]content_margin_*[/code] properties of the "
 "used [StyleBox]es."
+msgstr ""
+
+#: doc/classes/Button.xml
+msgid ""
+"Specifies if the icon should be aligned to the left, right, or center of a "
+"button. Uses the same [enum TextAlign] constants as the text alignment. If "
+"centered, text will draw on top of the icon."
 msgstr ""
 
 #: doc/classes/Button.xml doc/classes/LinkButton.xml
@@ -11999,15 +11993,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/TileMap.xml doc/classes/TileSet.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/112"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Isometric Demo"
+msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/Environment.xml
 #: doc/classes/WorldEnvironment.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/110"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D HDR Demo"
+msgstr ""
 
 #: doc/classes/Camera2D.xml
 msgid "Aligns the camera to the tracked node."
@@ -12435,14 +12427,12 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml doc/classes/CanvasLayer.xml
 #: doc/classes/InputEvent.xml doc/classes/Viewport.xml
-msgid "$DOCS_URL/tutorials/2d/2d_transforms.html"
+msgid "Viewport and canvas transforms"
 msgstr ""
 
 #: doc/classes/CanvasItem.xml doc/classes/Control.xml doc/classes/Node2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html"
+msgid "Custom drawing in 2D"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html"
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -12637,7 +12627,9 @@ msgid "Returns the transform matrix of this item's canvas."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Returns the global position of the mouse."
+msgid ""
+"Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is "
+"in using the coordinate system of the [CanvasLayer]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12650,7 +12642,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Returns the mouse position relative to this item's position."
+msgid ""
+"Returns the mouse's position in this [CanvasItem] using the local coordinate "
+"system of this [CanvasItem]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12944,11 +12938,23 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasLayer.xml
-msgid "$DOCS_URL/tutorials/2d/canvas_layers.html"
+msgid "Canvas layers"
 msgstr ""
 
 #: doc/classes/CanvasLayer.xml
 msgid "Returns the RID of the canvas used by this layer."
+msgstr ""
+
+#: doc/classes/CanvasLayer.xml
+msgid ""
+"Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
+"setting [member visible] to [code]false[/code]."
+msgstr ""
+
+#: doc/classes/CanvasLayer.xml
+msgid ""
+"Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
+"setting [member visible] to [code]true[/code]."
 msgstr ""
 
 #: doc/classes/CanvasLayer.xml
@@ -12992,6 +12998,18 @@ msgstr ""
 
 #: doc/classes/CanvasLayer.xml
 msgid "The layer's transform."
+msgstr ""
+
+#: doc/classes/CanvasLayer.xml
+msgid ""
+"If [code]false[/code], any [CanvasItem] under this [CanvasLayer] will be "
+"hidden.\n"
+"Unlike [member CanvasItem.visible], visibility of a [CanvasLayer] isn't "
+"propagated to underlying layers."
+msgstr ""
+
+#: doc/classes/CanvasLayer.xml
+msgid "Emitted when visibility of the layer is changed. See [member visible]."
 msgstr ""
 
 #: doc/classes/CanvasModulate.xml
@@ -13073,20 +13091,6 @@ msgid ""
 "By setting various properties on this object, you can control how individual "
 "characters will be displayed in a [RichTextEffect]."
 msgstr ""
-
-#: doc/classes/CharFXTransform.xml doc/classes/RichTextEffect.xml
-#: doc/classes/RichTextLabel.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel."
-"html"
-
-#: doc/classes/CharFXTransform.xml doc/classes/RichTextEffect.xml
-msgid ""
-"https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
-msgstr ""
-"https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 
 #: doc/classes/CharFXTransform.xml
 msgid ""
@@ -13646,6 +13650,7 @@ msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 #: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid "Returns the object's [RID]."
 msgstr ""
 
@@ -13730,9 +13735,9 @@ msgid ""
 "The physics layers this CollisionObject3D is in. Collision objects can exist "
 "in one or more of 32 different layers. See also [member collision_mask].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See [url="
-"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
+"object B scans, or object B is in any layers that object A scans. See "
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Collision layers and masks[/url] in the documentation for more "
 "information."
 msgstr ""
 
@@ -13741,9 +13746,9 @@ msgid ""
 "The physics layers this CollisionObject3D scans. Collision objects can scan "
 "one or more of 32 different layers. See also [member collision_layer].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See [url="
-"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
+"object B scans, or object B is in any layers that object A scans. See "
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Collision layers and masks[/url] in the documentation for more "
 "information."
 msgstr ""
 
@@ -13753,10 +13758,11 @@ msgid ""
 "events as the mouse is dragged across its shapes."
 msgstr ""
 
-#: doc/classes/CollisionObject.xml
+#: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid ""
-"If [code]true[/code], the [CollisionObject]'s shapes will respond to "
-"[RayCast]s."
+"If [code]true[/code], this object is pickable. A pickable object can detect "
+"the mouse pointer entering/leaving, and if the mouse is inside it, report "
+"input events. Requires at least one [member collision_layer] bit to be set."
 msgstr ""
 
 #: doc/classes/CollisionObject.xml
@@ -13849,9 +13855,9 @@ msgid ""
 "The physics layers this CollisionObject2D is in. Collision objects can exist "
 "in one or more of 32 different layers. See also [member collision_mask].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See [url="
-"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
+"object B scans, or object B is in any layers that object A scans. See "
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Collision layers and masks[/url] in the documentation for more "
 "information."
 msgstr ""
 
@@ -13860,18 +13866,10 @@ msgid ""
 "The physics layers this CollisionObject2D scans. Collision objects can scan "
 "one or more of 32 different layers. See also [member collision_layer].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See [url="
-"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
+"object B scans, or object B is in any layers that object A scans. See "
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Collision layers and masks[/url] in the documentation for more "
 "information."
-msgstr ""
-
-#: doc/classes/CollisionObject2D.xml
-msgid ""
-"If [code]true[/code], this object is pickable. A pickable object can detect "
-"the mouse pointer entering/leaving, and if the mouse is inside it, report "
-"input events. Requires at least one [code]collision_layer[/code] bit to be "
-"set."
 msgstr ""
 
 #: doc/classes/CollisionObject2D.xml
@@ -13995,15 +13993,11 @@ msgstr ""
 
 #: doc/classes/CollisionShape.xml doc/classes/CollisionShape2D.xml
 #: doc/classes/Physics2DDirectBodyState.xml
-#: doc/classes/Physics2DDirectSpaceState.xml doc/classes/PhysicsBody.xml
-#: doc/classes/PhysicsBody2D.xml doc/classes/PhysicsDirectBodyState.xml
+#: doc/classes/Physics2DDirectSpaceState.xml
+#: doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RigidBody.xml
-#: doc/classes/Shape.xml doc/classes/Shape2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/physics/physics_introduction.html"
+msgid "Physics introduction"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html"
 
 #: doc/classes/CollisionShape.xml
 msgid ""
@@ -14042,9 +14036,8 @@ msgstr ""
 #: doc/classes/CollisionShape2D.xml doc/classes/KinematicBody2D.xml
 #: doc/classes/RectangleShape2D.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/113"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Kinematic Character Demo"
+msgstr ""
 
 #: doc/classes/CollisionShape2D.xml
 msgid ""
@@ -14089,19 +14082,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Color.xml doc/classes/ColorPickerButton.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/517"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D GD Paint Demo"
+msgstr ""
 
 #: doc/classes/Color.xml doc/classes/ColorPicker.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/146"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Tween Demo"
+msgstr ""
 
 #: doc/classes/Color.xml doc/classes/ColorPickerButton.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/133"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "GUI Drag And Drop Demo"
+msgstr ""
 
 #: doc/classes/Color.xml
 msgid ""
@@ -15559,20 +15549,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
-msgid "$DOCS_URL/tutorials/ui/index.html"
+msgid "GUI tutorial index"
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/ui/control_node_gallery.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/gui/index.html"
+msgid "Control node gallery"
+msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
-msgid "https://github.com/godotengine/godot-demo-projects/tree/master/gui"
+msgid "All GUI Demos"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -15672,8 +15658,8 @@ msgid ""
 "custom value.\n"
 "$MyLabel.add_color_override(\"font_color\", Color(1, 0.5, 0))\n"
 "# Reset the font color of the child label.\n"
-"$MyLabel.add_color_override(\"font_color\", get_color(\"font_color\", \"Label"
-"\"))\n"
+"$MyLabel.add_color_override(\"font_color\", get_color(\"font_color\", "
+"\"Label\"))\n"
 "[/codeblock]"
 msgstr ""
 
@@ -15809,8 +15795,9 @@ msgid ""
 "Returns a [Color] from the first matching [Theme] in the tree if that "
 "[Theme] has a color item with the specified [code]name[/code] and "
 "[code]theme_type[/code]. If [code]theme_type[/code] is omitted the class "
-"name of the current control is used as the type. If the type is a class name "
-"its parent classes are also checked, in order of inheritance.\n"
+"name of the current control is used as the type, or [member "
+"theme_type_variation] if it is defined. If the type is a class name its "
+"parent classes are also checked, in order of inheritance.\n"
 "For the current control its local overrides are considered first (see "
 "[method add_color_override]), then its assigned [member theme]. After the "
 "current control, each parent control and its assigned [member theme] are "
@@ -16558,6 +16545,25 @@ msgstr ""
 msgid ""
 "Changing this property replaces the current [Theme] resource this node and "
 "all its [Control] children use."
+msgstr ""
+
+#: doc/classes/Control.xml
+msgid ""
+"The name of a theme type variation used by this [Control] to look up its own "
+"theme items. When empty, the class name of the node is used (e.g. "
+"[code]Button[/code] for the [Button] control), as well as the class names of "
+"all parent classes (in order of inheritance).\n"
+"When set, this property gives the highest priority to the type of the "
+"specified name. This type can in turn extend another type, forming a "
+"dependency chain. See [method Theme.set_type_variation]. If the theme item "
+"cannot be found using this type or its base types, lookup falls back on the "
+"class names.\n"
+"[b]Note:[/b] To look up [Control]'s own items use various [code]get_*[/code] "
+"methods without specifying [code]theme_type[/code].\n"
+"[b]Note:[/b] Theme items are looked for in the tree order, from branch to "
+"root, where each [Control] node is checked for its [member theme] property. "
+"The earliest match against any type/class name is returned. The project-"
+"level Theme and the default Theme are checked last."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -17650,12 +17656,6 @@ msgid ""
 "fly and doesn't need to be configured by the user."
 msgstr ""
 
-#: doc/classes/CPUParticles2D.xml doc/classes/Particles2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/2d/particle_systems_2d.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html"
-
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "Sets this node's properties to match a given [Particles2D] node with an "
@@ -17820,8 +17820,8 @@ msgid ""
 "Generates a self-signed [X509Certificate] from the given [CryptoKey] and "
 "[code]issuer_name[/code]. The certificate validity will be defined by "
 "[code]not_before[/code] and [code]not_after[/code] (first valid date and "
-"last valid date). The [code]issuer_name[/code] must contain at least \"CN="
-"\" (common name, i.e. the domain name), \"O=\" (organization, i.e. your "
+"last valid date). The [code]issuer_name[/code] must contain at least "
+"\"CN=\" (common name, i.e. the domain name), \"O=\" (organization, i.e. your "
 "company name), \"C=\" (country, i.e. 2 lettered ISO-3166 code of the country "
 "the organization is based in).\n"
 "A small example to generate an RSA key and a X509 self-signed certificate.\n"
@@ -17910,7 +17910,22 @@ msgid "A CSG Box shape."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGBox.xml
-msgid "This node allows you to create a box for use with the CSG system."
+msgid ""
+"This node allows you to create a box for use with the CSG system.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
+msgstr ""
+
+#: modules/csg/doc_classes/CSGBox.xml modules/csg/doc_classes/CSGCombiner.xml
+#: modules/csg/doc_classes/CSGCylinder.xml modules/csg/doc_classes/CSGMesh.xml
+#: modules/csg/doc_classes/CSGPolygon.xml
+#: modules/csg/doc_classes/CSGPrimitive.xml
+#: modules/csg/doc_classes/CSGShape.xml modules/csg/doc_classes/CSGSphere.xml
+#: modules/csg/doc_classes/CSGTorus.xml
+msgid "Prototyping levels with CSG"
 msgstr ""
 
 #: modules/csg/doc_classes/CSGBox.xml
@@ -17942,7 +17957,12 @@ msgid ""
 "children of one CSGCombiner node, and a set of separate operations on a "
 "second set of shapes that are children of a second CSGCombiner node, and "
 "then do an operation that takes the two end results as its input to create "
-"the final shape."
+"the final shape.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGCylinder.xml
@@ -17952,7 +17972,12 @@ msgstr ""
 #: modules/csg/doc_classes/CSGCylinder.xml
 msgid ""
 "This node allows you to create a cylinder (or cone) for use with the CSG "
-"system."
+"system.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGCylinder.xml
@@ -17994,7 +18019,13 @@ msgstr ""
 msgid ""
 "This CSG node allows you to use any mesh resource as a CSG shape, provided "
 "it is closed, does not self-intersect, does not contain internal faces and "
-"has no edges that connect to more then two faces."
+"has no edges that connect to more than two faces. See also [CSGPolygon] for "
+"drawing 2D extruded polygons to be used as CSG nodes.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGMesh.xml
@@ -18018,7 +18049,12 @@ msgstr ""
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "An array of 2D points is extruded to quickly and easily create a variety of "
-"3D meshes."
+"3D meshes. See also [CSGMesh] for using 3D meshes as CSG nodes.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGPolygon.xml
@@ -18099,7 +18135,13 @@ msgid ""
 msgstr ""
 
 #: modules/csg/doc_classes/CSGPolygon.xml
-msgid "The point array that defines the 2D polygon that is extruded."
+msgid ""
+"The point array that defines the 2D polygon that is extruded. This can be a "
+"convex or concave polygon with 3 or more points. The polygon must [i]not[/i] "
+"have any intersecting edges. Otherwise, triangulation will fail and no mesh "
+"will be generated.\n"
+"[b]Note:[/b] If only 1 or 2 points are defined in [member polygon], no mesh "
+"will be generated."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGPolygon.xml
@@ -18174,7 +18216,12 @@ msgstr ""
 msgid ""
 "Parent class for various CSG primitives. It contains code and functionality "
 "that is common between them. It cannot be used directly. Instead use one of "
-"the various classes that inherit from it."
+"the various classes that inherit from it.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGPrimitive.xml
@@ -18188,7 +18235,12 @@ msgstr ""
 #: modules/csg/doc_classes/CSGShape.xml
 msgid ""
 "This is the CSG base class that provides CSG operation support to the "
-"various CSG nodes in Godot."
+"various CSG nodes in Godot.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGShape.xml doc/classes/RayCast2D.xml
@@ -18289,7 +18341,13 @@ msgid "A CSG Sphere shape."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGSphere.xml
-msgid "This node allows you to create a sphere for use with the CSG system."
+msgid ""
+"This node allows you to create a sphere for use with the CSG system.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGSphere.xml
@@ -18320,7 +18378,13 @@ msgid "A CSG Torus shape."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGTorus.xml
-msgid "This node allows you to create a torus for use with the CSG system."
+msgid ""
+"This node allows you to create a torus for use with the CSG system.\n"
+"[b]Note:[/b] CSG nodes are intended to be used for level prototyping. "
+"Creating CSG nodes has a significant CPU cost compared to creating a "
+"[MeshInstance] with a [PrimitiveMesh]. Moving a CSG node within another CSG "
+"node also has a significant CPU cost, so it should be avoided during "
+"gameplay."
 msgstr ""
 
 #: modules/csg/doc_classes/CSGTorus.xml
@@ -18362,13 +18426,6 @@ msgid ""
 "class and is only available in Mono-enabled Godot builds.\n"
 "See also [GodotSharp]."
 msgstr ""
-
-#: modules/mono/doc_classes/CSharpScript.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/c_sharp/index.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/"
-"index.html"
 
 #: modules/mono/doc_classes/CSharpScript.xml
 #: modules/gdnative/doc_classes/PluginScript.xml
@@ -18532,6 +18589,14 @@ msgid ""
 "view frustum culling only.\n"
 "Objects that are not [code]Static[/code] or [code]Dynamic[/code] can be "
 "freely created and deleted during the lifetime of the game level."
+msgstr ""
+
+#: doc/classes/CullInstance.xml
+msgid ""
+"This allows fine control over the mesh merging feature in the "
+"[RoomManager].\n"
+"Setting this option to [code]false[/code] can be used to prevent an instance "
+"being merged."
 msgstr ""
 
 #: doc/classes/CullInstance.xml
@@ -19246,11 +19311,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Dictionary.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary"
+msgid "GDScript basics: Dictionary"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
 
 #: doc/classes/Dictionary.xml
 msgid "Clear the dictionary, removing all key/value pairs."
@@ -19305,8 +19367,8 @@ msgstr ""
 
 #: doc/classes/Dictionary.xml
 msgid ""
-"Returns a hashed integer value representing the dictionary contents. This "
-"can be used to compare dictionaries by value:\n"
+"Returns a hashed 32-bit integer value representing the dictionary contents. "
+"This can be used to compare dictionaries by value:\n"
 "[codeblock]\n"
 "var dict1 = {0: 10}\n"
 "var dict2 = {0: 10}\n"
@@ -19315,7 +19377,11 @@ msgid ""
 "print(dict1.hash() == dict2.hash())\n"
 "[/codeblock]\n"
 "[b]Note:[/b] Dictionaries with the same keys/values but in a different order "
-"will have a different hash."
+"will have a different hash.\n"
+"[b]Note:[/b] Dictionaries with equal content will always produce identical "
+"hash values. However, the reverse is not true. Returning identical hash "
+"values does [i]not[/i] imply the dictionaries are equal, because different "
+"dictionaries can have identical hash values due to hash collisions."
 msgstr ""
 
 #: doc/classes/Dictionary.xml
@@ -19342,13 +19408,6 @@ msgid ""
 "or moonlight. The worldspace location of the DirectionalLight transform "
 "(origin) is ignored. Only the basis is used to determine light direction."
 msgstr ""
-
-#: doc/classes/DirectionalLight.xml doc/classes/Light.xml
-#: doc/classes/OmniLight.xml doc/classes/SpotLight.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/lights_and_shadows.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html"
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -19471,12 +19530,6 @@ msgid ""
 "        print(\"An error occurred when trying to access the path.\")\n"
 "[/codeblock]"
 msgstr ""
-
-#: doc/classes/Directory.xml doc/classes/File.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/filesystem.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/Directory.xml
 msgid ""
@@ -20505,13 +20558,6 @@ msgid ""
 "add_import_plugin] method first."
 msgstr ""
 
-#: doc/classes/EditorImportPlugin.xml doc/classes/ResourceImporter.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/plugins/editor/import_plugins.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
-
 #: doc/classes/EditorImportPlugin.xml
 msgid ""
 "Gets the options and default values for the preset at this index. Returns an "
@@ -20543,8 +20589,8 @@ msgid ""
 "func get_option_visibility(option, options):\n"
 "    # Only show the lossy quality setting if the compression mode is set to "
 "\"Lossy\".\n"
-"    if option == \"compress/lossy_quality\" and options.has(\"compress/mode"
-"\"):\n"
+"    if option == \"compress/lossy_quality\" and options.has(\"compress/"
+"mode\"):\n"
 "        return int(options[\"compress/mode\"]) == COMPRESS_LOSSY\n"
 "\n"
 "    return true\n"
@@ -20577,8 +20623,8 @@ msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml
 msgid ""
-"Gets the Godot resource type associated with this loader. e.g. [code]\"Mesh"
-"\"[/code] or [code]\"Animation\"[/code]."
+"Gets the Godot resource type associated with this loader. e.g. "
+"[code]\"Mesh\"[/code] or [code]\"Animation\"[/code]."
 msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml
@@ -20688,11 +20734,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorInspectorPlugin.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/plugins/editor/inspector_plugins.html"
+msgid "Inspector plugins"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/EditorInspectorPlugin.xml
 msgid "Adds a custom control, which is not necessarily a property editor."
@@ -20953,12 +20996,6 @@ msgid ""
 "plugins and export plugins. See also [EditorScript] to add functions to the "
 "editor."
 msgstr ""
-
-#: doc/classes/EditorPlugin.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/plugins/editor/index.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -21831,13 +21868,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorScenePostImport.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script"
-msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
-"importing_scenes.html#custom-script"
-
-#: doc/classes/EditorScenePostImport.xml
 msgid ""
 "Returns the source file path which got imported (e.g. [code]res://scene.dae[/"
 "code])."
@@ -22252,13 +22282,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"spatial_gizmos.html"
-
-#: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
 "Adds a new material to the internal material list for the plugin. It can "
 "then be accessed with [method get_material]. Should not be overridden."
@@ -22580,9 +22603,8 @@ msgid ""
 "[code]new_line_no[/code] is the line number in the new file (can be "
 "[code]-1[/code] if the line is deleted). [code]old_line_no[/code] is the "
 "line number in the old file (can be [code]-1[/code] if the line is added). "
-"[code]content[/code] is the diff text. [code]content[/code] is the diff "
-"text. [code]status[/code] is a single character string which stores the line "
-"origin."
+"[code]content[/code] is the diff text. [code]status[/code] is a single "
+"character string which stores the line origin."
 msgstr ""
 
 #: doc/classes/EditorVCSInterface.xml
@@ -22901,31 +22923,35 @@ msgid ""
 "- Glow\n"
 "- Tonemap (Auto Exposure)\n"
 "- Adjustments\n"
-"These effects will only apply when the [Viewport]'s intended usage is \"3D\" "
-"or \"3D Without Effects\". This can be configured for the root Viewport with "
-"[member ProjectSettings.rendering/quality/intended_usage/"
-"framebuffer_allocation], or for specific Viewports via the [member Viewport."
-"usage] property."
+"If the target [Viewport] is set to \"2D Without Sampling\", all post-"
+"processing effects will be unavailable. With \"3D Without Effects\", the "
+"following options will be unavailable:\n"
+"- Ssao\n"
+"- Ss Reflections\n"
+"This can be configured for the root Viewport with [member ProjectSettings."
+"rendering/quality/intended_usage/framebuffer_allocation], or for specific "
+"Viewports via the [member Viewport.usage] property.\n"
+"Note that [member ProjectSettings.rendering/quality/intended_usage/"
+"framebuffer_allocation] has a mobile platform override to use \"3D Without "
+"Effects\" by default. It improves the performance on mobile devices, but at "
+"the same time affects the screen display on mobile devices."
 msgstr ""
 
 #: doc/classes/Environment.xml doc/classes/WorldEnvironment.xml
 #, fuzzy
-msgid "$DOCS_URL/tutorials/3d/environment_and_post_processing.html"
+msgid "Environment and post-processing"
 msgstr ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/"
 "environment_and_post_processing.html"
 
 #: doc/classes/Environment.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/high_dynamic_range.html"
+msgid "Light transport in game engines"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html"
 
 #: doc/classes/Environment.xml doc/classes/Material.xml doc/classes/Mesh.xml
 #: doc/classes/MeshInstance.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/123"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Material Testers Demo"
+msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -22985,12 +23011,14 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Defines the amount of light that the sky brings on the scene. A value of 0 "
-"means that the sky's light emission has no effect on the scene illumination, "
-"thus all ambient illumination is provided by the ambient light. On the "
-"contrary, a value of 1 means that all the light that affects the scene is "
-"provided by the sky, thus the ambient light parameter has no effect on the "
-"scene."
+"Defines the amount of light that the sky brings on the scene. A value of "
+"[code]0.0[/code] means that the sky's light emission has no effect on the "
+"scene illumination, thus all ambient illumination is provided by the ambient "
+"light. On the contrary, a value of [code]1.0[/code] means that [i]all[/i] "
+"the light that affects the scene is provided by the sky, thus the ambient "
+"light parameter has no effect on the scene.\n"
+"[b]Note:[/b] [member ambient_light_sky_contribution] is internally clamped "
+"between [code]0.0[/code] and [code]1.0[/code] (inclusive)."
 msgstr ""
 
 #: doc/classes/Environment.xml
@@ -23214,7 +23242,22 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Environment.xml
-msgid "If [code]true[/code], the glow effect is enabled."
+msgid ""
+"If [code]true[/code], the glow effect is enabled.\n"
+"[b]Note:[/b] Only effective if [member ProjectSettings.rendering/quality/"
+"intended_usage/framebuffer_allocation] is [b]3D[/b] ([i]not[/i] [b]3D "
+"Without Effects[/b]). On mobile, [member ProjectSettings.rendering/quality/"
+"intended_usage/framebuffer_allocation] defaults to [b]3D Without Effects[/b] "
+"by default, so its [code].mobile[/code] override needs to be changed to "
+"[b]3D[/b].\n"
+"[b]Note:[/b] When using GLES3 on mobile, HDR rendering is disabled by "
+"default for performance reasons. This means glow will only be visible if "
+"[member glow_hdr_threshold] is decreased below [code]1.0[/code] or if "
+"[member glow_bloom] is increased above [code]0.0[/code]. Also consider "
+"increasing [member glow_intensity] to [code]1.5[/code]. If you want glow to "
+"behave on mobile like it does on desktop (at a performance cost), enable "
+"[member ProjectSettings.rendering/quality/depth/hdr]'s [code].mobile[/code] "
+"override."
 msgstr ""
 
 #: doc/classes/Environment.xml
@@ -23666,6 +23709,10 @@ msgid ""
 "[b]F8[/b] while the project is running, the file won't be closed as the game "
 "process will be killed. You can work around this by calling [method flush] "
 "at regular intervals."
+msgstr ""
+
+#: doc/classes/File.xml
+msgid "File system"
 msgstr ""
 
 #: doc/classes/File.xml
@@ -24270,11 +24317,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/float.xml
-msgid "https://en.wikipedia.org/wiki/Double-precision_floating-point_format"
+msgid "Wikipedia: Double-precision floating-point format"
 msgstr ""
 
 #: doc/classes/float.xml
-msgid "https://en.wikipedia.org/wiki/Single-precision_floating-point_format"
+msgid "Wikipedia: Single-precision floating-point format"
 msgstr ""
 
 #: doc/classes/float.xml
@@ -24300,6 +24347,23 @@ msgid ""
 "calling [code]float(\"1a3\")[/code] will return 1 while calling "
 "[code]float(\"1e3a2\")[/code] will return 1000.0."
 msgstr ""
+
+#: doc/classes/FlowContainer.xml
+msgid "Base class for flow containers."
+msgstr ""
+
+#: doc/classes/FlowContainer.xml
+msgid ""
+"Arranges child [Control] nodes vertically or horizontally in a left-to-right "
+"or top-to-bottom flow.\n"
+"A line is filled with [Control] nodes until no more fit on the same line, "
+"similar to text in an autowrapped label."
+msgstr ""
+
+#: doc/classes/FlowContainer.xml
+#, fuzzy
+msgid "Returns the current line count."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
 
 #: doc/classes/Font.xml
 msgid "Internationalized font and text drawing support."
@@ -24441,20 +24505,6 @@ msgid ""
 msgstr ""
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/gdnative/gdnative-c-example.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-c-"
-"example.html"
-
-#: modules/gdnative/doc_classes/GDNativeLibrary.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/gdnative/gdnative-cpp-example.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-"
-"cpp-example.html"
-
-#: modules/gdnative/doc_classes/GDNativeLibrary.xml
 msgid ""
 "Returns paths to all dependency libraries for the current platform and "
 "architecture."
@@ -24522,13 +24572,6 @@ msgid ""
 "set_script] extends an existing object, if that object's class matches one "
 "of the script's base classes."
 msgstr ""
-
-#: modules/gdscript/doc_classes/GDScript.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/gdscript/index.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"index.html"
 
 #: modules/gdscript/doc_classes/GDScript.xml
 msgid "Returns byte code for the script source code."
@@ -25318,8 +25361,9 @@ msgid ""
 "Returns a [PoolIntArray] where each triangle consists of three consecutive "
 "point indices into [code]polygon[/code] (i.e. the returned array will have "
 "[code]n * 3[/code] elements, with [code]n[/code] being the number of found "
-"triangles). If the triangulation did not succeed, an empty [PoolIntArray] is "
-"returned."
+"triangles). Output triangles will always be counter clockwise, and the "
+"contour will be flipped if it's clockwise. If the triangulation did not "
+"succeed, an empty [PoolIntArray] is returned."
 msgstr ""
 
 #: doc/classes/Geometry.xml
@@ -25573,7 +25617,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/GIProbe.xml
-msgid "$DOCS_URL/tutorials/3d/gi_probes.html"
+msgid "GI probes"
 msgstr ""
 
 #: doc/classes/GIProbe.xml
@@ -25589,7 +25633,12 @@ msgid ""
 "[b]Note:[/b] [method bake] works from the editor and in exported projects. "
 "This makes it suitable for procedurally generated or user-built levels. "
 "Baking a [GIProbe] generally takes from 5 to 20 seconds in most scenes. "
-"Reducing [member subdiv] can speed up baking."
+"Reducing [member subdiv] can speed up baking.\n"
+"[b]Note:[/b] [GeometryInstance]s and [Light]s must be fully ready before "
+"[method bake] is called. If you are procedurally creating those and some "
+"meshes or lights are missing from your baked [GIProbe], use "
+"[code]call_deferred(\"bake\")[/code] instead of calling [method bake] "
+"directly."
 msgstr ""
 
 #: doc/classes/GIProbe.xml
@@ -26570,11 +26619,13 @@ msgid ""
 "reorders its Control-derived children to accommodate the new layout."
 msgstr ""
 
-#: doc/classes/GridContainer.xml
+#: doc/classes/GridContainer.xml doc/classes/HFlowContainer.xml
+#: doc/classes/VFlowContainer.xml
 msgid "The horizontal separation of children nodes."
 msgstr ""
 
-#: doc/classes/GridContainer.xml
+#: doc/classes/GridContainer.xml doc/classes/HFlowContainer.xml
+#: doc/classes/VFlowContainer.xml
 msgid "The vertical separation of children nodes."
 msgstr ""
 
@@ -26601,10 +26652,8 @@ msgid ""
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/using_gridmaps.html"
+msgid "Using gridmaps"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "Clear all cells."
@@ -26647,6 +26696,12 @@ msgstr ""
 msgid ""
 "Returns an array of [Vector3] with the non-empty cell coordinates in the "
 "grid map."
+msgstr ""
+
+#: modules/gridmap/doc_classes/GridMap.xml
+msgid ""
+"Returns an array of all cells with the given item index specified in "
+"[code]item[/code]."
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
@@ -26870,6 +26925,14 @@ msgstr ""
 msgid ""
 "Width of the height map data. Changing this will resize the [member "
 "map_data]."
+msgstr ""
+
+#: doc/classes/HFlowContainer.xml
+msgid "Horizontal flow container."
+msgstr ""
+
+#: doc/classes/HFlowContainer.xml
+msgid "Horizontal version of [FlowContainer]."
 msgstr ""
 
 #: doc/classes/HingeJoint.xml
@@ -27201,21 +27264,6 @@ msgid ""
 "are otherwise valid. If this is a concern, you may want to use automatically "
 "managed certificates with a short validity period."
 msgstr ""
-
-#: doc/classes/HTTPClient.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/networking/http_client_class.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"http_client_class.html"
-
-#: doc/classes/HTTPClient.xml doc/classes/HTTPRequest.xml
-#: doc/classes/StreamPeerSSL.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/networking/ssl_certificates.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates."
-"html"
 
 #: doc/classes/HTTPClient.xml
 msgid "Closes the current connection, allowing reuse of this [HTTPClient]."
@@ -28008,13 +28056,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/networking/http_request_class.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"http_request_class.html"
-
-#: doc/classes/HTTPRequest.xml
 msgid "Cancels the current request."
 msgstr ""
 
@@ -28159,11 +28200,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Image.xml doc/classes/ImageTexture.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/assets_pipeline/importing_images.html"
+msgid "Importing images"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
-"importing_scenes.html#custom-script"
 
 #: doc/classes/Image.xml
 msgid ""
@@ -28880,6 +28918,10 @@ msgid ""
 "compressed into two channels)."
 msgstr ""
 
+#: doc/classes/Image.xml
+msgid "Source texture (before compression) is a [TextureLayered]."
+msgstr ""
+
 #: doc/classes/ImageTexture.xml
 msgid "A [Texture] based on an [Image]."
 msgstr ""
@@ -29071,7 +29113,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
-msgid "$DOCS_URL/tutorials/inputs/index.html"
+msgid "Inputs tutorial index"
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -29300,8 +29342,8 @@ msgid ""
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
 "for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
-"[code]false[/code] even if one of the action's keys is pressed. See [url="
-"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"[code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
 "examples[/url] in the documentation for more information."
 msgstr ""
 
@@ -29329,8 +29371,8 @@ msgid ""
 "keyboard shortcuts are generally dependent on the keyboard layout in non-"
 "game applications. If in doubt, use [method is_physical_key_pressed].\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return "
-"[code]false[/code] even if one of the action's keys is pressed. See [url="
-"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"[code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
 "examples[/url] in the documentation for more information."
 msgstr ""
 
@@ -29487,7 +29529,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
-msgid "Sets the mouse position to the specified vector."
+msgid ""
+"Sets the mouse position to the specified vector, provided in pixels and "
+"relative to an origin at the upper left corner of the game window.\n"
+"Mouse position is clipped to the limits of the screen resolution, or to the "
+"limits of the game window if [enum MouseMode] is set to [constant "
+"MOUSE_MODE_CONFINED]."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -29622,15 +29669,9 @@ msgstr ""
 msgid "Base class of all sort of input event. See [method Node._input]."
 msgstr ""
 
-#: doc/classes/InputEvent.xml doc/classes/InputEventJoypadButton.xml
-#: doc/classes/InputEventJoypadMotion.xml doc/classes/InputEventKey.xml
-#: doc/classes/InputEventMouse.xml doc/classes/InputEventScreenDrag.xml
-#: doc/classes/InputEventScreenTouch.xml
-#: doc/classes/InputEventWithModifiers.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/inputs/inputevent.html"
+#: doc/classes/InputEvent.xml
+msgid "InputEvent"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html"
 
 #: doc/classes/InputEvent.xml
 msgid ""
@@ -29673,8 +29714,8 @@ msgid ""
 "modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
 "direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
-"[code]false[/code] even if one of the action's keys is pressed. See [url="
-"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"[code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
 "examples[/url] in the documentation for more information."
 msgstr ""
 
@@ -29705,8 +29746,8 @@ msgid ""
 "Returns [code]true[/code] if this input event is pressed. Not relevant for "
 "events of type [InputEventMouseMotion] or [InputEventScreenDrag].\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
-"[code]false[/code] even if one of the action's keys is pressed. See [url="
-"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"[code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
 "examples[/url] in the documentation for more information."
 msgstr ""
 
@@ -29750,11 +29791,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputEventAction.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/inputs/inputevent.html#actions"
+msgid "InputEvent: Actions"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
-"html#actions"
 
 #: doc/classes/InputEventAction.xml
 msgid "The action's name. Actions are accessed via this [String]."
@@ -29921,17 +29959,15 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputEventMIDI.xml
-msgid ""
-"https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-"
-"status-bytes"
+msgid "MIDI Message Status Byte List"
 msgstr ""
 
 #: doc/classes/InputEventMIDI.xml
-msgid "https://en.wikipedia.org/wiki/General_MIDI#Program_change_events"
+msgid "Wikipedia General MIDI Instrument List"
 msgstr ""
 
 #: doc/classes/InputEventMIDI.xml
-msgid "https://en.wikipedia.org/wiki/Piano_key_frequencies#List"
+msgid "Wikipedia Piano Key Frequencies List"
 msgstr ""
 
 #: doc/classes/InputEventMIDI.xml
@@ -30015,17 +30051,21 @@ msgstr ""
 
 #: doc/classes/InputEventMouse.xml
 msgid ""
-"The global mouse position relative to the current [Viewport]. If used in "
-"[method Control._gui_input] and if the current [Control] is not under the "
-"mouse, moving it will not update this value."
+"When received in [method Node._input] or [method Node._unhandled_input], "
+"returns the mouse's position in the root [Viewport] using the coordinate "
+"system of the root [Viewport].\n"
+"When received in [method Control._gui_input], returns the mouse's position "
+"in the [CanvasLayer] that the [Control] is in using the coordinate system of "
+"the [CanvasLayer]."
 msgstr ""
 
 #: doc/classes/InputEventMouse.xml
 msgid ""
-"The local mouse position relative to the [Viewport]. If used in [method "
-"Control._gui_input], the position is relative to the current [Control] which "
-"is under the mouse. If the current [Control] is not under the mouse, moving "
-"it will not update this value."
+"When received in [method Node._input] or [method Node._unhandled_input], "
+"returns the mouse's position in the [Viewport] this [Node] is in using the "
+"coordinate system of this [Viewport].\n"
+"When received in [method Control._gui_input], returns the mouse's position "
+"in the [Control] using the local coordinate system of the [Control]."
 msgstr ""
 
 #: doc/classes/InputEventMouseButton.xml
@@ -30035,13 +30075,6 @@ msgstr ""
 #: doc/classes/InputEventMouseButton.xml
 msgid "Contains mouse click information. See [method Node._input]."
 msgstr ""
-
-#: doc/classes/InputEventMouseButton.xml doc/classes/InputEventMouseMotion.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/"
-"mouse_and_input_coordinates.html"
 
 #: doc/classes/InputEventMouseButton.xml
 msgid ""
@@ -30079,9 +30112,13 @@ msgid ""
 "at most. If you need more precise input reporting, call [method Input."
 "set_use_accumulated_input] with [code]false[/code] to make events emitted as "
 "often as possible. If you use InputEventMouseMotion to draw lines, consider "
-"implementing [url=https://en.wikipedia.org/wiki/Bresenham"
-"%27s_line_algorithm]Bresenham's line algorithm[/url] as well to avoid "
-"visible gaps in lines if the user is moving the mouse quickly."
+"implementing [url=https://en.wikipedia.org/wiki/"
+"Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
+"avoid visible gaps in lines if the user is moving the mouse quickly."
+msgstr ""
+
+#: doc/classes/InputEventMouseMotion.xml
+msgid "Mouse and input coordinates"
 msgstr ""
 
 #: doc/classes/InputEventMouseMotion.xml
@@ -30206,13 +30243,6 @@ msgid ""
 "code with [method add_action] and [method action_add_event]. See [method "
 "Node._input]."
 msgstr ""
-
-#: doc/classes/InputMap.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/inputs/inputevent.html#inputmap"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
-"html#inputmap"
 
 #: doc/classes/InputMap.xml
 msgid ""
@@ -30968,15 +30998,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/JavaScript.xml
-#, fuzzy
-msgid ""
-"$DOCS_URL/tutorials/export/exporting_for_web.html#calling-javascript-from-"
-"script"
-msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/export/"
-"exporting_for_web.html#calling-javascript-from-script"
-
-#: doc/classes/JavaScript.xml
 msgid ""
 "Creates a reference to a script function that can be used as a callback by "
 "JavaScript. The reference must be kept until the callback happens, or it "
@@ -31022,6 +31043,29 @@ msgid ""
 "[code]window[/code]. The callback must accept a single [Array] argument, "
 "which will contain the JavaScript [code]arguments[/code]. See "
 "[JavaScriptObject] for usage."
+msgstr ""
+
+#: doc/classes/JavaScript.xml
+msgid ""
+"Returns [code]true[/code] if a new version of the progressive web app is "
+"waiting to be activated.\n"
+"[b]Note:[/b] Only relevant when exported as a Progressive Web App."
+msgstr ""
+
+#: doc/classes/JavaScript.xml
+msgid ""
+"Performs the live update of the progressive web app. Forcing the new version "
+"to be installed and the page to be reloaded.\n"
+"[b]Note:[/b] Your application will be [b]reloaded in all browser tabs[/b].\n"
+"[b]Note:[/b] Only relevant when exported as a Progressive Web App and "
+"[method pwa_needs_update] returns [code]true[/code]."
+msgstr ""
+
+#: doc/classes/JavaScript.xml
+msgid ""
+"Emitted when an update for this progressive web app has been detected but is "
+"waiting to be activated because a previous version is active. See [method "
+"pwa_update] to force the update to take place immediately."
 msgstr ""
 
 #: doc/classes/JavaScriptObject.xml
@@ -31084,11 +31128,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/JNISingleton.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/platform/android/android_plugin.html"
+msgid "Creating Android plugins"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/Joint.xml
 msgid "Base class for all 3D joints."
@@ -31103,9 +31144,8 @@ msgstr ""
 
 #: doc/classes/Joint.xml doc/classes/RigidBody.xml doc/classes/VehicleBody.xml
 #: doc/classes/VehicleWheel.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/524"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Truck Town Demo"
+msgstr ""
 
 #: doc/classes/Joint.xml
 msgid ""
@@ -31182,7 +31222,11 @@ msgid ""
 "[b]Note:[/b] The JSON specification does not define integer or float types, "
 "but only a [i]number[/i] type. Therefore, converting a Variant to JSON text "
 "will convert all numerical values to [float] types.\n"
-"Use [code]indent[/code] parameter to pretty print the output.\n"
+"The [code]indent[/code] parameter controls if and how something is indented, "
+"the string used for this parameter will be used where there should be an "
+"indent in the output, even spaces like [code]\"   \"[/code] will work. "
+"[code]\\t[/code] and [code]\\n[/code] can also be used for a tab indent, or "
+"to make a newline for each indent respectively.\n"
 "[b]Example output:[/b]\n"
 "[codeblock]\n"
 "## JSON.print(my_dictionary)\n"
@@ -31192,18 +31236,34 @@ msgid ""
 "\n"
 "## JSON.print(my_dictionary, \"\\t\")\n"
 "{\n"
-"        \"name\": \"my_dictionary\",\n"
-"        \"version\": \"1.0.0\",\n"
-"        \"entities\": [\n"
-"                {\n"
-"                        \"name\": \"entity_0\",\n"
-"                        \"value\": \"value_0\"\n"
-"                },\n"
-"                {\n"
-"                        \"name\": \"entity_1\",\n"
-"                        \"value\": \"value_1\"\n"
-"                }\n"
-"        ]\n"
+"    \"name\": \"my_dictionary\",\n"
+"    \"version\": \"1.0.0\",\n"
+"    \"entities\": [\n"
+"        {\n"
+"            \"name\": \"entity_0\",\n"
+"            \"value\": \"value_0\"\n"
+"        },\n"
+"        {\n"
+"            \"name\": \"entity_1\",\n"
+"            \"value\": \"value_1\"\n"
+"        }\n"
+"    ]\n"
+"}\n"
+"\n"
+"## JSON.print(my_dictionary, \"...\")\n"
+"{\n"
+"...\"name\": \"my_dictionary\",\n"
+"...\"version\": \"1.0.0\",\n"
+"...\"entities\": [\n"
+"......{\n"
+".........\"name\": \"entity_0\",\n"
+".........\"value\": \"value_0\"\n"
+"......},\n"
+"......{\n"
+".........\"name\": \"entity_1\",\n"
+".........\"value\": \"value_1\"\n"
+"......}\n"
+"...]\n"
 "}\n"
 "[/codeblock]"
 msgstr ""
@@ -31355,11 +31415,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/physics/kinematic_character_2d.html"
+msgid "Kinematic character (2D)"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"kinematic_character_2d.html"
 
 #: doc/classes/KinematicBody.xml
 msgid ""
@@ -31608,11 +31665,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/physics/using_kinematic_body_2d.html"
+msgid "Using KinematicBody2D"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"using_kinematic_body_2d.html"
 
 #: doc/classes/KinematicBody2D.xml
 msgid ""
@@ -32041,6 +32095,10 @@ msgid ""
 "lighting."
 msgstr ""
 
+#: doc/classes/Light.xml doc/classes/SpotLight.xml
+msgid "3D lights and shadows"
+msgstr ""
+
 #: doc/classes/Light.xml
 msgid "Returns the value of the specified [enum Light.Param] parameter."
 msgstr ""
@@ -32116,7 +32174,12 @@ msgid "The color of shadows cast by this light."
 msgstr ""
 
 #: doc/classes/Light.xml
-msgid "Attempts to reduce [member shadow_bias] gap."
+msgid ""
+"Attempts to reduce [member shadow_bias] gap by rendering screen-space "
+"contact shadows. This has a performance impact, especially at higher "
+"values.\n"
+"[b]Note:[/b] Contact shadows can look broken, so leaving this property to "
+"[code]0.0[/code] is recommended."
 msgstr ""
 
 #: doc/classes/Light.xml
@@ -32236,13 +32299,6 @@ msgid ""
 "parameters (range and shadows-related).\n"
 "[b]Note:[/b] Light2D can also be used as a mask."
 msgstr ""
-
-#: doc/classes/Light2D.xml doc/classes/LightOccluder2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows."
-"html"
 
 #: doc/classes/Light2D.xml
 msgid "The Light2D's [Color]."
@@ -32503,8 +32559,12 @@ msgstr ""
 
 #: doc/classes/Line2D.xml
 msgid ""
-"The smoothness of the rounded joints and caps. This is only used if a cap or "
-"joint is set as round."
+"The smoothness of the rounded joints and caps. Higher values result in "
+"smoother corners, but are more demanding to render and update. This is only "
+"used if a cap or joint is set as round.\n"
+"[b]Note:[/b] The default value is tuned for lines with the default [member "
+"width]. For thin lines, this value should be reduced to a number between "
+"[code]2[/code] and [code]4[/code] to improve performance."
 msgstr ""
 
 #: doc/classes/Line2D.xml
@@ -34090,10 +34150,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MeshInstance2D.xml
-msgid "$DOCS_URL/tutorials/2d/2d_meshes.html"
-msgstr ""
-
-#: doc/classes/MeshInstance2D.xml
 msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
 msgstr ""
 
@@ -34324,22 +34380,6 @@ msgid ""
 "provided by the user."
 msgstr ""
 
-#: doc/classes/MultiMesh.xml doc/classes/MultiMeshInstance.xml
-#, fuzzy
-msgid ""
-"$DOCS_URL/tutorials/performance/vertex_animation/animating_thousands_of_fish."
-"html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
-"animating_thousands_of_fish.html"
-
-#: doc/classes/MultiMesh.xml doc/classes/MultiMeshInstance.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/performance/using_multimesh.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/optimization/"
-"using_multimesh.html"
-
 #: doc/classes/MultiMesh.xml
 msgid ""
 "Returns the visibility axis-aligned bounding box in local space. See also "
@@ -34364,6 +34404,15 @@ msgstr ""
 
 #: doc/classes/MultiMesh.xml
 msgid ""
+"When using [i]physics interpolation[/i], this function allows you to prevent "
+"interpolation on an instance in the current physics tick.\n"
+"This allows you to move instances instantaneously, and should usually be "
+"used when initially placing an instance such as a bullet to prevent "
+"graphical glitches."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
 "Sets all data related to the instances in one go. This is especially useful "
 "when loading the data from disk or preparing the data from GDNative.\n"
 "All data is packed in one large float array. An array may look like this: "
@@ -34373,6 +34422,18 @@ msgid ""
 "[code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float "
 "(4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/"
 "code] is stored as 4 floats."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"An alternative version of [method MultiMesh.set_as_bulk_array] which can be "
+"used with [i]physics interpolation[/i]. This method takes two arrays, and "
+"can set the data for the current and previous tick in one go. The renderer "
+"will automatically interpolate the data at each frame.\n"
+"This is useful for situations where the order of instances may change from "
+"physics tick to tick, such as particle systems.\n"
+"When the order of instances is coherent, the simpler [method MultiMesh."
+"set_as_bulk_array] can still be used with interpolation."
 msgstr ""
 
 #: doc/classes/MultiMesh.xml
@@ -34416,6 +34477,16 @@ msgstr ""
 
 #: doc/classes/MultiMesh.xml
 msgid "Mesh to be drawn."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"Choose whether to use an interpolation method that favors speed or quality.\n"
+"When using low physics tick rates (typically below 20) or high rates of "
+"object rotation, you may get better results from the high quality setting.\n"
+"[b]Note:[/b] Fast quality does not equate to low quality. Except in the "
+"special cases mentioned above, the quality should be comparable to high "
+"quality."
 msgstr ""
 
 #: doc/classes/MultiMesh.xml
@@ -34470,6 +34541,18 @@ msgid ""
 "Use this for highest precision."
 msgstr ""
 
+#: doc/classes/MultiMesh.xml
+msgid ""
+"Always interpolate using Basis lerping, which can produce warping artifacts "
+"in some situations."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"Attempt to interpolate using Basis slerping (spherical linear interpolation) "
+"where possible, otherwise fall back to lerping."
+msgstr ""
+
 #: doc/classes/MultiMeshInstance.xml
 msgid "Node that instances a [MultiMesh]."
 msgstr ""
@@ -34481,13 +34564,6 @@ msgid ""
 "This is useful to optimize the rendering of a high amount of instances of a "
 "given mesh (for example trees in a forest or grass strands)."
 msgstr ""
-
-#: doc/classes/MultiMeshInstance.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/using_multi_mesh_instance.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/"
-"using_multi_mesh_instance.html"
 
 #: doc/classes/MultiMeshInstance.xml
 msgid ""
@@ -34737,13 +34813,6 @@ msgid ""
 "used to protect a critical section; however, be careful to avoid deadlocks."
 msgstr ""
 
-#: doc/classes/Mutex.xml doc/classes/Semaphore.xml doc/classes/Thread.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/performance/threads/using_multiple_threads.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/threads/"
-"using_multiple_threads.html"
-
 #: doc/classes/Mutex.xml
 msgid ""
 "Locks this [Mutex], blocks until it is unlocked by the current owner.\n"
@@ -34815,9 +34884,8 @@ msgstr ""
 
 #: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
 #: doc/classes/NavigationServer.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/124"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Navmesh Demo"
+msgstr ""
 
 #: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
 msgid ""
@@ -34854,6 +34922,10 @@ msgid ""
 "etc.) are considered in the path calculation, otherwise they are ignored."
 msgstr ""
 
+#: doc/classes/Navigation.xml
+msgid "The cell height to use for fields."
+msgstr ""
+
 #: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
 msgid "The XZ plane cell size to use for fields."
 msgstr ""
@@ -34882,9 +34954,8 @@ msgstr ""
 
 #: doc/classes/Navigation2D.xml doc/classes/Navigation2DServer.xml
 #: doc/classes/NavigationPolygon.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/117"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Navigation Demo"
+msgstr ""
 
 #: doc/classes/Navigation2D.xml
 msgid ""
@@ -35201,7 +35272,7 @@ msgstr ""
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
 "The minimal amount of time for which this agent's velocities, that are "
-"computed with the collision avoidance algorithim, are safe with respect to "
+"computed with the collision avoidance algorithm, are safe with respect to "
 "other agents. The larger the number, the sooner the agent will respond to "
 "other agents, but the less freedom in choosing its velocities. Must be "
 "positive."
@@ -35753,6 +35824,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the map cell height."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
+
+#: doc/classes/NavigationServer.xml
 msgid ""
 "Returns the normal for the point returned by [method map_get_closest_point]."
 msgstr ""
@@ -35772,6 +35848,10 @@ msgstr ""
 #, fuzzy
 msgid "Returns the map's up direction."
 msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
+
+#: doc/classes/NavigationServer.xml
+msgid "Set the map cell height used to weld the navigation mesh polygons."
+msgstr ""
 
 #: doc/classes/NavigationServer.xml
 msgid "Sets the map up direction."
@@ -35811,18 +35891,6 @@ msgid ""
 "the server port in UDP. You can use the [UPNP] class to try to forward the "
 "server port automatically when starting the server."
 msgstr ""
-
-#: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
-#: doc/classes/NetworkedMultiplayerPeer.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/networking/high_level_multiplayer.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"high_level_multiplayer.html"
-
-#: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
-msgid "http://enet.bespin.org/usergroup0.html"
-msgstr "http://enet.bespin.org/usergroup0.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid ""
@@ -36063,9 +36131,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerPeer.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/537"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "High-level multiplayer"
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerPeer.xml
+msgid "WebRTC Signaling Demo"
+msgstr ""
 
 #: doc/classes/NetworkedMultiplayerPeer.xml
 msgid ""
@@ -36355,16 +36426,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
-#, fuzzy
-msgid "$DOCS_URL/getting_started/step_by_step/nodes_and_scenes.html"
+msgid "Nodes and Scenes"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"scenes_and_nodes.html"
 
 #: doc/classes/Node.xml
-#, fuzzy
-msgid "https://github.com/godotengine/godot-demo-projects/"
-msgstr "https://github.com/godotengine/tps-demo"
+msgid "All Demos"
+msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
@@ -36410,7 +36477,7 @@ msgid ""
 "_unhandled_key_input] are usually a better fit as they allow the GUI to "
 "intercept the events first.\n"
 "[b]Note:[/b] This method is only called if the node is present in the scene "
-"tree (i.e. if it's not orphan)."
+"tree (i.e. if it's not an orphan)."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -36425,7 +36492,7 @@ msgid ""
 "Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in "
 "[method Object._notification].\n"
 "[b]Note:[/b] This method is only called if the node is present in the scene "
-"tree (i.e. if it's not orphan)."
+"tree (i.e. if it's not an orphan)."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -36438,7 +36505,7 @@ msgid ""
 "Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method "
 "Object._notification].\n"
 "[b]Note:[/b] This method is only called if the node is present in the scene "
-"tree (i.e. if it's not orphan)."
+"tree (i.e. if it's not an orphan)."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -36453,17 +36520,17 @@ msgid ""
 "Usually used for initialization. For even earlier initialization, [method "
 "Object._init] may be used. See also [method _enter_tree].\n"
 "[b]Note:[/b] [method _ready] may be called only once for each node. After "
-"removing a node from the scene tree and adding again, [code]_ready[/code] "
-"will not be called for the second time. This can be bypassed with requesting "
-"another call with [method request_ready], which may be called anywhere "
-"before adding the node again."
+"removing a node from the scene tree and adding it again, [code]_ready[/code] "
+"will not be called a second time. This can be bypassed by requesting another "
+"call with [method request_ready], which may be called anywhere before adding "
+"the node again."
 msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
 "Called when an [InputEvent] hasn't been consumed by [method _input] or any "
-"GUI. The input event propagates up through the node tree until a node "
-"consumes it.\n"
+"GUI [Control] item. The input event propagates up through the node tree "
+"until a node consumes it.\n"
 "It is only called if unhandled input processing is enabled, which is done "
 "automatically if this method is overridden, and can be toggled with [method "
 "set_process_unhandled_input].\n"
@@ -36473,14 +36540,14 @@ msgid ""
 "better fit than [method _input] as they allow the GUI to intercept the "
 "events first.\n"
 "[b]Note:[/b] This method is only called if the node is present in the scene "
-"tree (i.e. if it's not orphan)."
+"tree (i.e. if it's not an orphan)."
 msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
 "Called when an [InputEventKey] hasn't been consumed by [method _input] or "
-"any GUI. The input event propagates up through the node tree until a node "
-"consumes it.\n"
+"any GUI [Control] item. The input event propagates up through the node tree "
+"until a node consumes it.\n"
 "It is only called if unhandled key input processing is enabled, which is "
 "done automatically if this method is overridden, and can be toggled with "
 "[method set_process_unhandled_key_input].\n"
@@ -36490,7 +36557,7 @@ msgid ""
 "fit than [method _input] as they allow the GUI to intercept the events "
 "first.\n"
 "[b]Note:[/b] This method is only called if the node is present in the scene "
-"tree (i.e. if it's not orphan)."
+"tree (i.e. if it's not an orphan)."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -36797,6 +36864,25 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
+"Returns [code]true[/code] if the physics interpolated flag is set for this "
+"Node (see [method set_physics_interpolated]).\n"
+"[b]Note:[/b] Interpolation will only be active is both the flag is set "
+"[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
+"be tested using [method is_physics_interpolated_and_enabled]."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Returns [code]true[/code] if physics interpolation is enabled (see [method "
+"set_physics_interpolated]) [b]and[/b] enabled in the [SceneTree].\n"
+"This is a convenience version of [method is_physics_interpolated] that also "
+"checks whether physics interpolation is enabled globally.\n"
+"See [member SceneTree.physics_interpolation] and [member ProjectSettings."
+"physics/common/physics_interpolation]."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
 "Returns [code]true[/code] if physics processing is enabled (see [method "
 "set_physics_process])."
 msgstr ""
@@ -36967,6 +37053,21 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
+"When physics interpolation is active, moving a node to a radically different "
+"transform (such as placement within a level) can result in a visible glitch "
+"as the object is rendered moving from the old to new position over the "
+"physics tick.\n"
+"This glitch can be prevented by calling [code]reset_physics_interpolation[/"
+"code], which temporarily turns off interpolation until the physics tick is "
+"complete.\n"
+"[constant NOTIFICATION_RESET_PHYSICS_INTERPOLATION] will be received by the "
+"node and all children recursively.\n"
+"[b]Note:[/b] This function should be called [b]after[/b] moving the node, "
+"rather than before."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
 "Sends a remote procedure call request for the given [code]method[/code] to "
 "peers on the network (and locally), optionally sending all additional "
 "arguments as arguments to the method called by the RPC. The call request "
@@ -37063,6 +37164,14 @@ msgid ""
 "keywords. Inherited from the parent node by default, which ultimately "
 "defaults to peer ID 1 (the server). If [code]recursive[/code], the given "
 "peer is recursively set as the master for all children of this node."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Enables or disables physics interpolation per node, offering a finer grain "
+"of control than turning physics interpolation on and off globally.\n"
+"[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
+"interpolation can sometimes give superior results."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -37199,6 +37308,18 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
+msgid ""
+"Emitted when a child node enters the scene tree, either because it entered "
+"on its own or because this node entered with it."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Emitted when a child node exits the scene tree, either because it exited on "
+"its own or because this node exited."
+msgstr ""
+
+#: doc/classes/Node.xml
 msgid "Emitted when the node is ready."
 msgstr ""
 
@@ -37305,6 +37426,12 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
+"Notification received when [method reset_physics_interpolation] is called on "
+"the node or parent nodes."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
 "Inherits pause mode from the node's parent. For the root node, it is "
 "equivalent to [constant PAUSE_MODE_STOP]. Default."
 msgstr ""
@@ -37351,11 +37478,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node2D.xml doc/classes/Vector2.xml
-#, fuzzy
-msgid "https://github.com/godotengine/godot-demo-projects/tree/master/2d"
+msgid "All 2D Demos"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Node2D.xml
 msgid "Multiplies the current scale by the [code]ratio[/code] vector."
@@ -37522,9 +37646,8 @@ msgstr ""
 #: doc/classes/NodePath.xml doc/classes/PackedScene.xml doc/classes/Panel.xml
 #: doc/classes/PanelContainer.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/520"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Role Playing Game Demo"
+msgstr ""
 
 #: doc/classes/NodePath.xml
 msgid ""
@@ -37560,11 +37683,11 @@ msgid ""
 "transforming it to a pure property path with no node name (defaults to "
 "resolving from the current node).\n"
 "[codeblock]\n"
-"# This will be parsed as a node path to the \"x\" property in the \"position"
-"\" node\n"
+"# This will be parsed as a node path to the \"x\" property in the "
+"\"position\" node\n"
 "var node_path = NodePath(\"position:x\")\n"
-"# This will be parsed as a node path to the \"x\" component of the \"position"
-"\" property in the current node\n"
+"# This will be parsed as a node path to the \"x\" component of the "
+"\"position\" property in the current node\n"
 "var property_path = node_path.get_as_property_path()\n"
 "print(property_path) # :position:x\n"
 "[/codeblock]"
@@ -37701,8 +37824,8 @@ msgstr ""
 msgid ""
 "Every class which is not a built-in type inherits from this class.\n"
 "You can construct Objects from scripting languages, using [code]Object.new()"
-"[/code] in GDScript, [code]new Object[/code] in C#, or the \"Construct Object"
-"\" node in VisualScript.\n"
+"[/code] in GDScript, [code]new Object[/code] in C#, or the \"Construct "
+"Object\" node in VisualScript.\n"
 "Objects do not manage memory. If a class inherits from Object, you will have "
 "to delete instances of it manually. To do so, call the [method free] method "
 "from your script or delete the instance from C++.\n"
@@ -37736,19 +37859,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Object.xml doc/classes/Reference.xml doc/classes/Resource.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/best_practices/node_alternatives.html"
+msgid "When and how to avoid using nodes for everything"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/"
-"best_practices/node_alternatives.html"
 
 #: doc/classes/Object.xml
-#, fuzzy
-msgid ""
-"$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html#advanced-exports"
+msgid "Advanced exports using _get_property_list()"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -37951,8 +38067,8 @@ msgstr ""
 msgid ""
 "Gets the object's property indexed by the given [NodePath]. The node path "
 "should be relative to the current object and can use the colon character "
-"([code]:[/code]) to access nested properties. Examples: [code]\"position:x"
-"\"[/code] or [code]\"material:next_pass:blend_mode\"[/code].\n"
+"([code]:[/code]) to access nested properties. Examples: [code]\"position:"
+"x\"[/code] or [code]\"material:next_pass:blend_mode\"[/code].\n"
 "[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't "
 "support actual paths to [Node]s in the scene tree, only colon-separated sub-"
 "property paths. For the purpose of nodes, use [method Node."
@@ -38076,7 +38192,7 @@ msgstr ""
 #: doc/classes/Object.xml
 msgid ""
 "Assigns a new value to the given property. If the [code]property[/code] does "
-"not exist, nothing will happen.\n"
+"not exist or the given value's type doesn't match, nothing will happen.\n"
 "[b]Note:[/b] In C#, the property name must be specified as snake_case if it "
 "is defined by a built-in Godot node. This doesn't apply to user-defined "
 "properties where you should use the same convention as in the C# source "
@@ -38263,6 +38379,48 @@ msgstr ""
 
 #: doc/classes/OccluderShape.xml
 msgid "[Occluder]s can use any primitive shape derived from [OccluderShape]."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid "Polygon occlusion primitive for use with the [Occluder] node."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid ""
+"[OccluderShape]s are resources used by [Occluder] nodes, allowing geometric "
+"occlusion culling.\n"
+"The polygon must be a convex polygon. The polygon points can be created and "
+"deleted either in the Editor inspector or by calling "
+"[code]set_polygon_points[/code]. The points of the edges can be set by "
+"dragging the handles in the Editor viewport.\n"
+"Additionally each polygon occluder can optionally support a single hole. If "
+"you add at least three points in the Editor inspector to the hole, you can "
+"drag the edge points of the hole in the Editor viewport.\n"
+"In general, the lower the number of edges in polygons and holes, the faster "
+"the system will operate at runtime, so in most cases you will want to use 4 "
+"points for each."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid "Sets an individual hole point position."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid "Sets an individual polygon point position."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid "Allows changing the hole geometry from code."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid "Allows changing the polygon geometry from code."
+msgstr ""
+
+#: doc/classes/OccluderShapePolygon.xml
+msgid ""
+"Specifies whether the occluder should operate from both sides. If "
+"[code]false[/code], the occluder will operate one way only."
 msgstr ""
 
 #: doc/classes/OccluderShapeSphere.xml
@@ -38791,7 +38949,16 @@ msgid ""
 "OS.execute(\"CMD.exe\", [\"/C\", \"cd %TEMP% && dir\"], true, output)\n"
 "[/codeblock]\n"
 "[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and "
-"Windows."
+"Windows.\n"
+"[b]Note:[/b] To execute a Windows command interpreter built-in command, "
+"specify [code]cmd.exe[/code] in [code]path[/code], [code]/c[/code] as the "
+"first argument, and the desired command as the second argument.\n"
+"[b]Note:[/b] To execute a PowerShell built-in command, specify "
+"[code]powershell.exe[/code] in [code]path[/code], [code]-Command[/code] as "
+"the first argument, and the desired command as the second argument.\n"
+"[b]Note:[/b] To execute a Unix shell built-in command, specify shell "
+"executable name in [code]path[/code], [code]-c[/code] as the first argument, "
+"and the desired command as the second argument."
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -39043,7 +39210,19 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-msgid "Returns the number of threads available on the host machine."
+msgid ""
+"Returns the number of [i]logical[/i] CPU cores available on the host "
+"machine. On CPUs with HyperThreading enabled, this number will be greater "
+"than the number of [i]physical[/i] CPU cores."
+msgstr ""
+
+#: doc/classes/OS.xml
+msgid ""
+"Returns the name of the CPU model on the host machine (e.g. \"Intel(R) "
+"Core(TM) i7-6700K CPU @ 4.00GHz\").\n"
+"[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and "
+"iOS. On Android, HTML5 and UWP, [method get_processor_name] returns an empty "
+"string."
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -39052,8 +39231,8 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
-"Returns the given scancode as a string (e.g. Return values: [code]\"Escape"
-"\"[/code], [code]\"Shift+Escape\"[/code]).\n"
+"Returns the given scancode as a string (e.g. Return values: "
+"[code]\"Escape\"[/code], [code]\"Shift+Escape\"[/code]).\n"
 "See also [member InputEventKey.scancode] and [method InputEventKey."
 "get_scancode_with_modifiers]."
 msgstr ""
@@ -39303,6 +39482,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
+msgid "Returns [code]true[/code] if there is content on the clipboard."
+msgstr ""
+
+#: doc/classes/OS.xml
 msgid ""
 "Returns [code]true[/code] if the environment variable with the name "
 "[code]variable[/code] exists.\n"
@@ -39408,6 +39591,13 @@ msgstr ""
 msgid ""
 "Returns the localized name of the keyboard layout at position [code]index[/"
 "code].\n"
+"[b]Note:[/b] This method is implemented on Linux, macOS and Windows."
+msgstr ""
+
+#: doc/classes/OS.xml
+msgid ""
+"Converts a physical (US QWERTY) [code]scancode[/code] to one in the active "
+"keyboard layout.\n"
 "[b]Note:[/b] This method is implemented on Linux, macOS and Windows."
 msgstr ""
 
@@ -40368,14 +40558,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Panel.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/516"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Finite State Machine Demo"
+msgstr ""
 
 #: doc/classes/Panel.xml doc/classes/Skeleton.xml doc/classes/SkeletonIK.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/523"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Inverse Kinematics Demo"
+msgstr ""
 
 #: doc/classes/Panel.xml
 msgid "The style of this [Panel]."
@@ -40526,13 +40714,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Particles.xml
-#, fuzzy
-msgid ""
-"$DOCS_URL/tutorials/performance/vertex_animation/"
-"controlling_thousands_of_fish.html"
+msgid "Controlling thousands of fish with Particles"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
-"controlling_thousands_of_fish.html"
 
 #: doc/classes/Particles.xml
 msgid ""
@@ -40649,6 +40832,10 @@ msgid ""
 "camera position and angle.\n"
 "[b]Note:[/b] Unlike [CPUParticles2D], [Particles2D] currently ignore the "
 "texture region defined in [AtlasTexture]s."
+msgstr ""
+
+#: doc/classes/Particles2D.xml
+msgid "Particle systems (2D)"
 msgstr ""
 
 #: doc/classes/Particles2D.xml
@@ -41396,11 +41583,8 @@ msgstr ""
 #: doc/classes/Physics2DDirectSpaceState.xml
 #: doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RayCast.xml
-#: doc/classes/RayCast2D.xml doc/classes/World.xml doc/classes/World2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/physics/ray-casting.html"
+msgid "Ray-casting"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html"
 
 #: doc/classes/Physics2DDirectBodyState.xml doc/classes/RigidBody2D.xml
 msgid "Adds a constant directional force without affecting rotation."
@@ -43978,9 +44162,8 @@ msgstr ""
 
 #: doc/classes/PoolVector2Array.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/519"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Navigation Astar Demo"
+msgstr ""
 
 #: doc/classes/PoolVector2Array.xml
 msgid ""
@@ -44388,6 +44571,11 @@ msgid ""
 "[b]Note:[/b] The indices of items after the removed item will be shifted by "
 "one."
 msgstr ""
+
+#: doc/classes/PopupMenu.xml
+#, fuzzy
+msgid "Sets the currently focused item as the given [code]index[/code]."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
 
 #: doc/classes/PopupMenu.xml
 msgid "Hides the [PopupMenu] when the window loses focus."
@@ -45686,8 +45874,8 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Color of the disabled navigation geometry, visible when \"Visible Navigation"
-"\" is enabled in the Debug menu."
+"Color of the disabled navigation geometry, visible when \"Visible "
+"Navigation\" is enabled in the Debug menu."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -45773,8 +45961,8 @@ msgid ""
 "window is used to emulate fullscreen. On macOS, a new desktop is used to "
 "display the running project.\n"
 "Regardless of the platform, enabling fullscreen will change the window size "
-"to match the monitor's size. Therefore, make sure your project supports [url="
-"$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple "
+"to match the monitor's size. Therefore, make sure your project supports "
+"[url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple "
 "resolutions[/url] when enabling fullscreen mode.\n"
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
@@ -45862,9 +46050,9 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Text-based file extensions to include in the script editor's \"Find in Files"
-"\" feature. You can add e.g. [code]tscn[/code] if you wish to also parse "
-"your scene files, especially if you use built-in scripts which are "
+"Text-based file extensions to include in the script editor's \"Find in "
+"Files\" feature. You can add e.g. [code]tscn[/code] if you wish to also "
+"parse your scene files, especially if you use built-in scripts which are "
 "serialized in the scene files."
 msgstr ""
 
@@ -46893,6 +47081,17 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"If [code]true[/code], the renderer will interpolate the transforms of "
+"physics objects between the last two transforms, such that smooth motion is "
+"seen when physics ticks do not coincide with rendered frames.\n"
+"[b]Note:[/b] When moving objects to new positions (rather than the usual "
+"physics motion) you may want to temporarily turn off interpolation to "
+"prevent a visible glitch. You can do this using the [method Node."
+"reset_physics_interpolation] function."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "Controls how much physics ticks are synchronized with real time. For 0 or "
 "less, the ticks are synchronized. Such values are recommended for network "
 "games, where clock synchronization matters. Higher values cause higher "
@@ -46903,8 +47102,10 @@ msgid ""
 "[b]Note:[/b] For best results, when using a custom physics interpolation "
 "solution, the physics jitter fix should be disabled by setting [member "
 "physics/common/physics_jitter_fix] to [code]0[/code].\n"
+"[b]Note:[/b] Jitter fix is automatically disabled at runtime when [member "
+"physics/common/physics_interpolation] is enabled.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
-"the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead."
+"the value at runtime, set [member Engine.physics_jitter_fix] instead."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47245,12 +47446,14 @@ msgid ""
 "situation, that the engine generates internally so it can be used from the "
 "beginning while the traditional conditioned, optimized version of it is "
 "being compiled.\n"
-"In order to save some loading time, you can use [code]Asynchronous + Cache[/"
-"code], which also causes the ubershaders to be cached into storage so they "
-"can be ready faster next time they are used (provided the platform provides "
-"support for it).\n"
-"[b]Warning:[/b] Async. compilation is currently only supported for spatial "
-"and particle materials/shaders."
+"To reduce loading times after the project has been launched at least once, "
+"you can use [code]Asynchronous + Cache[/code]. This also causes the "
+"ubershaders to be cached into storage so they can be ready faster next time "
+"they are used (provided the platform provides support for it).\n"
+"[b]Note:[/b] Asynchronous compilation is currently only supported for "
+"spatial (3D) and particle materials/shaders. CanvasItem (2D) shaders will "
+"not use asynchronous compilation even if this setting is set to "
+"[code]Asynchronous[/code] or [code]Asynchronous + Cache[/code]."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47345,6 +47548,17 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"Determines the maximum number of polygon occluders that will be used at any "
+"one time.\n"
+"Although you can have many occluders in a scene, each frame the system will "
+"choose from these the most relevant based on a screen space metric, in order "
+"to give the best overall performance.\n"
+"A greater number of polygons can potentially cull more objects, however the "
+"cost of culling calculations scales with the number of occluders."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "Determines the maximum number of sphere occluders that will be used at any "
 "one time.\n"
 "Although you can have many occluders in a scene, each frame the system will "
@@ -47404,14 +47618,19 @@ msgstr ""
 msgid ""
 "If [code]true[/code], allocates the root [Viewport]'s framebuffer with high "
 "dynamic range. High dynamic range allows the use of [Color] values greater "
-"than 1.\n"
+"than 1. This must be set to [code]true[/code] for glow rendering to work if "
+"[member Environment.glow_hdr_threshold] is greater than or equal to "
+"[code]1.0[/code].\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Lower-end override for [member rendering/quality/depth/hdr] on mobile "
-"devices, due to performance concerns or driver support."
+"devices, due to performance concerns or driver support. This must be set to "
+"[code]true[/code] for glow rendering to work if [member Environment."
+"glow_hdr_threshold] is greater than or equal to [code]1.0[/code].\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47444,7 +47663,8 @@ msgstr ""
 msgid ""
 "The directional shadow's size in pixels. Higher values will result in "
 "sharper shadows, at the cost of performance. The value will be rounded up to "
-"the nearest power of 2."
+"the nearest power of 2. This setting can be changed at run-time; the change "
+"will be applied immediately."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47539,8 +47759,8 @@ msgid ""
 "resources it uses (but the less features it supports). If set to \"2D "
 "Without Sampling\" or \"3D Without Effects\", sample buffers will not be "
 "allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/"
-"code] will not be available in shaders and post-processing effects will not "
-"be available in the [Environment]."
+"code] will not be available in shaders and post-processing effects such as "
+"glow will not be available in [Environment]."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -47863,6 +48083,12 @@ msgid ""
 "pixels)."
 msgstr ""
 
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Objects can use this signal to restrict reading of settings only to "
+"situations where a change has been made."
+msgstr ""
+
 #: doc/classes/ProximityGroup.xml
 msgid "General-purpose proximity detection node."
 msgstr ""
@@ -47881,9 +48107,8 @@ msgstr ""
 
 #: doc/classes/QuadMesh.xml doc/classes/Viewport.xml
 #: doc/classes/ViewportTexture.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/129"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D in 3D Demo"
+msgstr ""
 
 #: doc/classes/QuadMesh.xml
 msgid "Offset of the generated Quad. Useful for particles."
@@ -47908,14 +48133,6 @@ msgid ""
 "operations (obtaining axis-angle and performing SLERP, in particular) are "
 "more efficient and robust against floating-point errors."
 msgstr ""
-
-#: doc/classes/Quat.xml
-#, fuzzy
-msgid ""
-"$DOCS_URL/tutorials/3d/using_transforms.html#interpolating-with-quaternions"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms."
-"html#interpolating-with-quaternions"
 
 #: doc/classes/Quat.xml
 msgid "Constructs a quaternion from the given [Basis]."
@@ -48082,9 +48299,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/math/random_number_generation.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgid "Random number generation"
+msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid ""
@@ -48520,7 +48736,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Rect2.xml
-msgid "Returns the area of the [Rect2]."
+msgid "Returns the area of the [Rect2]. See also [method has_no_area]."
 msgstr ""
 
 #: doc/classes/Rect2.xml
@@ -48548,7 +48764,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Rect2.xml
-msgid "Returns [code]true[/code] if the [Rect2] is flat or empty."
+msgid ""
+"Returns [code]true[/code] if the [Rect2] is flat or empty, [code]false[/"
+"code] otherwise. See also [method get_area].\n"
+"[b]Note:[/b] If the [Rect2] has a negative size and is not flat or empty, "
+"[method has_no_area] will return [code]true[/code]."
 msgstr ""
 
 #: doc/classes/Rect2.xml
@@ -48703,12 +48923,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ReflectionProbe.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/reflection_probes.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html"
-
-#: doc/classes/ReflectionProbe.xml
 msgid ""
 "If [code]true[/code], enables box projection. This makes reflections look "
 "more correct in rectangle-shaped rooms by offsetting the reflection center "
@@ -48777,7 +48991,11 @@ msgstr ""
 msgid ""
 "The maximum distance away from the [ReflectionProbe] an object can be before "
 "it is culled. Decrease this to improve performance, especially when using "
-"the [constant UPDATE_ALWAYS] [member update_mode]."
+"the [constant UPDATE_ALWAYS] [member update_mode].\n"
+"[b]Note:[/b] The maximum reflection distance is always at least equal to the "
+"[member extents]. This means that decreasing [member max_distance] will not "
+"always cull objects from reflections, especially if the reflection probe's "
+"[member extents] are already large."
 msgstr ""
 
 #: doc/classes/ReflectionProbe.xml
@@ -49095,9 +49313,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Resource.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/resources.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html"
+msgid "Resources"
+msgstr ""
 
 #: doc/classes/Resource.xml
 msgid ""
@@ -49314,6 +49531,10 @@ msgid ""
 "This is the base class for the resource importers implemented in core. To "
 "implement your own resource importers using editor plugins, see "
 "[EditorImportPlugin]."
+msgstr ""
+
+#: doc/classes/ResourceImporter.xml
+msgid "Import plugins"
 msgstr ""
 
 #: doc/classes/ResourceImporter.xml
@@ -49633,9 +49854,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/132"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "BBCode in RichTextLabel"
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml
+msgid "GUI Rich Text/BBcode Demo"
+msgstr ""
 
 #: doc/classes/RichTextLabel.xml
 msgid ""
@@ -49830,9 +50054,10 @@ msgid ""
 "methods when edited.\n"
 "[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with "
 "[code]bbcode_text[/code] (e.g. [code]bbcode_text += \"some string\"[/code]) "
-"as it replaces the whole text and can cause slowdowns. Use [method "
-"append_bbcode] for adding text instead, unless you absolutely need to close "
-"a tag that was opened in an earlier method call."
+"as it replaces the whole text and can cause slowdowns. It will also erase "
+"all BBCode that was added to stack using [code]push_*[/code] methods. Use "
+"[method append_bbcode] for adding text instead, unless you absolutely need "
+"to close a tag that was opened in an earlier method call."
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
@@ -50417,14 +50642,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RigidBody2D.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/119"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Physics Platformer Demo"
+msgstr ""
 
 #: doc/classes/RigidBody2D.xml doc/classes/Sprite.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/148"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Instancing Demo"
+msgstr ""
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -51022,11 +51245,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RootMotionView.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/animation/animation_tree.html#root-motion"
+msgid "Using AnimationTree - Root motion"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html"
 
 #: doc/classes/RootMotionView.xml
 msgid "Path to an [AnimationTree] node to use as a basis for root motion."
@@ -51231,18 +51451,6 @@ msgid ""
 "[SceneTree] is the default [MainLoop] implementation used by scenes, and is "
 "thus in charge of the game loop."
 msgstr ""
-
-#: doc/classes/SceneTree.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/scene_tree.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/shading/index.html"
-
-#: doc/classes/SceneTree.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/rendering/multiple_resolutions.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/viewports/"
-"multiple_resolutions.html"
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -51489,6 +51697,13 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
+"Although physics interpolation would normally be globally turned on and off "
+"using [member ProjectSettings.physics/common/physics_interpolation], this "
+"property allows control over interpolation at runtime."
+msgstr ""
+
+#: doc/classes/SceneTree.xml
+msgid ""
 "If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new "
 "incoming connections."
 msgstr ""
@@ -51697,10 +51912,6 @@ msgid ""
 "The [code]new[/code] method of a script subclass creates a new instance. "
 "[method Object.set_script] extends an existing object, if that object's "
 "class matches one of the script's base classes."
-msgstr ""
-
-#: doc/classes/Script.xml
-msgid "$DOCS_URL/tutorials/scripting/index.html"
 msgstr ""
 
 #: doc/classes/Script.xml
@@ -52012,16 +52223,6 @@ msgid ""
 "rendering objects or updating particle information. For a detailed "
 "explanation and usage, please see the tutorials linked below."
 msgstr ""
-
-#: doc/classes/Shader.xml doc/classes/ShaderMaterial.xml
-msgid "$DOCS_URL/tutorials/shaders/index.html"
-msgstr ""
-
-#: doc/classes/Shader.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/shaders/introduction_to_shaders.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Shader.xml
 msgid ""
@@ -52350,12 +52551,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Skeleton2D.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/animation/2d_skeletons.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html"
-
-#: doc/classes/Skeleton2D.xml
 msgid ""
 "Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The "
 "object to return is identified by the parameter [code]idx[/code]. Bones are "
@@ -52665,14 +52860,11 @@ msgstr ""
 #: doc/classes/SoftBody.xml
 msgid ""
 "A deformable physics body. Used to create elastic or deformable objects such "
-"as cloth, rubber, or other flexible materials."
+"as cloth, rubber, or other flexible materials.\n"
+"[b]Note:[/b] There are many known bugs in [SoftBody]. Therefore, it's not "
+"recommended to use them for things that can affect gameplay (such as a "
+"player character made entirely out of soft bodies)."
 msgstr ""
-
-#: doc/classes/SoftBody.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/physics/soft_body.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html"
 
 #: doc/classes/SoftBody.xml
 msgid "Returns local translation of a vertex in the surface array."
@@ -52756,17 +52948,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/introduction_to_3d.html"
+msgid "Introduction to 3D"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Spatial.xml doc/classes/Vector3.xml
-#, fuzzy
-msgid "https://github.com/godotengine/godot-demo-projects/tree/master/3d"
+msgid "All 3D Demos"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
+
+#: doc/classes/Spatial.xml
+msgid ""
+"When using physics interpolation, there will be circumstances in which you "
+"want to know the interpolated (displayed) transform of a node rather than "
+"the standard transform (which may only be accurate to the most recent "
+"physics tick).\n"
+"This is particularly important for frame-based operations that take place in "
+"[method Node._process], rather than [method Node._physics_process]. Examples "
+"include [Camera]s focusing on a node, or finding where to fire lasers from "
+"on a frame rather than physics tick."
+msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid ""
@@ -52829,11 +53028,16 @@ msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid ""
-"Rotates itself so that the local -Z axis points towards the [code]target[/"
-"code] position.\n"
-"The transform will first be rotated around the given [code]up[/code] vector, "
-"and then fully aligned to the target by a further rotation around an axis "
-"perpendicular to both the [code]target[/code] and [code]up[/code] vectors.\n"
+"Rotates the node so that the local forward axis (-Z) points toward the "
+"[code]target[/code] position.\n"
+"The local up axis (+Y) points as close to the [code]up[/code] vector as "
+"possible while staying perpendicular to the local forward axis. The "
+"resulting transform is orthogonal, and the scale is preserved. Non-uniform "
+"scaling may not work correctly.\n"
+"The [code]target[/code] position cannot be the same as the node's position, "
+"the [code]up[/code] vector cannot be zero, and the direction from the node's "
+"position to the [code]target[/code] vector cannot be parallel to the "
+"[code]up[/code] vector.\n"
 "Operations take place in global space."
 msgstr ""
 
@@ -52974,8 +53178,8 @@ msgid ""
 "of the Euler-angle parametrization of the rotation matrix, are stored in a "
 "[Vector3] data structure not because the rotation is a vector, but only "
 "because [Vector3] exists as a convenient data-structure to store 3 floating-"
-"point numbers. Therefore, applying affine operations on the rotation \"vector"
-"\" is not meaningful."
+"point numbers. Therefore, applying affine operations on the rotation "
+"\"vector\" is not meaningful."
 msgstr ""
 
 #: doc/classes/Spatial.xml
@@ -53067,12 +53271,6 @@ msgid ""
 "and properties without the need to write shader code. See the tutorial below "
 "for details."
 msgstr ""
-
-#: doc/classes/SpatialMaterial.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/3d/spatial_material.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html"
 
 #: doc/classes/SpatialMaterial.xml
 msgid "Returns [code]true[/code], if the specified [enum Feature] is enabled."
@@ -54421,9 +54619,9 @@ msgstr ""
 
 #: doc/classes/SpringArm.xml
 msgid ""
-"The layers against which the collision check shall be done. See [url="
-"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
+"The layers against which the collision check shall be done. See "
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Collision layers and masks[/url] in the documentation for more "
 "information."
 msgstr ""
 
@@ -54599,14 +54797,29 @@ msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
 msgid ""
-"A color value that gets multiplied on, could be used for mood-coloring or to "
-"simulate the color of light."
+"A color value used to [i]multiply[/i] the texture's colors. Can be used for "
+"mood-coloring or to simulate the color of light.\n"
+"[b]Note:[/b] If a [member GeometryInstance.material_override] is defined on "
+"the [SpriteBase3D], the material override must be configured to take vertex "
+"colors into account for albedo. Otherwise, the color defined in [member "
+"modulate] will be ignored. For a [SpatialMaterial], [member SpatialMaterial."
+"vertex_color_use_as_albedo] must be [code]true[/code]. For a "
+"[ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the "
+"shader's [code]fragment()[/code] function."
 msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
 msgid ""
-"The objects' visibility on a scale from [code]0[/code] fully invisible to "
-"[code]1[/code] fully visible."
+"The texture's visibility on a scale from [code]0[/code] (fully invisible) to "
+"[code]1[/code] (fully visible). [member opacity] is a multiplier for the "
+"[member modulate] color's alpha channel.\n"
+"[b]Note:[/b] If a [member GeometryInstance.material_override] is defined on "
+"the [SpriteBase3D], the material override must be configured to take vertex "
+"colors into account for albedo. Otherwise, the opacity defined in [member "
+"opacity] will be ignored. For a [SpatialMaterial], [member SpatialMaterial."
+"vertex_color_use_as_albedo] must be [code]true[/code]. For a "
+"[ShaderMaterial], [code]ALPHA *= COLOR.a;[/code] must be inserted in the "
+"shader's [code]fragment()[/code] function."
 msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
@@ -54980,6 +55193,53 @@ msgid ""
 "encoding and decoding."
 msgstr ""
 
+#: doc/classes/StreamPeerBuffer.xml
+msgid "Data buffer stream peer."
+msgstr ""
+
+#: doc/classes/StreamPeerBuffer.xml
+msgid ""
+"Data buffer stream peer that uses a byte array as the stream. This object "
+"can be used to handle binary data from network sessions. To handle binary "
+"data stored in files, [File] can be used directly.\n"
+"A [StreamPeerBuffer] object keeps an internal cursor which is the offset in "
+"bytes to the start of the buffer. Get and put operations are performed at "
+"the cursor position and will move the cursor accordingly."
+msgstr ""
+
+#: doc/classes/StreamPeerBuffer.xml
+msgid "Clears the [member data_array] and resets the cursor."
+msgstr ""
+
+#: doc/classes/StreamPeerBuffer.xml
+msgid ""
+"Returns a new [StreamPeerBuffer] with the same [member data_array] content."
+msgstr ""
+
+#: doc/classes/StreamPeerBuffer.xml
+#, fuzzy
+msgid "Returns the current cursor position."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
+
+#: doc/classes/StreamPeerBuffer.xml
+#, fuzzy
+msgid "Returns the size of [member data_array]."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
+
+#: doc/classes/StreamPeerBuffer.xml
+msgid "Resizes the [member data_array]. This [i]doesn't[/i] update the cursor."
+msgstr ""
+
+#: doc/classes/StreamPeerBuffer.xml
+msgid ""
+"Moves the cursor to the specified position. [code]position[/code] must be a "
+"valid index of [member data_array]."
+msgstr ""
+
+#: doc/classes/StreamPeerBuffer.xml
+msgid "The underlying data buffer. Setting this value resets the cursor."
+msgstr ""
+
 #: doc/classes/StreamPeerSSL.xml
 msgid "SSL stream peer."
 msgstr ""
@@ -55133,13 +55393,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_format_string.html"
-
-#: doc/classes/String.xml
 msgid "Constructs a new String from the given [bool]."
 msgstr ""
 
@@ -55240,7 +55493,12 @@ msgid "Returns [code]true[/code] if the string begins with the given string."
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Returns the bigrams (pairs of consecutive letters) of this string."
+msgid ""
+"Returns an array containing the bigrams (pairs of consecutive letters) of "
+"this string.\n"
+"[codeblock]\n"
+"print(\"Bigrams\".bigrams()) # Prints \"[Bi, ig, gr, ra, am, ms]\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -55404,7 +55662,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Hashes the string and returns a 32-bit integer."
+msgid ""
+"Returns the 32-bit hash value representing the string's contents.\n"
+"[b]Note:[/b] [String]s with equal content will always produce identical hash "
+"values. However, the reverse is not true. Returning identical hash values "
+"does [i]not[/i] imply the strings are equal, because different strings can "
+"have identical hash values due to hash collisions."
 msgstr ""
 
 #: doc/classes/String.xml
@@ -55453,10 +55716,10 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Returns a copy of the string with lines indented with [code]prefix[/code].\n"
-"For example, the string can be indented with two tabs using [code]\"\\t\\t"
-"\"[/code], or four spaces using [code]\"    \"[/code]. The prefix can be any "
-"string so it can also be used to comment out strings with e.g. [code]\"# \"[/"
-"code]. See also [method dedent] to remove indentation.\n"
+"For example, the string can be indented with two tabs using "
+"[code]\"\\t\\t\"[/code], or four spaces using [code]\"    \"[/code]. The "
+"prefix can be any string so it can also be used to comment out strings with "
+"e.g. [code]\"# \"[/code]. See also [method dedent] to remove indentation.\n"
 "[b]Note:[/b] Empty lines are kept empty."
 msgstr ""
 
@@ -55498,7 +55761,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Returns [code]true[/code] if this string contains a valid float."
+msgid ""
+"Returns [code]true[/code] if this string contains a valid float. This is "
+"inclusive of integers, and also supports exponents:\n"
+"[codeblock]\n"
+"print(\"1.7\".is_valid_float()) # Prints \"true\"\n"
+"print(\"24\".is_valid_float()) # Prints \"true\"\n"
+"print(\"7e3\".is_valid_float()) # Prints \"true\"\n"
+"print(\"24\".is_valid_float()) # Prints \"true\"\n"
+"print(\"Hello\".is_valid_float()) # Prints \"false\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -55521,11 +55793,24 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if this string is a valid identifier. A valid "
 "identifier may contain only letters, digits and underscores ([code]_[/code]) "
-"and the first character may not be a digit."
+"and the first character may not be a digit.\n"
+"[codeblock]\n"
+"print(\"good_ident_1\".is_valid_identifier()) # Prints \"true\"\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"false\"\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"false\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Returns [code]true[/code] if this string contains a valid integer."
+msgid ""
+"Returns [code]true[/code] if this string contains a valid integer.\n"
+"[codeblock]\n"
+"print(\"7\".is_valid_int()) # Prints \"true\"\n"
+"print(\"14.6\".is_valid_int()) # Prints \"false\"\n"
+"print(\"L\".is_valid_int()) # Prints \"false\"\n"
+"print(\"+3\".is_valid_int()) # Prints \"true\"\n"
+"print(\"-12\".is_valid_int()) # Prints \"true\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -55574,14 +55859,16 @@ msgstr ""
 msgid ""
 "Does a simple case-sensitive expression match, where [code]\"*\"[/code] "
 "matches zero or more arbitrary characters and [code]\"?\"[/code] matches any "
-"single character except a period ([code]\".\"[/code])."
+"single character except a period ([code]\".\"[/code]). An empty string or "
+"empty expression always evaluates to [code]false[/code]."
 msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
 "Does a simple case-insensitive expression match, where [code]\"*\"[/code] "
 "matches zero or more arbitrary characters and [code]\"?\"[/code] matches any "
-"single character except a period ([code]\".\"[/code])."
+"single character except a period ([code]\".\"[/code]). An empty string or "
+"empty expression always evaluates to [code]false[/code]."
 msgstr ""
 
 #: doc/classes/String.xml
@@ -55751,8 +56038,16 @@ msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
-"Returns the similarity index of the text compared to this string. 1 means "
-"totally similar and 0 means totally dissimilar."
+"Returns the similarity index ([url=https://en.wikipedia.org/wiki/"
+"S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this "
+"string compared to another. 1.0 means totally similar and 0.0 means totally "
+"dissimilar.\n"
+"[codeblock]\n"
+"print(\"ABC123\".similarity(\"ABC123\")) # Prints \"1\"\n"
+"print(\"ABC123\".similarity(\"XYZ456\")) # Prints \"0\"\n"
+"print(\"ABC123\".similarity(\"123ABC\")) # Prints \"0.8\"\n"
+"print(\"ABC123\".similarity(\"abc123\")) # Prints \"0.4\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -55821,12 +56116,27 @@ msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
-"Converts a string containing a decimal number into a [code]float[/code]."
+"Converts a string containing a decimal number into a [code]float[/code]. The "
+"method will stop on the first non-number character except the first [code].[/"
+"code] (decimal point), and [code]e[/code] which is used for exponential.\n"
+"[codeblock]\n"
+"print(\"12.3\".to_float()) # 12.3\n"
+"print(\"1.2.3\".to_float()) # 1.2\n"
+"print(\"12ab3\".to_float()) # 12\n"
+"print(\"1e3\".to_float()) # 1000\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
-"Converts a string containing an integer number into an [code]int[/code]."
+"Converts a string containing an integer number into an [code]int[/code]. The "
+"method will remove any non-number character and stop if it encounters a "
+"[code].[/code].\n"
+"[codeblock]\n"
+"print(\"123\".to_int()) # 123\n"
+"print(\"a1b2c3\".to_int()) # 123\n"
+"print(\"1.2.3\".to_int()) # 1\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -57228,6 +57538,16 @@ msgid "Returns the total width of all gutters and internal padding."
 msgstr ""
 
 #: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "Returns the total amount of lines that could be drawn."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "Returns the number of visible lines, including wrapped text."
+msgstr "Mengembalikan nilai hiperbolik tangen dari parameter."
+
+#: doc/classes/TextEdit.xml
 msgid ""
 "Returns a [String] text with the word under the caret (text cursor) location."
 msgstr ""
@@ -58226,10 +58546,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
-msgid "$DOCS_URL/tutorials/ui/gui_skinning.html"
-msgstr ""
-
-#: doc/classes/Theme.xml
 msgid "Clears all values on the theme."
 msgstr ""
 
@@ -58266,6 +58582,12 @@ msgstr ""
 msgid ""
 "Clears the theme item of [code]data_type[/code] at [code]name[/code] if the "
 "theme has [code]node_type[/code]."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
+"Unmarks [code]theme_type[/code] as being a variation of another theme type. "
+"See [method set_type_variation]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -58317,7 +58639,8 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Returns the [Font] at [code]name[/code] if the theme has [code]node_type[/"
-"code]."
+"code]. If such item does not exist and [member default_font] is set on the "
+"theme, the default font will be returned."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -58408,6 +58731,17 @@ msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
+"Returns the name of the base theme type if [code]theme_type[/code] is a "
+"valid variation type. Returns an empty string otherwise."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
+"Returns a list of all type variations for the given [code]base_type[/code]."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
 "Returns [code]true[/code] if [Color] with [code]name[/code] is in "
 "[code]node_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
@@ -58452,6 +58786,12 @@ msgid ""
 "Returns [code]true[/code] if a theme item of [code]data_type[/code] with "
 "[code]name[/code] is in [code]node_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
+"Returns [code]true[/code] if [code]theme_type[/code] is marked as a "
+"variation of [code]base_type[/code]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -58551,6 +58891,20 @@ msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
+"Marks [code]theme_type[/code] as a variation of [code]base_type[/code].\n"
+"This adds [code]theme_type[/code] as a suggested option for [member Control."
+"theme_type_variation] on a [Control] that is of the [code]base_type[/code] "
+"class.\n"
+"Variations can also be nested, i.e. [code]base_type[/code] can be another "
+"variation. If a chain of variations ends with a [code]base_type[/code] "
+"matching the class of the [Control], the whole chain is going to be "
+"suggested as options.\n"
+"[b]Note:[/b] Suggestions only show up if this theme resource is set as the "
+"project default theme. See [member ProjectSettings.gui/theme/custom]."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
 "The default font of this [Theme] resource. Used as a fallback value for font "
 "items defined in this theme, but having invalid values. If this value is "
 "also invalid, the global default value is used.\n"
@@ -58595,11 +58949,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Thread.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/performance/threads/thread_safe_apis.html"
+msgid "Using multiple threads"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/threads/thread_safe_apis."
-"html"
+
+#: doc/classes/Thread.xml
+msgid "Thread-safe APIs"
+msgstr ""
 
 #: doc/classes/Thread.xml
 msgid ""
@@ -58674,15 +59029,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TileMap.xml doc/classes/TileSet.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/2d/using_tilemaps.html"
+msgid "Using Tilemaps"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html"
 
 #: doc/classes/TileMap.xml doc/classes/TileSet.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/111"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "2D Hexagonal Demo"
+msgstr ""
 
 #: doc/classes/TileMap.xml
 msgid "Clears all cells."
@@ -59271,7 +59623,12 @@ msgid "Sets the tile's material."
 msgstr ""
 
 #: doc/classes/TileSet.xml
-msgid "Sets the tile's modulation color."
+msgid ""
+"Sets the tile's modulation color.\n"
+"[b]Note:[/b] Modulation is performed by setting the tile's vertex color. To "
+"access this in a shader, use [code]COLOR[/code] rather than [code]MODULATE[/"
+"code] (which instead accesses the [TileMap]'s [member CanvasItem.modulate] "
+"property)."
 msgstr ""
 
 #: doc/classes/TileSet.xml
@@ -60102,17 +60459,6 @@ msgid ""
 "map a string to another string."
 msgstr ""
 
-#: doc/classes/Translation.xml doc/classes/TranslationServer.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/i18n/internationalizing_games.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/i18n/"
-"internationalizing_games.html"
-
-#: doc/classes/Translation.xml doc/classes/TranslationServer.xml
-msgid "$DOCS_URL/tutorials/i18n/locales.html"
-msgstr ""
-
 #: doc/classes/Translation.xml
 msgid "Virtual method to override [method get_message]."
 msgstr ""
@@ -60228,7 +60574,8 @@ msgstr ""
 
 #: doc/classes/Tree.xml
 msgid ""
-"Creates an item in the tree and adds it as a child of [code]parent[/code].\n"
+"Creates an item in the tree and adds it as a child of [code]parent[/code], "
+"which can be either a valid [TreeItem] or [code]null[/code].\n"
 "If [code]parent[/code] is [code]null[/code], the root item will be the "
 "parent, or the new item will be the root itself if the tree is empty.\n"
 "The new item will be the [code]idx[/code]th child of parent, or it will be "
@@ -60250,6 +60597,11 @@ msgid ""
 "focused logically.\n"
 "[b]Note:[/b] Despite the name of this method, the focus cursor itself is "
 "only visible in [constant SELECT_MULTI] mode."
+msgstr ""
+
+#: doc/classes/Tree.xml
+msgid ""
+"Returns the button id at [code]position[/code], or -1 if no button is there."
 msgstr ""
 
 #: doc/classes/Tree.xml
@@ -60301,9 +60653,9 @@ msgstr ""
 
 #: doc/classes/Tree.xml
 msgid ""
-"Returns the rectangle area for the specified item. If [code]column[/code] is "
-"specified, only get the position and size of that column, otherwise get the "
-"rectangle containing all columns."
+"Returns the rectangle area for the specified [TreeItem]. If [code]column[/"
+"code] is specified, only get the position and size of that column, otherwise "
+"get the rectangle containing all columns."
 msgstr ""
 
 #: doc/classes/Tree.xml
@@ -60314,8 +60666,8 @@ msgstr ""
 
 #: doc/classes/Tree.xml
 msgid ""
-"Returns the next selected item after the given one, or [code]null[/code] if "
-"the end is reached.\n"
+"Returns the next selected [TreeItem] after the given one, or [code]null[/"
+"code] if the end is reached.\n"
 "If [code]from[/code] is [code]null[/code], this returns the first selected "
 "item."
 msgstr ""
@@ -60355,8 +60707,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Tree.xml
-msgid "Causes the [Tree] to jump to the specified item."
-msgstr ""
+#, fuzzy
+msgid "Causes the [Tree] to jump to the specified [TreeItem]."
+msgstr "Mengembalikan nilai sinus hiperbolik invers dari parameter."
 
 #: doc/classes/Tree.xml
 msgid ""
@@ -60724,11 +61077,10 @@ msgstr ""
 #: doc/classes/TreeItem.xml
 msgid ""
 "Adds a button with [Texture] [code]button[/code] at column [code]column[/"
-"code]. The [code]button_idx[/code] index is used to identify the button when "
-"calling other methods. If not specified, the next available index is used, "
-"which may be retrieved by calling [method get_button_count] immediately "
-"after this method. Optionally, the button can be [code]disabled[/code] and "
-"have a [code]tooltip[/code]."
+"code]. The [code]id[/code] is used to identify the button. If not specified, "
+"the next available index is used, which may be retrieved by calling [method "
+"get_button_count] immediately before this method. Optionally, the button can "
+"be [code]disabled[/code] and have a [code]tooltip[/code]."
 msgstr ""
 
 #: doc/classes/TreeItem.xml
@@ -60763,8 +61115,18 @@ msgstr ""
 
 #: doc/classes/TreeItem.xml
 msgid ""
-"Returns the number of buttons in column [code]column[/code]. May be used to "
-"get the most recently added button's index, if no index was specified."
+"Returns the button index if there is a button with id [code]id[/code] in "
+"column [code]column[/code], otherwise returns -1."
+msgstr ""
+
+#: doc/classes/TreeItem.xml
+msgid "Returns the number of buttons in column [code]column[/code]."
+msgstr ""
+
+#: doc/classes/TreeItem.xml
+msgid ""
+"Returns the id for the button at index [code]button_idx[/code] in column "
+"[code]column[/code]."
 msgstr ""
 
 #: doc/classes/TreeItem.xml
@@ -62116,12 +62478,6 @@ msgid ""
 "should be created to lock it if multi-threaded access is desired."
 msgstr ""
 
-#: doc/classes/Variant.xml
-#, fuzzy
-msgid "$DOCS_URL/development/cpp/variant_class.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/development/cpp/variant_class.html"
-
 #: doc/classes/VBoxContainer.xml
 msgid "Vertical box container."
 msgstr ""
@@ -62148,8 +62504,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-msgid ""
-"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+msgid "3Blue1Brown Essence of Linear Algebra"
 msgstr ""
 
 #: doc/classes/Vector2.xml
@@ -62805,6 +63160,14 @@ msgid ""
 "body roll."
 msgstr ""
 
+#: doc/classes/VFlowContainer.xml
+msgid "Vertical flow container."
+msgstr ""
+
+#: doc/classes/VFlowContainer.xml
+msgid "Vertical version of [FlowContainer]."
+msgstr ""
+
 #: doc/classes/VideoPlayer.xml
 msgid "Control for playing video streams."
 msgstr ""
@@ -63015,28 +63378,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "$DOCS_URL/tutorials/rendering/index.html"
+msgid "Viewports tutorial index"
 msgstr ""
 
 #: doc/classes/Viewport.xml doc/classes/ViewportTexture.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/128"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D in 2D Demo"
+msgstr ""
 
 #: doc/classes/Viewport.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/130"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Screen Capture Demo"
+msgstr ""
 
 #: doc/classes/Viewport.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/541"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "Dynamic Split Screen Demo"
+msgstr ""
 
 #: doc/classes/Viewport.xml doc/classes/ViewportTexture.xml
-#, fuzzy
-msgid "https://godotengine.org/asset-library/asset/586"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgid "3D Viewport Scaling Demo"
+msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -63063,7 +63422,9 @@ msgid "Returns the topmost modal in the stack."
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "Returns the mouse position relative to the viewport."
+msgid ""
+"Returns the mouse's position in this [Viewport] using the coordinate system "
+"of this [Viewport]."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -63154,7 +63515,9 @@ msgid "Forces update of the 2D and 3D worlds."
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "Warps the mouse to a position relative to the viewport."
+msgid ""
+"Moves the mouse pointer to the specified position in this [Viewport] using "
+"the coordinate system of this [Viewport]."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -63875,13 +64238,6 @@ msgid ""
 "You are most likely to use this class via the Visual Script editor or when "
 "writing plugins for it."
 msgstr ""
-
-#: modules/visual_script/doc_classes/VisualScript.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/scripting/visual_script/index.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/"
-"visual_script/index.html"
 
 #: modules/visual_script/doc_classes/VisualScript.xml
 msgid "Add a custom signal with the specified name to the VisualScript."
@@ -65638,13 +65994,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/performance/using_servers.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers."
-"html"
-
-#: doc/classes/VisualServer.xml
 msgid "Sets images to be rendered in the window margin."
 msgstr ""
 
@@ -66079,8 +66428,8 @@ msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid ""
-"Color displayed for clear areas of the scene (if using Custom color or Color"
-"+Sky background modes)."
+"Color displayed for clear areas of the scene (if using Custom color or "
+"Color+Sky background modes)."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
@@ -66353,7 +66702,10 @@ msgstr ""
 #: doc/classes/VisualServer.xml
 msgid ""
 "Returns [code]true[/code] if changes have been made to the VisualServer's "
-"data. [method draw] is usually called if this happens."
+"data. [method draw] is usually called if this happens.\n"
+"As changes are registered as either high or low priority (e.g. dynamic "
+"shaders), this function takes an optional argument to query either low or "
+"high priority changes, or any changes."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
@@ -68666,6 +69018,22 @@ msgstr ""
 msgid "Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO."
 msgstr ""
 
+#: doc/classes/VisualServer.xml
+msgid ""
+"Used to query for any changes that request a redraw, whatever the priority."
+msgstr ""
+
+#: doc/classes/VisualServer.xml
+msgid ""
+"Registered changes which have low priority can be optionally prevented from "
+"causing editor redraws. Examples might include dynamic shaders (typically "
+"using the [code]TIME[/code] built-in)."
+msgstr ""
+
+#: doc/classes/VisualServer.xml
+msgid "Registered changes which can cause a redraw default to high priority."
+msgstr ""
+
 #: doc/classes/VisualShader.xml
 msgid "A custom shader program with a visual editor."
 msgstr ""
@@ -68763,12 +69131,6 @@ msgid ""
 "and a set of properties. Each node has also connection ports that allow to "
 "connect it to another nodes and control the flow of the shader."
 msgstr ""
-
-#: doc/classes/VisualShaderNode.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/shaders/visual_shaders.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html"
 
 #: doc/classes/VisualShaderNode.xml
 msgid ""
@@ -69227,13 +69589,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeCustom.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/plugins/editor/visual_shader_plugins.html"
-msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"visual_shader_plugins.html"
-
-#: doc/classes/VisualShaderNodeCustom.xml
 msgid ""
 "Override this method to define the category of the associated custom node in "
 "the Visual Shader Editor's members dialog. The path may look like "
@@ -69571,16 +69926,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeInput.xml
-#, fuzzy
-msgid "$DOCS_URL/tutorials/shaders/shader_reference/index.html"
-msgstr ""
-"https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/"
-"index.html"
-
-#: doc/classes/VisualShaderNodeInput.xml
 msgid ""
-"One of the several input constants in lower-case style like: \"vertex"
-"\"([code]VERTEX[/code]) or \"point_size\"([code]POINT_SIZE[/code])."
+"One of the several input constants in lower-case style like: "
+"\"vertex\"([code]VERTEX[/code]) or \"point_size\"([code]POINT_SIZE[/code])."
 msgstr ""
 
 #: doc/classes/VisualShaderNodeIs.xml
@@ -69629,8 +69977,8 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeOutput.xml
 msgid ""
-"This visual shader node is present in all shader graphs in form of \"Output"
-"\" block with multiple output value ports."
+"This visual shader node is present in all shader graphs in form of "
+"\"Output\" block with multiple output value ports."
 msgstr ""
 
 #: doc/classes/VisualShaderNodeScalarClamp.xml
@@ -71337,11 +71685,11 @@ msgid ""
 "signals is the same id as used in [member ARVRController.controller_id].\n"
 "You can use one or all of these methods to allow your game or app to support "
 "a wider or narrower set of devices and input methods, or to allow more "
-"advanced interations with more advanced devices."
+"advanced interactions with more advanced devices."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
-msgid "https://www.snopekgames.com/blog/2020/how-make-vr-game-webxr-godot"
+msgid "How to make a VR game for WebXR with Godot"
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
@@ -71361,6 +71709,14 @@ msgid ""
 "- [signal squeezestart]\n"
 "- [signal squeeze]\n"
 "- [signal squeezestart]"
+msgstr ""
+
+#: modules/webxr/doc_classes/WebXRInterface.xml
+msgid ""
+"Returns the target ray mode for the given [code]controller_id[/code].\n"
+"This can help interpret the input coming from that controller. See "
+"[url=https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/"
+"targetRayMode]XRInputSource.targetRayMode[/url] for more information."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
@@ -71470,15 +71826,15 @@ msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid ""
-"Emitted after one of the \"controllers\" has finished its \"primary action"
-"\".\n"
+"Emitted after one of the \"controllers\" has finished its \"primary "
+"action\".\n"
 "Use [method get_controller] to get more information about the controller."
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid ""
-"Emitted when one of the \"controllers\" has finished its \"primary action"
-"\".\n"
+"Emitted when one of the \"controllers\" has finished its \"primary "
+"action\".\n"
 "Use [method get_controller] to get more information about the controller."
 msgstr ""
 
@@ -71540,6 +71896,24 @@ msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid "Emitted when [member visibility_state] has changed."
+msgstr ""
+
+#: modules/webxr/doc_classes/WebXRInterface.xml
+msgid "We don't know the the target ray mode."
+msgstr ""
+
+#: modules/webxr/doc_classes/WebXRInterface.xml
+msgid ""
+"Target ray originates at the viewer's eyes and points in the direction they "
+"are looking."
+msgstr ""
+
+#: modules/webxr/doc_classes/WebXRInterface.xml
+msgid "Target ray from a handheld pointer, most likely a VR touch controller."
+msgstr ""
+
+#: modules/webxr/doc_classes/WebXRInterface.xml
+msgid "Target ray from touch screen, mouse or other tactile input device."
 msgstr ""
 
 #: doc/classes/WindowDialog.xml

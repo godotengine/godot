@@ -111,9 +111,11 @@ void EditorHelpSearch::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
@@ -178,8 +180,6 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
-	old_search = false;
-
 	set_hide_on_ok(false);
 
 	set_title(TTR("Search Help"));
@@ -534,7 +534,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
 		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
-	String tooltip = p_doc->brief_description.strip_edges();
+	String tooltip = DTR(p_doc->brief_description.strip_edges());
 
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);

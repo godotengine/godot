@@ -128,7 +128,7 @@ void RotatedFileLogger::clear_old_backups() {
 	String basename = base_path.get_file().get_basename();
 	String extension = base_path.get_extension();
 
-	DirAccess *da = DirAccess::open(base_path.get_base_dir());
+	DirAccessRef da = DirAccess::open(base_path.get_base_dir());
 	if (!da) {
 		return;
 	}
@@ -152,8 +152,6 @@ void RotatedFileLogger::clear_old_backups() {
 			da->remove(E->get());
 		}
 	}
-
-	memdelete(da);
 }
 
 void RotatedFileLogger::rotate_file() {
@@ -167,18 +165,16 @@ void RotatedFileLogger::rotate_file() {
 				backup_name += "." + base_path.get_extension();
 			}
 
-			DirAccess *da = DirAccess::open(base_path.get_base_dir());
+			DirAccessRef da = DirAccess::open(base_path.get_base_dir());
 			if (da) {
 				da->copy(base_path, backup_name);
-				memdelete(da);
 			}
 			clear_old_backups();
 		}
 	} else {
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_USERDATA);
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_USERDATA);
 		if (da) {
 			da->make_dir_recursive(base_path.get_base_dir());
-			memdelete(da);
 		}
 	}
 

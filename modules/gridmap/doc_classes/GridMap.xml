@@ -79,6 +79,13 @@
 				Returns an array of [Vector3] with the non-empty cell coordinates in the grid map.
 			</description>
 		</method>
+		<method name="get_used_cells_by_item" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="item" type="int" />
+			<description>
+				Returns an array of all cells with the given item index specified in [code]item[/code].
+			</description>
+		</method>
 		<method name="make_baked_meshes">
 			<return type="void" />
 			<argument index="0" name="gen_lightmap_uv" type="bool" default="false" />
@@ -108,15 +115,6 @@
 				Sets the mesh index for the cell referenced by its grid coordinates.
 				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
 				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
-			</description>
-		</method>
-		<method name="set_clip">
-			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
-			<argument index="1" name="clipabove" type="bool" default="true" />
-			<argument index="2" name="floor" type="int" default="0" />
-			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="0" />
-			<description>
 			</description>
 		</method>
 		<method name="set_collision_layer_value">

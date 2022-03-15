@@ -57,6 +57,7 @@
   HB_FONT_FUNC_IMPLEMENT (glyph_contour_point) \
   HB_FONT_FUNC_IMPLEMENT (glyph_name) \
   HB_FONT_FUNC_IMPLEMENT (glyph_from_name) \
+  HB_FONT_FUNC_IMPLEMENT (glyph_shape) \
   /* ^--- Add new callbacks here */
 
 struct hb_font_funcs_t
@@ -140,6 +141,8 @@ struct hb_font_t
   hb_position_t em_scalef_y (float v) { return em_scalef (v, y_scale); }
   float em_fscale_x (int16_t v) { return em_fscale (v, x_scale); }
   float em_fscale_y (int16_t v) { return em_fscale (v, y_scale); }
+  float em_fscalef_x (float v) { return em_fscalef (v, x_scale); }
+  float em_fscalef_y (float v) { return em_fscalef (v, y_scale); }
   hb_position_t em_scale_dir (int16_t v, hb_direction_t direction)
   { return em_mult (v, dir_mult (direction)); }
 
@@ -371,6 +374,15 @@ struct hb_font_t
 					 name, len,
 					 glyph,
 					 klass->user_data.glyph_from_name);
+  }
+
+  void get_glyph_shape (hb_codepoint_t glyph,
+			hb_draw_funcs_t *draw_funcs, void *draw_data)
+  {
+    klass->get.f.glyph_shape (this, user_data,
+			      glyph,
+			      draw_funcs, draw_data,
+			      klass->user_data.glyph_shape);
   }
 
 
@@ -625,7 +637,9 @@ struct hb_font_t
   hb_position_t em_mult (int16_t v, int64_t mult)
   { return (hb_position_t) ((v * mult + 32768) >> 16); }
   hb_position_t em_scalef (float v, int scale)
-  { return (hb_position_t) roundf (v * scale / face->get_upem ()); }
+  { return (hb_position_t) roundf (em_fscalef (v, scale)); }
+  float em_fscalef (float v, int scale)
+  { return v * scale / face->get_upem (); }
   float em_fscale (int16_t v, int scale)
   { return (float) v * scale / face->get_upem (); }
 };

@@ -60,12 +60,12 @@
 
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.
-#define MIN_ZOOM 1. / 128
-#define MAX_ZOOM 128
+constexpr real_t MIN_ZOOM = 1. / 128;
+constexpr real_t MAX_ZOOM = 128;
 
 #define RULER_WIDTH (15 * EDSCALE)
-#define SCALE_HANDLE_DISTANCE 25
-#define MOVE_HANDLE_DISTANCE 25
+constexpr real_t SCALE_HANDLE_DISTANCE = 25;
+constexpr real_t MOVE_HANDLE_DISTANCE = 25;
 
 class SnapDialog : public ConfirmationDialog {
 	GDCLASS(SnapDialog, ConfirmationDialog);
@@ -489,12 +489,12 @@ void CanvasItemEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 			viewport->update();
 		}
 
-		if (k->is_pressed() && !k->is_ctrl_pressed() && !k->is_echo()) {
-			if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->matches_event(p_ev)) {
+		if (k->is_pressed() && !k->is_ctrl_pressed() && !k->is_echo() && (grid_snap_active || _is_grid_visible())) {
+			if (multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->matches_event(p_ev)) {
 				// Multiply the grid size
 				grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
 				viewport->update();
-			} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->matches_event(p_ev)) {
+			} else if (divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->matches_event(p_ev)) {
 				// Divide the grid size
 				Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
 				if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0) {
@@ -938,6 +938,60 @@ void CanvasItemEditor::_reset_create_position() {
 	node_create_position = Point2();
 }
 
+bool CanvasItemEditor::_is_grid_visible() const {
+	switch (grid_visibility) {
+		case GRID_VISIBILITY_SHOW:
+			return true;
+		case GRID_VISIBILITY_SHOW_WHEN_SNAPPING:
+			return grid_snap_active;
+		case GRID_VISIBILITY_HIDE:
+			return false;
+	}
+	ERR_FAIL_V_MSG(true, "Unexpected grid_visibility value");
+}
+
+void CanvasItemEditor::_prepare_grid_menu() {
+	for (int i = GRID_VISIBILITY_SHOW; i <= GRID_VISIBILITY_HIDE; i++) {
+		grid_menu->set_item_checked(i, i == grid_visibility);
+	}
+}
+
+void CanvasItemEditor::_on_grid_menu_id_pressed(int p_id) {
+	switch (p_id) {
+		case GRID_VISIBILITY_SHOW:
+		case GRID_VISIBILITY_SHOW_WHEN_SNAPPING:
+		case GRID_VISIBILITY_HIDE:
+			grid_visibility = (GridVisibility)p_id;
+			viewport->update();
+			view_menu->get_popup()->hide();
+			return;
+	}
+
+	// Toggle grid: go to the least restrictive option possible.
+	if (grid_snap_active) {
+		switch (grid_visibility) {
+			case GRID_VISIBILITY_SHOW:
+			case GRID_VISIBILITY_SHOW_WHEN_SNAPPING:
+				grid_visibility = GRID_VISIBILITY_HIDE;
+				break;
+			case GRID_VISIBILITY_HIDE:
+				grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
+				break;
+		}
+	} else {
+		switch (grid_visibility) {
+			case GRID_VISIBILITY_SHOW:
+				grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
+				break;
+			case GRID_VISIBILITY_SHOW_WHEN_SNAPPING:
+			case GRID_VISIBILITY_HIDE:
+				grid_visibility = GRID_VISIBILITY_SHOW;
+				break;
+		}
+	}
+	viewport->update();
+}
+
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -1139,6 +1193,8 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					}
 				}
 			}
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
@@ -1163,25 +1219,25 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
 			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 32.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 32.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 16.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 16.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 8.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 8.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 4.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 4.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 2.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 2.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->matches_event(p_event)) {
-				_update_zoom(1.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->matches_event(p_event)) {
-				_update_zoom(2.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(2.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->matches_event(p_event)) {
-				_update_zoom(4.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(4.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->matches_event(p_event)) {
-				_update_zoom(8.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(8.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->matches_event(p_event)) {
-				_update_zoom(16.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(16.0);
 			}
 		}
 	}
@@ -2726,7 +2782,7 @@ void CanvasItemEditor::_draw_rulers() {
 
 	// The rule transform
 	Transform2D ruler_transform = Transform2D();
-	if (show_grid || grid_snap_active) {
+	if (grid_snap_active || _is_grid_visible()) {
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (snap_relative && selection.size() > 0) {
 			ruler_transform.translate(_get_encompassing_rect_from_list(selection).position);
@@ -2806,7 +2862,7 @@ void CanvasItemEditor::_draw_rulers() {
 }
 
 void CanvasItemEditor::_draw_grid() {
-	if (show_grid || grid_snap_active) {
+	if (_is_grid_visible()) {
 		// Draw the grid
 		Vector2 real_grid_offset;
 		const List<CanvasItem *> selection = _get_edited_canvas_items();
@@ -3510,7 +3566,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		return;
 	}
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-	if (canvas_item && !canvas_item->is_visible()) {
+	if (canvas_item && !canvas_item->is_visible_in_tree()) {
 		return;
 	}
 
@@ -3580,7 +3636,7 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 		return;
 	}
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-	if (canvas_item && !canvas_item->is_visible()) {
+	if (canvas_item && !canvas_item->is_visible_in_tree()) {
 		return;
 	}
 
@@ -3694,149 +3750,154 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 	_button_tool_select(p_tool);
 }
 
+void CanvasItemEditor::_update_editor_settings() {
+	select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+	list_select_button->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
+	move_button->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
+	scale_button->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
+	rotate_button->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
+	smart_snap_button->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+	grid_snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
+	snap_config_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+	skeleton_menu->set_icon(get_theme_icon(SNAME("Bone"), SNAME("EditorIcons")));
+	override_camera_button->set_icon(get_theme_icon(SNAME("Camera2D"), SNAME("EditorIcons")));
+	pan_button->set_icon(get_theme_icon(SNAME("ToolPan"), SNAME("EditorIcons")));
+	ruler_button->set_icon(get_theme_icon(SNAME("Ruler"), SNAME("EditorIcons")));
+	pivot_button->set_icon(get_theme_icon(SNAME("EditPivot"), SNAME("EditorIcons")));
+	select_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	anchor_handle = get_theme_icon(SNAME("EditorControlAnchor"), SNAME("EditorIcons"));
+	lock_button->set_icon(get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")));
+	unlock_button->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
+	group_button->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
+	ungroup_button->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
+	key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
+	key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
+	key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
+	key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
+	key_auto_insert_button->set_icon(get_theme_icon(SNAME("AutoKey"), SNAME("EditorIcons")));
+	// Use a different color for the active autokey icon to make them easier
+	// to distinguish from the other key icons at the top. On a light theme,
+	// the icon will be dark, so we need to lighten it before blending it
+	// with the red color.
+	const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
+	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
+	animation_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+
+	_update_context_menu_stylebox();
+
+	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+	pan_speed = int(EditorSettings::get_singleton()->get("editors/panning/2d_editor_pan_speed"));
+	warped_panning = bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning"));
+}
+
 void CanvasItemEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
-		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
+	switch (p_what) {
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
-		int nb_having_pivot = 0;
+			int nb_having_pivot = 0;
 
-		// Update the viewport if the canvas_item changes
-		List<CanvasItem *> selection = _get_edited_canvas_items(true);
-		for (CanvasItem *canvas_item : selection) {
-			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
+			// Update the viewport if the canvas_item changes
+			List<CanvasItem *> selection = _get_edited_canvas_items(true);
+			for (CanvasItem *canvas_item : selection) {
+				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 
-			Rect2 rect;
-			if (canvas_item->_edit_use_rect()) {
-				rect = canvas_item->_edit_get_rect();
-			} else {
-				rect = Rect2();
-			}
-			Transform2D xform = canvas_item->get_transform();
+				Rect2 rect;
+				if (canvas_item->_edit_use_rect()) {
+					rect = canvas_item->_edit_get_rect();
+				} else {
+					rect = Rect2();
+				}
+				Transform2D xform = canvas_item->get_transform();
 
-			if (rect != se->prev_rect || xform != se->prev_xform) {
-				viewport->update();
-				se->prev_rect = rect;
-				se->prev_xform = xform;
-			}
-
-			Control *control = Object::cast_to<Control>(canvas_item);
-			if (control) {
-				real_t anchors[4];
-				Vector2 pivot;
-
-				pivot = control->get_pivot_offset();
-				anchors[SIDE_LEFT] = control->get_anchor(SIDE_LEFT);
-				anchors[SIDE_RIGHT] = control->get_anchor(SIDE_RIGHT);
-				anchors[SIDE_TOP] = control->get_anchor(SIDE_TOP);
-				anchors[SIDE_BOTTOM] = control->get_anchor(SIDE_BOTTOM);
-
-				if (pivot != se->prev_pivot || anchors[SIDE_LEFT] != se->prev_anchors[SIDE_LEFT] || anchors[SIDE_RIGHT] != se->prev_anchors[SIDE_RIGHT] || anchors[SIDE_TOP] != se->prev_anchors[SIDE_TOP] || anchors[SIDE_BOTTOM] != se->prev_anchors[SIDE_BOTTOM]) {
-					se->prev_pivot = pivot;
-					se->prev_anchors[SIDE_LEFT] = anchors[SIDE_LEFT];
-					se->prev_anchors[SIDE_RIGHT] = anchors[SIDE_RIGHT];
-					se->prev_anchors[SIDE_TOP] = anchors[SIDE_TOP];
-					se->prev_anchors[SIDE_BOTTOM] = anchors[SIDE_BOTTOM];
+				if (rect != se->prev_rect || xform != se->prev_xform) {
 					viewport->update();
+					se->prev_rect = rect;
+					se->prev_xform = xform;
+				}
+
+				Control *control = Object::cast_to<Control>(canvas_item);
+				if (control) {
+					real_t anchors[4];
+					Vector2 pivot;
+
+					pivot = control->get_pivot_offset();
+					anchors[SIDE_LEFT] = control->get_anchor(SIDE_LEFT);
+					anchors[SIDE_RIGHT] = control->get_anchor(SIDE_RIGHT);
+					anchors[SIDE_TOP] = control->get_anchor(SIDE_TOP);
+					anchors[SIDE_BOTTOM] = control->get_anchor(SIDE_BOTTOM);
+
+					if (pivot != se->prev_pivot || anchors[SIDE_LEFT] != se->prev_anchors[SIDE_LEFT] || anchors[SIDE_RIGHT] != se->prev_anchors[SIDE_RIGHT] || anchors[SIDE_TOP] != se->prev_anchors[SIDE_TOP] || anchors[SIDE_BOTTOM] != se->prev_anchors[SIDE_BOTTOM]) {
+						se->prev_pivot = pivot;
+						se->prev_anchors[SIDE_LEFT] = anchors[SIDE_LEFT];
+						se->prev_anchors[SIDE_RIGHT] = anchors[SIDE_RIGHT];
+						se->prev_anchors[SIDE_TOP] = anchors[SIDE_TOP];
+						se->prev_anchors[SIDE_BOTTOM] = anchors[SIDE_BOTTOM];
+						viewport->update();
+					}
+				}
+
+				if (canvas_item->_edit_use_pivot()) {
+					nb_having_pivot++;
 				}
 			}
 
-			if (canvas_item->_edit_use_pivot()) {
-				nb_having_pivot++;
+			// Activate / Deactivate the pivot tool
+			pivot_button->set_disabled(nb_having_pivot == 0);
+
+			// Update the viewport if bones changes
+			for (KeyValue<BoneKey, BoneList> &E : bone_list) {
+				Object *b = ObjectDB::get_instance(E.key.from);
+				if (!b) {
+					viewport->update();
+					break;
+				}
+
+				Node2D *b2 = Object::cast_to<Node2D>(b);
+				if (!b2 || !b2->is_inside_tree()) {
+					continue;
+				}
+
+				Transform2D global_xform = b2->get_global_transform();
+
+				if (global_xform != E.value.xform) {
+					E.value.xform = global_xform;
+					viewport->update();
+				}
+
+				Bone2D *bone = Object::cast_to<Bone2D>(b);
+				if (bone && bone->get_length() != E.value.length) {
+					E.value.length = bone->get_length();
+					viewport->update();
+				}
 			}
-		}
+		} break;
 
-		// Activate / Deactivate the pivot tool
-		pivot_button->set_disabled(nb_having_pivot == 0);
-
-		// Update the viewport if bones changes
-		for (KeyValue<BoneKey, BoneList> &E : bone_list) {
-			Object *b = ObjectDB::get_instance(E.key.from);
-			if (!b) {
-				viewport->update();
-				break;
+		case NOTIFICATION_ENTER_TREE: {
+			select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
+			for (int i = 0; i < 4; i++) {
+				select_sb->set_margin_size(Side(i), 4);
+				select_sb->set_default_margin(Side(i), 4);
 			}
 
-			Node2D *b2 = Object::cast_to<Node2D>(b);
-			if (!b2 || !b2->is_inside_tree()) {
-				continue;
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
+			_keying_changed();
+			_update_editor_settings();
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
+			_update_editor_settings();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible() && override_camera_button->is_pressed()) {
+				EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
+
+				debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
+				override_camera_button->set_pressed(false);
 			}
-
-			Transform2D global_xform = b2->get_global_transform();
-
-			if (global_xform != E.value.xform) {
-				E.value.xform = global_xform;
-				viewport->update();
-			}
-
-			Bone2D *bone = Object::cast_to<Bone2D>(b);
-			if (bone && bone->get_length() != E.value.length) {
-				E.value.length = bone->get_length();
-				viewport->update();
-			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
-		for (int i = 0; i < 4; i++) {
-			select_sb->set_margin_size(Side(i), 4);
-			select_sb->set_default_margin(Side(i), 4);
-		}
-
-		AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
-		_keying_changed();
-
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
-	}
-
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-		list_select_button->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
-		move_button->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
-		scale_button->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
-		rotate_button->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
-		smart_snap_button->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
-		grid_snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
-		snap_config_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-		skeleton_menu->set_icon(get_theme_icon(SNAME("Bone"), SNAME("EditorIcons")));
-		override_camera_button->set_icon(get_theme_icon(SNAME("Camera2D"), SNAME("EditorIcons")));
-		pan_button->set_icon(get_theme_icon(SNAME("ToolPan"), SNAME("EditorIcons")));
-		ruler_button->set_icon(get_theme_icon(SNAME("Ruler"), SNAME("EditorIcons")));
-		pivot_button->set_icon(get_theme_icon(SNAME("EditPivot"), SNAME("EditorIcons")));
-		select_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
-		anchor_handle = get_theme_icon(SNAME("EditorControlAnchor"), SNAME("EditorIcons"));
-		lock_button->set_icon(get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")));
-		unlock_button->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
-		group_button->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
-		ungroup_button->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
-		key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
-		key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
-		key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
-		key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
-		key_auto_insert_button->set_icon(get_theme_icon(SNAME("AutoKey"), SNAME("EditorIcons")));
-		// Use a different color for the active autokey icon to make them easier
-		// to distinguish from the other key icons at the top. On a light theme,
-		// the icon will be dark, so we need to lighten it before blending it
-		// with the red color.
-		const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
-		key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
-		animation_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-
-		_update_context_menu_stylebox();
-
-		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-		pan_speed = int(EditorSettings::get_singleton()->get("editors/panning/2d_editor_pan_speed"));
-		warped_panning = bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning"));
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible() && override_camera_button->is_pressed()) {
-			EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
-
-			debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
-			override_camera_button->set_pressed(false);
-		}
+		} break;
 	}
 }
 
@@ -4005,6 +4066,10 @@ void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 	_zoom_on_position(p_zoom, viewport_scrollable->get_size() / 2.0);
 }
 
+void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
+	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport->get_local_mouse_position());
+}
+
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
 	smart_snap_active = p_status;
 	viewport->update();
@@ -4128,12 +4193,6 @@ void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
 void CanvasItemEditor::_popup_callback(int p_op) {
 	last_option = MenuOption(p_op);
 	switch (p_op) {
-		case SHOW_GRID: {
-			show_grid = !show_grid;
-			int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
-			view_menu->get_popup()->set_item_checked(idx, show_grid);
-			viewport->update();
-		} break;
 		case SHOW_ORIGIN: {
 			show_origin = !show_origin;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_ORIGIN);
@@ -4606,7 +4665,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_node_center"] = snap_node_center;
 	state["snap_other_nodes"] = snap_other_nodes;
 	state["snap_guides"] = snap_guides;
-	state["show_grid"] = show_grid;
+	state["grid_visibility"] = grid_visibility;
 	state["show_origin"] = show_origin;
 	state["show_viewport"] = show_viewport;
 	state["show_rulers"] = show_rulers;
@@ -4708,10 +4767,8 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		smartsnap_config_popup->set_item_checked(idx, snap_guides);
 	}
 
-	if (state.has("show_grid")) {
-		show_grid = state["show_grid"];
-		int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
-		view_menu->get_popup()->set_item_checked(idx, show_grid);
+	if (state.has("grid_visibility")) {
+		grid_visibility = (GridVisibility)(int)(state["grid_visibility"]);
 	}
 
 	if (state.has("show_origin")) {
@@ -5121,7 +5178,19 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	p = view_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Always Show Grid"), Key::NUMBERSIGN), SHOW_GRID);
+
+	grid_menu = memnew(PopupMenu);
+	grid_menu->connect("about_to_popup", callable_mp(this, &CanvasItemEditor::_prepare_grid_menu));
+	grid_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_on_grid_menu_id_pressed));
+	grid_menu->set_name("GridMenu");
+	grid_menu->add_radio_check_item(TTR("Show"), GRID_VISIBILITY_SHOW);
+	grid_menu->add_radio_check_item(TTR("Show When Snapping"), GRID_VISIBILITY_SHOW_WHEN_SNAPPING);
+	grid_menu->add_radio_check_item(TTR("Hide"), GRID_VISIBILITY_HIDE);
+	grid_menu->add_separator();
+	grid_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/toggle_grid", TTR("Toggle Grid"), KeyModifierMask::CMD | Key::APOSTROPHE));
+	p->add_child(grid_menu);
+	p->add_submenu_item(TTR("Grid"), "GridMenu");
+
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show Helpers"), Key::H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show Rulers")), SHOW_RULERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), Key::Y), SHOW_GUIDES);
@@ -5495,16 +5564,18 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), path, new_name);
 	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + new_name));
 
-	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
-	if (parent_ci) {
+	CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
+	if (instance_ci) {
 		Vector2 target_pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(p_point);
 		target_pos = canvas_item_editor->snap_point(target_pos);
-		target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
-		// Preserve instance position of the original scene.
-		CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
-		if (instance_ci) {
-			target_pos += instance_ci->_edit_get_position();
+
+		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
+		if (parent_ci) {
+			target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
 		}
+		// Preserve instance position of the original scene.
+		target_pos += instance_ci->_edit_get_position();
+
 		editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_position", target_pos);
 	}
 
@@ -5702,29 +5773,32 @@ Node *CanvasItemEditorViewport::_make_texture_node_type(String texture_node_type
 	return node;
 }
 
-void CanvasItemEditorViewport::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		List<BaseButton *> btn_list;
-		button_group->get_buttons(&btn_list);
+void CanvasItemEditorViewport::_update_theme() {
+	List<BaseButton *> btn_list;
+	button_group->get_buttons(&btn_list);
 
-		for (int i = 0; i < btn_list.size(); i++) {
-			CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
-			check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
-		}
-
-		label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	for (int i = 0; i < btn_list.size(); i++) {
+		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
+		check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
 	}
 
+	label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+}
+
+void CanvasItemEditorViewport::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
+			_update_theme();
 			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
-
-		default:
-			break;
 	}
 }
 

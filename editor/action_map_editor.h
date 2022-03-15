@@ -164,7 +164,7 @@ private:
 
 	// Filtering and Adding actions
 
-	bool show_builtin_actions;
+	bool show_builtin_actions = false;
 	CheckButton *show_builtin_actions_checkbutton;
 	LineEdit *action_list_search;
 

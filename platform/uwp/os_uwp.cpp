@@ -95,12 +95,12 @@ void OS_UWP::set_window_fullscreen(bool p_enabled) {
 
 	video_mode.fullscreen = view->IsFullScreenMode;
 
-	if (video_mode.fullscreen == p_enabled)
+	if (video_mode.fullscreen == p_enabled) {
 		return;
+	}
 
 	if (p_enabled) {
 		video_mode.fullscreen = view->TryEnterFullScreenMode();
-
 	} else {
 		view->ExitFullScreenMode();
 		video_mode.fullscreen = false;
@@ -112,13 +112,15 @@ bool OS_UWP::is_window_fullscreen() const {
 }
 
 void OS_UWP::set_keep_screen_on(bool p_enabled) {
-	if (is_keep_screen_on() == p_enabled)
+	if (is_keep_screen_on() == p_enabled) {
 		return;
+	}
 
-	if (p_enabled)
+	if (p_enabled) {
 		display_request->RequestActive();
-	else
+	} else {
 		display_request->RequestRelease();
+	}
 
 	OS::set_keep_screen_on(p_enabled);
 }
@@ -150,7 +152,7 @@ void OS_UWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
 
 void OS_UWP::screen_size_changed() {
 	gl_context->reset();
-};
+}
 
 Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	main_loop = nullptr;
@@ -269,8 +271,9 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	_ensure_user_data_dir();
 
-	if (is_keep_screen_on())
+	if (is_keep_screen_on()) {
 		display_request->RequestActive();
+	}
 
 	set_keep_screen_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
 
@@ -283,22 +286,24 @@ void OS_UWP::set_clipboard(const String &p_text) {
 	clip->SetText(ref new Platform::String((LPCWSTR)(p_text.utf16().get_data())));
 
 	Clipboard::SetContent(clip);
-};
+}
 
 String OS_UWP::get_clipboard() const {
-	if (managed_object->clipboard != nullptr)
+	if (managed_object->clipboard != nullptr) {
 		return managed_object->clipboard->Data();
-	else
+	} else {
 		return "";
-};
+	}
+}
 
 void OS_UWP::input_event(const Ref<InputEvent> &p_event) {
 	input->parse_input_event(p_event);
-};
+}
 
 void OS_UWP::delete_main_loop() {
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 }
 
@@ -308,16 +313,18 @@ void OS_UWP::set_main_loop(MainLoop *p_main_loop) {
 }
 
 void OS_UWP::finalize() {
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 
 	main_loop = nullptr;
 
 	rendering_server->finish();
 	memdelete(rendering_server);
 #ifdef GLES3_ENABLED
-	if (gl_context)
+	if (gl_context) {
 		memdelete(gl_context);
+	}
 #endif
 
 	memdelete(input);
@@ -472,8 +479,9 @@ OS::Time OS_UWP::get_time(bool p_utc) const {
 OS::TimeZoneInfo OS_UWP::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
-	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		daylight = true;
+	}
 
 	TimeZoneInfo ret;
 	if (daylight) {
@@ -507,7 +515,7 @@ uint64_t OS_UWP::get_unix_time() const {
 	SystemTimeToFileTime(&ep, &fep);
 
 	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
-};
+}
 
 void OS_UWP::delay_usec(uint32_t p_usec) const {
 	int msec = p_usec < 1000 ? 1 : p_usec / 1000;
@@ -590,8 +598,9 @@ void OS_UWP::queue_key_event(KeyEvent &p_event) {
 void OS_UWP::set_cursor_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
-	if (cursor_shape == p_shape)
+	if (cursor_shape == p_shape) {
 		return;
+	}
 
 	static const CoreCursorType uwp_cursors[CURSOR_MAX] = {
 		CoreCursorType::Arrow,
@@ -628,15 +637,15 @@ void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	return FAILED;
-};
+}
 
 Error OS_UWP::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	return FAILED;
-};
+}
 
 Error OS_UWP::kill(const ProcessID &p_pid) {
 	return FAILED;
-};
+}
 
 Error OS_UWP::set_cwd(const String &p_cwd) {
 	return FAILED;
@@ -651,11 +660,11 @@ void OS_UWP::set_icon(const Ref<Image> &p_icon) {
 
 bool OS_UWP::has_environment(const String &p_var) const {
 	return false;
-};
+}
 
 String OS_UWP::get_environment(const String &p_var) const {
 	return "";
-};
+}
 
 bool OS_UWP::set_environment(const String &p_var, const String &p_value) const {
 	return false;
@@ -751,8 +760,9 @@ Error OS_UWP::get_dynamic_library_symbol_handle(void *p_library_handle, const St
 }
 
 void OS_UWP::run() {
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->init();
 
@@ -763,12 +773,14 @@ void OS_UWP::run() {
 
 	while (!force_quit) {
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		if (managed_object->alert_close_handle)
+		if (managed_object->alert_close_handle) {
 			continue;
+		}
 		process_events(); // get rid of pending events
-		if (Main::iteration())
+		if (Main::iteration()) {
 			break;
-	};
+		}
+	}
 
 	main_loop->finish();
 }

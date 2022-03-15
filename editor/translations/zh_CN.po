@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"PO-Revision-Date: 2022-03-08 15:20+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -97,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -580,16 +580,16 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
 "此动画属于导入的场景，因此不会保存对导入轨道的更改。\n"
 "\n"
 "要启用添加自定义轨道的功能，可以在场景的导入设置中将\n"
-"“Animation > Storage” 设为 “ Files”，并启用 “Animation > Keep Custom "
-"Tracks”，然后重新导入。\n"
+"“Animation > Storage”设为“Files”，并启用“Animation > Keep Custom Tracks”，然"
+"后重新导入。\n"
 "或者也可以使用将动画导入为单独文件的导入预设。"
 
 #: editor/animation_track_editor.cpp
@@ -683,7 +683,7 @@ msgstr "优化动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "清空动画"
+msgstr "清理动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
@@ -723,19 +723,19 @@ msgstr "移除无效帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "移除未分解的空轨道"
+msgstr "移除无法解析的轨道和空轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
-msgstr "清除所有动画"
+msgstr "清理所有动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "清除动画（无法撤销！）"
+msgstr "清理动画（无法撤销！）"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
-msgstr "清空"
+msgstr "清理"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Ratio:"
@@ -1432,7 +1432,7 @@ msgid "Bus Options"
 msgstr "总线选项"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "创建副本"
 
@@ -1537,6 +1537,11 @@ msgstr "加载默认总线布局。"
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
 msgstr "创建新的总线布局。"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "打开音频总线布局"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2215,8 +2220,8 @@ msgstr "方法说明"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
 "当前没有此方法的说明。请帮我们[color=$color][url=$url]贡献一个[/url][/"
 "color]！"
@@ -2930,7 +2935,7 @@ msgstr "切换专注模式。"
 msgid "Add a new scene."
 msgstr "添加新场景。"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "场景"
 
@@ -3034,9 +3039,8 @@ msgid "Install Android Build Template..."
 msgstr "安装 Android 构建模板..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "打开 “编辑器数据” 文件夹"
+msgstr "打开 “用户数据” 文件夹"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3291,8 +3295,12 @@ msgid "Update Continuously"
 msgstr "持续更新"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
-msgstr "当有更改时更新"
+msgid "Update All Changes"
+msgstr "更新所有修改"
+
+#: editor/editor_node.cpp
+msgid "Update Vital Changes"
+msgstr "更新关键修改"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3726,9 +3734,8 @@ msgstr "从节点中导入："
 
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
-#, fuzzy
 msgid "%s Error"
-msgstr "错误"
+msgstr "%s 错误"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4041,6 +4048,17 @@ msgstr "名称包含无效字符。"
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+"编辑器无法识别该文件扩展名。\n"
+"如果你仍要重命名，请使用操作系统的文件管理器。\n"
+"在重命名为未知扩展名后，改文件不会再在编辑器中显示。"
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4092,7 +4110,7 @@ msgstr "添加到收藏"
 
 #: editor/filesystem_dock.cpp
 msgid "Remove from Favorites"
-msgstr "从收藏中删除"
+msgstr "从收藏中移除"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -4158,7 +4176,7 @@ msgstr "按最近修改"
 msgid "Sort by First Modified"
 msgstr "按最早修改"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
 msgstr "复制为..."
 
@@ -4954,6 +4972,10 @@ msgid "Rename Animation"
 msgstr "重命名动画"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "复制动画"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr "混合下一步变更"
 
@@ -4964,10 +4986,6 @@ msgstr "修改混合时间"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
 msgstr "加载动画"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr "复制动画"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
@@ -5123,7 +5141,7 @@ msgstr "接下来（自动队列）："
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr "跨动画时间混合"
+msgstr "跨动画混合时间"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
@@ -5624,6 +5642,10 @@ msgstr "Godot 编辑器是在没有光线跟踪支持的情况下构建的，无
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "烘焙光照贴图"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8082,7 +8104,13 @@ msgid "Cinematic Preview"
 msgstr "效果预览"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "使用 GLES2 渲染器时不可用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8970,6 +8998,11 @@ msgid "Select Another Theme Resource:"
 msgstr "选择其他主题资源："
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "重命名资源"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "其他主题"
 
@@ -9017,6 +9050,20 @@ msgstr ""
 "将此样式盒置顶为主样式。编辑其属性会更新该类型下其他所有样式盒的相同属性。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "添加项目类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "设置变量类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "修改基础类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "显示默认"
 
@@ -9033,8 +9080,19 @@ msgid "Override all default type items."
 msgstr "覆盖所有默认类型项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "添加项目类型"
+#, fuzzy
+msgid "Base Type"
+msgstr "修改基础类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9602,7 +9660,6 @@ msgid "TileSet"
 msgstr "图块集"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No VCS plugins are available."
 msgstr "没有可用的 VCS 插件。"
 
@@ -9613,54 +9670,47 @@ msgstr "错误"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid ""
 "Remote settings are empty. VCS features that use the network may not work."
-msgstr ""
+msgstr "远程仓库设置为空。使用网络的 VCS 特性可能无法工作。"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No commit message was provided."
-msgstr "没有提供名称。"
+msgstr "未提供提交消息。"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
 msgstr "提交"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Staged Changes"
-msgstr "着色器变更："
+msgstr "暂存修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstaged Changes"
-msgstr "着色器变更："
+msgstr "撤销暂存修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "提交"
+msgstr "提交："
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
-msgstr ""
+msgstr "日期："
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Subtitle:"
-msgstr "子树"
+msgstr "副标题："
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Do you want to remove the %s branch?"
-msgstr ""
+msgstr "是否要移除 %s 分支？"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Do you want to remove the %s remote?"
-msgstr "确定要创建空类型吗？"
+msgstr "是否要移除 %s 远程仓库？"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Apply"
-msgstr "应用重置"
+msgstr "应用"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9671,148 +9721,120 @@ msgid "Initialize"
 msgstr "初始化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Login"
-msgstr "移除点"
+msgstr "远程仓库登录"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Username"
-msgstr "重命名"
+msgstr "用户名"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Password"
-msgstr ""
+msgstr "密码"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
-msgstr ""
+msgstr "SSH 公钥路径"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH public key path"
-msgstr ""
+msgstr "选择 SSH 公钥路径"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Private Key Path"
-msgstr ""
+msgstr "SSH 私钥路径"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH private key path"
-msgstr ""
+msgstr "选择 SSH 私钥路径"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "SSH 密码"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
 msgstr "检测新变化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Discard all changes"
-msgstr "关闭并保存更改吗？"
+msgstr "丢弃所有修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage all changes"
-msgstr "保存本地更改..."
+msgstr "暂存所有修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstage all changes"
-msgstr "材质变更："
+msgstr "撤销暂存所有修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Message"
-msgstr "提交变更"
+msgstr "提交消息"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
-msgstr "提交变更"
+msgstr "提交修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit List"
-msgstr "提交"
+msgstr "提交列表"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
+msgstr "提交列表大小"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "匹配项："
+msgstr "分支"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Branch"
-msgstr "新建项目"
+msgstr "新建分支"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Branch"
-msgstr "移除动画轨道"
+msgstr "移除分支"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branch Name"
-msgstr ""
+msgstr "分支名称"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remotes"
-msgstr "远程"
+msgstr "远程仓库"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Remote"
-msgstr "新建项目"
+msgstr "新建远程仓库"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Remote"
-msgstr "移除项目"
+msgstr "移除远程仓库"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "远程 "
+msgstr "远程仓库名称"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote URL"
-msgstr "远程 "
+msgstr "远程仓库 URL"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Fetch"
-msgstr ""
+msgstr "抓取"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Pull"
-msgstr ""
+msgstr "拉取"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Push"
-msgstr ""
+msgstr "推送"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Force Push"
-msgstr "源网格："
+msgstr "强制推送"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9820,7 +9842,7 @@ msgstr "已修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Renamed"
-msgstr "更名"
+msgstr "已更名"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Deleted"
@@ -9832,22 +9854,19 @@ msgstr "类型更改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Unmerged"
-msgstr ""
+msgstr "未合并"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "View:"
-msgstr "视图"
+msgstr "查看："
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Split"
-msgstr "拆分路径"
+msgstr "拆分"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unified"
-msgstr "已修改"
+msgstr "联合"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -9879,7 +9898,7 @@ msgstr "添加输入端口"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
-msgstr "增加输出端口"
+msgstr "添加输出端口"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change input port type"
@@ -10447,7 +10466,7 @@ msgstr "计算变换的倒数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the transpose of a transform."
-msgstr "计算一个变换的转置。"
+msgstr "计算变换的转置。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
@@ -10664,7 +10683,7 @@ msgstr "（仅限片段/光照模式）（标量）使用本地差分的“ x”
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
-msgstr "（仅适用于片段/光照模式）（向量）使用局部差分的“y”导数。"
+msgstr "（仅限片段/光照模式）（向量）使用局部差分的“y”导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10787,7 +10806,7 @@ msgid ""
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "筛选导出非资源文件或文件夹\n"
-"（使用英文逗号分隔，如：*.json, *.txt, docs/* ）"
+"（以英文逗号分隔，如：*.json, *.txt, docs/* ）"
 
 #: editor/project_export.cpp
 msgid ""
@@ -11287,7 +11306,7 @@ msgstr "重命名输入事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Action deadzone"
-msgstr "修改动作盲区"
+msgstr "修改动作死区"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
@@ -11509,7 +11528,7 @@ msgstr "动作"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
-msgstr "盲区"
+msgstr "死区"
 
 #: editor/project_settings_editor.cpp
 msgid "Device:"
@@ -12430,6 +12449,11 @@ msgid "Stack Frames"
 msgstr "栈帧"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "筛选图块"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "性能分析器"
 
@@ -12601,6 +12625,14 @@ msgstr "设置遮挡球体半径"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
 msgstr "设置遮挡球体位置"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Polygon Point Position"
+msgstr "设置遮挡多边形顶点位置"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Hole Point Position"
+msgstr "设置遮挡空洞顶点位置"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -13300,38 +13332,36 @@ msgid "Edit Member"
 msgstr "编辑成员"
 
 #: modules/visual_script/visual_script_expression.cpp
-#, fuzzy
 msgid "Expression"
-msgstr "设置表达式"
+msgstr "表达式"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return"
-msgstr ""
+msgstr "返回"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "动画"
+msgstr "条件"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
-msgstr ""
+msgstr "如果 cond 是："
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "循环"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
-msgstr ""
+msgstr "只要 cond 成立："
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "迭代器"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "for (elem) in (input):"
-msgstr ""
+msgstr "对 input 中的每一个 elem："
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -13347,79 +13377,71 @@ msgstr "迭代器失效： "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "序列"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "in order:"
-msgstr "重命名文件夹："
+msgstr "按顺序："
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Switch"
-msgstr "俯仰角："
+msgstr "切换"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "'input' is:"
-msgstr ""
+msgstr "“input”是："
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Type Cast"
-msgstr "类型："
+msgstr "类型转换"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
-msgstr ""
+msgstr "是 %s 吗？"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
-msgstr ""
+msgstr "对 %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "On Self"
-msgstr "仅自己"
+msgstr "对自身"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Subtract %s"
-msgstr "位于字符 %s"
+msgstr "将 %s 减去"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Multiply %s"
-msgstr ""
+msgstr "将 %s 乘以"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Divide %s"
-msgstr ""
+msgstr "将 %s 除以"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Mod %s"
-msgstr "添加 %s"
+msgstr "将 %s 求模"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "ShiftLeft %s"
-msgstr "设置 %s"
+msgstr "将 %s 向左移位"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "ShiftRight %s"
-msgstr ""
+msgstr "将 %s 向右移位"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "BitAnd %s"
-msgstr "将 %s 固定"
+msgstr "将 %s 按位与"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitOr %s"
-msgstr ""
+msgstr "将 %s 按位或"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitXor %s"
-msgstr ""
+msgstr "将 %s 按位异或"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -13444,19 +13466,16 @@ msgid "Invalid index property name '%s' in node %s."
 msgstr "节点 “%s” 的索引属性名 “%s” 无效。"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Emit %s"
-msgstr "设置 %s"
+msgstr "触发 %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Function"
 msgstr "函数"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Compose Array"
-msgstr "调整数组大小"
+msgstr "组成数组"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -13468,7 +13487,7 @@ msgstr ": 无效参数: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
-msgstr ""
+msgstr "如果 cond 则 a，否则 b"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -13479,64 +13498,52 @@ msgid "VariableSet not found in script: "
 msgstr "脚本中未找到 VariableSet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Preload"
-msgstr "重新加载"
+msgstr "预加载"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Index"
-msgstr "Z 索引"
+msgstr "获取索引"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Index"
-msgstr "Z 索引"
+msgstr "设置索引"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Global Constant"
-msgstr "常量"
+msgstr "全局常量"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Class Constant"
-msgstr "常量"
+msgstr "类常量"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Basic Constant"
-msgstr "常量"
+msgstr "基本常量"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Math Constant"
-msgstr "常量"
+msgstr "数学常量"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Engine Singleton"
-msgstr "启用的 GDNative 单例"
+msgstr "获取引擎单例"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Node"
-msgstr "TimeSeek 节点"
+msgstr "获取场景节点"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Tree"
-msgstr "场景树编辑"
+msgstr "获取场景树"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Self"
-msgstr "仅自己"
+msgstr "获取自身"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "CustomNode"
-msgstr "剪切节点"
+msgstr "自定义节点"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -13546,36 +13553,31 @@ msgstr "自定义节点不包含 _step() 方法，不能生成图像。"
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
-msgstr "_step() 的返回值无效，必须是整形 (Seq Out) 或字符串 (Error)。"
+msgstr "_step() 的返回值无效，必须是整型（Seq Out）或字符串（Error）。"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "SubCall"
-msgstr "调用"
+msgstr "子调用"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Construct %s"
-msgstr "常量"
+msgstr "构造 %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Local Var"
-msgstr "使用本地空间"
+msgstr "获取局部变量"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Local Var"
-msgstr "使用本地空间"
+msgstr "设置局部变量"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Action %s"
-msgstr "动作"
+msgstr "动作 %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Deconstruct %s"
-msgstr ""
+msgstr "解构 %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -13583,40 +13585,35 @@ msgstr "搜索 VisualScript"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "Yield"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "等待"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Frame"
-msgstr "移动帧"
+msgstr "下一帧"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Physics Frame"
-msgstr "物理帧 %"
+msgstr "下一物理帧"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "%s sec(s)"
-msgstr ""
+msgstr "%s 秒"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitSignal"
-msgstr "信号"
+msgstr "等待信号"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitNodeSignal"
-msgstr "信号"
+msgstr "等待节点信号"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitInstanceSignal"
-msgstr "实例化"
+msgstr "等待实例信号"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -13745,9 +13742,10 @@ msgstr "无效的包名称："
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"“android/modules” 项目设置（变更于Godot 3.2.2）中包含了无效模组 "
-"“GodotPaymentV3”。\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -13950,10 +13948,6 @@ msgstr "未指定 App Store Team ID - 无法配置项目。"
 msgid "Invalid Identifier:"
 msgstr "无效的标识符："
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr "预设中未指定必需的图标。"
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr "停止 HTTP 服务器"
@@ -13994,17 +13988,190 @@ msgstr "无法创建 HTTP 服务器目录："
 msgid "Error starting HTTP server:"
 msgstr "启动 HTTP 服务器时出错："
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr "无法访问文件系统。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr "获取 Info.plist 哈希失败。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no exe name."
+msgstr "Info.plist 无效，没有可执行文件名称。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Info.plist 无效，没有捆绑包 ID。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr "Info.plist 无效，无法加载。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create \"%s\" subfolder."
+msgstr "创建“%s”子文件夹失败。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr "提取瘦二进制文件失败。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid binary format."
+msgstr "二进制格式无效。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr "签名已存在！"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to process nested resources."
+msgstr "处理嵌套资源失败。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "创建 _CodeSignature 子文件夹失败。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get CodeResources hash."
+msgstr "获取 CodeResources 哈希失败。"
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+msgid "Invalid entitlements file."
+msgstr "授权文件无效。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid executable file."
+msgstr "可执行文件无效。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr "无法改变签名加载命令的大小。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr "无法创建胖二进制。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr "未知捆绑包类型。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr "未知对象类型。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr "注意：公证过程通常少于一个小时。过程结束后，你会收到一封邮件。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr "你可以手动检查进度，请打开终端并运行以下命令："
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr "运行以下命令将公证票证装订到导出的应用中（可选）："
+
+#: platform/osx/export/export.cpp
+msgid "No identity found."
+msgstr "没有找到身份。"
+
+#: platform/osx/export/export.cpp
+msgid "Creating app bundle"
+msgstr "正在创建应用捆绑包"
+
+#: platform/osx/export/export.cpp
+msgid "Could not find template app to export:"
+msgstr "无法找到导出的模板应用："
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr "该操作系统上不支持相对符号链接，导出的项目可能损坏！"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr "未找到请求的二进制模板“%s”。你的模板归档中可能缺失该文件。"
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr "正在制作 PKG"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr "Ad-hoc 签名的应用需要“Disable Library Validation”授权才能加载动态库。"
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr "正在对捆绑包进行代码签名"
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr "正在制作 DMG"
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr "正在对 DMG 进行代码签名"
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr "正在制作 ZIP"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr "公证要求该应用先进行归档，请选择 DMG 或 ZIP 导出格式。"
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr "正在发送归档进行公证"
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr "无效的包标识符："
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
-msgstr "公证：需要代码签名。"
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
+msgstr ""
+"警告：编辑器设置里选中的是内置的“codesign”。代码签名仅限于 ad-hoc 签名。"
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
-msgstr "公证：需要加强的运行时环境。"
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+"警告：未安装 Xcode 命令行工具，将使用内置的“codesign”。代码签名仅限于 ad-hoc "
+"签名。"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr "公证：不支持使用 Ad-hoc 签名进行公证。"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr "公证：公证需要代码签名。"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr "公证：公证需要加固运行时环境。"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
+msgstr "公证：公证需要时间戳运行时环境。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
@@ -14013,6 +14180,75 @@ msgstr "公证：未指定 Apple ID 名称。"
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
 msgstr "公证：未指定 Apple ID 密码。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+"警告：已禁用公证。如果从未知来源下载该导出后的项目，将被 Gatekeeper 阻止运"
+"行。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+"已禁用代码签名。导出后的项目将无法在启用 Gatekeeper 的 Mac 和使用 Apple "
+"Silicon 的 Mac 上运行。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr "加固运行时环境与 Ad-hoc 签名不兼容，将被禁用！"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr "时间戳运行时环境与 Ad-hoc 签名不兼容，将被禁用！"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+"警告：不支持从该操作系统进行公证。如果从未知来源下载该导出后的项目，将被 "
+"Gatekeeper 阻止运行。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr "隐私：已启用麦克风访问，但未指定用途描述。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr "隐私：已启用相机访问，但未指定用途描述。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr "隐私：已启用位置信息访问，但未指定用途描述。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr "隐私：已启用地址簿访问，但未指定用途描述。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr "隐私：已启用日历访问，但未指定用途描述。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
+msgstr "隐私：已启用照片库访问，但未指定用途描述。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14065,6 +14301,26 @@ msgstr "宽幅 310x150 Logo 图片尺寸无效（应为 310x150）。"
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "启动画面图片尺寸无效（应为 620x300）。"
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+"必须在编辑器设置中配置 rcedit 工具（Export > Windows > Rcedit）才能修改图标或"
+"应用信息数据。"
+
+#: platform/windows/export/export.cpp
+msgid "Invalid icon path:"
+msgstr "图标路径无效："
+
+#: platform/windows/export/export.cpp
+msgid "Invalid file version:"
+msgstr "文件版本无效："
+
+#: platform/windows/export/export.cpp
+msgid "Invalid product version:"
+msgstr "产品版本无效："
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -14211,14 +14467,14 @@ msgstr ""
 "ParallaxLayer 类型的节点必须作为 ParallaxBackground 的子节点才能正常工作。"
 
 #: scene/2d/particles_2d.cpp
-#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles2D\" toolbar option for this purpose."
 msgstr ""
 "基于 GPU 的粒子不受 GLES2 视频驱动程序的支持。\n"
-"改为使用 CPUParticles2D 节点。为此，可以使用 “转换为 CPUParticles” 选项。"
+"改为使用 CPUParticles2D 节点。为此，可以使用工具栏上的“转换为 "
+"CPUParticles2D”选项。"
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -14228,6 +14484,10 @@ msgid ""
 "You can use the \"Convert to CPUParticles2D\" toolbar option for this "
 "purpose."
 msgstr ""
+"在 macOS 上，渲染 Particles2D 比 CPUParticles2D 要慢上很多，因为变换反馈是在 "
+"CPU 上实现的，而不是 GPU。\n"
+"以 macOS 为目标时，请考虑使用 CPUParticles2D。\n"
+"为此，可以使用工具栏上的“转换为 CPUParticles2D”选项。"
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -14459,14 +14719,14 @@ msgid "Only uniform scales are supported."
 msgstr "仅支持统一的缩放。"
 
 #: scene/3d/particles.cpp
-#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 "基于 GPU 的粒子不受 GLES2 视频驱动程序的支持。\n"
-"改为使用 CPUParticles 节点。为此，您可以使用 “转换为 CPUParticles” 选项。"
+"改为使用 CPUParticles 节点。为此，可以使用工具栏上的“转换为 CPUParticles”选"
+"项。"
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14475,6 +14735,10 @@ msgid ""
 "Consider using CPUParticles instead when targeting macOS.\n"
 "You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
+"在 macOS 上，渲染 Particles 比 CPUParticles 要慢上很多，因为变换反馈是在 CPU "
+"上实现的，而不是 GPU。\n"
+"以 macOS 为目标时，请考虑使用 CPUParticles。\n"
+"为此，可以使用工具栏上的“转换为 CPUParticles”选项。"
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14664,8 +14928,8 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
-"VehicleWheel 为 VehicleBody 提供一个车轮系统 (Wheel System)。请将它作为 "
-"VehicleBody 的子节点。"
+"VehicleWheel 是用来为 VehicleBody 提供车轮系统的。请将它用作 VehicleBody 的子"
+"节点。"
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -14735,12 +14999,12 @@ msgstr "该节点已废弃。请使用 AnimationTree 代替。"
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "颜色：#%s\n"
-"鼠标左键：设置颜色\n"
-"鼠标右键：删除预设"
+"鼠标左键：应用颜色\n"
+"鼠标右键：移除预设"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
@@ -14776,8 +15040,8 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
-"由于该控件的 Mouse Filter 设置为 “Ignore” 因此将不会显示高亮工具提示。将 "
-"Mouse Filter 设置为 “Stop” 或 “Pass” 可修正此问题。"
+"由于该控件的 Mouse Filter 设置为“Ignore”因此将不会显示高亮工具提示。将 Mouse "
+"Filter 设置为“Stop”或“Pass”可修正此问题。"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

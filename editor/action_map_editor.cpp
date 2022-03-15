@@ -562,8 +562,6 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 			_update_input_list();
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -613,7 +611,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	add_child(main_vbox);
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tab_container->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
@@ -1014,8 +1012,6 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -1126,8 +1122,6 @@ void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 }
 
 ActionMapEditor::ActionMapEditor() {
-	show_builtin_actions = false;
-
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	main_vbox->set_anchors_and_offsets_preset(PRESET_WIDE);

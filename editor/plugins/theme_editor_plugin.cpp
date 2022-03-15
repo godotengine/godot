@@ -1887,7 +1887,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	theme_type_editor = p_theme_type_editor;
 
 	tc = memnew(TabContainer);
-	tc->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tc->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	add_child(tc);
 
 	// Edit Items tab.
@@ -2077,7 +2077,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
 	for (const String &E : ext) {
-		import_another_theme_dialog->add_filter("*." + E + "; Theme Resource");
+		import_another_theme_dialog->add_filter(vformat("*.%s; %s", E, TTR("Theme Resource")));
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
 	import_another_theme_dialog->connect("file_selected", callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk));
@@ -3664,7 +3664,7 @@ ThemeEditor::ThemeEditor() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
 	for (const String &E : ext) {
-		preview_scene_dialog->add_filter("*." + E + "; Scene");
+		preview_scene_dialog->add_filter(vformat("*.%s; %s", E, TTR("Scene")));
 	}
 	main_hs->add_child(preview_scene_dialog);
 	preview_scene_dialog->connect("file_selected", callable_mp(this, &ThemeEditor::_preview_scene_dialog_cbk));

@@ -87,16 +87,19 @@ void CollisionShape3D::_notification(int p_what) {
 				_update_in_shape_owner();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (parent) {
 				_update_in_shape_owner();
 			}
 		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			if (parent) {
 				parent->remove_shape_owner(owner_id);

@@ -28,13 +28,14 @@
 # meowmeowmeowcat <meowmeowcat1211@gmail.com>, 2021.
 # anthonychen <anton1554970211@126.com>, 2021.
 # Chia-Hsiang Cheng <cche0109@student.monash.edu>, 2021.
+# 曹恩逢 <nelson22768384@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-14 15:28+0000\n"
-"Last-Translator: anthonychen <anton1554970211@126.com>\n"
+"PO-Revision-Date: 2022-02-12 21:43+0000\n"
+"Last-Translator: 曹恩逢 <nelson22768384@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -42,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -527,8 +528,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -1379,7 +1380,7 @@ msgid "Bus Options"
 msgstr "匯流排選項"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "重複"
 
@@ -1485,13 +1486,18 @@ msgstr "載入預設匯流排配置。"
 msgid "Create a new Bus Layout."
 msgstr "建立新匯流排配置。"
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "開啟音訊匯流排配置"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "無效的名稱。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "無法以數字開頭。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2166,8 +2172,8 @@ msgstr "方法說明"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
 "該方法目前沒有說明。請幫我們[color=$color][url=$url]貢獻一個[/url][/color]！"
 
@@ -2884,7 +2890,7 @@ msgstr "切換／取消專注模式。"
 msgid "Add a new scene."
 msgstr "新增場景。"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "場景"
 
@@ -3241,8 +3247,14 @@ msgid "Update Continuously"
 msgstr "持續更新"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
+#, fuzzy
+msgid "Update All Changes"
 msgstr "更改時更新"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Update Vital Changes"
+msgstr "材質變更："
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3991,6 +4003,14 @@ msgstr "名稱包含無效字元。"
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4108,7 +4128,7 @@ msgstr "按最後修改時間排序"
 msgid "Sort by First Modified"
 msgstr "按最早修改時間排序"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
 msgstr "重複..."
 
@@ -4906,6 +4926,10 @@ msgid "Rename Animation"
 msgstr "重新命名動畫"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "重複動畫"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr "混合下一個更改"
 
@@ -4916,10 +4940,6 @@ msgstr "修改混合時間"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
 msgstr "載入動畫"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr "重複動畫"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
@@ -5575,6 +5595,10 @@ msgstr "Godot 編輯器在建構時未支援光線追蹤 (Ray Tracing) ，無法
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "烘焙光照圖"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8039,7 +8063,13 @@ msgid "Cinematic Preview"
 msgstr "效果預覽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "使用 GLES2 算繪引擎時無法使用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8928,6 +8958,11 @@ msgid "Select Another Theme Resource:"
 msgstr "選擇其他主題資源："
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "重新命名資源"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "其他主題"
 
@@ -8978,6 +9013,20 @@ msgstr ""
 "釘選該樣式盒為主要樣式。編輯其屬性將更新所有其他同類別的樣式盒之相同屬性。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "新增項目類型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "設定變數型別"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "更改基礎型別"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "顯示預設"
 
@@ -8994,8 +9043,19 @@ msgid "Override all default type items."
 msgstr "複寫所有預設類別項目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "新增項目類型"
+#, fuzzy
+msgid "Base Type"
+msgstr "更改基礎型別"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9700,18 +9760,6 @@ msgstr "提交"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12386,6 +12434,11 @@ msgid "Stack Frames"
 msgstr "堆疊框"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "篩選圖塊"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "分析工具"
 
@@ -12557,6 +12610,16 @@ msgstr "設定遮擋球體半徑"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
 msgstr "設定遮擋球體位置"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Polygon Point Position"
+msgstr "設定入口控制點位置"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Hole Point Position"
+msgstr "設定曲線控制點位置"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -13700,9 +13763,10 @@ msgstr "無效的套件名稱："
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"「andoird/modules」專案設定中包含了無效的「GodotPaymentV3」模組（更改於 "
-"Godot 3.2.2）。\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -13906,10 +13970,6 @@ msgstr "尚未設定 App Store Team ID - 無法設定專案。"
 msgid "Invalid Identifier:"
 msgstr "無效的識別符："
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr "必須在預設設定中指定必填圖示。"
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr "停止 HTTP 伺服器"
@@ -13950,16 +14010,202 @@ msgstr "無法建立HTTP伺服器目錄："
 msgid "Error starting HTTP server:"
 msgstr "啟動HTTP伺服器時發生錯誤："
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, no exe name."
+msgstr "無效的專案名稱。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, can't load."
+msgstr "無效的幾何圖形，無法建立多邊形。"
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to create \"%s\" subfolder."
+msgstr "無法新增資料夾。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid binary format."
+msgstr "無效的基礎路徑。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to process nested resources."
+msgstr "加載資源失敗。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to get CodeResources hash."
+msgstr "加載資源失敗。"
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid entitlements file."
+msgstr "無效的副檔名。"
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid executable file."
+msgstr "無效的副檔名。"
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "No identity found."
+msgstr "未發現任何圖示。"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Creating app bundle"
+msgstr "正在建立縮圖"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not find template app to export:"
+msgstr ""
+"找不到樣板APK以匯出：\n"
+"%s"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr "無效的捆綁識別符："
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization: Code signing is required for notarization."
 msgstr "公證：需要程式碼簽署。"
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+#, fuzzy
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr "公證：需要強化執行階段（Hardened Runtime）。"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr "公證：需要強化執行階段（Hardened Runtime）。"
 
 #: platform/osx/export/export.cpp
@@ -13969,6 +14215,69 @@ msgstr "公證：未指定Apple ID名稱。"
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
 msgstr "公證：未指定Apple ID密碼。"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
+msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14021,6 +14330,27 @@ msgstr "無效的寬 310x150 LOGO 圖片尺寸（需為 310x150）。"
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "無效的啟動畫面圖片尺寸（應為 620x300）。"
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid icon path:"
+msgstr "無效的路徑。"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid file version:"
+msgstr "無效的副檔名。"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid product version:"
+msgstr "無效的產品 GUID。"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -14417,8 +14747,8 @@ msgstr "僅支援均等縮放。"
 #, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 "GLES2 視訊驅動程式不支援基於 GPU 的粒子。\n"
 "請改為使用 CPUParticles 節點。可使用「Convert to CPUParticles」選項。"
@@ -14688,9 +15018,10 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "該節點已停止維護，請改為使用 AnimationTree。"
 
 #: scene/gui/color_picker.cpp
+#, fuzzy
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "色彩： #%s\n"

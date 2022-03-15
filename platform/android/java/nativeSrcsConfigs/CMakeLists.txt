@@ -15,5 +15,4 @@ file(GLOB_RECURSE HEADERS ${GODOT_ROOT_DIR}/*.h**)
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME}
         SYSTEM PUBLIC
-        ${GODOT_ROOT_DIR}
-        ${GODOT_ROOT_DIR}/modules/gdnative/include)
+        ${GODOT_ROOT_DIR})

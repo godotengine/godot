@@ -86,8 +86,9 @@ private:
 			attached = false;
 			confirmed = false;
 
-			for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+			for (int i = 0; i < MAX_JOY_BUTTONS; i++) {
 				last_buttons[i] = false;
+			}
 		}
 	};
 

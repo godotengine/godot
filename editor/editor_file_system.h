@@ -47,7 +47,7 @@ class EditorFileSystemDirectory : public Object {
 
 	String name;
 	uint64_t modified_time;
-	bool verified; //used for checking changes
+	bool verified = false; //used for checking changes
 
 	EditorFileSystemDirectory *parent;
 	Vector<EditorFileSystemDirectory *> subdirs;
@@ -132,20 +132,20 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads;
+	bool use_threads = true;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
 	EditorFileSystemDirectory *new_filesystem;
 
-	bool abort_scan;
-	bool scanning;
-	bool importing;
-	bool first_scan;
-	bool scan_changes_pending;
+	bool abort_scan = false;
+	bool scanning = false;
+	bool importing = false;
+	bool first_scan = true;
+	bool scan_changes_pending = false;
 	float scan_total;
 	String filesystem_settings_version_for_import;
-	bool revalidate_import_files;
+	bool revalidate_import_files = false;
 
 	void _scan_filesystem();
 
@@ -197,8 +197,8 @@ class EditorFileSystem : public Node {
 	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
-	bool scanning_changes;
-	bool scanning_changes_done;
+	bool scanning_changes = false;
+	bool scanning_changes_done = false;
 
 	static void _thread_func_sources(void *_userdata);
 

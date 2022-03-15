@@ -121,7 +121,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM_TINT"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT_GLOSS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT_ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY_FLOW"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SSS_STRENGTH"] = ShaderLanguage::TYPE_FLOAT;
@@ -202,7 +202,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "unshaded" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "wireframe" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse", "lambert", "lambert_wrap", "burley", "toon" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular", "schlick_ggx", "blinn", "phong", "toon", "disabled" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular", "schlick_ggx", "toon", "disabled" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "skip_vertex_transform" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "world_vertex_coords" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "ensure_correct_normals" });
@@ -318,6 +318,12 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["MASS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA1"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA2"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA3"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA4"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA5"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA6"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
@@ -338,6 +344,12 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["RESTART"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA1"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA2"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA3"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA4"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA5"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA6"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);

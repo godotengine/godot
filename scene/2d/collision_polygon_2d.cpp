@@ -102,26 +102,20 @@ void CollisionPolygon2D::_notification(int p_what) {
 				_build_polygon();
 				_update_in_shape_owner();
 			}
-
-			/*if (Engine::get_singleton()->is_editor_hint()) {
-				//display above all else
-				set_z_as_relative(false);
-				set_z_index(RS::CANVAS_ITEM_Z_MAX - 1);
-			}*/
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (parent) {
 				_update_in_shape_owner();
 			}
-
 		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
-
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			if (parent) {
 				parent->remove_shape_owner(owner_id);

@@ -181,16 +181,19 @@
 				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
 			</description>
 		</method>
-		<method name="find_node" qualifiers="const">
-			<return type="Node" />
+		<method name="find_nodes" qualifiers="const">
+			<return type="Node[]" />
 			<argument index="0" name="mask" type="String" />
-			<argument index="1" name="recursive" type="bool" default="true" />
-			<argument index="2" name="owned" type="bool" default="true" />
+			<argument index="1" name="type" type="String" default="&quot;&quot;" />
+			<argument index="2" name="recursive" type="bool" default="true" />
+			<argument index="3" name="owned" type="bool" default="true" />
 			<description>
-				Finds a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]). Returns [code]null[/code] if no matching [Node] is found.
-				[b]Note:[/b] It does not match against the full path, just against individual node names.
+				Finds descendants of this node whose, name matches [code]mask[/code] as in [method String.match], and/or type matches [code]type[/code] as in [method Object.is_class].
+				[code]mask[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[code]type[/code] will check equality or inheritance. It is case-sensitive, [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
 				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] instead. To avoid using [method find_node] too often, consider caching the node reference into a variable.
+				Returns an empty array, if no matching nodes are found.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. To avoid using [method find_nodes] too often, consider caching the node references into variables.
 			</description>
 		</method>
 		<method name="find_parent" qualifiers="const">
@@ -852,6 +855,14 @@
 			Specific to the Android platform.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
+		</constant>
+		<constant name="NOTIFICATION_WM_DPI_CHANGE" value="1009">
+		</constant>
+		<constant name="NOTIFICATION_VP_MOUSE_ENTER" value="1010">
+			Notification received when the mouse enters the viewport.
+		</constant>
+		<constant name="NOTIFICATION_VP_MOUSE_EXIT" value="1011">
+			Notification received when the mouse leaves the viewport.
 		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.

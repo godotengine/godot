@@ -544,12 +544,6 @@ bool GodotConvexPolygonShape2D::intersect_segment(const Vector2 &p_begin, const 
 	bool inters = false;
 
 	for (int i = 0; i < point_count; i++) {
-		//hmm.. no can do..
-		/*
-		if (d.dot(points[i].normal)>=0)
-			continue;
-		*/
-
 		Vector2 res;
 
 		if (!Geometry2D::segment_intersects_segment(p_begin, p_end, points[i].pos, points[(i + 1) % point_count].pos, &res)) {

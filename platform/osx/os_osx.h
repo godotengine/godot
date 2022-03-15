@@ -102,6 +102,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 

@@ -148,10 +148,10 @@ private:
 
 	void _node_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
 	void _node_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
-	void _node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
+	void _node_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void _res_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
 	void _res_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
-	void _res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
+	void _res_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void _root_func(const NodePath &p_scene_path, const String &p_scene_from);
 
 	void _create_node_func(const NodePath &p_parent, const String &p_type, const String &p_name);

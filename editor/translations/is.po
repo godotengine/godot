@@ -526,8 +526,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -1370,7 +1370,7 @@ msgid "Bus Options"
 msgstr "Val á kvarða"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr ""
 
@@ -1474,6 +1474,10 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+msgid "Audio Bus Layout"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp
@@ -2148,8 +2152,8 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -2834,7 +2838,7 @@ msgstr ""
 msgid "Add a new scene."
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr ""
 
@@ -3182,7 +3186,11 @@ msgid "Update Continuously"
 msgstr "Samfellt"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
+msgid "Update All Changes"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Update Vital Changes"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3911,6 +3919,14 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4023,7 +4039,7 @@ msgstr ""
 msgid "Sort by First Modified"
 msgstr ""
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Duplicate..."
 msgstr "Hreyfimynd Tvöfalda Lykla"
@@ -4821,6 +4837,10 @@ msgid "Rename Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr ""
 
@@ -4830,10 +4850,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -5489,6 +5505,10 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -7947,7 +7967,12 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8842,6 +8867,10 @@ msgid "Select Another Theme Resource:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme Resource"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr ""
 
@@ -8890,6 +8919,18 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Set Variation Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Set Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr ""
 
@@ -8906,7 +8947,17 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
+msgid "Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -9604,18 +9655,6 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12209,6 +12248,10 @@ msgid "Stack Frames"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+msgid "Filter stack variables"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr ""
 
@@ -12379,6 +12422,14 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Polygon Point Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Hole Point Position"
 msgstr ""
 
 #: modules/csg/csg_gizmos.cpp
@@ -13511,6 +13562,9 @@ msgstr ""
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13699,10 +13753,6 @@ msgstr ""
 msgid "Invalid Identifier:"
 msgstr ""
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr ""
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr ""
@@ -13743,16 +13793,186 @@ msgstr ""
 msgid "Error starting HTTP server:"
 msgstr ""
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no exe name."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create \"%s\" subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid binary format."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to process nested resources."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get CodeResources hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+msgid "Invalid entitlements file."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid executable file."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "No identity found."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Creating app bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Could not find template app to export:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -13761,6 +13981,69 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -13813,6 +14096,24 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Invalid icon path:"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Invalid file version:"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Invalid product version:"
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
@@ -14165,8 +14466,8 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -14406,7 +14707,7 @@ msgstr ""
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 

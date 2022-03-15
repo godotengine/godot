@@ -377,9 +377,10 @@ void SceneImportSettings::_update_view_gizmos() {
 			continue;
 		}
 
-		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(mesh_node->find_node("collider_view"));
-		CRASH_COND_MSG(collider_view == nullptr, "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+		TypedArray<Node> descendants = mesh_node->find_nodes("collider_view", "MeshInstance3D");
+		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
 
+		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
 		collider_view->set_visible(generate_collider);
 		if (generate_collider) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
@@ -837,8 +838,10 @@ void SceneImportSettings::_re_import() {
 }
 
 void SceneImportSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
+		} break;
 	}
 }
 
@@ -1266,8 +1269,8 @@ SceneImportSettings::SceneImportSettings() {
 
 	item_save_path = memnew(EditorFileDialog);
 	item_save_path->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	item_save_path->add_filter("*.tres;Text Resource");
-	item_save_path->add_filter("*.res;Binary Resource");
+	item_save_path->add_filter("*.tres; " + TTR("Text Resource"));
+	item_save_path->add_filter("*.res; " + TTR("Binary Resource"));
 	add_child(item_save_path);
 	item_save_path->connect("file_selected", callable_mp(this, &SceneImportSettings::_save_path_changed));
 

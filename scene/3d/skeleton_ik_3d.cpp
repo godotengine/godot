@@ -407,14 +407,14 @@ void SkeletonIK3D::_notification(int p_what) {
 			set_process_priority(1);
 			reload_chain();
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (target_node_override) {
 				reload_goal();
 			}
-
 			_solve_chain();
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			reload_chain();
 		} break;

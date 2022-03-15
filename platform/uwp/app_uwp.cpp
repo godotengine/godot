@@ -177,7 +177,7 @@ static MouseButton _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 #endif
 
 	return MOUSE_BUTTON_NONE;
-};
+}
 
 static bool _is_touch(Windows::UI::Input::PointerPoint ^ pointerPoint) {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
@@ -231,11 +231,11 @@ static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windo
 	outputPosition.Y *= vm.height;
 
 	return outputPosition;
-};
+}
 
 static int _get_finger(uint32_t p_touch_id) {
 	return p_touch_id % 31; // for now
-};
+}
 
 void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args, bool p_pressed, bool p_is_wheel) {
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
@@ -281,15 +281,15 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 			os->input_event(mouse_button);
 		}
 	}
-};
+}
 
 void App::OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 	pointer_event(sender, args, true);
-};
+}
 
 void App::OnPointerReleased(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 	pointer_event(sender, args, false);
-};
+}
 
 void App::OnPointerWheelChanged(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 	pointer_event(sender, args, true, true);
@@ -416,8 +416,9 @@ void App::Load(Platform::String ^ entryPoint) {
 
 // This method is called after the window becomes active.
 void App::Run() {
-	if (Main::start())
+	if (Main::start()) {
 		os->run();
+	}
 }
 
 // Terminate events do not cause Uninitialize to be called. It will be called if your IFrameworkView

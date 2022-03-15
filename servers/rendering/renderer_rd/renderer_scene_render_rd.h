@@ -428,7 +428,7 @@ private:
 
 	bool glow_bicubic_upscale = false;
 	bool glow_high_quality = false;
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
+	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	mutable RID_Owner<RendererSceneEnvironmentRD, true> environment_owner;
 
@@ -678,10 +678,6 @@ private:
 			float shadow_range_begin[4];
 			float shadow_split_offsets[4];
 			float shadow_matrices[4][16];
-			float shadow_color1[4];
-			float shadow_color2[4];
-			float shadow_color3[4];
-			float shadow_color4[4];
 			float uv_scale1[2];
 			float uv_scale2[2];
 			float uv_scale3[2];

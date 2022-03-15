@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -382,8 +382,8 @@ struct Row
         const int tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065);
         const int tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865);
 
-        const int tmp0 = (ACCESS_COL(0) + ACCESS_COL(4)) << CONST_BITS;
-        const int tmp1 = (ACCESS_COL(0) - ACCESS_COL(4)) << CONST_BITS;
+        const int tmp0 = static_cast<unsigned int>(ACCESS_COL(0) + ACCESS_COL(4)) << CONST_BITS;
+        const int tmp1 = static_cast<unsigned int>(ACCESS_COL(0) - ACCESS_COL(4)) << CONST_BITS;
 
         const int tmp10 = tmp0 + tmp3, tmp13 = tmp0 - tmp3, tmp11 = tmp1 + tmp2, tmp12 = tmp1 - tmp2;
 
@@ -461,8 +461,8 @@ struct Col
         const int tmp2 = z1 + MULTIPLY(z3, - FIX_1_847759065);
         const int tmp3 = z1 + MULTIPLY(z2, FIX_0_765366865);
 
-        const int tmp0 = (ACCESS_ROW(0) + ACCESS_ROW(4)) << CONST_BITS;
-        const int tmp1 = (ACCESS_ROW(0) - ACCESS_ROW(4)) << CONST_BITS;
+        const int tmp0 = static_cast<unsigned int>(ACCESS_ROW(0) + ACCESS_ROW(4)) << CONST_BITS;
+        const int tmp1 = static_cast<unsigned int>(ACCESS_ROW(0) - ACCESS_ROW(4)) << CONST_BITS;
 
         const int tmp10 = tmp0 + tmp3, tmp13 = tmp0 - tmp3, tmp11 = tmp1 + tmp2, tmp12 = tmp1 - tmp2;
 
@@ -2557,7 +2557,7 @@ void jpeg_decoder::decode_block_dc_first(jpeg_decoder *pD, int component_id, int
         s = JPGD_HUFF_EXTEND(r, s);
     }
     pD->m_last_dc_val[component_id] = (s += pD->m_last_dc_val[component_id]);
-    p[0] = static_cast<jpgd_block_t>(s << pD->m_successive_low);
+    p[0] = static_cast<jpgd_block_t>(static_cast<unsigned int>(s) << pD->m_successive_low);
 }
 
 
@@ -2588,7 +2588,7 @@ void jpeg_decoder::decode_block_ac_first(jpeg_decoder *pD, int component_id, int
             if ((k += r) > 63) pD->stop_decoding(JPGD_DECODE_ERROR);
             r = pD->get_bits_no_markers(s);
             s = JPGD_HUFF_EXTEND(r, s);
-            p[g_ZAG[k]] = static_cast<jpgd_block_t>(s << pD->m_successive_low);
+            p[g_ZAG[k]] = static_cast<jpgd_block_t>(static_cast<unsigned int>(s) << pD->m_successive_low);
         } else {
             if (r == 15) {
                 if ((k += 15) > 63) pD->stop_decoding(JPGD_DECODE_ERROR);
@@ -2607,7 +2607,7 @@ void jpeg_decoder::decode_block_ac_refine(jpeg_decoder *pD, int component_id, in
 {
     int s, k, r;
     int p1 = 1 << pD->m_successive_low;
-    int m1 = (-1) << pD->m_successive_low;
+    int m1 = static_cast<unsigned int>(-1) << pD->m_successive_low;
     jpgd_block_t *p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
     
     JPGD_ASSERT(pD->m_spectral_end <= 63);

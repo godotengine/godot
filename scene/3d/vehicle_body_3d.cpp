@@ -116,9 +116,7 @@ TypedArray<String> VehicleWheel3D::get_configuration_warnings() const {
 }
 
 void VehicleWheel3D::_update(PhysicsDirectBodyState3D *s) {
-	if (m_raycastInfo.m_isInContact)
-
-	{
+	if (m_raycastInfo.m_isInContact) {
 		real_t project = m_raycastInfo.m_contactNormalWS.dot(m_raycastInfo.m_wheelDirectionWS);
 		Vector3 chassis_velocity_at_contactPoint;
 		Vector3 relpos = m_raycastInfo.m_contactPointWS - s->get_transform().origin;
@@ -135,11 +133,7 @@ void VehicleWheel3D::_update(PhysicsDirectBodyState3D *s) {
 			m_suspensionRelativeVelocity = projVel * inv;
 			m_clippedInvContactDotSuspension = inv;
 		}
-
-	}
-
-	else // Not in contact : position wheel in a nice (rest length) position
-	{
+	} else { // Not in contact : position wheel in a nice (rest length) position
 		m_raycastInfo.m_suspensionLength = m_suspensionRestLength;
 		m_suspensionRelativeVelocity = real_t(0.0);
 		m_raycastInfo.m_contactNormalWS = -m_raycastInfo.m_wheelDirectionWS;

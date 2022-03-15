@@ -107,8 +107,9 @@ void RedirectIOToConsole() {
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
-	if (!EngineDebugger::is_active())
+	if (!EngineDebugger::is_active()) {
 		return FALSE;
+	}
 
 	switch (dwCtrlType) {
 		case CTRL_C_EVENT:
@@ -166,8 +167,9 @@ void OS_Windows::initialize() {
 }
 
 void OS_Windows::delete_main_loop() {
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 }
 
@@ -180,8 +182,9 @@ void OS_Windows::finalize() {
 	driver_midi.close();
 #endif
 
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 
 	main_loop = nullptr;
 }
@@ -288,8 +291,9 @@ OS::Time OS_Windows::get_time(bool p_utc) const {
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
-	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		daylight = true;
+	}
 
 	TimeZoneInfo ret;
 	if (daylight) {
@@ -322,10 +326,11 @@ double OS_Windows::get_unix_time() const {
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	if (p_usec < 1000)
+	if (p_usec < 1000) {
 		Sleep(1);
-	else
+	} else {
 		Sleep(p_usec / 1000);
+	}
 }
 
 uint64_t OS_Windows::get_ticks_usec() const {
@@ -430,7 +435,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			if (p_pipe_mutex) {
 				p_pipe_mutex->unlock();
 			}
-		};
+		}
 		CloseHandle(pipe[0]); // Close pipe read handle.
 	} else {
 		WaitForSingleObject(pi.pi.hProcess, INFINITE);
@@ -446,7 +451,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	CloseHandle(pi.pi.hThread);
 
 	return OK;
-};
+}
 
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
@@ -478,7 +483,7 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	process_map->insert(pid, pi);
 
 	return OK;
-};
+}
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
 	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
@@ -492,15 +497,16 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	CloseHandle(pi.hThread);
 
 	return ret != 0 ? OK : FAILED;
-};
+}
 
 int OS_Windows::get_process_id() const {
 	return _getpid();
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {
-	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0)
+	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0) {
 		return ERR_CANT_OPEN;
+	}
 
 	return OK;
 }
@@ -523,7 +529,7 @@ bool OS_Windows::has_environment(const String &p_var) const {
 	free(env);
 	return has_env;
 #endif
-};
+}
 
 String OS_Windows::get_environment(const String &p_var) const {
 	WCHAR wval[0x7fff]; // MSDN says 32767 char is the maximum
@@ -542,7 +548,7 @@ String OS_Windows::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];
 		return fgets(buff, 1024, stdin);
-	};
+	}
 
 	return String();
 }
@@ -580,17 +586,20 @@ String OS_Windows::get_locale() const {
 	int sublang = SUBLANGID(langid);
 
 	while (wl->locale) {
-		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL)
+		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL) {
 			neutral = wl->locale;
+		}
 
-		if (lang == wl->main_lang && sublang == wl->sublang)
+		if (lang == wl->main_lang && sublang == wl->sublang) {
 			return String(wl->locale).replace("-", "_");
+		}
 
 		wl++;
 	}
 
-	if (!neutral.is_empty())
+	if (!neutral.is_empty()) {
 		return String(neutral).replace("-", "_");
+	}
 
 	return "en";
 }
@@ -617,25 +626,48 @@ BOOL is_wow64() {
 
 int OS_Windows::get_processor_count() const {
 	SYSTEM_INFO sysinfo;
-	if (is_wow64())
+	if (is_wow64()) {
 		GetNativeSystemInfo(&sysinfo);
-	else
+	} else {
 		GetSystemInfo(&sysinfo);
+	}
 
 	return sysinfo.dwNumberOfProcessors;
 }
 
+String OS_Windows::get_processor_name() const {
+	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
+
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(id.utf16().get_data()), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"ProcessorNameString", NULL, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	} else {
+		RegCloseKey(hkey);
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+}
+
 void OS_Windows::run() {
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->initialize();
 
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-		if (Main::iteration())
+		if (Main::iteration()) {
 			break;
-	};
+		}
+	}
 
 	main_loop->finalize();
 }

@@ -106,7 +106,7 @@ static void _setup_clock() {
 
 void OS_Unix::debug_break() {
 	assert(false);
-};
+}
 
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
@@ -198,7 +198,7 @@ double OS_Unix::get_unix_time() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, nullptr);
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
-};
+}
 
 OS::Date OS_Unix::get_date(bool p_utc) const {
 	time_t t = time(nullptr);
@@ -410,7 +410,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 
 int OS_Unix::get_process_id() const {
 	return getpid();
-};
+}
 
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
@@ -439,12 +439,12 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from within the executable path
+		// This code exists so GDExtension can load .so files from within the executable path.
 		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from a standard unix location
+		// This code exists so GDExtension can load .so files from a standard unix location.
 		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
 	}
 
@@ -555,8 +555,9 @@ String OS_Unix::get_executable_path() const {
 
 	char *resolved_path = new char[buff_size + 1];
 
-	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1) {
 		WARN_PRINT("MAXPATHLEN is too small");
+	}
 
 	String path(resolved_path);
 	delete[] resolved_path;

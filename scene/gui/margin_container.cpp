@@ -107,6 +107,7 @@ void MarginContainer::_notification(int p_what) {
 				fit_child_in_rect(c, Rect2(margin_left, margin_top, w, h));
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;

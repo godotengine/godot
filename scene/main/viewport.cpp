@@ -406,8 +406,8 @@ void Viewport::_notification(int p_what) {
 #endif // _3D_DISABLED
 				set_physics_process_internal(true);
 			}
-
 		} break;
+
 		case NOTIFICATION_READY: {
 #ifndef _3D_DISABLED
 			if (audio_listener_3d_set.size() && !audio_listener_3d) {
@@ -438,6 +438,7 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
 
@@ -461,6 +462,7 @@ void Viewport::_notification(int p_what) {
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!get_tree()) {
 				return;
@@ -493,17 +495,20 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
-		case NOTIFICATION_WM_MOUSE_ENTER: {
-			gui.mouse_in_window = true;
+
+		case NOTIFICATION_VP_MOUSE_ENTER: {
+			gui.mouse_in_viewport = true;
 		} break;
-		case NOTIFICATION_WM_MOUSE_EXIT: {
-			gui.mouse_in_window = false;
+
+		case NOTIFICATION_VP_MOUSE_EXIT: {
+			gui.mouse_in_viewport = false;
 			_drop_physics_mouseover();
 			_drop_mouse_over();
-			// When the mouse exits the window, we want to end mouse_over, but
+			// When the mouse exits the viewport, we want to end mouse_over, but
 			// not mouse_focus, because, for example, we want to continue
-			// dragging a scrollbar even if the mouse has left the window.
+			// dragging a scrollbar even if the mouse has left the viewport.
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
@@ -1234,6 +1239,7 @@ void Viewport::_gui_show_tooltip() {
 
 	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
+	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
 
@@ -1263,7 +1269,10 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
-	gui.tooltip_popup->show();
+	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
+	if (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
+		gui.tooltip_popup->show();
+	}
 	gui.tooltip_popup->child_controls_changed();
 }
 
@@ -1678,7 +1687,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Control *over = nullptr;
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
-		} else if (gui.mouse_in_window) {
+		} else if (gui.mouse_in_viewport) {
 			over = gui_find_control(mpos);
 		}
 
@@ -2020,6 +2029,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				next->grab_focus();
 				set_input_as_handled();
 			}
+		}
+	}
+}
+
+void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (!mb->is_pressed()) {
+			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
 		}
 	}
 }
@@ -2686,6 +2706,9 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	if (!is_input_handled()) {
 		_gui_input_event(ev);
+	} else {
+		// Cleanup internal GUI state after accepting event during _input().
+		_gui_cleanup_internal_state(ev);
 	}
 
 	event_count++;
@@ -2759,6 +2782,14 @@ Vector2 Viewport::get_camera_rect_size() const {
 }
 
 void Viewport::set_disable_input(bool p_disable) {
+	if (p_disable == disable_input) {
+		return;
+	}
+	if (p_disable) {
+		_drop_mouse_focus();
+		_drop_mouse_over();
+		_gui_cancel_tooltip();
+	}
 	disable_input = p_disable;
 }
 
@@ -3031,12 +3062,8 @@ Viewport *Viewport::get_parent_viewport() const {
 	return get_parent()->get_viewport();
 }
 
-void Viewport::set_embed_subwindows_hint(bool p_embed) {
+void Viewport::set_embedding_subwindows(bool p_embed) {
 	gui.embed_subwindows_hint = p_embed;
-}
-
-bool Viewport::get_embed_subwindows_hint() const {
-	return gui.embed_subwindows_hint;
 }
 
 bool Viewport::is_embedding_subwindows() const {
@@ -3629,8 +3656,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_filter", "mode"), &Viewport::set_default_canvas_item_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_filter"), &Viewport::get_default_canvas_item_texture_filter);
 
-	ClassDB::bind_method(D_METHOD("set_embed_subwindows_hint", "enable"), &Viewport::set_embed_subwindows_hint);
-	ClassDB::bind_method(D_METHOD("get_embed_subwindows_hint"), &Viewport::get_embed_subwindows_hint);
+	ClassDB::bind_method(D_METHOD("set_embedding_subwindows", "enable"), &Viewport::set_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
 
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
@@ -3712,7 +3738,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embed_subwindows_hint", "get_embed_subwindows_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embedding_subwindows", "is_embedding_subwindows");
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
@@ -3939,11 +3965,14 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 void SubViewport::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
 	}
 }
 

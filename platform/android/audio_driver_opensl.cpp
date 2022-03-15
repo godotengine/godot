@@ -56,8 +56,9 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mix)
+	if (mix) {
 		mutex.unlock();
+	}
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -312,13 +313,15 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 }
 
 void AudioDriverOpenSL::lock() {
-	if (active)
+	if (active) {
 		mutex.lock();
+	}
 }
 
 void AudioDriverOpenSL::unlock() {
-	if (active)
+	if (active) {
 		mutex.unlock();
+	}
 }
 
 void AudioDriverOpenSL::finish() {

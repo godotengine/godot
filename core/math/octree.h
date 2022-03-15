@@ -211,11 +211,6 @@ private:
 			E = pair_map.insert(key, pdata);
 			E->get().eA = p_A->pair_list.push_back(&E->get());
 			E->get().eB = p_B->pair_list.push_back(&E->get());
-
-			/*
-			if (pair_callback)
-				pair_callback(pair_callback_userdata,p_A->userdata,p_B->userdata);
-			*/
 		} else {
 			E->get().refcount++;
 		}
@@ -853,11 +848,6 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 	for (typename List<typename Element::OctantOwner, AL>::Element *F = owners.front(); F;) {
 		Octant *o = F->get().octant;
 		typename List<typename Element::OctantOwner, AL>::Element *N = F->next();
-
-		/*
-		if (!use_pairs)
-			o->elements.erase( F->get().E );
-		*/
 
 		if (use_pairs && e.pairable) {
 			o->pairable_elements.erase(F->get().E);

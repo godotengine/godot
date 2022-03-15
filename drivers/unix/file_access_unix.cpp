@@ -246,7 +246,7 @@ uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
-};
+}
 
 Error FileAccessUnix::get_error() const {
 	return last_error;
@@ -285,8 +285,9 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 		return false;
 	}
 #else
-	if (_access(filename.utf8().get_data(), 4) == -1)
+	if (_access(filename.utf8().get_data(), 4) == -1) {
 		return false;
+	}
 #endif
 
 	// See if this is a regular file
@@ -309,7 +310,7 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	} else {
 		print_verbose("Failed to get modified time for: " + p_file + "");
 		return 0;
-	};
+	}
 }
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
@@ -321,7 +322,7 @@ uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 		return flags.st_mode & 0x7FF; //only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
-	};
+	}
 }
 
 Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {

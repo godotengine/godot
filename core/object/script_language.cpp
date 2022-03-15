@@ -46,10 +46,12 @@ bool ScriptServer::languages_finished = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		if (EngineDebugger::is_active()) {
-			EngineDebugger::get_script_debugger()->set_break_language(get_language());
-		}
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			if (EngineDebugger::is_active()) {
+				EngineDebugger::get_script_debugger()->set_break_language(get_language());
+			}
+		} break;
 	}
 }
 
@@ -306,20 +308,6 @@ void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) 
 			}
 		}
 	}
-}
-
-Variant ScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	Callable::CallError error;
-	return call(p_method, argptr, argc, error);
 }
 
 void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {

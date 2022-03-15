@@ -93,12 +93,12 @@ void NavigationRegion3D::_notification(int p_what) {
 				add_child(dm);
 				debug_view = dm;
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform());
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer3D::get_singleton()->region_set_map(region, RID());
 

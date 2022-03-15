@@ -206,11 +206,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
 				Returns [code]true[/code] if the transforms are not equal.
@@ -257,11 +252,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

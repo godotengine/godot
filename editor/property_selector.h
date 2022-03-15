@@ -56,7 +56,7 @@ class PropertySelector : public ConfirmationDialog {
 	String base_type;
 	ObjectID script;
 	Object *instance;
-	bool virtuals_only;
+	bool virtuals_only = false;
 
 	Vector<Variant::Type> type_filter;
 

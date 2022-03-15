@@ -99,6 +99,7 @@ void ParallaxLayer::_notification(int p_what) {
 			orig_scale = get_scale();
 			_update_mirroring();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				break;

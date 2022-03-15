@@ -252,7 +252,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	// Custom offline page
 	const String offline_page = p_preset->get("progressive_web_app/offline_page");
 	if (!offline_page.is_empty()) {
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		const String offline_dest = dir.plus_file(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
 		if (err != OK) {
@@ -445,18 +445,18 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + pck_path);
 		return error;
 	}
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	for (int i = 0; i < shared_objects.size(); i++) {
-		String dst = base_dir.plus_file(shared_objects[i].path.get_file());
-		error = da->copy(shared_objects[i].path, dst);
-		if (error != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + shared_objects[i].path.get_file());
-			memdelete(da);
-			return error;
+
+	{
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		for (int i = 0; i < shared_objects.size(); i++) {
+			String dst = base_dir.plus_file(shared_objects[i].path.get_file());
+			error = da->copy(shared_objects[i].path, dst);
+			if (error != OK) {
+				EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + shared_objects[i].path.get_file());
+				return error;
+			}
 		}
 	}
-	memdelete(da);
-	da = nullptr;
 
 	// Extract templates.
 	error = _extract_template(template_path, base_dir, base_name, pwa);

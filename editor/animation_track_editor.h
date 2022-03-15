@@ -77,16 +77,16 @@ class AnimationTimelineEdit : public Range {
 	UndoRedo *undo_redo;
 	Rect2 hsize_rect;
 
-	bool editing;
-	bool use_fps;
+	bool editing = false;
+	bool use_fps = false;
 
 	Ref<ViewPanner> panner;
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _pan_callback(Vector2 p_scroll_vec);
 	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
-	bool dragging_timeline;
-	bool dragging_hsize;
+	bool dragging_timeline = false;
+	bool dragging_hsize = false;
 	float dragging_hsize_from;
 	float dragging_hsize_at;
 
@@ -120,6 +120,8 @@ public:
 	bool is_using_fps() const;
 
 	void set_hscroll(HScrollBar *p_hscroll);
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	AnimationTimelineEdit();
 };
@@ -169,7 +171,7 @@ class AnimationTrackEdit : public Control {
 
 	PopupMenu *menu;
 
-	bool clicking_on_name;
+	bool clicking_on_name = false;
 
 	void _zoom_changed();
 
@@ -182,14 +184,16 @@ class AnimationTrackEdit : public Control {
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 
+	Ref<Texture2D> _get_key_type_icon() const;
+
 	mutable int dropping_at;
 	float insert_at_pos;
-	bool moving_selection_attempt;
+	bool moving_selection_attempt = false;
 	int select_single_attempt;
-	bool moving_selection;
+	bool moving_selection = false;
 	float moving_selection_from_ofs;
 
-	bool in_group;
+	bool in_group = false;
 	AnimationTrackEditor *editor;
 
 protected:
@@ -308,7 +312,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
 
-	bool animation_changing_awaiting_update;
+	bool animation_changing_awaiting_update = false;
 	void _animation_update();
 	int _get_track_selected();
 	void _animation_changed();
@@ -338,7 +342,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	int adding_track_type;
 	NodePath adding_track_path;
 
-	bool keying;
+	bool keying = false;
 
 	struct InsertData {
 		Animation::TrackType type;
@@ -353,7 +357,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	CheckBox *insert_confirm_bezier;
 	CheckBox *insert_confirm_reset;
 	ConfirmationDialog *insert_confirm;
-	bool insert_queue;
+	bool insert_queue = false;
 	List<InsertData> insert_data;
 
 	void _query_insert(const InsertData &p_id);
@@ -408,7 +412,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
 
-	bool moving_selection;
+	bool moving_selection = false;
 	float moving_selection_offset;
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
@@ -423,7 +427,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	Control *box_selection;
 	void _box_selection_draw();
-	bool box_selecting;
+	bool box_selecting = false;
 	Vector2 box_selecting_from;
 	Rect2 box_select_rect;
 	void _scroll_input(const Ref<InputEvent> &p_event);

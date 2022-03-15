@@ -135,7 +135,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		NodeDock::get_singleton()->get_parent()->call("set_current_tab", NodeDock::get_singleton()->get_index());
+		TabContainer *tab_container = Object::cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
+		NodeDock::get_singleton()->get_parent()->call("set_current_tab", tab_container->get_tab_idx_from_control(NodeDock::get_singleton()));
 		NodeDock::get_singleton()->show_connections();
 
 	} else if (p_id == BUTTON_GROUPS) {
@@ -144,7 +145,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		NodeDock::get_singleton()->get_parent()->call("set_current_tab", NodeDock::get_singleton()->get_index());
+		TabContainer *tab_container = Object::cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
+		NodeDock::get_singleton()->get_parent()->call("set_current_tab", tab_container->get_tab_idx_from_control(NodeDock::get_singleton()));
 		NodeDock::get_singleton()->show_groups();
 	}
 }
@@ -700,6 +702,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 			_update_tree();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("tree_changed", callable_mp(this, &SceneTreeEditor::_tree_changed));
 			get_tree()->disconnect("tree_process_mode_changed", callable_mp(this, &SceneTreeEditor::_tree_process_mode_changed));
@@ -708,6 +711,7 @@ void SceneTreeEditor::_notification(int p_what) {
 			tree->disconnect("item_collapsed", callable_mp(this, &SceneTreeEditor::_cell_collapsed));
 			get_tree()->disconnect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed));
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_tree();
 		} break;
@@ -1193,17 +1197,11 @@ void SceneTreeEditor::_bind_methods() {
 }
 
 SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_open_instance) {
-	connect_to_script_mode = false;
-	connecting_signal = false;
 	undo_redo = nullptr;
-	tree_dirty = true;
 	selected = nullptr;
 
-	marked_selectable = false;
-	marked_children_selectable = false;
 	can_rename = p_can_rename;
 	can_open_instance = p_can_open_instance;
-	display_foreign = false;
 	editor_selection = nullptr;
 
 	if (p_label) {
@@ -1245,11 +1243,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	add_child(warning);
 	warning->set_title(TTR("Node Configuration Warning!"));
 
-	show_enabled_subscene = false;
-
 	last_hash = 0;
-	pending_test_update = false;
-	updating_tree = false;
 	blocked = 0;
 
 	update_timer = memnew(Timer);
@@ -1283,13 +1277,16 @@ void SceneTreeDialog::_notification(int p_what) {
 				tree->update_tree();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
 		} break;

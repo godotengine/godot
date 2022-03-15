@@ -1318,7 +1318,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			code += tab + "TRANSFORM = " + p_input_vars[5] + ";\n";
 		}
 	} else {
-		if (!p_input_vars[0].is_empty()) { // active (begin)
+		if (!p_input_vars[0].is_empty()) { // Active (begin).
 			code += tab + "ACTIVE = " + p_input_vars[0] + ";\n";
 			code += tab + "if(ACTIVE) {\n";
 			tab += "	";
@@ -1381,7 +1381,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				code += tab + "TRANSFORM " + op + " mat4(vec4(" + p_input_vars[scale] + ", 0, 0, 0), vec4(0, " + p_input_vars[scale] + ", 0, 0), vec4(0, 0, " + p_input_vars[scale] + ", 0), vec4(0, 0, 0, 1));\n";
 			}
 		}
-		if (!p_input_vars[0].is_empty()) { // active (end)
+		if (!p_input_vars[0].is_empty()) { // Active (end).
 			code += "	}\n";
 		}
 	}

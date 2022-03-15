@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"PO-Revision-Date: 2022-02-23 17:55+0000\n"
 "Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -510,8 +510,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -520,8 +520,8 @@ msgstr ""
 "\n"
 "Untuk memberikan keupayaan untuk menambah trek tersuai, navigasi ke tetapan "
 "import adegan dan tetapkan\n"
-"\"Animasi > Simpanan\" ke \"Fail\", aktifkan \"Animasi > Simpan Trek Tersuai"
-"\", kemudian import semula.\n"
+"\"Animasi > Simpanan\" ke \"Fail\", aktifkan \"Animasi > Simpan Trek "
+"Tersuai\", kemudian import semula.\n"
 "Sebagai alternatif, gunakan pratetap import yang mengimportkan animasi untuk "
 "memisahkan fail."
 
@@ -567,7 +567,7 @@ msgstr "FPS"
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Edit"
+msgstr "Sunting"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
@@ -931,8 +931,8 @@ msgstr "Edit Sambungan:"
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
-"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% s"
-"\"?"
+"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% "
+"s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -1377,7 +1377,7 @@ msgid "Bus Options"
 msgstr "Pilihan Bas"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Pendua"
 
@@ -1482,6 +1482,11 @@ msgstr "Muatkan Susun Atur Bas lalai."
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
 msgstr "Cipta Susun Atur Bas baru."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Buka Susun Atur Bas Audio"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2181,8 +2186,8 @@ msgstr "Penerangan Kaedah"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
 "Tiada keterangan untuk kaedah ini. Tolong bantu kami dengan [color=$color]"
 "[url=$url]menyumbang satu[/url][/color]!"
@@ -2928,7 +2933,7 @@ msgstr "Togol mod bebas gangguan."
 msgid "Add a new scene."
 msgstr "Tambah adegan baru."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Adegan"
 
@@ -3032,9 +3037,8 @@ msgid "Install Android Build Template..."
 msgstr "Pasang Templat Binaan Android..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "Buka Folder Data Editor"
+msgstr "Buka Folder Data Pengguna"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3305,8 +3309,12 @@ msgid "Update Continuously"
 msgstr "Kemas Kini Secara Berterusan"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
-msgstr "Kemas Kini Apabila Diubah"
+msgid "Update All Changes"
+msgstr "Kemas Kini Semua Perubahan"
+
+#: editor/editor_node.cpp
+msgid "Update Vital Changes"
+msgstr "Kemas Kini Perubahan Penting"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3754,9 +3762,8 @@ msgstr "Import Dari Nod:"
 
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
-#, fuzzy
 msgid "%s Error"
-msgstr "Ralat!"
+msgstr "%s Ralat"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4075,6 +4082,14 @@ msgstr "Nama mengandungi aksara yang tidak sah."
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4193,7 +4208,7 @@ msgstr "Susun mengikut Terakhir Diubah Suai"
 msgid "Sort by First Modified"
 msgstr "Susun mengikut Pertama Diubah Suai"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
 msgstr "Penduakan..."
 
@@ -4471,7 +4486,7 @@ msgstr "Pengimport:"
 
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
-msgstr "Set Semula ke Lalai"
+msgstr "Memulihkan ke Keadaan Asli"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
@@ -5007,6 +5022,10 @@ msgid "Rename Animation"
 msgstr "Namakan Semula Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "Gandakan Animasi"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr "Adun Berubah Seterusnya"
 
@@ -5017,10 +5036,6 @@ msgstr "Tukar Masa Blend"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
 msgstr "Muatkan Animasi"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr "Gandakan Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
@@ -5393,35 +5408,35 @@ msgstr "Nod Blend4"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "Nod TimeScale"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "Nod TimeSeek"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Nod Peralihan"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr ""
+msgstr "Import Animasi..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Sunting Filter Nod"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
-msgstr ""
+msgstr "Filter..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
-msgstr ""
+msgstr "Kandungan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
-msgstr ""
+msgstr "Lihat Fail"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
@@ -5429,7 +5444,7 @@ msgstr "Muat turun"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Ralat sambungan, sila cuba lagi."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
@@ -5437,11 +5452,11 @@ msgstr "Tidak dapat menyambung."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr ""
+msgstr "Tidak dapat menyambung ke hos:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Tiada respons daripada hos:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
@@ -5449,7 +5464,7 @@ msgstr "Tiada jawapan."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Tidak dapat menyelesaikan nama hos:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
@@ -5457,31 +5472,31 @@ msgstr "Tidak dapat menyelesaikan."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
-msgstr ""
+msgstr "Permintaan gagal, kod pulangan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Cannot save response to:"
-msgstr ""
+msgstr "Tidak dapat menyimpan respons kepada:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Ralat tulis."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "Permintaan gagal, terlalu banyak ubah hala"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect loop."
-msgstr ""
+msgstr "Ubah hala gelung."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, timeout"
-msgstr ""
+msgstr "Permintaan gagal, tamat masa"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Timeout."
-msgstr ""
+msgstr "Masa tamat."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
@@ -5489,409 +5504,420 @@ msgstr "Gagal:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Hash muat turun buruk, dengan andaian fail telah diusik."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Dijangka:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Mendapat:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed SHA-256 hash check"
-msgstr ""
+msgstr "Semakan hash SHA-256 gagal"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Ralat Muat Turun Aset:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
-msgstr ""
+msgstr "Memuat turun (%s / %s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading..."
-msgstr ""
+msgstr "Memuat turun..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr ""
+msgstr "Menyelesaikan..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
-msgstr ""
+msgstr "Ralat membuat permintaan"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Terbiar"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install..."
-msgstr ""
+msgstr "Pasang..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Cuba semula"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Ralat Muat Turun"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Muat turun untuk aset ini sedang dijalankan!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Dikemaskini Baru-baru Ini"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Paling Kurang Dikemaskini Baru-Baru Ini"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nama (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nama (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Lesen"
+msgstr "Lesen (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Lesen"
+msgstr "Lesen (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
-msgstr ""
+msgstr "Pertama"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Previous"
-msgstr ""
+msgstr "Sebelum"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
-msgstr ""
+msgstr "Seterusnya"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "Terakhir"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "Semua"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "Cari templat, projek dan demo"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
-msgstr ""
+msgstr "Cari aset (tidak termasuk templat, projek dan demo)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
-msgstr ""
+msgstr "Import..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
-msgstr ""
+msgstr "Pemalam..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "Isih:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategori:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "Laman:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support"
-msgstr ""
+msgstr "Sokongan"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Rasmi"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Menguji"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Loading..."
-msgstr ""
+msgstr "Memuatkan..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "Fail ZIP Aset"
 
 #: editor/plugins/audio_stream_editor_plugin.cpp
 msgid "Audio Preview Play/Pause"
-msgstr ""
+msgstr "Main/Jeda Pratonton Audio"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
+"Tidak dapat menentukan laluan simpan untuk imej lightmap.\n"
+"Simpan adegan anda dan cuba lagi."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
+"Tiada mesh untuk di-bake. Pastikan ia mengandungi saluran UV2 dan bendera "
+"'Use In Baked Light' dan 'Generate Lightman' dihidupkan."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
-msgstr ""
+msgstr "Gagal mencipta imej lightmap, pastikan laluan boleh ditulis."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr ""
+msgstr "Gagal menentukan saiz lightmap. Saiz lightmap maksimum terlalu kecil?"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Sesetengah mesh tidak sah. Pastikan nilai saluran UV2 terkandung dalam "
+"kawasan persegi [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Editor Godot dibina tanpa sokongan ray tracing, lightmap tidak dapat di-bake."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
+msgstr "Bake Lightmap"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
-msgstr ""
+msgstr "Pilih fail lightmap bake:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
-msgstr ""
+msgstr "Pratonton"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr ""
+msgstr "Konfigurasikan Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr ""
+msgstr "Grid Offset:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr ""
+msgstr "Langkah Grid:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Garis Utama Setiap:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "steps"
-msgstr ""
+msgstr "langkah-langkah"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr ""
+msgstr "Offset Putaran:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr ""
+msgstr "Langkah Putaran:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Step:"
-msgstr ""
+msgstr "Langkah Skala:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
-msgstr ""
+msgstr "Alih Panduan Menegak"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Vertical Guide"
-msgstr ""
+msgstr "Cipta Panduan Menegak"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove Vertical Guide"
-msgstr ""
+msgstr "Keluarkan Panduan Menegak"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Horizontal Guide"
-msgstr ""
+msgstr "Alihkan Panduan Mendatar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Horizontal Guide"
-msgstr ""
+msgstr "Cipta Panduan Mendatar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
-msgstr "Buang Trek Anim"
+msgstr "Keluarkan Panduan Mendatar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Horizontal and Vertical Guides"
-msgstr ""
+msgstr "Cipta Panduan Mendatar dan Menegak"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "Tetapkan Offset Pivot CanvasItem \"%s\" kepada (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
-msgstr ""
+msgstr "Putar %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr ""
+msgstr "Putar CanvasItem \"%s\" ke %d darjah"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr ""
+msgstr "Alih CanvasItem \"%s\" Anchor"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Skala Node2D \"%s\" ke (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "Ubah Saiz Kawalan \"%s\" kepada (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale %d CanvasItems"
-msgstr ""
+msgstr "Skala %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Skalakan CanvasItem \"%s\" kepada (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move %d CanvasItems"
-msgstr ""
+msgstr "Alihkan %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "Alihkan CanvasItem \"%s\" ke (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Locked"
-msgstr ""
+msgstr "Terkunci"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Kumpulan"
+msgstr "Terkumpul"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
+"Anak-anak bekas mempunyai nilai sauh dan margin mereka yang ditindih oleh "
+"ibu bapa mereka."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "Pratetap untuk nilai sauh dan margin bagi nod Control."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
+"Apabila aktif, mengalihkan nod Control mengubah sauh mereka dan bukannya "
+"margin."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
-msgstr ""
+msgstr "Atas Kiri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Right"
-msgstr ""
+msgstr "Atas Kanan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Right"
-msgstr ""
+msgstr "Bawah Kanan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Left"
-msgstr ""
+msgstr "Bawah Kiri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Left"
-msgstr ""
+msgstr "Tengah Kiri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Top"
-msgstr ""
+msgstr "Tengah Atas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Right"
-msgstr ""
+msgstr "Tengah Kanan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Bottom"
-msgstr ""
+msgstr "Tengah Bawah"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Tengah"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Left Wide"
-msgstr ""
+msgstr "Kiri Lebar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr ""
+msgstr "Atas Lebar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Right Wide"
-msgstr ""
+msgstr "Kanan Lebar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr ""
+msgstr "Bawah Lebar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "VCenter Lebar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "HCenter Lebar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr ""
+msgstr "Penuh Rect"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
-msgstr ""
+msgstr "Kekalkan Nisbah"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
-msgstr ""
+msgstr "Sauh sahaja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors and Margins"
-msgstr ""
+msgstr "Tukar Sauh dan Margin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
-msgstr ""
+msgstr "Tukar Sauh"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5899,6 +5925,9 @@ msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
+"Penggantian Kamera Projek\n"
+"Menggantikan kamera projek yang sedang berjalan dengan kamera viewport "
+"editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5907,120 +5936,120 @@ msgid ""
 "No project instance running. Run the project from the editor to use this "
 "feature."
 msgstr ""
+"Penggantian Kamera Projek\n"
+"Tiada instance projek berjalan. Jalankan projek daripada editor menggunakan "
+"ciri ini."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock Selected"
-msgstr ""
+msgstr "Kunci Dipilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock Selected"
-msgstr ""
+msgstr "Buka Kunci Dipilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected"
-msgstr "Semua Pilihan"
+msgstr "Kumpulan Dipilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected"
-msgstr "Semua Pilihan"
+msgstr "Nyahkumpulan Dipilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
-msgstr ""
+msgstr "Tampal Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Guides"
-msgstr "Anim Ubah Penukaran"
+msgstr "Kosongkan Panduan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr ""
+msgstr "Cipta Tulang(-tulang) Tersuai dari Nod(-nod)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Anim Ubah Penukaran"
+msgstr "Kosongkan Tulang"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
-msgstr ""
+msgstr "Buat Rantai IK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
-msgstr ""
+msgstr "Kosongkan Rantai IK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
 msgstr ""
+"Amaran: Kanak-kanak bekas mendapat kedudukan dan saiz mereka hanya "
+"ditentukan oleh ibu bapa mereka."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr ""
+msgstr "Zum Set Semula"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr ""
+msgstr "Pilih Mod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Drag: Rotate selected node around pivot."
-msgstr ""
+msgstr "Seret: Putar nod terpilih di sekeliling pangsi."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Move selected node."
-msgstr "Padam Rect yang dipilih."
+msgstr "Alt+Seret: Pindahkan nod terpilih."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Scale selected node."
-msgstr "Padam Rect yang dipilih."
+msgstr "Alt+Seret: Skalakan nod terpilih."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "V: Set selected node's pivot position."
-msgstr "Node yang dipilih bukan Viewport!"
+msgstr "V: Tetapkan kedudukan pangsi nod terpilih."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
+"Alt+RMB: Tunjukkan senarai semua nod pada kedudukan yang diklik, termasuk "
+"yang dikunci."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
-msgstr ""
+msgstr "RMB: Tambah nod pada kedudukan yang diklik."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
-msgstr ""
+msgstr "Mod Alih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr ""
+msgstr "Mod Putar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr ""
+msgstr "Mod Skala"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
-msgstr ""
+msgstr "Shift: Skala secara berkadar."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6028,208 +6057,206 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
+"Tunjukkan senarai semua objek pada kedudukan yang diklik\n"
+"(sama seperti Alt+RMB dalam mod pilih)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
-msgstr ""
+msgstr "Klik untuk menukar pangsi putaran objek."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
-msgstr ""
+msgstr "Mod Pan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Ruler Mode"
-msgstr ""
+msgstr "Mod Pembaris"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle smart snapping."
-msgstr ""
+msgstr "Togol snap pintar."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
-msgstr ""
+msgstr "Gunakan Smart Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
-msgstr ""
+msgstr "Togol grid menyentap."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr ""
+msgstr "Gunakan Grid Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr ""
+msgstr "Pilihan Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr ""
+msgstr "Gunakan Snap Putaran"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Scale Snap"
-msgstr ""
+msgstr "Gunakan Skala Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr ""
+msgstr "Snap Relatif"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr ""
+msgstr "Gunakan Pixel Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr ""
+msgstr "Snap Pintar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr ""
+msgstr "Konfigurasikan Snap..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr ""
+msgstr "Snap kepada Ibu Bapa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
-msgstr ""
+msgstr "Snap ke Anchor Nod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Sides"
-msgstr ""
+msgstr "Snap ke Sisi Nod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Center"
-msgstr ""
+msgstr "Snap ke Pusat Nod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Other Nodes"
-msgstr ""
+msgstr "Snap ke Nod Lain"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
-msgstr ""
+msgstr "Snap ke Panduan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr ""
+msgstr "Kunci objek terpilih di tempatnya (tidak dapat dialihkan)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected Node(s)"
-msgstr "Semua Pilihan"
+msgstr "Kunci Nod Terpilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr ""
+msgstr "Buka kunci objek terpilih (boleh dialihkan)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected Node(s)"
-msgstr "Gandakan Kunci Terpilih"
+msgstr "Buka Kunci Nod Terpilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
-msgstr ""
+msgstr "Pastikan kanak-kanak objek tidak boleh dipilih."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected Node(s)"
-msgstr "Semua Pilihan"
+msgstr "Kumpulkan Nod Terpilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr ""
+msgstr "Mengembalikan keupayaan kanak-kanak objek untuk dipilih."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected Node(s)"
-msgstr "Semua Pilihan"
+msgstr "Nyahkumpulkan Nod Terpilih"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
-msgstr ""
+msgstr "Pilihan Rangka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
-msgstr ""
+msgstr "Tunjukkan Tulang-tulang"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Custom Bone(s) from Node(s)"
-msgstr ""
+msgstr "Buat Tulang(-tulang) Tersuai dari Nod(-nod)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Custom Bones"
-msgstr ""
+msgstr "Kosongkan Tulang Tersuai"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
+msgstr "Pandangan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
-msgstr ""
+msgstr "Sentiasa Tunjukkan Grid"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr ""
+msgstr "Tunjukkan Pembantu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
-msgstr ""
+msgstr "Tunjukkan Pembaris"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr ""
+msgstr "Tunjukkan Panduan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Origin"
-msgstr ""
+msgstr "Tunjukkan Asal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr ""
+msgstr "Tunjukkan Viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Tunjukkan Ikon Kumpulan Dan Kunci"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
-msgstr ""
+msgstr "Pemilihan Pusat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr ""
+msgstr "Pemilihan Bingkai"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr ""
+msgstr "Pratonton Skala Kanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Topeng terjemahan untuk memasukkan kekunci."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Topeng putaran untuk memasukkan kekunci."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Topeng skala untuk memasukkan kekunci."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert keys (based on mask)."
-msgstr ""
+msgstr "Masukkan kekunci (berdasarkan topeng)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6238,328 +6265,326 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Masukkan kekunci automatik apabila objek diterjemahkan, diputarkan atau "
+"diskalakan (berdasarkan topeng).\n"
+"Kekunci hanya ditambahkan pada trek sedia ada, tiada trek baru akan "
+"dicipta.\n"
+"Kekunci mesti dimasukkan secara manual untuk kali pertama."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Auto Insert Key"
-msgstr ""
+msgstr "Auto Masukkan Kunci"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation Key and Pose Options"
-msgstr ""
+msgstr "Pilihan Kunci Animasi dan Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
-msgstr ""
+msgstr "Masukkan Kunci (Trek Sedia Ada)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
-msgstr ""
+msgstr "Salin Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
-msgstr ""
+msgstr "Kosongkan Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node Here"
-msgstr "Tambah Titik Nod"
+msgstr "Tambah Nod Di Sini"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Instance Scene Here"
-msgstr "Masukkan Kunci di Sini"
+msgstr "Adegan Contoh Di Sini"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "Darabkan langkah grid dengan 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "Bahagikan langkah grid dengan 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan View"
-msgstr ""
+msgstr "Pandangan Pan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 3.125%"
-msgstr ""
+msgstr "Zum ke 3.125%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 6.25%"
-msgstr ""
+msgstr "Zum ke 6.25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 12.5%"
-msgstr ""
+msgstr "Zum ke 12.5%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 25%"
-msgstr "Zum Keluar"
+msgstr "Zum ke 25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 50%"
-msgstr "Zum Keluar"
+msgstr "Zum ke 50%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 100%"
-msgstr "Zum Keluar"
+msgstr "Zum ke 100%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 200%"
-msgstr "Zum Keluar"
+msgstr "Zum ke 200%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 400%"
-msgstr "Zum Keluar"
+msgstr "Zum ke 400%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 800%"
-msgstr "Zum Keluar"
+msgstr "Zum ke 800%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
-msgstr ""
+msgstr "Zum ke 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Add %s"
-msgstr ""
+msgstr "Tambah %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Menambah %s..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Tidak boleh instantiate berbilang nod tanpa akar."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr ""
+msgstr "Cipta Nod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr ""
+msgstr "Ralat membuat adegan dari %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Default Type"
-msgstr ""
+msgstr "Tukar Jenis Lalai"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Seret & lepas + Shift : Tambah nod sebagai adik-beradik\n"
+"Seret & lepas + Alt : Tukar jenis nod"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
-msgstr ""
+msgstr "Cipta Poligon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
-msgstr ""
+msgstr "Edit Poli"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly (Remove Point)"
-msgstr ""
+msgstr "Edit Poli (Alih Keluar Titik)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
-msgstr ""
+msgstr "Tetapkan Pemegang"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr ""
+msgstr "Muatkan Topeng Pelepasan"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Restart"
-msgstr ""
+msgstr "Mula semula"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr ""
+msgstr "Keluarkan Topeng Emission"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Particles"
-msgstr ""
+msgstr "Zarah"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
-msgstr ""
+msgstr "Kiraan Titik Dijana:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr ""
+msgstr "Topeng Emission"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Solid Pixels"
-msgstr ""
+msgstr "Piksel Pepejal"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Piksel Sempadan"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Directed Border Pixels"
-msgstr ""
+msgstr "Piksel Sempadan Diarahkan"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
-msgstr ""
+msgstr "Tangkap daripada Pixel"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr ""
+msgstr "Warna Emission"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
-msgstr ""
+msgstr "CPUParticles"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr ""
+msgstr "Cipta Titik Emission Daripada Mesh"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr ""
+msgstr "Cipta Titik Emission Daripada Nod"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 0"
-msgstr ""
+msgstr "Flat 0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr ""
+msgstr "Flat 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
-msgstr ""
+msgstr "Perlahan Masuk"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease Out"
-msgstr ""
+msgstr "Perlahan Keluar"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
-msgstr ""
+msgstr "Smoothstep"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Point"
-msgstr ""
+msgstr "Ubah Suai Titik Lengkung"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Tangent"
-msgstr ""
+msgstr "Ubah Suai Tangen Lengkung"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Curve Preset"
-msgstr ""
+msgstr "Muat Pratetap Lengkung"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add Point"
 msgstr "Tambah Titik"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Point"
-msgstr "Buang Trek Anim"
+msgstr "Buang Titik"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Left Linear"
-msgstr ""
+msgstr "Linear Kiri"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Right Linear"
-msgstr ""
+msgstr "Linear Kanan"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Preset"
-msgstr ""
+msgstr "Muatkan Pratetap"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
-msgstr ""
+msgstr "Keluarkan Titik Lengkung"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
-msgstr ""
+msgstr "Togol Lengkung Linear Tangen"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
-msgstr ""
+msgstr "Tahan Shift untuk mengedit tangen secara individu"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Right click to add point"
-msgstr ""
+msgstr "Klik kanan untuk menambah titik"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr ""
+msgstr "Panggang GI Probe"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
-msgstr ""
+msgstr "Kecerunan Disunting"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
-msgstr ""
+msgstr "Item %d"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Items"
-msgstr ""
+msgstr "Item"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item List Editor"
-msgstr ""
+msgstr "Editor Senarai Item"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
-msgstr ""
+msgstr "Cipta Poligon Occluder"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
-msgstr ""
+msgstr "Mesh kosong!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a Trimesh collision shape."
-msgstr ""
+msgstr "Tidak dapat mencipta bentuk perlanggaran Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
-msgstr ""
+msgstr "Buat Badan Trimesh Statik"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
-msgstr ""
+msgstr "Ini tidak berfungsi pada akar tempat adegan!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Shape"
-msgstr ""
+msgstr "Cipta Bentuk Statik Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
@@ -7552,7 +7577,6 @@ msgstr ""
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Search"
 msgstr "Cari"
 
@@ -8006,38 +8030,32 @@ msgid "Yaw:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size:"
-msgstr "Saiz: "
+msgstr "Saiz:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes:"
-msgstr "Parameter Berubah"
+msgstr "Perubahan Bahan:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
-msgstr "Parameter Berubah"
+msgstr "Perubahan Shader:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes:"
-msgstr "Parameter Berubah"
+msgstr "Perubahan Permukaan:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Draw Calls:"
-msgstr "Panggilan"
+msgstr "Cabutan Panggilan:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices:"
-msgstr "Sifat-sifat"
+msgstr "Bucu:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
@@ -8140,7 +8158,12 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8707,9 +8730,8 @@ msgid "{num} constant(s)"
 msgstr "Pemalar"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No constants found."
-msgstr "Pemalar Sahaja"
+msgstr "Tiada pemalar ditemui."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} font(s)"
@@ -8756,9 +8778,8 @@ msgid "Importing items {n}/{n}"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Keluar dari editor?"
+msgstr "Mengemaskini editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8845,19 +8866,16 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Collapse types."
-msgstr "Runtuhkan Semua"
+msgstr "Lipat jenis."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Expand types."
-msgstr "Kembangkan Semua"
+msgstr "Kembangkan jenis."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all Theme items."
-msgstr "Pilih Fail Templat"
+msgstr "Pilih semua benda Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select With Data"
@@ -9013,9 +9031,8 @@ msgid "Add StyleBox Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Items:"
-msgstr "Keluarkan Item"
+msgstr "Keluarkan Benda:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
@@ -9041,9 +9058,8 @@ msgid "Old Name:"
 msgstr "Nama Nod:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Items"
-msgstr "Import Sebagai:"
+msgstr "Import Benda"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9059,6 +9075,11 @@ msgstr "Editor"
 #, fuzzy
 msgid "Select Another Theme Resource:"
 msgstr "Cari Penggantian Sumber:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Sumber"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
@@ -9114,6 +9135,18 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Set Variation Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Set Base Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Show Default"
 msgstr "Muatkan Lalai"
@@ -9123,16 +9156,26 @@ msgid "Show default type items alongside items that have been overridden."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override All"
-msgstr "ganti:"
+msgstr "Gantikan Semua"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
+#, fuzzy
+msgid "Base Type"
+msgstr "Ubah Jenis %s"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -9149,9 +9192,8 @@ msgid "Add, remove, organize and import Theme items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Preview"
-msgstr "Pratonton:"
+msgstr "Tambah Pratonton"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9159,9 +9201,8 @@ msgid "Default Preview"
 msgstr "Lalai"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select UI Scene:"
-msgstr "Simpan Adegan"
+msgstr "Pilih Adegan UI:"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid ""
@@ -9726,9 +9767,8 @@ msgid "Unstaged Changes"
 msgstr "Parameter Berubah"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "Komuniti"
+msgstr "Commit:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
@@ -9805,9 +9845,8 @@ msgid "Discard all changes"
 msgstr "Parameter Berubah"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage all changes"
-msgstr "Menyimpan perubahan tempatan..."
+msgstr "Peringkat semua perubahan"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9833,21 +9872,8 @@ msgid "Commit list size"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Padanan:"
+msgstr "Ranting"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9879,9 +9905,8 @@ msgid "Remove Remote"
 msgstr "Keluarkan Item"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "Nama Nod:"
+msgstr "Nama Remote"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12428,6 +12453,11 @@ msgid "Stack Frames"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Tapis isyarat"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr ""
 
@@ -12598,6 +12628,15 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Polygon Point Position"
+msgstr "Cipta Poligon Occluder"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Hole Point Position"
 msgstr ""
 
 #: modules/csg/csg_gizmos.cpp
@@ -13655,9 +13694,8 @@ msgid "Exporting APK..."
 msgstr "Eksport..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Uninstalling..."
-msgstr "Nyahpasang"
+msgstr "Menyahpasang..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13665,9 +13703,8 @@ msgid "Installing to device, please wait..."
 msgstr "Mengambil maklumat cermin, sila tunggu..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not install to device: %s"
-msgstr "Tidak dapat memulakan subproses!"
+msgstr "Tidak dapat memasang ke peranti: %s"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13749,6 +13786,9 @@ msgstr ""
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13797,11 +13837,8 @@ msgid "Signing debug %s..."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Signing release %s..."
-msgstr ""
-"Mengimbas Fail,\n"
-"Sila Tunggu..."
+msgstr "Menandatangani keluaran %s..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
@@ -13887,9 +13924,8 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: %s"
-msgstr "Kandungan Pakej:"
+msgstr "Pakej tidak ditemui: %s"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13916,9 +13952,8 @@ msgid "Adding files..."
 msgstr "Tapis Fail-fail..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files"
-msgstr "Tidak dapat memulakan subproses!"
+msgstr "Tidak dapat mengeksport fail projek"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -13942,10 +13977,6 @@ msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Invalid Identifier:"
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -13973,35 +14004,210 @@ msgid "Could not write file:"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file:"
-msgstr "Tidak dapat mencipta folder."
+msgstr "Tidak dapat membaca fail:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell:"
-msgstr "Tidak dapat mencipta folder."
+msgstr "Tidak dapat membaca shell HTML:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "Tidak dapat mencipta folder."
+msgstr "Tidak dapat mencipta direktori server HTTP:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "Ralat semasa menyimpan TileSet!"
+msgstr "Ralat memulakan server HTTP:"
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, no exe name."
+msgstr "Nama kumpulan tidak sah."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Tidak dapat mencipta folder."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid binary format."
+msgstr "Nama tidak sah."
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to process nested resources."
+msgstr "Gagal untuk memuatkan sumber."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to get CodeResources hash."
+msgstr "Gagal untuk memuatkan sumber."
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid entitlements file."
+msgstr "Nama tidak sah."
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid executable file."
+msgstr "Nama kumpulan tidak sah."
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "No identity found."
+msgstr "Tiada sub-sumber dijumpai."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Creating app bundle"
+msgstr "Mencipta Gambar Kecil"
+
+#: platform/osx/export/export.cpp
+msgid "Could not find template app to export:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -14010,6 +14216,69 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -14063,6 +14332,27 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid icon path:"
+msgstr "Nama tidak sah."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid file version:"
+msgstr "Versi Terpasang Lain:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid product version:"
+msgstr "Nama kumpulan tidak sah."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -14133,11 +14423,11 @@ msgstr "Nod A dan Nod B mestilah PhysicsBody2Ds"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Nod A mestilah PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Nod B mestilah PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
@@ -14414,8 +14704,8 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -14655,7 +14945,7 @@ msgstr ""
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 
@@ -14814,4 +15104,4 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Pemalar tidak dapat diubah suai."

@@ -543,7 +543,7 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 		".webp", // Same reasoning as .png
 		".cfb", // Don't let small config files slow-down startup
 		".scn", // Binary scenes are usually already compressed
-		".stex", // Streamable textures are usually already compressed
+		".ctex", // Streamable textures are usually already compressed
 		// Trailer for easier processing
 		nullptr
 	};
@@ -1387,6 +1387,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 	Vector<String> string_table;
 
 	String package_name = p_preset->get("package/name");
+	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
 
 	for (uint32_t i = 0; i < string_count; i++) {
 		uint32_t offset = decode_uint32(&r_manifest[string_table_begins + i * 4]);
@@ -1401,9 +1402,8 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 
 			} else {
 				String lang = str.substr(str.rfind("-") + 1, str.length()).replace("-", "_");
-				String prop = "application/config/name_" + lang;
-				if (ProjectSettings::get_singleton()->has_setting(prop)) {
-					str = ProjectSettings::get_singleton()->get(prop);
+				if (appnames.has(lang)) {
+					str = appnames[lang];
 				} else {
 					str = get_project_name(package_name);
 				}

@@ -50,8 +50,6 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
-
 	~GPUParticlesCollision3D();
 };
 
@@ -273,8 +271,6 @@ public:
 
 	void set_directionality(real_t p_directionality);
 	real_t get_directionality() const;
-
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
 
 	~GPUParticlesAttractor3D();
 };

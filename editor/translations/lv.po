@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"PO-Revision-Date: 2022-02-14 22:08+0000\n"
 "Last-Translator: M E <gruffy7932@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -328,7 +328,7 @@ msgstr "Dublicēt atslēgvietnes"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
-msgstr ""
+msgstr "Pievienot RESET vērtību(-as)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -498,9 +498,8 @@ msgid ""
 msgstr "Šī iespēja nestrādā ar Bazjē rediģēšanu, jo tai ir tikai viens celiņš."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Add RESET Keys"
-msgstr "Anim Mainīt Atslēgas Izmēru"
+msgstr "Anim pievienot atiestat. atslēgas"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -509,8 +508,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -1108,7 +1107,7 @@ msgstr "Kļūme lādējot:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
-msgstr "Ielādēšana apturēta, jo trūkst ceļu uz pamata failiem:"
+msgstr "Ielādēšana apturēta, jo trūkst pamata faili:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -1116,7 +1115,7 @@ msgstr "Atvērt jebkurā gadījumā"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr "Kuru darbību izdarīt?"
+msgstr "Kādu darbību veikt ?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
@@ -1375,7 +1374,7 @@ msgid "Bus Options"
 msgstr "Kopnes Iestatījumi"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Izveidot dublikātu"
 
@@ -1481,13 +1480,18 @@ msgstr "Ielādēt Kopnes Izkārtojuma noklusējumu."
 msgid "Create a new Bus Layout."
 msgstr "Izveidot jaunu Kopnes izkārtojumu."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Atvērt audio kopnes izkārtojumu"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Nederīgs nosaukums."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Nevar sākt ar ciparu."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -1711,7 +1715,7 @@ msgstr "Pielāgots atkļūdošanas šablons nav atrasts."
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "Pielāgots relīzes sablons nav atrasts."
+msgstr "Pielāgots relīzes šablons nav atrasts."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -2115,9 +2119,8 @@ msgid "Properties"
 msgstr "Iestatījumi"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "overrides %s:"
-msgstr "pārrakstīšana:"
+msgstr "pārraksta %s:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2133,7 +2136,7 @@ msgstr "Motīva iestatījumi"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Colors"
-msgstr ""
+msgstr "Krāsas"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
@@ -2141,15 +2144,15 @@ msgstr "Konstantes"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Fonts"
-msgstr ""
+msgstr "Fonti"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Icons"
-msgstr ""
+msgstr "Ikonas"
 
 #: editor/editor_help.cpp
 msgid "Styles"
-msgstr ""
+msgstr "Stili"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2168,8 +2171,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Pašreiz šim mainīgajam nav apraksta. Lūdzu, palīdzi mums [color=$color][url="
-"$url]izveidot to[/url][/color]!"
+"Pašreiz šim mainīgajam nav apraksta. Lūdzu, palīdzi mums [color=$color]"
+"[url=$url]izveidot to[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -2177,11 +2180,11 @@ msgstr "Metožu Apraksts"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Pašreiz šai metodei nav apraksta. Lūdzu, palīdzi mums [color=$color][url="
-"$url]pievienojot vienu[/url][/color]!"
+"Pašreiz šai metodei nav apraksta. Lūdzu, palīdzi mums [color=$color]"
+"[url=$url]pievienojot vienu[/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2257,18 +2260,19 @@ msgid "Property:"
 msgstr "Parametrs:"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "(vērtība)"
+msgstr "Piespraust vērtību"
 
 #: editor/editor_inspector.cpp
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
+"Vērtības piespraušana liek to saglabāt, pat ja tā ir vienāda ar noklusējuma "
+"vērtību."
 
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
-msgstr ""
+msgstr "Pin vērtība [Atspējota, jo \"%s\" ir paredzēts tikai redaktoram]"
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -2283,26 +2287,23 @@ msgstr "Uzlikt vairākus:"
 
 #: editor/editor_inspector.cpp
 msgid "Pinned %s"
-msgstr ""
+msgstr "Piesprausts %s"
 
 #: editor/editor_inspector.cpp
 msgid "Unpinned %s"
-msgstr ""
+msgstr "Atsprausts %s"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property"
-msgstr "Kopēt iestatījumus"
+msgstr "Kopēt mainīgo"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Paste Property"
-msgstr "Ielīmēt iestatījumus"
+msgstr "Ielīmēt mainīgo"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property Path"
-msgstr "Kopēt mezgla ceļu"
+msgstr "Kopēt mainīgā ceļu"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2536,18 +2537,25 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Šis resurss pieder ainai, kas ir importēta, tādēļ to nevar rediģēt.\n"
+"Lūdzu, lasiet dokumentāciju par ainu importēšanu, lai labāk saprastu šo "
+"darbplūsmu."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
 msgstr ""
+"Šis resurss pieder ainai, kas ir instancēta vai mantota.\n"
+"Izmaiņas tajā netiks saglabātas, saglabājot pašreizējo ainu."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"Šis resurss tika importēts, tāpēc to nevar rediģēt. Mainiet tā iestatījumus "
+"importēšanas panelī un pēc tam importējiet atkārtoti."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2567,6 +2575,9 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
+"Šis ir attālināts objekts, tāpēc tā izmaiņas netiks saglabātas.\n"
+"Lūdzu, izlasiet dokumentāciju, kas attiecas uz atkļūdošanu, lai labāk "
+"izprastu šo darbplūsmu."
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
@@ -2625,6 +2636,8 @@ msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
+"Lai saglabātu ainu, ir nepieciešams saknes mezgls. Saknes mezglu var "
+"pievienot, izmantojot ainas koka doku."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2668,15 +2681,15 @@ msgstr "Atgriezts: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Nevar atgriezt, kad peles pogas ir nospiestas."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Nav ko pārstrādāt."
 
 #: editor/editor_node.cpp
 msgid "Redo: %s"
-msgstr ""
+msgstr "Atkārtot: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2691,6 +2704,8 @@ msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Pašreizējai ainai ir nesaglabātas izmaiņas.\n"
+"Vai tomēr pārlādēt saglabāto ainu? Šo darbību nevar atsaukt."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2747,7 +2762,7 @@ msgstr "Atvērt Aizvērto Ainu"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr ""
+msgstr "Nevar iespējot spraudni: '%s' konfigurācijas parsēšana neizdevās."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: '%s'."
@@ -2763,11 +2778,16 @@ msgid ""
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
+"Nevar ielādēt spraudņa skriptu no: '%s'. Tā iemesls var būt kļūda šajā "
+"slripta kodā.\n"
+"Spraudnis '%s' atspējots, lai novērstu tupmākās kļūdas."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"Nevar ielādēt papildinājuma skriptu no ceļa: '%s' Bāzes tips nav "
+"EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
@@ -2779,12 +2799,16 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"Aina '%s' tika importēta automātiski, tāpēc to nevar modificēt.\n"
+"Lai tajā veiktu izmaiņas, izveidojiet jaunu pārmantotu ainu."
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
+"Kļūda ielādējot ainu, tai jābūt projekta ceļā. Izmantojiet 'Importēt', lai "
+"atvērtu ainu, pēc tam saglabājiet to projekta ceļā."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
@@ -2800,6 +2824,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Galvenā aina vēl nav definēta, izvēlēties tagad?\n"
+"To var mainīt vēlāk projekta Iestatījumos sadaļā 'aplikācija'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2807,6 +2833,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Izvēlētā aina '%s' nepastāv, izvēlieties derīgu?\n"
+"To var mainīt vēlāk \"Projekta iestatījumi\" sadaļā 'lietojumprogramma'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2814,6 +2842,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Izvēlētā aina '%s' nav ainas fails, izvēlieties derīgu?\n"
+"To var mainīt vēlāk projekta iestatījumos sadaļā 'aplikācija'."
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -2879,17 +2909,17 @@ msgstr "Doka pozīcija"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "Traucējumu brīvs režīms"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr ""
+msgstr "Pārslēgt traucējumu brīvo režīmu."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Pievienot jaunu ainu."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Aina"
 
@@ -2915,7 +2945,7 @@ msgstr "Filtrēt failus..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr ""
+msgstr "Darbības ar ainas failiem."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
@@ -2927,7 +2957,7 @@ msgstr "Jauna mantota aina..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr ""
+msgstr "Atvērt ainu..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
@@ -2943,11 +2973,11 @@ msgstr "Konvertēt Uz..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr ""
+msgstr "TīklaBibliotēka..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr ""
+msgstr "FlīžuKomplekts..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2993,9 +3023,8 @@ msgid "Install Android Build Template..."
 msgstr "Instalēt Android būves šablonu..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "Atvērt redaktora datu mapi"
+msgstr "Atvērt lietotāja datu mapi"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3217,7 +3246,7 @@ msgstr "Apstādināt ainu."
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "Atskaņot rediģēto ainu."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
@@ -3225,15 +3254,15 @@ msgstr "Spēlēt Ainu"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Atskaņot pielāgotu ainu"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "Atskaņot pielāgotu ainu"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "Lai nomainītu video draiveri, ir jāpārstartē redaktors."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -3245,7 +3274,13 @@ msgid "Update Continuously"
 msgstr "Nepārtraukti Atjaunot"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
+#, fuzzy
+msgid "Update All Changes"
+msgstr "Atjaunot Kad Mainīts"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Update Vital Changes"
 msgstr "Atjaunot Kad Mainīts"
 
 #: editor/editor_node.cpp
@@ -3262,7 +3297,7 @@ msgstr "Inspektors"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr ""
+msgstr "Izvērst apakšējo paneli"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -3274,15 +3309,15 @@ msgstr "Nesaglabāt"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr ""
+msgstr "Trūkst Android būves šablonu, lūdzu, instalējiet atbilstošos šablonus."
 
 #: editor/editor_node.cpp
 msgid "Manage Templates"
-msgstr ""
+msgstr "Pārvaldīt šablonus"
 
 #: editor/editor_node.cpp
 msgid "Install from file"
-msgstr ""
+msgstr "Instalēt no faila"
 
 #: editor/editor_node.cpp
 msgid "Select android sources file"
@@ -3315,15 +3350,15 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Importēr šablonus no ZIP faila"
 
 #: editor/editor_node.cpp
 msgid "Template Package"
-msgstr ""
+msgstr "Šablona pakotne"
 
 #: editor/editor_node.cpp modules/gltf/editor_scene_exporter_gltf_plugin.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "Eksportēt bibliotēku"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
@@ -3501,7 +3536,7 @@ msgstr "Rediģēt Tekstu:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
-msgstr ""
+msgstr "Ieslēgts"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
@@ -3667,9 +3702,8 @@ msgstr "Importēt no mezgla:"
 
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
-#, fuzzy
 msgid "%s Error"
-msgstr "Kļūda!"
+msgstr "%s Kļūda"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -3980,6 +4014,14 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4092,7 +4134,7 @@ msgstr ""
 msgid "Sort by First Modified"
 msgstr ""
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
 msgstr "Dublicēt..."
 
@@ -4189,9 +4231,8 @@ msgid "Replace..."
 msgstr "Aizvietot..."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Replace in Files"
-msgstr "Aizvietot visu"
+msgstr "Aizvietot failos"
 
 #: editor/find_in_files.cpp
 msgid "Find: "
@@ -4202,9 +4243,8 @@ msgid "Replace: "
 msgstr "Aizvietot: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace All (NO UNDO)"
-msgstr "Aizvietot visu"
+msgstr "Aizvietot visu (Nevar atsaukt)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4880,6 +4920,10 @@ msgid "Rename Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr ""
 
@@ -4889,10 +4933,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -5544,6 +5584,10 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Izvēlēties gaismas kartes cepšanas failu:"
 
@@ -5845,9 +5889,8 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+Bīdīt: Pārvietot izvēlēto mezglu."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Bīdīt: Pārvietot izvēlēto mezglu."
+msgstr "Alt+Bīdīt: Pielāgo mērogu izvēlētajam mezglam."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
@@ -5976,9 +6019,8 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected Node(s)"
-msgstr "Dzēst mezglu(s)"
+msgstr "Aizslēgt izvēlēto mezglu(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5987,9 +6029,8 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected Node(s)"
-msgstr "Dzēst mezglu(s)"
+msgstr "Atslēgt izvēlēto muzglu(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7537,7 +7578,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
-msgstr ""
+msgstr "Grāmatzīmes"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
@@ -7546,7 +7587,7 @@ msgstr "Pārrāvumpunkts"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Iet uz"
 
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -7637,7 +7678,7 @@ msgstr "Doties uz iepriekšējo grāmatzīmi"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Bookmarks"
-msgstr ""
+msgstr "Noņemt visas grāmatzīmes"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function..."
@@ -7976,7 +8017,12 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8852,6 +8898,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Izvēlēties citu motīva resursu:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Resurss"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr ""
 
@@ -8869,9 +8920,8 @@ msgid "Available Node-based types:"
 msgstr "Pieejamie Profili:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Type name is empty!"
-msgstr "Faila Nosaukums nav definēts."
+msgstr "Tipa nosaukums ir tukšs!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8902,6 +8952,20 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Nomainīt Bāzes Tipu:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Nomainīt Bāzes Tipu:"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Rādīt noklusējumu"
 
@@ -8918,7 +8982,18 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
+#, fuzzy
+msgid "Base Type"
+msgstr "Mainīt tipu"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -9491,19 +9566,16 @@ msgid "Commit"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Staged Changes"
-msgstr "Ēnotāja izmaiņas:"
+msgstr "Soļu izmaiņas"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstaged Changes"
-msgstr "Ēnotāja izmaiņas:"
+msgstr "Neiestudētas izmaiņas"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "Komūns"
+msgstr "Izdarīt:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
@@ -9575,19 +9647,16 @@ msgid "Detect new changes"
 msgstr "Atrast jaunas izmaiņas"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Discard all changes"
-msgstr "Aizvērt un saglabāt izmaiņas?"
+msgstr "Atmest visas izmaiņas"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage all changes"
-msgstr "Saglabā lokālās izmaiņas..."
+msgstr "Visu izmaiņu posms"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstage all changes"
-msgstr "Saglabā lokālās izmaiņas..."
+msgstr "Atcelt visas izmaiņas"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9608,21 +9677,8 @@ msgid "Commit list size"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Sakritības:"
+msgstr "Zari"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9654,9 +9710,8 @@ msgid "Remove Remote"
 msgstr "Noņemt vienumu"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "Mezgla Vārds:"
+msgstr "Attālais vārds"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9700,9 +9755,8 @@ msgid "Unmerged"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "View:"
-msgstr "Skatīt"
+msgstr "Skatīt:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Split"
@@ -12186,6 +12240,11 @@ msgid "Stack Frames"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filtrēt signālus"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr ""
 
@@ -12356,6 +12415,14 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Polygon Point Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Hole Point Position"
 msgstr ""
 
 #: modules/csg/csg_gizmos.cpp
@@ -13485,6 +13552,9 @@ msgstr "Nederīgs paketes nosaukums:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13673,10 +13743,6 @@ msgstr ""
 msgid "Invalid Identifier:"
 msgstr "Nederīgs Identifikators:"
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr ""
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr ""
@@ -13717,16 +13783,193 @@ msgstr ""
 msgid "Error starting HTTP server:"
 msgstr ""
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, no exe name."
+msgstr "Nederīgs projekta nosaukums."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Neizdevās izveidot mapi."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid binary format."
+msgstr "Nederīgs bāzes ceļš."
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to process nested resources."
+msgstr "Bērna process savienots."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get CodeResources hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid entitlements file."
+msgstr "Nederīgs paplašinājums."
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid executable file."
+msgstr "Nederīgs paplašinājums."
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "No identity found."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Creating app bundle"
+msgstr "Izveido sīktēlu"
+
+#: platform/osx/export/export.cpp
+msgid "Could not find template app to export:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr "Nederīgs bunduļa identifikators:"
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -13735,6 +13978,69 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -13788,6 +14094,27 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid icon path:"
+msgstr "Nederīgs ceļš."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid file version:"
+msgstr "Nederīgs paplašinājums."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid product version:"
+msgstr "Nederīgs produkta GUID."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -14139,8 +14466,8 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -14380,7 +14707,7 @@ msgstr "Šis mezgls ir novecojis. Tā vietā izmanto AnimationTree."
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 

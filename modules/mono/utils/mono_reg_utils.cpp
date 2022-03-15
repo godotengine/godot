@@ -60,8 +60,9 @@ REGSAM _get_bitness_sam() {
 LONG _RegOpenKey(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult) {
 	LONG res = RegOpenKeyExW(hKey, lpSubKey, 0, KEY_READ, phkResult);
 
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		res = RegOpenKeyExW(hKey, lpSubKey, 0, KEY_READ | _get_bitness_sam(), phkResult);
+	}
 
 	return res;
 }
@@ -92,31 +93,37 @@ LONG _find_mono_in_reg(const String &p_subkey, MonoRegInfo &r_info, bool p_old_r
 	HKEY hKey;
 	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, (LPCWSTR)(p_subkey.utf16().get_data()), &hKey);
 
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
 	if (!p_old_reg) {
 		res = _RegKeyQueryString(hKey, "Version", r_info.version);
-		if (res != ERROR_SUCCESS)
+		if (res != ERROR_SUCCESS) {
 			goto cleanup;
+		}
 	}
 
 	res = _RegKeyQueryString(hKey, "SdkInstallRoot", r_info.install_root_dir);
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
 	res = _RegKeyQueryString(hKey, "FrameworkAssemblyDirectory", r_info.assembly_dir);
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
 	res = _RegKeyQueryString(hKey, "MonoConfigDir", r_info.config_dir);
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
-	if (r_info.install_root_dir.ends_with("\\"))
+	if (r_info.install_root_dir.ends_with("\\")) {
 		r_info.bin_dir = r_info.install_root_dir + "bin";
-	else
+	} else {
 		r_info.bin_dir = r_info.install_root_dir + "\\bin";
+	}
 
 cleanup:
 	RegCloseKey(hKey);
@@ -129,8 +136,9 @@ LONG _find_mono_in_reg_old(const String &p_subkey, MonoRegInfo &r_info) {
 	HKEY hKey;
 	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, (LPCWSTR)(p_subkey.utf16().get_data()), &hKey);
 
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
 	res = _RegKeyQueryString(hKey, "DefaultCLR", default_clr);
 
@@ -147,11 +155,13 @@ cleanup:
 MonoRegInfo find_mono() {
 	MonoRegInfo info;
 
-	if (_find_mono_in_reg("Software\\Mono", info) == ERROR_SUCCESS)
+	if (_find_mono_in_reg("Software\\Mono", info) == ERROR_SUCCESS) {
 		return info;
+	}
 
-	if (_find_mono_in_reg_old("Software\\Novell\\Mono", info) == ERROR_SUCCESS)
+	if (_find_mono_in_reg_old("Software\\Novell\\Mono", info) == ERROR_SUCCESS) {
 		return info;
+	}
 
 	return MonoRegInfo();
 }
@@ -212,13 +222,15 @@ String find_msbuild_tools_path() {
 	HKEY hKey;
 	LONG res = _RegOpenKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\14.0", &hKey);
 
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
 	res = _RegKeyQueryString(hKey, "MSBuildToolsPath", msbuild_tools_path);
 
-	if (res != ERROR_SUCCESS)
+	if (res != ERROR_SUCCESS) {
 		goto cleanup;
+	}
 
 cleanup:
 	RegCloseKey(hKey);

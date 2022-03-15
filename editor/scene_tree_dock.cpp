@@ -1270,6 +1270,7 @@ void SceneTreeDock::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			clear_inherit_confirm->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tree->set_auto_expand_selected(EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"), false);
 			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -1286,6 +1287,7 @@ void SceneTreeDock::_notification(int p_what) {
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == nullptr;
 
@@ -1298,7 +1300,6 @@ void SceneTreeDock::_notification(int p_what) {
 					scene_tree->show();
 				}
 			}
-
 		} break;
 	}
 }
@@ -1534,7 +1535,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 		}
 	}
 
-	bool autorename_animation_tracks = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
+	bool autorename_animation_tracks = bool(EDITOR_GET("editors/animation/autorename_animation_tracks"));
 
 	if (autorename_animation_tracks && Object::cast_to<AnimationPlayer>(p_base)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_base);
@@ -2550,7 +2551,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
 				menu_properties->add_item(capitalize ? p.capitalize() : p);
-				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
+				menu_properties->set_item_metadata(-1, p);
 			}
 
 			menu_properties->reset_size();
@@ -3496,8 +3497,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	menu_subresources->set_name("Sub-Resources");
 	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(false));
 	menu->add_child(menu_subresources);
-	first_enter = true;
-	restore_script_editor_on_drag = false;
 
 	menu_properties = memnew(PopupMenu);
 	add_child(menu_properties);
@@ -3510,9 +3509,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	set_process_input(true);
 	set_process(true);
-
-	profile_allow_editing = true;
-	profile_allow_script_editing = true;
 
 	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
 	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);

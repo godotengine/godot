@@ -122,8 +122,10 @@ AABB Occluder3D::get_aabb() const {
 }
 
 void Occluder3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		_update();
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_update();
+		} break;
 	}
 }
 
@@ -190,7 +192,6 @@ void QuadOccluder3D::set_size(const Vector2 &p_size) {
 	}
 
 	size = p_size.max(Vector2());
-	;
 	_update();
 }
 
@@ -235,7 +236,6 @@ void BoxOccluder3D::set_size(const Vector3 &p_size) {
 	}
 
 	size = Vector3(MAX(p_size.x, 0.0f), MAX(p_size.y, 0.0f), MAX(p_size.z, 0.0f));
-	;
 	_update();
 }
 
@@ -431,10 +431,6 @@ AABB OccluderInstance3D::get_aabb() const {
 		return occluder->get_aabb();
 	}
 	return AABB();
-}
-
-Vector<Face3> OccluderInstance3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {

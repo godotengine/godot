@@ -41,10 +41,6 @@ struct _CollectorCallback2D {
 	Vector2 *sep_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector2 &p_point_A, const Vector2 &p_point_B) {
-		/*
-		if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-			return;
-		*/
 		if (swap) {
 			callback(p_point_B, p_point_A, userdata);
 		} else {

@@ -31,11 +31,13 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "webxr_interface_js.h"
+
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "emscripten.h"
 #include "godot_webxr.h"
 #include "servers/rendering/renderer_compositor.h"
+
 #include <stdlib.h>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
@@ -481,7 +483,6 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 				sprintf(name, "axis_%i", i);
 
 				float value = *((float *)axes + (i + 1));
-				;
 				tracker->set_input(name, value);
 			}
 			free(axes);

@@ -150,13 +150,7 @@ class GridMap : public Node3D {
 	bool center_z = true;
 	float cell_scale = 1.0;
 
-	bool clip = false;
-	bool clip_above = true;
-	int clip_floor = 0;
-
 	bool recreating_octants = false;
-
-	Vector3::Axis clip_axis = Vector3::AXIS_Z;
 
 	Ref<MeshLibrary> mesh_library;
 
@@ -260,12 +254,11 @@ public:
 	Vector3i world_to_map(const Vector3 &p_world_position) const;
 	Vector3 map_to_world(const Vector3i &p_map_position) const;
 
-	void set_clip(bool p_enabled, bool p_clip_above = true, int p_floor = 0, Vector3::Axis p_axis = Vector3::AXIS_X);
-
 	void set_cell_scale(float p_scale);
 	float get_cell_scale() const;
 
 	Array get_used_cells() const;
+	Array get_used_cells_by_item(int p_item) const;
 
 	Array get_meshes() const;
 

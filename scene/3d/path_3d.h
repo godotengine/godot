@@ -42,7 +42,6 @@ class Path3D : public Node3D {
 	void _curve_changed();
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

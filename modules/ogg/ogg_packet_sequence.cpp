@@ -162,6 +162,7 @@ bool OGGPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
 }
 
 uint32_t OGGPacketSequencePlayback::seek_page_internal(int64_t granule, uint32_t after_page_inclusive, uint32_t before_page_inclusive) {
+	// FIXME: This function needs better corner case handling.
 	if (before_page_inclusive == after_page_inclusive) {
 		return before_page_inclusive;
 	}
@@ -169,7 +170,8 @@ uint32_t OGGPacketSequencePlayback::seek_page_internal(int64_t granule, uint32_t
 	// Complicating the bisection search algorithm, the middle page might not have a packet that ends on it,
 	// which means it might not have a correct granule position. Find a nearby page that does have a packet ending on it.
 	uint32_t bisection_page = -1;
-	for (uint32_t test_page = actual_middle_page; test_page <= before_page_inclusive; test_page++) {
+	// Don't include before_page_inclusive because that always succeeds and will cause infinite recursion later.
+	for (uint32_t test_page = actual_middle_page; test_page < before_page_inclusive; test_page++) {
 		if (ogg_packet_sequence->page_data[test_page].size() > 0) {
 			bisection_page = test_page;
 			break;

@@ -1107,7 +1107,7 @@ void light_compute(
 		float rim,
 		float rim_tint,
 		float clearcoat,
-		float clearcoat_gloss,
+		float clearcoat_roughness,
 		float anisotropy,
 		inout vec3 diffuse_light,
 		inout vec3 specular_light,
@@ -1298,7 +1298,7 @@ LIGHT_SHADER_CODE
 #if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
+		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_roughness));
 		float Fr = mix(.04, 1.0, cLdotH5);
 		//float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
 		float Gr = V_GGX(cNdotL, cNdotV, 0.25);
@@ -1427,7 +1427,7 @@ void main() {
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
-	float clearcoat_gloss = 0.0;
+	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	float sss_strength = 0.0; //unused
@@ -2028,7 +2028,7 @@ FRAGMENT_SHADER_CODE
 			rim,
 			rim_tint,
 			clearcoat,
-			clearcoat_gloss,
+			clearcoat_roughness,
 			anisotropy,
 			diffuse_light,
 			specular_light,

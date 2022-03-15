@@ -80,8 +80,9 @@ public:
 
 	std::string name() { return std::string(sym->Name); }
 	std::string undecorated_name() {
-		if (*sym->Name == '\0')
+		if (*sym->Name == '\0') {
 			return "<couldn't map PC to fn name>";
+		}
 		std::vector<char> und_name(max_name_len);
 		UnDecorateSymbolName(sym->Name, &und_name[0], max_name_len, UNDNAME_COMPLETE);
 		return std::string(&und_name[0], strlen(&und_name[0]));
@@ -131,12 +132,14 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	fprintf(stderr, "\n================================================================\n");
 	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
 
-	if (OS::get_singleton()->get_main_loop())
+	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	}
 
 	// Load the symbols:
-	if (!SymInitialize(process, nullptr, false))
+	if (!SymInitialize(process, nullptr, false)) {
 		return EXCEPTION_CONTINUE_SEARCH;
+	}
 
 	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
 	EnumProcessModules(process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
@@ -193,18 +196,21 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			if (frame.AddrPC.Offset != 0) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
-				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line))
+				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
 					fprintf(stderr, "[%d] %s (%s:%d)\n", n, fnName.c_str(), line.FileName, line.LineNumber);
-				else
+				} else {
 					fprintf(stderr, "[%d] %s\n", n, fnName.c_str());
-			} else
+				}
+			} else {
 				fprintf(stderr, "[%d] ???\n", n);
+			}
 
 			n++;
 		}
 
-		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
+		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr)) {
 			break;
+		}
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 
 	fprintf(stderr, "-- END OF BACKTRACE --\n");
@@ -225,8 +231,9 @@ CrashHandler::~CrashHandler() {
 }
 
 void CrashHandler::disable() {
-	if (disabled)
+	if (disabled) {
 		return;
+	}
 
 	disabled = true;
 }

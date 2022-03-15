@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTWAV_H
-#define RESOURCEIMPORTWAV_H
+#ifndef RESOURCE_IMPORTER_WAV_H
+#define RESOURCE_IMPORTER_WAV_H
 
 #include "core/io/resource_importer.h"
 
@@ -50,9 +50,6 @@ public:
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const override;
 
 	static void _compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &dst_data) {
-		/*p_sample_data->data = (void*)malloc(len);
-		xm_s8 *dataptr=(xm_s8*)p_sample_data->data;*/
-
 		static const int16_t _ima_adpcm_step_table[89] = {
 			7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
 			19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
@@ -81,15 +78,14 @@ public:
 
 		int i, step_idx = 0, prev = 0;
 		uint8_t *out = w;
-		//int16_t xm_prev=0;
 		const float *in = p_data.ptr();
 
-		/* initial value is zero */
+		// Initial value is zero.
 		*(out++) = 0;
 		*(out++) = 0;
-		/* Table index initial value */
+		// Table index initial value.
 		*(out++) = 0;
-		/* unused */
+		// Unused.
 		*(out++) = 0;
 
 		for (i = 0; i < datalen; i++) {
@@ -101,14 +97,7 @@ public:
 				xm_sample = 0;
 			} else {
 				xm_sample = CLAMP(in[i] * 32767.0, -32768, 32767);
-				/*
-				if (xm_sample==32767 || xm_sample==-32768)
-					printf("clippy!\n",xm_sample);
-				*/
 			}
-
-			//xm_sample=xm_sample+xm_prev;
-			//xm_prev=xm_sample;
 
 			diff = (int)xm_sample - prev;
 
@@ -129,7 +118,7 @@ public:
 
 				step >>= 1;
 				mask >>= 1;
-			};
+			}
 
 			if (nibble & 8) {
 				prev -= vpdiff;
@@ -137,20 +126,10 @@ public:
 				prev += vpdiff;
 			}
 
-			if (prev > 32767) {
-				//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip up %i\n",i,xm_sample,prev,diff,vpdiff,prev);
-				prev = 32767;
-			} else if (prev < -32768) {
-				//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip down %i\n",i,xm_sample,prev,diff,vpdiff,prev);
-				prev = -32768;
-			}
+			prev = CLAMP(prev, -32768, 32767);
 
 			step_idx += _ima_adpcm_index_table[nibble];
-			if (step_idx < 0) {
-				step_idx = 0;
-			} else if (step_idx > 88) {
-				step_idx = 88;
-			}
+			step_idx = CLAMP(step_idx, 0, 88);
 
 			if (i & 1) {
 				*out |= nibble << 4;
@@ -158,7 +137,6 @@ public:
 			} else {
 				*out = nibble;
 			}
-			/*dataptr[i]=prev>>8;*/
 		}
 	}
 
@@ -167,4 +145,4 @@ public:
 	ResourceImporterWAV();
 };
 
-#endif // RESOURCEIMPORTWAV_H
+#endif // RESOURCE_IMPORTER_WAV_H

@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_openxr = env_modules.Clone()
+
+#################################################
+# Add in our Khronos OpenXR loader
+
+thirdparty_obj = []
+thirdparty_dir = "#thirdparty/openxr"
+
+env_openxr.Prepend(
+    CPPPATH=[
+        thirdparty_dir,
+        thirdparty_dir + "/include",
+        thirdparty_dir + "/src",
+        thirdparty_dir + "/src/common",
+        thirdparty_dir + "/src/external/jsoncpp/include",
+        thirdparty_dir + "/src/loader",
+    ]
+)
+
+# may need to check and set:
+# - XR_USE_TIMESPEC
+
+env_thirdparty = env_openxr.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
+
+if env["platform"] == "android":
+    # may need to set OPENXR_ANDROID_VERSION_SUFFIX
+    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
+
+    # may need to include java parts of the openxr loader
+elif env["platform"] == "linuxbsd":
+    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_LINUX", "XR_USE_PLATFORM_XLIB"])
+    # FIXME: Review what needs to be set for Android and macOS.
+    env_thirdparty.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
+elif env["platform"] == "windows":
+    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
+
+# add in common files (hope these don't clash with us)
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/common/filesystem_utils.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/common/object_info.cpp")
+
+# add in external jsoncpp dependency
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/external/jsoncpp/src/lib_json/json_reader.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/external/jsoncpp/src/lib_json/json_value.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/external/jsoncpp/src/lib_json/json_writer.cpp")
+
+# add in load
+if env["platform"] == "android":
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/android_utilities.cpp")
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
+
+env.modules_sources += thirdparty_obj
+
+#################################################
+# And include our module source
+
+module_obj = []
+
+env_openxr.add_source_files(module_obj, "*.cpp")
+env_openxr.add_source_files(module_obj, "action_map/*.cpp")
+
+# We're a little more targetted with our extensions
+if env["platform"] == "android":
+    env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
+if env["vulkan"]:
+    env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

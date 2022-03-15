@@ -63,7 +63,7 @@ void register_websocket_types() {
 	WSLServer::make_default();
 #endif
 
-	GDREGISTER_VIRTUAL_CLASS(WebSocketMultiplayerPeer);
+	GDREGISTER_ABSTRACT_CLASS(WebSocketMultiplayerPeer);
 	ClassDB::register_custom_instance_class<WebSocketServer>();
 	ClassDB::register_custom_instance_class<WebSocketClient>();
 	ClassDB::register_custom_instance_class<WebSocketPeer>();

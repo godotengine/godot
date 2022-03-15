@@ -212,32 +212,6 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 					m_normals = resolve_vertex_data_array<Vector3>(layer_scope, MappingInformationType, ReferenceInformationType, "Normals");
 				} else if (layer_type_name == "LayerElementColor") {
 					m_colors = resolve_vertex_data_array<Color>(layer_scope, MappingInformationType, ReferenceInformationType, "Colors", "ColorIndex");
-					// NOTE: this is a useful sanity check to ensure you're getting any color data which is not default.
-					//					const Color first_color_check = m_colors.data[0];
-					//					bool colors_are_all_the_same = true;
-					//					size_t i = 1;
-					//					for(i = 1; i < m_colors.data.size(); i++)
-					//					{
-					//						const Color current_color = m_colors.data[i];
-					//						if(current_color.is_equal_approx(first_color_check))
-					//						{
-					//							continue;
-					//						}
-					//						else
-					//						{
-					//							colors_are_all_the_same = false;
-					//							break;
-					//						}
-					//					}
-					//
-					//					if(colors_are_all_the_same)
-					//					{
-					//						print_error("Color serialisation is not working for vertex colors some should be different in the test asset.");
-					//					}
-					//					else
-					//					{
-					//						print_verbose("Color array has unique colors at index: " + itos(i));
-					//					}
 				}
 			}
 		}

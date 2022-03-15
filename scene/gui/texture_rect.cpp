@@ -29,84 +29,87 @@
 /*************************************************************************/
 
 #include "texture_rect.h"
+
 #include "core/core_string_names.h"
 #include "servers/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		if (texture.is_null()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			if (texture.is_null()) {
+				return;
+			}
 
-		Size2 size;
-		Point2 offset;
-		Rect2 region;
-		bool tile = false;
+			Size2 size;
+			Point2 offset;
+			Rect2 region;
+			bool tile = false;
 
-		switch (stretch_mode) {
-			case STRETCH_SCALE: {
-				size = get_size();
-			} break;
-			case STRETCH_TILE: {
-				size = get_size();
-				tile = true;
-			} break;
-			case STRETCH_KEEP: {
-				size = texture->get_size();
-			} break;
-			case STRETCH_KEEP_CENTERED: {
-				offset = (get_size() - texture->get_size()) / 2;
-				size = texture->get_size();
-			} break;
-			case STRETCH_KEEP_ASPECT_CENTERED:
-			case STRETCH_KEEP_ASPECT: {
-				size = get_size();
-				int tex_width = texture->get_width() * size.height / texture->get_height();
-				int tex_height = size.height;
+			switch (stretch_mode) {
+				case STRETCH_SCALE: {
+					size = get_size();
+				} break;
+				case STRETCH_TILE: {
+					size = get_size();
+					tile = true;
+				} break;
+				case STRETCH_KEEP: {
+					size = texture->get_size();
+				} break;
+				case STRETCH_KEEP_CENTERED: {
+					offset = (get_size() - texture->get_size()) / 2;
+					size = texture->get_size();
+				} break;
+				case STRETCH_KEEP_ASPECT_CENTERED:
+				case STRETCH_KEEP_ASPECT: {
+					size = get_size();
+					int tex_width = texture->get_width() * size.height / texture->get_height();
+					int tex_height = size.height;
 
-				if (tex_width > size.width) {
-					tex_width = size.width;
-					tex_height = texture->get_height() * tex_width / texture->get_width();
-				}
+					if (tex_width > size.width) {
+						tex_width = size.width;
+						tex_height = texture->get_height() * tex_width / texture->get_width();
+					}
 
-				if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
-					offset.x += (size.width - tex_width) / 2;
-					offset.y += (size.height - tex_height) / 2;
-				}
+					if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
+						offset.x += (size.width - tex_width) / 2;
+						offset.y += (size.height - tex_height) / 2;
+					}
 
-				size.width = tex_width;
-				size.height = tex_height;
-			} break;
-			case STRETCH_KEEP_ASPECT_COVERED: {
-				size = get_size();
+					size.width = tex_width;
+					size.height = tex_height;
+				} break;
+				case STRETCH_KEEP_ASPECT_COVERED: {
+					size = get_size();
 
-				Size2 tex_size = texture->get_size();
-				Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
-				float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
-				Size2 scaled_tex_size = tex_size * scale;
+					Size2 tex_size = texture->get_size();
+					Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
+					float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
+					Size2 scaled_tex_size = tex_size * scale;
 
-				region.position = ((scaled_tex_size - size) / scale).abs() / 2.0f;
-				region.size = size / scale;
-			} break;
-		}
+					region.position = ((scaled_tex_size - size) / scale).abs() / 2.0f;
+					region.size = size / scale;
+				} break;
+			}
 
-		Ref<AtlasTexture> p_atlas = texture;
+			Ref<AtlasTexture> p_atlas = texture;
 
-		if (p_atlas.is_valid() && region.has_no_area()) {
-			Size2 scale_size(size.width / texture->get_width(), size.height / texture->get_height());
+			if (p_atlas.is_valid() && region.has_no_area()) {
+				Size2 scale_size(size.width / texture->get_width(), size.height / texture->get_height());
 
-			offset.width += hflip ? p_atlas->get_margin().get_position().width * scale_size.width * 2 : 0;
-			offset.height += vflip ? p_atlas->get_margin().get_position().height * scale_size.height * 2 : 0;
-		}
+				offset.width += hflip ? p_atlas->get_margin().get_position().width * scale_size.width * 2 : 0;
+				offset.height += vflip ? p_atlas->get_margin().get_position().height * scale_size.height * 2 : 0;
+			}
 
-		size.width *= hflip ? -1.0f : 1.0f;
-		size.height *= vflip ? -1.0f : 1.0f;
+			size.width *= hflip ? -1.0f : 1.0f;
+			size.height *= vflip ? -1.0f : 1.0f;
 
-		if (region.has_no_area()) {
-			draw_texture_rect(texture, Rect2(offset, size), tile);
-		} else {
-			draw_texture_rect_region(texture, Rect2(offset, size), region);
-		}
+			if (region.has_no_area()) {
+				draw_texture_rect(texture, Rect2(offset, size), tile);
+			} else {
+				draw_texture_rect_region(texture, Rect2(offset, size), region);
+			}
+		} break;
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -236,6 +236,14 @@ static SimpleXMLType _getXMLType(const char* itr, const char* itrEnd, size_t &to
 }
 
 
+static char* _strndup(const char* src, unsigned len)
+{
+    auto ret = (char*)malloc(len + 1);
+    if (!ret) return nullptr;
+    ret[len] = '\0';
+    return (char*)memcpy(ret, src, len);
+}
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
@@ -264,6 +272,7 @@ const char* simpleXmlNodeTypeToString(TVG_UNUSED SvgNodeType type)
         "Video",
         "ClipPath",
         "Mask",
+        "Symbol",
         "Unknown",
     };
     return TYPE_NAMES[(int) type];
@@ -450,7 +459,7 @@ bool simpleXmlParse(const char* buf, unsigned bufLength, bool strip, simpleXMLCb
 }
 
 
-bool simpleXmlParseW3CAttribute(const char* buf, simpleXMLAttributeCb func, const void* data)
+bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAttributeCb func, const void* data)
 {
     const char* end;
     char* key;
@@ -459,7 +468,7 @@ bool simpleXmlParseW3CAttribute(const char* buf, simpleXMLAttributeCb func, cons
 
     if (!buf) return false;
 
-    end = buf + strlen(buf);
+    end = buf + bufLength;
     key = (char*)alloca(end - buf + 1);
     val = (char*)alloca(end - buf + 1);
 
@@ -468,6 +477,11 @@ bool simpleXmlParseW3CAttribute(const char* buf, simpleXMLAttributeCb func, cons
     do {
         char* sep = (char*)strchr(buf, ':');
         next = (char*)strchr(buf, ';');
+        if (sep >= end) {
+            next = nullptr;
+            sep = nullptr;
+        }
+        if (next >= end) next = nullptr;
 
         key[0] = '\0';
         val[0] = '\0';
@@ -506,6 +520,47 @@ bool simpleXmlParseW3CAttribute(const char* buf, simpleXMLAttributeCb func, cons
     } while (next != nullptr);
 
     return true;
+}
+
+
+/*
+ * Supported formats:
+ * tag {}, .name {}, tag.name{}
+ */
+const char* simpleXmlParseCSSAttribute(const char* buf, unsigned bufLength, char** tag, char** name, const char** attrs, unsigned* attrsLength)
+{
+    if (!buf) return nullptr;
+
+    *tag = *name = nullptr;
+    *attrsLength = 0;
+
+    auto itr = _simpleXmlSkipWhiteSpace(buf, buf + bufLength);
+    auto itrEnd = (const char*)memchr(buf, '{', bufLength);
+
+    if (!itrEnd || itr == itrEnd) return nullptr;
+
+    auto nextElement = (const char*)memchr(itrEnd, '}', bufLength - (itrEnd - buf));
+    if (!nextElement) return nullptr;
+
+    *attrs = itrEnd + 1;
+    *attrsLength = nextElement - *attrs;
+
+    const char *p;
+
+    itrEnd = _simpleXmlUnskipWhiteSpace(itrEnd, itr);
+    if (*(itrEnd - 1) == '.') return nullptr;
+
+    for (p = itr; p < itrEnd; p++) {
+        if (*p == '.') break;
+    }
+
+    if (p == itr) *tag = strdup("all");
+    else *tag = _strndup(itr, p - itr);
+
+    if (p == itrEnd) *name = nullptr;
+    else *name = _strndup(p + 1, itrEnd - p - 1);
+
+    return (nextElement ? nextElement + 1 : nullptr);
 }
 
 

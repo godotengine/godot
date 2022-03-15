@@ -1789,7 +1789,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
  **/
 HB_EXTERN void
 hb_buffer_append (hb_buffer_t *buffer,
-		  hb_buffer_t *source,
+		  const hb_buffer_t *source,
 		  unsigned int start,
 		  unsigned int end)
 {

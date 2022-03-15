@@ -429,7 +429,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 					}
-				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 					const double *src = array.ptr();
@@ -573,7 +573,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 						}
 					}
-				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 					const double *src = array.ptr();
@@ -1879,10 +1879,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_set_color", "light", "color"), &RenderingServer::light_set_color);
 	ClassDB::bind_method(D_METHOD("light_set_param", "light", "param", "value"), &RenderingServer::light_set_param);
 	ClassDB::bind_method(D_METHOD("light_set_shadow", "light", "enabled"), &RenderingServer::light_set_shadow);
-	ClassDB::bind_method(D_METHOD("light_set_shadow_color", "light", "color"), &RenderingServer::light_set_shadow_color);
 	ClassDB::bind_method(D_METHOD("light_set_projector", "light", "texture"), &RenderingServer::light_set_projector);
 	ClassDB::bind_method(D_METHOD("light_set_negative", "light", "enable"), &RenderingServer::light_set_negative);
 	ClassDB::bind_method(D_METHOD("light_set_cull_mask", "light", "mask"), &RenderingServer::light_set_cull_mask);
+	ClassDB::bind_method(D_METHOD("light_set_distance_fade", "decal", "enabled", "begin", "shadow", "length"), &RenderingServer::light_set_distance_fade);
 	ClassDB::bind_method(D_METHOD("light_set_reverse_cull_face_mode", "light", "enabled"), &RenderingServer::light_set_reverse_cull_face_mode);
 	ClassDB::bind_method(D_METHOD("light_set_bake_mode", "light", "bake_mode"), &RenderingServer::light_set_bake_mode);
 	ClassDB::bind_method(D_METHOD("light_set_max_sdfgi_cascade", "light", "cascade"), &RenderingServer::light_set_max_sdfgi_cascade);
@@ -2371,10 +2371,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_ACES);
 
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(ENV_SSR_ROUGNESS_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_DISABLED);
+	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_HIGH);
 
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_VERY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_LOW);
@@ -2580,6 +2580,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_particles", "item", "particles", "texture"), &RenderingServer::canvas_item_add_particles);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_set_transform", "item", "transform"), &RenderingServer::canvas_item_add_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_clip_ignore", "item", "ignore"), &RenderingServer::canvas_item_add_clip_ignore);
+	ClassDB::bind_method(D_METHOD("canvas_item_add_animation_slice", "item", "animation_length", "slice_begin", "slice_end", "offset"), &RenderingServer::canvas_item_add_animation_slice, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("canvas_item_set_sort_children_by_y", "item", "enabled"), &RenderingServer::canvas_item_set_sort_children_by_y);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_index", "item", "z_index"), &RenderingServer::canvas_item_set_z_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_as_relative_to_parent", "item", "enabled"), &RenderingServer::canvas_item_set_z_as_relative_to_parent);
@@ -2860,11 +2861,11 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
 
-	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
+	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/roughness_layers", 8); // Assumes a 256x256 cubemap
 	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples", 1024);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 128);
+	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/ggx_samples", 32);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 16);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
@@ -2879,8 +2880,6 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading.mobile", true);
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley", false);
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
-	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx", false);
-	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx.mobile", true);
 
 	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
 
@@ -3001,7 +3000,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 
-	GLOBAL_DEF_RST("rendering/xr/enabled", false);
+	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
 
 	GLOBAL_DEF_RST("rendering/2d/options/use_software_skinning", true);
 	GLOBAL_DEF_RST("rendering/2d/options/ninepatch_mode", 1);

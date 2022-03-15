@@ -87,7 +87,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		if (!S_ISREG(st.st_mode)) {
 			return ERR_FILE_CANT_OPEN;
 		}
-	};
+	}
 
 #ifdef TOOLS_ENABLED
 	// Windows is case insensitive, but all other platforms are sensitive to it
@@ -269,7 +269,7 @@ uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
-};
+}
 
 Error FileAccessWindows::get_error() const {
 	return last_error;
@@ -326,8 +326,9 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 
 uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	if (file.ends_with("/") && file != "/")
+	if (file.ends_with("/") && file != "/") {
 		file = file.substr(0, file.length() - 1);
+	}
 
 	struct _stat st;
 	int rv = _wstat((LPCWSTR)(file.utf16().get_data()), &st);

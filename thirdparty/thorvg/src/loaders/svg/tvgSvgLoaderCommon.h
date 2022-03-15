@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,8 @@ enum class SvgNodeType
     Video,
     ClipPath,
     Mask,
+    CssStyle,
+    Symbol,
     Unknown
 };
 
@@ -111,7 +113,8 @@ enum class SvgStyleFlags
     Transform = 0x800,
     ClipPath = 0x1000,
     Mask = 0x2000,
-    Display = 0x4000
+    MaskType = 0x4000,
+    Display = 0x8000
 };
 
 enum class SvgStopStyleFlags
@@ -125,6 +128,12 @@ enum class SvgFillRule
 {
     Winding = 0,
     OddEven = 1
+};
+
+enum class SvgMaskType
+{
+    Luminance = 0,
+    Alpha
 };
 
 //Length type to recalculate %, pt, pc, mm, cm etc
@@ -145,6 +154,7 @@ struct SvgDocNode
     float vw;
     float vh;
     SvgNode* defs;
+    SvgNode* style;
     bool preserveAspect;
 };
 
@@ -157,11 +167,21 @@ struct SvgDefsNode
     Array<SvgStyleGradient*> gradients;
 };
 
+struct SvgSymbolNode
+{
+    float w, h;
+    float vx, vy, vw, vh;
+    bool preserveAspect;
+    bool overflowVisible;
+};
+
 struct SvgUseNode
 {
     float x, y, w, h;
+    bool isWidthSet;
+    bool isHeightSet;
+    SvgNode* symbol;
 };
-
 
 struct SvgEllipseNode
 {
@@ -215,9 +235,19 @@ struct SvgPolygonNode
     float* points;
 };
 
-struct SvgCompositeNode
+struct SvgClipNode
 {
     bool userSpace;
+};
+
+struct SvgMaskNode
+{
+    SvgMaskType type;
+    bool userSpace;
+};
+
+struct SvgCssStyleNode
+{
 };
 
 struct SvgLinearGradient
@@ -328,6 +358,7 @@ struct SvgStyleProperty
     int opacity;
     SvgColor color;
     bool curColorSet;
+    char* cssClass;
     SvgStyleFlags flags;
 };
 
@@ -352,7 +383,10 @@ struct SvgNode
         SvgPathNode path;
         SvgLineNode line;
         SvgImageNode image;
-        SvgCompositeNode comp;
+        SvgMaskNode mask;
+        SvgClipNode clip;
+        SvgCssStyleNode cssStyle;
+        SvgSymbolNode symbol;
     } node;
     bool display;
     ~SvgNode();
@@ -384,15 +418,18 @@ struct SvgNodeIdPair
 
 struct SvgLoaderData
 {
-    Array<SvgNode *> stack = {nullptr, 0, 0};
+    Array<SvgNode*> stack = {nullptr, 0, 0};
     SvgNode* doc = nullptr;
     SvgNode* def = nullptr;
+    SvgNode* cssStyle = nullptr;
     Array<SvgStyleGradient*> gradients;
     SvgStyleGradient* latestGradient = nullptr; //For stops
     SvgParser* svgParse = nullptr;
     Array<SvgNodeIdPair> cloneNodes;
+    Array<SvgNodeIdPair> nodesToStyle;
     int level = 0;
     bool result = false;
+    bool style = false;
 };
 
 /*

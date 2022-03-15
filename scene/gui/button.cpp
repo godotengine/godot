@@ -78,6 +78,7 @@ void Button::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update();
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
@@ -85,12 +86,14 @@ void Button::_notification(int p_what) {
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
@@ -290,7 +293,7 @@ void Button::_notification(int p_what) {
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
 			text_buf->set_width(clip_text ? text_clip : -1);
 
-			int text_width = clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x;
+			int text_width = MAX(1, clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
 				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
@@ -580,8 +583,8 @@ void Button::_bind_methods() {
 Button::Button(const String &p_text) {
 	text_buf.instantiate();
 	text_buf->set_flags(TextServer::BREAK_MANDATORY);
-
 	set_mouse_filter(MOUSE_FILTER_STOP);
+
 	set_text(p_text);
 }
 

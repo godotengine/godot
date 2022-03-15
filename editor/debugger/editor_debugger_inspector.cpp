@@ -107,14 +107,13 @@ void EditorDebuggerInspector::_bind_methods() {
 
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE:
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("object_id_selected", callable_mp(this, &EditorDebuggerInspector::_object_selected));
-			break;
-		case NOTIFICATION_ENTER_TREE:
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
 			edit(variables);
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 

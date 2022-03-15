@@ -46,7 +46,7 @@ Error ResourceSaverPNG::save(const String &p_path, const RES &p_resource, uint32
 	Error err = save_image(p_path, img);
 
 	return err;
-};
+}
 
 Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img) {
 	Vector<uint8_t> buffer;
@@ -89,4 +89,4 @@ void ResourceSaverPNG::get_recognized_extensions(const RES &p_resource, List<Str
 ResourceSaverPNG::ResourceSaverPNG() {
 	Image::save_png_func = &save_image;
 	Image::save_png_buffer_func = &save_image_to_buffer;
-};
+}

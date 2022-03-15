@@ -175,7 +175,7 @@ void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
 	Button *button = Object::cast_to<Button>(p_button);
 	changing_type_index = p_index;
 	Rect2 rect = button->get_screen_rect();
-	change_type->set_as_minsize();
+	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
 }
@@ -253,6 +253,7 @@ void EditorPropertyArray::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 		return;
@@ -408,6 +409,7 @@ void EditorPropertyArray::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 	}
@@ -504,34 +506,37 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 }
 
 void EditorPropertyArray::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		change_type->clear();
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			String type = Variant::get_type_name(Variant::Type(i));
-			change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
-		}
-		change_type->add_separator();
-		change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-		if (Object::cast_to<Button>(button_add_item)) {
-			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		}
-	}
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		if (is_visible_in_tree()) {
-			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-				dropping = true;
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (is_visible_in_tree()) {
+				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+					dropping = true;
+					edit->update();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			if (dropping) {
+				dropping = false;
 				edit->update();
 			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAG_END) {
-		if (dropping) {
-			dropping = false;
-			edit->update();
-		}
+		} break;
 	}
 }
 
@@ -711,7 +716,6 @@ EditorPropertyArray::EditorPropertyArray() {
 	size_slider = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
-	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyArray::_change_type_menu));
@@ -720,8 +724,6 @@ EditorPropertyArray::EditorPropertyArray() {
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
-
-	dropping = false;
 }
 
 ///////////////////// DICTIONARY ///////////////////////////
@@ -739,7 +741,7 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 
 		emit_changed(get_edited_property(), dict, "", true);
 
-		dict = dict.duplicate(); // Duplicate, so undo/redo works better\.
+		dict = dict.duplicate(); // Duplicate, so undo/redo works better.
 		object->set_dict(dict);
 	}
 }
@@ -748,7 +750,7 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 	Button *button = Object::cast_to<Button>(p_button);
 
 	Rect2 rect = button->get_screen_rect();
-	change_type->set_as_minsize();
+	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
 	changing_type_index = p_index;
@@ -802,7 +804,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); // Duplicate, so undo/redo works better\.
+	dict = dict.duplicate(); // Duplicate, so undo/redo works better.
 	object->set_dict(dict);
 	update_property();
 }
@@ -811,11 +813,12 @@ void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_object()->get(get_edited_property());
 
 	if (updated_val.get_type() == Variant::NIL) {
-		edit->set_text("Dictionary (Nil)"); // This provides symmetry with the array property.
+		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 		return;
@@ -823,7 +826,7 @@ void EditorPropertyDictionary::update_property() {
 
 	Dictionary dict = updated_val;
 
-	edit->set_text("Dictionary (size " + itos(dict.size()) + ")");
+	edit->set_text(vformat(TTR("Dictionary (size %d)"), dict.size()));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -1141,6 +1144,7 @@ void EditorPropertyDictionary::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 	}
@@ -1151,18 +1155,21 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		change_type->clear();
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			String type = Variant::get_type_name(Variant::Type(i));
-			change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
-		}
-		change_type->add_separator();
-		change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-		if (Object::cast_to<Button>(button_add_item)) {
-			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		}
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+		} break;
 	}
 }
 
@@ -1204,9 +1211,232 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	vbox = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
-	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = -1;
+}
+
+///////////////////// LOCALIZABLE STRING ///////////////////////////
+
+void EditorPropertyLocalizableString::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+	if (p_property.begins_with("indices")) {
+		int index = p_property.get_slice("/", 1).to_int();
+		Dictionary dict = object->get_dict();
+		Variant key = dict.get_key_at_index(index);
+		dict[key] = p_value;
+
+		emit_changed(get_edited_property(), dict, "", true);
+
+		dict = dict.duplicate(); // Duplicate, so undo/redo works better.
+		object->set_dict(dict);
+	}
+}
+
+void EditorPropertyLocalizableString::_add_locale_popup() {
+	locale_select->popup_locale_dialog();
+}
+
+void EditorPropertyLocalizableString::_add_locale(const String &p_locale) {
+	Dictionary dict = object->get_dict();
+
+	object->set_new_item_key(p_locale);
+	object->set_new_item_value(String());
+	dict[object->get_new_item_key()] = object->get_new_item_value();
+
+	emit_changed(get_edited_property(), dict, "", false);
+
+	dict = dict.duplicate(); // Duplicate, so undo/redo works better.
+	object->set_dict(dict);
+	update_property();
+}
+
+void EditorPropertyLocalizableString::_remove_item(Object *p_button, int p_index) {
+	Dictionary dict = object->get_dict();
+
+	Variant key = dict.get_key_at_index(p_index);
+	dict.erase(key);
+
+	emit_changed(get_edited_property(), dict, "", false);
+
+	dict = dict.duplicate(); // Duplicate, so undo/redo works better.
+	object->set_dict(dict);
+	update_property();
+}
+
+void EditorPropertyLocalizableString::update_property() {
+	Variant updated_val = get_edited_object()->get(get_edited_property());
+
+	if (updated_val.get_type() == Variant::NIL) {
+		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
+		edit->set_pressed(false);
+		if (vbox) {
+			set_bottom_editor(nullptr);
+			memdelete(vbox);
+			button_add_item = nullptr;
+			vbox = nullptr;
+		}
+		return;
+	}
+
+	Dictionary dict = updated_val;
+
+	edit->set_text(vformat(TTR("Localizable String (size %d)"), dict.size()));
+
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+	if (edit->is_pressed() != unfolded) {
+		edit->set_pressed(unfolded);
+	}
+
+	if (unfolded) {
+		updating = true;
+
+		if (!vbox) {
+			vbox = memnew(VBoxContainer);
+			add_child(vbox);
+			set_bottom_editor(vbox);
+
+			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			vbox->add_child(property_vbox);
+
+			paginator = memnew(EditorPaginator);
+			paginator->connect("page_changed", callable_mp(this, &EditorPropertyLocalizableString::_page_changed));
+			vbox->add_child(paginator);
+		} else {
+			// Queue children for deletion, deleting immediately might cause errors.
+			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+				property_vbox->get_child(i)->queue_delete();
+			}
+		}
+
+		int size = dict.size();
+
+		int max_page = MAX(0, size - 1) / page_length;
+		page_index = MIN(page_index, max_page);
+
+		paginator->update(page_index, max_page);
+		paginator->set_visible(max_page > 0);
+
+		int offset = page_index * page_length;
+
+		int amount = MIN(size - offset, page_length);
+
+		dict = dict.duplicate();
+
+		object->set_dict(dict);
+
+		for (int i = 0; i < amount; i++) {
+			String prop_name;
+			Variant key;
+			Variant value;
+
+			prop_name = "indices/" + itos(i + offset);
+			key = dict.get_key_at_index(i + offset);
+			value = dict.get_value_at_index(i + offset);
+
+			EditorProperty *prop = memnew(EditorPropertyText);
+
+			prop->set_object_and_property(object.ptr(), prop_name);
+			int remove_index = 0;
+
+			String cs = key.get_construct_string();
+			prop->set_label(cs);
+			prop->set_tooltip(cs);
+			remove_index = i + offset;
+
+			prop->set_selectable(false);
+			prop->connect("property_changed", callable_mp(this, &EditorPropertyLocalizableString::_property_changed));
+			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyLocalizableString::_object_id_selected));
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			property_vbox->add_child(hbox);
+			hbox->add_child(prop);
+			prop->set_h_size_flags(SIZE_EXPAND_FILL);
+			Button *edit = memnew(Button);
+			edit->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			hbox->add_child(edit);
+			edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item), varray(edit, remove_index));
+
+			prop->update_property();
+		}
+
+		if (page_index == max_page) {
+			button_add_item = memnew(Button);
+			button_add_item->set_text(TTR("Add Translation"));
+			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			button_add_item->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
+			property_vbox->add_child(button_add_item);
+		}
+
+		updating = false;
+
+	} else {
+		if (vbox) {
+			set_bottom_editor(nullptr);
+			memdelete(vbox);
+			button_add_item = nullptr;
+			vbox = nullptr;
+		}
+	}
+}
+
+void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyLocalizableString::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+		} break;
+	}
+}
+
+void EditorPropertyLocalizableString::_edit_pressed() {
+	Variant prop_val = get_edited_object()->get(get_edited_property());
+	if (prop_val.get_type() == Variant::NIL) {
+		Callable::CallError ce;
+		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+		get_edited_object()->set(get_edited_property(), prop_val);
+	}
+
+	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+	update_property();
+}
+
+void EditorPropertyLocalizableString::_page_changed(int p_page) {
+	if (updating) {
+		return;
+	}
+	page_index = p_page;
+	update_property();
+}
+
+void EditorPropertyLocalizableString::_bind_methods() {
+}
+
+EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
+	object.instantiate();
+	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
+
+	edit = memnew(Button);
+	edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit->set_clip_text(true);
+	edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_edit_pressed));
+	edit->set_toggle_mode(true);
+	add_child(edit);
+	add_focusable(edit);
+
+	vbox = nullptr;
+	button_add_item = nullptr;
+	paginator = nullptr;
+	updating = false;
+
+	locale_select = memnew(EditorLocaleDialog);
+	locale_select->connect("locale_selected", callable_mp(this, &EditorPropertyLocalizableString::_add_locale));
+	add_child(locale_select);
 }

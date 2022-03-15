@@ -53,8 +53,9 @@ class CSharpLanguage;
 #ifdef NO_SAFE_CAST
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
-	if (!p_inst)
+	if (!p_inst) {
 		return nullptr;
+	}
 	return p_inst->get_language() == TScriptLanguage::get_singleton() ? static_cast<TScriptInstance *>(p_inst) : nullptr;
 }
 #else
@@ -183,7 +184,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	void _resource_path_changed() override;
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -294,7 +295,7 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	void mono_object_disposed(MonoObject *p_obj);
 

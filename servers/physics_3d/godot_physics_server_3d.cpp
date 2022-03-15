@@ -1540,14 +1540,6 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 	} else if (body_owner.owns(p_rid)) {
 		GodotBody3D *body = body_owner.get_or_null(p_rid);
 
-		/*
-		if (body->get_state_query())
-			_clear_query(body->get_state_query());
-
-		if (body->get_direct_state_query())
-			_clear_query(body->get_direct_state_query());
-		*/
-
 		body->set_space(nullptr);
 
 		while (body->get_shape_count()) {
@@ -1565,11 +1557,6 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 		memdelete(soft_body);
 	} else if (area_owner.owns(p_rid)) {
 		GodotArea3D *area = area_owner.get_or_null(p_rid);
-
-		/*
-		if (area->get_monitor_query())
-			_clear_query(area->get_monitor_query());
-		*/
 
 		area->set_space(nullptr);
 

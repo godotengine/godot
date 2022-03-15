@@ -1081,6 +1081,7 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
@@ -1090,7 +1091,9 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
@@ -1099,6 +1102,7 @@ void VisualScriptEditor::_update_members() {
 
 	List<StringName> var_names;
 	script->get_variable_list(&var_names);
+	var_names.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : var_names) {
 		TreeItem *ti = members->create_item(variables);
 
@@ -1617,7 +1621,7 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 	conn_map.get_key_list(&keys);
 	for (const int &E : keys) {
 		for (const Set<int>::Element *F = conn_map[E].front(); F; F = F->next()) {
-			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E, F);
+			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E, F->get());
 		}
 	}
 
@@ -3532,7 +3536,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		print_error("Category not handled: " + p_category.quote());
 	}
 
-	if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr()) && p_category != "Class") {
+	if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr()) && p_category != "Class" && p_category != "VisualScriptNode") {
 		Vector<String> property_path = p_text.split(":");
 		String class_of_method = property_path[0];
 		String method_name = property_path[1];
@@ -3978,6 +3982,7 @@ void VisualScriptEditor::_notification(int p_what) {
 				_update_graph();
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
 			members_section->set_visible(is_visible_in_tree());
@@ -4719,8 +4724,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(select_base_type);
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
-	updating_members = false;
 
 	set_process_input(true);
 

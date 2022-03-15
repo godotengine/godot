@@ -32,6 +32,7 @@
 #define NAV_UTILS_H
 
 #include "core/math/vector3.h"
+#include "core/templates/vector.h"
 
 #include <vector>
 

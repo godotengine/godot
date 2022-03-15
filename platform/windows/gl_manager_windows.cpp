@@ -56,14 +56,9 @@ typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int
 
 int GLManager_Windows::_find_or_create_display(GLWindow &win) {
 	// find display NYI, only 1 supported so far
-	if (_displays.size())
+	if (_displays.size()) {
 		return 0;
-
-	//	for (unsigned int n = 0; n < _displays.size(); n++) {
-	//		const GLDisplay &d = _displays[n];
-	//		if (d.x11_display == p_x11_display)
-	//			return n;
-	//	}
+	}
 
 	// create
 	GLDisplay d_temp = {};
@@ -230,23 +225,27 @@ void GLManager_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 void GLManager_Windows::release_current() {
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 
 	wglMakeCurrent(_current_window->hDC, nullptr);
 }
 
 void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == -1)
+	if (p_window_id == -1) {
 		return;
+	}
 
 	GLWindow &win = _windows[p_window_id];
-	if (!win.in_use)
+	if (!win.in_use) {
 		return;
+	}
 
 	// noop
-	if (&win == _current_window)
+	if (&win == _current_window) {
 		return;
+	}
 
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 	wglMakeCurrent(win.hDC, disp.hRC);
@@ -255,8 +254,9 @@ void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id)
 }
 
 void GLManager_Windows::make_current() {
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 	if (!_current_window->in_use) {
 		WARN_PRINT("current window not in use!");
 		return;
@@ -269,8 +269,9 @@ void GLManager_Windows::swap_buffers() {
 	// NO NEED TO CALL SWAP BUFFERS for each window...
 	// see https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glXSwapBuffers.xml
 
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 	if (!_current_window->in_use) {
 		WARN_PRINT("current window not in use!");
 		return;
@@ -304,12 +305,15 @@ void GLManager_Windows::set_use_vsync(bool p_use) {
 	if (!setup) {
 		setup = true;
 		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1)
+		if (extensions.find("GLX_EXT_swap_control") != -1) {
 			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		if (extensions.find("GLX_MESA_swap_control") != -1)
+		}
+		if (extensions.find("GLX_MESA_swap_control") != -1) {
 			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		if (extensions.find("GLX_SGI_swap_control") != -1)
+		}
+		if (extensions.find("GLX_SGI_swap_control") != -1) {
 			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
+		}
 	}
 	int val = p_use ? 1 : 0;
 	if (glXSwapIntervalMESA) {
@@ -319,8 +323,9 @@ void GLManager_Windows::set_use_vsync(bool p_use) {
 	} else if (glXSwapIntervalEXT) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(x11_display, drawable, val);
-	} else
+	} else {
 		return;
+	}
 	use_vsync = p_use;
 	*/
 }

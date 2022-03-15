@@ -20,6 +20,14 @@
 				Adds the specified node to the shader.
 			</description>
 		</method>
+		<method name="add_varying">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="mode" type="int" enum="VisualShader.VaryingMode" />
+			<argument index="2" name="type" type="int" enum="VisualShader.VaryingType" />
+			<description>
+			</description>
+		</method>
 		<method name="can_connect_nodes" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
@@ -100,6 +108,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_varying" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="is_node_connection" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="type" type="int" enum="VisualShader.Type" />
@@ -117,6 +131,12 @@
 			<argument index="1" name="id" type="int" />
 			<description>
 				Removes the specified node from the shader.
+			</description>
+		</method>
+		<method name="remove_varying">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="replace_node">
@@ -181,6 +201,24 @@
 		</constant>
 		<constant name="TYPE_MAX" value="10" enum="Type">
 			Represents the size of the [enum Type] enum.
+		</constant>
+		<constant name="VARYING_MODE_VERTEX_TO_FRAG_LIGHT" value="0" enum="VaryingMode">
+		</constant>
+		<constant name="VARYING_MODE_FRAG_TO_LIGHT" value="1" enum="VaryingMode">
+		</constant>
+		<constant name="VARYING_MODE_MAX" value="2" enum="VaryingMode">
+		</constant>
+		<constant name="VARYING_TYPE_FLOAT" value="0" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_VECTOR_2D" value="1" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_VECTOR_3D" value="2" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_COLOR" value="3" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_TRANSFORM" value="4" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_MAX" value="5" enum="VaryingType">
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
 		</constant>

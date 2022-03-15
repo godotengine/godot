@@ -101,7 +101,7 @@ index 3a8a6efa83..8c5409bf24 100644
          pointvisible = true;
 -        for (iter2 = polys.begin(); iter2 != polys.end(); iter2++) {
 -          if (iter2->IsHole()) {
-+        for (iter2 = polys.front(); iter2; iter2->next()) {
++        for (iter2 = polys.front(); iter2; iter2 = iter2->next()) {
 +          if (iter2->get().IsHole()) {
              continue;
            }

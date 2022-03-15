@@ -229,6 +229,7 @@ void EditorQuickOpen::_notification(int p_what) {
 
 			search_box->set_clear_button_enabled(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
@@ -244,8 +245,6 @@ void EditorQuickOpen::_bind_methods() {
 }
 
 EditorQuickOpen::EditorQuickOpen() {
-	allow_multi_select = false;
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 	add_child(vbc);

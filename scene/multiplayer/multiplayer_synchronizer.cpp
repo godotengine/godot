@@ -108,10 +108,15 @@ void MultiplayerSynchronizer::_notification(int p_what) {
 	if (root_path.is_empty()) {
 		return;
 	}
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_start();
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		_stop();
+
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_start();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_stop();
+		} break;
 	}
 }
 

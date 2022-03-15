@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Viewport" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Creates a sub-view into the screen.
+		Base class for viewports.
 	</brief_description>
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera3D 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
-		If a viewport is a child of a [SubViewportContainer], it will automatically take up its size, otherwise it must be set manually.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
@@ -131,11 +130,6 @@
 				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
 			</description>
 		</method>
-		<method name="is_embedding_subwindows" qualifiers="const">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -220,7 +214,8 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
-		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
+		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
+			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.

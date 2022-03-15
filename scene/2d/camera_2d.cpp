@@ -79,6 +79,7 @@ void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
 
 	zoom = p_zoom;
+	zoom_scale = Vector2(1, 1) / zoom;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
@@ -103,8 +104,8 @@ Transform2D Camera2D::get_camera_transform() {
 	if (!first) {
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 			if (drag_horizontal_enabled && !Engine::get_singleton()->is_editor_hint() && !drag_horizontal_offset_changed) {
-				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom.x * drag_margin[SIDE_LEFT]));
-				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom.x * drag_margin[SIDE_RIGHT]));
+				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom_scale.x * drag_margin[SIDE_LEFT]));
+				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom_scale.x * drag_margin[SIDE_RIGHT]));
 			} else {
 				if (drag_horizontal_offset < 0) {
 					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * drag_horizontal_offset;
@@ -116,8 +117,8 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 
 			if (drag_vertical_enabled && !Engine::get_singleton()->is_editor_hint() && !drag_vertical_offset_changed) {
-				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom.y * drag_margin[SIDE_TOP]));
-				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom.y * drag_margin[SIDE_BOTTOM]));
+				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_TOP]));
+				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_BOTTOM]));
 
 			} else {
 				if (drag_vertical_offset < 0) {
@@ -133,8 +134,8 @@ Transform2D Camera2D::get_camera_transform() {
 			camera_pos = new_camera_pos;
 		}
 
-		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
-		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom);
+		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
+		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
 
 		if (limit_smoothing_enabled) {
 			if (screen_rect.position.x < limit[SIDE_LEFT]) {
@@ -168,14 +169,14 @@ Transform2D Camera2D::get_camera_transform() {
 		first = false;
 	}
 
-	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
+	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 
 	real_t angle = get_global_rotation();
 	if (rotating) {
 		screen_offset = screen_offset.rotated(angle);
 	}
 
-	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom);
+	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
 	if (!smoothing_enabled || !limit_smoothing_enabled) {
 		if (screen_rect.position.x < limit[SIDE_LEFT]) {
@@ -202,19 +203,11 @@ Transform2D Camera2D::get_camera_transform() {
 	camera_screen_center = screen_rect.get_center();
 
 	Transform2D xform;
-	xform.scale_basis(zoom);
+	xform.scale_basis(zoom_scale);
 	if (rotating) {
 		xform.set_rotation(angle);
 	}
-	xform.set_origin(screen_rect.position /*.floor()*/);
-
-	/*
-	if (0) {
-		xform = get_global_transform() * xform;
-	} else {
-		xform.elements[2]+=get_global_transform().get_origin();
-	}
-*/
+	xform.set_origin(screen_rect.position);
 
 	return (xform).affine_inverse();
 }
@@ -224,14 +217,14 @@ void Camera2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS:
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			_update_scroll();
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_processing_internal() && !is_physics_processing_internal()) {
 				_update_scroll();
 			}
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
 			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
@@ -256,8 +249,8 @@ void Camera2D::_notification(int p_what) {
 			_update_process_callback();
 			_update_scroll();
 			first = true;
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (is_current()) {
 				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
@@ -269,8 +262,8 @@ void Camera2D::_notification(int p_what) {
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
 			viewport = nullptr;
-
 		} break;
+
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {

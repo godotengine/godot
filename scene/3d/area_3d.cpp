@@ -344,10 +344,14 @@ void Area3D::_clear_monitoring() {
 }
 
 void Area3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_clear_monitoring();
-	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		_initialize_wind();
+	switch (p_what) {
+		case NOTIFICATION_EXIT_TREE: {
+			_clear_monitoring();
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			_initialize_wind();
+		} break;
 	}
 }
 

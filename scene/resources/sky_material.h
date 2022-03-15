@@ -42,6 +42,8 @@ private:
 	Color sky_horizon_color;
 	float sky_curve;
 	float sky_energy;
+	Ref<Texture2D> sky_cover;
+	Color sky_cover_modulate;
 
 	Color ground_bottom_color;
 	Color ground_horizon_color;
@@ -71,6 +73,12 @@ public:
 
 	void set_sky_energy(float p_energy);
 	float get_sky_energy() const;
+
+	void set_sky_cover(const Ref<Texture2D> &p_sky_cover);
+	Ref<Texture2D> get_sky_cover() const;
+
+	void set_sky_cover_modulate(const Color &p_sky_cover_modulate);
+	Color get_sky_cover_modulate() const;
 
 	void set_ground_bottom_color(const Color &p_ground_bottom);
 	Color get_ground_bottom_color() const;

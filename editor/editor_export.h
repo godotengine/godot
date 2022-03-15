@@ -297,7 +297,7 @@ class EditorExportPlugin : public RefCounted {
 		bool remap = false;
 	};
 	Vector<ExtraFile> extra_files;
-	bool skipped;
+	bool skipped = false;
 
 	Vector<String> ios_frameworks;
 	Vector<String> ios_embedded_frameworks;
@@ -379,7 +379,7 @@ class EditorExport : public Node {
 	StringName _export_presets_updated;
 
 	Timer *save_timer;
-	bool block_save;
+	bool block_save = false;
 
 	static EditorExport *singleton;
 

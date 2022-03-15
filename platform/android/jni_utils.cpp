@@ -46,7 +46,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				env->DeleteLocalRef(bclass);
 			} else {
 				v.val.z = *p_arg;
-			};
+			}
 		} break;
 		case Variant::INT: {
 			if (force_jobject) {
@@ -61,7 +61,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 			} else {
 				v.val.i = *p_arg;
-			};
+			}
 		} break;
 		case Variant::FLOAT: {
 			if (force_jobject) {
@@ -76,7 +76,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 			} else {
 				v.val.f = *p_arg;
-			};
+			}
 		} break;
 		case Variant::STRING: {
 			String s = *p_arg;
@@ -111,7 +111,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				jstring str = env->NewStringUTF(String(keys[j]).utf8().get_data());
 				env->SetObjectArrayElement(jkeys, j, str);
 				env->DeleteLocalRef(str);
-			};
+			}
 
 			jmethodID set_keys = env->GetMethodID(dclass, "set_keys", "([Ljava/lang/String;)V");
 			jvalue val;
@@ -128,7 +128,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				if (v.obj) {
 					env->DeleteLocalRef(v.obj);
 				}
-			};
+			}
 
 			jmethodID set_values = env->GetMethodID(dclass, "set_values", "([Ljava/lang/Object;)V");
 			val.l = jvalues;
@@ -205,7 +205,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 	if (name == "java.lang.String") {
 		return jstring_to_string((jstring)obj, env);
-	};
+	}
 
 	if (name == "[Ljava.lang.String;") {
 		jobjectArray arr = (jobjectArray)obj;
@@ -219,20 +219,20 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		}
 
 		return sarr;
-	};
+	}
 
 	if (name == "java.lang.Boolean") {
 		jmethodID boolValue = env->GetMethodID(c, "booleanValue", "()Z");
 		bool ret = env->CallBooleanMethod(obj, boolValue);
 		return ret;
-	};
+	}
 
 	if (name == "java.lang.Integer" || name == "java.lang.Long") {
 		jclass nclass = env->FindClass("java/lang/Number");
 		jmethodID longValue = env->GetMethodID(nclass, "longValue", "()J");
 		jlong ret = env->CallLongMethod(obj, longValue);
 		return ret;
-	};
+	}
 
 	if (name == "[I") {
 		jintArray arr = (jintArray)obj;
@@ -243,7 +243,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		int *w = sarr.ptrw();
 		env->GetIntArrayRegion(arr, 0, fCount, w);
 		return sarr;
-	};
+	}
 
 	if (name == "[B") {
 		jbyteArray arr = (jbyteArray)obj;
@@ -254,14 +254,14 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		uint8_t *w = sarr.ptrw();
 		env->GetByteArrayRegion(arr, 0, fCount, reinterpret_cast<signed char *>(w));
 		return sarr;
-	};
+	}
 
 	if (name == "java.lang.Float" || name == "java.lang.Double") {
 		jclass nclass = env->FindClass("java/lang/Number");
 		jmethodID doubleValue = env->GetMethodID(nclass, "doubleValue", "()D");
 		double ret = env->CallDoubleMethod(obj, doubleValue);
 		return ret;
-	};
+	}
 
 	if (name == "[D") {
 		jdoubleArray arr = (jdoubleArray)obj;
@@ -275,9 +275,9 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 			double n;
 			env->GetDoubleArrayRegion(arr, i, 1, &n);
 			w[i] = n;
-		};
+		}
 		return sarr;
-	};
+	}
 
 	if (name == "[F") {
 		jfloatArray arr = (jfloatArray)obj;
@@ -291,9 +291,9 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 			float n;
 			env->GetFloatArrayRegion(arr, i, 1, &n);
 			w[i] = n;
-		};
+		}
 		return sarr;
-	};
+	}
 
 	if (name == "[Ljava.lang.Object;") {
 		jobjectArray arr = (jobjectArray)obj;
@@ -308,7 +308,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		}
 
 		return varr;
-	};
+	}
 
 	if (name == "java.util.HashMap" || name == "org.godotengine.godot.Dictionary") {
 		Dictionary ret;
@@ -327,10 +327,10 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		for (int i = 0; i < keys.size(); i++) {
 			ret[keys[i]] = vals[i];
-		};
+		}
 
 		return ret;
-	};
+	}
 
 	env->DeleteLocalRef(c);
 
@@ -359,8 +359,9 @@ Variant::Type get_jni_type(const String &p_type) {
 	int idx = 0;
 
 	while (_type_to_vtype[idx].name) {
-		if (p_type == _type_to_vtype[idx].name)
+		if (p_type == _type_to_vtype[idx].name) {
 			return _type_to_vtype[idx].type;
+		}
 
 		idx++;
 	}
@@ -390,8 +391,9 @@ const char *get_jni_sig(const String &p_type) {
 	int idx = 0;
 
 	while (_type_to_vtype[idx].name) {
-		if (p_type == _type_to_vtype[idx].name)
+		if (p_type == _type_to_vtype[idx].name) {
 			return _type_to_vtype[idx].sig;
+		}
 
 		idx++;
 	}

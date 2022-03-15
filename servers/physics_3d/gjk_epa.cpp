@@ -918,7 +918,7 @@ bool Distance(	const GodotShape3D*	shape0,
 	{
 		results.status	=	gjk_status==GJK::eStatus::Inside?
 			sResults::Penetrating	:
-		sResults::GJK_Failed	;
+		sResults::GJK_Failed;
 		return(false);
 	}
 }

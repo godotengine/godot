@@ -251,9 +251,11 @@ void FlowContainer::_notification(int p_what) {
 			_resort();
 			update_minimum_size();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_sort();

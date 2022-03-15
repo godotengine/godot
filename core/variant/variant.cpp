@@ -1972,7 +1972,7 @@ Variant::operator ::RID() const {
 		}
 #endif
 		Callable::CallError ce;
-		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
+		Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::RID) {
 			return ret;
 		}
@@ -3309,21 +3309,7 @@ bool Variant::is_shared() const {
 	return false;
 }
 
-Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	Callable::CallError error;
-
-	Variant ret;
-	call(p_method, argptr, argc, ret, error);
-
+void Variant::_variant_call_error(const String &p_method, Callable::CallError &error) {
 	switch (error.error) {
 		case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 			String err = "Invalid type for argument #" + itos(error.argument) + ", expected '" + Variant::get_type_name(Variant::Type(error.expected)) + "'.";
@@ -3341,8 +3327,6 @@ Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 		default: {
 		}
 	}
-
-	return ret;
 }
 
 void Variant::construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct, void *p_construct_ud) {

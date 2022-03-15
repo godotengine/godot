@@ -898,10 +898,10 @@ public:
 	void light_set_color(RID p_light, const Color &p_color) override;
 	void light_set_param(RID p_light, RS::LightParam p_param, float p_value) override;
 	void light_set_shadow(RID p_light, bool p_enabled) override;
-	void light_set_shadow_color(RID p_light, const Color &p_color) override;
 	void light_set_projector(RID p_light, RID p_texture) override;
 	void light_set_negative(RID p_light, bool p_enable) override;
 	void light_set_cull_mask(RID p_light, uint32_t p_mask) override;
+	void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override;
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override;
 	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override;
 	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
@@ -1050,6 +1050,7 @@ public:
 	void particles_set_speed_scale(RID p_particles, double p_scale) override;
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override;
 	void particles_set_process_material(RID p_particles, RID p_material) override;
+	RID particles_get_process_material(RID p_particles) const override;
 	void particles_set_fixed_fps(RID p_particles, int p_fps) override;
 	void particles_set_interpolate(RID p_particles, bool p_enable) override;
 	void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
@@ -1167,27 +1168,21 @@ public:
 			int height = 0;
 
 			GLuint color = 0;
-
-			Effect() {
-			}
 		};
 
 		Effect copy_screen_effect;
 
 		struct MipMaps {
 			struct Size {
-				GLuint fbo;
-				GLuint color;
-				int width;
-				int height;
+				GLuint fbo = 0;
+				GLuint color = 0;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Size> sizes;
 			GLuint color = 0;
 			int levels = 0;
-
-			MipMaps() {
-			}
 		};
 
 		MipMaps mip_maps[2];
@@ -1197,14 +1192,14 @@ public:
 			GLuint color = 0;
 			GLuint depth = 0;
 			RID texture;
-
-			External() {
-			}
 		} external;
 
-		int x = 0, y = 0, width = 0, height = 0;
+		int x = 0;
+		int y = 0;
+		int width = 0;
+		int height = 0;
 
-		bool flags[RENDER_TARGET_FLAG_MAX];
+		bool flags[RENDER_TARGET_FLAG_MAX] = {};
 
 		// instead of allocating sized render targets immediately,
 		// defer this for faster startup

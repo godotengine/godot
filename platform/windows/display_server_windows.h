@@ -387,9 +387,15 @@ class DisplayServerWindows : public DisplayServer {
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		Set<WindowID> transient_children;
+
+		bool is_popup = false;
+		Rect2i parent_safe_rect;
 	};
 
 	JoypadWindows *joypad;
+	HHOOK mouse_monitor = nullptr;
+	List<WindowID> popup_list;
+	uint64_t time_since_popup = 0;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
@@ -440,6 +446,10 @@ class DisplayServerWindows : public DisplayServer {
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
+
+	void popup_open(WindowID p_window);
+	void popup_close(WindowID p_window);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
@@ -473,6 +483,10 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_window) override;
 	virtual void delete_sub_window(WindowID p_window) override;
+
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 

@@ -79,6 +79,9 @@ TEST_CASE("[Time] Unix time conversion to/from datetime string") {
 	CHECK_MESSAGE(time->get_date_string_from_unix_time(1391904000) == "2014-02-09", "Time get_date_string_from_unix_time: The date for GODOT IS OPEN SOURCE without time is as expected.");
 	CHECK_MESSAGE(time->get_time_string_from_unix_time(79830) == "22:10:30", "Time get_time_string_from_unix_time: The time for GODOT IS OPEN SOURCE without date is as expected.");
 	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(31494784780800) == "1000000-01-01T00:00:00", "Time get_datetime_string_from_unix_time: The timestamp for the year a million is as expected.");
+	CHECK_MESSAGE(time->get_offset_string_from_offset_minutes(0) == "+00:00", "Time get_offset_string_from_offset_minutes: The offset string is as expected.");
+	CHECK_MESSAGE(time->get_offset_string_from_offset_minutes(-600) == "-10:00", "Time get_offset_string_from_offset_minutes: The offset string is as expected.");
+	CHECK_MESSAGE(time->get_offset_string_from_offset_minutes(345) == "+05:45", "Time get_offset_string_from_offset_minutes: The offset string is as expected.");
 }
 
 TEST_CASE("[Time] Datetime dictionary conversion methods") {

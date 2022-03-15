@@ -17,12 +17,13 @@
 # Микола Тимошенко <9081@ukr.net>, 2020.
 # Miroslav <zinmirx@gmail.com>, 2020.
 # IllusiveMan196 <hamsterrv@gmail.com>, 2021.
+# KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"PO-Revision-Date: 2022-02-16 16:36+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -30,9 +31,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.10.1\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -523,8 +524,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -1390,7 +1391,7 @@ msgid "Bus Options"
 msgstr "Параметри шини"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Дублювати"
 
@@ -1495,6 +1496,11 @@ msgstr "Завантажити типове компонування шини."
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
 msgstr "Створення нового компонування шини."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Відкрити компонування аудіо шини"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2197,11 +2203,11 @@ msgstr "Описи методів"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"У поточній версії немає опису цього методу. Будь ласка, [color=$color][url="
-"$url]створіть його[/url][/color]!"
+"У поточній версії немає опису цього методу. Будь ласка, [color=$color]"
+"[url=$url]створіть його[/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2946,7 +2952,7 @@ msgstr "Перемкнути режим без відволікання."
 msgid "Add a new scene."
 msgstr "Додати нову сцену."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Сцена"
 
@@ -3050,9 +3056,8 @@ msgid "Install Android Build Template..."
 msgstr "Встановити шаблон збирання для Android…"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "Відкриття теки даних редактора"
+msgstr "Відкриття теки даних користувача"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3323,8 +3328,12 @@ msgid "Update Continuously"
 msgstr "Оновлювати неперервно"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
-msgstr "Оновлювати при зміні"
+msgid "Update All Changes"
+msgstr "Оновити усі зміни"
+
+#: editor/editor_node.cpp
+msgid "Update Vital Changes"
+msgstr "Оновити критичні зміни"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3772,9 +3781,8 @@ msgstr "Імпортувати з вузла:"
 
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
-#, fuzzy
 msgid "%s Error"
-msgstr "Помилка"
+msgstr "Помилка %s"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4099,6 +4107,19 @@ msgstr "Назва містить некоректні символи."
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+"Цей суфікс назв файлів не розпізнано редактором.\n"
+"Якщо ви хочете виконати перейменування попри це, скористайтеся програмою для "
+"керування файлами операційної системи.\n"
+"Після перейменовування із застосуванням невідомого суфікса назви, редактор "
+"більше не показуватиме файл у списку."
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4217,7 +4238,7 @@ msgstr "Упорядкувати за останнім внесенням змі
 msgid "Sort by First Modified"
 msgstr "Упорядкувати за початковим внесенням змін"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
 msgstr "Дублювати..."
 
@@ -5033,6 +5054,10 @@ msgid "Rename Animation"
 msgstr "Перейменувати анімацію"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "Дублювати анімацію"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr "Змінена подальша анімація"
 
@@ -5043,10 +5068,6 @@ msgstr "Змінити час змішування"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
 msgstr "Завантажити анімацію"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr "Дублювати анімацію"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
@@ -5714,6 +5735,10 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Запікати карти освітлення"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -6495,7 +6520,7 @@ msgstr "Плаский 0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr "Плаский 1"
+msgstr "Площина 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -8203,7 +8228,13 @@ msgid "Cinematic Preview"
 msgstr "Кінематичний перегляд"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Є недоступним, якщо використовується обробник GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9100,6 +9131,11 @@ msgid "Select Another Theme Resource:"
 msgstr "Виберіть ресурс іншої теми:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Перейменувати ресурс"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "Інша тема"
 
@@ -9149,6 +9185,20 @@ msgstr ""
 "цього типу."
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Додати тип запису"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Встановити тип змінної"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Змінити базовий тип"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Показати типовий"
 
@@ -9166,8 +9216,19 @@ msgid "Override all default type items."
 msgstr "Перевизначити усі записи стандартних типів."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Додати тип запису"
+#, fuzzy
+msgid "Base Type"
+msgstr "Змінити базовий тип"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9748,9 +9809,8 @@ msgid "TileSet"
 msgstr "Набір плиток"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No VCS plugins are available."
-msgstr "Немає доступних доданків систем керування версіями."
+msgstr "Немає доступних додатків систем керування версіями."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
@@ -9760,53 +9820,48 @@ msgstr "Помилка"
 msgid ""
 "Remote settings are empty. VCS features that use the network may not work."
 msgstr ""
+"Параметри віддаленого сховища є порожніми. Можливості системи керування "
+"версіями, які використовують мережу, можуть не працювати."
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No commit message was provided."
-msgstr "Ім'я не вказано."
+msgstr "Не було надано повідомлення про внесок."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
 msgstr "Внесок"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Staged Changes"
-msgstr "Зміни шейдерів:"
+msgstr "Етапні зміни"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstaged Changes"
-msgstr "Зміни шейдерів:"
+msgstr "Неетапні зміни"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "Внесок"
+msgstr "Внесок:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
-msgstr ""
+msgstr "Дата:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Subtitle:"
-msgstr "Піддерево"
+msgstr "Підзаголовок:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Do you want to remove the %s branch?"
-msgstr ""
+msgstr "Хочете вилучити гілку %s?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Do you want to remove the %s remote?"
-msgstr "Ви справді хочете створити порожній тип?"
+msgstr "Ви справді хочете вилучити віддалене сховище %s?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Apply"
-msgstr "Застосувати скидання"
+msgstr "Застосувати"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9817,148 +9872,120 @@ msgid "Initialize"
 msgstr "Ініціалізувати"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Login"
-msgstr "Вилучити точку"
+msgstr "Ім'я користувача віддаленого сховища"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Username"
-msgstr "Перейменувати"
+msgstr "Користувач"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Password"
-msgstr ""
+msgstr "Пароль"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
-msgstr ""
+msgstr "Шлях до відкритого ключа SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH public key path"
-msgstr ""
+msgstr "Виберіть шлях до відкритого ключа SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Private Key Path"
-msgstr ""
+msgstr "Шлях до закритого ключа SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH private key path"
-msgstr ""
+msgstr "Виберіть шлях до закритого ключа SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "Пароль SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
 msgstr "Виявити зміни"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Discard all changes"
-msgstr "Закрити та зберегти зміни?"
+msgstr "Відкинути усі зміни"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage all changes"
-msgstr "Збереження локальних змін..."
+msgstr "Створити етап з усіх змін"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstage all changes"
-msgstr "Зміни матеріалу:"
+msgstr "Скасувати етап з усіх змін"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Message"
-msgstr "Внести зміни"
+msgstr "Повідомлення внеску"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
 msgstr "Внести зміни"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit List"
-msgstr "Внесок"
+msgstr "Список внеску"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
+msgstr "Розмір списку внеску"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Збіги:"
+msgstr "Гілки"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Branch"
-msgstr "Створити новий проєкт"
+msgstr "Створити гілку"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Branch"
-msgstr "Видалити доріжку"
+msgstr "Вилучити гілку"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branch Name"
-msgstr ""
+msgstr "Назва гілки"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remotes"
-msgstr "Віддалений"
+msgstr "Віддалені сховища"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Remote"
-msgstr "Створити новий проєкт"
+msgstr "Створити віддалене сховище"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Remote"
-msgstr "Вилучити елемент"
+msgstr "Вилучити віддалене сховище"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "Віддалений "
+msgstr "Назва віддаленого сховища"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote URL"
-msgstr "Віддалений "
+msgstr "Адреса віддаленого сховища"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Fetch"
-msgstr ""
+msgstr "Отримати"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Pull"
-msgstr ""
+msgstr "Отримати"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Push"
-msgstr ""
+msgstr "Записати"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Force Push"
-msgstr "Початкова сітка:"
+msgstr "Примусово записати"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9978,22 +10005,19 @@ msgstr "Зміна типу"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Unmerged"
-msgstr ""
+msgstr "Необ'єднано"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "View:"
-msgstr "Перегляд"
+msgstr "Перегляд:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Split"
-msgstr "Розділити шлях"
+msgstr "Розділити"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unified"
-msgstr "Змінено"
+msgstr "Уніфіковано"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -12665,6 +12689,11 @@ msgid "Stack Frames"
 msgstr "Стосувати кадри"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Фільтрувати плитки"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Засіб профілювання"
 
@@ -12836,6 +12865,14 @@ msgstr "Змінити радіус сфери закупорювання"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
 msgstr "Встановити позицію сфери закупорювання"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Polygon Point Position"
+msgstr "Задати розташування точки затінювального багатокутника"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Hole Point Position"
+msgstr "Задати розташування точки отвору затінювання"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -13551,38 +13588,36 @@ msgid "Edit Member"
 msgstr "Редагувати член"
 
 #: modules/visual_script/visual_script_expression.cpp
-#, fuzzy
 msgid "Expression"
-msgstr "Встановити вираз"
+msgstr "Вираз"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return"
-msgstr ""
+msgstr "Повернутися"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "анімація"
+msgstr "Умова"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
-msgstr ""
+msgstr "якщо (cond) має значення:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "Доки"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
-msgstr ""
+msgstr "доки (cond):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "ітератор"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "for (elem) in (input):"
-msgstr ""
+msgstr "для (elem) у (input):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -13598,79 +13633,71 @@ msgstr "Ітератор став недійсним: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Послідовність"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "in order:"
-msgstr "Перейменування теки:"
+msgstr "у порядку:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Switch"
-msgstr "Тон:"
+msgstr "Перемкнутися"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "'input' is:"
-msgstr ""
+msgstr "«input» має значення:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Type Cast"
-msgstr "Типи:"
+msgstr "Виклик типу"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
-msgstr ""
+msgstr "Чи %s?"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
-msgstr ""
+msgstr "При %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "On Self"
-msgstr "Цей об'єкт"
+msgstr "На собі"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Subtract %s"
-msgstr "На символі %s"
+msgstr "Відняти %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Multiply %s"
-msgstr ""
+msgstr "Помножити на %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Divide %s"
-msgstr ""
+msgstr "Поділити на %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Mod %s"
-msgstr "Додати %s"
+msgstr "Поділити націло %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "ShiftLeft %s"
-msgstr "Встановити %s"
+msgstr "Зсунути ліворуч %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "ShiftRight %s"
-msgstr ""
+msgstr "Зсунути праворуч %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "BitAnd %s"
-msgstr "Пришпилено %s"
+msgstr "Побітове «І» %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitOr %s"
-msgstr ""
+msgstr "Побітове «АБО» %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitXor %s"
-msgstr ""
+msgstr "Побітове «Виключне АБО» %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -13695,19 +13722,16 @@ msgid "Invalid index property name '%s' in node %s."
 msgstr "Некоректна назва властивості індексу, «%s», у вузлі %s."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Emit %s"
-msgstr "Встановити %s"
+msgstr "Надіслати %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Функції"
+msgstr "Функція"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Compose Array"
-msgstr "Змінити розмір масиву"
+msgstr "Композитний масив"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -13719,7 +13743,7 @@ msgstr ": Неприпустимі аргументи: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
-msgstr ""
+msgstr "a якщо cond, інакше b"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -13730,64 +13754,52 @@ msgid "VariableSet not found in script: "
 msgstr "Не знайдено VariableSet у скрипті: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Preload"
-msgstr "Перезавантажити"
+msgstr "Попередньо завантажити"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Index"
-msgstr "Z-індекс"
+msgstr "Отримати індекс"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Index"
-msgstr "Z-індекс"
+msgstr "Встановити індекс"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Global Constant"
-msgstr "Сталий"
+msgstr "Загальна стала"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Class Constant"
-msgstr "Сталий"
+msgstr "Стала класу"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Basic Constant"
-msgstr "Сталий"
+msgstr "Базова стала"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Math Constant"
-msgstr "Сталий"
+msgstr "Математична стала"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Engine Singleton"
-msgstr "Увімкнений одинак GDNative"
+msgstr "Отримати синглтон рушія"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Node"
-msgstr "Вузол пошуку часу"
+msgstr "Отримати вузол сцени"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Tree"
-msgstr "Редагування ієрархії сцени"
+msgstr "Отримати ієрархію сцен"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Self"
-msgstr "Цей об'єкт"
+msgstr "Отримати себе"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "CustomNode"
-msgstr "Вирізати вузли"
+msgstr "Нетиповий вузол"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -13802,33 +13814,28 @@ msgstr ""
 "out) або рядок (error)."
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "SubCall"
-msgstr "Виклики"
+msgstr "Підвиклик"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Construct %s"
-msgstr "Константи"
+msgstr "Побудувати %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Local Var"
-msgstr "Використати локальний простір"
+msgstr "Отримати локальну змінну"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Local Var"
-msgstr "Використати локальний простір"
+msgstr "Встановити локальну змінну"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Action %s"
-msgstr "Дія"
+msgstr "Дія %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Deconstruct %s"
-msgstr ""
+msgstr "Деконструювати %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -13836,40 +13843,35 @@ msgstr "Шукати VisualScript"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "Результат"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "Очікування"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Frame"
-msgstr "Пересунути кадр"
+msgstr "Наступний кадр"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Physics Frame"
-msgstr "Фізичний кадр %"
+msgstr "Наступний фізичний кадр"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "%s sec(s)"
-msgstr ""
+msgstr "%s секунд"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitSignal"
-msgstr "Сигнал"
+msgstr "Очікування сигналу"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitNodeSignal"
-msgstr "Сигнал"
+msgstr "Очікування сигналу вузла"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitInstanceSignal"
-msgstr "Екземпляр"
+msgstr "Очікування сигналу екземпляра"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -14013,9 +14015,10 @@ msgstr "Некоректна назва пакунка:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Некоректний модуль «GodotPaymentV3» включено до параметрів проєкту «android/"
-"modules» (змінено у Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -14243,10 +14246,6 @@ msgstr ""
 msgid "Invalid Identifier:"
 msgstr "Некоректний ідентифікатор:"
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr "У шаблоні не вказано потрібної піктограми."
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr "Зупинити HTTP-сервер"
@@ -14287,17 +14286,209 @@ msgstr "Не вдалося створити каталог на сервері 
 msgid "Error starting HTTP server:"
 msgstr "Помилка під час спроби запуску сервера HTTP:"
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr "Не вдалося отримати доступ до файлової системи."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr "Не вдалося отримати хеш-суму Info.plist."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no exe name."
+msgstr "Некоректний вміст Info.plist — немає назви виконуваного файла."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Некоректний вміст Info.plist — немає ідентифікатора комплекту."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr "Некоректний вміст Info.plist — не вдалося завантажити."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Не вдалося створити підтеку «%s»."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr "Не вдалося видобути «тонкі» двійкові дані."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid binary format."
+msgstr "Некоректний формат двійкових даних."
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr "Вже підписано!"
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to process nested resources."
+msgstr "Не вдалося обробити вкладені ресурси."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Не вдалося створити підтеку _CodeSignature."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get CodeResources hash."
+msgstr "Не вдалося отримати хеш-суму CodeResources."
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+msgid "Invalid entitlements file."
+msgstr "Некоректний файл найменувань."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid executable file."
+msgstr "Некоректний виконуваний файл."
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr "Не вдалося змінити розмір команди завантаження підпису."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr "Не вдалося створити «товсті» двійкові дані."
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr "Невідомий тип комплекту."
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr "Невідомий тип об'єктів."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+"Зауваження: процедура засвідчення, загалом, триває не більше години. Щойно "
+"процедуру буде завершено, ви отримаєте повідомлення електронною поштою."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+"Ви можете стежити за поступом вручну — відкрийте термінал і віддайте у ньому "
+"таку команду:"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+"Віддайте таку команду для долучення квитка засвідчення до експортованої "
+"програми (необов'язкова процедура):"
+
+#: platform/osx/export/export.cpp
+msgid "No identity found."
+msgstr "Не знайдено профілю."
+
+#: platform/osx/export/export.cpp
+msgid "Creating app bundle"
+msgstr "Створюємо комплект програми"
+
+#: platform/osx/export/export.cpp
+msgid "Could not find template app to export:"
+msgstr "Не вдалося знайти програму-шаблон для експортування:"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+"У цій операційній системі не передбачено підтримки відносних символічних "
+"посилань. Експортований проєкт може виявитися непрацездатним!"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+"Не знайдено двійкового файла шаблона «%s». Ймовірно, його немає у вашому "
+"архіві шаблона."
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr "Створюємо PKG"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+"Для одноразово підписаних програм потрібен параметр «Вимкнути перевірку "
+"бібліотек» для завантаження динамічних бібліотек."
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr "Комплект із підписуванням коду"
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr "Створюємо DMG"
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr "DMG із підписуванням коду"
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr "Створюємо ZIP"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+"Для засвідчення програму слід спочатку архівувати. Виберіть замість "
+"поточного формат експортування DMG або ZIP."
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr "Надсилаємо архів для засвідчення"
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr "Некоректний ідентифікатор пакунка:"
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
-msgstr "Засвідчення: потрібен код підписування."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
+msgstr ""
+"Попередження: у параметрах редактора вибрано вбудований «codesign». "
+"Підписування коду обмежено одноразовим підписом."
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
-msgstr "Засвідчення: потрібне стійке середовище запуску."
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+"Попередження: не встановлено інструменти командного рядка Xcode, "
+"використовуємо вбудований «codesign». Підписування коду обмежено одноразовим "
+"підписом."
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+"Засвідчення: підтримки засвідчення із одноразовим підписом не передбачено."
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr "Засвідчення: для засвідчення потрібне підписування коду."
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr "Засвідчення: для засвідчення потрібне стійке середовище запуску."
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
+msgstr ""
+"Засвідчення: для засвідчення потрібне середовище запуску із часовими "
+"позначками."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
@@ -14306,6 +14497,92 @@ msgstr "Засвідчення: не вказано назву ідентифі�
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
 msgstr "Засвідчення: не вказано пароль до ідентифікатора Apple."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+"Попередження: засвідчення вимкнено. Експортований проєкт буде заблоковано "
+"Gatekeeper, якщо його отримано з невідомого джерела."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+"Підписування коду вимкнено. Експортований проєкт не запускатиметься на Macіз "
+"Gatekeeper та Mac на основі Apple Silicon."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+"Стійке середовище запуску є несумісним із одноразовим підписом — його буде "
+"вимкнено!"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+"Використання часових позначок є несумісним із одноразовим підписом — його "
+"буде вимкнено!"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+"Попередження: підтримки засвідчення у цій операційній системі не "
+"передбачено. Експортований проєкт буде заблоковано Gatekeeper, якщо його "
+"отримано із невідомого джерела."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+"Конфіденційність: увімкнено доступ до мікрофона, але опис використання не "
+"вказано."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+"Конфіденційність: увімкнено доступ до камери, але опис використання не "
+"вказано."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+"Конфіденційність: увімкнено доступ до даних щодо місця перебування, але опис "
+"використання не вказано."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+"Конфіденційність: увімкнено доступ до адресної книги, але опис використання "
+"не вказано."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+"Конфіденційність: увімкнено доступ до календаря, але опис використання не "
+"вказано."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
+msgstr ""
+"Конфіденційність: увімкнено доступ до бібліотеки фотографій, але опис "
+"використання не вказано."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14368,6 +14645,27 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Некоректні розмірності зображення вікна вітання (мають бути 620x300)."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+"Щоб мати змогу змінювати піктограму або дані щодо програми, має бути "
+"налаштовано інструмент rcedit у параметрах редактора (Експорт > Windows > "
+"Rcedit)."
+
+#: platform/windows/export/export.cpp
+msgid "Invalid icon path:"
+msgstr "Некоректний шлях до піктограм:"
+
+#: platform/windows/export/export.cpp
+msgid "Invalid file version:"
+msgstr "Некоректна версія файла:"
+
+#: platform/windows/export/export.cpp
+msgid "Invalid product version:"
+msgstr "Некоректна версія продукту:"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -14531,16 +14829,15 @@ msgstr ""
 "ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
-#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles2D\" toolbar option for this purpose."
 msgstr ""
-"У драйвері GLES2 не передбачено підтримки часток із обробкою за допомогою "
-"графічного процесора.\n"
+"У відеодрайвері GLES2 не передбачено підтримки часток із обробкою за "
+"допомогою графічного процесора.\n"
 "Вам слід скористатися вузлом CPUParticles2D. Для цього можете вибрати пункт "
-"«Перетворити на CPUParticles»."
+"«Перетворити на CPUParticles2D» на панелі інструментів."
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -14550,6 +14847,12 @@ msgid ""
 "You can use the \"Convert to CPUParticles2D\" toolbar option for this "
 "purpose."
 msgstr ""
+"У macOS обробка Particles2D є набагато повільнішою за CPUParticles2D через "
+"те, що відгук перетворення реалізовано на загальному процесорі, а не на "
+"графічному процесорі.\n"
+"Вам варто скористатися CPUParticles2D, якщо метою є запуск на macOS.\n"
+"Ви можете скористатися для цього пунктом панелі інструментів «Перетворити на "
+"CPUParticles2D»."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -14806,16 +15109,15 @@ msgid "Only uniform scales are supported."
 msgstr "Передбачено підтримку лише однорідних масштабів."
 
 #: scene/3d/particles.cpp
-#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
-"У драйвері GLES2 не передбачено підтримки часток із обробкою за допомогою "
-"графічного процесора.\n"
+"У відеодрайвері GLES2 не передбачено підтримки часток із обробкою за "
+"допомогою графічного процесора.\n"
 "Вам слід скористатися вузлом CPUParticles. Для цього можете вибрати пункт "
-"«Перетворити на CPUParticles»."
+"«Перетворити на CPUParticles» на панелі інструментів."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14824,6 +15126,12 @@ msgid ""
 "Consider using CPUParticles instead when targeting macOS.\n"
 "You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
+"У macOS обробка Particles є набагато повільнішою за CPUParticles через те, "
+"що відгук перетворення реалізовано на загальному процесорі, а не на "
+"графічному процесорі.\n"
+"Вам варто скористатися CPUParticles, якщо метою є запуск на macOS.\n"
+"Ви можете скористатися для цього пунктом панелі інструментів «Перетворити на "
+"CPUParticles»."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -15105,11 +15413,11 @@ msgstr ""
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "Колір: #%s\n"
-"Ліва кнопка: встановити колір\n"
+"Ліва кнопка: застосувати колір\n"
 "Права кнопка: вилучити взірець"
 
 #: scene/gui/color_picker.cpp

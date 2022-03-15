@@ -88,6 +88,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_subpixel_positioning, "font_rid", "subpixel_positioning");
 	GDVIRTUAL_BIND(_font_get_subpixel_positioning, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_embolden, "font_rid", "strength");
+	GDVIRTUAL_BIND(_font_get_embolden, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_transform, "font_rid", "transform");
+	GDVIRTUAL_BIND(_font_get_transform, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_variation_coordinates, "font_rid", "variation_coordinates");
 	GDVIRTUAL_BIND(_font_get_variation_coordinates, "font_rid");
 
@@ -525,6 +531,30 @@ TextServer::SubpixelPositioning TextServerExtension::font_get_subpixel_positioni
 		return (TextServer::SubpixelPositioning)ret;
 	}
 	return TextServer::SubpixelPositioning::SUBPIXEL_POSITIONING_DISABLED;
+}
+
+void TextServerExtension::font_set_embolden(RID p_font_rid, float p_strength) {
+	GDVIRTUAL_CALL(_font_set_embolden, p_font_rid, p_strength);
+}
+
+float TextServerExtension::font_get_embolden(RID p_font_rid) const {
+	float ret;
+	if (GDVIRTUAL_CALL(_font_get_embolden, p_font_rid, ret)) {
+		return ret;
+	}
+	return 0.f;
+}
+
+void TextServerExtension::font_set_transform(RID p_font_rid, Transform2D p_transform) {
+	GDVIRTUAL_CALL(_font_set_transform, p_font_rid, p_transform);
+}
+
+Transform2D TextServerExtension::font_get_transform(RID p_font_rid) const {
+	Transform2D ret;
+	if (GDVIRTUAL_CALL(_font_get_transform, p_font_rid, ret)) {
+		return ret;
+	}
+	return Transform2D();
 }
 
 void TextServerExtension::font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) {

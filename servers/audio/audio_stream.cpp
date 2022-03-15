@@ -76,10 +76,10 @@ void AudioStreamPlayback::seek(float p_time) {
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int ret;
-	if (GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret)) {
+	if (GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret)) {
 		return ret;
 	}
-	WARN_PRINT_ONCE("AudioStreamPlayback::mix unimplemented!");
+
 	return 0;
 }
 
@@ -94,7 +94,7 @@ void AudioStreamPlayback::_bind_methods() {
 }
 //////////////////////////////
 
-void AudioStreamPlaybackResampled::_begin_resample() {
+void AudioStreamPlaybackResampled::begin_resample() {
 	//clear cubic interpolation history
 	internal_buffer[0] = AudioFrame(0.0, 0.0);
 	internal_buffer[1] = AudioFrame(0.0, 0.0);
@@ -103,6 +103,30 @@ void AudioStreamPlaybackResampled::_begin_resample() {
 	//mix buffer
 	_mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
 	mix_offset = 0;
+}
+
+int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+	int ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
+	float ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
+void AudioStreamPlaybackResampled::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("begin_resample"), &AudioStreamPlaybackResampled::begin_resample);
+
+	GDVIRTUAL_BIND(_mix_resampled, "dst_buffer", "frame_count");
+	GDVIRTUAL_BIND(_get_stream_sampling_rate);
 }
 
 int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
@@ -200,6 +224,7 @@ bool AudioStream::is_monophonic() const {
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
+	ClassDB::bind_method(D_METHOD("instance_playback"), &AudioStream::instance_playback);
 	GDVIRTUAL_BIND(_instance_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
@@ -314,7 +339,7 @@ void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 
 	if (AudioDriver::get_singleton()->capture_start() == OK) {
 		active = true;
-		_begin_resample();
+		begin_resample();
 	}
 }
 

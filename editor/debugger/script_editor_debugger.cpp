@@ -135,15 +135,15 @@ void ScriptEditorDebugger::debug_continue() {
 void ScriptEditorDebugger::update_tabs() {
 	if (error_count == 0 && warning_count == 0) {
 		errors_tab->set_name(TTR("Errors"));
-		tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture2D>());
+		tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), Ref<Texture2D>());
 	} else {
 		errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 		if (error_count >= 1 && warning_count >= 1) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
 		} else if (error_count >= 1) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 		} else {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
 		}
 	}
 }
@@ -779,25 +779,27 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			skip_breakpoints->set_icon(get_theme_icon(SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
-			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-
-			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
-			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
-			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
 			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			skip_breakpoints->set_icon(get_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
+			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
+			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
+			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
 			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (is_session_active()) {
 				peer->poll();
@@ -857,6 +859,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				break;
 			};
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->has_theme_stylebox_override("panel")) {
 				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
@@ -1063,18 +1066,16 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 	return last_path_id;
 }
 
-void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
+void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!p_base || !live_debug || !is_session_active() || !EditorNode::get_singleton()->get_edited_scene()) {
 		return;
 	}
 
 	Node *node = Object::cast_to<Node>(p_base);
 
-	VARIANT_ARGPTRS
-
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+	for (int i = 0; i < p_argcount; i++) {
 		//no pointers, sorry
-		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::RID)) {
+		if (p_args[i]->get_type() == Variant::OBJECT || p_args[i]->get_type() == Variant::RID) {
 			return;
 		}
 	}
@@ -1086,9 +1087,9 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		Array msg;
 		msg.push_back(pathid);
 		msg.push_back(p_name);
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
-			msg.push_back(*argptr[i]);
+			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_node_call", msg);
 
@@ -1104,9 +1105,9 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		Array msg;
 		msg.push_back(pathid);
 		msg.push_back(p_name);
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
-			msg.push_back(*argptr[i]);
+			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_res_call", msg);
 
@@ -1657,7 +1658,7 @@ bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 

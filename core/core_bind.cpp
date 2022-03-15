@@ -137,7 +137,7 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
+Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
 	return ::ResourceSaver::save(p_path, p_resource, p_flags);
 }
@@ -156,9 +156,10 @@ Vector<String> ResourceSaver::get_recognized_extensions(const RES &p_resource) {
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 
+	BIND_ENUM_CONSTANT(FLAG_NONE);
 	BIND_ENUM_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_ENUM_CONSTANT(FLAG_BUNDLE_RESOURCES);
 	BIND_ENUM_CONSTANT(FLAG_CHANGE_PATH);
@@ -362,6 +363,10 @@ int OS::get_processor_count() const {
 	return ::OS::get_singleton()->get_processor_count();
 }
 
+String OS::get_processor_name() const {
+	return ::OS::get_singleton()->get_processor_name();
+}
+
 bool OS::is_stdout_verbose() const {
 	return ::OS::get_singleton()->is_stdout_verbose();
 }
@@ -554,6 +559,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &OS::get_low_processor_usage_mode_sleep_usec);
 
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
+	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
@@ -1563,10 +1569,8 @@ String Directory::get_current_dir() {
 Error Directory::make_dir(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		Error err = d->make_dir(p_dir);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_dir);
+		return da->make_dir(p_dir);
 	}
 	return d->make_dir(p_dir);
 }
@@ -1574,10 +1578,8 @@ Error Directory::make_dir(String p_dir) {
 Error Directory::make_dir_recursive(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		Error err = d->make_dir_recursive(p_dir);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_dir);
+		return da->make_dir_recursive(p_dir);
 	}
 	return d->make_dir_recursive(p_dir);
 }
@@ -1587,19 +1589,14 @@ bool Directory::file_exists(String p_file) {
 	if (!p_file.is_relative_path()) {
 		return FileAccess::exists(p_file);
 	}
-
 	return d->file_exists(p_file);
 }
 
 bool Directory::dir_exists(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, false, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		bool exists = d->dir_exists(p_dir);
-		memdelete(d);
-		return exists;
+		return DirAccess::exists(p_dir);
 	}
-
 	return d->dir_exists(p_dir);
 }
 
@@ -1618,11 +1615,9 @@ Error Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(p_from.is_empty() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
 
 	if (!p_from.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_from);
-		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
-		Error err = d->rename(p_from, p_to);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_from);
+		ERR_FAIL_COND_V_MSG(!da->file_exists(p_from) && !da->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
+		return da->rename(p_from, p_to);
 	}
 
 	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
@@ -1632,10 +1627,8 @@ Error Directory::rename(String p_from, String p_to) {
 Error Directory::remove(String p_name) {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_name.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_name);
-		Error err = d->remove(p_name);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_name);
+		return da->remove(p_name);
 	}
 
 	return d->remove(p_name);
@@ -1658,7 +1651,6 @@ void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &Directory::make_dir_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &Directory::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &Directory::dir_exists);
-	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&Directory::get_modified_time);
 	ClassDB::bind_method(D_METHOD("get_space_left"), &Directory::get_space_left);
 	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &Directory::copy);
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &Directory::rename);
@@ -2286,8 +2278,8 @@ void Engine::register_singleton(const StringName &p_name, Object *p_object) {
 	s.ptr = p_object;
 	s.user_created = true;
 	::Engine::get_singleton()->add_singleton(s);
-	;
 }
+
 void Engine::unregister_singleton(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregistered singleton: " + String(p_name));
 	ERR_FAIL_COND_MSG(!::Engine::get_singleton()->is_singleton_user_created(p_name), "Attempt to remove non-user created singleton: " + String(p_name));

@@ -66,23 +66,25 @@ void SpriteBase3D::_propagate_color_changed() {
 }
 
 void SpriteBase3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!pending_update) {
-			_im_update();
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (!pending_update) {
+				_im_update();
+			}
 
-		parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
-		if (parent_sprite) {
-			pI = parent_sprite->children.push_back(this);
-		}
-	}
+			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
+			if (parent_sprite) {
+				pI = parent_sprite->children.push_back(this);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent_sprite) {
-			parent_sprite->children.erase(pI);
-			pI = nullptr;
-			parent_sprite = nullptr;
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (parent_sprite) {
+				parent_sprite->children.erase(pI);
+				pI = nullptr;
+				parent_sprite = nullptr;
+			}
+		} break;
 	}
 }
 
@@ -173,10 +175,6 @@ void SpriteBase3D::_queue_update() {
 
 AABB SpriteBase3D::get_aabb() const {
 	return aabb;
-}
-
-Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
@@ -694,10 +692,6 @@ Rect2 Sprite3D::get_item_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
 	}
-	/*
-	if (texture.is_null())
-		return CanvasItem::get_item_rect();
-	*/
 
 	Size2 s;
 
@@ -1021,14 +1015,14 @@ void AnimatedSprite3D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation);
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			double remaining = get_process_delta_time();
 
 			while (remaining) {
+				double speed = frames->get_animation_speed(animation);
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
 				if (timeout <= 0) {
 					timeout = 1.0 / speed;
 

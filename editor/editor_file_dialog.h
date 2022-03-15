@@ -135,8 +135,8 @@ private:
 
 	Vector<String> filters;
 
-	bool previews_enabled;
-	bool preview_waiting;
+	bool previews_enabled = true;
+	bool preview_waiting = false;
 	int preview_wheel_index;
 	float preview_wheel_timeout;
 
@@ -145,8 +145,8 @@ private:
 	bool show_hidden_files;
 	DisplayMode display_mode;
 
-	bool disable_overwrite_warning;
-	bool invalidated;
+	bool disable_overwrite_warning = false;
+	bool invalidated = true;
 
 	void update_dir();
 	void update_file_name();

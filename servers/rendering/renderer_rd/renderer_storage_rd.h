@@ -751,6 +751,8 @@ private:
 		RID particle_instance_buffer;
 		RID frame_params_buffer;
 
+		uint32_t userdata_count = 0;
+
 		RID particles_material_uniform_set;
 		RID particles_copy_uniform_set;
 		RID particles_transforms_buffer_uniform_set;
@@ -849,12 +851,16 @@ private:
 			uint32_t order_by_lifetime;
 			uint32_t lifetime_split;
 			uint32_t lifetime_reverse;
-			uint32_t pad;
+			uint32_t copy_mode_2d;
+
+			float inv_emission_transform[16];
 		};
 
 		enum {
+			MAX_USERDATAS = 6
+		};
+		enum {
 			COPY_MODE_FILL_INSTANCES,
-			COPY_MODE_FILL_INSTANCES_2D,
 			COPY_MODE_FILL_SORT_BUFFER,
 			COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER,
 			COPY_MODE_MAX,
@@ -862,7 +868,7 @@ private:
 
 		ParticlesCopyShaderRD copy_shader;
 		RID copy_shader_version;
-		RID copy_pipelines[COPY_MODE_MAX];
+		RID copy_pipelines[COPY_MODE_MAX * (MAX_USERDATAS + 1)];
 
 		LocalVector<float> pose_update_buffer;
 
@@ -888,7 +894,10 @@ private:
 
 		RID pipeline;
 
-		bool uses_time;
+		bool uses_time = false;
+
+		bool userdatas_used[ParticlesShader::MAX_USERDATAS] = {};
+		uint32_t userdata_count = 0;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
@@ -1016,7 +1025,6 @@ private:
 		RS::LightType type;
 		float param[RS::LIGHT_PARAM_MAX];
 		Color color = Color(1, 1, 1, 1);
-		Color shadow_color;
 		RID projector;
 		bool shadow = false;
 		bool negative = false;
@@ -1024,6 +1032,10 @@ private:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
+		bool distance_fade = false;
+		real_t distance_fade_begin = 40.0;
+		real_t distance_fade_shadow = 50.0;
+		real_t distance_fade_length = 10.0;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 		bool directional_blend_splits = false;
@@ -1752,7 +1764,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(multimesh->buffer);
+			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
 			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1767,7 +1779,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(multimesh->buffer);
+			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
 			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1805,7 +1817,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(skeleton->buffer);
+			u.append_id(skeleton->buffer);
 			uniforms.push_back(u);
 			skeleton->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1828,10 +1840,10 @@ public:
 	void light_set_color(RID p_light, const Color &p_color);
 	void light_set_param(RID p_light, RS::LightParam p_param, float p_value);
 	void light_set_shadow(RID p_light, bool p_enabled);
-	void light_set_shadow_color(RID p_light, const Color &p_color);
 	void light_set_projector(RID p_light, RID p_texture);
 	void light_set_negative(RID p_light, bool p_enable);
 	void light_set_cull_mask(RID p_light, uint32_t p_mask);
+	void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length);
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
 	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode);
 	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade);
@@ -1876,18 +1888,31 @@ public:
 		return light->color;
 	}
 
-	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, Color());
-
-		return light->shadow_color;
-	}
-
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
 		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->cull_mask;
+	}
+
+	_FORCE_INLINE_ bool light_is_distance_fade_enabled(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_begin(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_begin;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_shadow(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_shadow;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_length(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_length;
 	}
 
 	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
@@ -2162,6 +2187,8 @@ public:
 	void particles_set_speed_scale(RID p_particles, double p_scale);
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	void particles_set_process_material(RID p_particles, RID p_material);
+	RID particles_get_process_material(RID p_particles) const;
+
 	void particles_set_fixed_fps(RID p_particles, int p_fps);
 	void particles_set_interpolate(RID p_particles, bool p_enable);
 	void particles_set_fractional_delta(RID p_particles, bool p_enable);
@@ -2240,7 +2267,7 @@ public:
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(particles->particle_instance_buffer);
+				u.append_id(particles->particle_instance_buffer);
 				uniforms.push_back(u);
 			}
 

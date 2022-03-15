@@ -98,13 +98,13 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/portrait_flipped"), true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "images/background_color"), "transparent"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/store_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square44x44_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square71x71_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square150x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square310x310_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/wide310x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/splash_screen", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/store_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square44x44_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square71x71_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square150x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square310x310_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/wide310x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/splash_screen", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_square150x150"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_wide310x150"), false));
@@ -201,37 +201,37 @@ bool EditorExportPlatformUWP::can_export(const Ref<EditorExportPreset> &p_preset
 		err += TTR("Invalid background color.") + "\n";
 	}
 
-	if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
+	if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
 		valid = false;
 		err += TTR("Invalid Store Logo image dimensions (should be 50x50).") + "\n";
 	}
 
-	if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
+	if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
 		valid = false;
 		err += TTR("Invalid square 44x44 logo image dimensions (should be 44x44).") + "\n";
 	}
 
-	if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
+	if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
 		valid = false;
 		err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 	}
 
-	if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+	if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
 		valid = false;
 		err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 	}
 
-	if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
+	if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
 		valid = false;
 		err += TTR("Invalid square 310x310 logo image dimensions (should be 310x310).") + "\n";
 	}
 
-	if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
+	if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
 		valid = false;
 		err += TTR("Invalid wide 310x150 logo image dimensions (should be 310x150).") + "\n";
 	}
 
-	if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
+	if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
 		valid = false;
 		err += TTR("Invalid splash screen image dimensions (should be 620x300).") + "\n";
 	}

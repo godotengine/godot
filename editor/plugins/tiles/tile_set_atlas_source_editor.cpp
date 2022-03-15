@@ -108,7 +108,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::get_id);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "id"), "set_id", "get_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"), "set_id", "get_id");
 
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }
@@ -2270,7 +2270,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 void TileSetAtlasSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			tool_select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
 			tool_paint_button->set_icon(get_theme_icon(SNAME("CanvasItem"), SNAME("EditorIcons")));
@@ -2281,8 +2281,9 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			resize_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
@@ -2298,9 +2299,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 				tile_set_changed_needs_update = false;
 			}
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 

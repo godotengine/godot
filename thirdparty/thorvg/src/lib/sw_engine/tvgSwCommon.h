@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -235,6 +235,7 @@ struct SwImage
 struct SwBlender
 {
     uint32_t (*join)(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    uint32_t (*lumaValue)(uint32_t c);
 };
 
 struct SwCompositor;

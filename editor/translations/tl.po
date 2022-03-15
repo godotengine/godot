@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-01-07 11:42+0000\n"
+"PO-Revision-Date: 2022-03-02 18:39+0000\n"
 "Last-Translator: Napstaguy04 <brokenscreen3@gmail.com>\n"
 "Language-Team: Tagalog <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tl/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -253,7 +253,7 @@ msgstr "Ipalit sa on/off ang track na ito."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Paraang Nag-aapdate (Kung papano inayos ang katangian na ito)"
+msgstr "Paraan ng Pag-update (Kung papano inayos ang katangian na ito)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -321,7 +321,7 @@ msgstr "Maglagay ng Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "Doblehin ang (mga) Key"
+msgstr "Duplikahin ang (mga) Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
@@ -511,8 +511,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -548,7 +548,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
-msgstr ""
+msgstr "Bilang ng usog ng Animasyon."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -609,7 +609,7 @@ msgstr "Bumalik sa Nakaraang Hakbang"
 
 #: editor/animation_track_editor.cpp
 msgid "Apply Reset"
-msgstr ""
+msgstr "I-apply ang Reset"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -633,7 +633,7 @@ msgstr "Gumawa ng (mga) RESET Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Tagapabilis ng Animasyon"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -645,7 +645,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "Pinakahangganang Angulo na Mao-optimize:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
@@ -930,8 +930,8 @@ msgstr "Ayusin Ang Pagkakabit:"
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
-"Tiyak ka bang gusto mong alisin lahat ng mga pagkakabit mula sa hudyat \"%s"
-"\"?"
+"Tiyak ka bang gusto mong alisin lahat ng mga pagkakabit mula sa hudyat "
+"\"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -1151,11 +1151,11 @@ msgstr "Mga Resources na Walang Tiyak na Pagmamayari:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr ""
+msgstr "Ibahin ang Dictionary Key"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr ""
+msgstr "Ibahin ang Dictionary Value"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -1347,7 +1347,7 @@ msgstr "Ilipat ang Effect ng Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr ""
+msgstr "Alisin ang Effect sa Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
@@ -1363,24 +1363,24 @@ msgstr "Nakatahimik"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Pasikot-sikot"
+msgstr "Ligtaan"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus Options"
 msgstr "Kaayusan ng Bus"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Doblehin"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
-msgstr ""
+msgstr "I-balik sa dati ang Volume"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr ""
+msgstr "Alisin ang Effect"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
@@ -1440,7 +1440,7 @@ msgstr "Nabigong ang pagsave ang file: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr ""
+msgstr "Magdagdag ng Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
@@ -1476,6 +1476,11 @@ msgstr ""
 msgid "Create a new Bus Layout."
 msgstr ""
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "I-save Ang Ayos ng Audio Bus Bilang..."
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Di-wastong pangalan."
@@ -1507,7 +1512,7 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr ""
+msgstr "Meron ng '%s' na Autoload!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
@@ -1572,11 +1577,11 @@ msgstr "Pangkalahatang (Global) Variable"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
-msgstr ""
+msgstr "I-pasta ang mga Params"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr ""
+msgstr "Sinasariwa ang Eksena"
 
 #: editor/editor_data.cpp
 msgid "Storing local changes..."
@@ -1821,6 +1826,8 @@ msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
+"Meron ng '%s' na profile. Alisin muna ito bago mag-import. Naihinto ang pag-"
+"import."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
@@ -2030,12 +2037,12 @@ msgstr "Tingnan ang mga item bilang talaan."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Mga Direktoryo at mga File:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
-msgstr ""
+msgstr "Pasilip:"
 
 #: editor/editor_file_dialog.cpp
 #: editor/plugins/version_control_editor_plugin.cpp scene/gui/file_dialog.cpp
@@ -2086,9 +2093,8 @@ msgid "Properties"
 msgstr "Mga Katangian"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "overrides %s:"
-msgstr "ipagpalit:"
+msgstr "Ipagpapalit sa %s:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2104,7 +2110,7 @@ msgstr "Mga Katangian ng Theme"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Colors"
-msgstr ""
+msgstr "Mga Kulay"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
@@ -2112,15 +2118,15 @@ msgstr "Mga Konstant"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Fonts"
-msgstr ""
+msgstr "Mga Font"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Icons"
-msgstr ""
+msgstr "Mga Icon"
 
 #: editor/editor_help.cpp
 msgid "Styles"
-msgstr ""
+msgstr "Mga Estilo"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2148,8 +2154,8 @@ msgstr "Panglalarawan ng mga Method"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
 "Kasalukuyang walang paglalarawan sa method na ito. Maaring tulungan kami sa "
 "pamamagitan ng [color=$color][url=$url]pag-kontribyut[/url][/color]!"
@@ -2161,7 +2167,7 @@ msgstr "Maghanap sa Sanggunian"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "Sensitibo sa Case"
 
 #: editor/editor_help_search.cpp
 msgid "Show Hierarchy"
@@ -2228,9 +2234,8 @@ msgid "Property:"
 msgstr "Katangian:"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "(halaga)"
+msgstr "Halaga ng Pin"
 
 #: editor/editor_inspector.cpp
 msgid ""
@@ -2261,19 +2266,16 @@ msgid "Unpinned %s"
 msgstr ""
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property"
-msgstr "Katangian"
+msgstr "Kopyahin ang Katangian"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Paste Property"
-msgstr "Katangian"
+msgstr "I-paste ang Katangian"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property Path"
-msgstr "Kopyahin ang Kinaroroonan"
+msgstr "Kopyahin ang Kinaroroonan ng Katangian"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2373,10 +2375,12 @@ msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
+"Hindi mai-ligtas ang resource na ito dahil hindi ito nabibilang sa ginagalaw "
+"na eksena. Gawing tangi (unique) muna ito."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr "I-save ang Resource Bilang..."
+msgstr "I-ligtas ang Resource Bilang..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -2440,11 +2444,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Could not save one or more scenes!"
-msgstr ""
+msgstr "Hindi mai-iligtas ang ni isa o dalawang eksena!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
-msgstr "Iimpok Lahat ng Mga Eksena"
+msgstr "I-ligtas Lahat ng Mga Eksena"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
@@ -2523,7 +2527,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "Walang eksenang pinili upang patakbuhin ang aplikasyon."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
@@ -2531,7 +2535,7 @@ msgstr "Isave muna ang eksena bago ito patakbuhin..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr ""
+msgstr "Hindi maumpisa ang subprocess!"
 
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
@@ -2539,11 +2543,11 @@ msgstr "Magbukas ng Eksena"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "Buksan ang Punong Eksena (Base Scene)"
 
 #: editor/editor_node.cpp
 msgid "Quick Open..."
-msgstr "Mabilisang Magbukas..."
+msgstr "Buksan Kaagad..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
@@ -2579,7 +2583,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr ""
+msgstr "I-ligtas ang Eksena Bilang..."
 
 #: editor/editor_node.cpp modules/gltf/editor_scene_exporter_gltf_plugin.cpp
 msgid "This operation can't be done without a scene."
@@ -2797,11 +2801,11 @@ msgstr "Isara ang Tab"
 
 #: editor/editor_node.cpp
 msgid "Undo Close Tab"
-msgstr ""
+msgstr "Ibalik ang Nasarang Tab"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr "Isara Ang Ibang Mga Tab"
+msgstr "Isara ang Ibang mga Tab"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
@@ -2843,7 +2847,7 @@ msgstr ""
 msgid "Add a new scene."
 msgstr "Magdagdag ng panibagong eksena."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Eksena"
 
@@ -2885,7 +2889,7 @@ msgstr "Magbukas ng Eksena..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "Buksan ang Kumakailan"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -2906,12 +2910,12 @@ msgstr "TileSet..."
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr ""
+msgstr "I-undo"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "I-redo"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2947,9 +2951,8 @@ msgid "Install Android Build Template..."
 msgstr "Ikabit ang Android Build Template..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "Buksan ang Folder ng Datos ng Proyekto"
+msgstr "Buksan ang User Data Folder ng Proyekto"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3093,11 +3096,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr ""
+msgstr "Buksan ang Folder ng Editor Settings"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features..."
-msgstr ""
+msgstr "Pangasiwaan ang mga Tampok ng Editor..."
 
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
@@ -3189,8 +3192,14 @@ msgid "Update Continuously"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
-msgstr ""
+#, fuzzy
+msgid "Update All Changes"
+msgstr "Pansinin ang anumang pagbabago"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Update Vital Changes"
+msgstr "Pansinin ang anumang pagbabago"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3226,7 +3235,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Install from file"
-msgstr ""
+msgstr "Mag-install mula sa file"
 
 #: editor/editor_node.cpp
 msgid "Select android sources file"
@@ -3387,7 +3396,7 @@ msgstr "Sukat:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (ms)"
-msgstr ""
+msgstr "Oras ng Frame (ms)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (ms)"
@@ -3479,7 +3488,7 @@ msgstr "Pumili ng Tinginan"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
-msgstr ""
+msgstr "Ang piniling node ay hindi Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
@@ -3518,7 +3527,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
-msgstr ""
+msgstr "Gawing Tangi (Unique)"
 
 #: editor/editor_resource_picker.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3532,7 +3541,7 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
 #: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr "Idikit"
+msgstr "I-pasta"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Convert to %s"
@@ -3625,7 +3634,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
-msgstr ""
+msgstr "Inuumpisahan ang pag-download..."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -3702,7 +3711,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr ""
+msgstr "Hindi Mairesolba"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3865,7 +3874,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
-msgstr ""
+msgstr "Mga Paborito"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -3914,6 +3923,14 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -3924,19 +3941,19 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr ""
+msgstr "Pinapalitan ang pangalan ng file:"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr ""
+msgstr "Pinapalitan ang pangalan ng folder:"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating file:"
-msgstr ""
+msgstr "Dinuduplicate ang file:"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating folder:"
-msgstr ""
+msgstr "Dinuduplicate ang folder:"
 
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
@@ -3956,15 +3973,15 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
-msgstr ""
+msgstr "Idagdag sa Paborito mo"
 
 #: editor/filesystem_dock.cpp
 msgid "Remove from Favorites"
-msgstr ""
+msgstr "Alisin sa Paborito mo"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Baguhin ang mga Kaasahan..."
+msgstr "Baguhin ang mga Kaasahan (Dependencies)..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
@@ -3984,7 +4001,7 @@ msgstr "Bagong Skrip..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
-msgstr ""
+msgstr "Bagong Resource..."
 
 #: editor/filesystem_dock.cpp editor/inspector_dock.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4020,15 +4037,15 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Last Modified"
-msgstr "Ayusin ayon sa Huling Binago"
+msgstr "Pagbukud-bukurin ayon sa Huling Binago"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by First Modified"
-msgstr ""
+msgstr "Pagbukud-bukurin ayon sa Unang Binago"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
-msgstr ""
+msgstr "I-duplicate..."
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -4073,15 +4090,15 @@ msgstr "Ilipat"
 #: editor/project_manager.cpp editor/rename_dialog.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Rename"
-msgstr ""
+msgstr "Baguhin ang Pangalan"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "Ipagpalit"
 
 #: editor/filesystem_dock.cpp
 msgid "Create Scene"
-msgstr ""
+msgstr "Lumikha ng Eksena"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -4097,11 +4114,11 @@ msgstr "Hanapin:"
 
 #: editor/find_in_files.cpp editor/rename_dialog.cpp
 msgid "Replace:"
-msgstr ""
+msgstr "Palitan:"
 
 #: editor/find_in_files.cpp
 msgid "Folder:"
-msgstr ""
+msgstr "Folder:"
 
 #: editor/find_in_files.cpp
 msgid "Filters:"
@@ -4116,11 +4133,11 @@ msgstr ""
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find..."
-msgstr ""
+msgstr "Hanapin..."
 
 #: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
 msgid "Replace..."
-msgstr ""
+msgstr "Palitan..."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -4142,7 +4159,7 @@ msgstr "Palitan Lahat"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
-msgstr ""
+msgstr "Naghahanap..."
 
 #: editor/find_in_files.cpp
 msgid "%d match in %d file."
@@ -4158,11 +4175,11 @@ msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr ""
+msgstr "Idagdag sa Pangkat"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
+msgstr "Alisin sa Pangkat"
 
 #: editor/groups_editor.cpp
 msgid "Group name already exists."
@@ -4191,7 +4208,7 @@ msgstr ""
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
-msgstr ""
+msgstr "Salain ang mga node"
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
@@ -4252,11 +4269,11 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr ""
+msgstr "Mag-angkat ng Eksena"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr ""
+msgstr "Inaangkat ang Eksena..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -4288,7 +4305,7 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
-msgstr ""
+msgstr "Nililigtas..."
 
 #: editor/import_defaults_editor.cpp
 msgid "Select Importer"
@@ -4332,15 +4349,15 @@ msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Import As:"
-msgstr ""
+msgstr "Iangkat Bilang:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
-msgstr ""
+msgstr "Preset"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr ""
+msgstr "I-ligtas ang mga Eksena, I-reimport at Mag-restart"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -4363,11 +4380,11 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
-msgstr ""
+msgstr "Kopyahin ang mga Katangian"
 
 #: editor/inspector_dock.cpp
 msgid "Paste Properties"
-msgstr ""
+msgstr "I-pasta ang mga Katangian"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
@@ -4389,7 +4406,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Save As..."
-msgstr ""
+msgstr "I-ligtas Bilang..."
 
 #: editor/inspector_dock.cpp
 msgid "Extra resource options."
@@ -4421,11 +4438,11 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Open documentation for this object."
-msgstr ""
+msgstr "Buksan ang dokumentasyon para sa object na ito."
 
 #: editor/inspector_dock.cpp editor/scene_tree_dock.cpp
 msgid "Open Documentation"
-msgstr ""
+msgstr "Buksan ang Dokumentasyon"
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
@@ -4453,48 +4470,48 @@ msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Create a Plugin"
-msgstr ""
+msgstr "Gumawa ng Plugin"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Plugin Name:"
-msgstr ""
+msgstr "Pangalan ng Plugin:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr ""
+msgstr "Subfolder:"
 
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Author:"
-msgstr ""
+msgstr "May-akda:"
 
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr ""
+msgstr "Bersyon:"
 
 #: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
-msgstr ""
+msgstr "Wika:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Script Name:"
-msgstr ""
+msgstr "Pangalan ng Skript:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
-msgstr ""
+msgstr "Aktibahin na ngayon?"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon"
-msgstr ""
+msgstr "Lumikha ng Polygon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create points."
-msgstr ""
+msgstr "Lumikha ng mga punto."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
@@ -4502,27 +4519,30 @@ msgid ""
 "LMB: Move Point\n"
 "RMB: Erase Point"
 msgstr ""
+"Ayusin ang mga punto.\n"
+"LMB: Maglipat ng Punto\n"
+"RMB: Magbura ng Punto"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Erase points."
-msgstr ""
+msgstr "Burahin ang mga punto."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon"
-msgstr ""
+msgstr "Ayusin ang Polygon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr ""
+msgstr "Maglagay ng Punto"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon (Remove Point)"
-msgstr ""
+msgstr "Ayusin ang Polygon (Alisin ang Punto)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Remove Polygon And Point"
-msgstr ""
+msgstr "Alisin ang Polygon At Punto"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4530,14 +4550,14 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
+msgstr "Magdagdag ng Animation"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Load..."
-msgstr ""
+msgstr "Magload..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4603,20 +4623,20 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
-msgstr ""
+msgstr "Punto"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Open Editor"
-msgstr ""
+msgstr "Buksan ang Editor"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Open Animation Node"
-msgstr ""
+msgstr "Buksan ang Animation Node"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Triangle already exists."
@@ -4624,7 +4644,7 @@ msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Triangle"
-msgstr ""
+msgstr "Magdagdag ng Tatsulok"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Limits"
@@ -4708,12 +4728,12 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Set Animation"
-msgstr ""
+msgstr "Itakda ang Animasyon"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Delete Node"
-msgstr ""
+msgstr "Burahin ang Node"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -4776,41 +4796,45 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr ""
+msgstr "I-toggle ang Kusang Pagpapalabas"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr ""
+msgstr "Bagong Pangalan ng Animation:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Bagong Anim"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Baguhin ang Pangalan ng Animasyon:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr ""
+msgstr "Alisin ang Animation?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Alisin ang Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr ""
+msgstr "Di-wastong pangalan ng animation!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
+msgstr "May nakapangalan na parehas sa Animation na ito!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
+msgstr "Palitan ang Pangalan ng Animation"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -4823,10 +4847,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -4847,7 +4867,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to edit!"
-msgstr ""
+msgstr "Walang animasyong pinagtratrabauhan!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
@@ -4892,7 +4912,7 @@ msgstr "Bago"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
-msgstr ""
+msgstr "Ayusin ang mga Transisyon..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Open in Inspector"
@@ -4916,7 +4936,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
-msgstr ""
+msgstr "Mga Direksyon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
@@ -5048,6 +5068,9 @@ msgid ""
 "RMB to add new nodes.\n"
 "Shift+LMB to create connections."
 msgstr ""
+"Magpili at maglipad ng mga node.\n"
+"RMB upang magdagdag ng bagong mga node.\n"
+"Shift+LMB upang gumawa ng mga bagong koneksyon."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Create new nodes."
@@ -5161,15 +5184,15 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "Alisin ang Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr ""
+msgstr "Wasto ang animation tree."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr ""
+msgstr "Di-wasto ang animation tree."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
@@ -5221,27 +5244,27 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
-msgstr ""
+msgstr "Laman:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
-msgstr ""
+msgstr "Tignan ang mga File"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
-msgstr ""
+msgstr "I-download"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Nabigo sa pagkonekta, maaring subukan muli."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
-msgstr ""
+msgstr "Hindi makakonekta."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr ""
+msgstr "Hindi makakonekta sa host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
@@ -5257,7 +5280,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr ""
+msgstr "Hindi mai-resolba."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
@@ -5269,7 +5292,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Nabigo sa pag-write."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -5289,55 +5312,55 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Nabigo:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Di-wastong download hash, inaakalang may gumalaw ng file."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Inaasahan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Natanggap:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed SHA-256 hash check"
-msgstr ""
+msgstr "Nabigo sa pagsusuri ng SHA-256 hash"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Nabigo sa Pagdownload ng Asset:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
-msgstr ""
+msgstr "Dinadawnlowd (%s/%s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading..."
-msgstr ""
+msgstr "Dinadawnlowd..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr ""
+msgstr "Rineresolba..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
-msgstr ""
+msgstr "Nabigo sa paggawa ng hiling"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Nakatenga"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install..."
-msgstr ""
+msgstr "I-install..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Subukan muli"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
@@ -5357,23 +5380,23 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Pangalan (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Pangalan (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "License (A-Z)"
-msgstr ""
+msgstr "Lisensya (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "License (Z-A)"
-msgstr ""
+msgstr "Lisensya (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
-msgstr ""
+msgstr "Panguna"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Previous"
@@ -5389,7 +5412,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "Lahat"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
@@ -5409,31 +5432,31 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "Ipagbukud-bukod:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kaurian:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "Site:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support"
-msgstr ""
+msgstr "Naka-alalay"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Opisyal"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Sinusubukan"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Loading..."
-msgstr ""
+msgstr "Nagloload..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5479,13 +5502,17 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr ""
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
-msgstr ""
+msgstr "Pasilip"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
@@ -5553,7 +5580,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
-msgstr ""
+msgstr "Paikutin ang (mga) %d Canvasitems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
@@ -5701,7 +5728,7 @@ msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
-"Pagpapalit ng Kamera ng Proyekto\n"
+"Pagpapalit sa Kamera ng Proyekto\n"
 "Pinapalitan ang kamera ng tumatakbong proyekto sa kamera ng editor viewport."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5715,12 +5742,12 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock Selected"
-msgstr ""
+msgstr "I-lock ang nakapili"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock Selected"
-msgstr ""
+msgstr "I-unlock ang nakapili"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5734,7 +5761,7 @@ msgstr "Ibuwag Ang Pangkat ng Napili"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
-msgstr ""
+msgstr "I-pasta ang Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Guides"
@@ -5750,11 +5777,11 @@ msgstr "Alisin Ang Mga Buto"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
-msgstr ""
+msgstr "Lumikha ng IK Chain"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
-msgstr ""
+msgstr "Alisin ang IK Chain"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5767,7 +5794,7 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr ""
+msgstr "Ibalik sa Dati ang Zoom"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5796,10 +5823,12 @@ msgstr "V: Itakda ang posisyon ng pivot sa node."
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
+"Alt+RMB: Ipakita ang listahan ng lahat ng node at posisyong pinindutan, "
+"kabilang ang mga naka-lock."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
-msgstr ""
+msgstr "RMB: Magdagdag ng node sa posisyong pinindutan."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5818,7 +5847,7 @@ msgstr "Paraan ng Pagpapalaki"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
-msgstr ""
+msgstr "Shift: Palakihin na pa-proporsyonal."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5847,7 +5876,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
-msgstr ""
+msgstr "Gamitin ang Smart Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
@@ -5917,14 +5946,13 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected Node(s)"
-msgstr "Doblehin ang (mga) Napiling Key"
+msgstr "I-lock ang Nakapiling (mga) Node"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr ""
+msgstr "I-Unlock ang Napiling Object (maaring galawin)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5950,9 +5978,8 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected Node(s)"
-msgstr "Ibuwag Ang Pangkat ng Napili"
+msgstr "Ibuwag Ang Pangkat ng (mga) Napiling Node"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -5977,7 +6004,7 @@ msgstr "Tingnan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
-msgstr ""
+msgstr "Parating Ipakita ang Grid"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -6081,11 +6108,11 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 3.125%"
-msgstr ""
+msgstr "I-zoom sa 3.125%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 6.25%"
-msgstr ""
+msgstr "I-zoom sa 6.25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 12.5%"
@@ -6154,15 +6181,15 @@ msgstr ""
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
-msgstr ""
+msgstr "Gumawa ng Polygon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
-msgstr ""
+msgstr "Ayusin ang Poly"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly (Remove Point)"
-msgstr ""
+msgstr "Ayusin ang Poly (Magalis ng Punto)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -6178,7 +6205,7 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Restart"
-msgstr ""
+msgstr "Simulan muli"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6233,12 +6260,12 @@ msgstr ""
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr ""
+msgstr "Gumawa ng mga Punto ng Bugahan Galing sa Mesh"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr ""
+msgstr "Gumawa ng mga Punto ng Bugahan Galing sa Node"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 0"
@@ -6250,11 +6277,11 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
-msgstr ""
+msgstr "Suwabeng Pagpasok"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease Out"
-msgstr ""
+msgstr "Suwabeng Paglabas"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
@@ -6274,11 +6301,11 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add Point"
-msgstr ""
+msgstr "Magdagdag ng Punto"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Point"
-msgstr ""
+msgstr "Magalis ng Punto"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Left Linear"
@@ -7228,16 +7255,16 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
-msgstr ""
+msgstr "Hanapin ang Susunod"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr ""
+msgstr "Hanapin ang Nakaraan"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
-msgstr ""
+msgstr "Salain ang mga skrip"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -7277,15 +7304,15 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open..."
-msgstr ""
+msgstr "Buksan..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reopen Closed Script"
-msgstr ""
+msgstr "Buksan Muli ang Naisarang Skrip"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
-msgstr ""
+msgstr "I-ligtas Lahat"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
@@ -7402,7 +7429,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Results"
-msgstr ""
+msgstr "Bunga ng Paghahanap"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Scripts"
@@ -7435,7 +7462,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
-msgstr ""
+msgstr "Tumungo sa Punsyon"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
@@ -7486,29 +7513,29 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Pumunta sa"
 
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
-msgstr ""
+msgstr "Gupitin"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/theme_editor_plugin.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Piliin Lahat"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
-msgstr ""
+msgstr "Burahin ang Linya"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
-msgstr ""
+msgstr "I-urong Pakaliwa"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Right"
-msgstr ""
+msgstr "I-urong Pakanan"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
@@ -7581,11 +7608,11 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function..."
-msgstr ""
+msgstr "Pumunta sa Punsyon..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Line..."
-msgstr ""
+msgstr "Pumunta sa Linya..."
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -7916,7 +7943,12 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8794,6 +8826,11 @@ msgid "Select Another Theme Resource:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "Baguhin ang Pangalan ng Resource"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr ""
 
@@ -8843,6 +8880,20 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Magdagdag ng Bagong Uri ng Item"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Ibahin ang Punong-Uri"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Ibahin ang Punong-Uri"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Ipakita ang Karaniwan"
 
@@ -8859,8 +8910,19 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Magdagdag ng Bagong Uri ng Item"
+#, fuzzy
+msgid "Base Type"
+msgstr "Ibahin ang Punong-Uri"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9542,18 +9604,6 @@ msgstr "Magcommit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -10908,47 +10958,47 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Maghanap"
 
 #: editor/project_manager.cpp
 msgid "Scan Projects"
-msgstr ""
+msgstr "Maghanap ng mga Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr ""
+msgstr "Pumili ng Folder na Paghahanapan"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr ""
+msgstr "Bagong Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Import Project"
-msgstr ""
+msgstr "Mag-angkat ng Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Remove Project"
-msgstr ""
+msgstr "Alisin ang Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
-msgstr ""
+msgstr "Alisin ang Nawawala"
 
 #: editor/project_manager.cpp
 msgid "About"
-msgstr "Tungkol sa Godot"
+msgstr "Tungkol dito"
 
 #: editor/project_manager.cpp
 msgid "Asset Library Projects"
-msgstr ""
+msgstr "Mga Proyekto mula sa Asset Library"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
-msgstr ""
+msgstr "I-restart"
 
 #: editor/project_manager.cpp
 msgid "Remove All"
-msgstr ""
+msgstr "Alisin Lahat"
 
 #: editor/project_manager.cpp
 msgid "Also delete project contents (no undo!)"
@@ -10956,17 +11006,20 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
-msgstr ""
+msgstr "Hindi mapatakbo ang proyekto"
 
 #: editor/project_manager.cpp
 msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
+"Kasalukuyang wala ka pang mga proyekto.\n"
+"Gusto mo bang pumunta sa mga opisyal na halimbawang proyekto sa Asset "
+"Library?"
 
 #: editor/project_manager.cpp
 msgid "Filter projects"
-msgstr ""
+msgstr "Salain ang mga proyekto"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10974,6 +11027,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"Ang patlang na ito ay nagsasala sa mga proyekto ayon sa pangalan at hulihang "
+"path component. \n"
+"Upang sumala ng mga proyekto ayon sa pangalan at full path, dapat mayroong "
+"kahit isang '/' na karakter sa paghahanap."
 
 #: editor/project_settings_editor.cpp
 msgid "Physical Key"
@@ -12122,6 +12179,11 @@ msgid "Stack Frames"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Salain ang mga hudyat"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr ""
 
@@ -12139,7 +12201,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
-msgstr ""
+msgstr "Mga Tagasubaybay"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
@@ -12292,6 +12354,14 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Polygon Point Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Hole Point Position"
 msgstr ""
 
 #: modules/csg/csg_gizmos.cpp
@@ -12988,30 +13058,28 @@ msgid "Edit Member"
 msgstr "Ayusin ang Kasapi"
 
 #: modules/visual_script/visual_script_expression.cpp
-#, fuzzy
 msgid "Expression"
-msgstr "Ibahin ang Ekspresyon"
+msgstr "Ekspresyon"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "animation"
+msgstr "Kondisyon"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
-msgstr ""
+msgstr "if (kondisyon) ay:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "While"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
-msgstr ""
+msgstr "while (kondisyon):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator"
@@ -13023,11 +13091,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "Hindi iterable ang uri ng input: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "Naging invalid ang Iterator"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
@@ -13043,7 +13111,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Switch"
-msgstr ""
+msgstr "Switch"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "'input' is:"
@@ -13056,7 +13124,7 @@ msgstr "Mga Uri:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
-msgstr ""
+msgstr "%s ba?"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
@@ -13329,7 +13397,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Exporting APK..."
-msgstr ""
+msgstr "Iniluluwas ang APK..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Uninstalling..."
@@ -13345,7 +13413,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Running on device..."
-msgstr ""
+msgstr "Tumatakbo sa device..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not execute on device."
@@ -13411,7 +13479,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Di-wastong public key para sa APK expansion."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
@@ -13421,6 +13489,9 @@ msgstr "Di-wastong pangalan para sa pakete:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13482,11 +13553,11 @@ msgstr "nagbalik ng may pagkakabigong #%d ang 'apksigner'"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Verifying %s..."
-msgstr ""
+msgstr "Pinapatunayan ang %s..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
-msgstr ""
+msgstr "Nabigo ang pagpapatunay ng 'apksigner' ng %s."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Exporting for Android"
@@ -13539,7 +13610,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Binibuild ang Android Project (gradle)"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13563,13 +13634,15 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
-msgstr ""
+msgstr "Nililikha ang APK..."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
 msgstr ""
+"Walang mahanap na template APK upang iluwas:\n"
+"%s"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13581,11 +13654,11 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
-msgstr ""
+msgstr "Dinadagdag ang mga file..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not export project files"
-msgstr ""
+msgstr "Hindi mai-luwas ang mga project file"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -13611,17 +13684,13 @@ msgstr ""
 msgid "Invalid Identifier:"
 msgstr ""
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr ""
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Ihinto ang HTTP Server"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
-msgstr ""
+msgstr "Patakbuhin sa Browser"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
@@ -13655,16 +13724,189 @@ msgstr ""
 msgid "Error starting HTTP server:"
 msgstr ""
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no exe name."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, can't load."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Nabigong lumikha ng folder."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid binary format."
+msgstr "Di-wastong binary format."
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to process nested resources."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get CodeResources hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid entitlements file."
+msgstr "Di-wastong pangalan."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid executable file."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "No identity found."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Creating app bundle"
+msgstr "Ginagawa ang Thumbnail"
+
+#: platform/osx/export/export.cpp
+msgid "Could not find template app to export:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Code signing is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -13673,6 +13915,69 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -13725,6 +14030,25 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid icon path:"
+msgstr "Di-wastong pangalan."
+
+#: platform/windows/export/export.cpp
+msgid "Invalid file version:"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Invalid product version:"
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
@@ -14077,8 +14401,8 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -14318,9 +14642,10 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+#, fuzzy
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "Kulay: #%s\n"

@@ -201,6 +201,7 @@ void ShapeCast2D::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
@@ -254,6 +255,7 @@ void ShapeCast2D::_notification(int p_what) {
 			}
 #endif
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;

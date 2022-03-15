@@ -74,6 +74,7 @@ void CodeEdit::_notification(int p_what) {
 
 			line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			const Size2 size = get_size();

@@ -4,6 +4,7 @@
 		Creates a sub-view into the screen.
 	</brief_description>
 	<description>
+		[SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display something, [SubViewport]'s [member size] must be non-zero and it should be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
 	</description>
 	<tutorials>
 		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>

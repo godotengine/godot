@@ -67,6 +67,7 @@ void AudioListener2D::_notification(int p_what) {
 				make_current();
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {

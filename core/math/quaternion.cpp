@@ -129,7 +129,7 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 
 	// calculate coefficients
 
-	if ((1.0f - cosom) > CMP_EPSILON) {
+	if ((1.0f - cosom) > (real_t)CMP_EPSILON) {
 		// standard case (slerp)
 		omega = Math::acos(cosom);
 		sinom = Math::sin(omega);

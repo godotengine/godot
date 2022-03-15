@@ -295,14 +295,14 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			Vector<Color> colors;
+			colors.resize(len);
+
 			if (vertex_colors.size() == points.size()) {
-				colors.resize(len);
 				const Color *color_r = vertex_colors.ptr();
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color_r[i];
 				}
 			} else {
-				colors.resize(len);
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color;
 				}
@@ -428,15 +428,6 @@ Vector<Color> Polygon2D::get_vertex_colors() const {
 
 void Polygon2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
-
-	/*if (texture.is_valid()) {
-		uint32_t flags=texture->get_flags();
-		flags&=~Texture::FLAG_REPEAT;
-		if (tex_tile)
-			flags|=Texture::FLAG_REPEAT;
-
-		texture->set_flags(flags);
-	}*/
 	update();
 }
 

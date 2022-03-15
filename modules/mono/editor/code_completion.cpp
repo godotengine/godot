@@ -120,7 +120,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		} break;
 		case CompletionKind::NODE_PATHS: {
 			{
-				// AutoLoads
+				// Autoloads.
 				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {

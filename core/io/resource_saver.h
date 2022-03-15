@@ -71,6 +71,7 @@ class ResourceSaver {
 
 public:
 	enum SaverFlags {
+		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -80,7 +81,7 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	static Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = (uint32_t)FLAG_NONE);
 	static void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);

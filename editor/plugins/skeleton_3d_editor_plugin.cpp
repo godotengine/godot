@@ -103,8 +103,7 @@ void BoneTransformEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			create_editors();
-			break;
-		}
+		} break;
 	}
 }
 
@@ -531,18 +530,23 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 	TreeItem *selected = joint_tree->get_selected();
 	if (selected) {
 		const String path = selected->get_metadata(0);
-
-		if (path.begins_with("bones/")) {
-			const int b_idx = path.get_slicec('/', 1).to_int();
+		if (!path.begins_with("bones/")) {
+			return;
+		}
+		const int b_idx = path.get_slicec('/', 1).to_int();
+		selected_bone = b_idx;
+		if (pose_editor) {
 			const String bone_path = "bones/" + itos(b_idx) + "/";
-
 			pose_editor->set_target(bone_path);
 			pose_editor->set_keyable(keyable);
-			selected_bone = b_idx;
 		}
 	}
-	pose_editor->set_visible(selected);
+
+	if (pose_editor && pose_editor->is_inside_tree()) {
+		pose_editor->set_visible(selected);
+	}
 	set_bone_options_enabled(selected);
+
 	_update_properties();
 	_update_gizmo_visible();
 }

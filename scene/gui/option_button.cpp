@@ -91,6 +91,7 @@ void OptionButton::_notification(int p_what) {
 			}
 			arrow->draw(ci, ofs, clr);
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
@@ -107,6 +108,7 @@ void OptionButton::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				popup->hide();
@@ -410,7 +412,8 @@ void OptionButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
-OptionButton::OptionButton() {
+OptionButton::OptionButton(const String &p_text) :
+		Button(p_text) {
 	set_toggle_mode(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {

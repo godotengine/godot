@@ -32,6 +32,14 @@
 
 #include "scene/scene_string_names.h"
 
+AABB VisualInstance3D::get_aabb() const {
+	AABB ret;
+	if (GDVIRTUAL_CALL(_get_aabb, ret)) {
+		return ret;
+	}
+	return AABB();
+}
+
 AABB VisualInstance3D::get_transformed_aabb() const {
 	return get_global_transform().xform(get_aabb());
 }
@@ -47,27 +55,21 @@ void VisualInstance3D::_update_visibility() {
 void VisualInstance3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			// CHECK SKELETON => moving skeleton attaching logic to MeshInstance
-			/*
-			Skeleton *skeleton=Object::cast_to<Skeleton>(get_parent());
-			if (skeleton)
-				RenderingServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
-			*/
 			ERR_FAIL_COND(get_world_3d().is_null());
 			RenderingServer::get_singleton()->instance_set_scenario(instance, get_world_3d()->get_scenario());
 			_update_visibility();
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D gt = get_global_transform();
 			RenderingServer::get_singleton()->instance_set_transform(instance, gt);
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			RenderingServer::get_singleton()->instance_set_scenario(instance, RID());
 			RenderingServer::get_singleton()->instance_attach_skeleton(instance, RID());
-			//RS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
-
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
@@ -121,6 +123,7 @@ void VisualInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance3D::get_transformed_aabb);
 
+	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 }
 
@@ -218,9 +221,6 @@ void GeometryInstance3D::set_visibility_range_fade_mode(VisibilityRangeFadeMode 
 
 GeometryInstance3D::VisibilityRangeFadeMode GeometryInstance3D::get_visibility_range_fade_mode() const {
 	return visibility_range_fade_mode;
-}
-
-void GeometryInstance3D::_notification(int p_what) {
 }
 
 const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName p_name) const {

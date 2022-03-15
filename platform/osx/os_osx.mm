@@ -42,6 +42,8 @@
 #include <dlfcn.h>
 #include <libproc.h>
 #include <mach-o/dyld.h>
+#include <os/log.h>
+#include <sys/sysctl.h>
 
 _FORCE_INLINE_ String OS_OSX::get_framework_executable(const String &p_path) {
 	// Append framework executable name, or return as is if p_path is not a framework.
@@ -56,7 +58,8 @@ _FORCE_INLINE_ String OS_OSX::get_framework_executable(const String &p_path) {
 void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
 	// Prevent main loop from sleeping and redraw window during resize / modal popups.
 
-	if (get_singleton()->get_main_loop()) {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (get_singleton()->get_main_loop() && ds && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD || !ds->get_is_resizing())) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -70,6 +73,15 @@ void OS_OSX::initialize() {
 	crash_handler.initialize();
 
 	initialize_core();
+}
+
+String OS_OSX::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OS_OSX::initialize_core() {
@@ -430,7 +442,7 @@ void OS_OSX::run() {
 		} @catch (NSException *exception) {
 			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
-	};
+	}
 
 	main_loop->finalize();
 }

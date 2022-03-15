@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "ios.h"
+
 #import "app_delegate.h"
 #import "view_controller.h"
 #import <UIKit/UIKit.h>
@@ -36,7 +37,7 @@
 
 void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
-};
+}
 
 void iOS::alert(const char *p_alert, const char *p_title) {
 	NSString *title = [NSString stringWithUTF8String:p_title];
@@ -75,6 +76,6 @@ String iOS::get_rate_url(int p_app_id) const {
 
 	printf("returning rate url %s\n", ret.utf8().get_data());
 	return ret;
-};
+}
 
 iOS::iOS() {}

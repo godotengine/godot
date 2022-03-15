@@ -489,6 +489,7 @@ void TileMap::_notification(int p_what) {
 			_clear_internals();
 			_recreate_internals();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_clear_internals();
 		} break;
@@ -980,7 +981,7 @@ void TileMap::_recompute_rect_cache() {
 
 void TileMap::_rendering_notification(int p_what) {
 	switch (p_what) {
-		case CanvasItem::NOTIFICATION_VISIBILITY_CHANGED: {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			bool visible = is_visible_in_tree();
 			for (int layer = 0; layer < (int)layers.size(); layer++) {
 				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
@@ -997,7 +998,8 @@ void TileMap::_rendering_notification(int p_what) {
 				}
 			}
 		} break;
-		case CanvasItem::NOTIFICATION_TRANSFORM_CHANGED: {
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
 				return;
 			}
@@ -1016,7 +1018,8 @@ void TileMap::_rendering_notification(int p_what) {
 				}
 			}
 		} break;
-		case CanvasItem::NOTIFICATION_DRAW: {
+
+		case NOTIFICATION_DRAW: {
 			if (tile_set.is_valid()) {
 				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), is_y_sort_enabled());
 			}
@@ -1369,7 +1372,7 @@ void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSe
 
 void TileMap::_physics_notification(int p_what) {
 	switch (p_what) {
-		case CanvasItem::NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
 			in_editor = Engine::get_singleton()->is_editor_hint();
@@ -1382,7 +1385,8 @@ void TileMap::_physics_notification(int p_what) {
 				set_notify_local_transform(true);
 			}
 		} break;
-		case CanvasItem::NOTIFICATION_TRANSFORM_CHANGED: {
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
 			in_editor = Engine::get_singleton()->is_editor_hint();
@@ -1404,6 +1408,7 @@ void TileMap::_physics_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
@@ -1600,7 +1605,7 @@ void TileMap::_physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 void TileMap::_navigation_notification(int p_what) {
 	switch (p_what) {
-		case CanvasItem::NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (is_inside_tree()) {
 				for (int layer = 0; layer < (int)layers.size(); layer++) {
 					Transform2D tilemap_xform = get_global_transform();
@@ -1990,6 +1995,10 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 		_make_quadrant_dirty(Q);
 		used_rect_cache_dirty = true;
 	}
+}
+
+void TileMap::erase_cell(int p_layer, const Vector2i &p_coords) {
+	set_cell(p_layer, p_coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 }
 
 int TileMap::get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
@@ -3617,7 +3626,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "navigation_visibility_mode"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
+	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "layer", "coords", "use_proxies"), &TileMap::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "layer", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords);
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile);

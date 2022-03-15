@@ -232,13 +232,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="files_dropped">
-			<argument index="0" name="files" type="PackedStringArray" />
-			<argument index="1" name="screen" type="int" />
-			<description>
-				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
-			</description>
-		</signal>
 		<signal name="node_added">
 			<argument index="0" name="node" type="Node" />
 			<description>

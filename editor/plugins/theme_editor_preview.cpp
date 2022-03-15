@@ -203,6 +203,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("EditorFonts"));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			time_left -= get_process_delta_time();
 			if (time_left < 0) {

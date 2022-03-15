@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader_language.h"
+
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering_server.h"
@@ -632,7 +633,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 					char32_t last_char = str[str.length() - 1];
 
-					if (hexa_found) { // Integer(hex)
+					if (hexa_found) { // Integer (hex).
 						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}

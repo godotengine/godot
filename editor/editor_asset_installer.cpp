@@ -277,10 +277,8 @@ void EditorAssetInstaller::ok_pressed() {
 					dirpath = dirpath.substr(0, dirpath.length() - 1);
 				}
 
-				DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
-				memdelete(da);
-
 			} else {
 				Vector<uint8_t> data;
 				data.resize(info.uncompressed_size);
@@ -357,8 +355,6 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	add_child(error);
 	get_ok_button()->set_text(TTR("Install"));
 	set_title(TTR("Asset Installer"));
-
-	updating = false;
 
 	set_hide_on_ok(true);
 }

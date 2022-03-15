@@ -378,7 +378,7 @@ private:
 	Node3DEditor *spatial_editor;
 
 	Camera3D *previewing;
-	Camera3D *preview;
+	Camera3D *preview = nullptr;
 
 	bool previewing_cinema;
 	bool _is_node_locked(const Node *p_node);
@@ -414,6 +414,9 @@ private:
 	void commit_transform();
 	void update_transform(Point2 p_mousepos, bool p_shift);
 	void finish_transform();
+
+	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode);
+	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
 protected:
 	void _notification(int p_what);

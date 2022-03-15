@@ -377,154 +377,157 @@ void GPUParticles2D::restart() {
 }
 
 void GPUParticles2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		RID texture_rid;
-		Size2 size;
-		if (texture.is_valid()) {
-			texture_rid = texture->get_rid();
-			size = texture->get_size();
-		} else {
-			size = Size2(1, 1);
-		}
-
-		if (trail_enabled) {
-			RS::get_singleton()->mesh_clear(mesh);
-			PackedVector2Array points;
-			PackedVector2Array uvs;
-			PackedInt32Array bone_indices;
-			PackedFloat32Array bone_weights;
-			PackedInt32Array indices;
-
-			int total_segments = trail_sections * trail_section_subdivisions;
-			real_t depth = size.height * trail_sections;
-
-			for (int j = 0; j <= total_segments; j++) {
-				real_t v = j;
-				v /= total_segments;
-
-				real_t y = depth * v;
-				y = (depth * 0.5) - y;
-
-				int bone = j / trail_section_subdivisions;
-				real_t blend = 1.0 - real_t(j % trail_section_subdivisions) / real_t(trail_section_subdivisions);
-
-				real_t s = size.width;
-
-				points.push_back(Vector2(-s * 0.5, 0));
-				points.push_back(Vector2(+s * 0.5, 0));
-
-				uvs.push_back(Vector2(0, v));
-				uvs.push_back(Vector2(1, v));
-
-				for (int i = 0; i < 2; i++) {
-					bone_indices.push_back(bone);
-					bone_indices.push_back(MIN(trail_sections, bone + 1));
-					bone_indices.push_back(0);
-					bone_indices.push_back(0);
-
-					bone_weights.push_back(blend);
-					bone_weights.push_back(1.0 - blend);
-					bone_weights.push_back(0);
-					bone_weights.push_back(0);
-				}
-
-				if (j > 0) {
-					int base = j * 2 - 2;
-					indices.push_back(base + 0);
-					indices.push_back(base + 1);
-					indices.push_back(base + 2);
-
-					indices.push_back(base + 1);
-					indices.push_back(base + 3);
-					indices.push_back(base + 2);
-				}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			RID texture_rid;
+			Size2 size;
+			if (texture.is_valid()) {
+				texture_rid = texture->get_rid();
+				size = texture->get_size();
+			} else {
+				size = Size2(1, 1);
 			}
 
-			Array arr;
-			arr.resize(RS::ARRAY_MAX);
-			arr[RS::ARRAY_VERTEX] = points;
-			arr[RS::ARRAY_TEX_UV] = uvs;
-			arr[RS::ARRAY_BONES] = bone_indices;
-			arr[RS::ARRAY_WEIGHTS] = bone_weights;
-			arr[RS::ARRAY_INDEX] = indices;
+			if (trail_enabled) {
+				RS::get_singleton()->mesh_clear(mesh);
+				PackedVector2Array points;
+				PackedVector2Array uvs;
+				PackedInt32Array bone_indices;
+				PackedFloat32Array bone_weights;
+				PackedInt32Array indices;
 
-			RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				int total_segments = trail_sections * trail_section_subdivisions;
+				real_t depth = size.height * trail_sections;
 
-			Vector<Transform3D> xforms;
-			for (int i = 0; i <= trail_sections; i++) {
-				Transform3D xform;
-				/*
-				xform.origin.y = depth / 2.0 - size.height * real_t(i);
-				xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y */
-				xforms.push_back(xform);
+				for (int j = 0; j <= total_segments; j++) {
+					real_t v = j;
+					v /= total_segments;
+
+					real_t y = depth * v;
+					y = (depth * 0.5) - y;
+
+					int bone = j / trail_section_subdivisions;
+					real_t blend = 1.0 - real_t(j % trail_section_subdivisions) / real_t(trail_section_subdivisions);
+
+					real_t s = size.width;
+
+					points.push_back(Vector2(-s * 0.5, 0));
+					points.push_back(Vector2(+s * 0.5, 0));
+
+					uvs.push_back(Vector2(0, v));
+					uvs.push_back(Vector2(1, v));
+
+					for (int i = 0; i < 2; i++) {
+						bone_indices.push_back(bone);
+						bone_indices.push_back(MIN(trail_sections, bone + 1));
+						bone_indices.push_back(0);
+						bone_indices.push_back(0);
+
+						bone_weights.push_back(blend);
+						bone_weights.push_back(1.0 - blend);
+						bone_weights.push_back(0);
+						bone_weights.push_back(0);
+					}
+
+					if (j > 0) {
+						int base = j * 2 - 2;
+						indices.push_back(base + 0);
+						indices.push_back(base + 1);
+						indices.push_back(base + 2);
+
+						indices.push_back(base + 1);
+						indices.push_back(base + 3);
+						indices.push_back(base + 2);
+					}
+				}
+
+				Array arr;
+				arr.resize(RS::ARRAY_MAX);
+				arr[RS::ARRAY_VERTEX] = points;
+				arr[RS::ARRAY_TEX_UV] = uvs;
+				arr[RS::ARRAY_BONES] = bone_indices;
+				arr[RS::ARRAY_WEIGHTS] = bone_weights;
+				arr[RS::ARRAY_INDEX] = indices;
+
+				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+				Vector<Transform3D> xforms;
+				for (int i = 0; i <= trail_sections; i++) {
+					Transform3D xform;
+					/*
+					xform.origin.y = depth / 2.0 - size.height * real_t(i);
+					xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y */
+					xforms.push_back(xform);
+				}
+
+				RS::get_singleton()->particles_set_trail_bind_poses(particles, xforms);
+
+			} else {
+				RS::get_singleton()->mesh_clear(mesh);
+
+				Vector<Vector2> points = {
+					Vector2(-size.x / 2.0, -size.y / 2.0),
+					Vector2(size.x / 2.0, -size.y / 2.0),
+					Vector2(size.x / 2.0, size.y / 2.0),
+					Vector2(-size.x / 2.0, size.y / 2.0)
+				};
+
+				Vector<Vector2> uvs = {
+					Vector2(0, 0),
+					Vector2(1, 0),
+					Vector2(1, 1),
+					Vector2(0, 1)
+				};
+
+				Vector<int> indices = { 0, 1, 2, 0, 2, 3 };
+
+				Array arr;
+				arr.resize(RS::ARRAY_MAX);
+				arr[RS::ARRAY_VERTEX] = points;
+				arr[RS::ARRAY_TEX_UV] = uvs;
+				arr[RS::ARRAY_INDEX] = indices;
+
+				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform3D>());
 			}
-
-			RS::get_singleton()->particles_set_trail_bind_poses(particles, xforms);
-
-		} else {
-			RS::get_singleton()->mesh_clear(mesh);
-
-			Vector<Vector2> points = {
-				Vector2(-size.x / 2.0, -size.y / 2.0),
-				Vector2(size.x / 2.0, -size.y / 2.0),
-				Vector2(size.x / 2.0, size.y / 2.0),
-				Vector2(-size.x / 2.0, size.y / 2.0)
-			};
-
-			Vector<Vector2> uvs = {
-				Vector2(0, 0),
-				Vector2(1, 0),
-				Vector2(1, 1),
-				Vector2(0, 1)
-			};
-
-			Vector<int> indices = { 0, 1, 2, 0, 2, 3 };
-
-			Array arr;
-			arr.resize(RS::ARRAY_MAX);
-			arr[RS::ARRAY_VERTEX] = points;
-			arr[RS::ARRAY_TEX_UV] = uvs;
-			arr[RS::ARRAY_INDEX] = indices;
-
-			RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
-			RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform3D>());
-		}
-		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
+			RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
-		if (show_visibility_rect) {
-			draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
-		}
+			if (show_visibility_rect) {
+				draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
+			}
 #endif
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (sub_emitter != NodePath()) {
-			_attach_sub_emitter();
-		}
-	}
+		case NOTIFICATION_ENTER_TREE: {
+			if (sub_emitter != NodePath()) {
+				_attach_sub_emitter();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->particles_set_subemitter(particles, RID());
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->particles_set_subemitter(particles, RID());
+		} break;
 
-	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
-		if (can_process()) {
-			RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
-		} else {
-			RS::get_singleton()->particles_set_speed_scale(particles, 0);
-		}
-	}
+		case NOTIFICATION_PAUSED:
+		case NOTIFICATION_UNPAUSED: {
+			if (can_process()) {
+				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+			} else {
+				RS::get_singleton()->particles_set_speed_scale(particles, 0);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		_update_particle_emission_transform();
-	}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			_update_particle_emission_transform();
+		} break;
 
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (one_shot && !is_emitting()) {
-			notify_property_list_changed();
-			set_process_internal(false);
-		}
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (one_shot && !is_emitting()) {
+				notify_property_list_changed();
+				set_process_internal(false);
+			}
+		} break;
 	}
 }
 

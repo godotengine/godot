@@ -80,7 +80,7 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	self->call(*method, args, p_argcount, ret, error);
+	self->callp(*method, args, p_argcount, ret, error);
 	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
@@ -152,7 +152,7 @@ static void gdnative_variant_set_indexed(GDNativeVariantPtr p_self, GDNativeInt 
 
 	bool valid;
 	bool oob;
-	self->set_indexed(p_index, value, valid, oob);
+	self->set_indexed(p_index, *value, valid, oob);
 	*r_valid = valid;
 	*r_oob = oob;
 }

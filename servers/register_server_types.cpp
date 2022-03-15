@@ -110,7 +110,7 @@ void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
 
 	GDREGISTER_CLASS(TextServerManager);
-	GDREGISTER_VIRTUAL_CLASS(TextServer);
+	GDREGISTER_ABSTRACT_CLASS(TextServer);
 	GDREGISTER_CLASS(TextServerExtension);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
@@ -119,20 +119,20 @@ void preregister_server_types() {
 void register_server_types() {
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
-	GDREGISTER_VIRTUAL_CLASS(DisplayServer);
-	GDREGISTER_VIRTUAL_CLASS(RenderingServer);
+	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
+	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
 
-	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3D);
-	GDREGISTER_VIRTUAL_CLASS(NavigationServer2D);
-	GDREGISTER_VIRTUAL_CLASS(NavigationServer3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsServer2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
+	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
+	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_CLASS(CameraServer);
 
-	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
+	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 
-	GDREGISTER_VIRTUAL_CLASS(XRInterface);
+	GDREGISTER_ABSTRACT_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
 	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
@@ -149,7 +149,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioBusLayout);
 
 	GDREGISTER_CLASS(AudioStreamGenerator);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamGeneratorPlayback);
+	GDREGISTER_ABSTRACT_CLASS(AudioStreamGeneratorPlayback);
 
 	{
 		//audio effects
@@ -183,12 +183,12 @@ void register_server_types() {
 
 		GDREGISTER_CLASS(AudioEffectRecord);
 		GDREGISTER_CLASS(AudioEffectSpectrumAnalyzer);
-		GDREGISTER_VIRTUAL_CLASS(AudioEffectSpectrumAnalyzerInstance);
+		GDREGISTER_ABSTRACT_CLASS(AudioEffectSpectrumAnalyzerInstance);
 
 		GDREGISTER_CLASS(AudioEffectCapture);
 	}
 
-	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
+	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 	GDREGISTER_CLASS(RDTextureFormat);
 	GDREGISTER_CLASS(RDTextureView);
 	GDREGISTER_CLASS(RDAttachmentFormat);
@@ -208,16 +208,16 @@ void register_server_types() {
 
 	GDREGISTER_CLASS(CameraFeed);
 
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState2D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState3D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);

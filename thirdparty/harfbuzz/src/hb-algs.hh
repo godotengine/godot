@@ -498,7 +498,7 @@ struct hb_pair_t
 
   template <typename Q1, typename Q2,
 	    hb_enable_if (hb_is_convertible (T1, Q1) &&
-			  hb_is_convertible (T2, T2))>
+			  hb_is_convertible (T2, Q2))>
   operator hb_pair_t<Q1, Q2> () { return hb_pair_t<Q1, Q2> (first, second); }
 
   hb_pair_t<T1, T2> reverse () const

@@ -94,7 +94,7 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
-	OptionButton();
+	OptionButton(const String &p_text = String());
 	~OptionButton();
 };
 

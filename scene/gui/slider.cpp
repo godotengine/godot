@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "slider.h"
+
 #include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
@@ -150,19 +151,23 @@ void Slider::_notification(int p_what) {
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_inside = true;
 			update();
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
 			update();
 		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: // fallthrough
+
+		case NOTIFICATION_VISIBILITY_CHANGED:
 		case NOTIFICATION_EXIT_TREE: {
 			mouse_inside = false;
 			grab.active = false;
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
@@ -209,7 +214,6 @@ void Slider::_notification(int p_what) {
 				}
 				grabber->draw(ci, Point2i(ratio * areasize, size.height / 2 - grabber->get_size().height / 2));
 			}
-
 		} break;
 	}
 }
