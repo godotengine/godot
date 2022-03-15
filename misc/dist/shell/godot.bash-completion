@@ -69,6 +69,7 @@ _complete_godot_options() {
 --remote-debug
 --debug-collisions
 --debug-navigation
+--debug-stringnames
 --frame-delay
 --time-scale
 --disable-render-loop
