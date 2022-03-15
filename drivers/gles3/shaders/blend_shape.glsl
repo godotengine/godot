@@ -26,7 +26,7 @@ ARRAY_INDEX=8,
 layout(location = 0) in highp VFORMAT vertex_attrib;
 /* clang-format on */
 #ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-layout(location = 2) in vec4 normal_tangent_attrib;
+layout(location = 1) in vec4 normal_tangent_attrib;
 #else
 layout(location = 1) in vec3 normal_attrib;
 #endif
