@@ -253,6 +253,7 @@ void EditorPropertyArray::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 		return;
@@ -408,6 +409,7 @@ void EditorPropertyArray::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 	}
@@ -816,6 +818,7 @@ void EditorPropertyDictionary::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 		return;
@@ -1270,6 +1273,7 @@ void EditorPropertyLocalizableString::update_property() {
 		if (vbox) {
 			set_bottom_editor(nullptr);
 			memdelete(vbox);
+			button_add_item = nullptr;
 			vbox = nullptr;
 		}
 		return;
