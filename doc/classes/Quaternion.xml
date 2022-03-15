@@ -91,6 +91,11 @@
 				Returns the dot product of two quaternions.
 			</description>
 		</method>
+		<method name="exp" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+			</description>
+		</method>
 		<method name="get_angle" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -136,6 +141,11 @@
 			<return type="float" />
 			<description>
 				Returns the length of the quaternion, squared.
+			</description>
+		</method>
+		<method name="log" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
