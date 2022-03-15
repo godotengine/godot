@@ -1003,8 +1003,12 @@ void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+	if (items[p_idx].text == p_text) {
+		return;
+	}
 	items.write[p_idx].text = p_text;
 	items.write[p_idx].xl_text = atr(p_text);
+	items.write[p_idx].dirty = true;
 	_shape_item(p_idx);
 
 	control->update();
