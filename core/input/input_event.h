@@ -497,6 +497,68 @@ public:
 	InputEventPanGesture() {}
 };
 
+class InputEventGesturePan : public InputEventGesture {
+	GDCLASS(InputEventGesturePan, InputEventGesture);
+	Vector2 delta;
+	Vector2 velocity;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_delta(const Vector2 &p_delta);
+	Vector2 get_delta() const;
+
+	void set_velocity(const Vector2 &p_velocity);
+	Vector2 get_velocity() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
+	virtual String to_string() override;
+
+	InputEventGesturePan() {}
+};
+
+class InputEventGesturePinch : public InputEventGesture {
+	GDCLASS(InputEventGesturePinch, InputEventGesture);
+	float distance = 0;
+	float factor = 0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_distance(float p_distance);
+	float get_distance() const;
+
+	void set_factor(float p_factor);
+	float get_factor() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
+	virtual String to_string() override;
+
+	InputEventGesturePinch() {}
+};
+
+class InputEventGestureTwist : public InputEventGesture {
+	GDCLASS(InputEventGestureTwist, InputEventGesture);
+	float rotation = 0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_rotation(float p_rotation);
+	float get_rotation() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
+	virtual String to_string() override;
+
+	InputEventGestureTwist() {}
+};
+
 class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 

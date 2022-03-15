@@ -165,6 +165,9 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(InputEventGesture);
 	GDREGISTER_CLASS(InputEventMagnifyGesture);
 	GDREGISTER_CLASS(InputEventPanGesture);
+	GDREGISTER_CLASS(InputEventGesturePan);
+	GDREGISTER_CLASS(InputEventGesturePinch);
+	GDREGISTER_CLASS(InputEventGestureTwist);
 	GDREGISTER_CLASS(InputEventMIDI);
 
 	// Network

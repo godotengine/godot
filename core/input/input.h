@@ -114,6 +114,8 @@ private:
 
 	struct VelocityTrack {
 		uint64_t last_tick;
+		Vector2 position;
+		Vector2 last_delta;
 		Vector2 velocity;
 		Vector2 accum;
 		float accum_t;

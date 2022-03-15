@@ -189,6 +189,7 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
 	last_tick = tick;
+	last_delta = p_delta_p;
 
 	if (delta_t > max_ref_frame) {
 		// First movement in a long time, reset and start again.
@@ -548,6 +549,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		if (st->is_pressed()) {
 			VelocityTrack &track = touch_velocity_track[st->get_index()];
 			track.reset();
+			track.position = st->get_position();
 		} else {
 			// Since a pointer index may not occur again (OSs may or may not reuse them),
 			// imperatively remove it from the map to keep no fossil entries in it
@@ -591,9 +593,10 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventScreenDrag> sd = p_event;
 
 	if (sd.is_valid()) {
-		VelocityTrack &track = touch_velocity_track[sd->get_index()];
-		track.update(sd->get_relative());
-		sd->set_velocity(track.velocity);
+		VelocityTrack &vtrack = touch_velocity_track[sd->get_index()];
+		vtrack.update(sd->get_relative());
+		vtrack.position = sd->get_position();
+		sd->set_velocity(vtrack.velocity);
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
@@ -607,6 +610,84 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_button_mask(mouse_button_mask);
 
 			_parse_input_event_impl(motion_event, true);
+		}
+		int sz = touch_velocity_track.size();
+		if (sz > 1) {
+			float sz2 = 1.0f / float(sz * sz);
+			Point2 center = Point2();
+			for (Map<int, VelocityTrack>::Element *e = touch_velocity_track.front(); e; e = e->next()) {
+				center += e->get().position;
+			}
+			center /= sz;
+
+			int sector = -1;
+			for (Map<int, VelocityTrack>::Element *e = touch_velocity_track.front(); e; e = e->next()) {
+				Point2 adjusted_position = center - e->get().position;
+				float raw_angle = fmod(adjusted_position.angle_to(e->get().last_delta) + (Math_PI / 4), Math_TAU);
+				float adjusted_angle = raw_angle >= 0 ? raw_angle : raw_angle + Math_TAU;
+				int e_sector = floor(adjusted_angle / (Math_PI / 2));
+				if (sector == -1) {
+					sector = e_sector;
+				} else if (sector != e_sector) {
+					sector = -1;
+					break;
+				}
+			}
+			if (sector == -1) {
+				Vector2 delta = Vector2();
+				Vector2 velocity = Vector2();
+				for (Map<int, VelocityTrack>::Element *e = touch_velocity_track.front(); e; e = e->next()) {
+					VelocityTrack &track = e->get();
+					delta += track.last_delta;
+					velocity += track.velocity;
+				}
+				delta *= sz2;
+				velocity *= sz2;
+
+				if (event_dispatch_function) {
+					Ref<InputEventGesturePan> ev;
+					ev.instantiate();
+					ev->set_position(center);
+					ev->set_delta(delta);
+					ev->set_velocity(velocity);
+					event_dispatch_function(ev);
+				}
+			} else if (sector == 0 || sector == 2) {
+				float distance = 0;
+				float distance_p = 0;
+				for (Map<int, VelocityTrack>::Element *e = touch_velocity_track.front(); e; e = e->next()) {
+					VelocityTrack &track = e->get();
+					Vector2 d = track.position - center;
+					distance += d.length();
+					distance_p += (d + track.last_delta).length();
+				}
+				distance *= sz2;
+				distance_p *= sz2;
+
+				if (event_dispatch_function) {
+					Ref<InputEventGesturePinch> ev;
+					ev.instantiate();
+					ev->set_position(center);
+					ev->set_distance(distance);
+					ev->set_factor(distance / distance_p);
+					event_dispatch_function(ev);
+				}
+			} else if (sector == 1 || sector == 3) {
+				float rotation = 0;
+				for (Map<int, VelocityTrack>::Element *e = touch_velocity_track.front(); e; e = e->next()) {
+					VelocityTrack &track = e->get();
+					rotation += (track.position - center).angle_to(track.position + track.last_delta - center);
+				}
+				rotation *= sz2;
+
+				if (event_dispatch_function) {
+					Ref<InputEventGestureTwist> ev;
+					ev.instantiate();
+					ev->set_position(center);
+					ev->set_rotation(rotation);
+					event_dispatch_function(ev);
+				}
+			}
 		}
 	}
 
