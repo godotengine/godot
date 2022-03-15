@@ -175,7 +175,7 @@ int detect_prime() {
 			close(fdset[0]);
 
 		} else {
-			// In child, killing this process will not quit the engine.
+			// In child, exit() here will not quit the engine.
 
 			char string[201];
 
@@ -203,7 +203,7 @@ int detect_prime() {
 				print_verbose("Couldn't write vendor/renderer string.");
 			}
 			close(fdset[1]);
-			raise(SIGINT);
+			exit(0);
 		}
 	}
 
