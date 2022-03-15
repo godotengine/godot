@@ -1895,6 +1895,11 @@ void ProjectManager::_notification(int p_what) {
 				// to search without having to reach for their mouse
 				search_box->grab_focus();
 			}
+
+			if (asset_library) {
+				// Removes extra border margins.
+				asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
