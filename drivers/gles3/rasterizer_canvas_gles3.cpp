@@ -605,7 +605,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				_bind_canvas_texture(RID(), current_filter, current_repeat, r_index, last_texture, texpixel_size);
 				state.canvas_shader.version_bind_shader(state.current_shader_version, CanvasShaderGLES3::MODE_PRIMITIVE);
 
-				for (uint32_t j = 0; j < MIN(3, primitive->point_count); j++) {
+				for (uint32_t j = 0; j < MIN(3u, primitive->point_count); j++) {
 					state.instance_data_array[r_index].points[j * 2 + 0] = primitive->points[j].x;
 					state.instance_data_array[r_index].points[j * 2 + 1] = primitive->points[j].y;
 					state.instance_data_array[r_index].uvs[j * 2 + 0] = primitive->uvs[j].x;

@@ -1176,7 +1176,7 @@ uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_form
 		}
 		w = MAX(blockw, w >> 1);
 		h = MAX(blockh, h >> 1);
-		d = MAX(1, d >> 1);
+		d = MAX(1u, d >> 1);
 	}
 
 	return size;
@@ -1184,20 +1184,20 @@ uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_form
 
 uint32_t RenderingDeviceVulkan::get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	//formats and block size don't really matter here since they can all go down to 1px (even if block is larger)
-	int w = p_width;
-	int h = p_height;
-	int d = p_depth;
+	uint32_t w = p_width;
+	uint32_t h = p_height;
+	uint32_t d = p_depth;
 
-	int mipmaps = 1;
+	uint32_t mipmaps = 1;
 
 	while (true) {
 		if (w == 1 && h == 1 && d == 1) {
 			break;
 		}
 
-		w = MAX(1, w >> 1);
-		h = MAX(1, h >> 1);
-		d = MAX(1, d >> 1);
+		w = MAX(1u, w >> 1);
+		h = MAX(1u, h >> 1);
+		d = MAX(1u, d >> 1);
 
 		mipmaps++;
 	}
@@ -2556,8 +2556,8 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		}
 
 		mipmap_offset = image_total;
-		logic_width = MAX(1, logic_width >> 1);
-		logic_height = MAX(1, logic_height >> 1);
+		logic_width = MAX(1u, logic_width >> 1);
+		logic_height = MAX(1u, logic_height >> 1);
 	}
 
 	//barrier to restore layout
@@ -2755,9 +2755,9 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 
 			vkCmdCopyImageToBuffer(command_buffer, tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tmp_buffer.buffer, 1, &buffer_image_copy);
 
-			computed_w = MAX(1, computed_w >> 1);
-			computed_h = MAX(1, computed_h >> 1);
-			computed_d = MAX(1, computed_d >> 1);
+			computed_w = MAX(1u, computed_w >> 1);
+			computed_h = MAX(1u, computed_h >> 1);
+			computed_d = MAX(1u, computed_d >> 1);
 			offset += size;
 		}
 
@@ -9050,10 +9050,10 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	// Note: If adding new project settings here, also duplicate their definition in
 	// rendering_server.cpp for headless doctool.
 	staging_buffer_block_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
-	staging_buffer_block_size = MAX(4, staging_buffer_block_size);
+	staging_buffer_block_size = MAX(4u, staging_buffer_block_size);
 	staging_buffer_block_size *= 1024; //kb -> bytes
 	staging_buffer_max_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/max_size_mb", 128);
-	staging_buffer_max_size = MAX(1, staging_buffer_max_size);
+	staging_buffer_max_size = MAX(1u, staging_buffer_max_size);
 	staging_buffer_max_size *= 1024 * 1024;
 
 	if (staging_buffer_max_size < staging_buffer_block_size * 4) {

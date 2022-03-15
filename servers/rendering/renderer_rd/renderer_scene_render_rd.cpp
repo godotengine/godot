@@ -1666,8 +1666,8 @@ void RendererSceneRenderRD::_allocate_blur_textures(RenderBuffers *rb) {
 
 			if (i == 1) {
 				// next 2 are half size
-				tf.width = MAX(1, tf.width >> 1);
-				tf.height = MAX(1, tf.height >> 1);
+				tf.width = MAX(1u, tf.width >> 1);
+				tf.height = MAX(1u, tf.height >> 1);
 			}
 		}
 
