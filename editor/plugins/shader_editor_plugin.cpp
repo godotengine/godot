@@ -349,8 +349,16 @@ void ShaderEditor::_menu_option(int p_option) {
 }
 
 void ShaderEditor::_notification(int p_what) {
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
-		_check_for_external_edit();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			PopupMenu *popup = help_menu->get_popup();
+			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_icon("Instance", "EditorIcons"));
+		} break;
+
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+			_check_for_external_edit();
+		} break;
 	}
 }
 
@@ -664,7 +672,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	add_child(main_container);
