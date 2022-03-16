@@ -3,7 +3,7 @@
 	<brief_description>
 		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
 		Supported font formats:
-		- Dynamic font importer: TrueType (.ttf), OpenType (.otf), WOFF (.woff), Type 1 (.pfb, .pfm).
+		- Dynamic font importer: TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2), Type 1 (.pfb, .pfm).
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
 	</brief_description>
@@ -318,7 +318,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
+				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
 			</description>
 		</method>
