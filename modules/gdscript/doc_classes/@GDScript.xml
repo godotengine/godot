@@ -239,6 +239,11 @@
 			<return type="bool" />
 			<argument index="0" name="type" type="StringName" />
 			<description>
+				Returns whether the given [Object]-derived class exists in [ClassDB]. Note that [Variant] data types are not registered in [ClassDB].
+				[codeblock]
+				type_exists("Sprite2D") # Returns true
+				type_exists("NonExistentClass") # Returns false
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
