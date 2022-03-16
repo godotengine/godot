@@ -438,6 +438,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						was_separatable = separatable;
 						just_breaked_in_middle = false;
 
+						w += cw;
 						fw += cw;
 
 						end++;
@@ -579,7 +580,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 								if (visible) {
 									line_is_blank = false;
-									w += font->get_char_size(c[i], c[i + 1]).x;
 								}
 
 								if (c[i] == '\t') {
