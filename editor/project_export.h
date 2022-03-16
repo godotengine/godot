@@ -156,6 +156,8 @@ private:
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
 
+	void _open_key_help_link();
+
 	void _tab_changed(int);
 
 protected:
