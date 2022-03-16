@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CapsuleShape2D" inherits="Shape2D" version="3.5">
+<class name="CapsuleShape2D" inherits="Shape2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Capsule shape for 2D collisions.
 	</brief_description>

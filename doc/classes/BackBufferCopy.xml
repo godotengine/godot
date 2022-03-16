@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BackBufferCopy" inherits="Node2D" version="3.5">
+<class name="BackBufferCopy" inherits="Node2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Copies a region of the screen (or the whole screen) to a buffer so it can be accessed in your shader scripts through the [code]texture(SCREEN_TEXTURE, ...)[/code] function.
 	</brief_description>

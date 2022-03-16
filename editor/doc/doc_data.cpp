@@ -1083,7 +1083,12 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			header += " inherits=\"" + c.inherits + "\"";
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
-		header += ">";
+		// Reference the XML schema so editors can provide error checking.
+		// Modules are nested deep, so change the path to reference the same schema everywhere.
+		const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
+		header += vformat(
+				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
+				schema_path);
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
