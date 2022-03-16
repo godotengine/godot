@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_action.h                                                      */
+/*  openxr_action_editor.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_ACTION_H
-#define OPENXR_ACTION_H
+#ifndef OPENXR_ACTION_EDITOR_H
+#define OPENXR_ACTION_EDITOR_H
 
-#include "core/io/resource.h"
+#include "../action_map/openxr_action.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/text_edit.h"
 
-class OpenXRActionSet;
-
-class OpenXRAction : public Resource {
-	GDCLASS(OpenXRAction, Resource);
-
-public:
-	enum ActionType {
-		OPENXR_ACTION_BOOL,
-		OPENXR_ACTION_FLOAT,
-		OPENXR_ACTION_VECTOR2,
-		OPENXR_ACTION_POSE,
-		OPENXR_ACTION_HAPTIC,
-		OPENXR_ACTION_MAX
-	};
+class OpenXRActionEditor : public HBoxContainer {
+	GDCLASS(OpenXRActionEditor, HBoxContainer);
 
 private:
-	String localized_name;
-	ActionType action_type = OPENXR_ACTION_FLOAT;
+	Ref<OpenXRAction> action;
 
-	PackedStringArray toplevel_paths;
+	LineEdit *action_name = nullptr;
+	LineEdit *action_localized_name = nullptr;
+	OptionButton *action_type = nullptr;
+	Button *rem_action = nullptr;
+
+	void _theme_changed();
+	void _on_action_name_changed(const String p_new_text);
+	void _on_action_localized_name_changed(const String p_new_text);
+	void _on_item_selected(int p_idx);
+	void _on_remove_action();
 
 protected:
-	friend class OpenXRActionSet;
-
-	OpenXRActionSet *action_set = nullptr; // action belongs to this action set.
-
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	static Ref<OpenXRAction> new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths); // Helper function to add and configure an action
-	OpenXRActionSet *get_action_set() const { return action_set; } // Get the action set this action belongs to
-
-	String get_name_with_set() const; // Retrieve the name of this action as <action_set>/<action>
-
-	void set_localized_name(const String p_localized_name); // Set the localized name of this action
-	String get_localized_name() const; // Get the localized name of this action
-
-	void set_action_type(const ActionType p_action_type); // Set the type of this action
-	ActionType get_action_type() const; // Get the type of this action
-
-	void set_toplevel_paths(const PackedStringArray p_toplevel_paths); // Set the toplevel paths of this action
-	PackedStringArray get_toplevel_paths() const; // Get the toplevel paths of this action
-
-	void add_toplevel_path(const String p_toplevel_path); // Add a top level path to this action
-	void rem_toplevel_path(const String p_toplevel_path); // Remove a toplevel path from this action
-
-	void parse_toplevel_paths(const String p_toplevel_paths); // Parse and set the top level paths from a comma separated string
+	Ref<OpenXRAction> get_action() { return action; };
+	OpenXRActionEditor(Ref<OpenXRAction> p_action);
 };
 
-VARIANT_ENUM_CAST(OpenXRAction::ActionType);
-
-#endif // !OPENXR_ACTION_H
+#endif // !OPENXR_ACTION_EDITOR_H

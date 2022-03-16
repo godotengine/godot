@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_action.h                                                      */
+/*  openxr_interaction_profile_editor.h                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_ACTION_H
-#define OPENXR_ACTION_H
+#ifndef OPENXR_INTERACTION_PROFILE_EDITOR_H
+#define OPENXR_INTERACTION_PROFILE_EDITOR_H
 
-#include "core/io/resource.h"
+#include "../action_map/openxr_action_map.h"
+#include "../action_map/openxr_defs.h"
+#include "../action_map/openxr_interaction_profile.h"
+#include "scene/gui/scroll_container.h"
 
-class OpenXRActionSet;
+#include "openxr_select_action_dialog.h"
 
-class OpenXRAction : public Resource {
-	GDCLASS(OpenXRAction, Resource);
-
-public:
-	enum ActionType {
-		OPENXR_ACTION_BOOL,
-		OPENXR_ACTION_FLOAT,
-		OPENXR_ACTION_VECTOR2,
-		OPENXR_ACTION_POSE,
-		OPENXR_ACTION_HAPTIC,
-		OPENXR_ACTION_MAX
-	};
-
-private:
-	String localized_name;
-	ActionType action_type = OPENXR_ACTION_FLOAT;
-
-	PackedStringArray toplevel_paths;
+class OpenXRInteractionProfileEditorBase : public ScrollContainer {
+	GDCLASS(OpenXRInteractionProfileEditorBase, ScrollContainer);
 
 protected:
-	friend class OpenXRActionSet;
-
-	OpenXRActionSet *action_set = nullptr; // action belongs to this action set.
+	Ref<OpenXRInteractionProfile> interaction_profile;
+	Ref<OpenXRActionMap> action_map;
 
 	static void _bind_methods();
+	void _notification(int p_what);
+
+	const OpenXRDefs::InteractionProfile *profile_def = nullptr;
 
 public:
-	static Ref<OpenXRAction> new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths); // Helper function to add and configure an action
-	OpenXRActionSet *get_action_set() const { return action_set; } // Get the action set this action belongs to
+	Ref<OpenXRInteractionProfile> get_interaction_profile() { return interaction_profile; }
 
-	String get_name_with_set() const; // Retrieve the name of this action as <action_set>/<action>
+	virtual void _update_interaction_profile() {}
+	virtual void _theme_changed() {}
+	void _add_binding(const String p_action, const String p_path);
+	void _remove_binding(const String p_action, const String p_path);
 
-	void set_localized_name(const String p_localized_name); // Set the localized name of this action
-	String get_localized_name() const; // Get the localized name of this action
-
-	void set_action_type(const ActionType p_action_type); // Set the type of this action
-	ActionType get_action_type() const; // Get the type of this action
-
-	void set_toplevel_paths(const PackedStringArray p_toplevel_paths); // Set the toplevel paths of this action
-	PackedStringArray get_toplevel_paths() const; // Get the toplevel paths of this action
-
-	void add_toplevel_path(const String p_toplevel_path); // Add a top level path to this action
-	void rem_toplevel_path(const String p_toplevel_path); // Remove a toplevel path from this action
-
-	void parse_toplevel_paths(const String p_toplevel_paths); // Parse and set the top level paths from a comma separated string
+	OpenXRInteractionProfileEditorBase(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile);
 };
 
-VARIANT_ENUM_CAST(OpenXRAction::ActionType);
+class OpenXRInteractionProfileEditor : public OpenXRInteractionProfileEditorBase {
+	GDCLASS(OpenXRInteractionProfileEditor, OpenXRInteractionProfileEditorBase);
 
-#endif // !OPENXR_ACTION_H
+private:
+	String selecting_for_io_path;
+	HBoxContainer *main_hb = nullptr;
+	OpenXRSelectActionDialog *select_action_dialog = nullptr;
+
+	void _add_io_path(VBoxContainer *p_container, const OpenXRDefs::IOPath *p_io_path);
+
+public:
+	void select_action_for(const String p_io_path);
+	void action_selected(const String p_action);
+
+	virtual void _update_interaction_profile() override;
+	virtual void _theme_changed() override;
+	OpenXRInteractionProfileEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile);
+};
+
+#endif // !OPENXR_INTERACTION_PROFILE_EDITOR_H

@@ -48,14 +48,14 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
-#include "modules/openxr/openxr_interface.h"
+#include "openxr_interface.h"
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 
-bool OpenXRAPI::openxr_is_enabled() {
+bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
 	// @TODO we need an overrule switch so we can force enable openxr, i.e run "godot --openxr_enabled"
 
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
 #ifdef TOOLS_ENABLED
 		// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
 		return false;

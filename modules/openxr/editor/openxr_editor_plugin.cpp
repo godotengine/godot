@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_action.h                                                      */
+/*  openxr_editor_plugin.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_ACTION_H
-#define OPENXR_ACTION_H
+#include "openxr_editor_plugin.h"
 
-#include "core/io/resource.h"
+#include "../action_map/openxr_action_map.h"
+#include "editor/editor_node.h"
 
-class OpenXRActionSet;
+void OpenXREditorPlugin::edit(Object *p_node) {
+	if (Object::cast_to<OpenXRActionMap>(p_node)) {
+		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
+		if (path.is_resource_file()) {
+			action_map_editor->open_action_map(path);
+		}
+	}
+}
 
-class OpenXRAction : public Resource {
-	GDCLASS(OpenXRAction, Resource);
+bool OpenXREditorPlugin::handles(Object *p_node) const {
+	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
+}
 
-public:
-	enum ActionType {
-		OPENXR_ACTION_BOOL,
-		OPENXR_ACTION_FLOAT,
-		OPENXR_ACTION_VECTOR2,
-		OPENXR_ACTION_POSE,
-		OPENXR_ACTION_HAPTIC,
-		OPENXR_ACTION_MAX
-	};
+void OpenXREditorPlugin::make_visible(bool p_visible) {
+}
 
-private:
-	String localized_name;
-	ActionType action_type = OPENXR_ACTION_FLOAT;
+OpenXREditorPlugin::OpenXREditorPlugin() {
+	action_map_editor = memnew(OpenXRActionMapEditor);
+	EditorNode::get_singleton()->add_bottom_panel_item(TTR("OpenXR Action Map"), action_map_editor);
+}
 
-	PackedStringArray toplevel_paths;
-
-protected:
-	friend class OpenXRActionSet;
-
-	OpenXRActionSet *action_set = nullptr; // action belongs to this action set.
-
-	static void _bind_methods();
-
-public:
-	static Ref<OpenXRAction> new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths); // Helper function to add and configure an action
-	OpenXRActionSet *get_action_set() const { return action_set; } // Get the action set this action belongs to
-
-	String get_name_with_set() const; // Retrieve the name of this action as <action_set>/<action>
-
-	void set_localized_name(const String p_localized_name); // Set the localized name of this action
-	String get_localized_name() const; // Get the localized name of this action
-
-	void set_action_type(const ActionType p_action_type); // Set the type of this action
-	ActionType get_action_type() const; // Get the type of this action
-
-	void set_toplevel_paths(const PackedStringArray p_toplevel_paths); // Set the toplevel paths of this action
-	PackedStringArray get_toplevel_paths() const; // Get the toplevel paths of this action
-
-	void add_toplevel_path(const String p_toplevel_path); // Add a top level path to this action
-	void rem_toplevel_path(const String p_toplevel_path); // Remove a toplevel path from this action
-
-	void parse_toplevel_paths(const String p_toplevel_paths); // Parse and set the top level paths from a comma separated string
-};
-
-VARIANT_ENUM_CAST(OpenXRAction::ActionType);
-
-#endif // !OPENXR_ACTION_H
+OpenXREditorPlugin::~OpenXREditorPlugin() {
+}

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_action.h                                                      */
+/*  openxr_editor_plugin.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_ACTION_H
-#define OPENXR_ACTION_H
+#ifndef OPENXR_EDITOR_PLUGIN_H
+#define OPENXR_EDITOR_PLUGIN_H
 
-#include "core/io/resource.h"
+#include "editor/editor_plugin.h"
+#include "openxr_action_map_editor.h"
 
-class OpenXRActionSet;
+class OpenXREditorPlugin : public EditorPlugin {
+	GDCLASS(OpenXREditorPlugin, EditorPlugin);
 
-class OpenXRAction : public Resource {
-	GDCLASS(OpenXRAction, Resource);
-
-public:
-	enum ActionType {
-		OPENXR_ACTION_BOOL,
-		OPENXR_ACTION_FLOAT,
-		OPENXR_ACTION_VECTOR2,
-		OPENXR_ACTION_POSE,
-		OPENXR_ACTION_HAPTIC,
-		OPENXR_ACTION_MAX
-	};
-
-private:
-	String localized_name;
-	ActionType action_type = OPENXR_ACTION_FLOAT;
-
-	PackedStringArray toplevel_paths;
-
-protected:
-	friend class OpenXRActionSet;
-
-	OpenXRActionSet *action_set = nullptr; // action belongs to this action set.
-
-	static void _bind_methods();
+	OpenXRActionMapEditor *action_map_editor;
 
 public:
-	static Ref<OpenXRAction> new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths); // Helper function to add and configure an action
-	OpenXRActionSet *get_action_set() const { return action_set; } // Get the action set this action belongs to
+	virtual String get_name() const override { return "OpenXRPlugin"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	String get_name_with_set() const; // Retrieve the name of this action as <action_set>/<action>
-
-	void set_localized_name(const String p_localized_name); // Set the localized name of this action
-	String get_localized_name() const; // Get the localized name of this action
-
-	void set_action_type(const ActionType p_action_type); // Set the type of this action
-	ActionType get_action_type() const; // Get the type of this action
-
-	void set_toplevel_paths(const PackedStringArray p_toplevel_paths); // Set the toplevel paths of this action
-	PackedStringArray get_toplevel_paths() const; // Get the toplevel paths of this action
-
-	void add_toplevel_path(const String p_toplevel_path); // Add a top level path to this action
-	void rem_toplevel_path(const String p_toplevel_path); // Remove a toplevel path from this action
-
-	void parse_toplevel_paths(const String p_toplevel_paths); // Parse and set the top level paths from a comma separated string
+	OpenXREditorPlugin();
+	~OpenXREditorPlugin();
 };
 
-VARIANT_ENUM_CAST(OpenXRAction::ActionType);
-
-#endif // !OPENXR_ACTION_H
+#endif // !OPENXR_EDITOR_PLUGIN_H
