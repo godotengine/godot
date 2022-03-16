@@ -33,25 +33,33 @@
 #include "core/os/file_access.h"
 #include "core/translation.h"
 
-RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
+RES TranslationLoaderPO::load_translation(FileAccess *f, bool p_use_context, Error *r_error) {
 	enum Status {
 		STATUS_NONE,
 		STATUS_READING_ID,
 		STATUS_READING_STRING,
+		STATUS_READING_CONTEXT,
 	};
 
 	Status status = STATUS_NONE;
 
 	String msg_id;
 	String msg_str;
+	String msg_context;
 	String config;
 
 	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}
 
-	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
+	Ref<Translation> translation;
+	if (p_use_context) {
+		translation = Ref<Translation>(memnew(ContextTranslation));
+	} else {
+		translation.instance();
+	}
 	int line = 1;
+	bool entered_context = false;
 	bool skip_this = false;
 	bool skip_next = false;
 	bool is_eof = false;
@@ -63,12 +71,29 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 		// If we reached last line and it's not a content line, break, otherwise let processing that last loop
 		if (is_eof && l.empty()) {
-			if (status == STATUS_READING_ID) {
+			if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT) {
 				memdelete(f);
-				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading 'msgid' at: " + path + ":" + itos(line));
+				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));
 			} else {
 				break;
 			}
+		}
+
+		if (l.begins_with("msgctxt")) {
+			if (status != STATUS_READING_STRING) {
+				memdelete(f);
+				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgctxt', was expecting 'msgstr' before 'msgctxt' while parsing: " + path + ":" + itos(line));
+			}
+
+			// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
+			// and set "entered_context" to true to prevent adding twice.
+			if (!skip_this && msg_id != "") {
+				translation->add_context_message(msg_id, msg_str, msg_context);
+			}
+			msg_context = "";
+			l = l.substr(7, l.length()).strip_edges();
+			status = STATUS_READING_CONTEXT;
+			entered_context = true;
 		}
 
 		if (l.begins_with("msgid")) {
@@ -78,8 +103,8 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			}
 
 			if (msg_id != "") {
-				if (!skip_this) {
-					translation->add_message(msg_id, msg_str);
+				if (!skip_this && !entered_context) {
+					translation->add_context_message(msg_id, msg_str, msg_context);
 				}
 			} else if (config == "") {
 				config = msg_str;
@@ -87,16 +112,21 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 			l = l.substr(5, l.length()).strip_edges();
 			status = STATUS_READING_ID;
+			// If we did not encounter msgctxt, we reset context to empty to reset it.
+			if (!entered_context) {
+				msg_context = "";
+			}
 			msg_id = "";
 			msg_str = "";
 			skip_this = skip_next;
 			skip_next = false;
+			entered_context = false;
 		}
 
 		if (l.begins_with("msgstr")) {
 			if (status != STATUS_READING_ID) {
 				memdelete(f);
-				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr', was expecting 'msgid' while parsing: " + path + ":" + itos(line));
+				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: " + path + ":" + itos(line));
 			}
 
 			l = l.substr(6, l.length()).strip_edges();
@@ -108,7 +138,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				skip_next = true;
 			}
 			line++;
-			continue; //nothing to read or comment
+			continue; // Nothing to read or comment.
 		}
 
 		if (!l.begins_with("\"") || status == STATUS_NONE) {
@@ -146,8 +176,10 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 		if (status == STATUS_READING_ID) {
 			msg_id += l;
-		} else {
+		} else if (status == STATUS_READING_STRING) {
 			msg_str += l;
+		} else if (status == STATUS_READING_CONTEXT) {
+			msg_context += l;
 		}
 
 		line++;
@@ -155,10 +187,11 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 	memdelete(f);
 
+	// Add the last set of data from last iteration.
 	if (status == STATUS_READING_STRING) {
 		if (msg_id != "") {
 			if (!skip_this) {
-				translation->add_message(msg_id, msg_str);
+				translation->add_context_message(msg_id, msg_str, msg_context);
 			}
 		} else if (config == "") {
 			config = msg_str;
@@ -197,7 +230,7 @@ RES TranslationLoaderPO::load(const String &p_path, const String &p_original_pat
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path + "'.");
 
-	return load_translation(f, r_error);
+	return load_translation(f, false, r_error);
 }
 
 void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) const {
