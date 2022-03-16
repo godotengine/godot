@@ -130,6 +130,11 @@ bool MenuButton::is_switch_on_hover() {
 
 void MenuButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
+
+	if (popup->get_item_count() == p_count) {
+		return;
+	}
+
 	popup->set_item_count(p_count);
 	notify_property_list_changed();
 }

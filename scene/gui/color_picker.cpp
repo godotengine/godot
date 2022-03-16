@@ -292,6 +292,9 @@ bool ColorPicker::is_displaying_old_color() const {
 }
 
 void ColorPicker::set_edit_alpha(bool p_show) {
+	if (edit_alpha == p_show) {
+		return;
+	}
 	edit_alpha = p_show;
 	_update_controls();
 
@@ -509,6 +512,9 @@ Color ColorPicker::get_pick_color() const {
 
 void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	ERR_FAIL_INDEX(p_shape, SHAPE_MAX);
+	if (current_shape == p_shape) {
+		return;
+	}
 	current_shape = p_shape;
 
 	_copy_color_to_hsv();
@@ -1131,6 +1137,9 @@ void ColorPicker::_html_focus_exit() {
 }
 
 void ColorPicker::set_presets_enabled(bool p_enabled) {
+	if (presets_enabled == p_enabled) {
+		return;
+	}
 	presets_enabled = p_enabled;
 	if (!p_enabled) {
 		btn_add_preset->set_disabled(true);
@@ -1146,6 +1155,9 @@ bool ColorPicker::are_presets_enabled() const {
 }
 
 void ColorPicker::set_presets_visible(bool p_visible) {
+	if (presets_visible == p_visible) {
+		return;
+	}
 	presets_visible = p_visible;
 	preset_separator->set_visible(p_visible);
 	preset_container->set_visible(p_visible);
@@ -1419,6 +1431,9 @@ void ColorPickerButton::_notification(int p_what) {
 }
 
 void ColorPickerButton::set_pick_color(const Color &p_color) {
+	if (color == p_color) {
+		return;
+	}
 	color = p_color;
 	if (picker) {
 		picker->set_pick_color(p_color);
@@ -1432,6 +1447,9 @@ Color ColorPickerButton::get_pick_color() const {
 }
 
 void ColorPickerButton::set_edit_alpha(bool p_show) {
+	if (edit_alpha == p_show) {
+		return;
+	}
 	edit_alpha = p_show;
 	if (picker) {
 		picker->set_edit_alpha(p_show);

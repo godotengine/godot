@@ -88,6 +88,10 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].text == p_text) {
+		return;
+	}
+
 	items.write[p_idx].text = p_text;
 	_shape(p_idx);
 	update();
@@ -153,6 +157,10 @@ void ItemList::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].tooltip == p_tooltip) {
+		return;
+	}
+
 	items.write[p_idx].tooltip = p_tooltip;
 	update();
 	shape_changed = true;
@@ -168,6 +176,10 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].icon == p_icon) {
+		return;
+	}
 
 	items.write[p_idx].icon = p_icon;
 	update();
@@ -186,6 +198,10 @@ void ItemList::set_item_icon_transposed(int p_idx, const bool p_transposed) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].icon_transposed == p_transposed) {
+		return;
+	}
+
 	items.write[p_idx].icon_transposed = p_transposed;
 	update();
 	shape_changed = true;
@@ -202,6 +218,10 @@ void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].icon_region == p_region) {
+		return;
+	}
 
 	items.write[p_idx].icon_region = p_region;
 	update();
@@ -220,6 +240,10 @@ void ItemList::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].icon_modulate == p_modulate) {
+		return;
+	}
+
 	items.write[p_idx].icon_modulate = p_modulate;
 	update();
 }
@@ -235,6 +259,10 @@ void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_colo
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].custom_bg == p_custom_bg_color) {
+		return;
+	}
 
 	items.write[p_idx].custom_bg = p_custom_bg_color;
 	update();
@@ -252,6 +280,10 @@ void ItemList::set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_colo
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].custom_fg == p_custom_fg_color) {
+		return;
+	}
+
 	items.write[p_idx].custom_fg = p_custom_fg_color;
 	update();
 }
@@ -267,6 +299,10 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].tag_icon == p_tag_icon) {
+		return;
+	}
 
 	items.write[p_idx].tag_icon = p_tag_icon;
 	update();
@@ -299,6 +335,10 @@ void ItemList::set_item_disabled(int p_idx, bool p_disabled) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].disabled == p_disabled) {
+		return;
+	}
+
 	items.write[p_idx].disabled = p_disabled;
 	update();
 }
@@ -313,6 +353,10 @@ void ItemList::set_item_metadata(int p_idx, const Variant &p_metadata) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].metadata == p_metadata) {
+		return;
+	}
 
 	items.write[p_idx].metadata = p_metadata;
 	update();
@@ -379,6 +423,10 @@ bool ItemList::is_selected(int p_idx) const {
 void ItemList::set_current(int p_current) {
 	ERR_FAIL_INDEX(p_current, items.size());
 
+	if (current == p_current) {
+		return;
+	}
+
 	if (select_mode == SELECT_SINGLE) {
 		select(p_current, true);
 	} else {
@@ -410,6 +458,11 @@ void ItemList::move_item(int p_from_idx, int p_to_idx) {
 
 void ItemList::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
+
+	if (items.size() == p_count) {
+		return;
+	}
+
 	items.resize(p_count);
 	update();
 	shape_changed = true;
@@ -445,6 +498,11 @@ void ItemList::clear() {
 
 void ItemList::set_fixed_column_width(int p_size) {
 	ERR_FAIL_COND(p_size < 0);
+
+	if (fixed_column_width == p_size) {
+		return;
+	}
+
 	fixed_column_width = p_size;
 	update();
 	shape_changed = true;
@@ -455,6 +513,10 @@ int ItemList::get_fixed_column_width() const {
 }
 
 void ItemList::set_same_column_width(bool p_enable) {
+	if (same_column_width == p_enable) {
+		return;
+	}
+
 	same_column_width = p_enable;
 	update();
 	shape_changed = true;
@@ -487,6 +549,11 @@ int ItemList::get_max_text_lines() const {
 
 void ItemList::set_max_columns(int p_amount) {
 	ERR_FAIL_COND(p_amount < 0);
+
+	if (max_columns == p_amount) {
+		return;
+	}
+
 	max_columns = p_amount;
 	update();
 	shape_changed = true;
@@ -497,6 +564,10 @@ int ItemList::get_max_columns() const {
 }
 
 void ItemList::set_select_mode(SelectMode p_mode) {
+	if (select_mode == p_mode) {
+		return;
+	}
+
 	select_mode = p_mode;
 	update();
 }
@@ -526,6 +597,10 @@ ItemList::IconMode ItemList::get_icon_mode() const {
 }
 
 void ItemList::set_fixed_icon_size(const Size2 &p_size) {
+	if (fixed_icon_size == p_size) {
+		return;
+	}
+
 	fixed_icon_size = p_size;
 	update();
 }
@@ -1512,6 +1587,10 @@ void ItemList::set_autoscroll_to_bottom(const bool p_enable) {
 }
 
 void ItemList::set_auto_height(bool p_enable) {
+	if (auto_height == p_enable) {
+		return;
+	}
+
 	auto_height = p_enable;
 	shape_changed = true;
 	update();

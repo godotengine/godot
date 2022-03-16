@@ -179,6 +179,10 @@ Ref<Texture2D> TextureRect::get_texture() const {
 }
 
 void TextureRect::set_ignore_texture_size(bool p_ignore) {
+	if (ignore_texture_size == p_ignore) {
+		return;
+	}
+
 	ignore_texture_size = p_ignore;
 	update();
 	update_minimum_size();
@@ -189,6 +193,10 @@ bool TextureRect::get_ignore_texture_size() const {
 }
 
 void TextureRect::set_stretch_mode(StretchMode p_mode) {
+	if (stretch_mode == p_mode) {
+		return;
+	}
+
 	stretch_mode = p_mode;
 	update();
 }
@@ -198,6 +206,10 @@ TextureRect::StretchMode TextureRect::get_stretch_mode() const {
 }
 
 void TextureRect::set_flip_h(bool p_flip) {
+	if (hflip == p_flip) {
+		return;
+	}
+
 	hflip = p_flip;
 	update();
 }
@@ -207,6 +219,10 @@ bool TextureRect::is_flipped_h() const {
 }
 
 void TextureRect::set_flip_v(bool p_flip) {
+	if (vflip == p_flip) {
+		return;
+	}
+
 	vflip = p_flip;
 	update();
 }

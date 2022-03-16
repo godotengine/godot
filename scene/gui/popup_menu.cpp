@@ -1144,6 +1144,11 @@ void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].icon == p_icon) {
+		return;
+	}
+
 	items.write[p_idx].icon = p_icon;
 
 	control->update();
@@ -1157,6 +1162,10 @@ void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (items[p_idx].checked == p_checked) {
+		return;
+	}
+
 	items.write[p_idx].checked = p_checked;
 
 	control->update();
@@ -1169,6 +1178,11 @@ void PopupMenu::set_item_id(int p_idx, int p_id) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].id == p_id) {
+		return;
+	}
+
 	items.write[p_idx].id = p_id;
 
 	control->update();
@@ -1181,6 +1195,11 @@ void PopupMenu::set_item_accelerator(int p_idx, Key p_accel) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].accel == p_accel) {
+		return;
+	}
+
 	items.write[p_idx].accel = p_accel;
 	items.write[p_idx].dirty = true;
 
@@ -1194,6 +1213,11 @@ void PopupMenu::set_item_metadata(int p_idx, const Variant &p_meta) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].metadata == p_meta) {
+		return;
+	}
+
 	items.write[p_idx].metadata = p_meta;
 	control->update();
 	child_controls_changed();
@@ -1205,6 +1229,11 @@ void PopupMenu::set_item_disabled(int p_idx, bool p_disabled) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].disabled == p_disabled) {
+		return;
+	}
+
 	items.write[p_idx].disabled = p_disabled;
 	control->update();
 	child_controls_changed();
@@ -1216,6 +1245,11 @@ void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].submenu == p_submenu) {
+		return;
+	}
+
 	items.write[p_idx].submenu = p_submenu;
 	control->update();
 	child_controls_changed();
@@ -1330,6 +1364,11 @@ void PopupMenu::set_item_as_separator(int p_idx, bool p_separator) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].separator == p_separator) {
+		return;
+	}
+
 	items.write[p_idx].separator = p_separator;
 	control->update();
 }
@@ -1344,6 +1383,12 @@ void PopupMenu::set_item_as_checkable(int p_idx, bool p_checkable) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	int type = (int)(p_checkable ? Item::CHECKABLE_TYPE_CHECK_BOX : Item::CHECKABLE_TYPE_NONE);
+	if (type == items[p_idx].checkable_type) {
+		return;
+	}
+
 	items.write[p_idx].checkable_type = p_checkable ? Item::CHECKABLE_TYPE_CHECK_BOX : Item::CHECKABLE_TYPE_NONE;
 	control->update();
 	_menu_changed();
@@ -1354,6 +1399,12 @@ void PopupMenu::set_item_as_radio_checkable(int p_idx, bool p_radio_checkable) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	int type = (int)(p_radio_checkable ? Item::CHECKABLE_TYPE_RADIO_BUTTON : Item::CHECKABLE_TYPE_NONE);
+	if (type == items[p_idx].checkable_type) {
+		return;
+	}
+
 	items.write[p_idx].checkable_type = p_radio_checkable ? Item::CHECKABLE_TYPE_RADIO_BUTTON : Item::CHECKABLE_TYPE_NONE;
 	control->update();
 	_menu_changed();
@@ -1364,6 +1415,11 @@ void PopupMenu::set_item_tooltip(int p_idx, const String &p_tooltip) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].tooltip == p_tooltip) {
+		return;
+	}
+
 	items.write[p_idx].tooltip = p_tooltip;
 	control->update();
 	_menu_changed();
@@ -1374,6 +1430,11 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bo
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].shortcut == p_shortcut && items[p_idx].shortcut_is_global == p_global && items[p_idx].shortcut.is_valid() == p_shortcut.is_valid()) {
+		return;
+	}
+
 	if (items[p_idx].shortcut.is_valid()) {
 		_unref_shortcut(items[p_idx].shortcut);
 	}
@@ -1394,7 +1455,12 @@ void PopupMenu::set_item_indent(int p_idx, int p_indent) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items.write[p_idx].indent == p_indent) {
+		return;
+	}
 	items.write[p_idx].indent = p_indent;
+
 	control->update();
 	child_controls_changed();
 	_menu_changed();
@@ -1405,6 +1471,11 @@ void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].state == p_state) {
+		return;
+	}
+
 	items.write[p_idx].state = p_state;
 	control->update();
 	_menu_changed();
@@ -1415,6 +1486,11 @@ void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
 		p_idx += get_item_count();
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].shortcut_is_disabled == p_disabled) {
+		return;
+	}
+
 	items.write[p_idx].shortcut_is_disabled = p_disabled;
 	control->update();
 	_menu_changed();
@@ -1457,6 +1533,11 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 
 void PopupMenu::set_current_index(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (mouse_over == p_idx) {
+		return;
+	}
+
 	mouse_over = p_idx;
 	scroll_to_item(mouse_over);
 	control->update();
@@ -1469,6 +1550,11 @@ int PopupMenu::get_current_index() const {
 void PopupMenu::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
 	int prev_size = items.size();
+
+	if (prev_size == p_count) {
+		return;
+	}
+
 	items.resize(p_count);
 
 	if (prev_size < p_count) {

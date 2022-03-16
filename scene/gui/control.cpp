@@ -723,6 +723,9 @@ real_t Control::get_anchor(Side p_side) const {
 
 void Control::set_offset(Side p_side, real_t p_value) {
 	ERR_FAIL_INDEX((int)p_side, 4);
+	if (data.offset[p_side] == p_value) {
+		return;
+	}
 
 	data.offset[p_side] = p_value;
 	_size_changed();
@@ -740,6 +743,10 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 }
 
 void Control::set_begin(const Size2 &p_point) {
+	if (data.offset[0] == p_point.x && data.offset[1] == p_point.y) {
+		return;
+	}
+
 	data.offset[0] = p_point.x;
 	data.offset[1] = p_point.y;
 	_size_changed();
@@ -750,6 +757,10 @@ Size2 Control::get_begin() const {
 }
 
 void Control::set_end(const Size2 &p_point) {
+	if (data.offset[2] == p_point.x && data.offset[3] == p_point.y) {
+		return;
+	}
+
 	data.offset[2] = p_point.x;
 	data.offset[3] = p_point.y;
 	_size_changed();
@@ -760,6 +771,10 @@ Size2 Control::get_end() const {
 }
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
+	if (data.h_grow == p_direction) {
+		return;
+	}
+
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.h_grow = p_direction;
@@ -771,6 +786,10 @@ Control::GrowDirection Control::get_h_grow_direction() const {
 }
 
 void Control::set_v_grow_direction(GrowDirection p_direction) {
+	if (data.v_grow == p_direction) {
+		return;
+	}
+
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.v_grow = p_direction;
@@ -1427,6 +1446,10 @@ Rect2 Control::get_anchorable_rect() const {
 }
 
 void Control::set_scale(const Vector2 &p_scale) {
+	if (data.scale == p_scale) {
+		return;
+	}
+
 	data.scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (data.scale.x == 0) {
@@ -1444,6 +1467,10 @@ Vector2 Control::get_scale() const {
 }
 
 void Control::set_rotation(real_t p_radians) {
+	if (data.rotation == p_radians) {
+		return;
+	}
+
 	data.rotation = p_radians;
 	update();
 	_notify_transform();
@@ -1454,6 +1481,10 @@ real_t Control::get_rotation() const {
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
+	if (data.pivot_offset == p_pivot) {
+		return;
+	}
+
 	data.pivot_offset = p_pivot;
 	update();
 	_notify_transform();
@@ -2204,6 +2235,9 @@ Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 }
 
 void Control::set_disable_visibility_clip(bool p_ignore) {
+	if (data.disable_visibility_clip == p_ignore) {
+		return;
+	}
 	data.disable_visibility_clip = p_ignore;
 	update();
 }
@@ -2213,6 +2247,9 @@ bool Control::is_visibility_clip_disabled() const {
 }
 
 void Control::set_clip_contents(bool p_clip) {
+	if (data.clip_contents == p_clip) {
+		return;
+	}
 	data.clip_contents = p_clip;
 	update();
 }
@@ -2331,6 +2368,9 @@ Ref<Theme> Control::get_theme() const {
 }
 
 void Control::set_theme_type_variation(const StringName &p_theme_type) {
+	if (data.theme_type_variation == p_theme_type) {
+		return;
+	}
 	data.theme_type_variation = p_theme_type;
 	_propagate_theme_changed(this, data.theme_owner, data.theme_owner_window);
 }
@@ -2960,6 +3000,9 @@ TypedArray<Vector2i> Control::structured_text_parser(TextServer::StructuredTextP
 }
 
 void Control::set_layout_direction(Control::LayoutDirection p_direction) {
+	if (data.layout_dir == p_direction) {
+		return;
+	}
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
 	data.layout_dir = p_direction;
