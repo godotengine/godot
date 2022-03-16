@@ -3480,6 +3480,15 @@ template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 
+	{
+		const int max_flags = 32;
+
+		if (t_hint == PropertyHint::PROPERTY_HINT_FLAGS && p_annotation->resolved_arguments.size() > max_flags) {
+			push_error(vformat(R"(The argument count limit for "@export_flags" is exceeded (%d/%d).)", p_annotation->resolved_arguments.size(), max_flags), p_annotation);
+			return false;
+		}
+	}
+
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
