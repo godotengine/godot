@@ -140,11 +140,11 @@ namespace GodotTools.Build
             if (!File.Exists(file))
                 return;
 
-            file = ProjectSettings.LocalizePath(file);
+            file = ProjectSettings.Singleton.LocalizePath(file);
 
             if (file.StartsWith("res://"))
             {
-                var script = (Script)ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
+                var script = (Script)ResourceLoader.Singleton.Load(file, typeHint: Internal.CSharpLanguageType);
 
                 if (script != null && Internal.ScriptEditorEdit(script, issue.Line, issue.Column))
                     Internal.EditorNodeShowScriptScreen();
@@ -326,7 +326,7 @@ namespace GodotTools.Build
                     }
 
                     if (text != null)
-                        DisplayServer.ClipboardSet(text);
+                        DisplayServer.Singleton.ClipboardSet(text);
                     break;
                 }
                 default:

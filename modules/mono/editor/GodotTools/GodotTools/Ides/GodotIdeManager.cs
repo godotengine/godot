@@ -21,7 +21,7 @@ namespace GodotTools.Ides
                 return _messagingServer;
 
             _messagingServer?.Dispose();
-            _messagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+            _messagingServer = new MessagingServer(OS.Singleton.GetExecutablePath(), ProjectSettings.Singleton.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
 
             _ = _messagingServer.Listen();
 
@@ -200,13 +200,13 @@ namespace GodotTools.Ides
         {
             public void LogDebug(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.Singleton.IsStdoutVerbose())
                     Console.WriteLine(message);
             }
 
             public void LogInfo(string message)
             {
-                if (OS.IsStdoutVerbose())
+                if (OS.Singleton.IsStdoutVerbose())
                     Console.WriteLine(message);
             }
 

@@ -7,7 +7,7 @@ namespace GodotTools.Utils
     {
         private static string GlobalizePath(this string path)
         {
-            return ProjectSettings.GlobalizePath(path);
+            return ProjectSettings.Singleton.GlobalizePath(path);
         }
 
         public static bool Exists(string path)

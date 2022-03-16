@@ -62,7 +62,7 @@ namespace GodotTools.Build
 
         private static void PrintVerbose(string text)
         {
-            if (Godot.OS.IsStdoutVerbose())
+            if (Godot.OS.Singleton.IsStdoutVerbose())
                 Godot.GD.Print(text);
         }
 
@@ -164,7 +164,7 @@ namespace GodotTools.Build
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
-            if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
+            if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.Singleton.GetName(), out platform))
                 buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())

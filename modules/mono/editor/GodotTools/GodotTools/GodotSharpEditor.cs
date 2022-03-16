@@ -43,7 +43,7 @@ namespace GodotTools
         {
             get
             {
-                string projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
+                string projectAssemblyName = (string)ProjectSettings.Singleton.GetSetting("application/config/name");
                 projectAssemblyName = projectAssemblyName.ToSafeDirName();
                 if (string.IsNullOrEmpty(projectAssemblyName))
                     projectAssemblyName = "UnnamedProject";
@@ -57,7 +57,7 @@ namespace GodotTools
             {
                 pr.Step("Generating C# project...".TTR());
 
-                string resourceDir = ProjectSettings.GlobalizePath("res://");
+                string resourceDir = ProjectSettings.Singleton.GlobalizePath("res://");
 
                 string path = resourceDir;
                 string name = ProjectAssemblyName;
@@ -206,7 +206,7 @@ namespace GodotTools
                     return Error.Unavailable;
                 case ExternalEditorId.VisualStudio:
                 {
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = ProjectSettings.Singleton.GlobalizePath(script.ResourcePath);
 
                     var args = new List<string>
                     {
@@ -218,7 +218,7 @@ namespace GodotTools
 
                     try
                     {
-                        if (Godot.OS.IsStdoutVerbose())
+                        if (Godot.OS.Singleton.IsStdoutVerbose())
                             Console.WriteLine($"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
 
                         OS.RunProcess(command, args);
@@ -234,13 +234,13 @@ namespace GodotTools
                     goto case ExternalEditorId.MonoDevelop;
                 case ExternalEditorId.Rider:
                 {
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = ProjectSettings.Singleton.GlobalizePath(script.ResourcePath);
                     RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line);
                     return Error.Ok;
                 }
                 case ExternalEditorId.MonoDevelop:
                 {
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = ProjectSettings.Singleton.GlobalizePath(script.ResourcePath);
 
                     GodotIdeManager.LaunchIdeAsync().ContinueWith(launchTask =>
                     {
@@ -288,10 +288,10 @@ namespace GodotTools
                         }
                     }
 
-                    string resourcePath = ProjectSettings.GlobalizePath("res://");
+                    string resourcePath = ProjectSettings.Singleton.GlobalizePath("res://");
                     args.Add(resourcePath);
 
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = ProjectSettings.Singleton.GlobalizePath(script.ResourcePath);
 
                     if (line >= 0)
                     {

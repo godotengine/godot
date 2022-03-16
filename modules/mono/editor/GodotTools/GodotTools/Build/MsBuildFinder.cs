@@ -186,7 +186,7 @@ namespace GodotTools.Build
             var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
 
             var outputArray = new Godot.Collections.Array<string>();
-            int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
+            int exitCode = Godot.OS.Singleton.Execute(vsWherePath, vsWhereArgs,
                 output: (Godot.Collections.Array)outputArray);
 
             if (exitCode != 0)

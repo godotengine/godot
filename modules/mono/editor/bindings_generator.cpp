@@ -1370,15 +1370,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	output.append(INDENT1 "public ");
 	if (itype.is_singleton) {
-		output.append("static partial class ");
+		output.append("partial class ");
 	} else {
 		output.append(itype.is_instantiable ? "partial class " : "abstract partial class ");
 	}
 	output.append(itype.proxy_name);
 
-	if (itype.is_singleton) {
-		output.append("\n");
-	} else if (is_derived_type) {
+	if (is_derived_type) {
 		if (obj_types.has(itype.base_name)) {
 			output.append(" : ");
 			output.append(obj_types[itype.base_name].proxy_name);
@@ -1387,6 +1385,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
+	} else {
+		output.append("\n");
 	}
 
 	output.append(INDENT1 "{");
@@ -1469,32 +1469,34 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
+	if (itype.is_singleton || is_derived_type) {
+		output.append(MEMBER_BEGIN "private static StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
+		output.append(itype.name);
+		output.append("\";\n");
+	}
+
 	if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
 
 		output.append(MEMBER_BEGIN "private static Godot.Object singleton;\n");
-		output.append(MEMBER_BEGIN "public static Godot.Object Singleton\n" INDENT2 "{\n" INDENT3
-								   "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
-								   "singleton = Engine.GetSingleton(typeof(");
+		output.append(MEMBER_BEGIN "public static ");
 		output.append(itype.proxy_name);
-		output.append(").Name);\n" INDENT4 "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
-
-		output.append(MEMBER_BEGIN "private static StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
+		output.append(" Singleton\n" INDENT2 "{\n" INDENT3
+					  "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
+					  "singleton = Engine.GetSingleton(typeof(");
+		output.append(itype.proxy_name);
+		output.append(").Name);\n" INDENT4 "return (");
+		output.append(itype.proxy_name);
+		output.append(")singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
 
 		output.append(INDENT2 "internal static IntPtr " BINDINGS_PTR_FIELD " = ");
 		output.append(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
 		output.append("." ICALL_PREFIX);
 		output.append(itype.name);
 		output.append(SINGLETON_ICALL_SUFFIX "();\n");
-	} else if (is_derived_type) {
-		// Add member fields
+	}
 
-		output.append(MEMBER_BEGIN "private static StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
-
+	if (is_derived_type) {
 		// Add default constructor
 		if (itype.is_instantiable) {
 			output.append(MEMBER_BEGIN "public ");
@@ -1641,10 +1643,6 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
-
-	if (p_itype.is_singleton) {
-		p_output.append("static ");
-	}
 
 	p_output.append(prop_itype->cs_type);
 	p_output.append(" ");
@@ -1889,7 +1887,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		p_output.append(MEMBER_BEGIN);
 		p_output.append(p_imethod.is_internal ? "internal " : "public ");
 
-		if (p_itype.is_singleton) {
+		if (p_itype.name == "Engine" && p_imethod.name == "get_singleton") {
 			p_output.append("static ");
 		} else if (p_imethod.is_virtual) {
 			p_output.append("virtual ");
@@ -2041,30 +2039,18 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		// Generate event
 		p_output.append(MEMBER_BEGIN "[Signal]" MEMBER_BEGIN "public ");
 
-		if (p_itype.is_singleton) {
-			p_output.append("static ");
-		}
-
 		p_output.append("event ");
 		p_output.append(delegate_name);
 		p_output.append(" ");
 		p_output.append(p_isignal.proxy_name);
 		p_output.append("\n" OPEN_BLOCK_L2);
 
-		if (p_itype.is_singleton) {
-			p_output.append("add => Singleton.Connect(__signal_name_");
-		} else {
-			p_output.append("add => Connect(__signal_name_");
-		}
+		p_output.append("add => Connect(__signal_name_");
 
 		p_output.append(p_isignal.name);
 		p_output.append(", new Callable(value));\n");
 
-		if (p_itype.is_singleton) {
-			p_output.append(INDENT3 "remove => Singleton.Disconnect(__signal_name_");
-		} else {
-			p_output.append(INDENT3 "remove => Disconnect(__signal_name_");
-		}
+		p_output.append(INDENT3 "remove => Disconnect(__signal_name_");
 
 		p_output.append(p_isignal.name);
 		p_output.append(", new Callable(value));\n");

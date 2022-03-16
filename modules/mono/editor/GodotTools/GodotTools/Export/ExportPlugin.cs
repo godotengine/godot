@@ -35,7 +35,7 @@ namespace GodotTools.Export
 
         private void AddI18NAssemblies(Godot.Collections.Dictionary<string, string> assemblies, string bclDir)
         {
-            var codesets = (I18NCodesets)ProjectSettings.GetSetting("mono/export/i18n_codesets");
+            var codesets = (I18NCodesets)ProjectSettings.Singleton.GetSetting("mono/export/i18n_codesets");
 
             if (codesets == I18NCodesets.None)
                 return;
@@ -65,7 +65,7 @@ namespace GodotTools.Export
 
             GlobalDef("mono/export/i18n_codesets", I18NCodesets.All);
 
-            ProjectSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            ProjectSettings.Singleton.AddPropertyInfo(new Godot.Collections.Dictionary
             {
                 ["type"] = Variant.Type.Int,
                 ["name"] = "mono/export/i18n_codesets",
@@ -104,7 +104,7 @@ namespace GodotTools.Export
 
             // TODO What if the source file is not part of the game's C# project
 
-            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("mono/export/include_scripts_content");
+            bool includeScriptsContent = (bool)ProjectSettings.Singleton.GetSetting("mono/export/include_scripts_content");
 
             if (!includeScriptsContent)
             {
@@ -239,7 +239,7 @@ namespace GodotTools.Export
             string apiConfig = isDebug ? "Debug" : "Release";
             string resAssembliesDir = Path.Combine(GodotSharpDirs.ResAssembliesBaseDir, apiConfig);
 
-            bool assembliesInsidePck = (bool)ProjectSettings.GetSetting("mono/export/export_assemblies_inside_pck") || outputDataDir == null;
+            bool assembliesInsidePck = (bool)ProjectSettings.Singleton.GetSetting("mono/export/export_assemblies_inside_pck") || outputDataDir == null;
 
             if (!assembliesInsidePck)
             {
@@ -277,14 +277,14 @@ namespace GodotTools.Export
             }
 
             // AOT compilation
-            bool aotEnabled = platform == OS.Platforms.iOS || (bool)ProjectSettings.GetSetting("mono/export/aot/enabled");
+            bool aotEnabled = platform == OS.Platforms.iOS || (bool)ProjectSettings.Singleton.GetSetting("mono/export/aot/enabled");
 
             if (aotEnabled)
             {
                 string aotToolchainPath = null;
 
                 if (platform == OS.Platforms.Android)
-                    aotToolchainPath = (string)ProjectSettings.GetSetting("mono/export/aot/android_toolchain_path");
+                    aotToolchainPath = (string)ProjectSettings.Singleton.GetSetting("mono/export/aot/android_toolchain_path");
 
                 if (aotToolchainPath == string.Empty)
                     aotToolchainPath = null; // Don't risk it being used as current working dir
@@ -296,10 +296,10 @@ namespace GodotTools.Export
                     LLVMOnly = false,
                     LLVMPath = "",
                     LLVMOutputPath = "",
-                    FullAot = platform == OS.Platforms.iOS || (bool)(ProjectSettings.GetSetting("mono/export/aot/full_aot") ?? false),
-                    UseInterpreter = (bool)ProjectSettings.GetSetting("mono/export/aot/use_interpreter"),
-                    ExtraAotOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_aot_options") ?? Array.Empty<string>(),
-                    ExtraOptimizerOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options") ?? Array.Empty<string>(),
+                    FullAot = platform == OS.Platforms.iOS || (bool)(ProjectSettings.Singleton.GetSetting("mono/export/aot/full_aot") ?? false),
+                    UseInterpreter = (bool)ProjectSettings.Singleton.GetSetting("mono/export/aot/use_interpreter"),
+                    ExtraAotOptions = (string[])ProjectSettings.Singleton.GetSetting("mono/export/aot/extra_aot_options") ?? Array.Empty<string>(),
+                    ExtraOptimizerOptions = (string[])ProjectSettings.Singleton.GetSetting("mono/export/aot/extra_optimizer_options") ?? Array.Empty<string>(),
                     ToolchainPath = aotToolchainPath
                 };
 
@@ -470,7 +470,7 @@ namespace GodotTools.Export
 
         private static string DetermineDataDirNameForProject()
         {
-            string appName = (string)ProjectSettings.GetSetting("application/config/name");
+            string appName = (string)ProjectSettings.Singleton.GetSetting("application/config/name");
             string appNameSafe = appName.ToSafeDirName();
             return $"data_{appNameSafe}";
         }

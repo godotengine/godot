@@ -2,7 +2,7 @@ using System;
 
 namespace Godot
 {
-    public static partial class ResourceLoader
+    public partial class ResourceLoader
     {
         /// <summary>
         /// Loads a resource at the given <paramref name="path"/>, caching the result
@@ -22,7 +22,7 @@ namespace Godot
         /// Thrown when the given the loaded resource can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
-        public static T Load<T>(string path, string typeHint = null, CacheMode cacheMode = CacheMode.Reuse) where T : class
+        public T Load<T>(string path, string typeHint = null, CacheMode cacheMode = CacheMode.Reuse) where T : class
         {
             return (T)(object)Load(path, typeHint, cacheMode);
         }

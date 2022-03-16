@@ -57,7 +57,7 @@ namespace GodotTools.Build
 
             string launchMessage = $"Running: \"{startInfo.FileName}\" {startInfo.Arguments}";
             stdOutHandler?.Invoke(launchMessage);
-            if (Godot.OS.IsStdoutVerbose())
+            if (Godot.OS.Singleton.IsStdoutVerbose())
                 Console.WriteLine(launchMessage);
 
             startInfo.RedirectStandardOutput = true;

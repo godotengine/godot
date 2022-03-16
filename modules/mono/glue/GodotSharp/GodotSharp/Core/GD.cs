@@ -157,7 +157,7 @@ namespace Godot
         /// <returns>The loaded <see cref="Resource"/>.</returns>
         public static Resource Load(string path)
         {
-            return ResourceLoader.Load(path);
+            return ResourceLoader.Singleton.Load(path);
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace Godot
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
         public static T Load<T>(string path) where T : class
         {
-            return ResourceLoader.Load<T>(path);
+            return ResourceLoader.Singleton.Load<T>(path);
         }
 
         /// <summary>

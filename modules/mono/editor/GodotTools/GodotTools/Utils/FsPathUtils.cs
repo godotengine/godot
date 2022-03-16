@@ -8,7 +8,7 @@ namespace GodotTools.Utils
 {
     public static class FsPathUtils
     {
-        private static readonly string _resourcePath = ProjectSettings.GlobalizePath("res://");
+        private static readonly string _resourcePath = ProjectSettings.Singleton.GlobalizePath("res://");
 
         private static bool PathStartsWithAlreadyNorm(this string childPath, string parentPath)
         {
