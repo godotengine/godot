@@ -57,9 +57,18 @@ if "wayland" in env and env["wayland"]:
         target="xdg-shell.gen.c", source="#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
     )
 
+    env.WAYLAND_API_HEADER(
+        target="pointer_constraints.gen.h", source="#thirdparty/wayland-protocols/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml"
+    )
+
+    env.WAYLAND_API_CODE(
+        target="pointer_constraints.gen.c", source="#thirdparty/wayland-protocols/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml"
+    )
+
     common_linuxbsd += [
         "wayland.gen.c",
         "xdg-shell.gen.c",
+        "pointer_constraints.gen.c",
         "display_server_wayland.cpp",
         "key_mapping_xkb.cpp",
     ]

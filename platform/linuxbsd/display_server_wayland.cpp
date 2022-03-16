@@ -238,6 +238,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
+		globals.wp_pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_constraints_v1_interface, 1);
+		globals.wp_pointer_constraints_name = name;
+		return;
+	}
+
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
 		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, 2);
 		globals.xdg_wm_base_name = name;
@@ -259,6 +265,12 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	if (name == globals.wl_seat_name) {
 		wl_seat_destroy(globals.wl_seat);
 		globals.wl_compositor = nullptr;
+		return;
+	}
+
+	if (name == globals.wp_pointer_constraints_name) {
+		zwp_pointer_constraints_v1_destroy(globals.wp_pointer_constraints);
+		globals.wp_pointer_constraints = nullptr;
 		return;
 	}
 
@@ -790,14 +802,47 @@ String DisplayServerWayland::get_name() const {
 }
 
 void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
-	// TODO
-	print_verbose("wayland stub mouse_set_mode");
+	if (p_mode == wls.pointer_state.mode) {
+		return;
+	}
+
+	struct wl_pointer *wp = wls.pointer_state.wl_pointer;
+	struct zwp_pointer_constraints_v1 *pc = wls.globals.wp_pointer_constraints;
+
+	struct zwp_locked_pointer_v1 *&lp = wls.pointer_state.wp_locked_pointer;
+
+	switch (p_mode) {
+		case MOUSE_MODE_VISIBLE:
+		case MOUSE_MODE_HIDDEN: {
+			if (lp) {
+				zwp_locked_pointer_v1_destroy(lp);
+				lp = nullptr;
+			};
+		} break;
+
+		case MOUSE_MODE_CAPTURED: {
+			if (!lp) {
+				WindowData &wd = wls.windows[MAIN_WINDOW_ID];
+				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+
+				// Center the cursor on unlock.
+				wl_fixed_t unlock_x = wl_fixed_from_int(wd.rect.size.width / 2);
+				wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
+
+				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
+			};
+		} break;
+
+		default: {
+			// TODO: Implement other modes.
+		}
+	}
+
+	wls.pointer_state.mode = p_mode;
 }
 
 DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
-	// TODO
-	print_verbose("wayland stub mouse_get_mode");
-	return MOUSE_MODE_VISIBLE;
+	return wls.pointer_state.mode;
 }
 
 void DisplayServerWayland::mouse_warp_to_position(const Point2i &p_to) {
@@ -1300,6 +1345,17 @@ void DisplayServerWayland::process_events() {
 
 						wd.rect_changed_callback.call((const Variant **)&arg, 1, ret, ce);
 					}
+
+					if (msg_data->id == MAIN_WINDOW_ID) {
+						if (wls.pointer_state.wp_locked_pointer) {
+							// Since the window changes size, we have to reset its position hint, to
+							// successfully have a centered cursor on unlock.
+							wl_fixed_t unlock_x = wl_fixed_from_int(wd.rect.size.width / 2);
+							wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
+
+							zwp_locked_pointer_v1_set_cursor_position_hint(wls.pointer_state.wp_locked_pointer, unlock_x, unlock_y);
+						}
+					}
 				}
 
 				memdelete(msg_data);
@@ -1445,7 +1501,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// Wait for globals to get notified from the compositor.
 	wl_display_roundtrip(wls.display);
 
-	ERR_FAIL_COND(!wls.globals.wl_compositor || !wls.globals.wl_seat || !wls.globals.xdg_wm_base);
+	// TODO: Perhaps gracefully handle missing protocols when possible?
+	ERR_FAIL_COND(!wls.globals.wl_compositor || !wls.globals.wl_seat || !wls.globals.wp_pointer_constraints || !wls.globals.xdg_wm_base);
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);

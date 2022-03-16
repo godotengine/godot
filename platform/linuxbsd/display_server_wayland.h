@@ -40,6 +40,7 @@
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
 
+#include "pointer_constraints.gen.h"
 #include "wayland.gen.h"
 #include "xdg-shell.gen.h"
 
@@ -89,6 +90,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct wl_seat *wl_seat = nullptr;
 		uint32_t wl_seat_name = 0;
+
+		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
+		uint32_t wp_pointer_constraints_name = 0;
 
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
@@ -148,6 +152,10 @@ class DisplayServerWayland : public DisplayServer {
 
 	struct PointerState {
 		struct wl_pointer *wl_pointer = nullptr;
+		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
+		struct zwp_confined_pointer_v1 *confined_pointer = nullptr;
+
+		MouseMode mode = MOUSE_MODE_VISIBLE;
 
 		// This variable is needed to buffer all pointer changes until a
 		// wl_pointer.frame event, as per Wayland's specification. Everything is

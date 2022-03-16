@@ -703,6 +703,7 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - `stable/xdg-shell/xdg-shell.xml`
+- `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
 - `COPYING`
 
 
