@@ -276,7 +276,7 @@ class DisplayServerWayland : public DisplayServer {
 	static void _xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel);
 
 	// Wayland event listeners.
-	static constexpr struct wl_registry_listener registry_listener = {
+	static constexpr struct wl_registry_listener wl_registry_listener = {
 		.global = _wl_registry_on_global,
 		.global_remove = _wl_registry_on_global_remove,
 	};

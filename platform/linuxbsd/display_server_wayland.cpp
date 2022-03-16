@@ -1496,7 +1496,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// TODO: Better error handling.
 	ERR_FAIL_NULL(wls.display);
 
-	wl_registry_add_listener(wls.registry, &registry_listener, &wls);
+	wl_registry_add_listener(wls.registry, &wl_registry_listener, &wls);
 
 	// Wait for globals to get notified from the compositor.
 	wl_display_roundtrip(wls.display);
