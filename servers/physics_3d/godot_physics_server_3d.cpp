@@ -920,7 +920,7 @@ RID GodotPhysicsServer3D::soft_body_create() {
 	return rid;
 }
 
-void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) {
+void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!soft_body);
 
@@ -1355,7 +1355,7 @@ int GodotPhysicsServer3D::joint_get_solver_priority(RID p_joint) const {
 	return joint->get_priority();
 }
 
-void GodotPhysicsServer3D::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+void GodotPhysicsServer3D::joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(!joint);
 

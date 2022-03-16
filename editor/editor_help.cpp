@@ -1897,8 +1897,6 @@ EditorHelp::EditorHelp() {
 
 	class_desc->set_selection_enabled(true);
 
-	scroll_locked = false;
-	select_locked = false;
 	class_desc->hide();
 }
 

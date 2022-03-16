@@ -42,7 +42,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 	StringName base_type;
-	bool allow_multi_select;
+	bool allow_multi_select = false;
 
 	Vector<String> files;
 	OAHashMap<String, Ref<Texture2D>> icons;

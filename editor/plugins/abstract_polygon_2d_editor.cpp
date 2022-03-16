@@ -292,15 +292,14 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							_commit_action();
 							return true;
 						} else {
-							Vector<Vector2> vertices2 = _get_polygon(insert.polygon);
-							pre_move_edit = vertices2;
+							pre_move_edit = vertices;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
-							vertices2.insert(edited_point.vertex, edited_point.pos);
+							vertices.insert(edited_point.vertex, edited_point.pos);
 							selected_point = Vertex(edited_point.polygon, edited_point.vertex);
 							edge_point = PosVertex();
 
 							undo_redo->create_action(TTR("Insert Point"));
-							_action_set_polygon(insert.polygon, vertices2);
+							_action_set_polygon(insert.polygon, vertices);
 							_commit_action();
 							return true;
 						}

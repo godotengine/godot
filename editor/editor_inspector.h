@@ -68,15 +68,16 @@ private:
 	friend class EditorInspector;
 	Object *object;
 	StringName property;
+	String property_path;
 
 	int property_usage;
 
-	bool read_only;
-	bool checkable;
-	bool checked;
-	bool draw_warning;
-	bool keying;
-	bool deletable;
+	bool read_only = false;
+	bool checkable = false;
+	bool checked = false;
+	bool draw_warning = false;
+	bool keying = false;
+	bool deletable = false;
 
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
@@ -90,19 +91,19 @@ private:
 	Rect2 delete_rect;
 	bool delete_hover = false;
 
-	bool can_revert;
-	bool can_pin;
-	bool pin_hidden;
-	bool pinned;
+	bool can_revert = false;
+	bool can_pin = false;
+	bool pin_hidden = false;
+	bool pinned = false;
 
-	bool use_folding;
-	bool draw_top_bg;
+	bool use_folding = false;
+	bool draw_top_bg = true;
 
 	void _update_popup();
 	void _focusable_focused(int p_index);
 
-	bool selectable;
-	bool selected;
+	bool selectable = true;
+	bool selected = false;
 	int selected_focusable;
 
 	float split_ratio;
@@ -442,23 +443,23 @@ class EditorInspector : public ScrollContainer {
 	//
 
 	LineEdit *search_box;
-	bool show_categories;
-	bool hide_script;
-	bool use_doc_hints;
-	bool capitalize_paths;
-	bool use_filter;
-	bool autoclear;
-	bool use_folding;
+	bool show_categories = false;
+	bool hide_script = true;
+	bool use_doc_hints = false;
+	bool capitalize_paths = true;
+	bool use_filter = false;
+	bool autoclear = false;
+	bool use_folding = false;
 	int changing;
-	bool update_all_pending;
-	bool read_only;
-	bool keying;
-	bool sub_inspector;
-	bool wide_editors;
-	bool deletable_properties;
+	bool update_all_pending = false;
+	bool read_only = false;
+	bool keying = false;
+	bool sub_inspector = false;
+	bool wide_editors = false;
+	bool deletable_properties = false;
 
 	float refresh_countdown;
-	bool update_tree_pending;
+	bool update_tree_pending = false;
 	StringName _prop_edited;
 	StringName property_selected;
 	int property_focusable;

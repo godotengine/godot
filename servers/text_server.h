@@ -261,6 +261,12 @@ public:
 	virtual void font_set_subpixel_positioning(RID p_font_rid, SubpixelPositioning p_subpixel) = 0;
 	virtual SubpixelPositioning font_get_subpixel_positioning(RID p_font_rid) const = 0;
 
+	virtual void font_set_embolden(RID p_font_rid, float p_strength) = 0;
+	virtual float font_get_embolden(RID p_font_rid) const = 0;
+
+	virtual void font_set_transform(RID p_font_rid, Transform2D p_transform) = 0;
+	virtual Transform2D font_get_transform(RID p_font_rid) const = 0;
+
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) = 0;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const = 0;
 

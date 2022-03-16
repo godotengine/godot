@@ -247,23 +247,22 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		return TTR("Path is not local.");
 	}
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (d->change_dir(p.get_base_dir()) != OK) {
-		memdelete(d);
-		return TTR("Base path is invalid.");
+	{
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->change_dir(p.get_base_dir()) != OK) {
+			return TTR("Base path is invalid.");
+		}
 	}
-	memdelete(d);
 
-	// Check if file exists.
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->dir_exists(p)) {
-		memdelete(f);
-		return TTR("A directory with the same name exists.");
-	} else if (p_file_must_exist && !f->file_exists(p)) {
-		memdelete(f);
-		return TTR("File does not exist.");
+	{
+		// Check if file exists.
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->dir_exists(p)) {
+			return TTR("A directory with the same name exists.");
+		} else if (p_file_must_exist && !da->file_exists(p)) {
+			return TTR("File does not exist.");
+		}
 	}
-	memdelete(f);
 
 	// Check file extension.
 	String extension = p.get_extension();
@@ -556,13 +555,12 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	}
 
 	// Check if file exists.
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
-	if (f->file_exists(p)) {
+	if (da->file_exists(p)) {
 		is_new_script_created = false;
 		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
-	memdelete(f);
 
 	is_path_valid = true;
 	_update_dialog();
@@ -643,7 +641,7 @@ void ScriptCreateDialog::_update_template_menu() {
 				if (!templates_found.is_empty()) {
 					if (!separator) {
 						template_menu->add_separator();
-						template_menu->set_item_text(template_menu->get_item_count() - 1, display_name);
+						template_menu->set_item_text(-1, display_name);
 						separator = true;
 					}
 					for (ScriptLanguage::ScriptTemplate &t : templates_found) {
@@ -838,7 +836,7 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 
 	String dir_path = p_dir.plus_file(p_object);
 
-	DirAccess *d = DirAccess::open(dir_path);
+	DirAccessRef d = DirAccess::open(dir_path);
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -849,7 +847,6 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 	}
 	return user_templates;
 }
@@ -1029,7 +1026,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
-	is_browsing_parent = false;
 
 	/* Class Name */
 
@@ -1040,8 +1036,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(class_name);
 
 	/* Templates */
-
-	is_using_templates = true;
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	HBoxContainer *template_hb = memnew(HBoxContainer);
 	template_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1082,7 +1076,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);
 	gc->add_child(hb);
-	re_check_path = false;
 	path_controls[0] = label;
 	path_controls[1] = hb;
 
@@ -1119,17 +1112,4 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	set_hide_on_ok(false);
 	set_title(TTR("Attach Node Script"));
-
-	is_parent_name_valid = false;
-	is_class_name_valid = false;
-	is_path_valid = false;
-
-	has_named_classes = false;
-	supports_built_in = false;
-	can_inherit_from_file = false;
-	is_built_in = false;
-	built_in_enabled = true;
-	load_enabled = true;
-
-	is_new_script_created = true;
 }

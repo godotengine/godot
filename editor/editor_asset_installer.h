@@ -42,7 +42,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	String asset_name;
 	AcceptDialog *error;
 	Map<String, TreeItem *> status_map;
-	bool updating;
+	bool updating = false;
 	void _item_edited();
 	void _check_propagated_to_item(Object *p_obj, int column);
 	virtual void ok_pressed() override;

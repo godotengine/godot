@@ -1881,7 +1881,7 @@ void ScriptEditor::_update_members_overview() {
 		String name = functions[i].get_slice(":", 0);
 		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
 			members_overview->add_item(name);
-			members_overview->set_item_metadata(members_overview->get_item_count() - 1, functions[i].get_slice(":", 1).to_int() - 1);
+			members_overview->set_item_metadata(-1, functions[i].get_slice(":", 1).to_int() - 1);
 		}
 	}
 
@@ -2139,7 +2139,7 @@ void ScriptEditor::_update_script_names() {
 	for (int i = 0; i < sedata_filtered.size(); i++) {
 		script_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
 		if (sedata_filtered[i].tool) {
-			script_list->set_item_icon_modulate(script_list->get_item_count() - 1, tool_color);
+			script_list->set_item_icon_modulate(-1, tool_color);
 		}
 
 		int index = script_list->get_item_count() - 1;

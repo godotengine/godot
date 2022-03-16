@@ -261,6 +261,8 @@ void register_core_types() {
 	_classdb = memnew(core_bind::special::ClassDB);
 	_marshalls = memnew(core_bind::Marshalls);
 	_engine_debugger = memnew(core_bind::EngineDebugger);
+
+	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 }
 
 void register_core_settings() {

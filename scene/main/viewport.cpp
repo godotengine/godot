@@ -2033,6 +2033,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 }
 
+void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (!mb->is_pressed()) {
+			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
+		}
+	}
+}
+
 List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 	gui.roots_order_dirty = true;
 	return gui.roots.push_back(p_control);
@@ -2695,6 +2706,9 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	if (!is_input_handled()) {
 		_gui_input_event(ev);
+	} else {
+		// Cleanup internal GUI state after accepting event during _input().
+		_gui_cleanup_internal_state(ev);
 	}
 
 	event_count++;
@@ -2768,6 +2782,14 @@ Vector2 Viewport::get_camera_rect_size() const {
 }
 
 void Viewport::set_disable_input(bool p_disable) {
+	if (p_disable == disable_input) {
+		return;
+	}
+	if (p_disable) {
+		_drop_mouse_focus();
+		_drop_mouse_over();
+		_gui_cancel_tooltip();
+	}
 	disable_input = p_disable;
 }
 
@@ -3040,12 +3062,8 @@ Viewport *Viewport::get_parent_viewport() const {
 	return get_parent()->get_viewport();
 }
 
-void Viewport::set_embed_subwindows_hint(bool p_embed) {
+void Viewport::set_embedding_subwindows(bool p_embed) {
 	gui.embed_subwindows_hint = p_embed;
-}
-
-bool Viewport::get_embed_subwindows_hint() const {
-	return gui.embed_subwindows_hint;
 }
 
 bool Viewport::is_embedding_subwindows() const {
@@ -3638,8 +3656,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_filter", "mode"), &Viewport::set_default_canvas_item_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_filter"), &Viewport::get_default_canvas_item_texture_filter);
 
-	ClassDB::bind_method(D_METHOD("set_embed_subwindows_hint", "enable"), &Viewport::set_embed_subwindows_hint);
-	ClassDB::bind_method(D_METHOD("get_embed_subwindows_hint"), &Viewport::get_embed_subwindows_hint);
+	ClassDB::bind_method(D_METHOD("set_embedding_subwindows", "enable"), &Viewport::set_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
 
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
@@ -3721,7 +3738,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embed_subwindows_hint", "get_embed_subwindows_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embedding_subwindows", "is_embedding_subwindows");
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");

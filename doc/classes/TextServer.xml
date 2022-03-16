@@ -112,6 +112,13 @@
 				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="font_get_embolden" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font embolden strength.
+			</description>
+		</method>
 		<method name="font_get_fixed_size" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -368,6 +375,13 @@
 				Returns array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
 			</description>
 		</method>
+		<method name="font_get_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns 2D transform applied to the font outlines.
+			</description>
+		</method>
 		<method name="font_get_underline_position" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -540,6 +554,14 @@
 			<argument index="2" name="descent" type="float" />
 			<description>
 				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="font_set_embolden">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="strength" type="float" />
+			<description>
+				Sets font embolden strength. If [code]strength[/code] is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
 		<method name="font_set_fixed_size">
@@ -763,6 +785,15 @@
 			<argument index="3" name="offset" type="PackedInt32Array" />
 			<description>
 				Sets array containing the first free pixel in the each column of texture. Should be the same size as texture width or empty.
+			</description>
+		</method>
+		<method name="font_set_transform">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="transform" type="Transform2D" />
+			<description>
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+				For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
 			</description>
 		</method>
 		<method name="font_set_underline_position">

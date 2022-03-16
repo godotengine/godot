@@ -388,6 +388,7 @@ private:
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
+	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
 	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
 
@@ -600,8 +601,7 @@ public:
 
 	virtual DisplayServer::WindowID get_window_id() const = 0;
 
-	void set_embed_subwindows_hint(bool p_embed);
-	bool get_embed_subwindows_hint() const;
+	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
 
 	Viewport *get_parent_viewport() const;

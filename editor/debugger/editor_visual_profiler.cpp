@@ -67,7 +67,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 
 	updating_frame = true;
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0));
+	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0u));
 
 	if (!seeking) {
 		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
@@ -426,6 +426,7 @@ void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_layout_rtl()) {
 				activate->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));

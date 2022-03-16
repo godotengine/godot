@@ -1771,9 +1771,6 @@ void CustomPropertyEditor::_bind_methods() {
 }
 
 CustomPropertyEditor::CustomPropertyEditor() {
-	read_only = false;
-	updating = false;
-
 	value_vbox = memnew(VBoxContainer);
 	add_child(value_vbox);
 

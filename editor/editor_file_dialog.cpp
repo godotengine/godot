@@ -214,7 +214,7 @@ void EditorFileDialog::update_dir() {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
 			drives->add_item(RTR("Network"));
-			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->set_item_disabled(-1, true);
 			drives->select(drives->get_item_count() - 1);
 		} else {
 			drives->select(dir_access->get_current_drive());
@@ -314,8 +314,8 @@ void EditorFileDialog::_post_popup() {
 				recentd.remove_at(i--);
 			} else {
 				recent->add_item(name, folder);
-				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
-				recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+				recent->set_item_metadata(-1, recentd[i]);
+				recent->set_item_icon_modulate(-1, folder_color);
 			}
 		}
 		EditorSettings::get_singleton()->set_recent_dirs(recentd);
@@ -800,9 +800,9 @@ void EditorFileDialog::update_file_list() {
 		item_list->add_item(dir_name);
 
 		if (display_mode == DISPLAY_THUMBNAILS) {
-			item_list->set_item_icon(item_list->get_item_count() - 1, folder_thumbnail);
+			item_list->set_item_icon(-1, folder_thumbnail);
 		} else {
-			item_list->set_item_icon(item_list->get_item_count() - 1, folder);
+			item_list->set_item_icon(-1, folder);
 		}
 
 		Dictionary d;
@@ -810,8 +810,8 @@ void EditorFileDialog::update_file_list() {
 		d["path"] = cdir.plus_file(dir_name);
 		d["dir"] = true;
 
-		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
-		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
+		item_list->set_item_metadata(-1, d);
+		item_list->set_item_icon_modulate(-1, folder_color);
 
 		dirs.pop_front();
 	}
@@ -858,10 +858,10 @@ void EditorFileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(cdir.plus_file(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
-					item_list->set_item_icon(item_list->get_item_count() - 1, file_thumbnail);
-					item_list->set_item_tag_icon(item_list->get_item_count() - 1, icon);
+					item_list->set_item_icon(-1, file_thumbnail);
+					item_list->set_item_tag_icon(-1, icon);
 				} else {
-					item_list->set_item_icon(item_list->get_item_count() - 1, icon);
+					item_list->set_item_icon(-1, icon);
 				}
 			}
 
@@ -870,7 +870,7 @@ void EditorFileDialog::update_file_list() {
 			d["dir"] = false;
 			String fullpath = cdir.plus_file(files.front()->get());
 			d["path"] = fullpath;
-			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+			item_list->set_item_metadata(-1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
@@ -1321,8 +1321,8 @@ void EditorFileDialog::_update_favorites() {
 			continue; // We don't handle favorite files here.
 		}
 
-		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
-		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
+		favorites->set_item_metadata(-1, favorited[i]);
+		favorites->set_item_icon_modulate(-1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);
@@ -1471,9 +1471,9 @@ void EditorFileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_file_mode", "get_file_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR), "set_current_dir", "get_current_dir");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*"), "set_current_file", "get_current_file");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path"), "set_current_path", "get_current_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_overwrite_warning"), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
 
@@ -1557,7 +1557,6 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
 	local_history_pos = 0;
-	disable_overwrite_warning = false;
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
@@ -1814,15 +1813,12 @@ EditorFileDialog::EditorFileDialog() {
 	set_hide_on_ok(false);
 	vbox = vbc;
 
-	invalidated = true;
 	if (register_func) {
 		register_func(this);
 	}
 
-	previews_enabled = true;
 	preview_wheel_timeout = 0;
 	preview_wheel_index = 0;
-	preview_waiting = false;
 }
 
 EditorFileDialog::~EditorFileDialog() {

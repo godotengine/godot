@@ -73,11 +73,23 @@ void StringName::cleanup() {
 				d = d->next;
 			}
 		}
-		print_line("\nStringName Reference Ranking:\n");
+
+		print_line("\nStringName reference ranking (from most to least referenced):\n");
+
 		data.sort_custom<DebugSortReferences>();
-		for (int i = 0; i < MIN(100, data.size()); i++) {
+		int unreferenced_stringnames = 0;
+		int rarely_referenced_stringnames = 0;
+		for (int i = 0; i < data.size(); i++) {
 			print_line(itos(i + 1) + ": " + data[i]->get_name() + " - " + itos(data[i]->debug_references));
+			if (data[i]->debug_references == 0) {
+				unreferenced_stringnames += 1;
+			} else if (data[i]->debug_references < 5) {
+				rarely_referenced_stringnames += 1;
+			}
 		}
+
+		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data.size(), unreferenced_stringnames, unreferenced_stringnames / float(data.size()) * 100));
+		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data.size(), rarely_referenced_stringnames, rarely_referenced_stringnames / float(data.size()) * 100));
 	}
 #endif
 	int lost_strings = 0;

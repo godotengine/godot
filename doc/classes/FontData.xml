@@ -567,6 +567,9 @@
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.
 		</member>
+		<member name="embolden" type="float" setter="set_embolden" getter="get_embolden" default="0.0">
+			If is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.
 		</member>
@@ -602,6 +605,10 @@
 		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
 			Font glyph sub-pixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+		</member>
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
+			2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+			For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
 		</member>
 	</members>
 </class>

@@ -98,7 +98,7 @@ class EditorHelp : public VBoxContainer {
 
 	};
 
-	bool select_locked;
+	bool select_locked = false;
 
 	String prev_search;
 
@@ -144,7 +144,7 @@ class EditorHelp : public VBoxContainer {
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
-	bool scroll_locked;
+	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());

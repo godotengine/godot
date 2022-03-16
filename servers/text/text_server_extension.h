@@ -139,6 +139,16 @@ public:
 	GDVIRTUAL2(_font_set_subpixel_positioning, RID, SubpixelPositioning);
 	GDVIRTUAL1RC(SubpixelPositioning, _font_get_subpixel_positioning, RID);
 
+	virtual void font_set_embolden(RID p_font_rid, float p_strength) override;
+	virtual float font_get_embolden(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_embolden, RID, float);
+	GDVIRTUAL1RC(float, _font_get_embolden, RID);
+
+	virtual void font_set_transform(RID p_font_rid, Transform2D p_transform) override;
+	virtual Transform2D font_get_transform(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_transform, RID, Transform2D);
+	GDVIRTUAL1RC(Transform2D, _font_get_transform, RID);
+
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) override;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const override;
 	GDVIRTUAL2(_font_set_variation_coordinates, RID, Dictionary);

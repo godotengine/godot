@@ -240,6 +240,4 @@ EditorPluginSettings::EditorPluginSettings() {
 	mc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(mc);
-
-	updating = false;
 }

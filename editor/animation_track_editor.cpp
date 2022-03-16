@@ -1814,13 +1814,6 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		if (hsize_rect.has_point(mm->get_position())) {
-			// Change the cursor to indicate that the track name column's width can be adjusted
-			set_default_cursor_shape(Control::CURSOR_HSIZE);
-		} else {
-			set_default_cursor_shape(Control::CURSOR_ARROW);
-		}
-
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
@@ -1833,6 +1826,15 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal(SNAME("timeline_changed"), ofs, false, mm->is_alt_pressed());
 		}
+	}
+}
+
+Control::CursorShape AnimationTimelineEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (dragging_hsize || hsize_rect.has_point(p_pos)) {
+		// Indicate that the track name column's width can be adjusted
+		return Control::CURSOR_HSIZE;
+	} else {
+		return get_default_cursor_shape();
 	}
 }
 
@@ -1884,8 +1886,6 @@ void AnimationTimelineEdit::_bind_methods() {
 }
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
-	use_fps = false;
-	editing = false;
 	name_limit = 150 * EDSCALE;
 	zoom = nullptr;
 	track_edit = nullptr;
@@ -1932,9 +1932,6 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_track->hide();
 	add_track->get_popup()->connect("index_pressed", callable_mp(this, &AnimationTimelineEdit::_track_added));
 	len_hb->hide();
-
-	dragging_timeline = false;
-	dragging_hsize = false;
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_scroll_callback), callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
@@ -3149,13 +3146,8 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	path = nullptr;
 	path_popup = nullptr;
 	menu = nullptr;
-	clicking_on_name = false;
 	dropping_at = 0;
 
-	in_group = false;
-
-	moving_selection_attempt = false;
-	moving_selection = false;
 	select_single_attempt = -1;
 
 	play_position_pos = 0;
@@ -6314,8 +6306,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_child(method_selector);
 	method_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_add_method_key));
 
-	insert_queue = false;
-
 	insert_confirm = memnew(ConfirmationDialog);
 	add_child(insert_confirm);
 	insert_confirm->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_confirm_insert_list));
@@ -6333,8 +6323,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_reset->set_text(TTR("Create RESET Track(s)", ""));
 	insert_confirm_reset->set_pressed(EDITOR_GET("editors/animation/default_create_reset_tracks"));
 	ichb->add_child(insert_confirm_reset);
-	keying = false;
-	moving_selection = false;
 	key_edit = nullptr;
 	multi_key_edit = nullptr;
 
@@ -6344,7 +6332,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect("draw", callable_mp(this, &AnimationTrackEditor::_box_selection_draw));
-	box_selecting = false;
 
 	// Default Plugins.
 
@@ -6441,7 +6428,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_hide_root(true);
 	track_vbox->add_child(track_copy_select);
 	track_copy_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_COPY_TRACKS_CONFIRM));
-	animation_changing_awaiting_update = false;
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {

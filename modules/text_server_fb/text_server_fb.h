@@ -142,6 +142,8 @@ class TextServerFallback : public TextServer {
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		Dictionary variation_coordinates;
 		float oversampling = 0.f;
+		float embolden = 0.f;
+		Transform2D transform;
 
 		uint32_t style_flags = 0;
 		String font_name;
@@ -172,7 +174,7 @@ class TextServerFallback : public TextServer {
 		}
 	};
 
-	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontDataForSizeFallback *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height) const;
+	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontDataForSizeFallback *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontDataFallback *p_font_data, FontDataForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
 #endif
@@ -293,6 +295,12 @@ public:
 
 	virtual void font_set_subpixel_positioning(RID p_font_rid, SubpixelPositioning p_subpixel) override;
 	virtual SubpixelPositioning font_get_subpixel_positioning(RID p_font_rid) const override;
+
+	virtual void font_set_embolden(RID p_font_rid, float p_strength) override;
+	virtual float font_get_embolden(RID p_font_rid) const override;
+
+	virtual void font_set_transform(RID p_font_rid, Transform2D p_transform) override;
+	virtual Transform2D font_get_transform(RID p_font_rid) const override;
 
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) override;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const override;

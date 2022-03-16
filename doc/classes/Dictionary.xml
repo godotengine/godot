@@ -307,17 +307,7 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Dictionary" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>

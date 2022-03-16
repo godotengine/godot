@@ -180,8 +180,6 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
-	old_search = false;
-
 	set_hide_on_ok(false);
 
 	set_title(TTR("Search Help"));

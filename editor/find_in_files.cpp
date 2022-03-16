@@ -612,8 +612,6 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 
-	_with_replace = false;
-
 	{
 		_replace_container = memnew(HBoxContainer);
 

@@ -303,17 +303,19 @@ void CSGShape3D::_update_shape() {
 		ERR_CONTINUE(mat < -1 || mat >= face_count.size());
 		int idx = mat == -1 ? face_count.size() - 1 : mat;
 
-		Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
+		if (n->faces[i].smooth) {
+			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
 
-		for (int j = 0; j < 3; j++) {
-			Vector3 v = n->faces[i].vertices[j];
-			Vector3 add;
-			if (vec_map.lookup(v, add)) {
-				add += p.normal;
-			} else {
-				add = p.normal;
+			for (int j = 0; j < 3; j++) {
+				Vector3 v = n->faces[i].vertices[j];
+				Vector3 add;
+				if (vec_map.lookup(v, add)) {
+					add += p.normal;
+				} else {
+					add = p.normal;
+				}
+				vec_map.set(v, add);
 			}
-			vec_map.set(v, add);
 		}
 
 		face_count.write[idx]++;
@@ -1530,6 +1532,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 			for (int i = 0; i < sides; i++) {
 				float inci = float(i) / sides;
 				float inci_n = float((i + 1)) / sides;
+				if (i == sides - 1) {
+					inci_n = 0;
+				}
 
 				float angi = inci * Math_TAU;
 				float angi_n = inci_n * Math_TAU;
@@ -1540,6 +1545,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 				for (int j = 0; j < ring_sides; j++) {
 					float incj = float(j) / ring_sides;
 					float incj_n = float((j + 1)) / ring_sides;
+					if (j == ring_sides - 1) {
+						incj_n = 0;
+					}
 
 					float angj = incj * Math_TAU;
 					float angj_n = incj_n * Math_TAU;

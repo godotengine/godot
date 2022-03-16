@@ -362,8 +362,8 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 
 				layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 
-				mmw = MAX(1, mmw >> 1);
-				mmh = MAX(1, mmh >> 1);
+				mmw = MAX(1u, mmw >> 1);
+				mmh = MAX(1u, mmh >> 1);
 			}
 
 			layers.push_back(layer);
@@ -390,8 +390,8 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 
 			layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 
-			mmw = MAX(1, mmw >> 1);
-			mmh = MAX(1, mmh >> 1);
+			mmw = MAX(1u, mmw >> 1);
+			mmh = MAX(1u, mmh >> 1);
 		}
 
 		layers.push_back(layer);
@@ -432,8 +432,8 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 				}
 			}
 
-			mmw = MAX(1, mmw >> 1);
-			mmh = MAX(1, mmh >> 1);
+			mmw = MAX(1u, mmw >> 1);
+			mmh = MAX(1u, mmh >> 1);
 		}
 	}
 }
@@ -1170,7 +1170,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 
 					sky_light_data.direction[0] = world_direction.x;
 					sky_light_data.direction[1] = world_direction.y;
-					sky_light_data.direction[2] = -world_direction.z;
+					sky_light_data.direction[2] = world_direction.z;
 
 					float sign = storage->light_is_negative(base) ? -1 : 1;
 					sky_light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);

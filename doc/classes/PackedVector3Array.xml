@@ -154,11 +154,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="PackedVector3Array" />
 			<description>
 			</description>
@@ -172,11 +167,6 @@
 		<operator name="operator +">
 			<return type="PackedVector3Array" />
 			<argument index="0" name="right" type="PackedVector3Array" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>
