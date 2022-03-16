@@ -146,6 +146,7 @@
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/font_editor_plugin.h"
+#include "editor/plugins/gdextension_export_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
@@ -7093,6 +7094,11 @@ EditorNode::EditorNode() {
 	export_text_to_binary_plugin.instantiate();
 
 	EditorExport::get_singleton()->add_export_plugin(export_text_to_binary_plugin);
+
+	Ref<GDExtensionExportPlugin> gdextension_export_plugin;
+	gdextension_export_plugin.instantiate();
+
+	EditorExport::get_singleton()->add_export_plugin(gdextension_export_plugin);
 
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();

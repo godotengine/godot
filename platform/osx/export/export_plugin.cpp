@@ -458,7 +458,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	return OK;
 }
 
-Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path) {
+Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn) {
 	bool force_builtin_codesign = EditorSettings::get_singleton()->get("export/macos/force_builtin_codesign");
 	bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
 
@@ -467,10 +467,10 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 #ifdef MODULE_REGEX_ENABLED
 
 #ifdef OSX_ENABLED
-		if (p_preset->get("codesign/timestamp")) {
+		if (p_preset->get("codesign/timestamp") && p_warn) {
 			WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
 		}
-		if (p_preset->get("codesign/hardened_runtime")) {
+		if (p_preset->get("codesign/hardened_runtime") && p_warn) {
 			WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
 		}
 #endif
@@ -490,14 +490,18 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		List<String> args;
 		if (p_preset->get("codesign/timestamp")) {
 			if (ad_hoc) {
-				WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+				if (p_warn) {
+					WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+				}
 			} else {
 				args.push_back("--timestamp");
 			}
 		}
 		if (p_preset->get("codesign/hardened_runtime")) {
 			if (ad_hoc) {
-				WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+				if (p_warn) {
+					WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+				}
 			} else {
 				args.push_back("--options");
 				args.push_back("runtime");
@@ -577,7 +581,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 		}
 
 		if (extensions_to_sign.find(current_file.get_extension()) > -1) {
-			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path) };
+			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path, false) };
 			if (code_sign_error != OK) {
 				return code_sign_error;
 			}
@@ -621,7 +625,7 @@ Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, co
 			// If it is a directory, find and sign all dynamic libraries.
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_should_error_on_non_code_sign);
 		} else {
-			err = _code_sign(p_preset, p_in_app_path, p_ent_path);
+			err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
 		}
 	}
 	return err;
@@ -1046,7 +1050,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 		Vector<SharedObject> shared_objects;
-		err = save_pack(p_preset, pack_path, &shared_objects);
+		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
 		// See if we can code sign our new package.
 		bool sign_enabled = p_preset->get("codesign/enable");
@@ -1213,7 +1217,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				String hlp_path = helpers[i];
 				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
 				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path, false);
 				}
 				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
 			}
@@ -1238,8 +1242,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
-				String path_in_app{ tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file() };
-				err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				if (shared_objects[i].target.is_empty()) {
+					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				} else {
+					String path_in_app = tmp_app_path_name.plus_file(shared_objects[i].target).plus_file(src_path.get_file());
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, false);
+				}
 				if (err != OK) {
 					break;
 				}
@@ -1257,7 +1266,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (sign_enabled) {
 			for (int i = 0; i < dylibs_found.size(); i++) {
 				if (err == OK) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path, false);
 				}
 			}
 		}
@@ -1282,7 +1291,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (ep.step(TTR("Code signing DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _code_sign(p_preset, p_path, ent_path);
+				err = _code_sign(p_preset, p_path, ent_path, false);
 			}
 		} else if (export_format == "zip") {
 			// Create ZIP.
