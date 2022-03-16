@@ -423,7 +423,7 @@ _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 // and doc translate for the class reference (DTR).
 #ifdef TOOLS_ENABLED
 // Gets parsed.
-String TTR(const String &);
+String TTR(const String &p_text, const String &p_context = "");
 String DTR(const String &);
 // Use for C strings.
 #define TTRC(m_value) (m_value)

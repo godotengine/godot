@@ -62,7 +62,7 @@ void load_editor_translations(const String &p_locale) {
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());
 
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, true);
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
@@ -87,7 +87,7 @@ void load_doc_translations(const String &p_locale) {
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());
 
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, false);
 
 			if (tr.is_valid()) {
 				tr->set_locale(dtl->lang);

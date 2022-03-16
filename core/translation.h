@@ -60,7 +60,21 @@ public:
 	void get_message_list(List<StringName> *r_messages) const;
 	int get_message_count() const;
 
+	// Not exposed to scripting. For easy usage of `ContextTranslation`.
+	virtual void add_context_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context);
+	virtual StringName get_context_message(const StringName &p_src_text, const StringName &p_context) const;
+
 	Translation();
+};
+
+class ContextTranslation : public Translation {
+	GDCLASS(ContextTranslation, Translation);
+
+	Map<StringName, Map<StringName, StringName>> context_translation_map;
+
+public:
+	virtual void add_context_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context);
+	virtual StringName get_context_message(const StringName &p_src_text, const StringName &p_context) const;
 };
 
 class TranslationServer : public Object {
@@ -107,7 +121,7 @@ public:
 	static String get_language_code(const String &p_locale);
 
 	void set_tool_translation(const Ref<Translation> &p_translation);
-	StringName tool_translate(const StringName &p_message) const;
+	StringName tool_translate(const StringName &p_message, const StringName &p_context) const;
 	void set_doc_translation(const Ref<Translation> &p_translation);
 	StringName doc_translate(const StringName &p_message) const;
 
