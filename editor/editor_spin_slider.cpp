@@ -443,6 +443,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		case NOTIFICATION_WM_CLOSE_REQUEST:
 		case NOTIFICATION_EXIT_TREE: {
 			if (grabbing_spinner) {
 				grabber->hide();
