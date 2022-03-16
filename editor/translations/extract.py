@@ -43,6 +43,7 @@ with open("editor/editor_property_name_processor.cpp") as f:
 
 unique_str = []
 unique_loc = {}
+ctx_group = {}  # Store msgctx, msg, and locations.
 main_po = """
 # LANGUAGE translation of the Godot Engine editor.
 # Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
@@ -62,15 +63,16 @@ msgstr ""
 """
 
 
+# Regex "(?P<name>(?:[^"\\]|\\.)*)" creates a group named `name` that matches a string.
 message_patterns = {
-    re.compile(r'RTR\("(([^"\\]|\\.)*)"\)'): False,
-    re.compile(r'TTR\("(([^"\\]|\\.)*)"\)'): False,
-    re.compile(r'TTRC\("(([^"\\]|\\.)*)"\)'): False,
-    re.compile(r'_initial_set\("([^"]+?)",'): True,
-    re.compile(r'GLOBAL_DEF(?:_RST)?\("([^".]+?)",'): True,
-    re.compile(r'EDITOR_DEF(?:_RST)?\("([^"]+?)",'): True,
-    re.compile(r'ADD_PROPERTY\(PropertyInfo\(Variant::[A-Z]+,\s*"([^"]+?)",'): True,
-    re.compile(r'ADD_GROUP\("([^"]+?)",'): False,
+    re.compile(r'RTR\("(?P<message>(?:[^"\\]|\\.)*)"\)'): False,
+    re.compile(r'TTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): False,
+    re.compile(r'TTRC\("(?P<message>(?:[^"\\]|\\.)*)"\)'): False,
+    re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): True,
+    re.compile(r'GLOBAL_DEF(?:_RST)?\("(?P<message>[^".]+?)",'): True,
+    re.compile(r'EDITOR_DEF(?:_RST)?\("(?P<message>[^"]+?)",'): True,
+    re.compile(r'ADD_PROPERTY\(PropertyInfo\(Variant::[A-Z]+,\s*"(?P<message>[^"]+?)",'): True,
+    re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)",'): False,
 }
 
 
@@ -92,12 +94,37 @@ def _process_editor_string(name):
     return capitalized
 
 
-def _write_translator_comment(msg, translator_comment):
+def _write_message(msgctx, msg, location):
+    global main_po
+    main_po += "#: " + location + "\n"
+    if msgctx != "":
+        main_po += 'msgctxt "' + msgctx + '"\n'
+    main_po += 'msgid "' + msg + '"\n'
+    main_po += 'msgstr ""\n\n'
+
+
+def _add_additional_location(msgctx, msg, location):
+    global main_po
+    # Add additional location to previous occurrence.
+    if msgctx != "":
+        msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
+    else:
+        msg_pos = main_po.find('\nmsgid "' + msg + '"')
+
+    if msg_pos == -1:
+        print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
+    main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
+
+
+def _write_translator_comment(msgctx, msg, translator_comment):
     if translator_comment == "":
         return
 
     global main_po
-    msg_pos = main_po.find('\nmsgid "' + msg + '"')
+    if msgctx != "":
+        msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
+    else:
+        msg_pos = main_po.find('\nmsgid "' + msg + '"')
 
     # If it's a new message, just append comment to the end of PO file.
     if msg_pos == -1:
@@ -218,39 +245,48 @@ def process_file(f, fname):
                     if line_nb:
                         location += ":" + str(lc)
 
-                    msg = m.group(1)
+                    groups = m.groupdict("")
+                    msg = groups.get("message", "")
+                    msgctx = groups.get("context", "")
 
                     if is_property_path:
                         for part in msg.split("/"):
-                            _add_message(_process_editor_string(part), location, translator_comment)
+                            _add_message(_process_editor_string(part), msgctx, location, translator_comment)
                     else:
-                        _add_message(msg, location, translator_comment)
-
+                        _add_message(msg, msgctx, location, translator_comment)
             translator_comment = ""
 
         l = f.readline()
         lc += 1
 
 
-def _add_message(msg, location, translator_comment):
+def _add_message(msg, msgctx, location, translator_comment):
     global main_po, unique_str, unique_loc
 
     # Write translator comment.
-    _write_translator_comment(msg, translator_comment)
+    _write_translator_comment(msgctx, msg, translator_comment)
+    translator_comment = ""
 
-    if not msg in unique_str:
-        main_po += "#: " + location + "\n"
-        main_po += 'msgid "' + msg + '"\n'
-        main_po += 'msgstr ""\n\n'
-        unique_str.append(msg)
-        unique_loc[msg] = [location]
-    elif not location in unique_loc[msg]:
-        # Add additional location to previous occurrence too
-        msg_pos = main_po.find('\nmsgid "' + msg + '"')
-        if msg_pos == -1:
-            print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-        main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
-        unique_loc[msg].append(location)
+    if msgctx != "":
+        # If it's a new context or a new message within an existing context, then write new msgid.
+        # Else add location to existing msgid.
+        if not msgctx in ctx_group:
+            _write_message(msgctx, msg, location)
+            ctx_group[msgctx] = {msg: [location]}
+        elif not msg in ctx_group[msgctx]:
+            _write_message(msgctx, msg, location)
+            ctx_group[msgctx][msg] = [location]
+        elif not location in ctx_group[msgctx][msg]:
+            _add_additional_location(msgctx, msg, location)
+            ctx_group[msgctx][msg].append(location)
+    else:
+        if not msg in unique_str:
+            _write_message(msgctx, msg, location)
+            unique_str.append(msg)
+            unique_loc[msg] = [location]
+        elif not location in unique_loc[msg]:
+            _add_additional_location(msgctx, msg, location)
+            unique_loc[msg].append(location)
 
 
 print("Updating the editor.pot template...")
