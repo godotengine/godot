@@ -1353,11 +1353,14 @@ String InputDefault::get_joy_button_string(int p_button) {
 
 int InputDefault::get_joy_button_index_from_string(String p_button) {
 	for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-		if (p_button == _buttons[i]) {
+		if (_buttons[i] == nullptr) {
+			break;
+		}
+		if (p_button == String(_buttons[i])) {
 			return i;
 		}
 	}
-	ERR_FAIL_V(-1);
+	ERR_FAIL_V_MSG(-1, vformat("Could not find a button index matching the string \"%s\".", p_button));
 }
 
 int InputDefault::get_unused_joy_id() {
@@ -1376,9 +1379,12 @@ String InputDefault::get_joy_axis_string(int p_axis) {
 
 int InputDefault::get_joy_axis_index_from_string(String p_axis) {
 	for (int i = 0; i < JOY_AXIS_MAX; i++) {
-		if (p_axis == _axes[i]) {
+		if (_axes[i] == nullptr) {
+			break;
+		}
+		if (p_axis == String(_axes[i])) {
 			return i;
 		}
 	}
-	ERR_FAIL_V(-1);
+	ERR_FAIL_V_MSG(-1, vformat("Could not find an axis index matching the string \"%s\".", p_axis));
 }
