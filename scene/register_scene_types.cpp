@@ -1014,7 +1014,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
-	ClassDB::add_compatibility_class("StreamTexture", "CompressedTexture2D");
+	ClassDB::add_compatibility_class("StreamTexture", "CompressedTexture2D"); // Godot 3.x
+	ClassDB::add_compatibility_class("StreamTexture2D", "CompressedTexture2D"); // Godot `master` branch until February 2022 (~4.0alpha3)
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
