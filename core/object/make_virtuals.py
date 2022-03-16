@@ -28,7 +28,8 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	}\\
 	\\
 	if (required) {\\
-	        WARN_PRINT_ONCE("Required virtual method: "+get_class()+"::" + #m_name + " must be overriden before calling.");\\
+	        ERR_PRINT_ONCE("Required virtual method: "+get_class()+"::" + #m_name + " must be overriden before calling.");\\
+	        $RVOID\\
     }\\
 \\
     return false;\\
@@ -66,10 +67,12 @@ def generate_version(argcount, const=False, returns=False):
     if returns:
         sproto += "R"
         s = s.replace("$RET", "m_ret, ")
+        s = s.replace("$RVOID", "(void)r_ret;")  # If required, may lead to uninitialized errors
         s = s.replace("$CALLPTRRETDEF", "PtrToArg<m_ret>::EncodeT ret;")
         method_info += "\tmethod_info.return_val = GetTypeInfo<m_ret>::get_class_info();\\\n"
     else:
         s = s.replace("$RET", "")
+        s = s.replace("$RVOID", "")
         s = s.replace("$CALLPTRRETDEF", "")
 
     if const:

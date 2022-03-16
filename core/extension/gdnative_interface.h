@@ -306,6 +306,8 @@ typedef struct {
 	void (*print_warning)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 	void (*print_script_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 
+	uint64_t (*get_native_struct_size)(const char *p_name);
+
 	/* GODOT VARIANT */
 
 	/* variant general */

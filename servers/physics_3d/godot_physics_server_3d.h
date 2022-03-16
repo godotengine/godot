@@ -253,7 +253,7 @@ public:
 
 	virtual RID soft_body_create() override;
 
-	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) override;
+	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;
@@ -353,7 +353,7 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
 	virtual int joint_get_solver_priority(RID p_joint) const override;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) override;
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
 	/* MISC */

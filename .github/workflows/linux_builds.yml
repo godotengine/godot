@@ -18,16 +18,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
-            cache-name: linux-editor-mono
-            target: release_debug
-            tools: true
-            tests: false # Disabled due freeze caused by mix Mono build and CI
-            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
-            doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
-            build-mono: true
-            artifact: true
+#          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+#            cache-name: linux-editor-mono
+#            target: release_debug
+#            tools: true
+#            tests: false # Disabled due freeze caused by mix Mono build and CI
+#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
+#            doc-test: true
+#            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+#            build-mono: true
+#            artifact: true
 
           - name: Editor with doubles and sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
             cache-name: linux-editor-double-sanitizers
@@ -44,14 +44,14 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Template w/ Mono (target=release, tools=no)
-            cache-name: linux-template-mono
-            target: release
-            tools: false
-            tests: false
-            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
-            build-mono: false
-            artifact: true
+#          - name: Template w/ Mono (target=release, tools=no)
+#            cache-name: linux-template-mono
+#            target: release
+#            tools: false
+#            tests: false
+#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
+#            build-mono: false
+#            artifact: true
 
           - name: Minimal Template (target=release, tools=no, everything disabled)
             cache-name: linux-template-minimal
