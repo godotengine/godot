@@ -50,11 +50,11 @@ if "wayland" in env and env["wayland"]:
     env.WAYLAND_API_CODE(target="wayland.gen.c", source="#thirdparty/wayland/protocol/wayland.xml")
 
     env.WAYLAND_API_HEADER(
-        target="xdg-shell.gen.h", source="#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
+        target="xdg_shell.gen.h", source="#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
     )
 
     env.WAYLAND_API_CODE(
-        target="xdg-shell.gen.c", source="#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
+        target="xdg_shell.gen.c", source="#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
     )
 
     env.WAYLAND_API_HEADER(
@@ -67,7 +67,7 @@ if "wayland" in env and env["wayland"]:
 
     common_linuxbsd += [
         "wayland.gen.c",
-        "xdg-shell.gen.c",
+        "xdg_shell.gen.c",
         "pointer_constraints.gen.c",
         "display_server_wayland.cpp",
         "key_mapping_xkb.cpp",

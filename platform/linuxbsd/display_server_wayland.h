@@ -42,7 +42,7 @@
 
 #include "pointer_constraints.gen.h"
 #include "wayland.gen.h"
-#include "xdg-shell.gen.h"
+#include "xdg_shell.gen.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
 #include "linux/input-event-codes.h"
