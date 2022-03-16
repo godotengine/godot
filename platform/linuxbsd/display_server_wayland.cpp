@@ -264,7 +264,7 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 	if (name == globals.wl_seat_name) {
 		wl_seat_destroy(globals.wl_seat);
-		globals.wl_compositor = nullptr;
+		globals.wl_seat = nullptr;
 		return;
 	}
 
@@ -276,7 +276,7 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 	if (name == globals.xdg_wm_base_name) {
 		xdg_wm_base_destroy(globals.xdg_wm_base);
-		globals.wl_compositor = nullptr;
+		globals.xdg_wm_base = nullptr;
 		return;
 	}
 
