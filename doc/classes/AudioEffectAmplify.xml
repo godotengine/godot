@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectAmplify" inherits="AudioEffect" version="3.5">
+<class name="AudioEffectAmplify" inherits="AudioEffect" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds an amplifying audio effect to an audio bus.
 		Increases or decreases the volume of the selected audio bus.

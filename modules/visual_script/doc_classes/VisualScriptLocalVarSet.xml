@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptLocalVarSet" inherits="VisualScriptNode" version="3.5">
+<class name="VisualScriptLocalVarSet" inherits="VisualScriptNode" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Changes a local variable's value.
 	</brief_description>
