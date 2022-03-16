@@ -577,6 +577,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
 			error_label->raise();
 		} break;
 
@@ -1377,7 +1378,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	initial_loading = true;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
-
 	add_child(library_main);
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
