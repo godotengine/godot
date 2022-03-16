@@ -468,6 +468,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					}
 
 					{
+						float line_length = 0.0f;
 						float ofs = 0.0f - backtrack;
 
 						for (int i = 0; i < end; i++) {
@@ -586,11 +587,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									visible = false;
 								}
 
+								const float current_char_width = font->get_char_size(fx_char, c[i + 1]).x;
 								if (visible) {
 									if (selected) {
-										cw = font->get_char_size(fx_char, c[i + 1]).x;
+										cw = current_char_width;
 										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									}
+									line_length += current_char_width;
 
 									const Color char_color = selected && override_selected_font_color ? selection_fg : fx_color;
 									const Color shadow_color = p_font_color_shadow * Color(1, 1, 1, char_color.a);
@@ -612,7 +615,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], char_color);
 									}
 								} else if (previously_visible && c[i] != '\t') {
-									backtrack += font->get_char_size(fx_char, c[i + 1]).x;
+									backtrack += current_char_width;
 								}
 
 								p_char_count++;
@@ -636,7 +639,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							const int line_y = y + lh - (line_descent - 2);
 							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
-							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							const Point2 to = from + Point2(line_length + (is_at_line_wrap ? 0 : align_spacing), 0);
 							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 						if (strikethrough) {
@@ -645,7 +648,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							const int line_y = y + lh - (line_ascent + line_descent) / 2;
 							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
-							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							const Point2 to = from + Point2(line_length + (is_at_line_wrap ? 0 : align_spacing), 0);
 							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 					}
