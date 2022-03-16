@@ -75,11 +75,10 @@ String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_or
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir) {
 	if (!DirAccess::exists(p_dir)) {
-		DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		DirAccessRef filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 		Error err = filesystem_da->make_dir_recursive(p_dir);
 		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
-		memdelete(filesystem_da);
 	}
 	return OK;
 }
@@ -161,6 +160,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		return ERR_CANT_OPEN;
 	}
 	da->list_dir_begin();
+	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
 	while (true) {
 		String file = da->get_next();
 		if (file.is_empty()) {
@@ -171,10 +171,9 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 			continue;
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
-		String property_name = "application/config/name_" + locale;
 		String locale_directory = "res://android/build/res/" + file + "/godot_project_name_string.xml";
-		if (ProjectSettings::get_singleton()->has_setting(property_name)) {
-			String locale_project_name = ProjectSettings::get_singleton()->get(property_name);
+		if (appnames.has(locale)) {
+			String locale_project_name = appnames[locale];
 			String processed_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);

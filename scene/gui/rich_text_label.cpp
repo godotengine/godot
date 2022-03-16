@@ -902,9 +902,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			int size = _find_outline_size(it, p_outline_size);
-			Color font_color = _find_outline_color(it, p_outline_color);
+			Color font_color = _find_color(it, p_base_color);
+			Color font_outline_color = _find_outline_color(it, p_outline_color);
 			Color font_shadow_color = p_font_shadow_color;
-			if ((size <= 0 || font_color.a == 0) && (font_shadow_color.a == 0)) {
+			if ((size <= 0 || font_outline_color.a == 0) && (font_shadow_color.a == 0)) {
 				gloff.x += glyphs[i].advance;
 				continue;
 			}
@@ -950,11 +951,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
 					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
 				}
-				font_color.a = faded_visibility;
+				font_outline_color.a = faded_visibility;
 				font_shadow_color.a = faded_visibility;
 			}
 
-			bool visible = (font_color.a != 0) || (font_shadow_color.a != 0);
+			bool visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
@@ -1024,18 +1025,20 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 
 			// Draw glyph outlines.
+			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
+			const Color modulated_shadow_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 			for (int j = 0; j < glyphs[i].repeat; j++) {
 				if (visible) {
 					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 					if (!skip && frid != RID()) {
-						if (font_shadow_color.a > 0) {
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
+						if (modulated_shadow_color.a > 0) {
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, modulated_shadow_color);
 						}
-						if (font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
+						if (modulated_shadow_color.a > 0 && p_shadow_outline_size > 0) {
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, modulated_shadow_color);
 						}
-						if (font_color.a != 0.0 && size > 0) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, font_color);
+						if (modulated_outline_color.a != 0.0 && size > 0) {
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, modulated_outline_color);
 						}
 					}
 					processed_glyphs_ol++;

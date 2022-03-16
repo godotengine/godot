@@ -265,15 +265,15 @@ bool Line2D::get_antialiased() const {
 }
 
 void Line2D::_draw() {
-	if (_points.size() <= 1 || _width == 0.f) {
+	int len = _points.size();
+	if (len <= 1 || _width == 0.f) {
 		return;
 	}
 
 	// TODO Is this really needed?
 	// Copy points for faster access
 	Vector<Vector2> points;
-	points.resize(_points.size());
-	int len = points.size();
+	points.resize(len);
 	{
 		const Vector2 *points_read = _points.ptr();
 		for (int i = 0; i < len; ++i) {

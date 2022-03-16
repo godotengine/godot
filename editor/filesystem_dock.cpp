@@ -525,16 +525,14 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		if (target_path.ends_with("/")) {
 			target_path = target_path.substr(0, target_path.length() - 1);
 		}
-		DirAccess *dirAccess = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (dirAccess->file_exists(p_path)) {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->file_exists(p_path)) {
 			path = target_path;
-		} else if (dirAccess->dir_exists(p_path)) {
+		} else if (da->dir_exists(p_path)) {
 			path = target_path + "/";
 		} else {
-			memdelete(dirAccess);
 			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
 		}
-		memdelete(dirAccess);
 	}
 
 	_set_current_path_text(path);
@@ -781,14 +779,14 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				icon = folder_icon;
 				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
 					files->add_item(text, icon, true);
-					files->set_item_metadata(files->get_item_count() - 1, favorite);
+					files->set_item_metadata(-1, favorite);
 				}
 			} else if (favorite.ends_with("/")) {
 				text = favorite.substr(0, favorite.length() - 1).get_file();
 				icon = folder_icon;
 				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
 					files->add_item(text, icon, true);
-					files->set_item_metadata(files->get_item_count() - 1, favorite);
+					files->set_item_metadata(-1, favorite);
 				}
 			} else {
 				int index;
@@ -842,9 +840,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 						bd += "/";
 					}
 
-					files->set_item_metadata(files->get_item_count() - 1, bd);
-					files->set_item_selectable(files->get_item_count() - 1, false);
-					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					files->set_item_metadata(-1, bd);
+					files->set_item_selectable(-1, false);
+					files->set_item_icon_modulate(-1, folder_color);
 				}
 
 				bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
@@ -854,8 +852,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					String dname = efd->get_subdir(i)->get_name();
 
 					files->add_item(dname, folder_icon, true);
-					files->set_item_metadata(files->get_item_count() - 1, directory.plus_file(dname) + "/");
-					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					files->set_item_metadata(-1, directory.plus_file(dname) + "/");
+					files->set_item_icon_modulate(-1, folder_color);
 
 					if (cselection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
@@ -1171,7 +1169,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		_get_all_items_in_dir(EditorFileSystem::get_singleton()->get_filesystem_path(old_path), file_changed_paths, folder_changed_paths);
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_verbose("Moving " + old_path + " -> " + new_path);
 	Error err = da->rename(old_path, new_path);
 	if (err == OK) {
@@ -1211,7 +1209,6 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + "\n");
 	}
-	memdelete(da);
 }
 
 void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const {
@@ -1230,7 +1227,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		return;
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_verbose("Duplicating " + old_path + " -> " + new_path);
 	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
@@ -1268,7 +1265,6 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + "\n");
 	}
-	memdelete(da);
 }
 
 void FileSystemDock::_update_resource_paths_after_move(const Map<String, String> &p_renames) const {
@@ -1418,12 +1414,11 @@ void FileSystemDock::_make_dir_confirm() {
 		directory = directory.get_base_dir();
 	}
 	print_verbose("Making folder " + dir_name + " in " + directory);
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(directory);
 	if (err == OK) {
 		err = da->make_dir(dir_name);
 	}
-	memdelete(da);
 
 	if (err == OK) {
 		print_verbose("FileSystem: calling rescan.");
@@ -1464,13 +1459,11 @@ void FileSystemDock::_make_scene_confirm() {
 
 	scene_name = directory.plus_file(scene_name);
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->file_exists(scene_name)) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		memdelete(da);
 		return;
 	}
-	memdelete(da);
 
 	int idx = EditorNode::get_singleton()->new_scene();
 	EditorNode::get_singleton()->get_editor_data().set_scene_path(idx, scene_name);
@@ -1533,7 +1526,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	// Present a more user friendly warning for name conflict.
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 #if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
 	// Workaround case insensitivity on Windows.
 	if ((da->file_exists(new_path) || da->dir_exists(new_path)) && new_path.to_lower() != old_path.to_lower()) {
@@ -1541,10 +1534,8 @@ void FileSystemDock::_rename_operation_confirm() {
 	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
 #endif
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		memdelete(da);
 		return;
 	}
-	memdelete(da);
 
 	Map<String, String> file_renames;
 	Map<String, String> folder_renames;
@@ -1588,13 +1579,11 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	String new_path = base_dir.plus_file(new_name);
 
 	// Present a more user friendly warning for name conflict
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		memdelete(da);
 		return;
 	}
-	memdelete(da);
 
 	_try_duplicate_item(to_duplicate, new_path);
 
@@ -2096,6 +2085,10 @@ void FileSystemDock::focus_on_filter() {
 		current_search_box->grab_focus();
 		current_search_box->select_all();
 	}
+}
+
+ScriptCreateDialog *FileSystemDock::get_script_create_dialog() const {
+	return make_script_dialog;
 }
 
 void FileSystemDock::set_file_list_display_mode(FileListDisplayMode p_mode) {
@@ -2818,7 +2811,7 @@ void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &f
 		return;
 	}
 
-	DirAccess *da = DirAccess::open(p_path);
+	DirAccessRef da = DirAccess::open(p_path);
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {
@@ -3179,10 +3172,7 @@ FileSystemDock::FileSystemDock() {
 	searched_string = String();
 	uncollapsed_paths_before_search = Vector<String>();
 
-	updating_tree = false;
 	tree_update_id = 0;
-	initialized = false;
-	import_dock_needs_update = false;
 
 	history_pos = 0;
 	history_max_size = 20;
@@ -3191,8 +3181,6 @@ FileSystemDock::FileSystemDock() {
 	display_mode = DISPLAY_MODE_TREE_ONLY;
 	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
-
-	always_show_folders = false;
 }
 
 FileSystemDock::~FileSystemDock() {

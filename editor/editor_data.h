@@ -239,9 +239,9 @@ class EditorSelection : public Object {
 private:
 	Map<Node *, Object *> selection;
 
-	bool emitted;
-	bool changed;
-	bool nl_changed;
+	bool emitted = false;
+	bool changed = false;
+	bool nl_changed = false;
 
 	void _node_removed(Node *p_node);
 

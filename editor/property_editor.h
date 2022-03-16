@@ -119,7 +119,7 @@ class CustomPropertyEditor : public PopupPanel {
 	TextureRect *texture_preview;
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
-	bool read_only;
+	bool read_only = false;
 	bool picking_viewport;
 	GridContainer *checks20gc;
 	CheckBox *checks20[20];
@@ -132,7 +132,7 @@ class CustomPropertyEditor : public PopupPanel {
 
 	Object *owner;
 
-	bool updating;
+	bool updating = false;
 
 	PropertyValueEvaluator *evaluator;
 

@@ -764,8 +764,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
 	get_ok_button()->set_text(TTR("Close"));
-
-	updating = false;
 }
 
 EditorSettingsDialog::~EditorSettingsDialog() {

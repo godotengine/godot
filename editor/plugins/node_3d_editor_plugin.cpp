@@ -56,31 +56,31 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 
-#define DISTANCE_DEFAULT 4
+constexpr real_t DISTANCE_DEFAULT = 4;
 
-#define GIZMO_ARROW_SIZE 0.35
-#define GIZMO_RING_HALF_WIDTH 0.1
-#define GIZMO_PLANE_SIZE 0.2
-#define GIZMO_PLANE_DST 0.3
-#define GIZMO_CIRCLE_SIZE 1.1
-#define GIZMO_SCALE_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
-#define GIZMO_ARROW_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
+constexpr real_t GIZMO_ARROW_SIZE = 0.35;
+constexpr real_t GIZMO_RING_HALF_WIDTH = 0.1;
+constexpr real_t GIZMO_PLANE_SIZE = 0.2;
+constexpr real_t GIZMO_PLANE_DST = 0.3;
+constexpr real_t GIZMO_CIRCLE_SIZE = 1.1;
+constexpr real_t GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
+constexpr real_t GIZMO_ARROW_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
 
-#define ZOOM_FREELOOK_MIN 0.01
-#define ZOOM_FREELOOK_MULTIPLIER 1.08
-#define ZOOM_FREELOOK_INDICATOR_DELAY_S 1.5
+constexpr real_t ZOOM_FREELOOK_MIN = 0.01;
+constexpr real_t ZOOM_FREELOOK_MULTIPLIER = 1.08;
+constexpr real_t ZOOM_FREELOOK_INDICATOR_DELAY_S = 1.5;
 
 #ifdef REAL_T_IS_DOUBLE
-#define ZOOM_FREELOOK_MAX 1'000'000'000'000
+constexpr double ZOOM_FREELOOK_MAX = 1'000'000'000'000;
 #else
-#define ZOOM_FREELOOK_MAX 10'000
+constexpr float ZOOM_FREELOOK_MAX = 10'000;
 #endif
 
-#define MIN_Z 0.01
-#define MAX_Z 1000000.0
+constexpr real_t MIN_Z = 0.01;
+constexpr real_t MAX_Z = 1000000.0;
 
-#define MIN_FOV 0.01
-#define MAX_FOV 179
+constexpr real_t MIN_FOV = 0.01;
+constexpr real_t MAX_FOV = 179;
 
 void ViewportRotationControl::_notification(int p_what) {
 	switch (p_what) {
@@ -2690,27 +2690,27 @@ void Node3DEditorViewport::_notification(int p_what) {
 	}
 }
 
-static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2D> icon, const Ref<Font> font, int font_size, const String &text) {
+static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Texture2D> p_icon, const Ref<Font> p_font, int p_font_size, const String &p_text, const Color &p_color) {
 	// Adjust bar size from control height
-	const Vector2 surface_size = surface.get_size();
+	const Vector2 surface_size = p_surface.get_size();
 	const real_t h = surface_size.y / 2.0;
 	const real_t y = (surface_size.y - h) / 2.0;
 
 	const Rect2 r(10 * EDSCALE, y, 6 * EDSCALE, h);
-	const real_t sy = r.size.y * fill;
+	const real_t sy = r.size.y * p_fill;
 
 	// Note: because this bar appears over the viewport, it has to stay readable for any background color
 	// Draw both neutral dark and bright colors to account this
-	surface.draw_rect(r, Color(1, 1, 1, 0.2));
-	surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
-	surface.draw_rect(r.grow(1), Color(0, 0, 0, 0.7), false, Math::round(EDSCALE));
+	p_surface.draw_rect(r, p_color * Color(1, 1, 1, 0.2));
+	p_surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), p_color * Color(1, 1, 1, 0.6));
+	p_surface.draw_rect(r.grow(1), Color(0, 0, 0, 0.7), false, Math::round(EDSCALE));
 
-	const Vector2 icon_size = icon->get_size();
+	const Vector2 icon_size = p_icon->get_size();
 	const Vector2 icon_pos = Vector2(r.position.x - (icon_size.x - r.size.x) / 2, r.position.y + r.size.y + 2 * EDSCALE);
-	surface.draw_texture(icon, icon_pos);
+	p_surface.draw_texture(p_icon, icon_pos, p_color);
 
 	// Draw text below the bar (for speed/zoom information).
-	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, font_size);
+	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, p_font_size, p_color, Math::round(2 * EDSCALE), Color(0, 0, 0));
 }
 
 void Node3DEditorViewport::_draw() {
@@ -2828,7 +2828,8 @@ void Node3DEditorViewport::_draw() {
 							get_theme_icon(SNAME("ViewportSpeed"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)));
+							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
+							Color(1.0, 0.95, 0.7));
 				}
 
 			} else {
@@ -2850,7 +2851,8 @@ void Node3DEditorViewport::_draw() {
 							get_theme_icon(SNAME("ViewportZoom"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)));
+							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
+							Color(0.7, 0.95, 1.0));
 				}
 			}
 		}

@@ -149,6 +149,17 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="canvas_item_add_animation_slice">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="animation_length" type="float" />
+			<argument index="2" name="slice_begin" type="float" />
+			<argument index="3" name="slice_end" type="float" />
+			<argument index="4" name="offset" type="float" default="0.0" />
+			<description>
+				Subsequent drawing commands will be ignored unless they fall within the specified animation slice. This is a faster way to implement animations that loop on background rather than redrawing constantly.
+			</description>
+		</method>
 		<method name="canvas_item_add_circle">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />

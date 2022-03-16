@@ -250,6 +250,14 @@ DirAccess *DirAccess::create(AccessType p_access) {
 	DirAccess *da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da) {
 		da->_access_type = p_access;
+
+		// for ACCESS_RESOURCES and ACCESS_FILESYSTEM, current_dir already defaults to where game was started
+		// in case current directory is force changed elsewhere for ACCESS_RESOURCES
+		if (p_access == ACCESS_RESOURCES) {
+			da->change_dir("res://");
+		} else if (p_access == ACCESS_USERDATA) {
+			da->change_dir("user://");
+		}
 	}
 
 	return da;
@@ -414,8 +422,6 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_
 }
 
 bool DirAccess::exists(String p_dir) {
-	DirAccess *da = DirAccess::create_for_path(p_dir);
-	bool valid = da->change_dir(p_dir) == OK;
-	memdelete(da);
-	return valid;
+	DirAccessRef da = DirAccess::create_for_path(p_dir);
+	return da->change_dir(p_dir) == OK;
 }

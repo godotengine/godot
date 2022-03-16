@@ -36,6 +36,7 @@ _complete_godot_options() {
 --quiet
 --editor
 --project-manager
+--debug-server
 --quit
 --language
 --path
@@ -45,7 +46,12 @@ _complete_godot_options() {
 --remote-fs
 --remote-fs-password
 --audio-driver
---video-driver
+--display-driver
+--rendering-driver
+--gpu-index
+--text-driver
+--tablet-driver
+--headless
 --fullscreen
 --maximized
 --windowed
@@ -53,12 +59,17 @@ _complete_godot_options() {
 --resolution
 --position
 --headless
+--single-window
 --debug
 --breakpoints
 --profiling
+--gpu-profile
+--vk-layers
+--gpu-abort
 --remote-debug
 --debug-collisions
 --debug-navigation
+--debug-stringnames
 --frame-delay
 --time-scale
 --disable-render-loop
@@ -73,6 +84,7 @@ _complete_godot_options() {
 --doctool
 --no-docbase
 --build-solutions
+--dump-extension-api
 --test
 " -- "$1"))
 }
@@ -98,10 +110,10 @@ _complete_godot_bash() {
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -W "unsafe safe separate" -- "$cur"))
-  elif [[ $prev == "--video-driver" ]]; then
+  elif [[ $prev == "--rendering-driver" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "Vulkan GLES2" -- "$cur"))
+    COMPREPLY=($(compgen -W "vulkan opengl3 dummy" -- "$cur"))
   elif [[ $prev == "--path" || $prev == "--doctool" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207

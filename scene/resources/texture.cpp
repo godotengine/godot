@@ -482,24 +482,24 @@ void CompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
 }
 
 void CompressedTexture2D::_requested_3d(void *p_ud) {
-	CompressedTexture2D *st = (CompressedTexture2D *)p_ud;
-	Ref<CompressedTexture2D> stex(st);
+	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
+	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_COND(!request_3d_callback);
-	request_3d_callback(stex);
+	request_3d_callback(ctex);
 }
 
 void CompressedTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel) {
-	CompressedTexture2D *st = (CompressedTexture2D *)p_ud;
-	Ref<CompressedTexture2D> stex(st);
+	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
+	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_COND(!request_roughness_callback);
-	request_roughness_callback(stex, p_normal_path, p_roughness_channel);
+	request_roughness_callback(ctex, p_normal_path, p_roughness_channel);
 }
 
 void CompressedTexture2D::_requested_normal(void *p_ud) {
-	CompressedTexture2D *st = (CompressedTexture2D *)p_ud;
-	Ref<CompressedTexture2D> stex(st);
+	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
+	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_COND(!request_normal_callback);
-	request_normal_callback(stex);
+	request_normal_callback(ctex);
 }
 
 CompressedTexture2D::TextureFormatRequestCallback CompressedTexture2D::request_3d_callback = nullptr;
@@ -522,14 +522,14 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	f->get_buffer(header, 4);
 	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != '2') {
 		memdelete(f);
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is corrupt (Bad header).");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is corrupt (Bad header).");
 	}
 
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
 		memdelete(f);
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 	r_width = f->get_32();
 	r_height = f->get_32();
@@ -973,11 +973,11 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 	f->get_buffer(header, 4);
 	ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L', ERR_FILE_UNRECOGNIZED);
 
-	//stored as stream textures (used for lossless and lossy compression)
+	//stored as compressed textures (used for lossless and lossy compression)
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 
 	r_depth = f->get_32(); //depth
@@ -1129,7 +1129,7 @@ RES ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const St
 }
 
 void ResourceFormatLoaderCompressedTexture3D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("stex3d");
+	p_extensions->push_back("ctex3d");
 }
 
 bool ResourceFormatLoaderCompressedTexture3D::handles_type(const String &p_type) const {
@@ -1137,7 +1137,7 @@ bool ResourceFormatLoaderCompressedTexture3D::handles_type(const String &p_type)
 }
 
 String ResourceFormatLoaderCompressedTexture3D::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "stex3d") {
+	if (p_path.get_extension().to_lower() == "ctex3d") {
 		return "CompressedTexture3D";
 	}
 	return "";
@@ -2792,13 +2792,13 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L') {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture layered file is corrupt (Bad header).");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture layered file is corrupt (Bad header).");
 	}
 
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 
 	uint32_t layer_count = f->get_32(); //layer count
@@ -2939,26 +2939,26 @@ CompressedTextureLayered::~CompressedTextureLayered() {
 /////////////////////////////////////////////////
 
 RES ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<CompressedTextureLayered> st;
-	if (p_path.get_extension().to_lower() == "stexarray") {
-		Ref<CompressedTexture2DArray> s;
-		s.instantiate();
-		st = s;
-	} else if (p_path.get_extension().to_lower() == "scube") {
-		Ref<CompressedCubemap> s;
-		s.instantiate();
-		st = s;
-	} else if (p_path.get_extension().to_lower() == "scubearray") {
-		Ref<CompressedCubemapArray> s;
-		s.instantiate();
-		st = s;
+	Ref<CompressedTextureLayered> ct;
+	if (p_path.get_extension().to_lower() == "ctexarray") {
+		Ref<CompressedTexture2DArray> c;
+		c.instantiate();
+		ct = c;
+	} else if (p_path.get_extension().to_lower() == "ccube") {
+		Ref<CompressedCubemap> c;
+		c.instantiate();
+		ct = c;
+	} else if (p_path.get_extension().to_lower() == "ccubearray") {
+		Ref<CompressedCubemapArray> c;
+		c.instantiate();
+		ct = c;
 	} else {
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
 		return RES();
 	}
-	Error err = st->load(p_path);
+	Error err = ct->load(p_path);
 	if (r_error) {
 		*r_error = err;
 	}
@@ -2966,13 +2966,13 @@ RES ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, con
 		return RES();
 	}
 
-	return st;
+	return ct;
 }
 
 void ResourceFormatLoaderCompressedTextureLayered::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("stexarray");
-	p_extensions->push_back("scube");
-	p_extensions->push_back("scubearray");
+	p_extensions->push_back("ctexarray");
+	p_extensions->push_back("ccube");
+	p_extensions->push_back("ccubearray");
 }
 
 bool ResourceFormatLoaderCompressedTextureLayered::handles_type(const String &p_type) const {
@@ -2980,13 +2980,13 @@ bool ResourceFormatLoaderCompressedTextureLayered::handles_type(const String &p_
 }
 
 String ResourceFormatLoaderCompressedTextureLayered::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "stexarray") {
+	if (p_path.get_extension().to_lower() == "ctexarray") {
 		return "CompressedTexture2DArray";
 	}
-	if (p_path.get_extension().to_lower() == "scube") {
+	if (p_path.get_extension().to_lower() == "ccube") {
 		return "CompressedCubemap";
 	}
-	if (p_path.get_extension().to_lower() == "scubearray") {
+	if (p_path.get_extension().to_lower() == "ccubearray") {
 		return "CompressedCubemapArray";
 	}
 	return "";

@@ -259,11 +259,9 @@ Error OSIPhone::shell_open(String p_uri) {
 }
 
 void OSIPhone::set_user_data_dir(String p_dir) {
-	DirAccess *da = DirAccess::open(p_dir);
-
+	DirAccessRef da = DirAccess::open(p_dir);
 	user_data_dir = da->get_current_dir();
 	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
-	memdelete(da);
 }
 
 String OSIPhone::get_user_data_dir() const {

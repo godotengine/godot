@@ -147,7 +147,7 @@ private:
 	}
 
 	String _test_path() {
-		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		String valid_path, valid_install_path;
 		if (d->change_dir(project_path->get_text()) == OK) {
 			valid_path = project_path->get_text();
@@ -165,7 +165,6 @@ private:
 
 		if (valid_path.is_empty()) {
 			set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR);
-			memdelete(d);
 			get_ok_button()->set_disabled(true);
 			return "";
 		}
@@ -179,7 +178,6 @@ private:
 
 			if (valid_install_path.is_empty()) {
 				set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
-				memdelete(d);
 				get_ok_button()->set_disabled(true);
 				return "";
 			}
@@ -194,7 +192,6 @@ private:
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
 						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
-						memdelete(d);
 						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
@@ -215,7 +212,6 @@ private:
 
 					if (ret == UNZ_END_OF_LIST_OF_FILE) {
 						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
-						memdelete(d);
 						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
@@ -242,14 +238,12 @@ private:
 
 					if (!is_folder_empty) {
 						set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
-						memdelete(d);
 						get_ok_button()->set_disabled(true);
 						return "";
 					}
 
 				} else {
 					set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
-					memdelete(d);
 					install_path_container->hide();
 					get_ok_button()->set_disabled(true);
 					return "";
@@ -257,7 +251,6 @@ private:
 
 			} else if (valid_path.ends_with("zip")) {
 				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
-				memdelete(d);
 				get_ok_button()->set_disabled(true);
 				return "";
 			}
@@ -282,7 +275,6 @@ private:
 
 			if (!is_folder_empty) {
 				set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
-				memdelete(d);
 				get_ok_button()->set_disabled(false);
 				return valid_path;
 			}
@@ -290,7 +282,6 @@ private:
 
 		set_message("");
 		set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
-		memdelete(d);
 		get_ok_button()->set_disabled(false);
 		return valid_path;
 	}
@@ -389,7 +380,7 @@ private:
 			return;
 		}
 
-		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text()) == OK) {
 			if (!d->dir_exists(project_name_no_edges)) {
 				if (d->make_dir(project_name_no_edges) == OK) {
@@ -408,8 +399,6 @@ private:
 				dialog_error->popup_centered();
 			}
 		}
-
-		memdelete(d);
 	}
 
 	void _text_changed(const String &p_text) {
@@ -551,14 +540,11 @@ private:
 						if (path.is_empty() || path == zip_root || !zip_root.is_subsequence_of(path)) {
 							//
 						} else if (path.ends_with("/")) { // a dir
-
 							path = path.substr(0, path.length() - 1);
 							String rel_path = path.substr(zip_root.length());
 
-							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							da->make_dir(dir.plus_file(rel_path));
-							memdelete(da);
-
 						} else {
 							Vector<uint8_t> data;
 							data.resize(info.uncompressed_size);
@@ -620,9 +606,8 @@ private:
 
 	void _remove_created_folder() {
 		if (!created_folder_path.is_empty()) {
-			DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			d->remove(created_folder_path);
-			memdelete(d);
 
 			create_dir->set_disabled(false);
 			created_folder_path = "";
@@ -725,10 +710,9 @@ public:
 				project_path->set_text(fav_dir);
 				fdialog->set_current_dir(fav_dir);
 			} else {
-				DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				project_path->set_text(d->get_current_dir());
 				fdialog->set_current_dir(d->get_current_dir());
-				memdelete(d);
 			}
 			String proj = TTR("New Game Project");
 			project_name->set_text(proj);
@@ -2411,12 +2395,11 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 		return;
 	}
 	Set<String> folders_set;
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
 		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
 	}
-	memdelete(da);
 	if (folders_set.size() > 0) {
 		PackedStringArray folders;
 		for (Set<String>::Element *E = folders_set.front(); E; E = E->next()) {
@@ -2425,7 +2408,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 
 		bool confirm = true;
 		if (folders.size() == 1) {
-			DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			if (dir->change_dir(folders[0]) == OK) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
@@ -2437,7 +2420,6 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 				}
 				dir->list_dir_end();
 			}
-			memdelete(dir);
 		}
 		if (confirm) {
 			multi_scan_ask->get_ok_button()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));

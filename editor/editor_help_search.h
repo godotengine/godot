@@ -60,7 +60,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	Button *hierarchy_button;
 	OptionButton *filter_combo;
 	Tree *results_tree;
-	bool old_search;
+	bool old_search = false;
 	String old_term;
 
 	class Runner;

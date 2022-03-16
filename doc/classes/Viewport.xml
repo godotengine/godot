@@ -130,11 +130,6 @@
 				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
 			</description>
 		</method>
-		<method name="is_embedding_subwindows" qualifiers="const">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -219,7 +214,8 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
-		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
+		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
+			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.

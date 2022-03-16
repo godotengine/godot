@@ -56,7 +56,7 @@ class LocalizationEditor : public VBoxContainer {
 	EditorFileDialog *pot_generate_dialog;
 
 	UndoRedo *undo_redo;
-	bool updating_translations;
+	bool updating_translations = false;
 	String localization_changed;
 
 	void _translation_file_open();

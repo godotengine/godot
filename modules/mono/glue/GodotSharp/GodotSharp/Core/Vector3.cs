@@ -551,8 +551,9 @@ namespace Godot
         /// Returns the result of the spherical linear interpolation between
         /// this vector and <paramref name="to"/> by amount <paramref name="weight"/>.
         ///
-        /// This method also handles interpolating the lengths if the input vectors have different lengths.
-        /// For the special case of one or both input vectors having zero length, this method behaves like [method lerp].
+        /// This method also handles interpolating the lengths if the input vectors
+        /// have different lengths. For the special case of one or both input vectors
+        /// having zero length, this method behaves like <see cref="Lerp"/>.
         /// </summary>
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>

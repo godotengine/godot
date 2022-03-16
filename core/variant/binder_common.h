@@ -100,6 +100,10 @@ struct VariantCaster<const T &> {
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
 			*(int64_t *)p_ptr = (int64_t)p_val;                              \
 		}                                                                    \
+	};                                                                       \
+	template <>                                                              \
+	struct ZeroInitializer<m_enum> {                                         \
+		static void initialize(m_enum &value) { value = (m_enum)0; }         \
 	};
 
 // Object enum casts must go here

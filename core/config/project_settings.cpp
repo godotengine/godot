@@ -145,15 +145,13 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		return p_path.simplify_path();
 	}
 
-	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	String path = p_path.replace("\\", "/").simplify_path();
 
 	if (dir->change_dir(path) == OK) {
 		String cwd = dir->get_current_dir();
 		cwd = cwd.replace("\\", "/");
-
-		memdelete(dir);
 
 		// Ensure that we end with a '/'.
 		// This is important to ensure that we do not wrongly localize the resource path
@@ -173,8 +171,6 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		return cwd.replace_first(res_path, "res://");
 	} else {
-		memdelete(dir);
-
 		int sep = path.rfind("/");
 		if (sep == -1) {
 			return "res://" + path;
@@ -541,7 +537,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V_MSG(!d, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_path + "'.");
 	d->change_dir(p_path);
 
@@ -572,8 +568,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			break;
 		}
 	}
-
-	memdelete(d);
 
 	if (!found) {
 		return err;
@@ -1199,6 +1193,8 @@ ProjectSettings::ProjectSettings() {
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
+	GLOBAL_DEF_BASIC("application/config/name_localized", Dictionary());
+	custom_prop_info["application/config/name_localized"] = PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING);
 	GLOBAL_DEF_BASIC("application/config/description", "");
 	custom_prop_info["application/config/description"] = PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT);
 	GLOBAL_DEF_BASIC("application/run/main_scene", "");

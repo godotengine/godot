@@ -245,8 +245,6 @@ void EditorQuickOpen::_bind_methods() {
 }
 
 EditorQuickOpen::EditorQuickOpen() {
-	allow_multi_select = false;
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 	add_child(vbc);

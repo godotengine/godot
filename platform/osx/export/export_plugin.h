@@ -56,7 +56,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	void _make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path);
+	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true);
 	Error _code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_should_error_on_non_code = true);
 	Error _copy_and_sign_files(DirAccessRef &dir_access, const String &p_src_path, const String &p_in_app_path,
 			bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
