@@ -345,7 +345,7 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
 		ps.wl_pointer = wl_seat_get_pointer(wl_seat);
-		ERR_FAIL_COND(!ps.wl_pointer);
+		ERR_FAIL_NULL(ps.wl_pointer);
 
 		wl_pointer_add_listener(ps.wl_pointer, &wl_pointer_listener, wls);
 	} else if (ps.wl_pointer) {
@@ -357,10 +357,10 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
 		ks.wl_keyboard = wl_seat_get_keyboard(wl_seat);
-		ERR_FAIL_COND(!ks.wl_keyboard);
+		ERR_FAIL_NULL(ks.wl_keyboard);
 
 		ks.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-		ERR_FAIL_COND(!ks.xkb_context);
+		ERR_FAIL_NULL(ks.xkb_context);
 
 		wl_keyboard_add_listener(ks.wl_keyboard, &wl_keyboard_listener, wls);
 	} else if (ks.wl_keyboard) {
@@ -1489,12 +1489,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wls.display = wl_display_connect(nullptr);
 
 	// TODO: Better error handling.
-	ERR_FAIL_COND(!wls.display);
+	ERR_FAIL_NULL(wls.display);
 
 	wls.registry = wl_display_get_registry(wls.display);
 
 	// TODO: Better error handling.
-	ERR_FAIL_COND(!wls.display);
+	ERR_FAIL_NULL(wls.display);
 
 	wl_registry_add_listener(wls.registry, &registry_listener, &wls);
 
