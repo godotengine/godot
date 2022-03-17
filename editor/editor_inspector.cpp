@@ -43,6 +43,20 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
+static bool _property_path_matches(const String &p_property_path, const String &p_filter) {
+	if (p_property_path.findn(p_filter) != -1) {
+		return true;
+	}
+
+	const Vector<String> sections = p_property_path.split("/");
+	for (int i = 0; i < sections.size(); i++) {
+		if (p_filter.is_subsequence_ofi(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i]))) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_font("font", "Tree");
@@ -1547,15 +1561,13 @@ void EditorInspector::update_tree() {
 		}
 
 		String name = (basename.find("/") != -1) ? basename.right(basename.rfind("/") + 1) : basename;
+		String name_override = name;
 
 		if (capitalize_paths) {
 			int dot = name.find(".");
 			if (dot != -1) {
-				String ov = name.right(dot);
-				name = name.substr(0, dot);
-				name = EditorPropertyNameProcessor::get_singleton()->process_name(name);
-				name += ov;
-
+				name_override = name.substr(0, dot);
+				name = EditorPropertyNameProcessor::get_singleton()->process_name(name_override) + name.right(dot);
 			} else {
 				name = EditorPropertyNameProcessor::get_singleton()->process_name(name);
 			}
@@ -1563,14 +1575,9 @@ void EditorInspector::update_tree() {
 
 		String path = basename.left(basename.rfind("/"));
 
-		if (use_filter && filter != "") {
-			String cat = path;
-
-			if (capitalize_paths) {
-				cat = EditorPropertyNameProcessor::get_singleton()->process_name(cat);
-			}
-
-			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
+		if (use_filter && !filter.empty()) {
+			const String property_path = property_prefix + (path.empty() ? "" : path + "/") + name_override;
+			if (!_property_path_matches(property_path, filter)) {
 				continue;
 			}
 		}
