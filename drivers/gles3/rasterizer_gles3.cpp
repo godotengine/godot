@@ -195,7 +195,7 @@ typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userP
 void RasterizerGLES3::initialize() {
 	print_verbose("Using OpenGL video driver");
 
-	storage._main_thread_id = Thread::get_caller_id();
+	texture_storage.set_main_thread_id(Thread::get_caller_id());
 
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
@@ -271,7 +271,7 @@ void RasterizerGLES3::prepare_for_blitting_render_targets() {
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect) {
 	ERR_FAIL_COND(storage.frame.current_rt);
 
-	RasterizerStorageGLES3::RenderTarget *rt = storage.render_target_owner.get_or_null(p_render_target);
+	GLES3::RenderTarget *rt = storage.render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
 	// TODO: do we need a keep 3d linear option?
@@ -324,10 +324,10 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	canvas.canvas_begin();
 
-	RID texture = storage.texture_create();
-	//storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
-	storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
-	storage.texture_set_data(texture, p_image);
+	RID texture = texture_storage.texture_create();
+	//texture_storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
+	texture_storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
+	texture_storage.texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
@@ -349,13 +349,13 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
 	}
 
-	RasterizerStorageGLES3::Texture *t = storage.texture_owner.get_or_null(texture);
-	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
+	GLES3::Texture *t = texture_storage.get_texture(texture);
+	glActiveTexture(GL_TEXTURE0 + config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas.canvas_end();
 
-	storage.free(texture);
+	texture_storage.texture_free(texture);
 
 	end_frame(true);
 }

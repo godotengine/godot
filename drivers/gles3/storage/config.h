@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  config.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,86 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifndef CONFIG_GLES3_H
+#define CONFIG_GLES3_H
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
+#ifdef GLES3_ENABLED
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
 
-class RenderingServerGlobals {
+// This must come first to avoid windows.h mess
+#include "platform_config.h"
+#ifndef OPENGL_INCLUDE_H
+#include <GLES3/gl3.h>
+#else
+#include OPENGL_INCLUDE_H
+#endif
+
+namespace GLES3 {
+
+class Config {
+private:
+	static Config *singleton;
+
 public:
-	static bool threaded;
+	bool shrink_textures_x2;
+	bool use_fast_texture_filter;
+	bool use_skeleton_software;
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	int max_vertex_texture_image_units;
+	int max_texture_image_units;
+	int max_texture_size;
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
+	// TODO implement wireframe in OpenGL
+	// bool generate_wireframes;
+
+	Set<String> extensions;
+
+	bool float_texture_supported;
+	bool s3tc_supported;
+	bool latc_supported;
+	bool rgtc_supported;
+	bool bptc_supported;
+	bool etc_supported;
+	bool etc2_supported;
+	bool srgb_decode_supported;
+
+	bool keep_original_textures;
+
+	bool force_vertex_shading;
+
+	bool use_rgba_2d_shadows;
+	bool use_rgba_3d_shadows;
+
+	bool support_32_bits_indices;
+	bool support_write_depth;
+	bool support_half_float_vertices;
+	bool support_npot_repeat_mipmap;
+	bool support_depth_texture;
+	bool support_depth_cubemaps;
+
+	bool support_shadow_cubemaps;
+
+	bool render_to_mipmap_supported;
+
+	GLuint depth_internalformat;
+	GLuint depth_type;
+	GLuint depth_buffer_internalformat;
+
+	// in some cases the legacy render didn't orphan. We will mark these
+	// so the user can switch orphaning off for them.
+	bool should_orphan = true;
+
+	static Config *get_singleton() { return singleton; };
+
+	Config();
+	~Config();
+	void initialize();
 };
 
-#define RSG RenderingServerGlobals
+} // namespace GLES3
 
-#endif // RENDERING_SERVER_GLOBALS_H
+#endif // GLES3_ENABLED
+
+#endif // !CONFIG_GLES3_H

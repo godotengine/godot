@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_gles3.h                                                   */
+/*  render_target_storage.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,72 +28,105 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_OPENGL_H
-#define RASTERIZER_OPENGL_H
+#ifndef RENDER_TARGET_STORAGE_GLES3_H
+#define RENDER_TARGET_STORAGE_GLES3_H
 
 #ifdef GLES3_ENABLED
 
-#include "rasterizer_canvas_gles3.h"
-#include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "storage/canvas_texture_storage.h"
-#include "storage/config.h"
-#include "storage/render_target_storage.h"
-#include "storage/texture_storage.h"
+#include "servers/rendering/renderer_storage.h" // included until we move stuff into storage/render_target_storage.h
+// #include "servers/rendering/storage/render_target_storage.h"
 
-class RasterizerGLES3 : public RendererCompositor {
-private:
-	uint64_t frame = 1;
-	float delta = 0;
+// This must come first to avoid windows.h mess
+#include "platform_config.h"
+#ifndef OPENGL_INCLUDE_H
+#include <GLES3/gl3.h>
+#else
+#include OPENGL_INCLUDE_H
+#endif
 
-	double time_total = 0.0;
+namespace GLES3 {
 
-protected:
-	GLES3::Config config;
-	GLES3::CanvasTextureStorage canvas_texture_storage;
-	GLES3::TextureStorage texture_storage;
-	RasterizerStorageGLES3 storage;
-	RasterizerCanvasGLES3 canvas;
-	RasterizerSceneGLES3 scene;
+// NOTE, this class currently is just a container for the the RenderTarget struct and is not yet implemented further, we'll do that next after we finish with TextureStorage
 
-	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
+struct RenderTarget {
+	RID self;
+	GLuint fbo = 0;
+	GLuint color = 0;
+	GLuint depth = 0;
 
-public:
-	RendererCanvasTextureStorage *get_canvas_texture_storage() { return &canvas_texture_storage; }
-	RendererTextureStorage *get_texture_storage() { return &texture_storage; }
-	RendererStorage *get_storage() { return &storage; }
-	RendererCanvasRender *get_canvas() { return &canvas; }
-	RendererSceneRender *get_scene() { return &scene; }
+	GLuint multisample_fbo = 0;
+	GLuint multisample_color = 0;
+	GLuint multisample_depth = 0;
+	bool multisample_active = false;
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	struct Effect {
+		GLuint fbo = 0;
+		int width = 0;
+		int height = 0;
 
-	void initialize();
-	void begin_frame(double frame_step);
+		GLuint color = 0;
+	};
 
-	void prepare_for_blitting_render_targets();
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	Effect copy_screen_effect;
 
-	void end_frame(bool p_swap_buffers);
+	struct MipMaps {
+		struct Size {
+			GLuint fbo = 0;
+			GLuint color = 0;
+			int width = 0;
+			int height = 0;
+		};
 
-	void finalize() {}
+		Vector<Size> sizes;
+		GLuint color = 0;
+		int levels = 0;
+	};
 
-	static RendererCompositor *_create_current() {
-		return memnew(RasterizerGLES3);
+	MipMaps mip_maps[2];
+
+	struct External {
+		GLuint fbo = 0;
+		GLuint color = 0;
+		GLuint depth = 0;
+		RID texture;
+	} external;
+
+	int x = 0;
+	int y = 0;
+	int width = 0;
+	int height = 0;
+
+	bool flags[RendererStorage::RENDER_TARGET_FLAG_MAX] = {};
+
+	// instead of allocating sized render targets immediately,
+	// defer this for faster startup
+	bool allocate_is_dirty = false;
+	bool used_in_frame = false;
+	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+
+	bool use_fxaa = false;
+	bool use_debanding = false;
+
+	RID texture;
+
+	bool used_dof_blur_near = false;
+	bool mip_maps_allocated = false;
+
+	Color clear_color = Color(1, 1, 1, 1);
+	bool clear_requested = false;
+
+	RenderTarget() {
+		for (int i = 0; i < RendererStorage::RENDER_TARGET_FLAG_MAX; ++i) {
+			flags[i] = false;
+		}
+		external.fbo = 0;
 	}
-
-	static void make_current() {
-		_create_func = _create_current;
-	}
-
-	virtual bool is_low_end() const { return true; }
-	uint64_t get_frame_number() const { return frame; }
-	double get_frame_delta_time() const { return delta; }
-
-	RasterizerGLES3();
-	~RasterizerGLES3() {}
 };
 
-#endif // GLES3_ENABLED
+} // namespace GLES3
 
-#endif
+#endif // !GLES3_ENABLED
+
+#endif // !RENDER_TARGET_STORAGE_GLES3_H

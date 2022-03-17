@@ -212,7 +212,7 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
 			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
 
-	RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
+	RS::get_singleton()->texture_2d_update(texture, p_image);
 
 	notify_property_list_changed();
 	emit_changed();

@@ -34,6 +34,7 @@
 #include "renderer_viewport.h"
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
+#include "servers/rendering/storage/canvas_texture_storage.h"
 
 static const int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
 
@@ -1530,26 +1531,26 @@ void RendererCanvasCull::canvas_set_shadow_texture_size(int p_size) {
 }
 
 RID RendererCanvasCull::canvas_texture_allocate() {
-	return RSG::storage->canvas_texture_allocate();
+	return RSG::canvas_texture_storage->canvas_texture_allocate();
 }
 void RendererCanvasCull::canvas_texture_initialize(RID p_rid) {
-	RSG::storage->canvas_texture_initialize(p_rid);
+	RSG::canvas_texture_storage->canvas_texture_initialize(p_rid);
 }
 
 void RendererCanvasCull::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
-	RSG::storage->canvas_texture_set_channel(p_canvas_texture, p_channel, p_texture);
+	RSG::canvas_texture_storage->canvas_texture_set_channel(p_canvas_texture, p_channel, p_texture);
 }
 
 void RendererCanvasCull::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) {
-	RSG::storage->canvas_texture_set_shading_parameters(p_canvas_texture, p_base_color, p_shininess);
+	RSG::canvas_texture_storage->canvas_texture_set_shading_parameters(p_canvas_texture, p_base_color, p_shininess);
 }
 
 void RendererCanvasCull::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
-	RSG::storage->canvas_texture_set_texture_filter(p_canvas_texture, p_filter);
+	RSG::canvas_texture_storage->canvas_texture_set_texture_filter(p_canvas_texture, p_filter);
 }
 
 void RendererCanvasCull::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
-	RSG::storage->canvas_texture_set_texture_repeat(p_canvas_texture, p_repeat);
+	RSG::canvas_texture_storage->canvas_texture_set_texture_repeat(p_canvas_texture, p_repeat);
 }
 
 void RendererCanvasCull::canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) {

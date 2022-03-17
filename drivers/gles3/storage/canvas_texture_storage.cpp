@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  canvas_texture_storage.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,69 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifdef GLES3_ENABLED
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
+#include "canvas_texture_storage.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+using namespace GLES3;
 
-class RenderingServerGlobals {
-public:
-	static bool threaded;
+CanvasTextureStorage *CanvasTextureStorage::singleton = nullptr;
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+CanvasTextureStorage *CanvasTextureStorage::get_singleton() {
+	return singleton;
+}
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
-};
+CanvasTextureStorage::CanvasTextureStorage() {
+	singleton = this;
+}
 
-#define RSG RenderingServerGlobals
+CanvasTextureStorage::~CanvasTextureStorage() {
+	singleton = nullptr;
+}
 
-#endif // RENDERING_SERVER_GLOBALS_H
+RID CanvasTextureStorage::canvas_texture_allocate() {
+	return canvas_texture_owner.allocate_rid();
+}
+
+void CanvasTextureStorage::canvas_texture_initialize(RID p_rid) {
+	canvas_texture_owner.initialize_rid(p_rid);
+}
+
+void CanvasTextureStorage::canvas_texture_free(RID p_rid) {
+	canvas_texture_owner.free(p_rid);
+}
+
+void CanvasTextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	switch (p_channel) {
+		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
+			ct->diffuse = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
+			ct->normal_map = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
+			ct->specular = p_texture;
+		} break;
+	}
+}
+
+void CanvasTextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ct->specular_color.r = p_specular_color.r;
+	ct->specular_color.g = p_specular_color.g;
+	ct->specular_color.b = p_specular_color.b;
+	ct->specular_color.a = p_shininess;
+}
+
+void CanvasTextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ct->texture_filter = p_filter;
+}
+
+void CanvasTextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ct->texture_repeat = p_repeat;
+}
+
+#endif // !GLES3_ENABLED
