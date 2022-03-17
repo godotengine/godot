@@ -810,14 +810,22 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	struct zwp_pointer_constraints_v1 *pc = wls.globals.wp_pointer_constraints;
 
 	struct zwp_locked_pointer_v1 *&lp = wls.pointer_state.wp_locked_pointer;
+	struct zwp_confined_pointer_v1 *&cp = wls.pointer_state.wp_confined_pointer;
 
+	// TODO: Implement cursor visibility and improve this block.
+	// This block has been built only with pointer constraining in mind.
 	switch (p_mode) {
 		case MOUSE_MODE_VISIBLE:
 		case MOUSE_MODE_HIDDEN: {
 			if (lp) {
 				zwp_locked_pointer_v1_destroy(lp);
 				lp = nullptr;
-			};
+			}
+
+			if (cp) {
+				zwp_confined_pointer_v1_destroy(cp);
+				cp = nullptr;
+			}
 		} break;
 
 		case MOUSE_MODE_CAPTURED: {
@@ -830,8 +838,16 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 				wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
 
 				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
-			};
+			}
 		} break;
+
+		case MOUSE_MODE_CONFINED:
+		case MOUSE_MODE_CONFINED_HIDDEN: {
+			if (!cp) {
+				WindowData &wd = wls.windows[MAIN_WINDOW_ID];
+				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+			}
+		}
 
 		default: {
 			// TODO: Implement other modes.
