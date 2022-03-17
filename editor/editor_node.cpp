@@ -151,6 +151,7 @@
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
+#include "editor/plugins/gradient_texture_2d_editor_plugin.h"
 #include "editor/plugins/input_event_editor_plugin.h"
 #include "editor/plugins/light_occluder_2d_editor_plugin.h"
 #include "editor/plugins/lightmap_gi_editor_plugin.h"
@@ -7025,6 +7026,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
 	add_editor_plugin(memnew(TextControlEditorPlugin));
 	add_editor_plugin(memnew(ControlEditorPlugin));
+	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));
