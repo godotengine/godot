@@ -2481,7 +2481,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 						int64_t wg_todo = (mipmaps[i].cell_count - 1) / wg_size + 1;
 						while (wg_todo) {
-							int64_t wg_count = MIN(wg_todo, wg_limit_x);
+							int64_t wg_count = MIN(wg_todo, (int64_t)wg_limit_x);
 							RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
 							RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
 							wg_todo -= wg_count;
