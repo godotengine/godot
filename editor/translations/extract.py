@@ -81,17 +81,24 @@ capitalize_re = re.compile(r"(?<=\D)(?=\d)|(?<=\d)(?=\D([a-z]|\d))")
 
 
 def _process_editor_string(name):
-    # See String::capitalize().
-    # fmt: off
-    capitalized = " ".join(
-        part.title()
-        for part in capitalize_re.sub("_", name).replace("_", " ").split()
-    )
-    # fmt: on
-    # See EditorStringProcessor::process_string().
-    for key, value in remaps.items():
-        capitalized = capitalized.replace(key, value)
-    return capitalized
+    # See EditorPropertyNameProcessor::process_string().
+    capitalized_parts = []
+    for segment in name.split("_"):
+        if not segment:
+            continue
+        remapped = remaps.get(segment)
+        if remapped:
+            capitalized_parts.append(remapped)
+        else:
+            # See String::capitalize().
+            # fmt: off
+            capitalized_parts.append(" ".join(
+                part.title()
+                for part in capitalize_re.sub("_", segment).replace("_", " ").split()
+            ))
+            # fmt: on
+
+    return " ".join(capitalized_parts)
 
 
 def _write_message(msgctx, msg, location):
