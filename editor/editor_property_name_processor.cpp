@@ -109,14 +109,14 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["http"] = "HTTP";
 	capitalize_string_remaps["ik"] = "IK";
 	capitalize_string_remaps["ios"] = "iOS";
-	capitalize_string_remaps["kb"] = "KB";
+	capitalize_string_remaps["kb"] = "(KB)"; // Unit.
 	capitalize_string_remaps["lod"] = "LOD";
 	capitalize_string_remaps["macos"] = "macOS";
 	capitalize_string_remaps["msaa"] = "MSAA";
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["png"] = "PNG";
-	capitalize_string_remaps["po2"] = "Power of 2";
+	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.
 	capitalize_string_remaps["pvs"] = "PVS";
 	capitalize_string_remaps["pvrtc"] = "PVRTC";
 	capitalize_string_remaps["s3tc"] = "S3TC";
@@ -127,10 +127,13 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ssh"] = "SSH";
 	capitalize_string_remaps["ssil"] = "SSIL";
 	capitalize_string_remaps["ssl"] = "SSL";
+	capitalize_string_remaps["stderr"] = "stderr";
+	capitalize_string_remaps["stdout"] = "stdout";
 	capitalize_string_remaps["tcp"] = "TCP";
+	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["url"] = "URL";
 	capitalize_string_remaps["urls"] = "URLs";
-	capitalize_string_remaps["ui"] = "UI";
+	capitalize_string_remaps["usec"] = "(µsec)"; // Unit.
 	capitalize_string_remaps["uv"] = "UV";
 	capitalize_string_remaps["uv1"] = "UV1";
 	capitalize_string_remaps["uv2"] = "UV2";
@@ -142,6 +145,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["webrtc"] = "WebRTC";
 	capitalize_string_remaps["websocket"] = "WebSocket";
 	capitalize_string_remaps["xr"] = "XR";
+	capitalize_string_remaps["xy"] = "XY";
+	capitalize_string_remaps["xz"] = "XZ";
 }
 
 EditorPropertyNameProcessor::~EditorPropertyNameProcessor() {
