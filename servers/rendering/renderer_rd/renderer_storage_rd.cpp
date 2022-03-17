@@ -8490,7 +8490,7 @@ RendererStorageRD::RendererStorageRD() {
 
 	using_lightmap_array = true; // high end
 	if (using_lightmap_array) {
-		uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+		uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 		if (textures_per_stage <= 256) {
 			lightmap_textures.resize(32);
