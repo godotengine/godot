@@ -2,7 +2,7 @@
 # Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
-# Marco Santos <enum.scima@gmail.com>, 2019.
+# Marco Santos <enum.scima@gmail.com>, 2019, 2022.
 # Amado Wilkins <epicalert68@gmail.com>, 2019.
 # Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>, 2019.
 # Jethro Parker <lionbearjet@hotmail.com>, 2020.
@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-11-19 08:44+0000\n"
-"Last-Translator: Napstaguy04 <brokenscreen3@gmail.com>\n"
+"PO-Revision-Date: 2022-03-17 13:58+0000\n"
+"Last-Translator: Marco Santos <enum.scima@gmail.com>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
 "Language: fil\n"
@@ -21,39 +21,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"Invalid na type argument para sa convert(), gamitin ang mga TYPE_* na "
-"constant."
+"Invalid na type argument para sa convert(), gamitin ang TYPE_* na constant."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Inasahan na ang haba ng string ay 1 (isang character)."
+msgstr "Inaasahan ang isang string na may haba na 1 (isang karakter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"Kulang ang mga byte para sa pag-decode ng mga byte, o kaya naman invalid na "
-"format."
+"Kulang ang mga byte para sa pagde-decode, o di kaya'y invalid na format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Invalid na input %i (hindi ipinasa) sa expression"
+msgstr "Invalid na input %i (di pinasa) sa expression"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
-"Hindi magagamit ang self dahil ang instance ay naka-null (hindi ipinasa)"
+msgstr "Di magagamit ang self dahil null ang instance (di pinasa)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Invalid na mga operand para sa operator na %s, %s, at %s."
+msgstr "Mga invalid na operand sa operator na %s, %s at %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -61,7 +58,7 @@ msgstr "Invalid na index ng type na %s para sa base type na %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Invalid na pinangalang index '%s' para sa base type na %s"
+msgstr "Invalid na pinangalanang index na '%s' para sa base type na %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -121,11 +118,11 @@ msgstr "Halaga:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Mag-insert ng Key dito"
+msgstr "Magpasok ng Key Rito"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "I-duplicate ang (mga) Napiling Key"
+msgstr "Doblehin ang (mga) Napiling Key"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -141,27 +138,27 @@ msgstr "Maglipat ng (mga) Bezier Point"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Pagduplika ng mga Animation Keys"
+msgstr "I-animate ang mga Dinobleng Key"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Pagbura ng mga Animation Key"
+msgstr "I-animate ang mga Binurang Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Pagbago ng Keyframe Time ng Animation"
+msgstr "I-animate ang Pagbago sa Oras ng Keyframe"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Pagbago ng Transition ng Animation"
+msgstr "I-animate ang Pagbago sa Transition"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Pagbago ng Transform ng Animation"
+msgstr "I-animate ang Pagbago sa Transform"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Pagbago ng Nilalaman ng Keyframe ng Animation"
+msgstr "I-animate ang Pagbago sa Halaga ng Keyframe"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"

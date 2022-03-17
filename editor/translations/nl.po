@@ -56,13 +56,15 @@
 # Tim Visee <tim+weblate@visee.me>, 2022.
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
 # Rémi Verschelde <remi@godotengine.org>, 2022.
+# Wouter <mysticaldev@hotmail.com>, 2022.
+# voylin <0voylin0@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-20 11:48+0000\n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2022-03-17 13:58+0000\n"
+"Last-Translator: voylin <0voylin0@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -70,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -374,9 +376,8 @@ msgid "Duplicate Key(s)"
 msgstr "Sleutel(s) dupliceren"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add RESET Value(s)"
-msgstr "Voeg RESET Frame(s) toe"
+msgstr "Voeg RESET Waarde(s) toe"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -548,9 +549,8 @@ msgstr ""
 "aanwezig is."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Add RESET Keys"
-msgstr "Anim Schaal Keys"
+msgstr "Anim Add RESET Keys"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1537,9 +1537,8 @@ msgid "Create a new Bus Layout."
 msgstr "Maak een nieuwe audiobusindeling."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Audiobusindeling openen"
+msgstr "Audio Bus Indeling"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1823,23 +1822,28 @@ msgstr "Geeft ingebouwde toegang tot de asset bibliotheek."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr ""
+msgstr "Staat toe de node hiërarchie te bewerken in het Scene tabblad."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene "
 "dock."
 msgstr ""
+"Staat toe om te werken met signalen en groepen van de geselecteerde node in "
+"het Scene tabblad."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
 msgstr ""
+"Staat toe om te bladeren in het lokale bestandssysteem via een eigen tabblad."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
 msgstr ""
+"Staat toe om de import instellingen te configureren voor individuele "
+"onderdelen. Heeft het bestandssysteem tabblad nodig om te functioneren."
 
 #: editor/editor_feature_profile.cpp
 msgid "(current)"
@@ -2156,7 +2160,7 @@ msgstr "Klasse:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Erft van:"
+msgstr "Erven:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
@@ -2323,10 +2327,12 @@ msgstr "Waarde vastzetten"
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
+"Als je een waarde vast plaatst, dan zal deze gedwongen worden opgeslagen, "
+"zelf als het overeenkomt met de standaard waarde."
 
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
-msgstr ""
+msgstr "Pin waarde [Uitgeschakeld omdat '%s' enkel voor in de editor is]"
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -2405,7 +2411,7 @@ msgstr "Omhoog"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr "Knooppunt"
+msgstr "Node"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -2682,13 +2688,12 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s bestaat niet meer! Geef een nieuwe opslaglocatie op."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
-"De huidige scène heeft geen wortelknoop, maar %d gewijzigde externe "
-"bron(nen) zijn toch opgeslagen."
+"De huidige scène heeft geen root node, maar externe resource(s), die werden "
+"gewijzigd door %d, werden toch opgeslagen."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2728,7 +2733,7 @@ msgstr "De huidige scène is niet opgeslagen. Toch openen?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Kan niet ongedaan maken terwijl de muis knoppen ingedrukt zijn."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
@@ -2740,7 +2745,7 @@ msgstr "Ongedaan maken: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Kan niet opnieuw doen terwijl de muis knoppen ingedrukt zijn."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3087,9 +3092,8 @@ msgid "Install Android Build Template..."
 msgstr "Android Build-sjabloon Installeren ..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "Editordatamap openen"
+msgstr "Gebruikersgegevens map openen"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3399,9 +3403,8 @@ msgid "Install from file"
 msgstr "Installeer Vanuit Bestand"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select android sources file"
-msgstr "Selecteer een Bron Mesh:"
+msgstr "Selecteer een android bronbestand"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3808,11 +3811,11 @@ msgstr "%s Fout"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
-msgstr ""
+msgstr "Open de map waarin deze templates zitten."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall these templates."
-msgstr ""
+msgstr "Deze templates verwijderen."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3826,7 +3829,7 @@ msgstr "Mirrors ophalen, even wachten a.u.b..."
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
-msgstr ""
+msgstr "Starten van de download..."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -3838,19 +3841,16 @@ msgid "Connecting to the mirror..."
 msgstr "Verbinden met Mirror..."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't resolve the requested address."
-msgstr "Kan hostname niet herleiden:"
+msgstr "Kan het opgevraagde adres niet herleiden."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't connect to the mirror."
-msgstr "Kan niet verbinden met host."
+msgstr "Kan niet verbinden met de host."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No response from the mirror."
-msgstr "Geen antwoord van host."
+msgstr "Geen antwoord van de host."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3858,9 +3858,8 @@ msgid "Request failed."
 msgstr "Aanvraag Mislukt."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Request ended up in a redirect loop."
-msgstr "Aanvraag mislukt, te veel redirects"
+msgstr "Aanvraag mislukt, te veel redirects."
 
 #: editor/export_template_manager.cpp
 msgid "Request failed:"
@@ -3868,7 +3867,7 @@ msgstr "Aanvraag mislukt:"
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
-msgstr ""
+msgstr "Download voltooid; bezig met uitpakken van bestanden..."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -3895,7 +3894,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Best available mirror"
-msgstr ""
+msgstr "Meest geschikte server"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3995,28 +3994,29 @@ msgstr "Huidige Versie:"
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
 msgstr ""
+"Geen exportsjablonen gevonden. Download de exportsjablonen of installeer ze "
+"vanuit een bestand."
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
-msgstr ""
+msgstr "De exportsjablonen zijn geïnstalleerd en klaar om te gebruiken."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open Folder"
-msgstr "Open een Bestand"
+msgstr "Map openen"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
 msgstr ""
+"Open de map waarin de geïnstalleerde sjablonen staan van de huidige versie."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
 msgstr "Verwijderen"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall templates for the current version."
-msgstr "Initiële waarde van teller"
+msgstr "Verwijder sjablonen van de huidige versie."
 
 #: editor/export_template_manager.cpp
 msgid "Download from:"
@@ -4034,13 +4034,15 @@ msgstr "Kopieer Fout"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
-msgstr ""
+msgstr "Download en installeer"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Download and install templates for the current version from the best "
 "possible mirror."
 msgstr ""
+"Download en installeer sjablonen voor de huidige versie vanuit de best "
+"mogelijke server."
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
@@ -4053,9 +4055,8 @@ msgid "Install from File"
 msgstr "Installeer Vanuit Bestand"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install templates from a local file."
-msgstr "Sjablonen importeren Vanuit ZIP-Bestand"
+msgstr "Sjablonen importeren Vanuit ZIP-Bestand."
 
 #: editor/export_template_manager.cpp editor/find_in_files.cpp
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -4090,6 +4091,8 @@ msgid ""
 "The templates will continue to download.\n"
 "You may experience a short editor freeze when they finish."
 msgstr ""
+"De sjablonen worden gedownload.\n"
+"De editor kan even vastlopen als de download klaar is."
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
@@ -4245,35 +4248,32 @@ msgid "Collapse All"
 msgstr "Alles inklappen"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort files"
-msgstr "Zoek bestanden"
+msgstr "Sorteer bestanden"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Ascending)"
-msgstr ""
+msgstr "Sorteren op Naam (Oplopend)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Descending)"
-msgstr ""
+msgstr "Sorteren op Naam (Aflopend)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Ascending)"
-msgstr ""
+msgstr "Sorteren op type (Oplopend)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Descending)"
-msgstr ""
+msgstr "Sorteren op Type (Aflopend)"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by Last Modified"
-msgstr "Laatst bewerkt"
+msgstr "Sorteren op Laatst bewerkt"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by First Modified"
-msgstr "Laatst bewerkt"
+msgstr "Sorteren op Laatst bewerkt"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
@@ -4285,7 +4285,7 @@ msgstr "Hernoemen..."
 
 #: editor/filesystem_dock.cpp
 msgid "Focus the search box"
-msgstr ""
+msgstr "Focus op de zoekbox"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -4620,14 +4620,12 @@ msgid "Failed to load resource."
 msgstr "Bron laden mislukt."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Copy Properties"
-msgstr "Eigenschappen"
+msgstr "Kopieer Eigenschappen"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Paste Properties"
-msgstr "Eigenschappen"
+msgstr "Plakken Eigenschappen"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
@@ -4683,9 +4681,8 @@ msgid "History of recently edited objects."
 msgstr "Geschiedenis van recent bewerkte objecten."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Open documentation for this object."
-msgstr "Open Godot online documentatie"
+msgstr "Open Godot online documentatie."
 
 #: editor/inspector_dock.cpp editor/scene_tree_dock.cpp
 msgid "Open Documentation"
@@ -4944,9 +4941,8 @@ msgid "Blend:"
 msgstr "Mengen:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "Parameter veranderd"
+msgstr "Parameter veranderd:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5674,11 +5670,11 @@ msgstr "Alle"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "Zoek sjablonen, projecten en demo's"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
-msgstr ""
+msgstr "Zoek bestanden (exclusief sjablonen, projecten en demo's)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5722,7 +5718,7 @@ msgstr "Assets ZIP Bestand"
 
 #: editor/plugins/audio_stream_editor_plugin.cpp
 msgid "Audio Preview Play/Pause"
-msgstr ""
+msgstr "Audio voorbeeld Afspelen/Pauzeren"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5777,7 +5773,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
-msgstr "Selecteer lightmap bake-bestand"
+msgstr "Selecteer lightmap bake-bestand:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6078,24 +6074,20 @@ msgstr "Selecteermodus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Drag: Rotate selected node around pivot."
-msgstr "De uitgekozen knoop of overgang verwijderen."
+msgstr "Slepen: Roteer de geselecteerde Node om het draaipunt."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt + Slepen : Verplaatsen"
+msgstr "Alt + Slepen: Verplaatsen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt + Slepen : Verplaatsen"
+msgstr "Alt + Slepen : Schalen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "V: Set selected node's pivot position."
-msgstr "De uitgekozen knoop of overgang verwijderen."
+msgstr "V: Stel het draaipunt in van de geselecteerde Node."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6126,7 +6118,7 @@ msgstr "Schaalmodus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
-msgstr ""
+msgstr "Shift: Proportioneel schalen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6730,9 +6722,8 @@ msgid "No mesh to debug."
 msgstr "Geen mesh om te debuggen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh has no UV in layer %d."
-msgstr "Model heeft geen UV in deze laag"
+msgstr "Model heeft geen UV in deze laag."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -7477,9 +7468,8 @@ msgid "Flip Portals"
 msgstr "Horizontaal omdraaien"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "Telling Gegenereerde Punten:"
+msgstr "Telling Gegenereerde Punten"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -8494,16 +8484,15 @@ msgstr "Toggle Freelook"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Decrease Field of View"
-msgstr ""
+msgstr "Verklein gezichtsveld"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Increase Field of View"
-msgstr ""
+msgstr "Vergroot gezichtsveld"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Reset Field of View to Default"
-msgstr "Reset naar standaard waarden"
+msgstr "Reset gezichtsveld naar standaard waarden"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9289,7 +9278,7 @@ msgstr "Type"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Filter the list of types or create a new custom type:"
-msgstr ""
+msgstr "Filter de lijst van types of creëer een nieuw zelfgemaakt type:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9297,9 +9286,8 @@ msgid "Available Node-based types:"
 msgstr "Beschikbare Profielen:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Type name is empty!"
-msgstr "Bestandsnaam is leeg."
+msgstr "Bestandsnaam is leeg!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9971,41 +9959,36 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No commit message was provided."
-msgstr "Geen naam opgegeven."
+msgstr "Geen commit bericht is opgegeven."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
 msgstr "Commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Staged Changes"
-msgstr "Shader Wijzigingen"
+msgstr "Gefaseerde Wijzigingen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstaged Changes"
-msgstr "Shader Wijzigingen"
+msgstr "Niet-gefaseerde Wijzigingen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "Commit"
+msgstr "Commit:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
-msgstr ""
+msgstr "Datum:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Subtitle:"
-msgstr "Subtree"
+msgstr "Ondertiteling:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Do you want to remove the %s branch?"
-msgstr ""
+msgstr "Weet je zeker dat je de %s branch wilt verwijderen?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -10013,9 +9996,8 @@ msgid "Do you want to remove the %s remote?"
 msgstr "Weet je zeker dat je meer dan één project wilt openen?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Apply"
-msgstr "Reset"
+msgstr "Toepassen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -10026,9 +10008,8 @@ msgid "Initialize"
 msgstr "Initialiseren"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Login"
-msgstr "Punt verwijderen"
+msgstr "Remote Login"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -10037,7 +10018,7 @@ msgstr "Naam wijzigen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Password"
-msgstr ""
+msgstr "Wachtwoord"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
@@ -10057,7 +10038,7 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "SSH Wachtwoord"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -14971,7 +14952,7 @@ msgstr ""
 
 #: scene/2d/navigation_agent_2d.cpp
 msgid "The NavigationAgent2D can be used only under a Node2D node."
-msgstr ""
+msgstr "De NavigationAgent2D kan alleen worden gebruikt als een Node2D Node."
 
 #: scene/2d/navigation_obstacle_2d.cpp
 msgid ""

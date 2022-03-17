@@ -82,8 +82,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-02 18:39+0000\n"
-"Last-Translator: Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>\n"
+"PO-Revision-Date: 2022-03-11 18:47+0000\n"
+"Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -91,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1558,9 +1558,8 @@ msgid "Create a new Bus Layout."
 msgstr "Neues Audiobus-Layout erstellen."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Öffne Audiobus-Layout"
+msgstr "Audiobus-Layout"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -5812,7 +5811,7 @@ msgstr "Lightmaps vorrendern"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "LightMap Bake"
-msgstr ""
+msgstr "LightMap-Bake"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8313,13 +8312,14 @@ msgstr "Cinematische Vorschau"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "(Nicht mit GLES2)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Debug draw modes are only available when using the GLES3 renderer, not GLES2."
-msgstr "Nicht verfügbar wenn der GLES2–Renderer genutzt wird."
+msgstr ""
+"Debug-Zeichenmodi sind nur verfügbar wenn der GLES3-Renderer genutzt wird, "
+"nicht beim GLES2-Renderer."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -9218,9 +9218,8 @@ msgid "Select Another Theme Resource:"
 msgstr "Andere Thema-Ressource auswählen:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme Resource"
-msgstr "Ressource umbenennen"
+msgstr "Themen-Ressource"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
@@ -9275,14 +9274,12 @@ msgid "Add Item Type"
 msgstr "Elementtyp hinzufügen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Variation Base Type"
-msgstr "Variablentyp festlegen"
+msgstr "Variationsbasistyp festlegen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Base Type"
-msgstr "Basistyp ändern"
+msgstr "Basistyp festlegen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -9301,19 +9298,20 @@ msgid "Override all default type items."
 msgstr "Alle Standard-Typelemente überbrücken."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "Basistyp ändern"
+msgstr "Basistyp"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
-msgstr ""
+msgstr "Den Variationsbasistyp aus einer Liste von verfügbaren Typen auswählen."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"Ein Typ, der mit einer eingebauten Klasse verbunden ist, kann nicht als "
+"Variation eines anderen Typs dienen."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9566,7 +9564,7 @@ msgstr "Von Szene erstellen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from Scene"
-msgstr "Aus Szene zusammenführen"
+msgstr "Node-Zweig aus anderer Szene hier einbinden"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
@@ -12419,7 +12417,7 @@ msgstr "Als Szenen-Wurzel festlegen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
-msgstr "Aus Szene zusammenführen"
+msgstr "Node-Zweig aus anderer Szene hier einbinden"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
@@ -12782,9 +12780,8 @@ msgid "Stack Frames"
 msgstr "Aufrufsverlauf"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Filter stack variables"
-msgstr "Kacheln filtern"
+msgstr "Stack-Variablen filtern"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -14116,6 +14113,12 @@ msgid ""
 "Note that the singleton was also renamed from \"GodotPayments\" to "
 "\"GodotGooglePlayBilling\"."
 msgstr ""
+"Ungültiges „GodotPaymentV3“-Modul in den Projekteinstellungen „android/"
+"modules“ vorhanden (wurde mit Godot 3.2.2 geändert).\n"
+"Es muss durch das Erstanbieter-Plugin „GodotGooglePlayBilling“ ersetzt "
+"werden.\n"
+"Hinweis: Das Singleton „GodotPayments“ wurde ebenfalls umbenannt in "
+"„GodotGooglePlayBilling“."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -14775,10 +14778,10 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"Dieses Node besitzt keine untergeordneten Formen, es kann deshalb nicht mit "
+"Dieser Node besitzt keine untergeordneten Formen, er kann deshalb nicht mit "
 "anderen Objekten kollidieren oder interagieren.\n"
-"Es wird empfohlen CollisionShape2D- oder CollisionPolygon2D-Unterobjekte "
-"hinzuzufügen um seine Form festzulegen."
+"Es wird empfohlen, CollisionShape2D- oder CollisionPolygon2D-Unterobjekte "
+"hinzuzufügen, um seine Form festzulegen."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -14901,9 +14904,9 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"Eine NavigationPolygon-Ressource muss für dieses Node erstellt oder ihm "
-"zugewiesen. Bitte trage die entsprechende Eigenschaft ein oder zeichne ein "
-"Polygon."
+"Eine NavigationPolygon-Ressource muss für diesen Node zugewiesen oder "
+"erzeugt werden. Bitte die entsprechende Eigenschaft eintragen oder ein neues "
+"Polygon zeichnen."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -15083,10 +15086,10 @@ msgid ""
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"Dieses Node besitzt keine untergeordneten Formen, es kann deshalb nicht mit "
+"Dieser Node besitzt keine untergeordneten Formen, er kann deshalb nicht mit "
 "anderen Objekten kollidieren oder interagieren.\n"
-"Es wird empfohlen CollisionShape- oder CollisionPolygon-Unterobjekte "
-"hinzuzufügen um seine Form festzulegen."
+"Es wird empfohlen, CollisionShape- oder CollisionPolygon-Unterobjekte "
+"hinzuzufügen, um seine Form festzulegen."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""

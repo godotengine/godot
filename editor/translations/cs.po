@@ -29,13 +29,14 @@
 # Daniel <dan@ger.cz>, 2021.
 # Jakub Janšta <jansta.ja@gmail.com>, 2021.
 # Petr Voparil <voparil.petr96@gmail.com>, 2022.
+# JoeMoos <josephmoose13@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-08 08:59+0000\n"
-"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
+"PO-Revision-Date: 2022-03-17 13:58+0000\n"
+"Last-Translator: JoeMoos <josephmoose13@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -1514,7 +1515,7 @@ msgstr "Neplatný název."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Nemůže začínat číslicí."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -4088,6 +4089,10 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"Tato přípona není editorem rozpoznána.\n"
+"Pokud chcete soubor přejmenovat, použijte průzkumník souborů vašeho "
+"operačního systému.\n"
+"Po přejmenování na neznámou příponu, soubor už nebude vidět v editoru."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -8196,7 +8201,7 @@ msgstr "Filmový náhled"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "(Není ve GLES2)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8761,8 +8766,9 @@ msgid "Styleboxes"
 msgstr "Styl"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "{num} color(s)"
-msgstr ""
+msgstr "{num} barev"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "No colors found."
@@ -8778,16 +8784,18 @@ msgid "No constants found."
 msgstr "Nebyly nalezeny žádné konstanty."
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "{num} font(s)"
-msgstr ""
+msgstr "{num} font(ů)"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "No fonts found."
 msgstr "Nebyla nalezena žádná písma."
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "{num} icon(s)"
-msgstr ""
+msgstr "{num} ikon(a)"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "No icons found."
@@ -8803,12 +8811,13 @@ msgid "No styleboxes found."
 msgstr "Nebyly nalezeny žádné dílčí zdroje."
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "{num} currently selected"
-msgstr ""
+msgstr "{num} právě vybráno"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Nothing was selected for the import."
-msgstr ""
+msgstr "Nic nebylo vybráno pro import."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8817,7 +8826,7 @@ msgstr "Importovat motiv"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing items {n}/{n}"
-msgstr ""
+msgstr "Importování položek {n}/{n}"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Updating the editor"
@@ -8834,7 +8843,7 @@ msgstr "Filtr:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "With Data"
-msgstr ""
+msgstr "S daty"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select by data type:"
@@ -9141,9 +9150,8 @@ msgid "Available Node-based types:"
 msgstr "Dostupné profily:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Type name is empty!"
-msgstr "Název souboru je prázdný."
+msgstr "Název typu je prázdný!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9827,9 +9835,8 @@ msgid "Unstaged Changes"
 msgstr "Změny shaderu:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "Commit"
+msgstr "Commit:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
@@ -9901,9 +9908,8 @@ msgid "Detect new changes"
 msgstr "Detekovat nové změny"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Discard all changes"
-msgstr "Zavřít a uložit změny?"
+msgstr "Zrušit všechny změny"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9934,9 +9940,8 @@ msgid "Commit list size"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Shody:"
+msgstr "Větve"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9950,7 +9955,7 @@ msgstr "Odstranit stopu animace"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branch Name"
-msgstr ""
+msgstr "Název větve"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9968,14 +9973,12 @@ msgid "Remove Remote"
 msgstr "Odstranit položku"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "Vzdálený "
+msgstr "Vzdálené Jméno"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote URL"
-msgstr "Vzdálený "
+msgstr "Vzdálená URL"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Fetch"
@@ -9992,7 +9995,7 @@ msgstr ""
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Force Push"
-msgstr "Zdrojová mesh:"
+msgstr "Vnutit nahrátí"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -10012,12 +10015,11 @@ msgstr "Změnit typ"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Unmerged"
-msgstr ""
+msgstr "Nespojeno"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "View:"
-msgstr "Zobrazení"
+msgstr "Zobrazení:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -11481,7 +11483,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Physical Key"
-msgstr ""
+msgstr "Fyzická Klávesa"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -12128,13 +12130,15 @@ msgstr "Smazat uzel \"%s\"?"
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires having a scene open in the editor."
-msgstr ""
+msgstr "Uložení větve jako scénu vyžaduje mít scénu otevřenou v editoru."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires selecting only one node, but you have "
 "selected %d nodes."
 msgstr ""
+"Uložení větve jako scénu vyžaduje vybrání jednoho uzlu, vy ale máte "
+"vybraných %d uzlů."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -13631,11 +13635,11 @@ msgstr "Typy:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
-msgstr ""
+msgstr "Je %s?"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
-msgstr ""
+msgstr "Na %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -13649,11 +13653,11 @@ msgstr "Na znaku %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Multiply %s"
-msgstr ""
+msgstr "Vynásobit %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Divide %s"
-msgstr ""
+msgstr "Vydělit %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -13850,7 +13854,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "Počkat"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
@@ -13864,7 +13868,7 @@ msgstr "Fyzikální snímek %"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "%s sec(s)"
-msgstr ""
+msgstr "%s vteřin(y)"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
@@ -13911,7 +13915,7 @@ msgstr "Vyberte zařízení ze seznamu"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
-msgstr ""
+msgstr "Běží na %s"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Exporting APK..."
@@ -14118,7 +14122,7 @@ msgstr "Neplatné jméno souboru! Android APK vyžaduje příponu *.apk."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
-msgstr ""
+msgstr "Nepodporovaný formát exportu!\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -14384,11 +14388,8 @@ msgid "Creating app bundle"
 msgstr "Vytvářím náhled"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export:"
-msgstr ""
-"Nepodařilo se najít šablonu APK pro export:\n"
-"%s"
+msgstr "Nepodařilo se najít šablonu APK pro export:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -14601,14 +14602,12 @@ msgid ""
 msgstr ""
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid icon path:"
-msgstr "Neplatná cesta."
+msgstr "Neplatná cesta ikony:"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid file version:"
-msgstr "Neplatná přípona."
+msgstr "Neplatná verze souboru:"
 
 #: platform/windows/export/export.cpp
 #, fuzzy

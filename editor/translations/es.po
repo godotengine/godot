@@ -74,13 +74,14 @@
 # Manuel Cantón Guillén <manuelcanton8@gmail.com>, 2021.
 # Alfonso V <alfonsov96@gmail.com>, 2022.
 # Cristhian Pineda Castro <kurgancpc@hotmail.com>, 2022.
+# flamenco687 <flamenco687@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-20 00:54+0000\n"
-"Last-Translator: Cristhian Pineda Castro <kurgancpc@hotmail.com>\n"
+"PO-Revision-Date: 2022-03-10 22:01+0000\n"
+"Last-Translator: flamenco687 <flamenco687@protonmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -88,7 +89,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1555,9 +1556,8 @@ msgid "Create a new Bus Layout."
 msgstr "Crear un nuevo Bus Layout."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Abrir Layout de Bus de Audio"
+msgstr "Layout de Bus de Audio"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -8308,13 +8308,14 @@ msgstr "Vista Previa Cinemática"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "(No en GLES2)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Debug draw modes are only available when using the GLES3 renderer, not GLES2."
-msgstr "No disponible al utilizar el renderizador GLES2."
+msgstr ""
+"Los modos de dibujo de depurado sólo están disponibles cuando se utiliza la "
+"API de renderización GLES3, no GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -9209,9 +9210,8 @@ msgid "Select Another Theme Resource:"
 msgstr "Seleccionar Otro Recurso del Theme:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme Resource"
-msgstr "Renombrar Recurso"
+msgstr "Recurso temático"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
@@ -9267,14 +9267,12 @@ msgid "Add Item Type"
 msgstr "Añadir Tipo de Elemento"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Variation Base Type"
-msgstr "Establecer Tipo de la Variable"
+msgstr "Establecer tipo de base de variación"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Base Type"
-msgstr "Cambiar Tipo Base"
+msgstr "Establer tipo de base"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -9295,19 +9293,22 @@ msgid "Override all default type items."
 msgstr "Anular todos los elementos de tipo por defecto."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "Cambiar Tipo Base"
+msgstr "Tipo Base"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
 msgstr ""
+"Selecciona el tipo de base de variación de una lista con los tipos "
+"disponibles."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"Un tipo asociado a una clase integrada no puede ser marcado como una "
+"variación de otro tipo."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -14607,7 +14608,7 @@ msgid ""
 "Hardened Runtime is not compatible with ad-hoc signature, and will be "
 "disabled!"
 msgstr ""
-"Hardened Runtime no es compatible con la firma ad-hoc,  y se desactivará!"
+"Hardened Runtime no es compatible con la firma ad-hoc, y se desactivará!"
 
 #: platform/osx/export/export.cpp
 msgid ""
