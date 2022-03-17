@@ -462,6 +462,23 @@ msgstr ""
 msgid "Anim Move Keys"
 msgstr ""
 
+#: editor/animation_track_editor.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Transform"
+msgstr ""
+
+#: editor/animation_track_editor.cpp editor/editor_help.cpp
+msgid "Methods"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Bezier"
+msgstr ""
+
+#: editor/animation_track_editor.cpp editor/editor_audio_buses.cpp
+msgid "Audio"
+msgstr ""
+
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
@@ -1339,10 +1356,6 @@ msgid "Delete Effect"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-msgid "Audio"
-msgstr ""
-
-#: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
 msgstr ""
 
@@ -2049,10 +2062,6 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "default:"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Methods"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -2767,6 +2776,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "%d more files"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -4239,6 +4253,12 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"Warning, no suitable PC VRAM compression enabled in Project Settings. This "
+"texture will not display correctly on PC."
+msgstr ""
+
 #: editor/import_defaults_editor.cpp
 msgid "Select Importer"
 msgstr ""
@@ -4479,6 +4499,14 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Add %s"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -5917,7 +5945,24 @@ msgid "View"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Always Show Grid"
+msgid "Show"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show When Snapping"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Hide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Toggle Grid"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Grid"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6058,11 +6103,6 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Add %s"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6486,6 +6526,14 @@ msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Apply without Transforms"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Apply with Transforms"
 msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -6965,10 +7013,6 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr ""
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Grid"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -8026,11 +8070,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Reset Field of View to Default"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Transform"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10527,6 +10566,16 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "GDScript Encryption Key (256-bits as hexadecimal):"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Note: Encryption key needs to be stored in the binary,\n"
+"you need to build the export templates from source."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "More Info..."
 msgstr ""
 
 #: editor/project_export.cpp

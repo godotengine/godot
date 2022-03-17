@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-03-02 18:39+0000\n"
+"PO-Revision-Date: 2022-03-17 13:58+0000\n"
 "Last-Translator: Napstaguy04 <brokenscreen3@gmail.com>\n"
 "Language-Team: Tagalog <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tl/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -119,7 +119,7 @@ msgstr "Maglagay ng Key dito"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Doblehin ang (mga) Napiling Key"
+msgstr "I-duplicate ang (mga) Napiling Key"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -589,7 +589,7 @@ msgstr "Ibahin Ang Sukat Mula Sa Panturo"
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Doblehin ang Napili"
+msgstr "I-duplicate ang Pinagpipilian"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
@@ -1372,7 +1372,7 @@ msgstr "Kaayusan ng Bus"
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "Doblehin"
+msgstr "I-duplicate"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -1400,7 +1400,7 @@ msgstr "Alisin ang Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr "Doblehin ang Audio Bus"
+msgstr "I-duplicate ang Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
@@ -1450,7 +1450,7 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr "Kumarga"
+msgstr "Mag-load"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
@@ -1860,7 +1860,7 @@ msgstr "Itutok"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
-msgstr "Magangkat"
+msgstr "Umangkat"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -1933,7 +1933,7 @@ msgstr "I-refresh"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
-msgstr "Nakilala Lahat"
+msgstr "Lahat na Kilalang Ekstensyon"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
@@ -2893,11 +2893,11 @@ msgstr "Buksan ang Kumakailan"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "I-ligtas ang Eksena"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "Palitan Sa..."
+msgstr "I-convert sa..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
@@ -2968,7 +2968,7 @@ msgstr "I-reload ang Kasalukuyang Proyekto"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Umuwi sa Talaproyektuhan"
+msgstr "Bumalik sa Talaproyektuhan"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
@@ -3005,7 +3005,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "Nakikitang Collision Shapes"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3608,7 +3608,7 @@ msgstr "Kinalalagyan ng Eksena:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "Magangkat mula sa Node:"
+msgstr "Umangkat mula sa Node:"
 
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
@@ -4073,7 +4073,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
-msgstr ""
+msgstr "Maghanap ng mga file"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -4137,7 +4137,7 @@ msgstr "Hanapin..."
 
 #: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
 msgid "Replace..."
-msgstr "Palitan..."
+msgstr "Pumalit..."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -4357,7 +4357,7 @@ msgstr "Preset"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "I-ligtas ang mga Eksena, I-reimport at Mag-restart"
+msgstr "I-ligtas ang mga Eksena, I-reimport at I-restart"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -5416,11 +5416,11 @@ msgstr "Lahat"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "Maghanap ng mga template, proyekto, at demo"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
-msgstr ""
+msgstr "Maghanap ng mga asset (maliban sa mga template, proyekto, at demo)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5729,7 +5729,8 @@ msgid ""
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
 "Pagpapalit sa Kamera ng Proyekto\n"
-"Pinapalitan ang kamera ng tumatakbong proyekto sa kamera ng editor viewport."
+"Ipinagpapalit ang kamera ng tumatakbong proyekto sa kamera ng editor "
+"viewport."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5765,7 +5766,7 @@ msgstr "I-pasta ang Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Guides"
-msgstr "Alisin Ang Mga Patnubay"
+msgstr "Alisin ang mga Patnubay"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
@@ -5833,17 +5834,17 @@ msgstr "RMB: Magdagdag ng node sa posisyong pinindutan."
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
-msgstr "Paraan ng Paggalaw"
+msgstr "Gumalaw"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr "Paraan ng Pag-ikot"
+msgstr "Mag-ikot"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr "Paraan ng Pagpapalaki"
+msgstr "Magpalaki"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
@@ -6000,7 +6001,7 @@ msgstr "Alisin Ang Mga Pasadyang Buto"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr "Tingnan"
+msgstr "Pagtanaw"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
@@ -6032,7 +6033,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
-msgstr "Igitna Ang Napili"
+msgstr "Pumuwesto sa gitna ng pinagtutukan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
@@ -7337,7 +7338,7 @@ msgstr "Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
-msgstr "Magangkat ng Tema..."
+msgstr "Umangkat ng Tema..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -10775,7 +10776,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr ""
+msgstr "Gumawa ng Bagong Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Create & Edit"
@@ -10791,11 +10792,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
-msgstr ""
+msgstr "Pangalan ng Proyekto:"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
-msgstr ""
+msgstr "Kinaroroonan ng Proyekto:"
 
 #: editor/project_manager.cpp
 msgid "Project Installation Path:"
@@ -10924,6 +10925,9 @@ msgid ""
 "Language changed.\n"
 "The interface will update after restarting the editor or project manager."
 msgstr ""
+"Naibago na ang wika.\n"
+"Magbabago lang ang interface pagkatapos i-restart ang editor o project "
+"manager."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10938,7 +10942,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Local Projects"
-msgstr ""
+msgstr "Mga Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Loading, please wait..."
@@ -10974,7 +10978,7 @@ msgstr "Bagong Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Import Project"
-msgstr "Mag-angkat ng Proyekto"
+msgstr "Umangkat ng Proyekto"
 
 #: editor/project_manager.cpp
 msgid "Remove Project"
@@ -11708,7 +11712,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
-msgstr ""
+msgstr "I-ligtas ang Bagong Eksena Bilang..."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -14691,7 +14695,7 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Paki-confirm..."
 
 #: scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
