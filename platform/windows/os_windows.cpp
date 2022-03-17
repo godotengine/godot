@@ -2406,7 +2406,7 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		daylight = true;
 	}
-	
+
 	Date date;
 	date.day = systemtime.wDay;
 	date.month = Month(systemtime.wMonth);
@@ -2435,7 +2435,7 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		daylight = true;
 	}
-	
+
 	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
 	if (daylight) {
