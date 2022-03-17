@@ -99,6 +99,111 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 4.12-dev\n"
 
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Screen Orientation"
+msgstr "滤色运算符。"
+
+#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Window"
+msgstr "新窗口"
+
+#: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Error"
+msgstr "错误"
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Result"
+msgstr "搜索结果"
+
+#: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
+msgid "Memory"
+msgstr ""
+
+#: core/command_queue_mt.cpp core/message_queue.cpp
+#: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles2/rasterizer_scene_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
+#: servers/visual_server.cpp
+msgid "Limits"
+msgstr ""
+
+#: core/command_queue_mt.cpp
+#, fuzzy
+msgid "Command Queue"
+msgstr "Command: 旋转"
+
+#: core/command_queue_mt.cpp
+msgid "Multithreading Queue Size (KB)"
+msgstr ""
+
+#: core/image.cpp modules/visual_script/visual_script.cpp
+#: scene/2d/polygon_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/resources/bit_map.cpp scene/resources/curve.cpp
+#: scene/resources/polygon_path_finder.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Data"
+msgstr "含数据"
+
+#: core/io/file_access_network.cpp core/register_core_types.cpp
+#: editor/editor_settings.cpp editor/export_template_manager.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+#, fuzzy
+msgid "Network"
+msgstr "网络分析器"
+
+#: core/io/file_access_network.cpp
+#, fuzzy
+msgid "Remote FS"
+msgstr "远程 "
+
+#: core/io/file_access_network.cpp
+#, fuzzy
+msgid "Page Size"
+msgstr "页： "
+
+#: core/io/file_access_network.cpp
+msgid "Page Read Ahead"
+msgstr ""
+
+#: core/io/http_client.cpp
+#, fuzzy
+msgid "Connection"
+msgstr "连接"
+
+#: core/io/http_client.cpp
+msgid "Read Chunk Size"
+msgstr ""
+
+#: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Network Peer"
+msgstr "网络分析器"
+
+#: core/io/multiplayer_api.cpp
+#, fuzzy
+msgid "Root Node"
+msgstr "根节点名称"
+
+#: core/io/networked_multiplayer_peer.cpp
+#, fuzzy
+msgid "Transfer Mode"
+msgstr "变换类型"
+
+#: core/io/packet_peer.cpp
+msgid "Stream Peer"
+msgstr ""
+
+#: core/io/udp_server.cpp
+#, fuzzy
+msgid "Max Pending Connections"
+msgstr "编辑连接："
+
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -142,6 +247,400 @@ msgstr "构造 '%s' 的参数无效"
 msgid "On call to '%s':"
 msgstr "在调用 '%s' 时："
 
+#: core/message_queue.cpp
+msgid "Message Queue"
+msgstr ""
+
+#: core/message_queue.cpp
+msgid "Max Size (KB)"
+msgstr ""
+
+#: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: modules/gdscript/language_server/gdscript_text_document.cpp
+#: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
+#: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Text Editor"
+msgstr "打开编辑器"
+
+#: core/os/input.cpp editor/editor_settings.cpp
+#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
+#: modules/gdscript/gdscript_editor.cpp
+#: modules/gdscript/language_server/gdscript_text_document.cpp
+#: scene/animation/animation_player.cpp scene/gui/control.cpp
+#: scene/main/node.cpp scene/resources/material.cpp
+#, fuzzy
+msgid "Completion"
+msgstr "复制选中项"
+
+#: core/os/input.cpp editor/editor_settings.cpp
+#: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
+#: modules/gdscript/language_server/gdscript_text_document.cpp
+#: scene/animation/animation_player.cpp scene/gui/control.cpp
+#: scene/main/node.cpp scene/resources/material.cpp
+#, fuzzy
+msgid "Use Single Quotes"
+msgstr "新建单个图块"
+
+#: core/os/input_event.cpp
+msgid "Strength"
+msgstr ""
+
+#: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
+#, fuzzy
+msgid "Application"
+msgstr "动作"
+
+#: core/project_settings.cpp main/main.cpp
+#, fuzzy
+msgid "Config"
+msgstr "设置吸附"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Project Settings Override"
+msgstr "项目设置..."
+
+#: core/project_settings.cpp editor/editor_autoload_settings.cpp
+#: editor/editor_help_search.cpp editor/editor_plugin_settings.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp scene/main/node.cpp
+msgid "Name"
+msgstr "名称"
+
+#: core/project_settings.cpp editor/editor_help.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Description"
+msgstr "描述"
+
+#: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: main/main.cpp
+msgid "Run"
+msgstr "运行"
+
+#: core/project_settings.cpp editor/editor_node.cpp
+#: editor/run_settings_dialog.cpp main/main.cpp
+msgid "Main Scene"
+msgstr "主场景"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Disable stdout"
+msgstr "禁用自动图块"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Disable stderr"
+msgstr "不可用的项目"
+
+#: core/project_settings.cpp
+msgid "Use Hidden Project Data Directory"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Use Custom User Dir"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Custom User Dir Name"
+msgstr ""
+
+#: core/project_settings.cpp editor/animation_track_editor.cpp
+#: editor/editor_audio_buses.cpp servers/audio_server.cpp
+msgid "Audio"
+msgstr "音频"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Default Bus Layout"
+msgstr "加载默认总线布局。"
+
+#: core/project_settings.cpp editor/editor_export.cpp
+#: editor/editor_file_system.cpp editor/editor_node.cpp
+#: editor/editor_settings.cpp editor/script_create_dialog.cpp
+#: scene/2d/camera_2d.cpp scene/3d/light.cpp scene/main/node.cpp
+msgid "Editor"
+msgstr "编辑器"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Main Run Args"
+msgstr "主场景参数："
+
+#: core/project_settings.cpp
+msgid "Search In File Extensions"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Script Templates Search Path"
+msgstr ""
+
+#: core/project_settings.cpp editor/editor_node.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "版本控制"
+
+#: core/project_settings.cpp
+msgid "Autoload On Startup"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Plugin Name"
+msgstr "插件名："
+
+#: core/project_settings.cpp scene/2d/collision_object_2d.cpp
+#: scene/3d/collision_object.cpp scene/gui/control.cpp
+#, fuzzy
+msgid "Input"
+msgstr "添加输入"
+
+#: core/project_settings.cpp
+msgid "UI Accept"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Select"
+msgstr "选择"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Cancel"
+msgstr "取消"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Focus Next"
+msgstr "聚焦路径"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Focus Prev"
+msgstr "聚焦路径"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Left"
+msgstr "左上"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Right"
+msgstr "右上"
+
+#: core/project_settings.cpp
+msgid "UI Up"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Down"
+msgstr "下载"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI Page Up"
+msgstr "页： "
+
+#: core/project_settings.cpp
+msgid "UI Page Down"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "UI Home"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "UI End"
+msgstr "在结尾"
+
+#: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
+#: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
+#: scene/3d/physics_body.cpp scene/main/scene_tree.cpp scene/main/viewport.cpp
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#: servers/physics/space_sw.cpp servers/physics_2d/physics_2d_server_sw.cpp
+#: servers/physics_2d/physics_2d_server_wrap_mt.h
+#: servers/physics_2d/space_2d_sw.cpp
+#, fuzzy
+msgid "Physics"
+msgstr " （物理）"
+
+#: core/project_settings.cpp editor/editor_settings.cpp
+#: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
+#: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
+#: scene/3d/physics_body.cpp scene/resources/world.cpp
+#: servers/physics/space_sw.cpp
+msgid "3D"
+msgstr ""
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Smooth Trimesh Collision"
+msgstr "创建三角网格碰撞同级"
+
+#: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles2/rasterizer_scene_gles2.cpp
+#: drivers/gles2/rasterizer_storage_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
+#: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
+#: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Rendering"
+msgstr "渲染器："
+
+#: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
+#: modules/lightmapper_cpu/register_types.cpp scene/3d/baked_lightmap.cpp
+#: scene/main/scene_tree.cpp servers/visual/visual_server_scene.cpp
+#: servers/visual_server.cpp
+msgid "Quality"
+msgstr ""
+
+#: core/project_settings.cpp scene/animation/animation_tree.cpp
+#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Filters"
+msgstr "筛选："
+
+#: core/project_settings.cpp
+msgid "Sharpen Intensity"
+msgstr ""
+
+#: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
+#: main/main.cpp modules/gdscript/gdscript.cpp
+#: modules/visual_script/visual_script.cpp scene/3d/room_manager.cpp
+#: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
+#: servers/visual_server.cpp
+msgid "Debug"
+msgstr "调试"
+
+#: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
+#: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Settings"
+msgstr "设置："
+
+#: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
+msgid "Profiler"
+msgstr "性能分析器"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Max Functions"
+msgstr "生成函数"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Compression"
+msgstr "表达式"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Formats"
+msgstr "格式"
+
+#: core/project_settings.cpp
+msgid "Zstd"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Long Distance Matching"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Compression Level"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Window Log Size"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Zlib"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Gzip"
+msgstr ""
+
+#: core/project_settings.cpp platform/android/export/export.cpp
+msgid "Android"
+msgstr ""
+
+#: core/project_settings.cpp
+msgid "Modules"
+msgstr ""
+
+#: core/register_core_types.cpp
+msgid "TCP"
+msgstr ""
+
+#: core/register_core_types.cpp
+#, fuzzy
+msgid "Connect Timeout Seconds"
+msgstr "与方法的连接："
+
+#: core/register_core_types.cpp
+msgid "Packet Peer Stream"
+msgstr ""
+
+#: core/register_core_types.cpp
+msgid "Max Buffer (Power of 2)"
+msgstr ""
+
+#: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
+msgid "SSL"
+msgstr ""
+
+#: core/register_core_types.cpp main/main.cpp
+#, fuzzy
+msgid "Certificates"
+msgstr "顶点："
+
+#: core/resource.cpp editor/dependency_editor.cpp
+#: editor/editor_resource_picker.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Resource"
+msgstr "资源"
+
+#: core/resource.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Resource Path"
+msgstr "资源路径"
+
+#: core/script_language.cpp
+#, fuzzy
+msgid "Source Code"
+msgstr "来源"
+
+#: core/translation.cpp editor/project_settings_editor.cpp
+msgid "Locale"
+msgstr "区域"
+
+#: core/translation.cpp
+#, fuzzy
+msgid "Test"
+msgstr "测试"
+
+#: core/translation.cpp scene/resources/font.cpp
+msgid "Fallback"
+msgstr ""
+
 #: core/ustring.cpp
 msgid "B"
 msgstr "B"
@@ -169,6 +668,109 @@ msgstr "PiB"
 #: core/ustring.cpp
 msgid "EiB"
 msgstr "EiB"
+
+#: drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles2/rasterizer_scene_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp
+msgid "Buffers"
+msgstr ""
+
+#: drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+msgid "Canvas Polygon Buffer Size (KB)"
+msgstr ""
+
+#: drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+msgid "Canvas Polygon Index Buffer Size (KB)"
+msgstr ""
+
+#: drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
+#: main/main.cpp scene/2d/physics_body_2d.cpp scene/resources/world_2d.cpp
+#: servers/physics_2d/physics_2d_server_sw.cpp
+#: servers/physics_2d/physics_2d_server_wrap_mt.h
+#: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
+msgid "2D"
+msgstr ""
+
+#: drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#, fuzzy
+msgid "Snapping"
+msgstr "智能吸附"
+
+#: drivers/gles2/rasterizer_canvas_base_gles2.cpp
+#: drivers/gles3/rasterizer_canvas_base_gles3.cpp
+#, fuzzy
+msgid "Use GPU Pixel Snap"
+msgstr "使用像素吸附"
+
+#: drivers/gles2/rasterizer_scene_gles2.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Immediate Buffer Size (KB)"
+msgstr ""
+
+#: drivers/gles2/rasterizer_storage_gles2.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp
+#, fuzzy
+msgid "Lightmapping"
+msgstr "烘焙光照贴图"
+
+#: drivers/gles2/rasterizer_storage_gles2.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp
+msgid "Use Bicubic Sampling"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Max Renderable Elements"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Max Renderable Lights"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
+msgid "Max Renderable Reflections"
+msgstr "居中显示所选项"
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Max Lights Per Object"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Subsurface Scattering"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: editor/plugins/spatial_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+msgid "Scale"
+msgstr "缩放"
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
+msgid "Follow Surface"
+msgstr "填充表面"
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Weight Samples"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "Voxel Cone Tracing"
+msgstr ""
+
+#: drivers/gles3/rasterizer_scene_gles3.cpp
+msgid "High Quality"
+msgstr ""
+
+#: drivers/gles3/rasterizer_storage_gles3.cpp
+msgid "Blend Shape Max Buffer Size (KB)"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -364,7 +966,7 @@ msgstr "离散"
 msgid "Trigger"
 msgstr "触发器"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/3d/baked_lightmap.cpp
 msgid "Capture"
 msgstr "捕获"
 
@@ -373,7 +975,8 @@ msgid "Nearest"
 msgstr "临近"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp scene/2d/physics_body_2d.cpp
+#: scene/3d/physics_body.cpp
 msgid "Linear"
 msgstr "线性"
 
@@ -421,6 +1024,30 @@ msgstr "修改动画循环模式"
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "移除动画轨道"
+
+#: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Editors"
+msgstr "编辑器"
+
+#: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/sprite.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/particles_material.cpp
+msgid "Animation"
+msgstr "动画"
+
+#: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Confirm Insert Track"
+msgstr "插入动画轨道和关键帧"
 
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
@@ -551,6 +1178,20 @@ msgstr "对象方法未找到： "
 msgid "Anim Move Keys"
 msgstr "移动动画关键帧"
 
+#: editor/animation_track_editor.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp scene/2d/node_2d.cpp
+#: scene/3d/spatial.cpp scene/main/canvas_layer.cpp
+msgid "Transform"
+msgstr "变换"
+
+#: editor/animation_track_editor.cpp editor/editor_help.cpp
+msgid "Methods"
+msgstr "方法"
+
+#: editor/animation_track_editor.cpp
+msgid "Bezier"
+msgstr ""
+
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
@@ -621,7 +1262,8 @@ msgid "Seconds"
 msgstr "秒"
 
 #: editor/animation_track_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp main/main.cpp
+#: scene/resources/texture.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -713,7 +1355,8 @@ msgstr "最大角度误差："
 msgid "Max Optimizable Angle:"
 msgstr "最大可优化角度："
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp scene/3d/room_manager.cpp
+#: servers/visual_server.cpp
 msgid "Optimize"
 msgstr "优化"
 
@@ -849,7 +1492,7 @@ msgstr "缩小"
 msgid "Reset Zoom"
 msgstr "重置缩放"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp modules/gdscript/gdscript.cpp
 msgid "Warnings"
 msgstr "警告"
 
@@ -915,7 +1558,8 @@ msgstr "额外调用参数："
 msgid "Receiver Method:"
 msgstr "接收方法："
 
-#: editor/connections_dialog.cpp
+#: editor/connections_dialog.cpp scene/3d/room_manager.cpp
+#: servers/visual_server.cpp
 msgid "Advanced"
 msgstr "高级"
 
@@ -1097,12 +1741,10 @@ msgstr ""
 msgid "Dependencies"
 msgstr "依赖"
 
-#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
-msgid "Resource"
-msgstr "资源"
-
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
+#: editor/plugins/path_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Path"
 msgstr "路径"
 
@@ -1445,10 +2087,6 @@ msgid "Delete Effect"
 msgstr "删除效果"
 
 #: editor/editor_audio_buses.cpp
-msgid "Audio"
-msgstr "音频"
-
-#: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
 msgstr "添加音频总线"
 
@@ -1591,6 +2229,7 @@ msgid "Remove Autoload"
 msgstr "移除 Autoload"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
+#: modules/gdscript/gdscript.cpp servers/visual_server.cpp
 msgid "Enable"
 msgstr "启用"
 
@@ -1624,12 +2263,6 @@ msgstr "路径："
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
 msgstr "节点名称："
-
-#: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_plugin_settings.cpp editor/editor_profiler.cpp
-#: editor/project_manager.cpp editor/settings_config_dialog.cpp
-msgid "Name"
-msgstr "名称"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Global Variable"
@@ -1772,6 +2405,10 @@ msgstr "找不到模板文件："
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "以 32 位平台导出时，内嵌的 PCK 不能大于 4GB。"
 
+#: editor/editor_export.cpp
+msgid "Convert Text Resources To Binary On Export"
+msgstr ""
+
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
 msgstr "3D 编辑器"
@@ -1781,6 +2418,7 @@ msgid "Script Editor"
 msgstr "脚本编辑器"
 
 #: editor/editor_feature_profile.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Library"
 msgstr "素材库"
 
@@ -1928,6 +2566,9 @@ msgid "Import"
 msgstr "导入"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
+#: platform/android/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#: platform/windows/export/export.cpp
 msgid "Export"
 msgstr "导出"
 
@@ -1962,6 +2603,11 @@ msgstr "导出配置文件"
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
 msgstr "管理编辑器功能配置文件"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Default Feature Profile"
+msgstr "Godot 功能配置文件"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -2031,6 +2677,40 @@ msgstr "保存"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Save a File"
 msgstr "保存文件"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Access"
+msgstr "成功！"
+
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Display Mode"
+msgstr "播放模式："
+
+#: editor/editor_file_dialog.cpp main/main.cpp modules/csg/csg_shape.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp scene/2d/light_2d.cpp
+#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp scene/3d/physics_body.cpp
+#: scene/gui/file_dialog.cpp servers/audio/effects/audio_effect_distortion.cpp
+#, fuzzy
+msgid "Mode"
+msgstr "平移模式"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Current Dir"
+msgstr "当前："
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Current File"
+msgstr "当前配置文件："
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Current Path"
+msgstr "当前："
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -2128,6 +2808,10 @@ msgstr "文件 %s 有不同类型的多个导入器，已中止导入"
 msgid "(Re)Importing Assets"
 msgstr "正在导入或重新导入素材"
 
+#: editor/editor_file_system.cpp
+msgid "Reimport Missing Imported Files"
+msgstr ""
+
 #: editor/editor_help.cpp
 msgid "Top"
 msgstr "顶部"
@@ -2146,10 +2830,6 @@ msgid "Inherited by:"
 msgstr "派生："
 
 #: editor/editor_help.cpp
-msgid "Description"
-msgstr "描述"
-
-#: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "在线教程"
 
@@ -2164,10 +2844,6 @@ msgstr "覆盖 %s："
 #: editor/editor_help.cpp
 msgid "default:"
 msgstr "默认："
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "方法"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2224,6 +2900,15 @@ msgid ""
 msgstr ""
 "当前没有此方法的说明。请帮我们[color=$color][url=$url]贡献一个[/url][/"
 "color]！"
+
+#: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Help"
+msgstr "帮助"
+
+#: editor/editor_help.cpp
+msgid "Sort Functions Alphabetically"
+msgstr ""
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2387,6 +3072,7 @@ msgid "Up"
 msgstr "上传"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#: scene/main/node.cpp
 msgid "Node"
 msgstr "节点"
 
@@ -2919,6 +3605,169 @@ msgid "%d more files"
 msgstr "其他 %d 个文件"
 
 #: editor/editor_node.cpp
+msgid ""
+"Unable to write to file '%s', file in use, locked or lacking permissions."
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "场景"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "场景路径："
+
+#: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
+#: servers/arvr/arvr_interface.cpp
+#, fuzzy
+msgid "Interface"
+msgstr "用户界面"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Scene Tabs"
+msgstr "切换场景选项卡"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Always Show Close Button"
+msgstr "总是显示网格"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Resize If Many Tabs"
+msgstr ""
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Minimum Width"
+msgstr ""
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Output"
+msgstr "输出"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Always Clear Output On Play"
+msgstr "清空输出"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Always Open Output On Play"
+msgstr ""
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Always Close Output On Stop"
+msgstr ""
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Auto Save"
+msgstr "自动裁剪"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Save Before Running"
+msgstr "运行前保存场景..."
+
+#: editor/editor_node.cpp
+msgid "Save On Focus Loss"
+msgstr ""
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Save Each Scene On Quit"
+msgstr "将分支保存为场景"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
+msgid "Quit Confirmation"
+msgstr "查看信息"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Show Update Spinner"
+msgstr "隐藏更新旋转图"
+
+#: editor/editor_node.cpp
+msgid "Update Continuously"
+msgstr "持续更新"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Update Vital Only"
+msgstr "更新关键修改"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Translate Properties"
+msgstr "粘贴属性"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Restore Scenes On Load"
+msgstr "获取场景节点"
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Show Thumbnail On Hover"
+msgstr ""
+
+#: editor/editor_node.cpp editor/editor_settings.cpp
+msgid "Inspector"
+msgstr "检查器"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Capitalize Properties"
+msgstr "粘贴属性"
+
+#: editor/editor_node.cpp
+msgid "Default Float Step"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Disable Folding"
+msgstr "不可用的按钮"
+
+#: editor/editor_node.cpp
+msgid "Auto Unfold Foreign Scenes"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Horizontal Vector2 Editing"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Horizontal Vector Types Editing"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Resources In Current Inspector"
+msgstr "在检查器中打开"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Resources To Open In New Inspector"
+msgstr "在检查器中打开"
+
+#: editor/editor_node.cpp
+msgid "Default Color Picker Mode"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Username"
+msgstr "用户名"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Public Key Path"
+msgstr "SSH 公钥路径"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Private Key Path"
+msgstr "SSH 私钥路径"
+
+#: editor/editor_node.cpp
 msgid "Dock Position"
 msgstr "面板位置"
 
@@ -2933,10 +3782,6 @@ msgstr "切换专注模式。"
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "添加新场景。"
-
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "场景"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -3009,17 +3854,13 @@ msgid "Miscellaneous project or scene-wide tools."
 msgstr "其他项目或全场景工具。"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
-#: editor/script_create_dialog.cpp
+#: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
 msgid "Project"
 msgstr "项目"
 
 #: editor/editor_node.cpp
 msgid "Project Settings..."
 msgstr "项目设置..."
-
-#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "版本控制"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
@@ -3041,7 +3882,8 @@ msgstr "安装 Android 构建模板..."
 msgid "Open User Data Folder"
 msgstr "打开 “用户数据” 文件夹"
 
-#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/editor_node.cpp editor/editor_settings.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "工具"
 
@@ -3056,11 +3898,6 @@ msgstr "重新加载当前项目"
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
 msgstr "退出到项目列表"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/project_export.cpp
-msgid "Debug"
-msgstr "调试"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -3164,10 +4001,6 @@ msgstr ""
 "启用该选项时，任何保存的脚本都会被正在运行的项目重新加载。\n"
 "当使用于远程设备时，启用网络文件系统能提高编辑效率。"
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
-msgid "Editor"
-msgstr "编辑器"
-
 #: editor/editor_node.cpp
 msgid "Editor Settings..."
 msgstr "编辑器设置..."
@@ -3207,10 +4040,6 @@ msgstr "管理编辑器功能..."
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
 msgstr "管理导出模板..."
-
-#: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
-msgid "Help"
-msgstr "帮助"
 
 #: editor/editor_node.cpp
 msgid "Online Documentation"
@@ -3290,10 +4119,6 @@ msgid "Save & Restart"
 msgstr "保存并重启"
 
 #: editor/editor_node.cpp
-msgid "Update Continuously"
-msgstr "持续更新"
-
-#: editor/editor_node.cpp
 msgid "Update All Changes"
 msgstr "更新所有修改"
 
@@ -3310,16 +4135,8 @@ msgid "FileSystem"
 msgstr "文件系统"
 
 #: editor/editor_node.cpp
-msgid "Inspector"
-msgstr "检查器"
-
-#: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
 msgstr "展开底部面板"
-
-#: editor/editor_node.cpp
-msgid "Output"
-msgstr "输出"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
@@ -3484,6 +4301,7 @@ msgid "Installed Plugins:"
 msgstr "已安装插件："
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
+#: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
 msgid "Update"
 msgstr "更新"
 
@@ -3547,13 +4365,29 @@ msgstr ""
 msgid "Frame #:"
 msgstr "帧 #："
 
-#: editor/editor_profiler.cpp
+#: editor/editor_profiler.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#: scene/resources/particles_material.cpp servers/visual_server.cpp
 msgid "Time"
 msgstr "时间"
 
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "调用"
+
+#: editor/editor_profiler.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Debugger"
+msgstr "调试器"
+
+#: editor/editor_profiler.cpp
+msgid "Profiler Frame History Size"
+msgstr ""
+
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Profiler Frame Max Functions"
+msgstr "重命名函数"
 
 #: editor/editor_properties.cpp
 msgid "Edit Text:"
@@ -3563,7 +4397,7 @@ msgstr "编辑文本："
 msgid "On"
 msgstr "启用"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp scene/main/canvas_layer.cpp
 msgid "Layer"
 msgstr "层"
 
@@ -3670,6 +4504,11 @@ msgstr "转换为 %s"
 msgid "New %s"
 msgstr "新建 %s"
 
+#: editor/editor_resource_picker.cpp
+#, fuzzy
+msgid "Edited Resource"
+msgstr "添加资源"
+
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr "新建脚本"
@@ -3677,6 +4516,11 @@ msgstr "新建脚本"
 #: editor/editor_resource_picker.cpp editor/scene_tree_dock.cpp
 msgid "Extend Script"
 msgstr "扩展脚本"
+
+#: editor/editor_resource_picker.cpp
+#, fuzzy
+msgid "Script Owner"
+msgstr "脚本名："
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -3710,6 +4554,980 @@ msgstr "无法运行脚本："
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "是否遗漏了 _run() 方法？"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Editor Language"
+msgstr "编辑器布局"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Display Scale"
+msgstr "全部显示"
+
+#: editor/editor_settings.cpp
+msgid "Custom Display Scale"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Main Font Size"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Code Font Size"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Font Antialiased"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Font Hinting"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Main Font"
+msgstr "主场景"
+
+#: editor/editor_settings.cpp
+msgid "Main Font Bold"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Code Font"
+msgstr "添加节点顶点"
+
+#: editor/editor_settings.cpp
+msgid "Dim Editor On Dialog Popup"
+msgstr ""
+
+#: editor/editor_settings.cpp main/main.cpp
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Separate Distraction Mode"
+msgstr "专注模式"
+
+#: editor/editor_settings.cpp
+msgid "Automatically Open Screenshots"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Max Array Dictionary Items Per Page"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
+#: scene/register_scene_types.cpp
+msgid "Theme"
+msgstr "主题"
+
+#: editor/editor_settings.cpp editor/import_dock.cpp
+msgid "Preset"
+msgstr "预设"
+
+#: editor/editor_settings.cpp
+msgid "Icon And Font Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Base Color"
+msgstr "颜色"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Accent Color"
+msgstr "拾取颜色"
+
+#: editor/editor_settings.cpp
+msgid "Contrast"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Relationship Line Opacity"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Highlight Tabs"
+msgstr "正在保存光照贴图"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Border Size"
+msgstr "边界像素"
+
+#: editor/editor_settings.cpp
+msgid "Use Graph Node Headers"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Additional Spacing"
+msgstr "动画循环"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Custom Theme"
+msgstr "编辑器主题"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Show Script Button"
+msgstr "滚轮向右"
+
+#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
+#, fuzzy
+msgid "Filesystem"
+msgstr "文件系统"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Directories"
+msgstr "方向"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Autoscan Project Path"
+msgstr "项目路径："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Default Project Path"
+msgstr "项目路径："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "On Save"
+msgstr "保存"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Compress Binary Resources"
+msgstr "复制资源"
+
+#: editor/editor_settings.cpp
+msgid "Safe Save On Backup Then Rename"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "File Dialog"
+msgstr "变换对话框"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Show Hidden Files"
+msgstr "切换显示隐藏文件"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Thumbnail Size"
+msgstr "缩略图..."
+
+#: editor/editor_settings.cpp
+msgid "Docks"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Scene Tree"
+msgstr "获取场景树"
+
+#: editor/editor_settings.cpp
+msgid "Start Create Dialog Fully Expanded"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Always Show Folders"
+msgstr "总是显示网格"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Property Editor"
+msgstr "分组编辑器"
+
+#: editor/editor_settings.cpp
+msgid "Auto Refresh Interval"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Subresource Hue Tint"
+msgstr "子资源"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Color Theme"
+msgstr "编辑器主题"
+
+#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+msgid "Line Spacing"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#, fuzzy
+msgid "Highlighting"
+msgstr "直接光照"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Syntax Highlighting"
+msgstr "语法高亮器"
+
+#: editor/editor_settings.cpp
+msgid "Highlight All Occurrences"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Highlight Current Line"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
+msgid "Highlight Type Safe Lines"
+msgstr ""
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Indent"
+msgstr "向左缩进"
+
+#: editor/editor_settings.cpp editor/script_editor_debugger.cpp
+#: modules/gdscript/gdscript_editor.cpp modules/mono/csharp_script.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: scene/resources/visual_shader_nodes.cpp
+msgid "Type"
+msgstr "类型"
+
+#: editor/editor_settings.cpp main/main.cpp
+#: modules/gdscript/gdscript_editor.cpp modules/mono/csharp_script.cpp
+#: scene/3d/camera.cpp scene/resources/dynamic_font.cpp
+#: scene/resources/navigation_mesh.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Size"
+msgstr "大小："
+
+#: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
+msgid "Auto Indent"
+msgstr "自动缩进"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Convert Indent On Save"
+msgstr "将缩进转为空格"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Draw Tabs"
+msgstr "绘制调用："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Draw Spaces"
+msgstr "绘制调用："
+
+#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/main/scene_tree.cpp
+msgid "Navigation"
+msgstr "导航"
+
+#: editor/editor_settings.cpp
+msgid "Smooth Scrolling"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "V Scroll Speed"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Show Minimap"
+msgstr "显示原点"
+
+#: editor/editor_settings.cpp
+msgid "Minimap Width"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Mouse Extra Buttons Navigate History"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Appearance"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Show Line Numbers"
+msgstr "行号："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Line Numbers Zero Padded"
+msgstr "行号："
+
+#: editor/editor_settings.cpp
+msgid "Show Bookmark Gutter"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Show Breakpoint Gutter"
+msgstr "跳过断点"
+
+#: editor/editor_settings.cpp
+msgid "Show Info Gutter"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Code Folding"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Word Wrap"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Show Line Length Guidelines"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Line Length Guideline Soft Column"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Line Length Guideline Hard Column"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Script List"
+msgstr "脚本编辑器"
+
+#: editor/editor_settings.cpp
+msgid "Show Members Overview"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#, fuzzy
+msgid "Files"
+msgstr "文件"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Trim Trailing Whitespace On Save"
+msgstr "移除尾部空格"
+
+#: editor/editor_settings.cpp
+msgid "Autosave Interval Secs"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Restore Scripts On Load"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Create Signal Callbacks"
+msgstr "强制备用着色器"
+
+#: editor/editor_settings.cpp
+msgid "Sort Members Outline Alphabetically"
+msgstr ""
+
+#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+msgid "Cursor"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Scroll Past End Of File"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Block Caret"
+msgstr ""
+
+#: editor/editor_settings.cpp scene/gui/line_edit.cpp
+msgid "Caret Blink"
+msgstr ""
+
+#: editor/editor_settings.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Caret Blink Speed"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Right Click Moves Caret"
+msgstr "鼠标右键添加点"
+
+#: editor/editor_settings.cpp
+msgid "Idle Parse Delay"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Auto Brace Complete"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Code Complete Delay"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Callhint Tooltip Offset"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Complete File Paths"
+msgstr "复制节点路径"
+
+#: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
+#, fuzzy
+msgid "Add Type Hints"
+msgstr "添加类型"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Show Help Index"
+msgstr "显示辅助信息"
+
+#: editor/editor_settings.cpp
+msgid "Help Font Size"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Help Source Font Size"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Help Title Font Size"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Grid Map"
+msgstr "网格地图"
+
+#: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Pick Distance"
+msgstr "拾取距离："
+
+#: editor/editor_settings.cpp
+msgid "Primary Grid Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Secondary Grid Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Selection Box Color"
+msgstr "仅选中"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Primary Grid Steps"
+msgstr "网格步长："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Grid Size"
+msgstr "网格步长："
+
+#: editor/editor_settings.cpp
+msgid "Grid Division Level Max"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Grid Division Level Min"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Grid Division Level Bias"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Grid XZ Plane"
+msgstr "GridMap 绘制"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Grid XY Plane"
+msgstr "GridMap 绘制"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Grid Yz Plane"
+msgstr "GridMap 绘制"
+
+#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Default FOV"
+msgstr "默认"
+
+#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Default Z Near"
+msgstr "默认主题"
+
+#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Default Z Far"
+msgstr "默认"
+
+#: editor/editor_settings.cpp
+msgid "Lightmap Baking Number Of CPU Threads"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Navigation Scheme"
+msgstr "导航模式"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Invert Y Axis"
+msgstr "编辑 Y 轴"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Invert X Axis"
+msgstr "编辑 X 轴"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Zoom Style"
+msgstr "缩小"
+
+#: editor/editor_settings.cpp
+msgid "Emulate Numpad"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Emulate 3 Button Mouse"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Orbit Modifier"
+msgstr "按最早修改"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Pan Modifier"
+msgstr "平移模式"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Zoom Modifier"
+msgstr "已修改"
+
+#: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+msgid "Warped Mouse Panning"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Navigation Feel"
+msgstr "导航模式"
+
+#: editor/editor_settings.cpp
+msgid "Orbit Sensitivity"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Orbit Inertia"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Translation Inertia"
+msgstr "翻译"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Zoom Inertia"
+msgstr "放大"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook"
+msgstr "自由观看向上"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook Navigation Scheme"
+msgstr "创建导航网格"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook Sensitivity"
+msgstr "自由观看向左"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook Inertia"
+msgstr "自由观看向左"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook Base Speed"
+msgstr "自由观看加速调整"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook Activation Modifier"
+msgstr "自由观看减速调整"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Freelook Speed Zoom Link"
+msgstr "自由观看加速调整"
+
+#: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Color"
+msgstr "拾取颜色"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Guides Color"
+msgstr "拾取颜色"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Smart Snapping Line Color"
+msgstr "智能吸附"
+
+#: editor/editor_settings.cpp
+msgid "Bone Width"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Bone Color 1"
+msgstr "重命名颜色项目"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Bone Color 2"
+msgstr "重命名颜色项目"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Bone Selected Color"
+msgstr "配置所选配置文件："
+
+#: editor/editor_settings.cpp
+msgid "Bone IK Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Bone Outline Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Bone Outline Size"
+msgstr "轮廓大小："
+
+#: editor/editor_settings.cpp
+msgid "Viewport Border Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Constrain Editor View"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Simple Panning"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Scroll To Pan"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Pan Speed"
+msgstr "速度："
+
+#: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Poly Editor"
+msgstr "2D 多边形 UV 编辑器"
+
+#: editor/editor_settings.cpp
+msgid "Point Grab Radius"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Show Previous Outline"
+msgstr "上一平面"
+
+#: editor/editor_settings.cpp editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Autorename Animation Tracks"
+msgstr "重命名动画"
+
+#: editor/editor_settings.cpp
+msgid "Default Create Bezier Tracks"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Default Create Reset Tracks"
+msgstr "创建 RESET 轨道"
+
+#: editor/editor_settings.cpp
+msgid "Onion Layers Past Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Onion Layers Future Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Visual Editors"
+msgstr "分组编辑器"
+
+#: editor/editor_settings.cpp
+msgid "Minimap Opacity"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Window Placement"
+msgstr ""
+
+#: editor/editor_settings.cpp scene/gui/control.cpp
+#, fuzzy
+msgid "Rect"
+msgstr "整个矩形"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Rect Custom Position"
+msgstr "设置曲线外控点位置"
+
+#: editor/editor_settings.cpp
+msgid "Screen"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Font Size"
+msgstr "前视图"
+
+#: editor/editor_settings.cpp
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+#, fuzzy
+msgid "Remote Host"
+msgstr "远程 "
+
+#: editor/editor_settings.cpp
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+#, fuzzy
+msgid "Remote Port"
+msgstr "移除点"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Editor SSL Certificates"
+msgstr "编辑器设置"
+
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
+#: editor/editor_settings.cpp editor/project_manager.cpp
+msgid "Project Manager"
+msgstr "项目管理器"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Sorting Order"
+msgstr "按顺序："
+
+#: editor/editor_settings.cpp
+msgid "Symbol Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Keyword Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Control Flow Keyword Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Base Type Color"
+msgstr "基础类型"
+
+#: editor/editor_settings.cpp
+msgid "Engine Type Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "User Type Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Comment Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "String Color"
+msgstr "保存文件："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Background Color"
+msgstr "无效的背景颜色。"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Completion Background Color"
+msgstr "无效的背景颜色。"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Completion Selected Color"
+msgstr "导入所选项"
+
+#: editor/editor_settings.cpp
+msgid "Completion Existing Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Completion Scroll Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Completion Font Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Text Color"
+msgstr "下一层"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Line Number Color"
+msgstr "行号："
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Safe Line Number Color"
+msgstr "行号："
+
+#: editor/editor_settings.cpp
+msgid "Caret Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Caret Background Color"
+msgstr "无效的背景颜色。"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Text Selected Color"
+msgstr "删除选中项"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Selection Color"
+msgstr "仅选中"
+
+#: editor/editor_settings.cpp
+msgid "Brace Mismatch Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Current Line Color"
+msgstr "当前场景"
+
+#: editor/editor_settings.cpp
+msgid "Line Length Guideline Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Word Highlighted Color"
+msgstr "语法高亮器"
+
+#: editor/editor_settings.cpp
+msgid "Number Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Function Color"
+msgstr "函数"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Member Variable Color"
+msgstr "重命名变量"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Mark Color"
+msgstr "拾取颜色"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Bookmark Color"
+msgstr "书签"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Breakpoint Color"
+msgstr "断点"
+
+#: editor/editor_settings.cpp
+msgid "Executing Line Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Code Folding Color"
+msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Search Result Color"
+msgstr "搜索结果"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Search Result Border Color"
+msgstr "搜索结果"
 
 #: editor/editor_spin_slider.cpp
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
@@ -3755,6 +5573,22 @@ msgstr "正在获取镜像列表……"
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
 msgstr "正在开始下载……"
+
+#: editor/export_template_manager.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "HTTP Proxy"
+msgstr ""
+
+#: editor/export_template_manager.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Host"
+msgstr ""
+
+#: editor/export_template_manager.cpp editor/fileserver/editor_file_server.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
+msgid "Port"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -3995,6 +5829,15 @@ msgid ""
 msgstr ""
 "模板下载仍会继续。\n"
 "完成时你可能会感受到编辑器的短暂冻结。"
+
+#: editor/fileserver/editor_file_server.cpp
+msgid "File Server"
+msgstr ""
+
+#: editor/fileserver/editor_file_server.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Password"
+msgstr "密码"
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
@@ -4358,6 +6201,14 @@ msgstr "分组编辑器"
 msgid "Manage Groups"
 msgstr "管理分组"
 
+#: editor/import/editor_import_collada.cpp
+msgid "Collada"
+msgstr ""
+
+#: editor/import/editor_import_collada.cpp
+msgid "Use Ambient"
+msgstr ""
+
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
 msgstr "导入为单一场景"
@@ -4439,6 +6290,12 @@ msgstr "有在 `post_import()` 方法中返回继承了 Node 的对象吗？"
 msgid "Saving..."
 msgstr "保存中..."
 
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"Warning, no suitable PC VRAM compression enabled in Project Settings. This "
+"texture will not display correctly on PC."
+msgstr ""
+
 #: editor/import_defaults_editor.cpp
 msgid "Select Importer"
 msgstr "选择导入器"
@@ -4485,10 +6342,6 @@ msgstr ""
 #: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "导入为："
-
-#: editor/import_dock.cpp
-msgid "Preset"
-msgstr "预设"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -4686,6 +6539,14 @@ msgstr "移除多边形及顶点"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
 msgstr "添加动画"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Add %s"
+msgstr "添加 %s"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -5039,10 +6900,6 @@ msgid "Animation Tools"
 msgstr "动画工具"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Animation"
-msgstr "动画"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr "新建"
@@ -5083,7 +6940,9 @@ msgstr "过去"
 msgid "Future"
 msgstr "未来"
 
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp modules/csg/csg_shape.cpp
+#: scene/main/scene_tree.cpp scene/resources/material.cpp
+#: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Depth"
 msgstr "深度"
 
@@ -5264,6 +7123,7 @@ msgid "Blend"
 msgstr "混合 (Blend)"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Mix"
 msgstr "混合 (Mix)"
 
@@ -5377,6 +7237,10 @@ msgstr "编辑节点筛选"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
 msgstr "筛选..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Use Threads"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -5501,6 +7365,11 @@ msgstr "重试"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
 msgstr "下载错误"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Available URLs"
+msgstr "可用配置文件："
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -5938,7 +7807,8 @@ msgid "Zoom Reset"
 msgstr "重置缩放"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp scene/gui/item_list.cpp
+#: scene/gui/tree.cpp
 msgid "Select Mode"
 msgstr "选择模式"
 
@@ -6139,8 +8009,28 @@ msgid "View"
 msgstr "视图"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Always Show Grid"
-msgstr "总是显示网格"
+#, fuzzy
+msgid "Show"
+msgstr "显示网格"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show When Snapping"
+msgstr "智能吸附"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Hide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Grid"
+msgstr "切换模式"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Grid"
+msgstr "网格"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -6286,11 +8176,6 @@ msgid "Zoom to 1600%"
 msgstr "缩放至 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Add %s"
-msgstr "添加 %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
 msgstr "正在添加 %s..."
 
@@ -6355,7 +8240,7 @@ msgstr "清除发射遮罩"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
 msgid "Particles"
 msgstr "粒子"
 
@@ -6488,7 +8373,9 @@ msgstr "编辑渐变"
 msgid "Item %d"
 msgstr "第 %d 项"
 
-#: editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp scene/gui/item_list.cpp
+#: scene/gui/menu_button.cpp scene/gui/option_button.cpp
+#: scene/gui/popup_menu.cpp
 msgid "Items"
 msgstr "列表项"
 
@@ -6588,7 +8475,10 @@ msgstr "无法创建轮廓！"
 msgid "Create Outline"
 msgstr "创建轮廓"
 
-#: editor/plugins/mesh_instance_editor_plugin.cpp
+#: editor/plugins/mesh_instance_editor_plugin.cpp modules/csg/csg_shape.cpp
+#: scene/2d/mesh_instance_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/mesh_instance.cpp scene/resources/multimesh.cpp
+#: scene/resources/texture.cpp
 msgid "Mesh"
 msgstr "网格"
 
@@ -6705,7 +8595,7 @@ msgstr ""
 "是否从已有场景中更新？：\n"
 "%s"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp
+#: editor/plugins/mesh_library_editor_plugin.cpp modules/gridmap/grid_map.cpp
 msgid "Mesh Library"
 msgstr "网格库"
 
@@ -6728,6 +8618,23 @@ msgstr "从场景中导入（应用变换）"
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "从场景中更新"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Apply without Transforms"
+msgstr "应用 MeshInstance 变换"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Apply with Transforms"
+msgstr "应用 MeshInstance 变换"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Preview Size"
+msgstr "预览"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
@@ -6888,7 +8795,7 @@ msgstr "表面顶点"
 msgid "Surface Points+Normal (Directed)"
 msgstr "表面定点 + 法线（有向）"
 
-#: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp scene/gui/video_player.cpp
 msgid "Volume"
 msgstr "体积"
 
@@ -6988,6 +8895,7 @@ msgstr "闭合曲线"
 #: editor/plugins/path_editor_plugin.cpp
 #: editor/plugins/theme_editor_preview.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_export.cpp
+#: main/main.cpp servers/visual_server.cpp
 msgid "Options"
 msgstr "选项"
 
@@ -7036,6 +8944,20 @@ msgstr "移除内控点"
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Segment (in curve)"
 msgstr "拆分线段（在曲线中）"
+
+#: editor/plugins/path_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "3D Gizmos"
+msgstr "控制器"
+
+#: editor/plugins/path_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Gizmo Colors"
+msgstr "发射色彩"
 
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move Joint"
@@ -7120,11 +9042,12 @@ msgstr "UV"
 msgid "Points"
 msgstr "点"
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/navigation_polygon.cpp
+#: scene/resources/navigation_mesh.cpp
 msgid "Polygons"
 msgstr "多边形"
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
 msgid "Bones"
 msgstr "骨骼"
 
@@ -7202,17 +9125,14 @@ msgstr "清除 UV"
 msgid "Grid Settings"
 msgstr "网格设置"
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp modules/csg/csg_shape.cpp
+#: scene/animation/animation_blend_space_1d.cpp
 msgid "Snap"
 msgstr "吸附"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
 msgstr "启用吸附"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Grid"
-msgstr "网格"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Show Grid"
@@ -7333,6 +9253,11 @@ msgid "Close and save changes?"
 msgstr "关闭并保存更改吗？"
 
 #: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Auto Reload Scripts On External Change"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
 msgstr "写入文本文件时出错："
 
@@ -7410,6 +9335,10 @@ msgid "%s Class Reference"
 msgstr "%s 类参考"
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Auto Reload And Parse Scripts On Save"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
 msgstr "查找下一个"
@@ -7431,7 +9360,7 @@ msgstr "切换按字母顺序排列方法。"
 msgid "Filter methods"
 msgstr "筛选方法"
 
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp scene/2d/y_sort.cpp
 msgid "Sort"
 msgstr "排序"
 
@@ -7456,6 +9385,8 @@ msgid "Previous Script"
 msgstr "上一个脚本"
 
 #: editor/plugins/script_editor_plugin.cpp
+#: modules/gdnative/videodecoder/video_stream_gdnative.cpp
+#: modules/theora/video_stream_theora.cpp modules/webm/video_stream_webm.cpp
 msgid "File"
 msgstr "文件"
 
@@ -7488,11 +9419,6 @@ msgid "History Next"
 msgstr "前进"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr "主题"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
 msgstr "导入主题..."
 
@@ -7511,10 +9437,6 @@ msgstr "关闭全部"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
 msgstr "关闭文档"
-
-#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
-msgid "Run"
-msgstr "运行"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -7582,13 +9504,64 @@ msgstr ""
 "磁盘中的下列文件已更新。\n"
 "请选择执行哪项操作？："
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Debugger"
-msgstr "调试器"
-
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Results"
 msgstr "搜索结果"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Open Dominant Script On Scene Change"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "External"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Use External Editor"
+msgstr "使用外部编辑器进行调试"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Exec Path"
+msgstr "导出路径"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Script Temperature Enabled"
+msgstr "选择模板文件"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Highlight Current Script"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script Temperature History Size"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Current Script Background Color"
+msgstr "无效的背景颜色。"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Group Help Pages"
+msgstr "编组所选项"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Sort Scripts By"
+msgstr "创建脚本"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "List Script Names As"
+msgstr "脚本名："
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Exec Flags"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Scripts"
@@ -7599,6 +9572,7 @@ msgid "Connections to method:"
 msgstr "与方法的连接："
 
 #: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Source"
 msgstr "来源"
 
@@ -7733,10 +9707,6 @@ msgid "Convert Indent to Tabs"
 msgstr "将缩进转为制表符"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Auto Indent"
-msgstr "自动缩进"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
 msgstr "在文件中查找..."
 
@@ -7797,7 +9767,7 @@ msgstr ""
 "此着色器已在磁盘上修改。\n"
 "应该采取什么行动？"
 
-#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/resources/material.cpp
 msgid "Shader"
 msgstr "着色器"
 
@@ -7829,7 +9799,8 @@ msgstr "覆盖放松姿势"
 msgid "Create physical bones"
 msgstr "创建物理骨骼"
 
-#: editor/plugins/skeleton_editor_plugin.cpp
+#: editor/plugins/skeleton_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
+#: scene/2d/polygon_2d.cpp
 msgid "Skeleton"
 msgstr "Skeleton"
 
@@ -7941,10 +9912,6 @@ msgstr "旋转"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate"
 msgstr "平移"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scale"
-msgstr "缩放"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8090,7 +10057,7 @@ msgstr "查看 FPS"
 msgid "Half Resolution"
 msgstr "半分辨率"
 
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp scene/main/viewport.cpp
 msgid "Audio Listener"
 msgstr "音频监听器"
 
@@ -8283,11 +10250,6 @@ msgid "Reset Field of View to Default"
 msgstr "重置为默认视野"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Transform"
-msgstr "变换"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
 msgstr "吸附物体到地面"
 
@@ -8403,6 +10365,24 @@ msgstr "前置"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Post"
 msgstr "后置"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Manipulator Gizmo Size"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Manipulator Gizmo Opacity"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport Rotation Gizmo"
+msgstr "锁定视角旋转"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Instanced"
+msgstr "实例化"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
@@ -9075,6 +11055,10 @@ msgid "Override all default type items."
 msgstr "覆盖所有默认类型项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: modules/visual_script/visual_script_flow_control.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Base Type"
 msgstr "基础类型"
 
@@ -9319,6 +11303,56 @@ msgstr "垂直翻转"
 msgid "Clear Transform"
 msgstr "清除变换"
 
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Map"
+msgstr "绘制 TileMap"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Palette Min Width"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Palette Item Hseparation"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Show Tile Names"
+msgstr "显示所有区域"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Show Tile Ids"
+msgstr "显示标尺"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Sort Tiles By Name"
+msgstr "文件排序"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Bucket Fill Preview"
+msgstr "油漆桶填充"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Editor Side"
+msgstr "编辑器"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Display Grid"
+msgstr "显示重复绘制"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Axis Color"
+msgstr "拾取颜色"
+
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet."
 msgstr "添加纹理到图块集。"
@@ -9363,11 +11397,17 @@ msgstr "上一个坐标"
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "选择上一个形状、子图块、图块。"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
 msgid "Region"
 msgstr "区域"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
+#: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
+#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
+#: scene/3d/collision_object.cpp scene/3d/physics_body.cpp
+#: scene/3d/soft_body.cpp scene/main/scene_tree.cpp
+#: scene/resources/shape_2d.cpp
 msgid "Collision"
 msgstr "碰撞"
 
@@ -9375,23 +11415,22 @@ msgstr "碰撞"
 msgid "Occlusion"
 msgstr "遮挡"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Navigation"
-msgstr "导航"
-
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/touch_screen_button.cpp
 msgid "Bitmask"
 msgstr "掩码"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/area_2d.cpp
+#: scene/3d/area.cpp scene/3d/physics_joint.cpp
+#: scene/animation/animation_node_state_machine.cpp
 msgid "Priority"
 msgstr "优先级"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp scene/gui/button.cpp
+#: scene/gui/item_list.cpp
 msgid "Icon"
 msgstr "图标"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/node_2d.cpp
 msgid "Z Index"
 msgstr "Z 索引"
 
@@ -9419,7 +11458,7 @@ msgstr "位掩码模式"
 msgid "Priority Mode"
 msgstr "优先模式"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/item_list.cpp
 msgid "Icon Mode"
 msgstr "图标模式"
 
@@ -9658,10 +11697,6 @@ msgid "No VCS plugins are available."
 msgstr "没有可用的 VCS 插件。"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Error"
-msgstr "错误"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid ""
 "Remote settings are empty. VCS features that use the network may not work."
 msgstr "远程仓库设置为空。使用网络的 VCS 特性可能无法工作。"
@@ -9719,24 +11754,8 @@ msgid "Remote Login"
 msgstr "远程仓库登录"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Username"
-msgstr "用户名"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Password"
-msgstr "密码"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "SSH Public Key Path"
-msgstr "SSH 公钥路径"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH public key path"
 msgstr "选择 SSH 公钥路径"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "SSH Private Key Path"
-msgstr "SSH 私钥路径"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH private key path"
@@ -9971,7 +11990,7 @@ msgstr "顶点"
 msgid "Fragment"
 msgstr "片段"
 
-#: editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp scene/3d/light.cpp
 msgid "Light"
 msgstr "灯光"
 
@@ -10770,7 +12789,7 @@ msgstr ""
 msgid "Export Path"
 msgstr "导出路径"
 
-#: editor/project_export.cpp
+#: editor/project_export.cpp scene/main/resource_preloader.cpp
 msgid "Resources"
 msgstr "资源"
 
@@ -10830,7 +12849,8 @@ msgstr "脚本"
 msgid "GDScript Export Mode:"
 msgstr "GDScript 导出模式："
 
-#: editor/project_export.cpp
+#: editor/project_export.cpp scene/gui/button.cpp scene/gui/label.cpp
+#: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 msgid "Text"
 msgstr "文本"
 
@@ -10849,6 +12869,17 @@ msgstr "无效的加密密钥（长度必须为 64 个十六进制字符）"
 #: editor/project_export.cpp
 msgid "GDScript Encryption Key (256-bits as hexadecimal):"
 msgstr "GDScript 加密密钥（256 位十六进制码）:"
+
+#: editor/project_export.cpp
+msgid ""
+"Note: Encryption key needs to be stored in the binary,\n"
+"you need to build the export templates from source."
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "More Info..."
+msgstr "移动..."
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -11166,11 +13197,6 @@ msgstr ""
 "确定要扫描文件夹 %s 中的现有 Godot 项目吗？ \n"
 "这可能需要一段时间。"
 
-#. TRANSLATORS: This refers to the application where users manage their Godot projects.
-#: editor/project_manager.cpp
-msgid "Project Manager"
-msgstr "项目管理器"
-
 #: editor/project_manager.cpp
 msgid "Local Projects"
 msgstr "本地项目"
@@ -11366,7 +13392,7 @@ msgstr "X 按键 2"
 msgid "Joypad Axis Index:"
 msgstr "手柄摇杆索引："
 
-#: editor/project_settings_editor.cpp
+#: editor/project_settings_editor.cpp scene/3d/sprite_3d.cpp
 msgid "Axis"
 msgstr "轴"
 
@@ -11557,10 +13583,6 @@ msgid "Remaps by Locale:"
 msgstr "按区域重定向："
 
 #: editor/project_settings_editor.cpp
-msgid "Locale"
-msgstr "区域"
-
-#: editor/project_settings_editor.cpp
 msgid "Locales Filter"
 msgstr "筛选区域"
 
@@ -11712,7 +13734,7 @@ msgstr "如果启用，计数器将为每组子节点重置。"
 msgid "Initial value for the counter"
 msgstr "计数器初始值"
 
-#: editor/rename_dialog.cpp
+#: editor/rename_dialog.cpp scene/resources/animation.cpp
 msgid "Step"
 msgstr "步长"
 
@@ -11796,13 +13818,9 @@ msgstr "重设父节点"
 msgid "Run Mode:"
 msgstr "运行模式："
 
-#: editor/run_settings_dialog.cpp
+#: editor/run_settings_dialog.cpp scene/main/scene_tree.cpp
 msgid "Current Scene"
 msgstr "当前场景"
-
-#: editor/run_settings_dialog.cpp
-msgid "Main Scene"
-msgstr "主场景"
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene Arguments:"
@@ -12142,6 +14160,20 @@ msgstr "本地"
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "是否清除继承？（无法撤销！）"
 
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Show Scene Tree Root Selection"
+msgstr "居中显示所选项"
+
+#: editor/scene_tree_dock.cpp
+msgid "Derive Script Globals By Name"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Use Favorites Root Selection"
+msgstr "完整显示所选项"
+
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visible"
 msgstr "切换可见性"
@@ -12447,8 +14479,16 @@ msgid "Filter stack variables"
 msgstr "筛选栈变量"
 
 #: editor/script_editor_debugger.cpp
-msgid "Profiler"
-msgstr "性能分析器"
+msgid "Auto Switch To Remote Scene Tree"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Remote Scene Tree Refresh Interval"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Remote Inspect Refresh Interval"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
@@ -12459,6 +14499,7 @@ msgid "Monitor"
 msgstr "监视"
 
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Value"
 msgstr "值"
 
@@ -12482,24 +14523,16 @@ msgstr "合计："
 msgid "Export list to a CSV file"
 msgstr "将列表导出为 CSV 文件"
 
-#: editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_nodes.cpp
-msgid "Resource Path"
-msgstr "资源路径"
-
-#: editor/script_editor_debugger.cpp
-msgid "Type"
-msgstr "类型"
-
-#: editor/script_editor_debugger.cpp
+#: editor/script_editor_debugger.cpp scene/resources/audio_stream_sample.cpp
+#: servers/audio/effects/audio_effect_record.cpp
 msgid "Format"
 msgstr "格式"
 
-#: editor/script_editor_debugger.cpp
+#: editor/script_editor_debugger.cpp scene/main/viewport.cpp
 msgid "Usage"
 msgstr "占用"
 
-#: editor/script_editor_debugger.cpp
+#: editor/script_editor_debugger.cpp servers/visual_server.cpp
 msgid "Misc"
 msgstr "其他"
 
@@ -12552,8 +14585,16 @@ msgid "Change Light Radius"
 msgstr "修改光照半径"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Stream Player 3D"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "修改 AudioStreamPlayer3D 发射角"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Camera"
+msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -12562,6 +14603,22 @@ msgstr "修改摄像机视角"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera Size"
 msgstr "修改摄像机尺寸"
+
+#: editor/spatial_editor_gizmos.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint"
+msgstr "点"
+
+#: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
+#: scene/2d/touch_screen_button.cpp scene/3d/collision_shape.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
+msgid "Shape"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Visibility Notifier"
+msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier AABB"
@@ -12572,8 +14629,23 @@ msgid "Change Particles AABB"
 msgstr "修改粒子 AABB"
 
 #: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Reflection Probe"
+msgstr "选择属性"
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "修改探针范围"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "GI Probe"
+msgstr "烘焙 GI 探针"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Baked Indirect Light"
+msgstr "间接光照"
 
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Sphere Shape Radius"
@@ -12604,12 +14676,76 @@ msgid "Change Ray Shape Length"
 msgstr "修改射线形状长度"
 
 #: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Navigation Edge"
+msgstr "导航模式"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Navigation Edge Disabled"
+msgstr "导航模式"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Navigation Solid"
+msgstr "导航模式"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Navigation Solid Disabled"
+msgstr "导航模式"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Joint Body A"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Joint Body B"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Room Edge"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Room Overlap"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Set Room Point Position"
 msgstr "设置房间顶点位置"
+
+#: editor/spatial_editor_gizmos.cpp scene/3d/portal.cpp
+#, fuzzy
+msgid "Portal Margin"
+msgstr "设置边距"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Portal Edge"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Portal Arrow"
+msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Portal Point Position"
 msgstr "设置入口顶点位置"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Portal Front"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Portal Back"
+msgstr "后退"
+
+#: editor/spatial_editor_gizmos.cpp scene/2d/light_occluder_2d.cpp
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Occluder"
+msgstr "遮挡模式"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Radius"
@@ -12627,6 +14763,505 @@ msgstr "设置遮挡多边形顶点位置"
 msgid "Set Occluder Hole Point Position"
 msgstr "设置遮挡空洞顶点位置"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Occluder Polygon Front"
+msgstr "创建遮光多边形"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Occluder Polygon Back"
+msgstr "创建遮光多边形"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Occluder Hole"
+msgstr "创建遮光多边形"
+
+#: main/main.cpp
+msgid "Godot Physics"
+msgstr ""
+
+#: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
+#: servers/visual/visual_server_scene.cpp
+msgid "Use BVH"
+msgstr ""
+
+#: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
+#: servers/visual/visual_server_scene.cpp
+#, fuzzy
+msgid "BVH Collision Margin"
+msgstr "碰撞模式"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Crash Handler"
+msgstr "设置处理程序"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Message"
+msgstr "提交消息"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Multithreaded Server"
+msgstr "设置多个节点"
+
+#: main/main.cpp
+msgid "Rid Pool Prealloc"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Debugger stdout"
+msgstr "调试器"
+
+#: main/main.cpp
+msgid "Max Chars Per Second"
+msgstr ""
+
+#: main/main.cpp
+msgid "Max Messages Per Frame"
+msgstr ""
+
+#: main/main.cpp
+msgid "Max Errors Per Second"
+msgstr ""
+
+#: main/main.cpp
+msgid "Max Warnings Per Second"
+msgstr ""
+
+#: main/main.cpp
+msgid "Flush stdout On Print"
+msgstr ""
+
+#: main/main.cpp servers/visual_server.cpp
+msgid "Logging"
+msgstr ""
+
+#: main/main.cpp
+msgid "File Logging"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Enable File Logging"
+msgstr "启用筛选"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Log Path"
+msgstr "复制路径"
+
+#: main/main.cpp
+msgid "Max Log Files"
+msgstr ""
+
+#: main/main.cpp
+msgid "Driver"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Driver Name"
+msgstr "脚本名："
+
+#: main/main.cpp
+msgid "Fallback To GLES2"
+msgstr ""
+
+#: main/main.cpp
+msgid "Use Nvidia Rect Flicker Workaround"
+msgstr ""
+
+#: main/main.cpp platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Display"
+msgstr "全部显示"
+
+#: main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/resources/texture.cpp
+msgid "Width"
+msgstr ""
+
+#: main/main.cpp modules/csg/csg_shape.cpp
+#: modules/opensimplex/noise_texture.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
+#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Height"
+msgstr "灯光"
+
+#: main/main.cpp scene/gui/dialogs.cpp
+msgid "Resizable"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Borderless"
+msgstr "边界像素"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Fullscreen"
+msgstr "切换全屏模式"
+
+#: main/main.cpp
+msgid "Always On Top"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Test Width"
+msgstr "左侧全幅"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Test Height"
+msgstr "测试"
+
+#: main/main.cpp
+msgid "DPI"
+msgstr ""
+
+#: main/main.cpp
+msgid "Allow hiDPI"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "V-Sync"
+msgstr "同步"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Use V-Sync"
+msgstr "使用吸附"
+
+#: main/main.cpp
+msgid "V-Sync Via Compositor"
+msgstr ""
+
+#: main/main.cpp
+msgid "Per Pixel Transparency"
+msgstr ""
+
+#: main/main.cpp
+msgid "Allowed"
+msgstr ""
+
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
+msgid "Enabled"
+msgstr "启用"
+
+#: main/main.cpp
+msgid "Intended Usage"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Framebuffer Allocation"
+msgstr "完整显示所选项"
+
+#: main/main.cpp platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Energy Saving"
+msgstr "保存出错"
+
+#: main/main.cpp platform/uwp/os_uwp.cpp
+#, fuzzy
+msgid "Keep Screen On"
+msgstr "保持调试器打开"
+
+#: main/main.cpp
+msgid "Threads"
+msgstr ""
+
+#: main/main.cpp servers/physics_2d/physics_2d_server_wrap_mt.h
+#, fuzzy
+msgid "Thread Model"
+msgstr "切换模式"
+
+#: main/main.cpp
+msgid "Thread Safe BVH"
+msgstr ""
+
+#: main/main.cpp
+msgid "Handheld"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Orientation"
+msgstr "在线文档"
+
+#: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Common"
+msgstr "社区"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Physics FPS"
+msgstr "物理帧 %"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Physics Jitter Fix"
+msgstr "物理帧 %"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Force FPS"
+msgstr "强制推送"
+
+#: main/main.cpp
+msgid "Enable Pause Aware Picking"
+msgstr ""
+
+#: main/main.cpp scene/gui/item_list.cpp scene/gui/popup_menu.cpp
+#: scene/gui/scroll_container.cpp scene/gui/text_edit.cpp scene/gui/tree.cpp
+#: scene/main/viewport.cpp scene/register_scene_types.cpp
+msgid "GUI"
+msgstr ""
+
+#: main/main.cpp
+msgid "Drop Mouse On GUI Input Disabled"
+msgstr ""
+
+#: main/main.cpp
+msgid "stdout"
+msgstr ""
+
+#: main/main.cpp
+msgid "Print FPS"
+msgstr ""
+
+#: main/main.cpp
+msgid "Verbose stdout"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Frame Delay Msec"
+msgstr "完整显示所选项"
+
+#: main/main.cpp
+msgid "Low Processor Mode"
+msgstr ""
+
+#: main/main.cpp
+msgid "Delta Sync After Draw"
+msgstr ""
+
+#: main/main.cpp
+msgid "Delta Smoothing"
+msgstr ""
+
+#: main/main.cpp
+msgid "iOS"
+msgstr ""
+
+#: main/main.cpp
+msgid "Hide Home Indicator"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Input Devices"
+msgstr "所有设备"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Pointing"
+msgstr "点"
+
+#: main/main.cpp
+msgid "Touch Delay"
+msgstr ""
+
+#: main/main.cpp servers/visual_server.cpp
+msgid "GLES3"
+msgstr ""
+
+#: main/main.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Shaders"
+msgstr "着色器"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Debug Shader Fallbacks"
+msgstr "强制备用着色器"
+
+#: main/main.cpp scene/3d/baked_lightmap.cpp scene/3d/camera.cpp
+#: scene/3d/world_environment.cpp scene/main/scene_tree.cpp
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Environment"
+msgstr "查看环境"
+
+#: main/main.cpp
+msgid "Default Clear Color"
+msgstr ""
+
+#: main/main.cpp
+msgid "Boot Splash"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Show Image"
+msgstr "显示骨骼"
+
+#: main/main.cpp
+msgid "Image"
+msgstr ""
+
+#: main/main.cpp
+msgid "Fullsize"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Use Filter"
+msgstr "筛选："
+
+#: main/main.cpp
+#, fuzzy
+msgid "Bg Color"
+msgstr "颜色"
+
+#: main/main.cpp
+#, fuzzy
+msgid "macOS Native Icon"
+msgstr "设置图块图标"
+
+#: main/main.cpp
+msgid "Windows Native Icon"
+msgstr ""
+
+#: main/main.cpp
+msgid "Buffering"
+msgstr ""
+
+#: main/main.cpp
+msgid "Agile Event Flushing"
+msgstr ""
+
+#: main/main.cpp
+msgid "Emulate Touch From Mouse"
+msgstr ""
+
+#: main/main.cpp
+msgid "Emulate Mouse From Touch"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Mouse Cursor"
+msgstr "鼠标按键"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Custom Image"
+msgstr "自定义节点"
+
+#: main/main.cpp
+msgid "Custom Image Hotspot"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Tooltip Position Offset"
+msgstr "旋转偏移："
+
+#: main/main.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
+msgid "Mono"
+msgstr ""
+
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
+msgid "Debugger Agent"
+msgstr "调试器"
+
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
+msgid "Wait For Debugger"
+msgstr "调试器"
+
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
+msgid "Wait Timeout"
+msgstr "超时。"
+
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+msgid "Args"
+msgstr ""
+
+#: main/main.cpp
+msgid "Runtime"
+msgstr ""
+
+#: main/main.cpp
+msgid "Unhandled Exception Policy"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Main Loop Type"
+msgstr "查找节点类型"
+
+#: main/main.cpp scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch"
+msgstr "抓取"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Aspect"
+msgstr "检查器"
+
+#: main/main.cpp
+msgid "Shrink"
+msgstr ""
+
+#: main/main.cpp
+msgid "Auto Accept Quit"
+msgstr ""
+
+#: main/main.cpp
+#, fuzzy
+msgid "Quit On Go Back"
+msgstr "后退"
+
+#: main/main.cpp
+#, fuzzy
+msgid "Snap Controls To Pixels"
+msgstr "吸附到节点边沿"
+
+#: main/main.cpp
+msgid "Dynamic Fonts"
+msgstr ""
+
+#: main/main.cpp
+msgid "Use Oversampling"
+msgstr ""
+
+#: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
+msgid "Active Soft World"
+msgstr ""
+
+#: modules/csg/csg_gizmos.cpp
+msgid "CSG"
+msgstr ""
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "修改圆柱体半径"
@@ -12642,6 +15277,120 @@ msgstr "修改圆环内半径"
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Torus Outer Radius"
 msgstr "修改圆环外半径"
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Operation"
+msgstr "选项"
+
+#: modules/csg/csg_shape.cpp modules/gridmap/grid_map.cpp
+#: scene/2d/collision_object_2d.cpp scene/2d/tile_map.cpp
+#: scene/3d/collision_object.cpp scene/3d/soft_body.cpp
+#: servers/physics_2d_server.cpp
+#, fuzzy
+msgid "Collision Layer"
+msgstr "碰撞模式"
+
+#: modules/csg/csg_shape.cpp modules/gridmap/grid_map.cpp
+#: scene/2d/collision_object_2d.cpp scene/2d/ray_cast_2d.cpp
+#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/collision_object.cpp
+#: scene/3d/ray_cast.cpp scene/3d/soft_body.cpp scene/3d/spring_arm.cpp
+#: scene/resources/navigation_mesh.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collision Mask"
+msgstr "碰撞模式"
+
+#: modules/csg/csg_shape.cpp scene/2d/canvas_item.cpp
+#: scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Material"
+msgstr "材质变更："
+
+#: modules/csg/csg_shape.cpp scene/2d/navigation_agent_2d.cpp
+#: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_agent.cpp
+#: scene/3d/navigation_obstacle.cpp scene/animation/root_motion_view.cpp
+#: scene/resources/capsule_shape.cpp scene/resources/circle_shape_2d.cpp
+#: scene/resources/cylinder_shape.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/sphere_shape.cpp
+#, fuzzy
+msgid "Radius"
+msgstr "半径："
+
+#: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Radial Segments"
+msgstr "主场景参数："
+
+#: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Rings"
+msgstr "警告"
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Sides"
+msgstr "显示辅助线"
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Inner Radius"
+msgstr "修改圆环内半径"
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Outer Radius"
+msgstr "修改圆环外半径"
+
+#: modules/csg/csg_shape.cpp
+msgid "Ring Sides"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+msgid "Spin Degrees"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+msgid "Spin Sides"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path Interval Type"
+msgstr "创建内部顶点"
+
+#: modules/csg/csg_shape.cpp
+msgid "Path Interval"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+msgid "Path Simplify Angle"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path Rotation"
+msgstr "随机旋转："
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path U Distance"
+msgstr "拾取距离："
+
+#: modules/enet/networked_multiplayer_enet.cpp
+#, fuzzy
+msgid "Compression Mode"
+msgstr "碰撞模式"
+
+#: modules/gdnative/gdnative.cpp
+#, fuzzy
+msgid "Config File"
+msgstr "保存文件："
+
+#: modules/gdnative/gdnative.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+#: modules/gdnative/nativescript/nativescript.cpp
+msgid "Library"
+msgstr "库"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
@@ -12688,16 +15437,52 @@ msgid "Disabled GDNative Singleton"
 msgstr "禁用的 GDNative 单例"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Library"
-msgstr "库"
-
-#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr "库： "
+
+#: modules/gdnative/nativescript/nativescript.cpp
+#, fuzzy
+msgid "Script Class"
+msgstr "脚本名："
+
+#: modules/gdnative/nativescript/nativescript.cpp
+msgid "Script Class Icon Path"
+msgstr ""
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
 msgstr "GDNative"
+
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#: modules/gdscript/gdscript.cpp
+#, fuzzy
+msgid "GDScript"
+msgstr "脚本"
+
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+msgid "Function Definition Color"
+msgstr ""
+
+#: modules/gdscript/editor/gdscript_highlighter.cpp
+#, fuzzy
+msgid "Node Path Color"
+msgstr "复制节点路径"
+
+#: modules/gdscript/gdscript.cpp modules/visual_script/visual_script.cpp
+msgid "Max Call Stack"
+msgstr ""
+
+#: modules/gdscript/gdscript.cpp
+msgid "Treat Warnings As Errors"
+msgstr ""
+
+#: modules/gdscript/gdscript.cpp
+msgid "Exclude Addons"
+msgstr ""
+
+#: modules/gdscript/gdscript.cpp
+msgid "Autocomplete Setters And Getters"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -12735,6 +15520,24 @@ msgstr "实例字典无效（派生类无效）"
 msgid "Object can't provide a length."
 msgstr "对象无法提供长度。"
 
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+#, fuzzy
+msgid "Language Server"
+msgstr "语言："
+
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+#, fuzzy
+msgid "Enable Smart Resolve"
+msgstr "无法解析"
+
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+msgid "Show Native Symbols In Editor"
+msgstr ""
+
+#: modules/gdscript/language_server/gdscript_language_server.cpp
+msgid "Use Thread"
+msgstr ""
+
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
 msgid "Export Mesh GLTF2"
 msgstr "导出网格 GLTF2"
@@ -12742,6 +15545,109 @@ msgstr "导出网格 GLTF2"
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
 msgid "Export GLTF..."
 msgstr "导出 GLTF..."
+
+#: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_state.cpp
+msgid "Unique Names"
+msgstr ""
+
+#: modules/gltf/gltf_skeleton.cpp
+#, fuzzy
+msgid "Godot Bone Node"
+msgstr "获取场景节点"
+
+#: modules/gltf/gltf_skin.cpp
+msgid "Inverse Binds"
+msgstr ""
+
+#: modules/gltf/gltf_skin.cpp
+msgid "Joint I To Bone I"
+msgstr ""
+
+#: modules/gltf/gltf_skin.cpp
+msgid "Joint I To Name"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Nodes"
+msgstr "节点"
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Buffer Views"
+msgstr "后视图"
+
+#: modules/gltf/gltf_state.cpp
+msgid "Accessors"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Meshes"
+msgstr "网格"
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Materials"
+msgstr "材质变更："
+
+#: modules/gltf/gltf_state.cpp scene/2d/particles_2d.cpp
+#: scene/gui/texture_button.cpp scene/gui/texture_progress.cpp
+#: scene/resources/font.cpp
+#, fuzzy
+msgid "Textures"
+msgstr "特性"
+
+#: modules/gltf/gltf_state.cpp
+msgid "Images"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+msgid "Skins"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+msgid "Cameras"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Lights"
+msgstr "灯光"
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Unique Animation Names"
+msgstr "新动画名称："
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Skeletons"
+msgstr "Skeleton"
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Skeleton To Node"
+msgstr "选择一个节点"
+
+#: modules/gltf/gltf_state.cpp scene/2d/animated_sprite.cpp
+#, fuzzy
+msgid "Animations"
+msgstr "动画："
+
+#: modules/gridmap/grid_map.cpp
+#, fuzzy
+msgid "Physics Material"
+msgstr "物理帧 %"
+
+#: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
+#: scene/resources/navigation_mesh.cpp
+msgid "Cell"
+msgstr ""
+
+#: modules/gridmap/grid_map.cpp
+msgid "Cell Octant Size"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -12786,10 +15692,6 @@ msgstr "GridMap 绘制"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Selection"
 msgstr "GridMap 选择"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Grid Map"
-msgstr "网格地图"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
@@ -12903,6 +15805,57 @@ msgstr "后处理"
 msgid "Plotting lightmaps"
 msgstr "绘制光照图"
 
+#: modules/lightmapper_cpu/register_types.cpp
+#, fuzzy
+msgid "CPU Lightmapper"
+msgstr "烘焙光照贴图"
+
+#: modules/lightmapper_cpu/register_types.cpp
+msgid "Low Quality Ray Count"
+msgstr ""
+
+#: modules/lightmapper_cpu/register_types.cpp
+msgid "Medium Quality Ray Count"
+msgstr ""
+
+#: modules/lightmapper_cpu/register_types.cpp
+msgid "High Quality Ray Count"
+msgstr ""
+
+#: modules/lightmapper_cpu/register_types.cpp
+msgid "Ultra Quality Ray Count"
+msgstr ""
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+msgid "Eye Height"
+msgstr ""
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+msgid "Iod"
+msgstr ""
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+#, fuzzy
+msgid "Display Width"
+msgstr "显示线框"
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+#, fuzzy
+msgid "Display To Lens"
+msgstr "显示无阴影"
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+msgid "Oversample"
+msgstr ""
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+msgid "K 1"
+msgstr ""
+
+#: modules/mobile_vr/mobile_vr_interface.cpp
+msgid "K 2"
+msgstr ""
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "类名不能是保留关键字"
@@ -12910,6 +15863,11 @@ msgstr "类名不能是保留关键字"
 #: modules/mono/csharp_script.cpp
 msgid "Build Solution"
 msgstr "构建解决方案"
+
+#: modules/mono/editor/csharp_project.cpp
+#, fuzzy
+msgid "Auto Update Project"
+msgstr "未命名项目"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -12980,6 +15938,45 @@ msgstr "解析多边形中..."
 msgid "Done!"
 msgstr "完成！"
 
+#: modules/opensimplex/noise_texture.cpp
+msgid "Bump Strength"
+msgstr ""
+
+#: modules/opensimplex/noise_texture.cpp
+msgid "Noise"
+msgstr ""
+
+#: modules/opensimplex/open_simplex_noise.cpp
+msgid "Octaves"
+msgstr ""
+
+#: modules/opensimplex/open_simplex_noise.cpp
+msgid "Period"
+msgstr ""
+
+#: modules/opensimplex/open_simplex_noise.cpp
+#, fuzzy
+msgid "Persistence"
+msgstr "透视"
+
+#: modules/opensimplex/open_simplex_noise.cpp
+msgid "Lacunarity"
+msgstr ""
+
+#: modules/upnp/upnp.cpp
+msgid "Discover Local Port"
+msgstr ""
+
+#: modules/upnp/upnp_device.cpp
+#, fuzzy
+msgid "Igd Status"
+msgstr "状态"
+
+#: modules/visual_script/visual_script.cpp scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Default Input Values"
+msgstr "修改输入值"
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -13011,6 +16008,17 @@ msgstr "在非堆栈中的节点中找到连续比特，请回报 Bug！"
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
 msgstr "堆栈深度溢出： "
+
+#: modules/visual_script/visual_script.cpp
+#, fuzzy
+msgid "Visual Script"
+msgstr "搜索 VisualScript"
+
+#: modules/visual_script/visual_script_builtin_funcs.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: scene/resources/visual_shader_nodes.cpp
+msgid "Function"
+msgstr "函数"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Signal Arguments"
@@ -13333,6 +16341,12 @@ msgid "Return"
 msgstr "返回"
 
 #: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Return Type"
+msgstr "返回"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Condition"
 msgstr "条件"
 
@@ -13377,6 +16391,11 @@ msgid "in order:"
 msgstr "按顺序："
 
 #: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Steps"
+msgstr "步长"
+
+#: modules/visual_script/visual_script_flow_control.cpp
 msgid "Switch"
 msgstr "切换"
 
@@ -13392,6 +16411,12 @@ msgstr "类型转换"
 msgid "Is %s?"
 msgstr "是 %s 吗？"
 
+#: modules/visual_script/visual_script_flow_control.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Base Script"
+msgstr "新建脚本"
+
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
 msgstr "对 %s"
@@ -13399,6 +16424,28 @@ msgstr "对 %s"
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On Self"
 msgstr "对自身"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Call Mode"
+msgstr "缩放模式"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Basic Type"
+msgstr "基础类型"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Argument Cache"
+msgstr "修改参数名称"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Rpc Call Mode"
+msgstr "缩放模式"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Subtract %s"
@@ -13437,10 +16484,30 @@ msgid "BitXor %s"
 msgstr "将 %s 按位异或"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Set Mode"
+msgstr "选择模式"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Type Cache"
+msgstr "类型转换"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Assign Op"
+msgstr "分配"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Get %s"
 msgstr "获取 %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Index"
+msgstr "索引："
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
@@ -13463,12 +16530,14 @@ msgid "Emit %s"
 msgstr "触发 %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "Function"
-msgstr "函数"
-
-#: modules/visual_script/visual_script_nodes.cpp
 msgid "Compose Array"
 msgstr "组成数组"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Operator"
+msgstr "迭代器"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -13557,6 +16626,11 @@ msgid "Construct %s"
 msgstr "构造 %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Constructor"
+msgstr "构造 %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Get Local Var"
 msgstr "获取局部变量"
 
@@ -13571,6 +16645,10 @@ msgstr "动作 %s"
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Deconstruct %s"
 msgstr "解构 %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Elem Cache"
+msgstr ""
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -13607,6 +16685,86 @@ msgstr "等待节点信号"
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "WaitInstanceSignal"
 msgstr "等待实例信号"
+
+#: modules/webrtc/webrtc_data_channel.cpp
+#, fuzzy
+msgid "Write Mode"
+msgstr "优先模式"
+
+#: modules/websocket/websocket_client.cpp
+msgid "Verify SSL"
+msgstr ""
+
+#: modules/websocket/websocket_client.cpp
+msgid "Trusted SSL Certificate"
+msgstr ""
+
+#: modules/websocket/websocket_server.cpp
+#, fuzzy
+msgid "Private Key"
+msgstr "SSH 私钥路径"
+
+#: modules/websocket/websocket_server.cpp platform/javascript/export/export.cpp
+msgid "SSL Certificate"
+msgstr ""
+
+#: modules/websocket/websocket_server.cpp
+#, fuzzy
+msgid "Ca Chain"
+msgstr "清除 IK 链"
+
+#: modules/webxr/webxr_interface.cpp
+#, fuzzy
+msgid "Session Mode"
+msgstr "区域模式"
+
+#: modules/webxr/webxr_interface.cpp
+#, fuzzy
+msgid "Required Features"
+msgstr "主要特性："
+
+#: modules/webxr/webxr_interface.cpp
+#, fuzzy
+msgid "Optional Features"
+msgstr "主要特性："
+
+#: modules/webxr/webxr_interface.cpp
+msgid "Requested Reference Space Types"
+msgstr ""
+
+#: modules/webxr/webxr_interface.cpp
+msgid "Reference Space Type"
+msgstr ""
+
+#: modules/webxr/webxr_interface.cpp
+#, fuzzy
+msgid "Visibility State"
+msgstr "切换 隐藏/可见"
+
+#: platform/android/export/export.cpp
+msgid "Android SDK Path"
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Debug Keystore"
+msgstr "调试器"
+
+#: platform/android/export/export.cpp
+msgid "Debug Keystore User"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug Keystore Pass"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Force System User"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Shutdown ADB On Exit"
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -13739,8 +16897,8 @@ msgid ""
 "Note that the singleton was also renamed from \"GodotPayments\" to "
 "\"GodotGooglePlayBilling\"."
 msgstr ""
-"项目设置“android/modules”中包含无效的“GodotPaymentV3”模块（Godot 3.2.2 "
-"的修改）。\n"
+"项目设置“android/modules”中包含无效的“GodotPaymentV3”模块（Godot 3.2.2 的修"
+"改）。\n"
 "请将其替换为第一方的“GodotGooglePlayBilling”插件。\n"
 "注意，单例“GodotPayments”也重命名为了“GodotGooglePlayBilling”。"
 
@@ -13984,6 +17142,27 @@ msgstr "无法创建 HTTP 服务器目录："
 #: platform/javascript/export/export.cpp
 msgid "Error starting HTTP server:"
 msgstr "启动 HTTP 服务器时出错："
+
+#: platform/javascript/export/export.cpp
+msgid "Web"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "HTTP Host"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "HTTP Port"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Use SSL"
+msgstr "使用吸附"
+
+#: platform/javascript/export/export.cpp
+msgid "SSL Key"
+msgstr ""
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't get filesystem access."
@@ -14247,6 +17426,14 @@ msgid ""
 "specified."
 msgstr "隐私：已启用照片库访问，但未指定用途描述。"
 
+#: platform/osx/export/export.cpp
+msgid "macOS"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Force Builtin Codesign"
+msgstr ""
+
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "无效的包短名称。"
@@ -14299,6 +17486,29 @@ msgstr "宽幅 310x150 Logo 图片尺寸无效（应为 310x150）。"
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "启动画面图片尺寸无效（应为 620x300）。"
 
+#: platform/uwp/export/export.cpp
+msgid "UWP"
+msgstr ""
+
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Signtool"
+msgstr "信号"
+
+#: platform/uwp/export/export.cpp
+msgid "Debug Certificate"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Debug Password"
+msgstr "密码"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Debug Algorithm"
+msgstr "调试器"
+
 #: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
@@ -14319,6 +17529,29 @@ msgstr "文件版本无效："
 msgid "Invalid product version:"
 msgstr "产品版本无效："
 
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Windows"
+msgstr "新窗口"
+
+#: platform/windows/export/export.cpp
+msgid "Rcedit"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Osslsigncode"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Wine"
+msgstr ""
+
+#: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Frames"
+msgstr "帧 %"
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
@@ -14326,6 +17559,190 @@ msgid ""
 msgstr ""
 "必须创建 SpriteFrames 资源，或在 “Frames” 属性中设置 SpriteFrames 资源，以便 "
 "AnimatedSprite 显示帧。"
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+#, fuzzy
+msgid "Physics Overrides"
+msgstr "重写"
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+#, fuzzy
+msgid "Space Override"
+msgstr "重写"
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+#, fuzzy
+msgid "Gravity Distance Scale"
+msgstr "等待实例信号"
+
+#: scene/2d/area_2d.cpp scene/2d/cpu_particles_2d.cpp scene/3d/area.cpp
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+msgid "Gravity"
+msgstr ""
+
+#: scene/2d/area_2d.cpp scene/2d/physics_body_2d.cpp scene/3d/area.cpp
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Damp"
+msgstr "线性"
+
+#: scene/2d/area_2d.cpp scene/2d/physics_body_2d.cpp scene/3d/area.cpp
+#: scene/3d/physics_body.cpp
+msgid "Angular Damp"
+msgstr ""
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+#, fuzzy
+msgid "Audio Bus"
+msgstr "添加音频总线"
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+#, fuzzy
+msgid "Audio Bus Name"
+msgstr "音频总线布局"
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
+msgid "Stream"
+msgstr ""
+
+#: scene/2d/audio_stream_player_2d.cpp scene/audio/audio_stream_player.cpp
+#: scene/gui/video_player.cpp servers/audio/effects/audio_effect_amplify.cpp
+#, fuzzy
+msgid "Volume dB"
+msgstr "体积"
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp
+#: servers/audio/effects/audio_effect_pitch_shift.cpp
+#, fuzzy
+msgid "Pitch Scale"
+msgstr "缩放"
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp
+#, fuzzy
+msgid "Playing"
+msgstr "运行"
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp
+msgid "Stream Paused"
+msgstr ""
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/3d/reflection_probe.cpp
+#, fuzzy
+msgid "Max Distance"
+msgstr "拾取距离："
+
+#: scene/2d/audio_stream_player_2d.cpp
+#, fuzzy
+msgid "Attenuation"
+msgstr "动画"
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
+#, fuzzy
+msgid "Bus"
+msgstr "添加总线"
+
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+msgid "Area Mask"
+msgstr ""
+
+#: scene/2d/back_buffer_copy.cpp
+#, fuzzy
+msgid "Copy Mode"
+msgstr "复制节点"
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Anchor Mode"
+msgstr "图标模式"
+
+#: scene/2d/camera_2d.cpp scene/main/canvas_layer.cpp
+#, fuzzy
+msgid "Custom Viewport"
+msgstr "1 个视窗"
+
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/animation/animation_tree.cpp scene/main/timer.cpp
+#, fuzzy
+msgid "Process Mode"
+msgstr "移动模式"
+
+#: scene/2d/camera_2d.cpp
+msgid "Limit"
+msgstr ""
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Draw Margin"
+msgstr "设置边距"
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Smoothing"
+msgstr "平滑插值"
+
+#: scene/2d/camera_2d.cpp scene/2d/path_2d.cpp scene/2d/sprite.cpp
+#: scene/3d/path.cpp
+#, fuzzy
+msgid "Offset"
+msgstr "偏移："
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Offset H"
+msgstr "偏移："
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Offset V"
+msgstr "偏移："
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Drag Margin"
+msgstr "设置边距"
+
+#: scene/2d/canvas_item.cpp scene/animation/animation_blend_space_2d.cpp
+#, fuzzy
+msgid "Blend Mode"
+msgstr "Blend2 节点"
+
+#: scene/2d/canvas_item.cpp
+#, fuzzy
+msgid "Light Mode"
+msgstr "右侧全幅"
+
+#: scene/2d/canvas_item.cpp scene/resources/material.cpp
+msgid "Particles Anim H Frames"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp scene/resources/material.cpp
+msgid "Particles Anim V Frames"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp scene/3d/spatial.cpp
+#, fuzzy
+msgid "Visibility"
+msgstr "切换 隐藏/可见"
+
+#: scene/2d/canvas_item.cpp
+#, fuzzy
+msgid "Show On Top"
+msgstr "显示原点"
+
+#: scene/2d/canvas_item.cpp scene/2d/light_occluder_2d.cpp
+#, fuzzy
+msgid "Light Mask"
+msgstr "LightMap 烘焙"
+
+#: scene/2d/canvas_item.cpp
+msgid "Toplevel"
+msgstr ""
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -14366,6 +17783,16 @@ msgstr "多边形无效。“Solids”构建模式需要至少三个点。"
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr "多边形无效。“Segments”构建模式需要至少两个点。"
 
+#: scene/2d/collision_polygon_2d.cpp
+#, fuzzy
+msgid "Build Mode"
+msgstr "标尺模式"
+
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+#, fuzzy
+msgid "One Way Collision Margin"
+msgstr "创建碰撞多边形"
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -14397,6 +17824,173 @@ msgstr ""
 "CPUParticles2D 动画需要使用启用了 “Particles Animation” 的 "
 "CanvasItemMaterial。"
 
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Amount"
+msgstr "数量："
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+msgid "Lifetime"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Preprocess"
+msgstr "后处理"
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Speed Scale"
+msgstr "缩放"
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+msgid "Explosiveness"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Randomness"
+msgstr "随机开始（秒）："
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Lifetime Randomness"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Fixed FPS"
+msgstr "查看 FPS"
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+msgid "Drawing"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+msgid "Draw Order"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp scene/2d/line_2d.cpp
+#: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
+#: scene/2d/particles_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
+#: scene/3d/sprite_3d.cpp scene/gui/nine_patch_rect.cpp
+#: scene/gui/texture_rect.cpp scene/resources/sky.cpp
+#: scene/resources/style_box.cpp scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Texture"
+msgstr "文本"
+
+#: scene/2d/cpu_particles_2d.cpp
+msgid "Normalmap"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Shape"
+msgstr "发射遮罩"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Sphere Radius"
+msgstr "发射源： "
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/material.cpp
+#: scene/resources/particles_material.cpp scene/resources/texture.cpp
+msgid "Flags"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Direction"
+msgstr "方向"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#: servers/audio/effects/audio_effect_reverb.cpp
+msgid "Spread"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Initial Velocity"
+msgstr "初始化"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Angular Velocity"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Orbit Velocity"
+msgstr "视图向右环绕"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Linear Accel"
+msgstr "线性"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Radial Accel"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Tangential Accel"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/joints_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/vehicle_body.cpp
+#: scene/resources/particles_material.cpp
+#: servers/audio/effects/audio_effect_reverb.cpp
+msgid "Damping"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Angle"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Color"
+msgstr "颜色"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Color Ramp"
+msgstr "颜色"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Color Initial Ramp"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Hue Variation"
+msgstr "分隔:"
+
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A 与 Node B 必须为 PhysicsBody2D"
@@ -14417,11 +18011,108 @@ msgstr "Joint 未连接 2 个 PhysicsBody2D"
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Node A 与 Node B 必须为不同的 PhysicsBody2D"
 
+#: scene/2d/joints_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Bias"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Softness"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp scene/resources/animation.cpp
+#: scene/resources/ray_shape.cpp
+msgid "Length"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+#, fuzzy
+msgid "Initial Offset"
+msgstr "初始化"
+
+#: scene/2d/joints_2d.cpp
+msgid "Rest Length"
+msgstr ""
+
+#: scene/2d/joints_2d.cpp
+msgid "Stiffness"
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "必须将具有灯光形状的纹理提供给 “Texture”（纹理）属性。"
+
+#: scene/2d/light_2d.cpp
+#, fuzzy
+msgid "Texture Scale"
+msgstr "纹理区域"
+
+#: scene/2d/light_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Energy"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+#, fuzzy
+msgid "Range"
+msgstr "更改"
+
+#: scene/2d/light_2d.cpp
+#, fuzzy
+msgid "Range Height"
+msgstr "向右旋转"
+
+#: scene/2d/light_2d.cpp
+msgid "Range Z Min"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+msgid "Range Z Max"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+#, fuzzy
+msgid "Range Layer Min"
+msgstr "修改摄像机尺寸"
+
+#: scene/2d/light_2d.cpp
+msgid "Range Layer Max"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+msgid "Range Item Cull Mask"
+msgstr ""
+
+#: scene/2d/light_2d.cpp scene/3d/light.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "Shadow"
+msgstr "着色器"
+
+#: scene/2d/light_2d.cpp
+msgid "Shadow Buffer Size"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+msgid "Shadow Gradient Length"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+#, fuzzy
+msgid "Shadow Filter"
+msgstr "修改过滤器"
+
+#: scene/2d/light_2d.cpp
+msgid "Shadow Filter Smooth"
+msgstr ""
+
+#: scene/2d/light_2d.cpp
+msgid "Shadow Item Cull Mask"
+msgstr ""
+
+#: scene/2d/light_occluder_2d.cpp
+#, fuzzy
+msgid "Cull Mode"
+msgstr "标尺模式"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -14432,6 +18123,90 @@ msgstr "此遮光体必须设置遮光形状才能起到遮光作用。"
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "此遮光体的遮光多边形为空。请绘制一个多边形。"
 
+#: scene/2d/line_2d.cpp
+#, fuzzy
+msgid "Width Curve"
+msgstr "拆分曲线"
+
+#: scene/2d/line_2d.cpp scene/resources/texture.cpp
+msgid "Fill"
+msgstr ""
+
+#: scene/2d/line_2d.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Gradient"
+msgstr "编辑渐变"
+
+#: scene/2d/line_2d.cpp
+#, fuzzy
+msgid "Texture Mode"
+msgstr "纹理区域"
+
+#: scene/2d/line_2d.cpp
+msgid "Capping"
+msgstr ""
+
+#: scene/2d/line_2d.cpp
+#, fuzzy
+msgid "Joint Mode"
+msgstr "图标模式"
+
+#: scene/2d/line_2d.cpp
+#, fuzzy
+msgid "Begin Cap Mode"
+msgstr "区域模式"
+
+#: scene/2d/line_2d.cpp
+#, fuzzy
+msgid "End Cap Mode"
+msgstr "吸附模式："
+
+#: scene/2d/line_2d.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "Border"
+msgstr "按顺序："
+
+#: scene/2d/line_2d.cpp
+msgid "Round Precision"
+msgstr ""
+
+#: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
+#: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
+msgid "Normal Map"
+msgstr ""
+
+#: scene/2d/multimesh_instance_2d.cpp scene/3d/multimesh_instance.cpp
+#, fuzzy
+msgid "Multimesh"
+msgstr "将 %s 乘以"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Target Desired Distance"
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Neighbor Dist"
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Max Neighbors"
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Time Horizon"
+msgstr "水平翻转"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Max Speed"
+msgstr "速度："
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Max Distance"
+msgstr "拾取距离："
+
 #: scene/2d/navigation_agent_2d.cpp
 msgid "The NavigationAgent2D can be used only under a Node2D node."
 msgstr "NavigationAgent2D 只能在 Node2D 节点下使用。"
@@ -14441,6 +18216,11 @@ msgid ""
 "The NavigationObstacle2D only serves to provide collision avoidance to a "
 "Node2D object."
 msgstr "NavigationObstacle2D 只能用于为 Node2D 对象避免碰撞。"
+
+#: scene/2d/navigation_polygon.cpp
+#, fuzzy
+msgid "Outlines"
+msgstr "轮廓大小："
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -14457,11 +18237,44 @@ msgstr ""
 "NavigationPolygonInstance 类型的节点必须作为 Navigation2D 的子节点或子孙节点"
 "才能为其提供导航数据。"
 
+#: scene/2d/navigation_polygon.cpp
+msgid "Navpoly"
+msgstr ""
+
+#: scene/2d/node_2d.cpp scene/main/canvas_layer.cpp
+#, fuzzy
+msgid "Rotation"
+msgstr "旋转步长："
+
+#: scene/2d/node_2d.cpp scene/main/canvas_layer.cpp
+#, fuzzy
+msgid "Rotation Degrees"
+msgstr "旋转 %s 度。"
+
+#: scene/2d/node_2d.cpp
+#, fuzzy
+msgid "Global Rotation"
+msgstr "全局常量"
+
+#: scene/2d/node_2d.cpp
+#, fuzzy
+msgid "Global Rotation Degrees"
+msgstr "旋转 %s 度。"
+
+#: scene/2d/parallax_background.cpp scene/gui/scroll_container.cpp
+msgid "Scroll"
+msgstr ""
+
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
 "ParallaxLayer 类型的节点必须作为 ParallaxBackground 的子节点才能正常工作。"
+
+#: scene/2d/parallax_layer.cpp scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Motion"
+msgstr "动作"
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -14499,9 +18312,53 @@ msgid ""
 msgstr ""
 "Particles2D 动画需要使用启用了 “Particles Animation” 的 CanvasItemMaterial。"
 
+#: scene/2d/particles_2d.cpp scene/3d/particles.cpp
+msgid "Process Material"
+msgstr ""
+
+#: scene/2d/path_2d.cpp scene/3d/path.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Curve"
+msgstr "拆分曲线"
+
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D 类型的节点只有作为 Path2D 的子节点节才能正常工作。"
+
+#: scene/2d/path_2d.cpp scene/3d/path.cpp
+#, fuzzy
+msgid "Unit Offset"
+msgstr "网格偏移："
+
+#: scene/2d/path_2d.cpp
+msgid "Lookahead"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Layers"
+msgstr "层"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: scene/resources/physics_material.cpp
+#, fuzzy
+msgid "Friction"
+msgstr "函数"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: scene/resources/physics_material.cpp
+msgid "Bounce"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Physics Material Override"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Gravity"
+msgstr "默认预览"
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -14513,9 +18370,109 @@ msgstr ""
 "的覆盖。\n"
 "建议您修改其子节点碰撞形状的尺寸。"
 
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Mass"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp
+#, fuzzy
+msgid "Inertia"
+msgstr "垂直："
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Weight"
+msgstr "灯光"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Gravity Scale"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp
+#, fuzzy
+msgid "Continuous Cd"
+msgstr "连续"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Contacts Reported"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Angular"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp
+msgid "Applied Forces"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Safe Margin"
+msgstr "设置边距"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Moving platform"
+msgstr "移动输出"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Moving Platform Apply Velocity On Leave"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Collider Metadata"
+msgstr ""
+
+#: scene/2d/polygon_2d.cpp
+#, fuzzy
+msgid "Texture Rotation Degrees"
+msgstr "旋转 %s 度。"
+
+#: scene/2d/polygon_2d.cpp
+#, fuzzy
+msgid "Texture Rotation"
+msgstr "纹理区域"
+
+#: scene/2d/polygon_2d.cpp
+msgid "Invert"
+msgstr ""
+
+#: scene/2d/polygon_2d.cpp
+#, fuzzy
+msgid "Invert Border"
+msgstr "按顺序："
+
+#: scene/2d/polygon_2d.cpp
+#, fuzzy
+msgid "Internal Vertex Count"
+msgstr "创建内部顶点"
+
+#: scene/2d/position_2d.cpp
+#, fuzzy
+msgid "Gizmo Extents"
+msgstr "控制器"
+
+#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
+msgid "Collide With"
+msgstr ""
+
+#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
+msgid "Collide With Areas"
+msgstr ""
+
+#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
+#, fuzzy
+msgid "Collide With Bodies"
+msgstr "碰撞模式"
+
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "Path 属性必须指向有效的 Node2D 节点才能正常工作。"
+
+#: scene/2d/skeleton_2d.cpp
+#, fuzzy
+msgid "Default Length"
+msgstr "默认主题"
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
@@ -14531,6 +18488,14 @@ msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr "该骨骼没有合适的放松姿势。请到 Skeleton2D 节点中设置一个。"
 
+#: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+msgid "Hframes"
+msgstr ""
+
+#: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+msgid "Vframes"
+msgstr ""
+
 #: scene/2d/tile_map.cpp
 msgid ""
 "TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
@@ -14541,15 +18506,99 @@ msgstr ""
 "它作为 Area2D、StaticBody2D、RigidBody2D、KinematicBody2D 等的子项来赋予它们"
 "形状。"
 
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Tile Set"
+msgstr "图块集"
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Cell Quadrant Size"
+msgstr "修改摄像机尺寸"
+
+#: scene/2d/tile_map.cpp
+msgid "Cell Half Offset"
+msgstr ""
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Cell Tile Origin"
+msgstr "显示原点"
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Collision Use Parent"
+msgstr "碰撞模式"
+
+#: scene/2d/tile_map.cpp
+msgid "Collision Use Kinematic"
+msgstr ""
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Collision Friction"
+msgstr "碰撞模式"
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Collision Bounce"
+msgstr "碰撞模式"
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Occluder Light Mask"
+msgstr "遮挡设置变换"
+
+#: scene/2d/touch_screen_button.cpp
+#, fuzzy
+msgid "Normal"
+msgstr "格式"
+
+#: scene/2d/touch_screen_button.cpp
+#, fuzzy
+msgid "Pressed"
+msgstr "预设"
+
+#: scene/2d/touch_screen_button.cpp
+#, fuzzy
+msgid "Visibility Mode"
+msgstr "优先模式"
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr "当直接将已编辑的场景根作为父级使用时，VisibilityEnabler2D 效果最佳。"
 
+#: scene/3d/area.cpp
+msgid "Reverb Bus"
+msgstr ""
+
+#: scene/3d/area.cpp
+#, fuzzy
+msgid "Reverb Bus Name"
+msgstr "重置总线音量"
+
+#: scene/3d/area.cpp
+#, fuzzy
+msgid "Reverb Bus Amount"
+msgstr "重置总线音量"
+
+#: scene/3d/area.cpp
+msgid "Reverb Bus Uniformity"
+msgstr ""
+
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCamera 必须将 ARVROrigin 节点作为其父节点。"
+
+#: scene/3d/arvr_nodes.cpp
+msgid "Controller Id"
+msgstr ""
+
+#: scene/3d/arvr_nodes.cpp
+msgid "Rumble"
+msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
@@ -14560,6 +18609,11 @@ msgid ""
 "The controller ID must not be 0 or this controller won't be bound to an "
 "actual controller."
 msgstr "控制器 ID 不能为 0，否则此控制器将不会绑定到实际的控制器。"
+
+#: scene/3d/arvr_nodes.cpp
+#, fuzzy
+msgid "Anchor Id"
+msgstr "仅锚点"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
@@ -14574,6 +18628,81 @@ msgstr "锚点 ID 不能为 0，否则此锚点将不会绑定到实际的锚点
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin 需要一个 ARVRCamera 子节点。"
+
+#: scene/3d/audio_stream_player_3d.cpp
+#, fuzzy
+msgid "Attenuation Model"
+msgstr "动画节点"
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Unit dB"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Unit Size"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Max dB"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Out Of Range Mode"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+#, fuzzy
+msgid "Emission Angle"
+msgstr "发射色彩"
+
+#: scene/3d/audio_stream_player_3d.cpp
+#, fuzzy
+msgid "Emission Angle Degrees"
+msgstr "发射色彩"
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Emission Angle Filter Attenuation dB"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Attenuation Filter"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Attenuation Filter Cutoff Hz"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+msgid "Attenuation Filter dB"
+msgstr ""
+
+#: scene/3d/audio_stream_player_3d.cpp
+#, fuzzy
+msgid "Doppler"
+msgstr "启用多普勒效应"
+
+#: scene/3d/audio_stream_player_3d.cpp scene/3d/camera.cpp
+#, fuzzy
+msgid "Doppler Tracking"
+msgstr "属性轨道"
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Bounds"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Cell Space Transform"
+msgstr "清除变换"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Cell Subdiv"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "User Data"
+msgstr "用户界面"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
@@ -14598,6 +18727,119 @@ msgstr "正在保存光照贴图"
 #: scene/3d/baked_lightmap.cpp
 msgid "Done"
 msgstr "完成"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Tweaks"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Bounces"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Bounce Indirect Energy"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Default Texels Per Unit"
+msgstr "默认主题"
+
+#: scene/3d/baked_lightmap.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Atlas"
+msgstr "新建图集"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Environment Mode"
+msgstr "查看环境"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Environment Custom Sky"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Environment Custom Color"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Environment Custom Energy"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Environment Min Light"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Capture Cell Size"
+msgstr "从像素捕获"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Capture Quality"
+msgstr "捕获"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Capture Propagation"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Image Path"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Light Data"
+msgstr "含数据"
+
+#: scene/3d/camera.cpp
+msgid "Keep Aspect"
+msgstr ""
+
+#: scene/3d/camera.cpp scene/3d/reflection_probe.cpp
+msgid "Cull Mask"
+msgstr ""
+
+#: scene/3d/camera.cpp
+#, fuzzy
+msgid "Projection"
+msgstr "项目"
+
+#: scene/3d/camera.cpp
+msgid "FOV"
+msgstr ""
+
+#: scene/3d/camera.cpp
+#, fuzzy
+msgid "Near"
+msgstr "临近"
+
+#: scene/3d/camera.cpp
+msgid "Far"
+msgstr ""
+
+#: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/gui/control.cpp
+#: scene/resources/shape.cpp scene/resources/style_box.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Margin"
+msgstr "设置边距"
+
+#: scene/3d/camera.cpp
+#, fuzzy
+msgid "Clip To"
+msgstr "向上裁剪"
+
+#: scene/3d/camera.cpp
+#, fuzzy
+msgid "Clip To Areas"
+msgstr "翻转入口"
+
+#: scene/3d/camera.cpp
+msgid "Clip To Bodies"
+msgstr ""
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -14660,6 +18902,71 @@ msgstr ""
 "CPUParticles 动画需要使用 Billboard Mode 设置为 “Particle Billboard” 的 "
 "SpatialMaterial。"
 
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Ring Radius"
+msgstr "发射遮罩"
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+msgid "Emission Ring Inner Radius"
+msgstr ""
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Ring Height"
+msgstr "发射位置："
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+msgid "Flatness"
+msgstr ""
+
+#: scene/3d/cull_instance.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Portals"
+msgstr "翻转入口"
+
+#: scene/3d/cull_instance.cpp
+#, fuzzy
+msgid "Portal Mode"
+msgstr "优先模式"
+
+#: scene/3d/cull_instance.cpp
+#, fuzzy
+msgid "Autoplace Priority"
+msgstr "启用优先级"
+
+#: scene/3d/gi_probe.cpp scene/animation/root_motion_view.cpp
+#: scene/resources/world_2d.cpp servers/physics_2d/physics_2d_server_sw.cpp
+msgid "Cell Size"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid "To Cell Xform"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+#, fuzzy
+msgid "Dynamic Range"
+msgstr "动态链接库"
+
+#: scene/3d/gi_probe.cpp
+msgid "Normal Bias"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+#, fuzzy
+msgid "Propagation"
+msgstr "导航"
+
+#: scene/3d/gi_probe.cpp scene/3d/reflection_probe.cpp
+msgid "Interior"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+#, fuzzy
+msgid "Compress"
+msgstr "组件"
+
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "正在绘制网格"
@@ -14685,9 +18992,74 @@ msgstr ""
 "因为存在已知问题，GIProbe Compress 属性已被启用，不会再起任何作用。\n"
 "如果要移除本警告，请禁用 GIProbe 的 Compress 属性。"
 
+#: scene/3d/gi_probe.cpp
+msgid "Subdiv"
+msgstr ""
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Light Color"
+msgstr "拾取颜色"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Light Bake Mode"
+msgstr "LightMap 烘焙"
+
+#: scene/3d/light.cpp
+msgid "Light Cull Mask"
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "Shadow Color"
+msgstr ""
+
+#: scene/3d/light.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Directional Shadow"
+msgstr "方向"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Directional Shadow Mode"
+msgstr "专注模式"
+
+#: scene/3d/light.cpp
+msgid "Directional Shadow Depth Range"
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "Omni"
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "Omni Shadow Mode"
+msgstr ""
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Omni Shadow Detail"
+msgstr "显示默认"
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "角度宽于 90 度的 SpotLight 无法投射出阴影。"
+
+#: scene/3d/light.cpp
+msgid "Spot"
+msgstr ""
+
+#: scene/3d/mesh_instance.cpp
+msgid "Skin"
+msgstr ""
+
+#: scene/3d/mesh_instance.cpp
+msgid "Software Skinning"
+msgstr ""
+
+#: scene/3d/navigation_agent.cpp
+msgid "Agent Height Offset"
+msgstr ""
 
 #: scene/3d/navigation_agent.cpp
 msgid "The NavigationAgent can be used only under a spatial node."
@@ -14700,6 +19072,10 @@ msgid ""
 msgstr ""
 "NavigationMeshInstance 类型节点必须作为 Navigation 节点的子节点或子孙节点才能"
 "提供导航数据。"
+
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "Navmesh"
+msgstr ""
 
 #: scene/3d/navigation_obstacle.cpp
 msgid ""
@@ -14750,6 +19126,11 @@ msgstr ""
 "粒子动画需要使用 Billboard Mode 设置为 “Particle Billboard” 的 "
 "SpatialMaterial。"
 
+#: scene/3d/particles.cpp
+#, fuzzy
+msgid "Draw Passes"
+msgstr "绘制调用："
+
 #: scene/3d/path.cpp
 msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow 类型的节点只有作为 Path 类型节点的子节点才能正常工作。"
@@ -14762,6 +19143,11 @@ msgstr ""
 "PathFollow 的 ROTATION_ORIENTED 要求在其父路径的 Curve 资源中启用 “Up "
 "Vector”。"
 
+#: scene/3d/path.cpp
+#, fuzzy
+msgid "Rotation Mode"
+msgstr "旋转模式"
+
 #: scene/3d/physics_body.cpp
 msgid ""
 "Size changes to RigidBody (in character or rigid modes) will be overridden "
@@ -14771,6 +19157,16 @@ msgstr ""
 "对 RigidBody（在 Character 或 Rigid 模式下）的尺寸修改，在运行时会被物理引擎"
 "的覆盖。\n"
 "建议您修改子节点的碰撞形状。"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Axis Lock"
+msgstr "轴"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Joint Type"
+msgstr "绘制图块"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
@@ -14792,6 +19188,55 @@ msgstr "Joint 未连接到任何 PhysicsBody"
 msgid "Node A and Node B must be different PhysicsBodies"
 msgstr "Node A 与 Node B 必须为不同的 PhysicsBody"
 
+#: scene/3d/physics_joint.cpp
+msgid "Solver"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Limit"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Upper"
+msgstr "大写"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Lower"
+msgstr "小写"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Upper Angle"
+msgstr "大写"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Lower Angle"
+msgstr "小写"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Swing Span"
+msgstr "正在保存场景"
+
+#: scene/3d/physics_joint.cpp
+msgid "Twist Span"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Limit X"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Limit Y"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Limit Z"
+msgstr ""
+
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
 msgstr "RoomManager 不应该是 Portal 的子节点或孙节点。"
@@ -14803,6 +19248,40 @@ msgstr "Room 不应该是 Portal 的子节点或孙节点。"
 #: scene/3d/portal.cpp
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
 msgstr "RoomGroup 不应该是 Portal 的子节点或孙节点。"
+
+#: scene/3d/proximity_group.cpp
+msgid "Dispatch Mode"
+msgstr ""
+
+#: scene/3d/ray_cast.cpp
+#, fuzzy
+msgid "Debug Shape"
+msgstr "调试器"
+
+#: scene/3d/ray_cast.cpp
+msgid "Debug Shape Thickness"
+msgstr ""
+
+#: scene/3d/reflection_probe.cpp
+#, fuzzy
+msgid "Update Mode"
+msgstr "旋转模式"
+
+#: scene/3d/reflection_probe.cpp
+msgid "Intensity"
+msgstr ""
+
+#: scene/3d/reflection_probe.cpp
+msgid "Interior Ambient Color"
+msgstr ""
+
+#: scene/3d/reflection_probe.cpp
+msgid "Interior Ambient Energy"
+msgstr ""
+
+#: scene/3d/reflection_probe.cpp
+msgid "Interior Ambient Contrib"
+msgstr ""
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -14831,6 +19310,19 @@ msgstr ""
 "房间的凸包中包含大量平面。\n"
 "为了提升性能，请考虑简化房间的边界。"
 
+#: scene/3d/room.cpp
+msgid "Room Simplify"
+msgstr ""
+
+#: scene/3d/room.cpp
+msgid "Bound"
+msgstr ""
+
+#: scene/3d/room_group.cpp
+#, fuzzy
+msgid "Roomgroup Priority"
+msgstr "优先级"
+
 #: scene/3d/room_group.cpp
 msgid "The RoomManager should not be placed inside a RoomGroup."
 msgstr "RoomManager 不应该被放置在 RoomGroup 中。"
@@ -14854,6 +19346,29 @@ msgstr ""
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
 msgstr "场景树中仅能存在一个 RoomManager。"
+
+#: scene/3d/room_manager.cpp
+msgid "Main"
+msgstr ""
+
+#: scene/3d/room_manager.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "PVS"
+msgstr "FPS"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "PVS Mode"
+msgstr "平移模式"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "PVS Filename"
+msgstr "ZIP 文件"
+
+#: scene/3d/room_manager.cpp servers/visual_server.cpp
+msgid "Gameplay"
+msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid ""
@@ -14900,6 +19415,40 @@ msgstr ""
 "请确保所有房间都包含几何结构，或者包含手动边界。"
 
 #: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Simulation Precision"
+msgstr "动画树无效。"
+
+#: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Total Mass"
+msgstr "合计："
+
+#: scene/3d/soft_body.cpp
+msgid "Linear Stiffness"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "Areaangular Stiffness"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "Volume Stiffness"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "Damping Coefficient"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "Drag Coefficient"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "Pose Matching Coefficient"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "在设置网格之前，将忽略该实体。"
 
@@ -14911,6 +19460,37 @@ msgid ""
 msgstr ""
 "对 SoftBody 尺寸的修改，将会在运行时被物理引擎所覆盖。\n"
 "建议修改子节点的碰撞体形状尺寸。"
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Transform"
+msgstr "保持全局变换"
+
+#: scene/3d/spatial.cpp
+msgid "Matrix"
+msgstr ""
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Gizmo"
+msgstr "控制器"
+
+#: scene/3d/sprite_3d.cpp
+msgid "Opacity"
+msgstr ""
+
+#: scene/3d/sprite_3d.cpp
+#, fuzzy
+msgid "Pixel Size"
+msgstr "像素吸附"
+
+#: scene/3d/sprite_3d.cpp
+msgid "Billboard"
+msgstr ""
+
+#: scene/3d/sprite_3d.cpp
+msgid "Alpha Cut"
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -14927,6 +19507,95 @@ msgid ""
 msgstr ""
 "VehicleWheel 是用来为 VehicleBody 提供车轮系统的。请将它用作 VehicleBody 的子"
 "节点。"
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Per-Wheel Motion"
+msgstr "滚轮向下"
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Engine Force"
+msgstr "在线文档"
+
+#: scene/3d/vehicle_body.cpp
+msgid "Brake"
+msgstr ""
+
+#: scene/3d/vehicle_body.cpp
+msgid "Steering"
+msgstr ""
+
+#: scene/3d/vehicle_body.cpp
+msgid "VehicleBody Motion"
+msgstr ""
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Wheel"
+msgstr "滚轮向上滚动。"
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Suspension"
+msgstr "表达式"
+
+#: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Geometry"
+msgstr "重试"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Material Override"
+msgstr "重写"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Material Overlay"
+msgstr "材质变更："
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Cast Shadow"
+msgstr "创建着色器节点"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Extra Cull Margin"
+msgstr "额外调用参数："
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Baked Light"
+msgstr "烘焙光照贴图"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Lightmap Scale"
+msgstr "LightMap 烘焙"
+
+#: scene/3d/visual_instance.cpp
+msgid "LOD"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "LOD Min Distance"
+msgstr "拾取距离："
+
+#: scene/3d/visual_instance.cpp
+msgid "LOD Min Hysteresis"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "LOD Max Distance"
+msgstr "拾取距离："
+
+#: scene/3d/visual_instance.cpp
+msgid "LOD Max Hysteresis"
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -14949,6 +19618,33 @@ msgstr ""
 "这个 WorldEnvironment 被忽略。添加摄像头（用于 3D 场景）或将此环境的背景模式"
 "设置为画布（用于 2D 场景）。"
 
+#: scene/animation/animation_blend_space_1d.cpp
+#, fuzzy
+msgid "Min Space"
+msgstr "主场景"
+
+#: scene/animation/animation_blend_space_1d.cpp
+msgid "Max Space"
+msgstr ""
+
+#: scene/animation/animation_blend_space_1d.cpp
+#, fuzzy
+msgid "Value Label"
+msgstr "值"
+
+#: scene/animation/animation_blend_space_2d.cpp
+#, fuzzy
+msgid "Auto Triangles"
+msgstr "打开／关闭自动三角形"
+
+#: scene/animation/animation_blend_space_2d.cpp
+msgid "X Label"
+msgstr ""
+
+#: scene/animation/animation_blend_space_2d.cpp
+msgid "Y Label"
+msgstr ""
+
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "在 BlendTree 节点 “%s” 上没有发现动画： “%s”"
@@ -14957,9 +19653,110 @@ msgstr "在 BlendTree 节点 “%s” 上没有发现动画： “%s”"
 msgid "Animation not found: '%s'"
 msgstr "没有动画： “%s”"
 
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Mix Mode"
+msgstr "Mix 节点"
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Fadein Time"
+msgstr "淡入淡出时间（秒）："
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Fadeout Time"
+msgstr "淡入淡出时间（秒）："
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "autorestart_"
+msgstr "自动重新开始："
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Autorestart Delay"
+msgstr "自动重新开始："
+
+#: scene/animation/animation_blend_tree.cpp
+msgid "Autorestart Random Delay"
+msgstr ""
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Input Count"
+msgstr "添加输入端口"
+
+#: scene/animation/animation_blend_tree.cpp
+#: scene/animation/animation_node_state_machine.cpp
+#, fuzzy
+msgid "Xfade Time"
+msgstr "淡入淡出时间（秒）："
+
+#: scene/animation/animation_node_state_machine.cpp
+#, fuzzy
+msgid "Switch Mode"
+msgstr "切换"
+
 #: scene/animation/animation_player.cpp
 msgid "Anim Apply Reset"
 msgstr "动画应用重置"
+
+#: scene/animation/animation_player.cpp
+#, fuzzy
+msgid "Current Animation"
+msgstr "设置动画"
+
+#: scene/animation/animation_player.cpp
+#, fuzzy
+msgid "Assigned Animation"
+msgstr "添加动画"
+
+#: scene/animation/animation_player.cpp
+#, fuzzy
+msgid "Autoplay"
+msgstr "打开／关闭自动播放"
+
+#: scene/animation/animation_player.cpp
+msgid "Reset On Save"
+msgstr ""
+
+#: scene/animation/animation_player.cpp
+#, fuzzy
+msgid "Current Animation Length"
+msgstr "修改动画长度"
+
+#: scene/animation/animation_player.cpp
+#, fuzzy
+msgid "Current Animation Position"
+msgstr "添加动画点"
+
+#: scene/animation/animation_player.cpp
+#, fuzzy
+msgid "Playback Options"
+msgstr "类选项："
+
+#: scene/animation/animation_player.cpp
+#: scene/animation/animation_tree_player.cpp scene/animation/tween.cpp
+msgid "Playback Process Mode"
+msgstr ""
+
+#: scene/animation/animation_player.cpp
+msgid "Playback Default Blend Time"
+msgstr ""
+
+#: scene/animation/animation_player.cpp
+msgid "Playback Active"
+msgstr ""
+
+#: scene/animation/animation_player.cpp scene/animation/tween.cpp
+#, fuzzy
+msgid "Playback Speed"
+msgstr "运行场景"
+
+#: scene/animation/animation_player.cpp
+msgid "Method Call Mode"
+msgstr ""
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
@@ -14972,6 +19769,11 @@ msgstr "无效动画： “%s” 。"
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "没有任何物体连接到节点 “%s” 的输入 “%s” 。"
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Filter Enabled"
+msgstr "筛选信号"
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
@@ -14989,9 +19791,86 @@ msgstr "动画播放器的路径没有加载一个 AnimationPlayer 节点。"
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationPlayer 根节点不是有效节点。"
 
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Tree Root"
+msgstr "创建根节点："
+
+#: scene/animation/animation_tree.cpp
+msgid "Root Motion"
+msgstr ""
+
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "该节点已废弃。请使用 AnimationTree 代替。"
+
+#: scene/animation/animation_tree_player.cpp
+#, fuzzy
+msgid "Playback"
+msgstr "运行"
+
+#: scene/animation/skeleton_ik.cpp
+#, fuzzy
+msgid "Interpolation"
+msgstr "插值模式"
+
+#: scene/audio/audio_stream_player.cpp
+#, fuzzy
+msgid "Mix Target"
+msgstr "目标"
+
+#: scene/gui/aspect_ratio_container.cpp scene/gui/texture_button.cpp
+#: scene/gui/texture_rect.cpp
+#, fuzzy
+msgid "Stretch Mode"
+msgstr "选择模式"
+
+#: scene/gui/aspect_ratio_container.cpp scene/gui/box_container.cpp
+msgid "Alignment"
+msgstr ""
+
+#: scene/gui/aspect_ratio_container.cpp
+#, fuzzy
+msgid "Alignment Horizontal"
+msgstr "水平翻转"
+
+#: scene/gui/aspect_ratio_container.cpp
+#, fuzzy
+msgid "Alignment Vertical"
+msgstr "垂直翻转"
+
+#: scene/gui/base_button.cpp
+#, fuzzy
+msgid "Action Mode"
+msgstr "图标模式"
+
+#: scene/gui/base_button.cpp
+#, fuzzy
+msgid "Button Mask"
+msgstr "按钮"
+
+#: scene/gui/base_button.cpp
+msgid "Enabled Focus Mode"
+msgstr ""
+
+#: scene/gui/base_button.cpp scene/gui/shortcut.cpp
+#, fuzzy
+msgid "Shortcut"
+msgstr "快捷键"
+
+#: scene/gui/base_button.cpp
+#, fuzzy
+msgid "Group"
+msgstr "分组"
+
+#: scene/gui/button.cpp scene/gui/label.cpp scene/gui/line_edit.cpp
+#: scene/gui/spin_box.cpp
+msgid "Align"
+msgstr ""
+
+#: scene/gui/button.cpp
+msgid "Icon Align"
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid ""
@@ -15040,6 +19919,100 @@ msgstr ""
 "由于该控件的 Mouse Filter 设置为“Ignore”因此将不会显示高亮工具提示。将 Mouse "
 "Filter 设置为“Stop”或“Pass”可修正此问题。"
 
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Anchor"
+msgstr "仅锚点"
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Grow Direction"
+msgstr "方向"
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Grow Horizontal"
+msgstr "水平:"
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Grow Vertical"
+msgstr "垂直："
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Rect Rotation"
+msgstr "随机旋转："
+
+#: scene/gui/control.cpp scene/resources/visual_shader_nodes.cpp
+msgid "Hint"
+msgstr ""
+
+#: scene/gui/control.cpp
+msgid "Hint Tooltip"
+msgstr ""
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Focus"
+msgstr "聚焦路径"
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Focus Mode"
+msgstr "遮挡模式"
+
+#: scene/gui/control.cpp
+msgid "Mouse"
+msgstr ""
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Mouse Filter"
+msgstr "筛选区域"
+
+#: scene/gui/control.cpp
+msgid "Mouse Default Cursor Shape"
+msgstr ""
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Size Flags"
+msgstr "大小： "
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Size Flags Horizontal"
+msgstr "水平翻转"
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Size Flags Vertical"
+msgstr "垂直翻转"
+
+#: scene/gui/control.cpp
+msgid "Size Flags Stretch Ratio"
+msgstr ""
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Theme Type Variation"
+msgstr "主题属性"
+
+#: scene/gui/dialogs.cpp
+msgid "Window Title"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+#, fuzzy
+msgid "Dialog"
+msgstr "变换对话框"
+
+#: scene/gui/dialogs.cpp
+#, fuzzy
+msgid "Dialog Text"
+msgstr "复制文本"
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "警告！"
@@ -15053,8 +20026,120 @@ msgid "Must use a valid extension."
 msgstr "必须使用有效的扩展名。"
 
 #: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom"
+msgstr "放大"
+
+#: scene/gui/graph_edit.cpp scene/gui/text_edit.cpp
+msgid "Minimap"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
 msgid "Enable grid minimap."
 msgstr "启用网格小地图。"
+
+#: scene/gui/graph_node.cpp
+msgid "Overlay"
+msgstr ""
+
+#: scene/gui/grid_container.cpp scene/gui/item_list.cpp
+#, fuzzy
+msgid "Columns"
+msgstr "体积"
+
+#: scene/gui/item_list.cpp scene/gui/popup_menu.cpp scene/gui/text_edit.cpp
+#: scene/gui/tree.cpp scene/main/viewport.cpp
+#, fuzzy
+msgid "Timers"
+msgstr "时间"
+
+#: scene/gui/item_list.cpp scene/gui/popup_menu.cpp scene/gui/tree.cpp
+msgid "Incremental Search Max Interval Msec"
+msgstr ""
+
+#: scene/gui/item_list.cpp
+msgid "Max Text Lines"
+msgstr ""
+
+#: scene/gui/item_list.cpp
+msgid "Max Columns"
+msgstr ""
+
+#: scene/gui/item_list.cpp
+msgid "Fixed Column Width"
+msgstr ""
+
+#: scene/gui/label.cpp
+msgid "Valign"
+msgstr ""
+
+#: scene/gui/label.cpp scene/gui/rich_text_label.cpp
+#, fuzzy
+msgid "Visible Characters"
+msgstr "有效字符："
+
+#: scene/gui/label.cpp scene/gui/rich_text_label.cpp
+#, fuzzy
+msgid "Percent Visible"
+msgstr "切换可见性"
+
+#: scene/gui/label.cpp
+msgid "Lines Skipped"
+msgstr ""
+
+#: scene/gui/label.cpp
+msgid "Max Lines Visible"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/resources/navigation_mesh.cpp
+msgid "Max Length"
+msgstr ""
+
+#: scene/gui/line_edit.cpp
+#, fuzzy
+msgid "Right Icon"
+msgstr "右键"
+
+#: scene/gui/line_edit.cpp
+#, fuzzy
+msgid "Placeholder"
+msgstr "加载为占位符"
+
+#: scene/gui/line_edit.cpp
+#, fuzzy
+msgid "Placeholder Alpha"
+msgstr "加载为占位符"
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Caret"
+msgstr ""
+
+#: scene/gui/line_edit.cpp
+#, fuzzy
+msgid "Caret Position"
+msgstr "设置曲线外控点位置"
+
+#: scene/gui/link_button.cpp
+msgid "Underline"
+msgstr ""
+
+#: scene/gui/nine_patch_rect.cpp
+#, fuzzy
+msgid "Patch Margin"
+msgstr "设置边距"
+
+#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
+msgid "Axis Stretch"
+msgstr ""
+
+#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "Axis Stretch Horizontal"
+msgstr "创建水平参考线"
+
+#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
+msgid "Axis Stretch Vertical"
+msgstr ""
 
 #: scene/gui/nine_patch_rect.cpp
 msgid ""
@@ -15067,6 +20152,11 @@ msgstr ""
 "当前使用的是 GLES2 后端，将使用 Stretch 的行为代替这些模式。"
 
 #: scene/gui/popup.cpp
+#, fuzzy
+msgid "Popup"
+msgstr "填充"
+
+#: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
@@ -15075,9 +20165,48 @@ msgstr ""
 "弹窗将默认隐藏，除非调用 popup() 或任何 popup*() 函数。虽然可以将弹窗设为可见"
 "来进行编辑，但在运行时会隐藏。"
 
+#: scene/gui/progress_bar.cpp
+#, fuzzy
+msgid "Percent"
+msgstr "最近使用："
+
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "如果启用了 “Exp Edit”，则 “Min Value” 必须大于 0。"
+
+#: scene/gui/range.cpp servers/audio/effects/audio_effect_compressor.cpp
+#, fuzzy
+msgid "Ratio"
+msgstr "保持长宽比"
+
+#: scene/gui/reference_rect.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "Border Width"
+msgstr "边界像素"
+
+#: scene/gui/rich_text_label.cpp
+msgid "BBCode"
+msgstr ""
+
+#: scene/gui/rich_text_label.cpp
+#, fuzzy
+msgid "Bbcode Text"
+msgstr "复制文本"
+
+#: scene/gui/rich_text_label.cpp
+#, fuzzy
+msgid "Tab Size"
+msgstr "大小："
+
+#: scene/gui/rich_text_label.cpp
+#, fuzzy
+msgid "Custom Effects"
+msgstr "移动总线效果"
+
+#: scene/gui/scroll_bar.cpp
+#, fuzzy
+msgid "Custom Step"
+msgstr "自定义节点"
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -15089,9 +20218,302 @@ msgstr ""
 "子节点应该是单个容器（VBox、HBox 等）或者使用单个控件并手动设置其自定义最小尺"
 "寸。"
 
+#: scene/gui/scroll_container.cpp
+msgid "Default Scroll Deadzone"
+msgstr ""
+
+#: scene/gui/slider.cpp
+#, fuzzy
+msgid "Tick Count"
+msgstr "拾取颜色"
+
+#: scene/gui/split_container.cpp
+#, fuzzy
+msgid "Dragger Visibility"
+msgstr "切换 隐藏/可见"
+
+#: scene/gui/tab_container.cpp scene/gui/tabs.cpp
+msgid "Tab Align"
+msgstr ""
+
+#: scene/gui/tab_container.cpp scene/gui/tabs.cpp
+#, fuzzy
+msgid "Current Tab"
+msgstr "当前："
+
+#: scene/gui/tabs.cpp
+msgid "Tab Close Display Policy"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+msgid "Text Edit Idle Detect Sec"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+msgid "Text Edit Undo Stack Max Size"
+msgstr ""
+
+#: scene/gui/texture_button.cpp
+msgid "Texture Normal"
+msgstr ""
+
+#: scene/gui/texture_button.cpp
+msgid "Texture Pressed"
+msgstr ""
+
+#: scene/gui/texture_button.cpp
+#, fuzzy
+msgid "Texture Hover"
+msgstr "纹理区域"
+
+#: scene/gui/texture_button.cpp
+#, fuzzy
+msgid "Texture Disabled"
+msgstr "（编辑器已禁用）"
+
+#: scene/gui/texture_button.cpp
+msgid "Texture Focused"
+msgstr ""
+
+#: scene/gui/texture_button.cpp
+msgid "Texture Click Mask"
+msgstr ""
+
+#: scene/gui/texture_button.cpp
+#, fuzzy
+msgid "Expand"
+msgstr "全部展开"
+
+#: scene/gui/texture_button.cpp
+msgid "Flip H"
+msgstr ""
+
+#: scene/gui/texture_button.cpp
+msgid "Flip V"
+msgstr ""
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Texture Under"
+msgstr "纹理区域"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Texture Over"
+msgstr "单步跳过"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Texture Progress"
+msgstr "主题属性"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Fill Mode"
+msgstr "播放模式："
+
+#: scene/gui/texture_progress.cpp
+msgid "Tint"
+msgstr ""
+
+#: scene/gui/texture_progress.cpp
+msgid "Radial Fill"
+msgstr ""
+
+#: scene/gui/texture_progress.cpp
+msgid "Radial Initial Angle"
+msgstr ""
+
+#: scene/gui/texture_progress.cpp
+msgid "Radial Fill Degrees"
+msgstr ""
+
+#: scene/gui/tree.cpp
+msgid "Custom Minimum Height"
+msgstr ""
+
 #: scene/gui/tree.cpp
 msgid "(Other)"
 msgstr "（其他）"
+
+#: scene/gui/tree.cpp
+msgid "Drop Mode Flags"
+msgstr ""
+
+#: scene/gui/video_player.cpp
+#, fuzzy
+msgid "Audio Track"
+msgstr "添加轨道"
+
+#: scene/gui/video_player.cpp
+msgid "Buffering Msec"
+msgstr ""
+
+#: scene/gui/video_player.cpp
+#, fuzzy
+msgid "Stream Position"
+msgstr "设置曲线内控点位置"
+
+#: scene/main/canvas_layer.cpp
+#, fuzzy
+msgid "Follow Viewport"
+msgstr "显示视口"
+
+#: scene/main/canvas_layer.cpp
+#, fuzzy
+msgid "Follow Viewport Scale"
+msgstr "显示视口"
+
+#: scene/main/http_request.cpp
+#, fuzzy
+msgid "Download File"
+msgstr "下载"
+
+#: scene/main/http_request.cpp
+#, fuzzy
+msgid "Download Chunk Size"
+msgstr "正在下载"
+
+#: scene/main/http_request.cpp
+msgid "Body Size Limit"
+msgstr ""
+
+#: scene/main/http_request.cpp
+msgid "Max Redirects"
+msgstr ""
+
+#: scene/main/http_request.cpp
+#, fuzzy
+msgid "Timeout"
+msgstr "超时。"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Name Num Separator"
+msgstr "带名称的分隔线"
+
+#: scene/main/node.cpp
+msgid "Name Casing"
+msgstr ""
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Editor Description"
+msgstr "描述"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Pause Mode"
+msgstr "平移模式"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Display Folded"
+msgstr "显示无阴影"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Filename"
+msgstr "重命名"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Owner"
+msgstr "拥有者："
+
+#: scene/main/node.cpp scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Multiplayer"
+msgstr "将 %s 乘以"
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Custom Multiplayer"
+msgstr "批量设置："
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Edited Scene Root"
+msgstr "新建场景根"
+
+#: scene/main/scene_tree.cpp
+msgid "Root"
+msgstr ""
+
+#: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
+msgid "Shapes"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+msgid "Shape Color"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Contact Color"
+msgstr "拾取颜色"
+
+#: scene/main/scene_tree.cpp
+msgid "Geometry Color"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Disabled Geometry Color"
+msgstr "不可用的项目"
+
+#: scene/main/scene_tree.cpp
+msgid "Max Contacts Displayed"
+msgstr ""
+
+#: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
+#, fuzzy
+msgid "Draw 2D Outlines"
+msgstr "创建轮廓"
+
+#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "插值模式"
+
+#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Reflections"
+msgstr "方向"
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Atlas Size"
+msgstr "轮廓大小："
+
+#: scene/main/scene_tree.cpp
+msgid "Atlas Subdiv"
+msgstr ""
+
+#: scene/main/scene_tree.cpp scene/main/viewport.cpp
+msgid "MSAA"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+msgid "Use FXAA"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+msgid "Use Debanding"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+msgid "HDR"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+msgid "Use 32 Bpc Depth"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Default Environment"
+msgstr "查看环境"
 
 #: scene/main/scene_tree.cpp
 msgid ""
@@ -15100,6 +20522,11 @@ msgid ""
 msgstr ""
 "无法加载项目设置中的默认环境（Rendering -> Environment -> Default "
 "Environment）。"
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Enable Object Picking"
+msgstr "启用洋葱皮"
 
 #: scene/main/timer.cpp
 msgid ""
@@ -15111,6 +20538,20 @@ msgstr ""
 "计时器等待时间非常短（小于 0.05 秒）时可能会根据渲染帧率和物理帧率的不同而表"
 "现得极为不同。\n"
 "建议使用脚本的 process 循环代替此类计时器。"
+
+#: scene/main/timer.cpp
+#, fuzzy
+msgid "Wait Time"
+msgstr "绘制图块"
+
+#: scene/main/timer.cpp
+msgid "Paused"
+msgstr ""
+
+#: scene/main/timer.cpp
+#, fuzzy
+msgid "Time Left"
+msgstr "左上"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -15129,9 +20570,1030 @@ msgid ""
 "dimensions to render anything."
 msgstr "Viewport 的宽高都大于等于 2 像素时才能进行渲染。"
 
+#: scene/main/viewport.cpp scene/resources/world_2d.cpp
+msgid "World"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "World 2D"
+msgstr ""
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Debug Draw"
+msgstr "调试"
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Render Target"
+msgstr "渲染器："
+
+#: scene/main/viewport.cpp
+msgid "Render Target Clear Mode"
+msgstr ""
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Render Target Update Mode"
+msgstr "修改动画更新模式"
+
+#: scene/main/viewport.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Shadow Atlas"
+msgstr "新建图集"
+
+#: scene/main/viewport.cpp
+msgid "Tooltip Delay Sec"
+msgstr ""
+
+#: scene/register_scene_types.cpp
+msgid "Use hiDPI"
+msgstr ""
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "Custom"
+msgstr "自定义节点"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "Custom Font"
+msgstr "自定义节点"
+
+#: scene/resources/audio_stream_sample.cpp
+#, fuzzy
+msgid "Loop Mode"
+msgstr "移动模式"
+
+#: scene/resources/curve.cpp
+#, fuzzy
+msgid "Min Value"
+msgstr "固定值"
+
+#: scene/resources/curve.cpp
+#, fuzzy
+msgid "Max Value"
+msgstr "值"
+
+#: scene/resources/curve.cpp
+#, fuzzy
+msgid "Bake Resolution"
+msgstr "半分辨率"
+
+#: scene/resources/curve.cpp
+msgid "Bake Interval"
+msgstr ""
+
+#: scene/resources/curve.cpp
+#, fuzzy
+msgid "Up Vector"
+msgstr "向量"
+
+#: scene/resources/dynamic_font.cpp
+msgid "Hinting"
+msgstr ""
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Font Path"
+msgstr "聚焦路径"
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Outline Size"
+msgstr "轮廓大小："
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Extra Spacing"
+msgstr "更多选项："
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Font"
+msgstr "字体"
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Font Data"
+msgstr "含数据"
+
+#: scene/resources/environment.cpp
+msgid "Background"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Background Mode"
+msgstr "图标模式"
+
+#: scene/resources/environment.cpp
+msgid "Background Sky"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Background Sky Custom FOV"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Background Energy"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Background Canvas Max Layer"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Background Camera Feed Id"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Ambient Light"
+msgstr "向右缩进"
+
+#: scene/resources/environment.cpp
+msgid "Ambient Light Energy"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Ambient Light Sky Contribution"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog Sun Amount"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog Depth Begin"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog Depth End"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Fog Depth Curve"
+msgstr "拆分曲线"
+
+#: scene/resources/environment.cpp
+msgid "Fog Transmit Curve"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog Height Min"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog Height Max"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fog Height Curve"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Tonemap"
+msgstr "重定向"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Tonemap Mode"
+msgstr "吸附模式："
+
+#: scene/resources/environment.cpp
+msgid "Tonemap Exposure"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Tonemap White"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Auto Exposure"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Auto Exposure Scale"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Auto Exposure Min Luma"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Auto Exposure Max Luma"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Auto Exposure Speed"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "SS Reflections"
+msgstr "缩放选中项"
+
+#: scene/resources/environment.cpp
+msgid "Ss Reflections Max Steps"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Ss Reflections Fade In"
+msgstr "仅选中"
+
+#: scene/resources/environment.cpp
+msgid "Ss Reflections Fade Out"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Ss Reflections Depth Tolerance"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "SSAO"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "SSAO Radius"
+msgstr "半径："
+
+#: scene/resources/environment.cpp
+msgid "SSAO Intensity"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "SSAO Radius 2"
+msgstr "半径："
+
+#: scene/resources/environment.cpp
+msgid "SSAO Intensity 2"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "SSAO Bias"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "SSAO Light Affect"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "SSAO AO Channel Affect"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "SSAO Color"
+msgstr "颜色"
+
+#: scene/resources/environment.cpp
+msgid "SSAO Quality"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "SSAO Blur"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "SSAO Edge Sharpness"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DOF Far Blur"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Far Distance"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Far Transition"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Far Amount"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Far Quality"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DOF Near Blur"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Near Distance"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Near Transition"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Near Amount"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "DoF Blur Near Quality"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Glow"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Glow Intensity"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Glow Strength"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Glow Bloom"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Glow Blend Mode"
+msgstr "Blend2 节点"
+
+#: scene/resources/environment.cpp
+msgid "Glow HDR Threshold"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Glow HDR Luminance Cap"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Glow HDR Scale"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Adjustments"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Adjustment Brightness"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Adjustment Contrast"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Adjustment Saturation"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Adjustment Color Correction"
+msgstr ""
+
+#: scene/resources/font.cpp
+#, fuzzy
+msgid "Ascent"
+msgstr "最近使用："
+
+#: scene/resources/height_map_shape.cpp
+msgid "Map Width"
+msgstr ""
+
+#: scene/resources/height_map_shape.cpp
+#, fuzzy
+msgid "Map Depth"
+msgstr "深度"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Render Priority"
+msgstr "启用优先级"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Next Pass"
+msgstr "下一平面"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Vertex Color"
+msgstr "顶点"
+
+#: scene/resources/material.cpp servers/visual_server.cpp
+#, fuzzy
+msgid "Parameters"
+msgstr "修改参数："
+
+#: scene/resources/material.cpp
+msgid "Params Diffuse Mode"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Specular Mode"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Params Blend Mode"
+msgstr "Blend2 节点"
+
+#: scene/resources/material.cpp
+msgid "Params Cull Mode"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Depth Draw Mode"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Line Width"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Point Size"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Billboard Mode"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Grow Amount"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Params Alpha Scissor Threshold"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Particles Anim"
+msgstr "粒子"
+
+#: scene/resources/material.cpp
+msgid "Albedo"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Metallic"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Metallic Specular"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Metallic Texture Channel"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Roughness"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Roughness Texture Channel"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission"
+msgstr "发射遮罩"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission Energy"
+msgstr "发射色彩"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission Operator"
+msgstr "发射色彩"
+
+#: scene/resources/material.cpp
+msgid "NormalMap"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Normal Scale"
+msgstr "随机缩放："
+
+#: scene/resources/material.cpp
+msgid "Rim"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Rim Tint"
+msgstr "随机倾斜："
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Clearcoat"
+msgstr "清除"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Clearcoat Gloss"
+msgstr "清除姿势"
+
+#: scene/resources/material.cpp
+msgid "Anisotropy"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Ambient Occlusion"
+msgstr "遮挡"
+
+#: scene/resources/material.cpp
+msgid "AO Light Affect"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "AO Texture Channel"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Depth Scale"
+msgstr "深度"
+
+#: scene/resources/material.cpp
+msgid "Depth Min Layers"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Depth Max Layers"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Subsurf Scatter"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Subsurf Scatter Strength"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Transmission"
+msgstr "过渡： "
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Refraction"
+msgstr "分隔:"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Refraction Scale"
+msgstr "随机缩放："
+
+#: scene/resources/material.cpp
+msgid "Refraction Texture Channel"
+msgstr ""
+
+#: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
+msgid "Detail"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Detail Blend Mode"
+msgstr "Blend2 节点"
+
+#: scene/resources/material.cpp
+msgid "Detail UV Layer"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "UV1"
+msgstr "UV"
+
+#: scene/resources/material.cpp
+msgid "UV1 Triplanar Sharpness"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "UV2"
+msgstr "UV"
+
+#: scene/resources/material.cpp
+msgid "UV2 Triplanar Sharpness"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Proximity Fade"
+msgstr "优先模式"
+
+#: scene/resources/material.cpp
+msgid "Proximity Fade Distance"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Distance Fade"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Distance Fade Mode"
+msgstr "专注模式"
+
+#: scene/resources/material.cpp
+msgid "Distance Fade Min Distance"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Distance Fade Max Distance"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Async Mode"
+msgstr "平移模式"
+
+#: scene/resources/mesh.cpp
+#, fuzzy
+msgid "Blend Shape Mode"
+msgstr "Blend2 节点"
+
+#: scene/resources/mesh.cpp scene/resources/primitive_meshes.cpp
+msgid "Custom AABB"
+msgstr ""
+
+#: scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Color Format"
+msgstr "颜色运算符。"
+
+#: scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Transform Format"
+msgstr "已忽略变换。"
+
+#: scene/resources/multimesh.cpp
+msgid "Custom Data Format"
+msgstr ""
+
+#: scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Instance Count"
+msgstr "实例化"
+
+#: scene/resources/multimesh.cpp
+msgid "Visible Instance Count"
+msgstr ""
+
+#: scene/resources/multimesh.cpp
+msgid "Physics Interpolation Quality"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Sample Partition Type"
+msgstr "设置变种基础类型"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Parsed Geometry Type"
+msgstr "解析多边形中..."
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Source Geometry Mode"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Agent"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Max Climb"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Max Slope"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Min Size"
+msgstr "轮廓大小："
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Merge Size"
+msgstr "从场景中合并"
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Edge"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Max Error"
+msgstr "错误"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Polygon"
+msgstr "多边形"
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Verts Per Poly"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Sample Distance"
+msgstr "拾取距离："
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Sample Max Error"
+msgstr "采样 Sampler"
+
+#: scene/resources/occluder_shape.cpp
+msgid "Spheres"
+msgstr ""
+
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
 msgstr "OccluderShapeSphere 设置 Spheres"
+
+#: scene/resources/particles_material.cpp
+msgid "Trail"
+msgstr ""
+
+#: scene/resources/particles_material.cpp
+msgid "Trail Divisor"
+msgstr ""
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Trail Size Modifier"
+msgstr "自由观看加速调整"
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Trail Color Modifier"
+msgstr "自由观看减速调整"
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Point Texture"
+msgstr "发射位置："
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Normal Texture"
+msgstr "发射源： "
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Color Texture"
+msgstr "发射色彩"
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Emission Point Count"
+msgstr "发射位置："
+
+#: scene/resources/primitive_meshes.cpp
+msgid "Mid Height"
+msgstr ""
+
+#: scene/resources/primitive_meshes.cpp
+msgid "Subdivide Width"
+msgstr ""
+
+#: scene/resources/primitive_meshes.cpp
+msgid "Subdivide Height"
+msgstr ""
+
+#: scene/resources/primitive_meshes.cpp
+msgid "Subdivide Depth"
+msgstr ""
+
+#: scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Top Radius"
+msgstr "半径："
+
+#: scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Bottom Radius"
+msgstr "右下"
+
+#: scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Left To Right"
+msgstr "右上"
+
+#: scene/resources/shader.cpp
+msgid "Code"
+msgstr ""
+
+#: scene/resources/shader.cpp
+#, fuzzy
+msgid "Custom Defines"
+msgstr "运行自定义场景"
+
+#: scene/resources/shape_2d.cpp
+msgid "Custom Solver Bias"
+msgstr ""
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Radiance Size"
+msgstr "轮廓大小："
+
+#: scene/resources/sky.cpp
+msgid "Panorama"
+msgstr ""
+
+#: scene/resources/sky.cpp
+msgid "Sky"
+msgstr ""
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Sky Curve"
+msgstr "拆分曲线"
+
+#: scene/resources/sky.cpp
+msgid "Sky Energy"
+msgstr ""
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Ground"
+msgstr "已分组"
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Ground Curve"
+msgstr "闭合曲线"
+
+#: scene/resources/sky.cpp
+msgid "Ground Energy"
+msgstr ""
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Sun"
+msgstr "运行"
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Sun Latitude"
+msgstr "替换"
+
+#: scene/resources/sky.cpp
+msgid "Sun Longitude"
+msgstr ""
+
+#: scene/resources/sky.cpp
+msgid "Sun Angle Min"
+msgstr ""
+
+#: scene/resources/sky.cpp
+msgid "Sun Angle Max"
+msgstr ""
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Sun Curve"
+msgstr "拆分曲线"
+
+#: scene/resources/sky.cpp
+msgid "Sun Energy"
+msgstr ""
+
+#: scene/resources/sky.cpp
+#, fuzzy
+msgid "Texture Size"
+msgstr "纹理区域"
+
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Content Margin"
+msgstr "设置边距"
+
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Expand Margin"
+msgstr "全部展开"
+
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Modulate"
+msgstr "填充"
+
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Corner Radius"
+msgstr "修改圆环内半径"
+
+#: scene/resources/style_box.cpp
+msgid "Corner Detail"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Shadow Size"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Anti Aliasing"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Anti Aliasing Size"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Grow Begin"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Grow End"
+msgstr ""
+
+#: scene/resources/style_box.cpp
+msgid "Thickness"
+msgstr ""
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Storage"
+msgstr "保存文件："
+
+#: scene/resources/texture.cpp
+msgid "Lossy Quality"
+msgstr ""
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Load Path"
+msgstr "载入预设"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Base Texture"
+msgstr "移除纹理"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Storage Mode"
+msgstr "缩放模式"
+
+#: scene/resources/texture.cpp
+msgid "Repeat"
+msgstr ""
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Base"
+msgstr "基础类型"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Current Frame"
+msgstr "当前场景名称"
+
+#: scene/resources/theme.cpp
+#, fuzzy
+msgid "Default Font"
+msgstr "默认"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Initialized"
+msgstr "初始化"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Input Name"
+msgstr "键位映射"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Uniform Name"
+msgstr "设置 Uniform 名称"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -15148,8 +21610,304 @@ msgid "Invalid source for shader."
 msgstr "着色器的源资源无效。"
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Texture Type"
+msgstr "纹理区域"
+
+#: scene/resources/visual_shader_nodes.cpp
+msgid "Cube Map"
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Color Default"
+msgstr "加载默认"
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid comparison function for that type."
 msgstr "该类型的比较功能无效。"
+
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Fallback Environment"
+msgstr "查看环境"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+msgid "Direct Space State"
+msgstr ""
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Gravity Vector"
+msgstr "默认预览"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Linear Damp"
+msgstr "左线性"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+msgid "Default Angular Damp"
+msgstr ""
+
+#: servers/arvr/arvr_interface.cpp
+msgid "AR"
+msgstr ""
+
+#: servers/audio/audio_stream.cpp
+#, fuzzy
+msgid "Audio Stream"
+msgstr "单选项目"
+
+#: servers/audio/audio_stream.cpp
+#, fuzzy
+msgid "Random Pitch"
+msgstr "随机倾斜："
+
+#: servers/audio/effects/audio_effect_capture.cpp
+#: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
+#: servers/audio/effects/audio_stream_generator.cpp
+msgid "Buffer Length"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "Voice Count"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+#: servers/audio/effects/audio_effect_reverb.cpp
+msgid "Dry"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_reverb.cpp
+msgid "Wet"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Threshold"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_compressor.cpp
+#: servers/audio/effects/audio_effect_filter.cpp
+msgid "Gain"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Attack Us"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_compressor.cpp
+#, fuzzy
+msgid "Release Ms"
+msgstr "发布"
+
+#: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Sidechain"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Tap 1"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Delay Ms"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Level dB"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_delay.cpp
+#: servers/audio/effects/audio_effect_panner.cpp
+#, fuzzy
+msgid "Pan"
+msgstr "平面："
+
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Tap 2"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_delay.cpp
+#: servers/audio/effects/audio_effect_phaser.cpp
+#, fuzzy
+msgid "Feedback"
+msgstr "发送文档反馈"
+
+#: servers/audio/effects/audio_effect_delay.cpp
+#, fuzzy
+msgid "Lowpass"
+msgstr "旁通"
+
+#: servers/audio/effects/audio_effect_distortion.cpp
+msgid "Pre Gain"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_distortion.cpp
+msgid "Keep Hf Hz"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_distortion.cpp
+msgid "Drive"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_distortion.cpp
+#, fuzzy
+msgid "Post Gain"
+msgstr "后置"
+
+#: servers/audio/effects/audio_effect_filter.cpp
+msgid "Cutoff Hz"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_filter.cpp
+#, fuzzy
+msgid "Resonance"
+msgstr "资源"
+
+#: servers/audio/effects/audio_effect_filter.cpp
+#, fuzzy
+msgid "dB"
+msgstr "B"
+
+#: servers/audio/effects/audio_effect_limiter.cpp
+msgid "Ceiling dB"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_limiter.cpp
+msgid "Threshold dB"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_limiter.cpp
+msgid "Soft Clip dB"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_limiter.cpp
+msgid "Soft Clip Ratio"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_phaser.cpp
+msgid "Range Min Hz"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_phaser.cpp
+msgid "Range Max Hz"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_phaser.cpp
+msgid "Rate Hz"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_pitch_shift.cpp
+msgid "Oversampling"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_pitch_shift.cpp
+#: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
+#, fuzzy
+msgid "Fft Size"
+msgstr "大小："
+
+#: servers/audio/effects/audio_effect_reverb.cpp
+msgid "Predelay"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_reverb.cpp
+#, fuzzy
+msgid "Predelay Msec"
+msgstr "播放模式："
+
+#: servers/audio/effects/audio_effect_reverb.cpp
+#, fuzzy
+msgid "Predelay Feedback"
+msgstr "发送文档反馈"
+
+#: servers/audio/effects/audio_effect_reverb.cpp
+msgid "Room Size"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_reverb.cpp
+#, fuzzy
+msgid "Hipass"
+msgstr "旁通"
+
+#: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
+msgid "Tap Back Pos"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_stereo_enhance.cpp
+msgid "Pan Pullout"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_stereo_enhance.cpp
+#, fuzzy
+msgid "Time Pullout Ms"
+msgstr "超时。"
+
+#: servers/audio/effects/audio_effect_stereo_enhance.cpp
+msgid "Surround"
+msgstr ""
+
+#: servers/audio/effects/audio_stream_generator.cpp servers/audio_server.cpp
+#, fuzzy
+msgid "Mix Rate"
+msgstr "Mix 节点"
+
+#: servers/audio_server.cpp
+#, fuzzy
+msgid "Enable Audio Input"
+msgstr "重命名音频总线"
+
+#: servers/audio_server.cpp
+#, fuzzy
+msgid "Output Latency"
+msgstr "输出"
+
+#: servers/audio_server.cpp
+msgid "Channel Disable Threshold dB"
+msgstr ""
+
+#: servers/audio_server.cpp
+#, fuzzy
+msgid "Channel Disable Time"
+msgstr "修改混合时间"
+
+#: servers/audio_server.cpp
+msgid "Video Delay Compensation Ms"
+msgstr ""
+
+#: servers/camera/camera_feed.cpp
+msgid "Feed"
+msgstr ""
+
+#: servers/physics/space_sw.cpp servers/physics_2d/space_2d_sw.cpp
+msgid "Sleep Threshold Linear"
+msgstr ""
+
+#: servers/physics/space_sw.cpp servers/physics_2d/space_2d_sw.cpp
+msgid "Sleep Threshold Angular"
+msgstr ""
+
+#: servers/physics/space_sw.cpp servers/physics_2d/space_2d_sw.cpp
+msgid "Time Before Sleep"
+msgstr ""
+
+#: servers/physics_2d/physics_2d_server_sw.cpp
+msgid "Bp Hash Table Size"
+msgstr ""
+
+#: servers/physics_2d/physics_2d_server_sw.cpp
+msgid "Large Object Surface Threshold In Cells"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Exclude"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Collider Id"
+msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Varying may not be assigned in the '%s' function."
@@ -15178,3 +21936,321 @@ msgstr "对 Uniform 的赋值。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#: servers/visual/visual_server_scene.cpp
+#, fuzzy
+msgid "Spatial Partitioning"
+msgstr "分区中..."
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "VRAM Compression"
+msgstr "表达式"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Import BPTC"
+msgstr "导入"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Import S3TC"
+msgstr "导入"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Import ETC"
+msgstr "导入"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Import ETC2"
+msgstr "导入"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Import PVRTC"
+msgstr "导入主题"
+
+#: servers/visual_server.cpp
+msgid "Lossless Compression"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Force PNG"
+msgstr "强制推送"
+
+#: servers/visual_server.cpp
+msgid "WebP Compression Level"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Time Rollover Secs"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Cubemap Size"
+msgstr "修改摄像机尺寸"
+
+#: servers/visual_server.cpp
+msgid "Quadrant 0 Subdiv"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Quadrant 1 Subdiv"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Quadrant 2 Subdiv"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Quadrant 3 Subdiv"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Shadows"
+msgstr "着色器"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Filter Mode"
+msgstr "筛选节点"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Texture Array Reflections"
+msgstr "居中显示所选项"
+
+#: servers/visual_server.cpp
+msgid "High Quality GGX"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Irradiance Max Size"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Shading"
+msgstr "填充"
+
+#: servers/visual_server.cpp
+msgid "Force Vertex Shading"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Force Lambert Over Burley"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Force Blinn Over GGX"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Mesh Storage"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Split Stream"
+msgstr "拆分曲线"
+
+#: servers/visual_server.cpp
+msgid "Use Physical Light Attenuation"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Depth Prepass"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Disable For Vendors"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Anisotropic Filter Level"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Use Nearest Mipmap Filter"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Skinning"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Software Skinning Fallback"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Force Software Skinning"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Use Software Skinning"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Ninepatch Mode"
+msgstr "插值模式"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Opengl"
+msgstr "打开"
+
+#: servers/visual_server.cpp
+msgid "Batching Send Null"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Batching Stream"
+msgstr "批量重命名"
+
+#: servers/visual_server.cpp
+msgid "Legacy Orphan Buffers"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Legacy Stream"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Batching"
+msgstr "搜索中..."
+
+#: servers/visual_server.cpp
+msgid "Use Batching"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Use Batching In Editor"
+msgstr "正在更新编辑器"
+
+#: servers/visual_server.cpp
+msgid "Single Rect Fallback"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Max Join Item Commands"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Colored Vertex Format Threshold"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Scissor Area Threshold"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Max Join Items"
+msgstr "管理项目..."
+
+#: servers/visual_server.cpp
+msgid "Batch Buffer Size"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Item Reordering Lookahead"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Flash Batching"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Diagnose Frame"
+msgstr "粘贴帧"
+
+#: servers/visual_server.cpp
+msgid "GLES2"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Compatibility"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Disable Half Float"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Precision"
+msgstr "表达式"
+
+#: servers/visual_server.cpp
+msgid "UV Contract"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "UV Contract Amount"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Use Simple PVS"
+msgstr "使用缩放吸附"
+
+#: servers/visual_server.cpp
+msgid "PVS Logging"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Use Signals"
+msgstr "信号"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Remove Danglers"
+msgstr "移除图块"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Flip Imported Portals"
+msgstr "翻转入口"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Occlusion Culling"
+msgstr "显示遮挡剔除"
+
+#: servers/visual_server.cpp
+msgid "Max Active Spheres"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Max Active Polygons"
+msgstr "移动多边形"
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Shader Compilation Mode"
+msgstr "插值模式"
+
+#: servers/visual_server.cpp
+msgid "Max Simultaneous Compiles"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Log Active Async Compiles Count"
+msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Shader Cache Size Mb"
+msgstr "修改摄像机尺寸"
