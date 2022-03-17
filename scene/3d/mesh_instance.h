@@ -96,6 +96,7 @@ protected:
 
 private:
 	// merging
+	bool _merge_meshes(Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility);
 	bool _is_mergeable_with(const MeshInstance &p_other) const;
 	void _merge_into_mesh_data(const MeshInstance &p_mi, const Transform &p_dest_tr_inv, int p_surface_id, PoolVector<Vector3> &r_verts, PoolVector<Vector3> &r_norms, PoolVector<real_t> &r_tangents, PoolVector<Color> &r_colors, PoolVector<Vector2> &r_uvs, PoolVector<Vector2> &r_uv2s, PoolVector<int> &r_inds);
 	bool _ensure_indices_valid(PoolVector<int> &r_indices, const PoolVector<Vector3> &p_verts) const;
@@ -146,7 +147,7 @@ public:
 
 	// merging
 	bool is_mergeable_with(Node *p_other) const;
-	bool merge_meshes(Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility);
+	bool merge_meshes(Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility);
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
