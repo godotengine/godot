@@ -2400,10 +2400,10 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	else
 		GetLocalTime(&systemtime);
 
-	//Get DST information from Windows.
+	//Get DST information from Windows, but only if p_utc is false.
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
-	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
+	if (p_utc == false && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		daylight = true;
 	}
 
