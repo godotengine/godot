@@ -712,35 +712,25 @@ void Control::_notification(int p_notification) {
 			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
-			Node *parent = this; //meh
+			CanvasItem *node = this;
 			Control *parent_control = nullptr;
-			bool subwindow = false;
 
-			while (parent) {
-				parent = parent->get_parent();
-
+			while (!node->is_set_as_top_level()) {
+				CanvasItem *parent = Object::cast_to<CanvasItem>(node->get_parent());
 				if (!parent) {
 					break;
 				}
 
-				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
-				if (ci && ci->is_set_as_top_level()) {
-					subwindow = true;
-					break;
-				}
-
 				parent_control = Object::cast_to<Control>(parent);
-
 				if (parent_control) {
 					break;
-				} else if (ci) {
-				} else {
-					break;
 				}
+
+				node = parent;
 			}
 
-			if (parent_control && !subwindow) {
-				//do nothing, has a parent control and not top_level
+			if (parent_control) {
+				// Do nothing, has a parent control.
 				if (data.theme.is_null() && parent_control->data.theme_owner) {
 					data.theme_owner = parent_control->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
