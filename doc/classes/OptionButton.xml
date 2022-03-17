@@ -80,6 +80,13 @@
 				Returns the text of the item at index [code]idx[/code].
 			</description>
 		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the tooltip of the item at index [code]idx[/code].
+			</description>
+		</method>
 		<method name="get_popup" qualifiers="const">
 			<return type="PopupMenu" />
 			<description>
@@ -159,6 +166,14 @@
 			<argument index="1" name="text" type="String" />
 			<description>
 				Sets the text of the item at index [code]idx[/code].
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="tooltip" type="String" />
+			<description>
+				Sets the tooltip of the item at index [code]idx[/code].
 			</description>
 		</method>
 	</methods>
