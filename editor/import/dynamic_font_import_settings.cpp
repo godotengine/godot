@@ -1393,6 +1393,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_child(root_vb);
 
 	main_pages = memnew(TabContainer);
+	main_pages->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	main_pages->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_pages->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	root_vb->add_child(main_pages);
