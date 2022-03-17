@@ -60,6 +60,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	uses_point_size = false;
 	uses_alpha = false;
+	uses_alpha_clip = false;
 	uses_blend_alpha = false;
 	uses_depth_pre_pass = false;
 	uses_discard = false;
@@ -109,6 +110,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
+	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
 
 	// actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
@@ -293,7 +295,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
 						blend_state = blend_state_blend;
-						if (depth_draw == DEPTH_DRAW_OPAQUE) {
+						if (depth_draw == DEPTH_DRAW_OPAQUE && !uses_alpha_clip) {
 							depth_stencil.enable_depth_write = false; //alpha does not draw depth
 						}
 					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || k == SHADER_VERSION_SHADOW_PASS_DP) {
