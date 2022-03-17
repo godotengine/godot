@@ -146,15 +146,15 @@ TEST_CASE("[Color] Conversion methods") {
 
 TEST_CASE("[Color] Named colors") {
 	CHECK_MESSAGE(
-			Color::named("red").is_equal_approx(Color(1, 0, 0)),
+			Color::named("red").is_equal_approx(Color::hex(0xFF0000FF)),
 			"The named color \"red\" should match the expected value.");
 
 	// Named colors have their names automatically normalized.
 	CHECK_MESSAGE(
-			Color::named("white_smoke").is_equal_approx(Color(0.96, 0.96, 0.96)),
+			Color::named("white_smoke").is_equal_approx(Color::hex(0xF5F5F5FF)),
 			"The named color \"white_smoke\" should match the expected value.");
 	CHECK_MESSAGE(
-			Color::named("Slate Blue").is_equal_approx(Color(0.42, 0.35, 0.80)),
+			Color::named("Slate Blue").is_equal_approx(Color::hex(0x6A5ACDFF)),
 			"The named color \"Slate Blue\" should match the expected value.");
 
 	ERR_PRINT_OFF;
