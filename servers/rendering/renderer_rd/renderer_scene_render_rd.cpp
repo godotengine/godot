@@ -385,7 +385,7 @@ void RendererSceneRenderRD::environment_set_volumetric_fog_filter_active(bool p_
 	volumetric_fog_filter_active = p_enable;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) {
+void RendererSceneRenderRD::environment_set_sdfgi_ray_count(int p_ray_count) {
 	gi.sdfgi_ray_count = p_ray_count;
 }
 
