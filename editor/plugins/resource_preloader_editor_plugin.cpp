@@ -39,15 +39,11 @@ void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void ResourcePreloaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		load->set_icon(get_icon("Folder", "EditorIcons"));
-	}
-
-	if (p_what == NOTIFICATION_READY) {
-		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			load->set_icon(get_icon("Folder", "EditorIcons"));
+		} break;
 	}
 }
 

@@ -425,9 +425,12 @@ void EditorProfiler::_clear_pressed() {
 }
 
 void EditorProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		activate->set_icon(get_icon("Play", "EditorIcons"));
-		clear_button->set_icon(get_icon("Clear", "EditorIcons"));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			activate->set_icon(get_icon("Play", "EditorIcons"));
+			clear_button->set_icon(get_icon("Clear", "EditorIcons"));
+		} break;
 	}
 }
 
