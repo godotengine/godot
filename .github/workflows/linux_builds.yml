@@ -36,9 +36,7 @@ jobs:
             tests: true
             sconsflags: float=64 use_asan=yes use_ubsan=yes
             proj-test: true
-            # Can be turned off for PRs that intentionally break compat with godot-cpp,
-            # until both the upstream PR and the matching godot-cpp changes are merged.
-            godot-cpp-test: false
+            godot-cpp-test: true
             bin: "./bin/godot.linuxbsd.double.tools.64.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
