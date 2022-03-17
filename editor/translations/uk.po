@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-16 16:36+0000\n"
+"PO-Revision-Date: 2022-03-10 22:02+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -31,9 +31,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1498,9 +1498,8 @@ msgid "Create a new Bus Layout."
 msgstr "Створення нового компонування шини."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Відкрити компонування аудіо шини"
+msgstr "Компонування звукової шини"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -5738,7 +5737,7 @@ msgstr "Запікати карти освітлення"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "LightMap Bake"
-msgstr ""
+msgstr "Приготування карти освітлення"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8229,13 +8228,14 @@ msgstr "Кінематичний перегляд"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "(Не у GLES2)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Debug draw modes are only available when using the GLES3 renderer, not GLES2."
-msgstr "Є недоступним, якщо використовується обробник GLES2."
+msgstr ""
+"Режим діагностики малювання є доступними, лише якщо використовується "
+"обробник GLES3, а не GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -9131,9 +9131,8 @@ msgid "Select Another Theme Resource:"
 msgstr "Виберіть ресурс іншої теми:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme Resource"
-msgstr "Перейменувати ресурс"
+msgstr "Ресурс теми"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
@@ -9189,14 +9188,12 @@ msgid "Add Item Type"
 msgstr "Додати тип запису"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Variation Base Type"
-msgstr "Встановити тип змінної"
+msgstr "Встановити базовий тип змінної"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Base Type"
-msgstr "Змінити базовий тип"
+msgstr "Встановити базовий тип"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -9216,19 +9213,20 @@ msgid "Override all default type items."
 msgstr "Перевизначити усі записи стандартних типів."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "Змінити базовий тип"
+msgstr "Базовий тип"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
-msgstr ""
+msgstr "Виберіть базовий тип змінної зі списку доступних типів."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"Тип, який пов'язано із вбудованим класом, не може бути позначено як варіацію "
+"іншого типу."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -12689,9 +12687,8 @@ msgid "Stack Frames"
 msgstr "Стосувати кадри"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Filter stack variables"
-msgstr "Фільтрувати плитки"
+msgstr "Фільтрувати змінні стека"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -14019,6 +14016,11 @@ msgid ""
 "Note that the singleton was also renamed from \"GodotPayments\" to "
 "\"GodotGooglePlayBilling\"."
 msgstr ""
+"До параметра проєкту «android/modules» включено некоректний модуль "
+"«GodotPaymentV3» (змінено у Godot 3.2.2).\n"
+"Замініть його на вбудований додаток «GodotGooglePlayBilling».\n"
+"Зауважте, що синглтон було також перейменовано з «GodotPayments» на "
+"«GodotGooglePlayBilling»."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

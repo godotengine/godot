@@ -89,13 +89,14 @@
 # Adi-df <adidf-web@laposte.net>, 2022.
 # MinusKube <minuskube@gmail.com>, 2022.
 # Alexandre <alexandre.blanquero00@gmail.com>, 2022.
+# Erwan Loisant <erwan@loisant.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-04 08:19+0000\n"
-"Last-Translator: Alexandre <alexandre.blanquero00@gmail.com>\n"
+"PO-Revision-Date: 2022-03-13 22:12+0000\n"
+"Last-Translator: Erwan Loisant <erwan@loisant.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -103,7 +104,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1573,9 +1574,8 @@ msgid "Create a new Bus Layout."
 msgstr "Créer une nouvel agencement de tranport."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Ouvrir une disposition de bus audio"
+msgstr "Configuration du bus audio"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -5842,7 +5842,7 @@ msgstr "Précalculer les lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "LightMap Bake"
-msgstr ""
+msgstr "LightMap Bake"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8349,7 +8349,7 @@ msgstr "Aperçu cinématographique"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "(Pas dans GLES2)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy

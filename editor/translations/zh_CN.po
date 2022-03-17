@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-03-08 15:20+0000\n"
+"PO-Revision-Date: 2022-03-10 22:01+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1539,9 +1539,8 @@ msgid "Create a new Bus Layout."
 msgstr "创建新的总线布局。"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "打开音频总线布局"
+msgstr "音频总线布局"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -5645,7 +5644,7 @@ msgstr "烘焙光照贴图"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "LightMap Bake"
-msgstr ""
+msgstr "LightMap 烘焙"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8105,13 +8104,12 @@ msgstr "效果预览"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "（GLES2 不可用）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Debug draw modes are only available when using the GLES3 renderer, not GLES2."
-msgstr "使用 GLES2 渲染器时不可用。"
+msgstr "调试绘制模式仅在使用 GLES3 渲染器时可用，GLES2 不可用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -8998,9 +8996,8 @@ msgid "Select Another Theme Resource:"
 msgstr "选择其他主题资源："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme Resource"
-msgstr "重命名资源"
+msgstr "主题资源"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
@@ -9054,14 +9051,12 @@ msgid "Add Item Type"
 msgstr "添加项目类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Variation Base Type"
-msgstr "设置变量类型"
+msgstr "设置变种基础类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Base Type"
-msgstr "修改基础类型"
+msgstr "设置基础类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -9080,19 +9075,18 @@ msgid "Override all default type items."
 msgstr "覆盖所有默认类型项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "修改基础类型"
+msgstr "基础类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
-msgstr ""
+msgstr "从可用类型列表中选择该变种的基础类型。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
-msgstr ""
+msgstr "与内置类关联的类型无法被标记为另一个类型的变种。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -12449,9 +12443,8 @@ msgid "Stack Frames"
 msgstr "栈帧"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Filter stack variables"
-msgstr "筛选图块"
+msgstr "筛选栈变量"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -13746,6 +13739,10 @@ msgid ""
 "Note that the singleton was also renamed from \"GodotPayments\" to "
 "\"GodotGooglePlayBilling\"."
 msgstr ""
+"项目设置“android/modules”中包含无效的“GodotPaymentV3”模块（Godot 3.2.2 "
+"的修改）。\n"
+"请将其替换为第一方的“GodotGooglePlayBilling”插件。\n"
+"注意，单例“GodotPayments”也重命名为了“GodotGooglePlayBilling”。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

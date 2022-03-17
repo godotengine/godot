@@ -61,12 +61,13 @@
 # zeyad majed <zmajd62@gmail.com>, 2022.
 # Whales State <whalesstate@gmail.com>, 2022.
 # Mr.k <mineshtine28546271@gmail.com>, 2022.
+# ywmaa <ywmaa.personal@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-28 15:48+0000\n"
+"PO-Revision-Date: 2022-03-17 13:58+0000\n"
 "Last-Translator: Mr.k <mineshtine28546271@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -76,7 +77,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -103,7 +104,7 @@ msgstr "لا يمكن استخدام self لأن النموذج فارغ (لم �
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "معاملات غير صالحة للمشغل %s, %s و %s."
+msgstr "معامل غير صالحة للمشغل ٪s و٪s و٪s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -302,7 +303,7 @@ msgstr "مقاطع الرسوم المتحركة:"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Change Track Path"
-msgstr "تغيير مسار الطريق"
+msgstr "تغيير مسار الطريق/المقطع"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -317,9 +318,8 @@ msgid "Interpolation Mode"
 msgstr "وضعية الأستيفاء"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "وضع التفاف الحلقة (نهاية العشوائية مع بداية الحلقة)"
+msgstr "وضع التفاف الحلقة (استكمال النهاية مع البداية في الحلقة)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -585,7 +585,6 @@ msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "اختر مشغل الرسم المتحرك من شجرة المشهد لكي تنشئ أو تعدل الحركة."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Only show tracks from nodes selected in tree."
 msgstr "فقط قم بتبين المقاطع من العقد (Nodes) المحددة في الشجرة."
 
@@ -900,7 +899,7 @@ msgstr "وسائط إستدعاء إضافية :"
 
 #: editor/connections_dialog.cpp
 msgid "Receiver Method:"
-msgstr "الدالة المُتلقنة:"
+msgstr "الدالة المُتلقية:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -1339,7 +1338,7 @@ msgstr "فشل استخراج الملفات التالية من الحزمة \"
 
 #: editor/editor_asset_installer.cpp
 msgid "(and %s more files)"
-msgstr "(و فَشَلَ %s من الملفات)"
+msgstr "(و %s ملفات اكثر)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Asset \"%s\" installed successfully!"
@@ -1530,7 +1529,6 @@ msgid "Create a new Bus Layout."
 msgstr "أنشئ نسق مسار جديد."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
 msgstr "إفتح نسق مسار الصوت"
 
@@ -2192,13 +2190,12 @@ msgid "Icons"
 msgstr "الأيقونات"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "الأنماط"
+msgstr "مظاهر"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "التعدادات"
+msgstr "تعداد"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -2213,8 +2210,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"لا يوجد حاليا وصف لهذه الخاصية. الرجاء المساعدة من خلال [color=$color]"
-"[url=$url]المساهمة واحد [/url][/color]!"
+"لا يوجد حاليا وصف لهذه الخاصية. الرجاء مساعدتنا عن طريق "
+"[color=$color][url=$url]المساهمة فيها [/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -2499,7 +2496,7 @@ msgstr "ينشئ الصورة المصغرة"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
-msgstr "هذه العميلة لا يمكن إجرائها من غير جذر رئيسي."
+msgstr "هذه العميلة لا يمكن إجرائها من غير جذر/اساس رئيسي للشجرة."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3152,7 +3149,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Force Shader Fallbacks"
-msgstr ""
+msgstr "اجبار ارتداد(احتياط) التظليل"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3163,6 +3160,11 @@ msgid ""
 "Asynchronous shader compilation must be enabled in the project settings for "
 "this option to make a difference."
 msgstr ""
+"عندما يتم تفعيل هذا الخيار ، سيتم استخدام التظليل في وضعه الارتدادي (اما "
+"ظاهر عن طريق تظليل اوبر او مخفي ) اثناء كل وقت التشغيل.\n"
+"هذا مفيد للتأكد من المظهر و الاداء الخاص بالارتدادات، و يتم عرضهم سريعا.\n"
+"التظليل الغير متزامن يجب تفعيله في اعدادات المشروع حتى يتم ملاحظة فرق في هذا "
+"الخيار."
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -3326,14 +3328,12 @@ msgid "Update Continuously"
 msgstr "تحديث متواصل"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "تحديث عند التغيير"
+msgstr "تحديث كل التغيرات"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Vital Changes"
-msgstr "تغيرات المادة"
+msgstr "تحديث التغيرات المهمة"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3421,9 +3421,8 @@ msgid "Merge With Existing"
 msgstr "دمج مع الموجود"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "تطبيق التحويلات ل MeshInstance"
+msgstr "تطبيق الهيئة ل MeshInstance"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3714,14 +3713,14 @@ msgid "Extend Script"
 msgstr "فتح الكود البرمجي"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
 "as runnable."
 msgstr ""
-"لا يوجد إعداد تصدير مسبق عامل لهذه المنصة.\n"
-"من فضلك أضفْ إعداد تصدير عامل في قائمة التصدير أو عرف إعداد تصدير موجود كعامل."
+"لا يوجد إعداد تصدير مسبق لهذه المنصة.\n"
+"من فضلك أضفْ إعداد تصدير في قائمة التصدير أو عرف إعداد تصدير موجود كقابل "
+"للتشغيل(عامل)."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -3848,11 +3847,10 @@ msgid "Error getting the list of mirrors."
 msgstr "هناك خطأ في جلب قائمة المرايا mirrors."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr ""
-"حدث خطأ في تفسير/تحليل (parsing) ملف JSON الخاص بقائمة المرايا. من فضلك بلّغ "
-"عن هذه المشكلة!"
+"حدث خطأ في تفسير/تحليل ملف JSON الخاص بقائمة المرايا. من فضلك بلّغ عن هذه "
+"المشكلة!"
 
 #: editor/export_template_manager.cpp
 msgid "Best available mirror"
@@ -3909,7 +3907,6 @@ msgid "SSL Handshake Error"
 msgstr "خطأ مطابقة ssl"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't open the export templates file."
 msgstr "لا نستطيع فتح ملف القوالب."
 
@@ -3918,12 +3915,10 @@ msgid "Invalid version.txt format inside the export templates file: %s."
 msgstr "صيغة غير صالحة ل version.txt داخل ملف القالب: %s."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No version.txt found inside the export templates file."
 msgstr "لم يتم إيجاد ملف version.txt في داخل ملف القالب."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for extracting templates:"
 msgstr "خطأ في إنشاء المسار لاستخراج القوالب:"
 
@@ -3980,9 +3975,8 @@ msgid "Download from:"
 msgstr "التحميل من:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open in Web Browser"
-msgstr "أفتحهُ في المتصفح"
+msgstr "إفتحهُ في المتصفح"
 
 #: editor/export_template_manager.cpp
 msgid "Copy Mirror URL"
@@ -4003,7 +3997,6 @@ msgid "Official export templates aren't available for development builds."
 msgstr "قوالب التصدير الرسمية غير مدعومة لأجل البناء الخاص بالتطوير."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install from File"
 msgstr "تثبيت من ملف"
 
@@ -4303,9 +4296,8 @@ msgid "Folder:"
 msgstr "مجلد:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Filters:"
-msgstr "تنقيات:"
+msgstr "مرشحات:"
 
 #: editor/find_in_files.cpp
 msgid ""
@@ -4600,7 +4592,6 @@ msgid "Extra resource options."
 msgstr "أختيارات اضافية للمورد."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource from Clipboard"
 msgstr "تحرير المورد من الحافظة (Clipboard)"
 
@@ -4855,10 +4846,9 @@ msgid "Remove BlendSpace2D Triangle"
 msgstr "إزالة مثلث الدمج الفضائي ثنائي البُعد BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr ""
-"إن BlendSpace2D لا ينتمي إلى عُقدة شجرة الرسومات المتحركة AnimationTree."
+"إن BlendSpace2D لا ينتمي إلى شبكة/node شجرة الرسومات المتحركة AnimationTree."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
@@ -5676,13 +5666,12 @@ msgstr ""
 "احفظ مشهدك ثم حاول مجدداً."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
-"لا يوجد ميش ليتم تجهيزهُ. تأكد أنهُ يحتوي على منفذ UV2 و أن علامتا 'الأستخدام "
-"في الضوء المخبوز ' و 'أنتج خريطة ضوئية' مفعلتان."
+"لا يوجد mesh ليتم تجهيزهُ. تأكد أنهُ يحتوي على منفذ UV2 و أن علامتا "
+"'الاستخدام في الضوء المخبوز ' و 'أنتج خريطة ضوئية' مفعلتان."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -5708,11 +5697,11 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "إعداد خرائط الضوء"
+msgstr "طبخ (إعداد) خرائط الضوء"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "LightMap Bake"
-msgstr ""
+msgstr "طبخ/تجهيز-خريطة-الاضاءة"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -5825,13 +5814,11 @@ msgstr "تحريك عنصر-اللوحة \"%s\" الى (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "حُدد القفل"
+msgstr "مُقفل"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
 msgstr "مُجَمعَ"
 
@@ -6159,7 +6146,6 @@ msgstr "قفل العنصر المحدد في هذا المكان (لا يمكن
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected Node(s)"
 msgstr "إقفال الوحدة(الوحدات) المحددة"
 
@@ -6170,7 +6156,6 @@ msgstr "إلغاء القفل عن هذا العنصر (يمكن تحريكه ا
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected Node(s)"
 msgstr "إلغاء فقل الوحدة(الوحدات) المحددة"
 
@@ -6181,7 +6166,6 @@ msgstr "تأكد من أن الطفل للعنصر غير قابل للتحدي�
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected Node(s)"
 msgstr "إجمعْ الوحدة(الوحدات) المحددة"
 
@@ -6192,7 +6176,6 @@ msgstr "إرجاع مقدرة تحديد الطفل للعنصر."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected Node(s)"
 msgstr "إلغاء جمعْ الوحدة(الوحدات) المحددة"
 
@@ -6310,9 +6293,8 @@ msgid "Add Node Here"
 msgstr "أضفْ وحدة هنا"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Instance Scene Here"
-msgstr "نمذجة المشهد(المشاهد)"
+msgstr "نسخ المشهد هنا"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -6452,7 +6434,6 @@ msgstr "قناع الانبعاث"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
 msgstr "البكسيلات الأساسية (Solid Pixels)"
 
@@ -6925,6 +6906,7 @@ msgid "Generate Visibility Rect"
 msgstr "توليد Rect الرؤية"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "لا يمكن إنشاء سوى نقطة وحيدة داخل معالج المواد لـ ParticlesMaterial"
 
@@ -7540,12 +7522,10 @@ msgid "Move Down"
 msgstr "تحريك لأسفل"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "النص البرمجي التالي"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "النص البرمجي السابق"
 
@@ -7938,7 +7918,7 @@ msgstr "تشغيل IK"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr "متعامد"
+msgstr "متعامد Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
@@ -7950,59 +7930,48 @@ msgid "Top Orthogonal"
 msgstr "متعامد"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "منظوري"
+msgstr "نظر من فوق"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "متعامد"
+msgstr "نظر من الاسفل (متعامد)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "منظوري"
+msgstr "نظر من الاسفل"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "متعامد"
+msgstr "نظر من الشمال (متعامد/ليس له بعد ثالث)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "منظوري"
+msgstr "نظر من الشمال"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "متعامد"
+msgstr "نظر من اليمين (متعامد/ليس له بعد ثالث)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Perspective"
-msgstr "منظوري"
+msgstr "نظر من اليمين"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Orthogonal"
-msgstr "متعامد"
+msgstr "نظر من الامام (متعامد/ليس له بعد ثالث)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "منظوري"
+msgstr "نظر من الامام"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "متعامد"
+msgstr "نظر من الخلف (متعامد/ليس له بعد ثالث)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "منظوري"
+msgstr "نظر من الخلف"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8011,7 +7980,6 @@ msgstr " [auto]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid " [portals active]"
 msgstr " [البوابات مفعلة]"
 
@@ -8042,15 +8010,13 @@ msgid "None"
 msgstr "لا شيء"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate"
-msgstr "وضع التدوير"
+msgstr "تدوير"
 
 #. TRANSLATORS: This refers to the movement that changes the position of an object.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translate"
-msgstr "الترجمة"
+msgstr "ترجم"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale"
@@ -8097,7 +8063,6 @@ msgid "Material Changes:"
 msgstr "تغيرات المادة:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
 msgstr "تغيرات المُظلل:"
 
@@ -8215,13 +8180,12 @@ msgstr "معاينة سينمائية"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "(Not in GLES2)"
-msgstr ""
+msgstr "غير متاح في ريندر GLES2"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Debug draw modes are only available when using the GLES3 renderer, not GLES2."
-msgstr "غير متوافر عند استخدام الخرج البصري GLES2 ."
+msgstr "وضع رسومات الاختبار متاح في ريندر GLES3 فقط و ليس ريندر GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -8279,9 +8243,8 @@ msgstr ""
 "لا يمكن الاعتماد على تلك القيمة كمؤشر لأداء اللعبة."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Convert Rooms"
-msgstr "تحويل إلي %s"
+msgstr "تحويل الغرف"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8359,9 +8322,8 @@ msgid "Orbit View Right"
 msgstr "تحريك المسار لليمين"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "الواجهة View الأمامية"
+msgstr "المنظر View الأمامي"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
@@ -8449,14 +8411,14 @@ msgid "View Grid"
 msgstr "إظهار الشبكة"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Portal Culling"
-msgstr "إعدادات إطار العرض"
+msgstr "إعدادات بوابات الاخفاء (الاشياء الغير ظاهرة للكاميرا)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Occlusion Culling"
-msgstr "إعدادات إطار العرض"
+msgstr ""
+"إعدادات الاخفاء بتقنية الاصطدام (طريقة برمجية لاخفاء الاشياء التي لا تراها "
+"الكاميرا)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8524,9 +8486,8 @@ msgid "Post"
 msgstr "لاحق"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unnamed Gizmo"
-msgstr "مشروع غير مسمى"
+msgstr "اداة غير مسمى"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8779,37 +8740,32 @@ msgid "TextureRegion"
 msgstr "منطقة النقش TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
-msgstr "الأسلوب"
+msgstr "مربعات الشكل"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} color(s)"
 msgstr "{num} لون (ألوان)"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No colors found."
-msgstr "لا مصدر للسطح تم تحديده."
+msgstr "لم يتم العثور على الوان."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "{num} constant(s)"
-msgstr "الثوابت"
+msgstr "‘الثابت(الثوابت)"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No constants found."
-msgstr "ثابت اللون."
+msgstr "لم يتم العثور على الثوابت."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} font(s)"
 msgstr "{num} خط (خطوط)"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No fonts found."
-msgstr "لم يوجد."
+msgstr "لم يتم العثور على الخطوط."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} icon(s)"
@@ -8824,9 +8780,8 @@ msgid "{num} stylebox(es)"
 msgstr "{num} ستايلبوكس"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No styleboxes found."
-msgstr "لا مصدر للسطح تم تحديده."
+msgstr "لم يتم العثور على مربعات الشكل."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} currently selected"
@@ -8837,9 +8792,8 @@ msgid "Nothing was selected for the import."
 msgstr "لم يتم اختيار شيء لأجل عملية الاستيراد."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Importing Theme Items"
-msgstr "استيراد الموضوع Theme"
+msgstr "استيراد مجموعة التنسيق"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing items {n}/{n}"
@@ -8850,9 +8804,8 @@ msgid "Updating the editor"
 msgstr "تحديث المحرر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Finalizing"
-msgstr "جاري إنهاء الاستيراد"
+msgstr "في المراحل النهائية"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Filter:"
@@ -8943,7 +8896,6 @@ msgid "Expand types."
 msgstr "توسيع كل الأنواع."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all Theme items."
 msgstr "حدد ملف القالب."
 
@@ -8990,29 +8942,24 @@ msgid "Remove All Color Items"
 msgstr "إزالة جميع عناصر الالوان"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Item"
-msgstr "إزالة عنصر"
+msgstr "اعادة تسمية العنصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Constant Items"
-msgstr "إزالة جميع العناصر"
+msgstr "إزالة جميع العناصر الثابتة"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Font Items"
-msgstr "إزالة جميع العناصر"
+msgstr "إزالة جميع عناصر الخط"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Icon Items"
-msgstr "إزالة جميع العناصر"
+msgstr "إزالة جميع عناصر العلامة/الايقونة"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All StyleBox Items"
-msgstr "إزالة جميع العناصر"
+msgstr "إزالة جميع عناصر مربعات الشكل"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -9027,61 +8974,52 @@ msgid "Add Color Item"
 msgstr "إضافة عنصر اللون"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Constant Item"
-msgstr "إضافة بنود للصنف"
+msgstr "إضافة عنصر ثابت"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Font Item"
-msgstr "إضافة عنصر"
+msgstr "إضافة عنصر الخط"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Icon Item"
-msgstr "إضافة عنصر"
+msgstr "إضافة عنصر العلامة/الايقونة"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Stylebox Item"
-msgstr "إضافة جميع العناصر"
+msgstr "إضافة عنصر مربع المظهر"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Rename Color Item"
 msgstr "إعادة تسمية عنصر اللون"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Constant Item"
-msgstr "حذف بنود من الصنف"
+msgstr "اعادة تسمية عنصر ثابت"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Font Item"
-msgstr "إعادة تسمية العُقدة"
+msgstr "إعادة تسمية عنصر الخط"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Rename Icon Item"
 msgstr "إعادة تسمية عنصر الأيقونة"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Stylebox Item"
-msgstr "مسح العنصر المحدد"
+msgstr "اعادة تسمية عنصر مربع المظهر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid file, not a Theme resource."
-msgstr "ملف خطأ، ليس ملف نسق مسار الصوت."
+msgstr "الملف خطأ، ليس ملف مورد المظهر الكلي."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Invalid file, same as the edited Theme resource."
 msgstr "ملف غير صالح، مماثل لمصدر الثيم المحرر."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Manage Theme Items"
-msgstr "إدارة القوالب"
+msgstr "إدارة عناصر المظاهر الكلية"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit Items"
@@ -9100,9 +9038,8 @@ msgid "Add Item:"
 msgstr "إضافة عنصر:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add StyleBox Item"
-msgstr "إضافة جميع العناصر"
+msgstr "إضافة عنصر مربع المظهر"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Items:"
@@ -9113,18 +9050,16 @@ msgid "Remove Class Items"
 msgstr "حذف بنود من الصنف"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Items"
-msgstr "حذف بنود من الصنف"
+msgstr "حذف عناصر مخصصة"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
 msgstr "إزالة جميع العناصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Theme Item"
-msgstr "عناصر ثيم واجهة المستخدم"
+msgstr "إضافة عنصر مظهر واجهة المستخدم"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Old Name:"
@@ -9135,29 +9070,24 @@ msgid "Import Items"
 msgstr "إستَردْ العناصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Theme"
-msgstr "الإفتراضي"
+msgstr "المظهر الكلي الاساسي"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editor Theme"
-msgstr "تحرير الموضوع"
+msgstr "مظهر المحرر/برنامج-جودوه"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select Another Theme Resource:"
-msgstr "حذف المورد:"
+msgstr "إختر مورد مظهر كلي أخر:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme Resource"
-msgstr "إعادة تسمية المورد"
+msgstr "مورد المظهر الكلي"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Another Theme"
-msgstr "استيراد الموضوع Theme"
+msgstr "مظهر كلي أخر"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Type"
@@ -9208,14 +9138,12 @@ msgid "Add Item Type"
 msgstr "إضافة نوع للعنصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Variation Base Type"
-msgstr "تحيد نوع المتغير"
+msgstr "حدد نوع المتغير"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Set Base Type"
-msgstr "تعديل النوع الأساس"
+msgstr "تعديل النوع الأساسي"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -9234,9 +9162,8 @@ msgid "Override all default type items."
 msgstr "تجاوز جميع أنواع العناصر الافتراضية."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "تعديل النوع الأساس"
+msgstr "النوع الأساسي"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
@@ -9249,9 +9176,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme:"
-msgstr "الموضوع:"
+msgstr "المظهر الكلي:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Manage Items..."
@@ -9861,18 +9787,16 @@ msgid "Unstaged Changes"
 msgstr "تغيرات المُظلل"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "ارتكاب:"
+msgstr "تسجيل/تجهيز:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
 msgstr "تاريخ:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Subtitle:"
-msgstr "العنوان:"
+msgstr "عنوان جانبي:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Do you want to remove the %s branch?"
@@ -9935,12 +9859,10 @@ msgid "Detect new changes"
 msgstr "الكشف عن التغيرات الجديدة"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Discard all changes"
 msgstr "إلغاء جميع التعديلات"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage all changes"
 msgstr "تحضير جميع التغيرات"
 
@@ -10003,9 +9925,8 @@ msgid "Remote Name"
 msgstr "من بُعد"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote URL"
-msgstr "من بعد"
+msgstr "لينك/مسار اونلاين عن بعد"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Fetch"
@@ -10020,7 +9941,6 @@ msgid "Push"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Force Push"
 msgstr "أنشر بإجبار"
 
@@ -10045,7 +9965,6 @@ msgid "Unmerged"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "View:"
 msgstr "أظهر:"
 
@@ -10945,7 +10864,6 @@ msgid "VisualShader"
 msgstr "المُظلل البصري"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property:"
 msgstr "تحرير الخاصية البصرية:"
 
@@ -11995,7 +11913,7 @@ msgstr "مقدار الزيادة للعداد لكل عُقدة"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "الحدود المُبطنة Padding"
+msgstr "الحواف Padding"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -13699,9 +13617,8 @@ msgid "'input' is:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Type Cast"
-msgstr "نوع"
+msgstr "تحويل النوع"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
@@ -13920,7 +13837,7 @@ msgstr "بحث VisualScript"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "انتظر حتى"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
@@ -14175,9 +14092,8 @@ msgid "Signing release %s..."
 msgstr "التوقيع-الرقمي للاصدار %s..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find keystore, unable to export."
-msgstr "لا يمكن فتح القالب, من أجل التصدير."
+msgstr "لا يمكن العثور على مفتاح المتجر، لا يمكن التصدير."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -14244,9 +14160,8 @@ msgid "Could not export project files to gradle project\n"
 msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle\n"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "لا يمكن كتابة الملف!"
+msgstr "لا يمكن كتابة ملف الحزمة الإضافية!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
@@ -14369,9 +14284,8 @@ msgid "Could not read HTML shell:"
 msgstr "لا يمكن قراءة ملف HTML مخصص:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "لا يمكن إنشاء المجلد:"
+msgstr "لا يمكن إنشاء مجلد خادم ال HTTP:"
 
 #: platform/javascript/export/export.cpp
 msgid "Error starting HTTP server:"
@@ -14486,9 +14400,8 @@ msgid "Creating app bundle"
 msgstr "ينشئ الصورة المصغرة"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export:"
-msgstr "لم يتم إيجاد تطبيق القالب (Template app) للتصدير:"
+msgstr "لم يتم إيجاد قالب التطبيق (Template app) للتصدير:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -15394,11 +15307,10 @@ msgstr ""
 "اضبط وضع الخلفية لهذه البيئة على لوحة (Canvas) (للمشاهد ثنائية البُعد)."
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr ""
-"في عقدة خليط-الشجرة (BlendTree) '%s'، لم يتم العثور على الرسوم المتحركة: '%s "
-"'"
+"في عقدة/شبكة خليط-الشجرة (BlendTree) '%s'، لم يتم العثور على الرسوم المتحركة:"
+" '%s '"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Animation not found: '%s'"
