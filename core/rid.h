@@ -68,13 +68,13 @@ public:
 		return _data == p_rid._data;
 	}
 	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
-		return _data < p_rid._data;
+		return get_id() < p_rid.get_id();
 	}
 	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
-		return _data <= p_rid._data;
+		return get_id() <= p_rid.get_id();
 	}
 	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
-		return _data > p_rid._data;
+		return get_id() > p_rid.get_id();
 	}
 	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
 		return _data != p_rid._data;
