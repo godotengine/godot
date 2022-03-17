@@ -2456,7 +2456,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				passes = 1; //only re-blitting is necessary
 			}
 			int wg_size = 64;
-			uint64_t wg_limit_x = RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
+			int64_t wg_limit_x = (int64_t)RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
 
 			for (int pass = 0; pass < passes; pass++) {
 				if (p_update_light_instances) {
@@ -2481,7 +2481,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 						int64_t wg_todo = (mipmaps[i].cell_count - 1) / wg_size + 1;
 						while (wg_todo) {
-							int64_t wg_count = MIN(wg_todo, (int64_t)wg_limit_x);
+							int64_t wg_count = MIN(wg_todo, wg_limit_x);
 							RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
 							RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
 							wg_todo -= wg_count;
