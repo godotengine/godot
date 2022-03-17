@@ -3414,7 +3414,19 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::INT: {
 			if (p_hint == PROPERTY_HINT_ENUM) {
 				EditorPropertyEnum *editor = memnew(EditorPropertyEnum);
-				Vector<String> options = p_hint_text.split(",");
+				Vector<String> options;
+				Variant script = p_object->get_script();
+				bool use_hint_text = true;
+
+				if (script.get_type() != Variant::NIL && script.has_method("get_export_enum_hints")) {
+					options = script.call("get_export_enum_hints", p_path);
+					use_hint_text = options.is_empty();
+				}
+
+				if (use_hint_text) {
+					options = p_hint_text.split(",");
+				}
+
 				editor->setup(options);
 				return editor;
 

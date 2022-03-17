@@ -88,7 +88,7 @@ class GDScript : public Script {
 	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
-
+	Map<StringName, Vector<String>> export_enum_hints;
 	Map<StringName, int> member_lines;
 	Map<StringName, Variant> member_default_values;
 	List<PropertyInfo> members_cache;
@@ -215,6 +215,8 @@ public:
 	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
 		return docs;
 	}
+
+	Vector<String> get_export_enum_hints(const StringName &p_name) const;
 #endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;

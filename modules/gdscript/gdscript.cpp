@@ -253,6 +253,14 @@ struct _GDScriptMemberSort {
 void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
+
+Vector<String> GDScript::get_export_enum_hints(const StringName &p_name) const {
+	if (export_enum_hints.has(p_name)) {
+		return export_enum_hints[p_name];
+	} else {
+		return Vector<String>{};
+	}
+}
 #endif
 
 void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const {
@@ -629,6 +637,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			basedir = basedir.get_base_dir();
 		}
 
+		export_enum_hints.clear();
+
 		GDScriptParser parser;
 		GDScriptAnalyzer analyzer(&parser);
 		Error err = parser.parse(source, path, false);
@@ -694,6 +704,25 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 							default_value = member.variable->initializer->reduced_value;
 						}
 						member_default_values_cache[member.variable->identifier->name] = default_value;
+
+						if (member.variable->export_info.hint == PropertyHint::PROPERTY_HINT_ENUM &&
+								!member.variable->annotations.is_empty()) {
+							GDScriptParser::AnnotationNode *annotation = member.variable->annotations[0];
+							Vector<String> enum_hints;
+							for (const GDScriptParser::ExpressionNode *const arg : annotation->arguments) {
+								auto literal_node = dynamic_cast<const GDScriptParser::LiteralNode *const>(arg);
+								if (literal_node && literal_node->value.get_type() == Variant::STRING) {
+									enum_hints.push_back(literal_node->value);
+								} else {
+									auto identifier_node = dynamic_cast<const GDScriptParser::IdentifierNode *const>(arg);
+									if (identifier_node) {
+										enum_hints.push_back(identifier_node->name);
+									}
+								}
+							}
+
+							export_enum_hints[member.variable->identifier->name] = enum_hints;
+						}
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
 						// TODO: Cache this in parser to avoid loops like this.
@@ -1005,6 +1034,9 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 
 	ClassDB::bind_method(D_METHOD("get_as_byte_code"), &GDScript::get_as_byte_code);
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("get_export_enum_hints"), &GDScript::get_export_enum_hints);
+#endif
 }
 
 Vector<uint8_t> GDScript::get_as_byte_code() const {
