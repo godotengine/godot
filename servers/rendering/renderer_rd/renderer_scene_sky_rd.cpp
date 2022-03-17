@@ -1167,7 +1167,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 				ERR_CONTINUE(base.is_null());
 
 				RS::LightType type = storage->light_get_type(base);
-				if (type == RS::LIGHT_DIRECTIONAL) {
+				if (type == RS::LIGHT_DIRECTIONAL && storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
 					Transform3D light_transform = li->transform;
 					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();

@@ -170,8 +170,8 @@ public:
 	void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) override {}
 	void light_directional_set_blend_splits(RID p_light, bool p_enable) override {}
 	bool light_directional_get_blend_splits(RID p_light) const override { return false; }
-	void light_directional_set_sky_only(RID p_light, bool p_sky_only) override {}
-	bool light_directional_is_sky_only(RID p_light) const override { return false; }
+	void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) override {}
+	RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const override { return RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY; }
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override { return RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL; }
 	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override { return RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID; }
