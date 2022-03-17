@@ -2440,7 +2440,7 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TimeZoneInfo ret;
 	if (daylight) {
 		ret.name = info.DaylightName;
-		ret.bias = info.Bias+info.DaylightBias;
+		ret.bias = info.Bias + info.DaylightBias;
 	} else {
 		ret.name = info.StandardName;
 		ret.bias = info.Bias;
