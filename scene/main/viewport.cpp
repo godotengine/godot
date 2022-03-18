@@ -2671,7 +2671,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	return true;
 }
 
-void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 	if (disable_input) {
@@ -2684,12 +2684,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	local_input_handled = false;
 
-	Ref<InputEvent> ev;
-	if (!p_local_coords) {
-		ev = _make_input_local(p_event);
-	} else {
-		ev = p_event;
-	}
+	Ref<InputEvent> ev = _make_input_local(p_event);
 
 	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
 		set_input_as_handled();
@@ -3606,7 +3601,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
-	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("push_input", "event"), &Viewport::push_input);
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);

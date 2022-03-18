@@ -138,7 +138,6 @@
 		<method name="push_input">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
