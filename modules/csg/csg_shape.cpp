@@ -653,6 +653,9 @@ void CSGShape3D::_bind_methods() {
 
 CSGShape3D::CSGShape3D() {
 	set_notify_local_transform(true);
+
+	// CSG shapes are typically used for static level geometry, so use a fitting GI mode by default.
+	set_gi_mode(GeometryInstance3D::GI_MODE_STATIC);
 }
 
 CSGShape3D::~CSGShape3D() {
