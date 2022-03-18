@@ -82,7 +82,7 @@ void main() {
 
 #endif
 
-	mat4 world_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
+	mat4 model_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
 
 #define FLAGS_INSTANCING_MASK 0x7F
 #define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
@@ -156,7 +156,7 @@ void main() {
 			}
 
 			matrix = transpose(matrix);
-			world_matrix = world_matrix * matrix;
+			model_matrix = model_matrix * matrix;
 		}
 	}
 
@@ -179,7 +179,7 @@ void main() {
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED)
-	vertex = (world_matrix * vec4(vertex, 0.0, 1.0)).xy;
+	vertex = (model_matrix * vec4(vertex, 0.0, 1.0)).xy;
 #endif
 
 	color_interp = color;

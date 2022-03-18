@@ -2361,7 +2361,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		actions.renames["UV"] = "uv";
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 
-		actions.renames["WORLD_MATRIX"] = "world_matrix";
+		actions.renames["MODEL_MATRIX"] = "model_matrix";
 		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
 		actions.renames["SCREEN_MATRIX"] = "canvas_data.screen_transform";
 		actions.renames["TIME"] = "canvas_data.time";
