@@ -276,6 +276,7 @@ void ShaderMaterial::set_shader_param(const StringName &p_param, const Variant &
 			RS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
 		}
 	}
+	emit_changed();
 }
 
 Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
