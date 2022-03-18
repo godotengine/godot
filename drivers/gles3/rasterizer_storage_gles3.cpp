@@ -175,7 +175,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_color = false;
 			p_shader->canvas_item.uses_vertex = false;
 
-			p_shader->canvas_item.uses_world_matrix = false;
+			p_shader->canvas_item.uses_model_matrix = false;
 			p_shader->canvas_item.uses_extra_matrix = false;
 			p_shader->canvas_item.uses_projection_matrix = false;
 			p_shader->canvas_item.uses_instance_custom = false;
@@ -198,7 +198,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 			shaders.actions_canvas.usage_flag_pointers["VERTEX"] = &p_shader->canvas_item.uses_vertex;
 
-			shaders.actions_canvas.usage_flag_pointers["WORLD_MATRIX"] = &p_shader->canvas_item.uses_world_matrix;
+			shaders.actions_canvas.usage_flag_pointers["MODEL_MATRIX"] = &p_shader->canvas_item.uses_model_matrix;
 			shaders.actions_canvas.usage_flag_pointers["EXTRA_MATRIX"] = &p_shader->canvas_item.uses_extra_matrix;
 			shaders.actions_canvas.usage_flag_pointers["PROJECTION_MATRIX"] = &p_shader->canvas_item.uses_projection_matrix;
 			shaders.actions_canvas.usage_flag_pointers["INSTANCE_CUSTOM"] = &p_shader->canvas_item.uses_instance_custom;

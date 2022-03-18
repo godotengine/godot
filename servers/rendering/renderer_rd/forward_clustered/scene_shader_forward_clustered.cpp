@@ -531,10 +531,10 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		//shader compiler
 		ShaderCompiler::DefaultIdentifierActions actions;
 
-		actions.renames["WORLD_MATRIX"] = "world_matrix";
-		actions.renames["WORLD_NORMAL_MATRIX"] = "world_normal_matrix";
-		actions.renames["INV_CAMERA_MATRIX"] = "scene_data.inv_camera_matrix";
-		actions.renames["CAMERA_MATRIX"] = "scene_data.camera_matrix";
+		actions.renames["MODEL_MATRIX"] = "model_matrix";
+		actions.renames["MODEL_NORMAL_MATRIX"] = "model_normal_matrix";
+		actions.renames["VIEW_MATRIX"] = "scene_data.view_matrix";
+		actions.renames["INV_VIEW_MATRIX"] = "scene_data.inv_view_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";

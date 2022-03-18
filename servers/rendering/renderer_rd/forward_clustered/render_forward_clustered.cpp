@@ -612,8 +612,8 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	//store camera into ubo
 	RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix);
 	RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
-	RendererStorageRD::store_transform(p_render_data->cam_transform, scene_state.ubo.camera_matrix);
-	RendererStorageRD::store_transform(p_render_data->cam_transform.affine_inverse(), scene_state.ubo.inv_camera_matrix);
+	RendererStorageRD::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
+	RendererStorageRD::store_transform(p_render_data->cam_transform.affine_inverse(), scene_state.ubo.view_matrix);
 
 	for (uint32_t v = 0; v < p_render_data->view_count; v++) {
 		projection = correction * p_render_data->view_projection[v];
