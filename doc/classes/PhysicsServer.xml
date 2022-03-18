@@ -673,7 +673,7 @@
 			<return type="int" />
 			<argument index="0" name="process_info" type="int" enum="PhysicsServer.ProcessInfo" />
 			<description>
-				Returns an Info defined by the [enum ProcessInfo] input given.
+				Returns information about the current state of the 3D physics engine. See [enum ProcessInfo] for a list of available states. Only implemented for Godot Physics.
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
