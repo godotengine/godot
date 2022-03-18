@@ -100,6 +100,9 @@
 
 #define BINDINGS_GENERATOR_VERSION UINT32_C(13)
 
+// Types that will be ignored by the generator and won't be available in C#.
+const Vector<String> ignored_types = { "PhysicsServer3DExtension" };
+
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
 static String fix_doc_description(const String &p_bbcode) {
@@ -2641,6 +2644,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		ClassDB::APIType api_type = ClassDB::get_api_type(type_cname);
 
 		if (api_type == ClassDB::API_NONE) {
+			class_list.pop_front();
+			continue;
+		}
+
+		if (ignored_types.has(type_cname)) {
+			_log("Ignoring type '%s' because it's in the list of ignored types\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
