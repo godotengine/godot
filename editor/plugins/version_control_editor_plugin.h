@@ -186,6 +186,7 @@ private:
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 	void _extra_option_selected(int p_index);
 	bool _is_staging_area_empty();
+	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
 
 	friend class EditorVCSInterface;
 

@@ -206,11 +206,12 @@ Dictionary EditorVCSInterface::create_diff_file(String p_new_file, String p_old_
 	return file_diff;
 }
 
-Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_id, String p_date) {
+Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_id, int64_t p_unix_timestamp, int64_t p_offset_minutes) {
 	Dictionary commit_info;
 	commit_info["message"] = p_msg;
 	commit_info["author"] = p_author;
-	commit_info["date"] = p_date;
+	commit_info["unix_timestamp"] = p_unix_timestamp;
+	commit_info["offset_minutes"] = p_offset_minutes;
 	commit_info["id"] = p_id;
 	return commit_info;
 }
@@ -267,7 +268,8 @@ EditorVCSInterface::Commit EditorVCSInterface::_convert_commit(Dictionary p_comm
 	EditorVCSInterface::Commit c;
 	c.msg = p_commit["message"];
 	c.author = p_commit["author"];
-	c.date = p_commit["date"];
+	c.unix_timestamp = p_commit["unix_timestamp"];
+	c.offset_minutes = p_commit["offset_minutes"];
 	c.id = p_commit["id"];
 	return c;
 }
@@ -309,7 +311,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
 	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);
 	ClassDB::bind_method(D_METHOD("create_diff_file", "new_file", "old_file"), &EditorVCSInterface::create_diff_file);
-	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "id", "date"), &EditorVCSInterface::create_commit);
+	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "id", "unix_timestamp", "offset_minutes"), &EditorVCSInterface::create_commit);
 	ClassDB::bind_method(D_METHOD("create_status_file", "file_path", "change_type", "area"), &EditorVCSInterface::create_status_file);
 	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_file", "diff_hunks"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
 	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
