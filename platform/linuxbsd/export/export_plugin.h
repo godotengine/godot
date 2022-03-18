@@ -28,26 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WINDOWS_EXPORT_PLUGIN_H
-#define WINDOWS_EXPORT_PLUGIN_H
+#ifndef LINUXBSD_EXPORT_PLUGIN_H
+#define LINUXBSD_EXPORT_PLUGIN_H
 
 #include "core/io/file_access.h"
-#include "core/os/os.h"
 #include "editor/editor_export.h"
 #include "editor/editor_settings.h"
-#include "platform/windows/logo.gen.h"
+#include "platform/linuxbsd/logo.gen.h"
+#include "scene/resources/texture.h"
 
-class EditorExportPlatformWindows : public EditorExportPlatformPC {
-	void _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
-	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) override;
-	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 };
 
 #endif
