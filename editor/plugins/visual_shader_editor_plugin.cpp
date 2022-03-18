@@ -1773,8 +1773,6 @@ void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *p
 	undo_redo->create_action(TTR("Change Input Port Name"));
 	undo_redo->add_do_method(node.ptr(), "set_input_port_name", p_port_id, validated_name);
 	undo_redo->add_undo_method(node.ptr(), "set_input_port_name", p_port_id, node->get_input_port_name(p_port_id));
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->commit_action();
 }
 
@@ -1801,8 +1799,6 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	undo_redo->create_action(TTR("Change Output Port Name"));
 	undo_redo->add_do_method(node.ptr(), "set_output_port_name", p_port_id, validated_name);
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_name", p_port_id, prev_name);
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->commit_action();
 }
 
