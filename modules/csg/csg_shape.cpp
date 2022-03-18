@@ -1126,7 +1126,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 	int face_count = 12; //it's a cube..
 
 	bool invert_val = is_inverting_faces();
-	Ref<Material> material = get_material();
+	Ref<Material> default_material = get_material();
 
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
@@ -1146,6 +1146,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 		Vector2 *uvsw = uvs.ptrw();
 		bool *smoothw = smooth.ptrw();
 		Ref<Material> *materialsw = materials.ptrw();
+		Ref<Material> *material_overridesw = face_material_overrides.ptrw();
 		bool *invertw = invert.ptrw();
 
 		int face = 0;
@@ -1174,7 +1175,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				Vector2 u[4];
 				for (int j = 0; j < 4; j++) {
-					u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
+					u[j] = face_uv_transforms[i].xform(Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]));
+				}
+
+				Ref<Material> face_material = default_material;
+				if (material_overridesw[i].is_valid()) {
+					face_material = material_overridesw[i];
 				}
 
 				//face 1
@@ -1188,7 +1194,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+				materialsw[face] = face_material;
 
 				face++;
 				//face 2
@@ -1202,7 +1208,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+				materialsw[face] = face_material;
 
 				face++;
 			}
@@ -1225,8 +1231,105 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
+	ClassDB::bind_method(D_METHOD("set_face_uv_scale"), &CSGBox3D::set_face_uv_scale);
+	ClassDB::bind_method(D_METHOD("get_face_uv_scale"), &CSGBox3D::get_face_uv_scale);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_offset"), &CSGBox3D::set_face_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_face_uv_offset"), &CSGBox3D::get_face_uv_offset);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_rotation"), &CSGBox3D::set_face_uv_rotation);
+	ClassDB::bind_method(D_METHOD("get_face_uv_rotation"), &CSGBox3D::get_face_uv_rotation);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_skew"), &CSGBox3D::set_face_uv_skew);
+	ClassDB::bind_method(D_METHOD("get_face_uv_skew"), &CSGBox3D::get_face_uv_skew);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_transform"), &CSGBox3D::set_face_uv_transform);
+	ClassDB::bind_method(D_METHOD("get_face_uv_transform"), &CSGBox3D::get_face_uv_transform);
+
+	ClassDB::bind_method(D_METHOD("set_face_override_material"), &CSGBox3D::set_face_override_material);
+	ClassDB::bind_method(D_METHOD("get_face_override_material"), &CSGBox3D::get_face_override_material);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+}
+
+bool CSGBox3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (!get_instance().is_valid()) {
+		return false;
+	}
+
+	String name = p_name;
+	if (name.begins_with("face_overrides/")) {
+		int idx = name.get_slicec('/', 1).to_int();
+
+		ERR_FAIL_INDEX_V(idx, face_material_overrides.size(), false);
+		ERR_FAIL_INDEX_V(idx, face_uv_transforms.size(), false);
+
+		if (name.ends_with("material")) {
+			set_face_override_material(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_scale")) {
+			set_face_uv_scale(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_offset")) {
+			set_face_uv_offset(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_rotation")) {
+			set_face_uv_rotation(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_skew")) {
+			set_face_uv_skew(idx, p_value);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CSGBox3D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (!get_instance().is_valid()) {
+		return false;
+	}
+
+	String name = p_name;
+	if (name.begins_with("face_overrides")) {
+		int idx = name.get_slicec('/', 1).get_slicec('_', 1).to_int();
+
+		ERR_FAIL_INDEX_V(idx, face_material_overrides.size(), false);
+		ERR_FAIL_INDEX_V(idx, face_uv_transforms.size(), false);
+
+		if (name.ends_with("material")) {
+			r_ret = face_material_overrides[idx];
+			return true;
+		} else if (name.ends_with("uv_scale")) {
+			r_ret = get_face_uv_scale(idx);
+			return true;
+		} else if (name.ends_with("uv_offset")) {
+			r_ret = get_face_uv_offset(idx);
+			return true;
+		} else if (name.ends_with("uv_rotation")) {
+			r_ret = get_face_uv_rotation(idx);
+			return true;
+		} else if (name.ends_with("uv_skew")) {
+			r_ret = get_face_uv_skew(idx);
+			return true;
+		}
+	}
+	return false;
+}
+
+void CSGBox3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < get_face_count(); i++) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "face_overrides/face_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "face_overrides/face_" + itos(i) + "/uv_scale"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "face_overrides/face_" + itos(i) + "/uv_offset"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "face_overrides/face_" + itos(i) + "/uv_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "face_overrides/face_" + itos(i) + "/uv_skew", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1,radians"));
+	}
+}
+
+int CSGBox3D::get_face_count() const {
+	return 6;
 }
 
 void CSGBox3D::set_size(const Vector3 &p_size) {
@@ -1247,6 +1350,86 @@ void CSGBox3D::set_material(const Ref<Material> &p_material) {
 
 Ref<Material> CSGBox3D::get_material() const {
 	return material;
+}
+
+void CSGBox3D::set_face_uv_scale(int p_face, const Vector2 &p_scale) {
+	ERR_FAIL_INDEX(p_face, 6);
+	Vector2 scale = p_scale;
+	if (Math::is_zero_approx(scale.x)) {
+		scale.x = CMP_EPSILON;
+	}
+	if (Math::is_zero_approx(scale.y)) {
+		scale.y = CMP_EPSILON;
+	}
+	Transform2D transform = face_uv_transforms[p_face];
+
+	transform.set_rotation_scale_and_skew(transform.get_rotation(), scale, transform.get_skew());
+
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+
+Vector2 CSGBox3D::get_face_uv_scale(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, Vector2());
+	return face_uv_transforms[p_face].get_scale();
+}
+
+void CSGBox3D::set_face_uv_offset(int p_face, const Vector2 &p_offset) {
+	ERR_FAIL_INDEX(p_face, 6);
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.elements[2] = p_offset;
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+Vector2 CSGBox3D::get_face_uv_offset(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, Vector2());
+	return face_uv_transforms[p_face].elements[2];
+}
+
+void CSGBox3D::set_face_uv_rotation(int p_face, float p_rotation) {
+	ERR_FAIL_INDEX(p_face, 6);
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(p_rotation, transform.get_scale(), transform.get_skew());
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+float CSGBox3D::get_face_uv_rotation(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, 0);
+	return face_uv_transforms[p_face].get_rotation();
+}
+
+void CSGBox3D::set_face_uv_skew(int p_face, float p_skew) {
+	ERR_FAIL_INDEX(p_face, 6);
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(transform.get_rotation(), transform.get_scale(), p_skew);
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+float CSGBox3D::get_face_uv_skew(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, 0);
+	return face_uv_transforms[p_face].get_skew();
+}
+
+void CSGBox3D::set_face_uv_transform(int p_face, const Transform2D &p_transform) {
+	ERR_FAIL_INDEX(p_face, 6);
+	face_uv_transforms.set(p_face, p_transform);
+	_make_dirty();
+}
+
+Transform2D CSGBox3D::get_face_uv_transform(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, Transform2D());
+	return face_uv_transforms[p_face];
+}
+
+void CSGBox3D::set_face_override_material(int p_face, const Ref<Material> &p_material) {
+	ERR_FAIL_INDEX(p_face, 6);
+	face_material_overrides.set(p_face, p_material);
+	_make_dirty();
+}
+
+Ref<Material> CSGBox3D::get_face_override_material(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, Ref<Material>());
+	return face_material_overrides[p_face];
 }
 
 ///////////////
@@ -1307,10 +1490,10 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(inc, 0),
-					Vector2(inc_n, 0),
-					Vector2(inc_n, 1),
-					Vector2(inc, 1),
+					face_uv_transforms[i].xform(Vector2(inc, 0)),
+					face_uv_transforms[i].xform(Vector2(inc_n, 0)),
+					face_uv_transforms[i].xform(Vector2(inc_n, 1)),
+					face_uv_transforms[i].xform(Vector2(inc, 1)),
 				};
 
 				//side face 1
@@ -1318,13 +1501,19 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
 
-				uvsw[face * 3 + 0] = u[0];
-				uvsw[face * 3 + 1] = u[1];
-				uvsw[face * 3 + 2] = u[2];
+				uvsw[face * 3 + 0] = (u[0]);
+				uvsw[face * 3 + 1] = (u[1]);
+				uvsw[face * 3 + 2] = (u[2]);
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+
+				Ref<Material> side_material = material;
+				if (face_material_overrides[1 + i].is_valid()) {
+					side_material = face_material_overrides[i];
+				}
+
+				materialsw[face] = side_material;
 
 				face++;
 
@@ -1340,7 +1529,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 					smoothw[face] = smooth_faces;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+
+					materialsw[face] = side_material;
 					face++;
 				}
 
@@ -1349,13 +1539,18 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+				uvsw[face * 3 + 0] = face_uv_transforms[0].xform(Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5));
+				uvsw[face * 3 + 1] = face_uv_transforms[0].xform(Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5));
+				uvsw[face * 3 + 2] = face_uv_transforms[0].xform(Vector2(0.5, 0.5));
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
-				materialsw[face] = material;
+
+				Ref<Material> bottom_material = material;
+				if (face_material_overrides[0].is_valid()) {
+					bottom_material = face_material_overrides[0];
+				}
+				materialsw[face] = bottom_material;
 				face++;
 
 				if (!cone) {
@@ -1364,13 +1559,19 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+					int face_idx = get_face_count() - 1;
+					uvsw[face * 3 + 0] = face_uv_transforms[face_idx].xform(Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5));
+					uvsw[face * 3 + 1] = face_uv_transforms[face_idx].xform(Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5));
+					uvsw[face * 3 + 2] = face_uv_transforms[face_idx].xform(Vector2(0.5, 0.5));
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
-					materialsw[face] = material;
+
+					Ref<Material> top_material = material;
+					if (face_material_overrides[face_idx].is_valid()) {
+						top_material = face_material_overrides[face_idx];
+					}
+					materialsw[face] = top_material;
 					face++;
 				}
 			}
@@ -1402,6 +1603,24 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGCylinder3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGCylinder3D::get_material);
 
+	ClassDB::bind_method(D_METHOD("set_face_uv_scale"), &CSGCylinder3D::set_face_uv_scale);
+	ClassDB::bind_method(D_METHOD("get_face_uv_scale"), &CSGCylinder3D::get_face_uv_scale);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_offset"), &CSGCylinder3D::set_face_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_face_uv_offset"), &CSGCylinder3D::get_face_uv_offset);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_rotation"), &CSGCylinder3D::set_face_uv_rotation);
+	ClassDB::bind_method(D_METHOD("get_face_uv_rotation"), &CSGCylinder3D::get_face_uv_rotation);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_skew"), &CSGCylinder3D::set_face_uv_skew);
+	ClassDB::bind_method(D_METHOD("get_face_uv_skew"), &CSGCylinder3D::get_face_uv_skew);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_transform"), &CSGCylinder3D::set_face_uv_transform);
+	ClassDB::bind_method(D_METHOD("get_face_uv_transform"), &CSGCylinder3D::get_face_uv_transform);
+
+	ClassDB::bind_method(D_METHOD("set_face_material_override"), &CSGCylinder3D::set_face_override_material);
+	ClassDB::bind_method(D_METHOD("get_face_material_override"), &CSGCylinder3D::get_face_override_material);
+
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder3D::get_smooth_faces);
 
@@ -1411,6 +1630,86 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_GROUP("Surface overrides", "surface_override");
+}
+
+bool CSGCylinder3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (!get_instance().is_valid()) {
+		return false;
+	}
+
+	String name = p_name;
+	if (name.begins_with("face_overrides")) {
+		int idx = name.get_slicec('/', 1).to_int();
+
+		ERR_FAIL_INDEX_V(idx, face_material_overrides.size(), false);
+		ERR_FAIL_INDEX_V(idx, face_uv_transforms.size(), false);
+
+		if (name.ends_with("material")) {
+			set_face_override_material(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_scale")) {
+			set_face_uv_scale(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_offset")) {
+			set_face_uv_offset(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_rotation")) {
+			set_face_uv_rotation(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_skew")) {
+			set_face_uv_skew(idx, p_value);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CSGCylinder3D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (!get_instance().is_valid()) {
+		return false;
+	}
+
+	String name = p_name.operator String();
+	if (name.begins_with("face_overrides")) {
+		int idx = name.get_slicec('/', 1).get_slicec('_', 1).to_int();
+
+		ERR_FAIL_INDEX_V(idx, face_material_overrides.size(), false);
+		ERR_FAIL_INDEX_V(idx, face_uv_transforms.size(), false);
+
+		if (name.ends_with("material")) {
+			r_ret = face_material_overrides[idx];
+			return true;
+		} else if (name.ends_with("uv_scale")) {
+			r_ret = get_face_uv_scale(idx);
+			return true;
+		} else if (name.ends_with("uv_offset")) {
+			r_ret = get_face_uv_offset(idx);
+			return true;
+		} else if (name.ends_with("uv_rotation")) {
+			r_ret = get_face_uv_rotation(idx);
+			return true;
+		} else if (name.ends_with("uv_skew")) {
+			r_ret = get_face_uv_skew(idx);
+			return true;
+		}
+	}
+	return false;
+}
+
+void CSGCylinder3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < get_face_count(); i++) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "face_overrides/face_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "face_overrides/face_" + itos(i) + "/uv_scale"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "face_overrides/face_" + itos(i) + "/uv_offset"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "face_overrides/face_" + itos(i) + "/uv_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "face_overrides/face_" + itos(i) + "/uv_skew", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1,radians"));
+	}
+}
+
+int CSGCylinder3D::get_face_count() const {
+	return sides + (cone ? 1 : 2);
 }
 
 void CSGCylinder3D::set_radius(const float p_radius) {
@@ -1436,8 +1735,15 @@ float CSGCylinder3D::get_height() const {
 void CSGCylinder3D::set_sides(const int p_sides) {
 	ERR_FAIL_COND(p_sides < 3);
 	sides = p_sides;
+
+	int faces = get_face_count();
+	face_material_overrides.resize(faces);
+	face_uv_transforms.resize(faces);
+
 	_make_dirty();
 	update_gizmos();
+
+	notify_property_list_changed();
 }
 
 int CSGCylinder3D::get_sides() const {
@@ -1446,8 +1752,15 @@ int CSGCylinder3D::get_sides() const {
 
 void CSGCylinder3D::set_cone(const bool p_cone) {
 	cone = p_cone;
+
+	int faces = get_face_count();
+	face_material_overrides.resize(faces);
+	face_uv_transforms.resize(faces);
+
 	_make_dirty();
 	update_gizmos();
+
+	notify_property_list_changed();
 }
 
 bool CSGCylinder3D::is_cone() const {
@@ -1472,6 +1785,84 @@ Ref<Material> CSGCylinder3D::get_material() const {
 	return material;
 }
 
+void CSGCylinder3D::set_face_uv_scale(int p_face, const Vector2 &p_scale) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Vector2 scale = p_scale;
+	if (Math::is_zero_approx(scale.x)) {
+		scale.x = CMP_EPSILON;
+	}
+	if (Math::is_zero_approx(scale.y)) {
+		scale.y = CMP_EPSILON;
+	}
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(transform.get_rotation(), scale, transform.get_skew());
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+
+Vector2 CSGCylinder3D::get_face_uv_scale(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Vector2());
+	return face_uv_transforms[p_face].get_scale();
+}
+
+void CSGCylinder3D::set_face_uv_offset(int p_face, const Vector2 &p_offset) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.elements[2] = p_offset;
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+Vector2 CSGCylinder3D::get_face_uv_offset(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Vector2());
+	return face_uv_transforms[p_face].elements[2];
+}
+
+void CSGCylinder3D::set_face_uv_rotation(int p_face, float p_rotation) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(p_rotation, transform.get_scale(), transform.get_skew());
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+float CSGCylinder3D::get_face_uv_rotation(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), 0);
+	return face_uv_transforms[p_face].get_rotation();
+}
+
+void CSGCylinder3D::set_face_uv_skew(int p_face, float p_skew) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(transform.get_rotation(), transform.get_scale(), p_skew);
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+float CSGCylinder3D::get_face_uv_skew(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), 0);
+	return face_uv_transforms[p_face].get_skew();
+}
+
+void CSGCylinder3D::set_face_uv_transform(int p_face, const Transform2D &p_transform) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	face_uv_transforms.set(p_face, p_transform);
+	_make_dirty();
+}
+
+Transform2D CSGCylinder3D::get_face_uv_transform(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Transform2D());
+	return face_uv_transforms[p_face];
+}
+
+void CSGCylinder3D::set_face_override_material(int p_face, Ref<Material> p_material) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	face_material_overrides.set(p_face, p_material);
+	_make_dirty();
+}
+
+Ref<Material> CSGCylinder3D::get_face_override_material(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Ref<Material>());
+	return face_material_overrides[p_face];
+}
+
 CSGCylinder3D::CSGCylinder3D() {
 	// defaults
 	radius = 0.5;
@@ -1479,6 +1870,10 @@ CSGCylinder3D::CSGCylinder3D() {
 	sides = 8;
 	cone = false;
 	smooth_faces = true;
+
+	int faces = 2 + sides;
+	face_material_overrides.resize(faces);
+	face_uv_transforms.resize(faces);
 }
 
 ///////////////
@@ -1876,11 +2271,16 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					uv.y = 1 - (uv.y / 2);
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-					uvsw[face * 3 + face_vertex_idx] = uv;
+					uvsw[face * 3 + face_vertex_idx] = face_uv_transforms[0].xform(uv);
 				}
 
 				smoothw[face] = false;
-				materialsw[face] = material;
+
+				Ref<Material> front_material = material;
+				if (face_material_overrides[0].is_valid()) {
+					front_material = face_material_overrides[0];
+				}
+				materialsw[face] = front_material;
 				invertw[face] = invert_faces;
 				face++;
 			}
@@ -1959,8 +2359,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			for (int y0 = 0; y0 < shape_sides; y0++) {
 				int y1 = (y0 + 1) % shape_sides;
 				// Use the top half of the texture.
-				double v0 = (y0 * v_step) / 2;
-				double v1 = ((y0 + 1) * v_step) / 2;
+				double v0 = (y0 * v_step);
+				double v1 = ((y0 + 1) * v_step);
 
 				Vector3 v[4] = {
 					previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
@@ -1970,11 +2370,16 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(u0, v0),
-					Vector2(u1, v0),
-					Vector2(u1, v1),
-					Vector2(u0, v1),
+					face_uv_transforms[1 + y0].xform(Vector2(u0, v0)),
+					face_uv_transforms[1 + y0].xform(Vector2(u1, v0)),
+					face_uv_transforms[1 + y0].xform(Vector2(u1, v1)),
+					face_uv_transforms[1 + y0].xform(Vector2(u0, v1)),
 				};
+
+				Ref<Material> side_material = material;
+				if (face_material_overrides[1 + y0].is_valid()) {
+					side_material = face_material_overrides[1 + y0];
+				}
 
 				// Face 1
 				facesw[face * 3 + 0] = v[0];
@@ -1987,7 +2392,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_faces;
-				materialsw[face] = material;
+				materialsw[face] = side_material;
 
 				face++;
 
@@ -2002,7 +2407,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				smoothw[face] = smooth_faces;
 				invertw[face] = invert_faces;
-				materialsw[face] = material;
+				materialsw[face] = side_material;
 
 				face++;
 			}
@@ -2021,11 +2426,17 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					uv.y = 1 - (uv.y / 2);
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-					uvsw[face * 3 + face_vertex_idx] = uv;
+					uvsw[face * 3 + face_vertex_idx] = face_uv_transforms[get_face_count() - 1].xform(uv);
 				}
 
 				smoothw[face] = false;
-				materialsw[face] = material;
+
+				Ref<Material> back_material = material;
+				if (face_material_overrides[get_face_count() - 1].is_valid()) {
+					back_material = face_material_overrides[get_face_count() - 1];
+				}
+				materialsw[face] = back_material;
+
 				invertw[face] = invert_faces;
 				face++;
 			}
@@ -2127,6 +2538,24 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPolygon3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGPolygon3D::get_material);
 
+	ClassDB::bind_method(D_METHOD("set_face_uv_scale"), &CSGPolygon3D::set_face_uv_scale);
+	ClassDB::bind_method(D_METHOD("get_face_uv_scale"), &CSGPolygon3D::get_face_uv_scale);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_offset"), &CSGPolygon3D::set_face_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_face_uv_offset"), &CSGPolygon3D::get_face_uv_offset);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_rotation"), &CSGPolygon3D::set_face_uv_rotation);
+	ClassDB::bind_method(D_METHOD("get_face_uv_rotation"), &CSGPolygon3D::get_face_uv_rotation);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_skew"), &CSGPolygon3D::set_face_uv_skew);
+	ClassDB::bind_method(D_METHOD("get_face_uv_skew"), &CSGPolygon3D::get_face_uv_skew);
+
+	ClassDB::bind_method(D_METHOD("set_face_uv_transform"), &CSGPolygon3D::set_face_uv_transform);
+	ClassDB::bind_method(D_METHOD("get_face_uv_transform"), &CSGPolygon3D::get_face_uv_transform);
+
+	ClassDB::bind_method(D_METHOD("set_face_material_override"), &CSGPolygon3D::set_face_override_material);
+	ClassDB::bind_method(D_METHOD("get_face_material_override"), &CSGPolygon3D::get_face_override_material);
+
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPolygon3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPolygon3D::get_smooth_faces);
 
@@ -2149,6 +2578,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_GROUP("Surface overrides", "surface_override");
 
 	BIND_ENUM_CONSTANT(MODE_DEPTH);
 	BIND_ENUM_CONSTANT(MODE_SPIN);
@@ -2162,10 +2592,95 @@ void CSGPolygon3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PATH_INTERVAL_SUBDIVIDE);
 }
 
+bool CSGPolygon3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (!get_instance().is_valid()) {
+		return false;
+	}
+
+	String name = p_name;
+	if (name.begins_with("face_overrides")) {
+		int idx = name.get_slicec('/', 1).to_int();
+
+		ERR_FAIL_INDEX_V(idx, face_material_overrides.size(), false);
+		ERR_FAIL_INDEX_V(idx, face_uv_transforms.size(), false);
+
+		if (name.ends_with("material")) {
+			set_face_override_material(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_scale")) {
+			set_face_uv_scale(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_offset")) {
+			set_face_uv_offset(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_rotation")) {
+			set_face_uv_rotation(idx, p_value);
+			return true;
+		} else if (name.ends_with("uv_skew")) {
+			set_face_uv_skew(idx, p_value);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CSGPolygon3D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (!get_instance().is_valid()) {
+		return false;
+	}
+
+	String name = p_name;
+	if (name.begins_with("face_overrides")) {
+		int idx = name.get_slicec('/', 1).get_slicec('_', 1).to_int();
+
+		ERR_FAIL_INDEX_V(idx, face_material_overrides.size(), false);
+		ERR_FAIL_INDEX_V(idx, face_uv_transforms.size(), false);
+
+		if (name.ends_with("material")) {
+			r_ret = face_material_overrides[idx];
+			return true;
+		} else if (name.ends_with("uv_scale")) {
+			r_ret = get_face_uv_scale(idx);
+			return true;
+		} else if (name.ends_with("uv_offset")) {
+			r_ret = get_face_uv_offset(idx);
+			return true;
+		} else if (name.ends_with("uv_rotation")) {
+			r_ret = get_face_uv_rotation(idx);
+			return true;
+		} else if (name.ends_with("uv_skew")) {
+			r_ret = get_face_uv_skew(idx);
+			return true;
+		}
+	}
+	return false;
+}
+
+void CSGPolygon3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < get_face_count(); i++) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "face_overrides/face_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "face_overrides/face_" + itos(i) + "/uv_scale"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "face_overrides/face_" + itos(i) + "/uv_offset"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "face_overrides/face_" + itos(i) + "/uv_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "face_overrides/face_" + itos(i) + "/uv_skew", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1,radians"));
+	}
+}
+
+int CSGPolygon3D::get_face_count() const {
+	return polygon.size() + 2;
+}
+
 void CSGPolygon3D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
+
+	int faces = get_face_count();
+	face_material_overrides.resize(faces);
+	face_uv_transforms.resize(faces);
+
 	_make_dirty();
 	update_gizmos();
+	notify_property_list_changed();
 }
 
 Vector<Vector2> CSGPolygon3D::get_polygon() const {
@@ -2323,6 +2838,84 @@ Ref<Material> CSGPolygon3D::get_material() const {
 	return material;
 }
 
+void CSGPolygon3D::set_face_uv_scale(int p_face, const Vector2 &p_scale) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Vector2 scale = p_scale;
+	if (Math::is_zero_approx(scale.x)) {
+		scale.x = CMP_EPSILON;
+	}
+	if (Math::is_zero_approx(scale.y)) {
+		scale.y = CMP_EPSILON;
+	}
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(transform.get_rotation(), scale, transform.get_skew());
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+
+Vector2 CSGPolygon3D::get_face_uv_scale(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Vector2());
+	return face_uv_transforms[p_face].get_scale();
+}
+
+void CSGPolygon3D::set_face_uv_offset(int p_face, const Vector2 &p_offset) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.elements[2] = p_offset;
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+Vector2 CSGPolygon3D::get_face_uv_offset(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Vector2());
+	return face_uv_transforms[p_face].elements[2];
+}
+
+void CSGPolygon3D::set_face_uv_rotation(int p_face, float p_rotation) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(p_rotation, transform.get_scale(), transform.get_skew());
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+float CSGPolygon3D::get_face_uv_rotation(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), 0);
+	return face_uv_transforms[p_face].get_rotation();
+}
+
+void CSGPolygon3D::set_face_uv_skew(int p_face, float p_skew) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	Transform2D transform = face_uv_transforms[p_face];
+	transform.set_rotation_scale_and_skew(transform.get_rotation(), transform.get_scale(), p_skew);
+	face_uv_transforms.set(p_face, transform);
+	_make_dirty();
+}
+float CSGPolygon3D::get_face_uv_skew(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), 0);
+	return face_uv_transforms[p_face].get_skew();
+}
+
+void CSGPolygon3D::set_face_uv_transform(int p_face, const Transform2D &p_transform) {
+	ERR_FAIL_INDEX(p_face, 6);
+	face_uv_transforms.set(p_face, p_transform);
+	_make_dirty();
+}
+
+Transform2D CSGPolygon3D::get_face_uv_transform(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, 6, Transform2D());
+	return face_uv_transforms[p_face];
+}
+
+void CSGPolygon3D::set_face_override_material(int p_face, Ref<Material> p_material) {
+	ERR_FAIL_INDEX(p_face, get_face_count());
+	face_material_overrides.set(p_face, p_material);
+	_make_dirty();
+}
+
+Ref<Material> CSGPolygon3D::get_face_override_material(int p_face) const {
+	ERR_FAIL_INDEX_V(p_face, get_face_count(), Ref<Material>());
+	return face_material_overrides[p_face];
+}
+
 bool CSGPolygon3D::_is_editable_3d_polygon() const {
 	return true;
 }
@@ -2351,4 +2944,8 @@ CSGPolygon3D::CSGPolygon3D() {
 	path_u_distance = 1.0;
 	path_joined = false;
 	path = nullptr;
+
+	int faces = 6;
+	face_material_overrides.resize(faces);
+	face_uv_transforms.resize(faces);
 }

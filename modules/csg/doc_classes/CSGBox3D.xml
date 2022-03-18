@@ -10,9 +10,101 @@
 	<tutorials>
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
+	<methods>
+		<method name="get_face_override_material" qualifiers="const">
+			<return type="Material" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the override material for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_offset" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV offset for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_rotation" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV rotation for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_scale" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV scale for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_skew" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV skew for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV transform for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_override_material">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Material" />
+			<description>
+				Sets override material for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_offset">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Vector2" />
+			<description>
+				Sets UV offset for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_rotation">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="float" />
+			<description>
+				Sets UV rotation for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_scale">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Vector2" />
+			<description>
+				Sets UV scale for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_skew">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="float" />
+			<description>
+				Sets UV skew for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_transform">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Transform2D" />
+			<description>
+				Sets UV transform for the given [code]face[/code].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The material used to render the box.
+			The default material used to render the box.
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
 			The box's width, height and depth.

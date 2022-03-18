@@ -10,6 +10,96 @@
 	<tutorials>
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
+	<methods>
+		<method name="get_face_material_override" qualifiers="const">
+			<return type="Material" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_face_uv_offset" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV offset for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_rotation" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV rotation for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_scale" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV scale for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_skew" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV skew for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="get_face_uv_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<argument index="0" name="arg0" type="int" />
+			<description>
+				Returns the UV transform for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_material_override">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Material" />
+			<description>
+			</description>
+		</method>
+		<method name="set_face_uv_offset">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Vector2" />
+			<description>
+				Sets UV offset for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_rotation">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="float" />
+			<description>
+				Sets UV rotation for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_scale">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Vector2" />
+			<description>
+				Sets UV scale for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_skew">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="float" />
+			<description>
+				Sets UV skew for the given [code]face[/code].
+			</description>
+		</method>
+		<method name="set_face_uv_transform">
+			<return type="void" />
+			<argument index="0" name="arg0" type="int" />
+			<argument index="1" name="arg1" type="Transform2D" />
+			<description>
+				Sets UV transform for the given [code]face[/code].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="cone" type="bool" setter="set_cone" getter="is_cone" default="false">
 			If [code]true[/code] a cone is created, the [member radius] will only apply to one side.
@@ -18,7 +108,7 @@
 			The height of the cylinder.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The material used to render the cylinder.
+			The default material used to render the cylinder. This material is used by the top and bottom faces if their materials are not set.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The radius of the cylinder.
