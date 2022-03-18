@@ -1408,7 +1408,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	// Page 1 layout: Rendering Options
 
 	VBoxContainer *page1_vb = memnew(VBoxContainer);
-	page1_vb->set_meta("_tab_name", TTR("Rendering options"));
+	page1_vb->set_name(TTR("Rendering Options"));
 	main_pages->add_child(page1_vb);
 
 	page1_description = memnew(Label);
@@ -1439,7 +1439,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	// Page 2 layout: Configurations
 	VBoxContainer *page2_vb = memnew(VBoxContainer);
-	page2_vb->set_meta("_tab_name", TTR("Sizes and variations"));
+	page2_vb->set_name(TTR("Sizes and Variations"));
 	main_pages->add_child(page2_vb);
 
 	page2_description = memnew(Label);
@@ -1491,7 +1491,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	// Page 3 layout: Text to select glyphs
 	VBoxContainer *page3_vb = memnew(VBoxContainer);
-	page3_vb->set_meta("_tab_name", TTR("Glyphs from the text"));
+	page3_vb->set_name(TTR("Glyphs from the Text"));
 	main_pages->add_child(page3_vb);
 
 	page3_description = memnew(Label);
@@ -1548,7 +1548,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	// Page 4 layout: Character map
 	VBoxContainer *page4_vb = memnew(VBoxContainer);
-	page4_vb->set_meta("_tab_name", TTR("Glyphs from the character map"));
+	page4_vb->set_name(TTR("Glyphs from the Character Map"));
 	main_pages->add_child(page4_vb);
 
 	page4_description = memnew(Label);
@@ -1599,7 +1599,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	// Page 4 layout: Metadata override
 	VBoxContainer *page5_vb = memnew(VBoxContainer);
-	page5_vb->set_meta("_tab_name", TTR("Metadata override"));
+	page5_vb->set_name(TTR("Metadata Override"));
 	main_pages->add_child(page5_vb);
 
 	page5_description = memnew(Label);
