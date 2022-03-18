@@ -40,9 +40,11 @@
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
 
-#include "pointer_constraints.gen.h"
 #include "wayland.gen.h"
 #include "xdg_shell.gen.h"
+
+#include "pointer_constraints.gen.h"
+#include "relative_pointer.gen.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
 #include "linux/input-event-codes.h"
@@ -91,11 +93,14 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_seat *wl_seat = nullptr;
 		uint32_t wl_seat_name = 0;
 
-		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
-		uint32_t wp_pointer_constraints_name = 0;
-
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
+
+		struct zwp_relative_pointer_manager_v1 *wp_relative_pointer_manager = nullptr;
+		uint32_t wp_relative_pointer_manager_name = 0;
+
+		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
+		uint32_t wp_pointer_constraints_name = 0;
 	};
 
 	struct WindowData {
@@ -139,6 +144,12 @@ class DisplayServerWayland : public DisplayServer {
 
 	struct PointerData {
 		Point2i position;
+		uint32_t motion_time = 0;
+
+		// Relative motion's has its own optional event and so needs its own time.
+		Vector2 relative_motion;
+		uint32_t relative_motion_time = 0;
+
 		WindowID focused_window_id = INVALID_WINDOW_ID;
 		MouseButton pressed_button_mask = MouseButton::NONE;
 
@@ -146,12 +157,13 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t button_time = 0;
 
 		Vector2 scroll_vector;
-
-		uint32_t time = 0;
 	};
 
 	struct PointerState {
 		struct wl_pointer *wl_pointer = nullptr;
+
+		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
+
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
 
@@ -269,11 +281,14 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
-	// xdg_shell event handlers.
+	// xdg-shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 	static void _xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 	static void _xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
 	static void _xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel);
+
+	// wayland-protocols event handlers.
+	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
 	// Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
@@ -319,7 +334,7 @@ class DisplayServerWayland : public DisplayServer {
 		.repeat_info = _wl_keyboard_on_repeat_info,
 	};
 
-	// xdg_shell event listeners.
+	// xdg-shell event listeners.
 	static constexpr struct xdg_wm_base_listener xdg_wm_base_listener = {
 		.ping = _xdg_wm_base_on_ping,
 	};
@@ -331,6 +346,12 @@ class DisplayServerWayland : public DisplayServer {
 	static constexpr struct xdg_toplevel_listener xdg_toplevel_listener = {
 		.configure = _xdg_toplevel_on_configure,
 		.close = _xdg_toplevel_on_close,
+	};
+
+	// wayland-protocols event listeners.
+
+	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
+		.relative_motion = _wp_relative_pointer_on_relative_motion,
 	};
 
 public:

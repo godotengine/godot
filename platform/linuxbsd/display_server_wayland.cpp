@@ -238,15 +238,21 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, 2);
+		globals.xdg_wm_base_name = name;
+		return;
+	}
+
 	if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
 		globals.wp_pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_constraints_v1_interface, 1);
 		globals.wp_pointer_constraints_name = name;
 		return;
 	}
 
-	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, 2);
-		globals.xdg_wm_base_name = name;
+	if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
+		globals.wp_relative_pointer_manager = (struct zwp_relative_pointer_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_relative_pointer_manager_v1_interface, 1);
+		globals.wp_relative_pointer_manager_name = name;
 		return;
 	}
 }
@@ -268,15 +274,21 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		return;
 	}
 
+	if (name == globals.xdg_wm_base_name) {
+		xdg_wm_base_destroy(globals.xdg_wm_base);
+		globals.xdg_wm_base = nullptr;
+		return;
+	}
+
 	if (name == globals.wp_pointer_constraints_name) {
 		zwp_pointer_constraints_v1_destroy(globals.wp_pointer_constraints);
 		globals.wp_pointer_constraints = nullptr;
 		return;
 	}
 
-	if (name == globals.xdg_wm_base_name) {
-		xdg_wm_base_destroy(globals.xdg_wm_base);
-		globals.xdg_wm_base = nullptr;
+	if (name == globals.wp_relative_pointer_manager_name) {
+		zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
+		globals.wp_relative_pointer_manager = nullptr;
 		return;
 	}
 
@@ -347,10 +359,21 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		ps.wl_pointer = wl_seat_get_pointer(wl_seat);
 		ERR_FAIL_NULL(ps.wl_pointer);
 
+		ps.wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(wls->globals.wp_relative_pointer_manager, ps.wl_pointer);
+		ERR_FAIL_NULL(ps.wp_relative_pointer);
+
 		wl_pointer_add_listener(ps.wl_pointer, &wl_pointer_listener, wls);
-	} else if (ps.wl_pointer) {
-		wl_pointer_destroy(ps.wl_pointer);
-		ps.wl_pointer = nullptr;
+		zwp_relative_pointer_v1_add_listener(ps.wp_relative_pointer, &wp_relative_pointer_listener, wls);
+	} else {
+		if (ps.wl_pointer) {
+			wl_pointer_destroy(ps.wl_pointer);
+			ps.wl_pointer = nullptr;
+		}
+
+		if (ps.wp_relative_pointer) {
+			zwp_relative_pointer_v1_destroy(ps.wp_relative_pointer);
+			ps.wp_relative_pointer = nullptr;
+		}
 	}
 
 	KeyboardState &ks = wls->keyboard_state;
@@ -407,7 +430,7 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 	pd.position.x = wl_fixed_to_int(surface_x);
 	pd.position.y = wl_fixed_to_int(surface_y);
 
-	pd.time = time;
+	pd.motion_time = time;
 }
 
 void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
@@ -443,7 +466,6 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 	}
 
 	pd.button_time = time;
-	pd.time = time;
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
@@ -470,7 +492,6 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 	pd.last_button_pressed = button_pressed;
 
 	pd.button_time = time;
-	pd.time = time;
 }
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
@@ -482,8 +503,8 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 	PointerData &old_pd = ps.data;
 	PointerData &pd = ps.data_buffer;
 
-	if (old_pd.time != pd.time && pd.focused_window_id != INVALID_WINDOW_ID) {
-		if (old_pd.position != pd.position) {
+	if (pd.focused_window_id != INVALID_WINDOW_ID) {
+		if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
 			WaylandMessage msg;
 			msg.type = WaylandMessageType::INPUT_EVENT;
 
@@ -507,7 +528,14 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			Input::get_singleton()->set_mouse_position(pd.position);
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
-			mm->set_relative(pd.position - old_pd.position);
+			if (old_pd.relative_motion_time != pd.relative_motion_time) {
+				mm->set_relative(pd.relative_motion);
+			} else {
+				// The spec includes the possibility of having motion events without an
+				// associated relative motion event. If that's the case, fallback to a
+				// simple delta of the position.
+				mm->set_relative(pd.position - old_pd.position);
+			}
 
 			msg.data = &mm;
 			wls->message_queue.push_back(msg);
@@ -782,6 +810,17 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 	msg.data = msg_data;
 
 	wd->message_queue->push_back(msg);
+}
+
+void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
+	WaylandState *wls = (WaylandState *)data;
+
+	PointerData &pd = wls->pointer_state.data_buffer;
+
+	pd.relative_motion.x = wl_fixed_to_double(dx);
+	pd.relative_motion.y = wl_fixed_to_double(dy);
+
+	pd.relative_motion_time = uptime_lo;
 }
 
 // Interface mthods
