@@ -204,7 +204,7 @@ Error ResourceUID::update_cache() {
 	FileAccess *f = nullptr;
 	for (OrderedHashMap<ID, Cache>::Element E = unique_ids.front(); E; E = E.next()) {
 		if (!E.get().saved_to_cache) {
-			if (f == nullptr) {
+			if (!f) {
 				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); //append
 				if (!f) {
 					return ERR_CANT_OPEN;
@@ -220,10 +220,9 @@ Error ResourceUID::update_cache() {
 		}
 	}
 
-	if (f != nullptr) {
+	if (f) {
 		f->seek(0);
 		f->store_32(cache_entries); //update amount of entries
-		f->close();
 		memdelete(f);
 	}
 

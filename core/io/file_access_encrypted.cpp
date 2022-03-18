@@ -291,11 +291,10 @@ void FileAccessEncrypted::store_8(uint8_t p_dest) {
 }
 
 bool FileAccessEncrypted::file_exists(const String &p_name) {
-	FileAccess *fa = FileAccess::open(p_name, FileAccess::READ);
+	FileAccessRef fa = FileAccess::open(p_name, FileAccess::READ);
 	if (!fa) {
 		return false;
 	}
-	memdelete(fa);
 	return true;
 }
 

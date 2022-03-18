@@ -112,7 +112,7 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 }
 
 Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encrypt) {
-	FileAccess *f = FileAccess::open(p_src, FileAccess::READ);
+	FileAccessRef f = FileAccess::open(p_src, FileAccess::READ);
 	if (!f) {
 		return ERR_FILE_CANT_OPEN;
 	}
@@ -148,9 +148,6 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	ofs = ofs + _size + pad;
 
 	files.push_back(pf);
-
-	f->close();
-	memdelete(f);
 
 	return OK;
 }
@@ -272,7 +269,7 @@ Error PCKPacker::flush(bool p_verbose) {
 }
 
 PCKPacker::~PCKPacker() {
-	if (file != nullptr) {
+	if (file) {
 		memdelete(file);
 	}
 	file = nullptr;

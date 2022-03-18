@@ -123,7 +123,7 @@ void ImageLoader::cleanup() {
 /////////////////
 
 RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
@@ -136,7 +136,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 
 	bool unrecognized = header[0] != 'G' || header[1] != 'D' || header[2] != 'I' || header[3] != 'M';
 	if (unrecognized) {
-		memdelete(f);
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
@@ -155,7 +154,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 	}
 
 	if (idx == -1) {
-		memdelete(f);
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
@@ -166,8 +164,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 	image.instantiate();
 
 	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
-
-	memdelete(f);
 
 	if (err != OK) {
 		if (r_error) {

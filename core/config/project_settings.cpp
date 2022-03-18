@@ -613,7 +613,7 @@ bool ProjectSettings::has_setting(String p_var) const {
 
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err != OK) {
 		return err;
 	}
@@ -621,7 +621,6 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	uint8_t hdr[4];
 	f->get_buffer(hdr, 4);
 	if (hdr[0] != 'E' || hdr[1] != 'C' || hdr[2] != 'F' || hdr[3] != 'G') {
-		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Corrupted header in binary project.binary (not ECFG).");
 	}
 
@@ -646,8 +645,6 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		set(key, value);
 	}
 
-	f->close();
-	memdelete(f);
 	return OK;
 }
 
@@ -778,7 +775,7 @@ Error ProjectSettings::save() {
 
 Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
 
 	uint8_t hdr[4] = { 'E', 'C', 'F', 'G' };
@@ -799,7 +796,6 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		int len;
 		err = encode_variant(p_custom_features, nullptr, len, false);
 		if (err != OK) {
-			memdelete(file);
 			ERR_FAIL_V(err);
 		}
 
@@ -808,7 +804,6 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 		err = encode_variant(p_custom_features, buff.ptrw(), len, false);
 		if (err != OK) {
-			memdelete(file);
 			ERR_FAIL_V(err);
 		}
 		file->store_32(len);
@@ -834,33 +829,24 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
-			if (err != OK) {
-				memdelete(file);
-			}
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
 
 			Vector<uint8_t> buff;
 			buff.resize(len);
 
 			err = encode_variant(value, buff.ptrw(), len, true);
-			if (err != OK) {
-				memdelete(file);
-			}
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
 			file->store_32(len);
 			file->store_buffer(buff.ptr(), buff.size());
 		}
 	}
 
-	file->close();
-	memdelete(file);
-
 	return OK;
 }
 
 Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.godot - " + p_file + ".");
 
@@ -905,14 +891,10 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		}
 	}
 
-	file->close();
-	memdelete(file);
-
 	return OK;
 }
 
 Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
-
 	return save_custom(p_file);
 }
 

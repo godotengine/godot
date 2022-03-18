@@ -276,22 +276,12 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 }
 
 Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
-	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
-	FileAccess *fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
+	FileAccessRef fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_from);
 
-	if (err) {
-		ERR_PRINT("Failed to open " + p_from);
-		return err;
-	}
-
-	FileAccess *fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
-	if (err) {
-		fsrc->close();
-		memdelete(fsrc);
-		ERR_PRINT("Failed to open " + p_to);
-		return err;
-	}
+	FileAccessRef fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_to);
 
 	fsrc->seek_end(0);
 	int size = fsrc->get_position();
@@ -318,9 +308,6 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 			err = OK;
 		}
 	}
-
-	memdelete(fsrc);
-	memdelete(fdst);
 
 	return err;
 }

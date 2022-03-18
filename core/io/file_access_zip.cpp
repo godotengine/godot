@@ -86,9 +86,7 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 static int godot_close(voidpf opaque, voidpf stream) {
 	FileAccess *f = (FileAccess *)stream;
 	if (f) {
-		f->close();
 		memdelete(f);
-		f = nullptr;
 	}
 	return 0;
 }

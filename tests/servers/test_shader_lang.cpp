@@ -313,22 +313,19 @@ MainLoop *test() {
 		return nullptr;
 	}
 
-	String test = cmdlargs.back()->get();
-
-	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-
-	if (!fa) {
-		ERR_FAIL_V(nullptr);
-	}
-
 	String code;
+	{
+		String test = cmdlargs.back()->get();
+		FileAccessRef fa = FileAccess::open(test, FileAccess::READ);
+		ERR_FAIL_COND_V(!fa, nullptr);
 
-	while (true) {
-		char32_t c = fa->get_8();
-		if (fa->eof_reached()) {
-			break;
+		while (true) {
+			char32_t c = fa->get_8();
+			if (fa->eof_reached()) {
+				break;
+			}
+			code += c;
 		}
-		code += c;
 	}
 
 	SL sl;
