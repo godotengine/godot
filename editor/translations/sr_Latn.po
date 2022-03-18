@@ -25,6 +25,55 @@ msgstr ""
 "X-Generator: Weblate 4.11.1-dev\n"
 
 #: core/bind/core_bind.cpp
+msgid "Tablet Driver"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Clipboard"
+msgstr "Klipbord je prazan!"
+
+#: core/bind/core_bind.cpp
+msgid "Current Screen"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Exit Code"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "V-Sync Enabled"
+msgstr ""
+
+#: core/bind/core_bind.cpp main/main.cpp
+msgid "V-Sync Via Compositor"
+msgstr ""
+
+#: core/bind/core_bind.cpp main/main.cpp
+msgid "Delta Smoothing"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Low Processor Usage Mode"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr ""
+
+#: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
+msgid "Keep Screen On"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Min Window Size"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Max Window Size"
+msgstr ""
+
+#: core/bind/core_bind.cpp
 msgid "Screen Orientation"
 msgstr ""
 
@@ -32,9 +81,95 @@ msgstr ""
 msgid "Window"
 msgstr ""
 
+#: core/bind/core_bind.cpp main/main.cpp
+msgid "Borderless"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Per Pixel Transparency Enabled"
+msgstr ""
+
+#: core/bind/core_bind.cpp main/main.cpp
+msgid "Fullscreen"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Maximized"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Minimized"
+msgstr ""
+
+#: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
+#: scene/gui/graph_node.cpp
+msgid "Resizable"
+msgstr ""
+
+#: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
+#: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
+#: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
+#: scene/gui/control.cpp scene/gui/line_edit.cpp
+#, fuzzy
+msgid "Position"
+msgstr "Napravi"
+
+#: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
+#: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
+#: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
+#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/gui/control.cpp
+#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
+#: scene/resources/style_box.cpp scene/resources/texture.cpp
+#: scene/resources/visual_shader.cpp servers/visual_server.cpp
+msgid "Size"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+msgid "Endian Swap"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Editor Hint"
+msgstr "Izmjeni Selekciju Krivulje"
+
+#: core/bind/core_bind.cpp
+msgid "Print Error Messages"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Iterations Per Second"
+msgstr "Način Interpolacije"
+
+#: core/bind/core_bind.cpp
+msgid "Target FPS"
+msgstr ""
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Time Scale"
+msgstr "Razmera"
+
+#: core/bind/core_bind.cpp main/main.cpp
+msgid "Physics Jitter Fix"
+msgstr ""
+
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr ""
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Error String"
+msgstr "Postavke Uređivača..."
+
+#: core/bind/core_bind.cpp
+#, fuzzy
+msgid "Error Line"
+msgstr "Greška:"
 
 #: core/bind/core_bind.cpp
 msgid "Result"
@@ -62,9 +197,20 @@ msgstr ""
 msgid "Multithreading Queue Size (KB)"
 msgstr ""
 
-#: core/image.cpp modules/visual_script/visual_script.cpp
-#: scene/2d/polygon_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#: scene/resources/bit_map.cpp scene/resources/curve.cpp
+#: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: scene/resources/visual_shader_nodes.cpp
+msgid "Function"
+msgstr "Funkcija"
+
+#: core/image.cpp core/packed_data_container.cpp
+#: modules/minimp3/audio_stream_mp3.cpp
+#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
+#: modules/visual_script/visual_script.cpp scene/2d/polygon_2d.cpp
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/resources/audio_stream_sample.cpp scene/resources/bit_map.cpp
+#: scene/resources/concave_polygon_shape.cpp scene/resources/curve.cpp
 #: scene/resources/polygon_path_finder.cpp scene/resources/texture.cpp
 msgid "Data"
 msgstr ""
@@ -90,6 +236,10 @@ msgid "Page Read Ahead"
 msgstr ""
 
 #: core/io/http_client.cpp
+msgid "Blocking Mode Enabled"
+msgstr ""
+
+#: core/io/http_client.cpp
 #, fuzzy
 msgid "Connection"
 msgstr "Poveži"
@@ -98,14 +248,31 @@ msgstr "Poveži"
 msgid "Read Chunk Size"
 msgstr ""
 
+#: core/io/marshalls.cpp
+msgid "Object ID"
+msgstr ""
+
+#: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
+msgid "Allow Object Decoding"
+msgstr ""
+
+#: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
+msgid "Refuse New Network Connections"
+msgstr ""
+
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Network Peer"
 msgstr ""
 
-#: core/io/multiplayer_api.cpp
+#: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
 #, fuzzy
 msgid "Root Node"
 msgstr "Animacija Obriši Ključeve"
+
+#: core/io/networked_multiplayer_peer.cpp
+#, fuzzy
+msgid "Refuse New Connections"
+msgstr "Poveži"
 
 #: core/io/networked_multiplayer_peer.cpp
 #, fuzzy
@@ -113,7 +280,31 @@ msgid "Transfer Mode"
 msgstr "Transformiši Poligon"
 
 #: core/io/packet_peer.cpp
+msgid "Encode Buffer Max Size"
+msgstr ""
+
+#: core/io/packet_peer.cpp
+msgid "Input Buffer Max Size"
+msgstr ""
+
+#: core/io/packet_peer.cpp
+msgid "Output Buffer Max Size"
+msgstr ""
+
+#: core/io/packet_peer.cpp
 msgid "Stream Peer"
+msgstr ""
+
+#: core/io/stream_peer.cpp
+msgid "Big Endian"
+msgstr ""
+
+#: core/io/stream_peer.cpp
+msgid "Data Array"
+msgstr ""
+
+#: core/io/stream_peer_ssl.cpp
+msgid "Blocking Handshake"
 msgstr ""
 
 #: core/io/udp_server.cpp
@@ -164,6 +355,15 @@ msgstr "Neispravni argumenti za konstrukciju '%s'"
 msgid "On call to '%s':"
 msgstr "Pri pozivu '%s':"
 
+#: core/math/random_number_generator.cpp
+#: modules/opensimplex/open_simplex_noise.cpp
+msgid "Seed"
+msgstr ""
+
+#: core/math/random_number_generator.cpp
+msgid "State"
+msgstr ""
+
 #: core/message_queue.cpp
 msgid "Message Queue"
 msgstr ""
@@ -203,8 +403,154 @@ msgstr "Kopiraj Označeno"
 msgid "Use Single Quotes"
 msgstr ""
 
+#: core/os/input_event.cpp editor/project_settings_editor.cpp
+#: servers/audio_server.cpp
+msgid "Device"
+msgstr ""
+
 #: core/os/input_event.cpp
+msgid "Alt"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Shift"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Control"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Meta"
+msgstr ""
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Command"
+msgstr "Zajednica"
+
+#: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
+#: scene/gui/base_button.cpp scene/gui/texture_button.cpp
+msgid "Pressed"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Scancode"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Physical Scancode"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Unicode"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Echo"
+msgstr ""
+
+#: core/os/input_event.cpp scene/gui/base_button.cpp
+msgid "Button Mask"
+msgstr ""
+
+#: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
+#, fuzzy
+msgid "Global Position"
+msgstr "Kontanta"
+
+#: core/os/input_event.cpp
+msgid "Factor"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Button Index"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Doubleclick"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Tilt"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Pressure"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Relative"
+msgstr ""
+
+#: core/os/input_event.cpp scene/2d/camera_2d.cpp
+#: scene/3d/interpolated_camera.cpp scene/animation/animation_player.cpp
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Speed"
+msgstr "Razmera"
+
+#: core/os/input_event.cpp editor/project_settings_editor.cpp
+#: scene/3d/sprite_3d.cpp
+msgid "Axis"
+msgstr ""
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Axis Value"
+msgstr "Zakači vrednost"
+
+#: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
+msgid "Index"
+msgstr ""
+
+#: core/os/input_event.cpp editor/project_settings_editor.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: scene/2d/touch_screen_button.cpp
+#, fuzzy
+msgid "Action"
+msgstr "Sve sekcije"
+
+#: core/os/input_event.cpp scene/resources/environment.cpp
+#: scene/resources/material.cpp
 msgid "Strength"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Delta"
+msgstr ""
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Channel"
+msgstr "Promeni"
+
+#: core/os/input_event.cpp main/main.cpp
+#, fuzzy
+msgid "Message"
+msgstr "Zajednica"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Pitch"
+msgstr "Razmera"
+
+#: core/os/input_event.cpp scene/2d/physics_body_2d.cpp
+#: scene/3d/physics_body.cpp
+msgid "Velocity"
+msgstr ""
+
+#: core/os/input_event.cpp
+msgid "Instrument"
+msgstr ""
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Controller Number"
+msgstr "Broj Linije:"
+
+#: core/os/input_event.cpp
+msgid "Controller Value"
 msgstr ""
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
@@ -220,10 +566,12 @@ msgstr ""
 msgid "Project Settings Override"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_autoload_settings.cpp
-#: editor/editor_help_search.cpp editor/editor_plugin_settings.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp scene/main/node.cpp
+#: core/project_settings.cpp core/resource.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
+#: editor/editor_plugin_settings.cpp editor/editor_profiler.cpp
+#: editor/project_manager.cpp editor/settings_config_dialog.cpp
+#: modules/gdnative/nativescript/nativescript.cpp scene/2d/area_2d.cpp
+#: scene/3d/area.cpp scene/main/node.cpp
 msgid "Name"
 msgstr ""
 
@@ -402,18 +750,20 @@ msgstr ""
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
 #: modules/lightmapper_cpu/register_types.cpp scene/3d/baked_lightmap.cpp
-#: scene/main/scene_tree.cpp servers/visual/visual_server_scene.cpp
+#: scene/main/scene_tree.cpp scene/resources/environment.cpp
+#: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
 msgstr ""
 
 #: core/project_settings.cpp scene/animation/animation_tree.cpp
-#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#: scene/gui/file_dialog.cpp scene/main/scene_tree.cpp
+#: servers/visual_server.cpp
 #, fuzzy
 msgid "Filters"
 msgstr "Filtriraj signale"
 
-#: core/project_settings.cpp
+#: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
 msgstr ""
 
@@ -442,7 +792,7 @@ msgstr ""
 msgid "Max Functions"
 msgstr "Napravi Funkciju"
 
-#: core/project_settings.cpp
+#: core/project_settings.cpp scene/3d/vehicle_body.cpp
 #, fuzzy
 msgid "Compression"
 msgstr "Napravi"
@@ -514,14 +864,25 @@ msgstr ""
 msgid "Resource"
 msgstr "Resurs"
 
-#: core/resource.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_nodes.cpp
-msgid "Resource Path"
+#: core/resource.cpp
+msgid "Local To Scene"
 msgstr ""
+
+#: core/resource.cpp editor/dependency_editor.cpp
+#: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Path"
+msgstr "Putanja"
 
 #: core/script_language.cpp
 msgid "Source Code"
 msgstr ""
+
+#: core/translation.cpp
+#, fuzzy
+msgid "Messages"
+msgstr "Zajednica"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
@@ -535,7 +896,7 @@ msgstr ""
 msgid "Fallback"
 msgstr ""
 
-#: core/ustring.cpp
+#: core/ustring.cpp scene/resources/segment_shape_2d.cpp
 msgid "B"
 msgstr "B"
 
@@ -567,7 +928,7 @@ msgstr "EiB"
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#: drivers/gles3/rasterizer_storage_gles3.cpp
+#: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
 msgstr ""
 
@@ -637,8 +998,13 @@ msgid "Subsurface Scattering"
 msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#: editor/plugins/spatial_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
-#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_node.cpp
+#: modules/gridmap/grid_map.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/node_2d.cpp scene/2d/parallax_layer.cpp scene/2d/polygon_2d.cpp
+#: scene/2d/remote_transform_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
+#: scene/main/canvas_layer.cpp scene/resources/environment.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
 msgid "Scale"
 msgstr "Razmera"
 
@@ -654,7 +1020,7 @@ msgstr ""
 msgid "Voxel Cone Tracing"
 msgstr ""
 
-#: drivers/gles3/rasterizer_scene_gles3.cpp
+#: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
 msgstr ""
 
@@ -929,8 +1295,10 @@ msgstr "Uredi"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
-#: scene/2d/cpu_particles_2d.cpp scene/2d/sprite.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/particles_material.cpp
+#: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/sprite.cpp scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
+#: scene/animation/animation_blend_tree.cpp
+#: scene/resources/particles_material.cpp
 msgid "Animation"
 msgstr ""
 
@@ -1072,6 +1440,8 @@ msgstr "Anim Pomeri Ključeve"
 #: editor/animation_track_editor.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp scene/2d/node_2d.cpp
 #: scene/3d/spatial.cpp scene/main/canvas_layer.cpp
+#: servers/camera/camera_feed.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
 msgid "Transform"
 msgstr ""
 
@@ -1468,7 +1838,7 @@ msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr "Odlaže signal, smešta ga u red i ispaljuje ga samo za vreme mirovanja."
 
-#: editor/connections_dialog.cpp
+#: editor/connections_dialog.cpp scene/resources/texture.cpp
 #, fuzzy
 msgid "Oneshot"
 msgstr "Jednookidač"
@@ -1638,13 +2008,6 @@ msgstr ""
 msgid "Dependencies"
 msgstr "Zavisnosti"
 
-#: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/plugins/path_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp
-#: modules/visual_script/visual_script_nodes.cpp
-msgid "Path"
-msgstr "Putanja"
-
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
 msgstr "Zavisnosti:"
@@ -1779,11 +2142,11 @@ msgid "Lead Developer"
 msgstr ""
 
 #. TRANSLATORS: This refers to a job title.
-#. The trailing space is used to distinguish with the project list application,
-#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
-msgid "Project Manager "
-msgstr ""
+#, fuzzy
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "Izmjeni Selekciju Krivulje"
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -2122,7 +2485,9 @@ msgid "Remove Autoload"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
-#: modules/gdscript/gdscript.cpp servers/visual_server.cpp
+#: modules/gdscript/gdscript.cpp scene/2d/polygon_2d.cpp scene/3d/area.cpp
+#: scene/3d/reflection_probe.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp servers/visual_server.cpp
 msgid "Enable"
 msgstr ""
 
@@ -2574,8 +2939,11 @@ msgstr ""
 #: editor/editor_file_dialog.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp scene/2d/light_2d.cpp
-#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp scene/3d/physics_body.cpp
-#: scene/gui/file_dialog.cpp servers/audio/effects/audio_effect_distortion.cpp
+#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
+#: scene/3d/baked_lightmap.cpp scene/3d/light.cpp scene/3d/physics_body.cpp
+#: scene/gui/control.cpp scene/gui/file_dialog.cpp
+#: scene/resources/environment.cpp scene/resources/material.cpp
+#: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Mode"
 msgstr ""
 
@@ -2589,6 +2957,15 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Current Path"
+msgstr ""
+
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Show Hidden Files"
+msgstr ""
+
+#: editor/editor_file_dialog.cpp
+msgid "Disable Overwrite Warning"
 msgstr ""
 
 #: editor/editor_file_dialog.cpp
@@ -2611,7 +2988,8 @@ msgstr ""
 msgid "Toggle Favorite"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/editor_resource_picker.cpp
+#: scene/gui/base_button.cpp
 msgid "Toggle Mode"
 msgstr ""
 
@@ -2729,6 +3107,8 @@ msgid "Theme Properties"
 msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/gradient.cpp
 msgid "Colors"
 msgstr ""
 
@@ -2839,14 +3219,18 @@ msgid "Method"
 msgstr ""
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Signal"
 msgstr ""
 
 #: editor/editor_help_search.cpp modules/visual_script/visual_script_nodes.cpp
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Constant"
 msgstr "Konstanta"
 
 #: editor/editor_help_search.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Property"
 msgstr ""
 
@@ -2856,6 +3240,30 @@ msgstr ""
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
+msgstr ""
+
+#: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
+msgid "Label"
+msgstr ""
+
+#: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
+msgid "Read Only"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Checkable"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Checked"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Draw Red"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Keying"
 msgstr ""
 
 #: editor/editor_inspector.cpp
@@ -3559,7 +3967,7 @@ msgstr "Zalepi Osobine"
 msgid "Default Float Step"
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp scene/gui/tree.cpp
 #, fuzzy
 msgid "Disable Folding"
 msgstr "Onemogućeno"
@@ -3605,7 +4013,7 @@ msgstr ""
 msgid "Dock Position"
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_plugin.cpp
 msgid "Distraction Free Mode"
 msgstr ""
 
@@ -4200,7 +4608,10 @@ msgstr "Izmeni Tekst:"
 msgid "On"
 msgstr ""
 
-#: editor/editor_properties.cpp scene/main/canvas_layer.cpp
+#: editor/editor_properties.cpp modules/gridmap/grid_map.cpp
+#: scene/2d/collision_object_2d.cpp scene/2d/tile_map.cpp
+#: scene/3d/collision_object.cpp scene/3d/soft_body.cpp
+#: scene/main/canvas_layer.cpp
 msgid "Layer"
 msgstr ""
 
@@ -4303,10 +4714,25 @@ msgstr "Konvertuj u %s"
 msgid "New %s"
 msgstr ""
 
+#: editor/editor_resource_picker.cpp editor/plugins/theme_editor_plugin.cpp
+#: modules/visual_script/visual_script_flow_control.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Base Type"
+msgstr "Promeni %s Tip"
+
 #: editor/editor_resource_picker.cpp
 #, fuzzy
 msgid "Edited Resource"
 msgstr "Resurs"
+
+#: editor/editor_resource_picker.cpp scene/gui/line_edit.cpp
+#: scene/gui/slider.cpp scene/gui/spin_box.cpp
+#, fuzzy
+msgid "Editable"
+msgstr "Uredi"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "New Script"
@@ -4439,7 +4865,7 @@ msgstr ""
 msgid "Accent Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/environment.cpp
 msgid "Contrast"
 msgstr ""
 
@@ -4506,10 +4932,6 @@ msgid "File Dialog"
 msgstr ""
 
 #: editor/editor_settings.cpp
-msgid "Show Hidden Files"
-msgstr ""
-
-#: editor/editor_settings.cpp
 msgid "Thumbnail Size"
 msgstr ""
 
@@ -4558,15 +4980,15 @@ msgstr ""
 msgid "Highlighting"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Syntax Highlighting"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight All Occurrences"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight Current Line"
 msgstr ""
 
@@ -4580,17 +5002,11 @@ msgid "Indent"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/mono/csharp_script.cpp
-#: modules/visual_script/visual_script_nodes.cpp
+#: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
+#: modules/gltf/gltf_light.cpp modules/mono/csharp_script.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/3d/physics_body.cpp
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Type"
-msgstr ""
-
-#: editor/editor_settings.cpp main/main.cpp
-#: modules/gdscript/gdscript_editor.cpp modules/mono/csharp_script.cpp
-#: scene/3d/camera.cpp scene/resources/dynamic_font.cpp
-#: scene/resources/navigation_mesh.cpp servers/visual_server.cpp
-msgid "Size"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
@@ -4601,11 +5017,11 @@ msgstr ""
 msgid "Convert Indent On Save"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Draw Tabs"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Draw Spaces"
 msgstr ""
 
@@ -4615,11 +5031,11 @@ msgstr ""
 msgid "Navigation"
 msgstr "Napravi"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Smooth Scrolling"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "V Scroll Speed"
 msgstr ""
 
@@ -4639,7 +5055,7 @@ msgstr ""
 msgid "Appearance"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Show Line Numbers"
 msgstr "Broj Linije:"
@@ -4732,7 +5148,7 @@ msgstr ""
 msgid "Caret Blink"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/editor_settings.cpp scene/gui/line_edit.cpp
 msgid "Caret Blink Speed"
 msgstr ""
 
@@ -4836,7 +5252,7 @@ msgid "Grid XY Plane"
 msgstr ""
 
 #: editor/editor_settings.cpp
-msgid "Grid Yz Plane"
+msgid "Grid YZ Plane"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
@@ -5059,7 +5475,9 @@ msgstr ""
 msgid "Window Placement"
 msgstr ""
 
-#: editor/editor_settings.cpp scene/gui/control.cpp
+#: editor/editor_settings.cpp scene/2d/back_buffer_copy.cpp scene/2d/sprite.cpp
+#: scene/2d/visibility_notifier_2d.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/control.cpp
 msgid "Rect"
 msgstr ""
 
@@ -5092,8 +5510,7 @@ msgstr "Ukloni Tačku"
 msgid "Editor SSL Certificates"
 msgstr ""
 
-#. TRANSLATORS: This refers to the application where users manage their Godot projects.
-#: editor/editor_settings.cpp editor/project_manager.cpp
+#: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr ""
 
@@ -5252,6 +5669,10 @@ msgstr ""
 
 #: editor/editor_spin_slider.cpp
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
+#: editor/editor_spin_slider.cpp scene/gui/button.cpp
+msgid "Flat"
 msgstr ""
 
 #: editor/editor_sub_scene.cpp
@@ -6640,8 +7061,8 @@ msgid "Future"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp modules/csg/csg_shape.cpp
-#: scene/main/scene_tree.cpp scene/resources/material.cpp
-#: servers/audio/effects/audio_effect_phaser.cpp
+#: scene/3d/collision_polygon.cpp scene/main/scene_tree.cpp
+#: scene/resources/material.cpp servers/audio/effects/audio_effect_phaser.cpp
 msgid "Depth"
 msgstr ""
 
@@ -6726,6 +7147,7 @@ msgid "Immediate"
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#: scene/animation/animation_blend_tree.cpp
 msgid "Sync"
 msgstr ""
 
@@ -6734,6 +7156,8 @@ msgid "At End"
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: scene/3d/vehicle_body.cpp
 msgid "Travel"
 msgstr ""
 
@@ -6815,6 +7239,7 @@ msgid "Fade Out (s):"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: scene/resources/style_box.cpp
 msgid "Blend"
 msgstr ""
 
@@ -6934,7 +7359,7 @@ msgstr ""
 msgid "Filters..."
 msgstr ""
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp scene/main/http_request.cpp
 msgid "Use Threads"
 msgstr ""
 
@@ -7098,11 +7523,11 @@ msgstr ""
 msgid "First"
 msgstr ""
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp scene/gui/control.cpp
 msgid "Previous"
 msgstr ""
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp scene/gui/control.cpp
 msgid "Next"
 msgstr ""
 
@@ -8153,6 +8578,7 @@ msgid "Create Outline"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp modules/csg/csg_shape.cpp
+#: modules/gltf/gltf_mesh.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/mesh_instance.cpp scene/resources/multimesh.cpp
 #: scene/resources/texture.cpp
@@ -8696,16 +9122,19 @@ msgstr ""
 msgid "Polygon 2D UV Editor"
 msgstr ""
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
 msgid "UV"
 msgstr ""
 
-#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/line_2d.cpp scene/3d/cpu_particles.cpp scene/3d/portal.cpp
+#: scene/3d/room.cpp scene/resources/convex_polygon_shape.cpp
+#: scene/resources/convex_polygon_shape_2d.cpp
 msgid "Points"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/navigation_polygon.cpp
-#: scene/resources/navigation_mesh.cpp
+#: scene/2d/polygon_2d.cpp scene/resources/navigation_mesh.cpp
 msgid "Polygons"
 msgstr "Poligoni"
 
@@ -8789,6 +9218,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/animation/animation_blend_space_1d.cpp
+#: scene/animation/animation_blend_space_2d.cpp
 msgid "Snap"
 msgstr ""
 
@@ -9231,7 +9661,8 @@ msgstr ""
 msgid "Source"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp scene/3d/interpolated_camera.cpp
+#: scene/animation/skeleton_ik.cpp
 msgid "Target"
 msgstr ""
 
@@ -9274,6 +9705,7 @@ msgid "Convert Case"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+#: scene/gui/label.cpp
 msgid "Uppercase"
 msgstr ""
 
@@ -9453,7 +9885,8 @@ msgid "Create physical bones"
 msgstr ""
 
 #: editor/plugins/skeleton_editor_plugin.cpp editor/spatial_editor_gizmos.cpp
-#: scene/2d/polygon_2d.cpp
+#: modules/gltf/gltf_node.cpp modules/gltf/gltf_skin.cpp
+#: scene/2d/polygon_2d.cpp scene/3d/mesh_instance.cpp
 msgid "Skeleton"
 msgstr ""
 
@@ -9469,7 +9902,7 @@ msgstr ""
 msgid "Orthogonal"
 msgstr ""
 
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_camera.cpp
 msgid "Perspective"
 msgstr ""
 
@@ -9557,7 +9990,7 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp scene/2d/path_2d.cpp
 msgid "Rotate"
 msgstr ""
 
@@ -9811,7 +10244,7 @@ msgstr ""
 msgid "Use Local Space"
 msgstr ""
 
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Use Snap"
 msgstr ""
 
@@ -10186,6 +10619,9 @@ msgid "Speed:"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+#: modules/gltf/gltf_animation.cpp modules/minimp3/audio_stream_mp3.cpp
+#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp scene/2d/path_2d.cpp
+#: scene/3d/path.cpp scene/resources/animation.cpp scene/resources/material.cpp
 msgid "Loop"
 msgstr ""
 
@@ -10702,15 +11138,6 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#: modules/visual_script/visual_script_flow_control.cpp
-#: modules/visual_script/visual_script_func_nodes.cpp
-#: modules/visual_script/visual_script_nodes.cpp
-#: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
-msgid "Base Type"
-msgstr "Promeni %s Tip"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
 msgstr ""
 
@@ -11042,6 +11469,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
 #: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/texture.cpp
 msgid "Region"
 msgstr ""
 
@@ -11049,7 +11477,7 @@ msgstr ""
 #: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
 #: scene/3d/collision_object.cpp scene/3d/physics_body.cpp
-#: scene/3d/soft_body.cpp scene/main/scene_tree.cpp
+#: scene/3d/physics_joint.cpp scene/3d/soft_body.cpp scene/main/scene_tree.cpp
 #: scene/resources/shape_2d.cpp
 #, fuzzy
 msgid "Collision"
@@ -11658,7 +12086,8 @@ msgstr ""
 msgid "Fragment"
 msgstr ""
 
-#: editor/plugins/visual_shader_editor_plugin.cpp scene/3d/light.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/light.cpp
 msgid "Light"
 msgstr ""
 
@@ -12402,6 +12831,10 @@ msgid "Export templates for this platform are missing/corrupted:"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export Path"
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Presets"
 msgstr ""
 
@@ -12413,10 +12846,6 @@ msgstr ""
 msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Export Path"
 msgstr ""
 
 #: editor/project_export.cpp scene/main/resource_preloader.cpp
@@ -12475,7 +12904,8 @@ msgstr ""
 msgid "GDScript Export Mode:"
 msgstr ""
 
-#: editor/project_export.cpp scene/gui/button.cpp scene/gui/label.cpp
+#: editor/project_export.cpp scene/gui/button.cpp scene/gui/dialogs.cpp
+#: scene/gui/label.cpp scene/gui/line_edit.cpp scene/gui/link_button.cpp
 #: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 msgid "Text"
 msgstr ""
@@ -12791,6 +13221,13 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
+#: editor/project_manager.cpp
+#, fuzzy
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "Izmjeni Selekciju Krivulje"
+
 #: editor/project_manager.cpp
 msgid "Local Projects"
 msgstr ""
@@ -12931,10 +13368,6 @@ msgid "All Devices"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Device"
-msgstr ""
-
-#: editor/project_settings_editor.cpp
 msgid " (Physical)"
 msgstr ""
 
@@ -12984,10 +13417,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
-msgstr ""
-
-#: editor/project_settings_editor.cpp scene/3d/sprite_3d.cpp
-msgid "Axis"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -13137,12 +13566,7 @@ msgstr ""
 msgid "Action:"
 msgstr ""
 
-#: editor/project_settings_editor.cpp
-#, fuzzy
-msgid "Action"
-msgstr "Sve sekcije"
-
-#: editor/project_settings_editor.cpp
+#: editor/project_settings_editor.cpp scene/gui/scroll_container.cpp
 msgid "Deadzone"
 msgstr ""
 
@@ -13329,7 +13753,9 @@ msgstr ""
 msgid "Initial value for the counter"
 msgstr ""
 
-#: editor/rename_dialog.cpp scene/resources/animation.cpp
+#: editor/rename_dialog.cpp scene/gui/range.cpp scene/resources/animation.cpp
+#: scene/resources/visual_shader_nodes.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
 msgid "Step"
 msgstr ""
 
@@ -14066,7 +14492,7 @@ msgid "Monitor"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
 msgid "Value"
 msgstr ""
 
@@ -14088,6 +14514,11 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Export list to a CSV file"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Resource Path"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp scene/resources/audio_stream_sample.cpp
@@ -14159,7 +14590,7 @@ msgstr ""
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr ""
 
-#: editor/spatial_editor_gizmos.cpp
+#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
 msgid "Camera"
 msgstr ""
 
@@ -14171,13 +14602,16 @@ msgstr ""
 msgid "Change Camera Size"
 msgstr ""
 
-#: editor/spatial_editor_gizmos.cpp scene/3d/physics_body.cpp
+#: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
+#: scene/3d/physics_body.cpp
 msgid "Joint"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp scene/2d/collision_shape_2d.cpp
-#: scene/2d/touch_screen_button.cpp scene/3d/collision_shape.cpp
-#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp servers/physics_2d_server.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/collision_shape.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/occluder.cpp scene/3d/spring_arm.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
 msgstr ""
@@ -14358,16 +14792,11 @@ msgid "Crash Handler"
 msgstr ""
 
 #: main/main.cpp
-#, fuzzy
-msgid "Message"
-msgstr "Zajednica"
-
-#: main/main.cpp
 msgid "Multithreaded Server"
 msgstr ""
 
 #: main/main.cpp
-msgid "Rid Pool Prealloc"
+msgid "RID Pool Prealloc"
 msgstr ""
 
 #: main/main.cpp
@@ -14436,28 +14865,18 @@ msgid "Display"
 msgstr ""
 
 #: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/resources/texture.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
+#: scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
 msgstr ""
 
-#: main/main.cpp modules/csg/csg_shape.cpp
-#: modules/opensimplex/noise_texture.cpp scene/resources/capsule_shape.cpp
+#: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
+#: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
+#: scene/resources/capsule_shape.cpp scene/resources/capsule_shape_2d.cpp
 #: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
 #: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
 msgid "Height"
-msgstr ""
-
-#: main/main.cpp scene/gui/dialogs.cpp
-msgid "Resizable"
-msgstr ""
-
-#: main/main.cpp
-msgid "Borderless"
-msgstr ""
-
-#: main/main.cpp
-msgid "Fullscreen"
 msgstr ""
 
 #: main/main.cpp
@@ -14490,10 +14909,6 @@ msgid "Use V-Sync"
 msgstr ""
 
 #: main/main.cpp
-msgid "V-Sync Via Compositor"
-msgstr ""
-
-#: main/main.cpp
 msgid "Per Pixel Transparency"
 msgstr ""
 
@@ -14501,7 +14916,15 @@ msgstr ""
 msgid "Allowed"
 msgstr ""
 
-#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp scene/2d/camera_2d.cpp
+#: scene/2d/light_2d.cpp scene/2d/navigation_polygon.cpp
+#: scene/2d/ray_cast_2d.cpp scene/2d/sprite.cpp scene/2d/y_sort.cpp
+#: scene/3d/audio_stream_player_3d.cpp scene/3d/baked_lightmap.cpp
+#: scene/3d/interpolated_camera.cpp scene/3d/light.cpp
+#: scene/3d/navigation_mesh_instance.cpp scene/3d/ray_cast.cpp
+#: scene/3d/sprite_3d.cpp scene/gui/graph_edit.cpp
+#: scene/gui/rich_text_label.cpp scene/resources/curve.cpp
+#: scene/resources/environment.cpp
 msgid "Enabled"
 msgstr ""
 
@@ -14515,10 +14938,6 @@ msgstr ""
 
 #: main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Energy Saving"
-msgstr ""
-
-#: main/main.cpp platform/uwp/os_uwp.cpp
-msgid "Keep Screen On"
 msgstr ""
 
 #: main/main.cpp
@@ -14553,10 +14972,6 @@ msgid "Physics FPS"
 msgstr ""
 
 #: main/main.cpp
-msgid "Physics Jitter Fix"
-msgstr ""
-
-#: main/main.cpp
 msgid "Force FPS"
 msgstr ""
 
@@ -14587,8 +15002,9 @@ msgid "Verbose stdout"
 msgstr ""
 
 #: main/main.cpp
-msgid "Frame Delay Msec"
-msgstr ""
+#, fuzzy
+msgid "Frame Delay (msec)"
+msgstr "Vreme Frejma(ms)"
 
 #: main/main.cpp
 msgid "Low Processor Mode"
@@ -14596,10 +15012,6 @@ msgstr ""
 
 #: main/main.cpp
 msgid "Delta Sync After Draw"
-msgstr ""
-
-#: main/main.cpp
-msgid "Delta Smoothing"
 msgstr ""
 
 #: main/main.cpp
@@ -14660,13 +15072,14 @@ msgstr ""
 msgid "Fullsize"
 msgstr ""
 
-#: main/main.cpp
+#: main/main.cpp scene/resources/dynamic_font.cpp
 msgid "Use Filter"
 msgstr ""
 
-#: main/main.cpp
-msgid "Bg Color"
-msgstr ""
+#: main/main.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "BG Color"
+msgstr "Promeni %s Tip"
 
 #: main/main.cpp
 msgid "macOS Native Icon"
@@ -14745,6 +15158,7 @@ msgid "Main Loop Type"
 msgstr "Počisti Animaciju"
 
 #: main/main.cpp scene/gui/texture_progress.cpp
+#: scene/gui/viewport_container.cpp
 msgid "Stretch"
 msgstr ""
 
@@ -14764,7 +15178,7 @@ msgstr ""
 msgid "Quit On Go Back"
 msgstr ""
 
-#: main/main.cpp
+#: main/main.cpp scene/main/viewport.cpp
 msgid "Snap Controls To Pixels"
 msgstr ""
 
@@ -14805,34 +15219,45 @@ msgstr ""
 msgid "Operation"
 msgstr "Odvajanje:"
 
-#: modules/csg/csg_shape.cpp modules/gridmap/grid_map.cpp
-#: scene/2d/collision_object_2d.cpp scene/2d/tile_map.cpp
-#: scene/3d/collision_object.cpp scene/3d/soft_body.cpp
-#: servers/physics_2d_server.cpp
+#: modules/csg/csg_shape.cpp
+msgid "Calculate Tangents"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Use Collision"
+msgstr "Napravi"
+
+#: modules/csg/csg_shape.cpp servers/physics_2d_server.cpp
 #, fuzzy
 msgid "Collision Layer"
 msgstr "Napravi"
 
-#: modules/csg/csg_shape.cpp modules/gridmap/grid_map.cpp
-#: scene/2d/collision_object_2d.cpp scene/2d/ray_cast_2d.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/collision_object.cpp
-#: scene/3d/ray_cast.cpp scene/3d/soft_body.cpp scene/3d/spring_arm.cpp
+#: modules/csg/csg_shape.cpp scene/2d/ray_cast_2d.cpp scene/3d/camera.cpp
+#: scene/3d/ray_cast.cpp scene/3d/spring_arm.cpp
 #: scene/resources/navigation_mesh.cpp servers/physics_server.cpp
 #, fuzzy
 msgid "Collision Mask"
 msgstr "Napravi"
 
-#: modules/csg/csg_shape.cpp scene/2d/canvas_item.cpp
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Invert Faces"
+msgstr "Konvertuj u %s"
+
+#: modules/csg/csg_shape.cpp scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
 #: scene/resources/primitive_meshes.cpp
 msgid "Material"
 msgstr ""
 
 #: modules/csg/csg_shape.cpp scene/2d/navigation_agent_2d.cpp
 #: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_agent.cpp
-#: scene/3d/navigation_obstacle.cpp scene/animation/root_motion_view.cpp
-#: scene/resources/capsule_shape.cpp scene/resources/circle_shape_2d.cpp
-#: scene/resources/cylinder_shape.cpp scene/resources/navigation_mesh.cpp
-#: scene/resources/primitive_meshes.cpp scene/resources/sphere_shape.cpp
+#: scene/3d/navigation_obstacle.cpp scene/3d/vehicle_body.cpp
+#: scene/animation/root_motion_view.cpp scene/resources/capsule_shape.cpp
+#: scene/resources/capsule_shape_2d.cpp scene/resources/circle_shape_2d.cpp
+#: scene/resources/cylinder_shape.cpp scene/resources/environment.cpp
+#: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
+#: scene/resources/sphere_shape.cpp
 msgid "Radius"
 msgstr ""
 
@@ -14846,7 +15271,15 @@ msgid "Rings"
 msgstr "Upozorenja"
 
 #: modules/csg/csg_shape.cpp
+msgid "Smooth Faces"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
 msgid "Sides"
+msgstr ""
+
+#: modules/csg/csg_shape.cpp
+msgid "Cone"
 msgstr ""
 
 #: modules/csg/csg_shape.cpp
@@ -14861,6 +15294,13 @@ msgstr ""
 msgid "Ring Sides"
 msgstr ""
 
+#: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
+#: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
+#: scene/3d/collision_polygon.cpp scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Polygon"
+msgstr "Poligoni"
+
 #: modules/csg/csg_shape.cpp
 msgid "Spin Degrees"
 msgstr ""
@@ -14868,6 +15308,11 @@ msgstr ""
 #: modules/csg/csg_shape.cpp
 msgid "Spin Sides"
 msgstr ""
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path Node"
+msgstr "Animacija Obriši Ključeve"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path Interval Type"
@@ -14887,16 +15332,78 @@ msgid "Path Rotation"
 msgstr "Kontanta"
 
 #: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path Local"
+msgstr "Kontanta"
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path Continuous U"
+msgstr "Neprekidna"
+
+#: modules/csg/csg_shape.cpp
 msgid "Path U Distance"
 msgstr ""
+
+#: modules/csg/csg_shape.cpp
+#, fuzzy
+msgid "Path Joined"
+msgstr "Kontanta"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 #, fuzzy
 msgid "Compression Mode"
 msgstr "Napravi"
 
+#: modules/enet/networked_multiplayer_enet.cpp
+#, fuzzy
+msgid "Transfer Channel"
+msgstr "Transformiši Poligon"
+
+#: modules/enet/networked_multiplayer_enet.cpp
+#, fuzzy
+msgid "Channel Count"
+msgstr "Instanciraj Scenu Ovde"
+
+#: modules/enet/networked_multiplayer_enet.cpp
+msgid "Always Ordered"
+msgstr ""
+
+#: modules/enet/networked_multiplayer_enet.cpp
+msgid "Server Relay"
+msgstr ""
+
+#: modules/enet/networked_multiplayer_enet.cpp
+msgid "DTLS Verify"
+msgstr ""
+
+#: modules/enet/networked_multiplayer_enet.cpp
+msgid "DTLS Hostname"
+msgstr ""
+
+#: modules/enet/networked_multiplayer_enet.cpp
+msgid "Use DTLS"
+msgstr ""
+
 #: modules/gdnative/gdnative.cpp
 msgid "Config File"
+msgstr ""
+
+#: modules/gdnative/gdnative.cpp
+msgid "Load Once"
+msgstr ""
+
+#: modules/gdnative/gdnative.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Singleton"
+msgstr ""
+
+#: modules/gdnative/gdnative.cpp
+msgid "Symbol Prefix"
+msgstr ""
+
+#: modules/gdnative/gdnative.cpp
+msgid "Reloadable"
 msgstr ""
 
 #: modules/gdnative/gdnative.cpp
@@ -14954,12 +15461,17 @@ msgid "Libraries: "
 msgstr ""
 
 #: modules/gdnative/nativescript/nativescript.cpp
+msgid "Class Name"
+msgstr ""
+
+#: modules/gdnative/nativescript/nativescript.cpp
 msgid "Script Class"
 msgstr ""
 
 #: modules/gdnative/nativescript/nativescript.cpp
-msgid "Script Class Icon Path"
-msgstr ""
+#, fuzzy
+msgid "Icon Path"
+msgstr "Putanja"
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
@@ -15055,6 +15567,165 @@ msgstr ""
 msgid "Export GLTF..."
 msgstr ""
 
+#: modules/gltf/gltf_accessor.cpp
+msgid "Buffer View"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_buffer_view.cpp
+msgid "Byte Offset"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+#, fuzzy
+msgid "Component Type"
+msgstr "Počisti Animaciju"
+
+#: modules/gltf/gltf_accessor.cpp
+msgid "Normalized"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+#, fuzzy
+msgid "Count"
+msgstr "Optimizuj Animaciju"
+
+#: modules/gltf/gltf_accessor.cpp scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Min"
+msgstr "MiB"
+
+#: modules/gltf/gltf_accessor.cpp scene/resources/visual_shader_nodes.cpp
+msgid "Max"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+#, fuzzy
+msgid "Sparse Count"
+msgstr "Instanciraj Scenu Ovde"
+
+#: modules/gltf/gltf_accessor.cpp
+msgid "Sparse Indices Buffer View"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+msgid "Sparse Indices Byte Offset"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+msgid "Sparse Indices Component Type"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+msgid "Sparse Values Buffer View"
+msgstr ""
+
+#: modules/gltf/gltf_accessor.cpp
+msgid "Sparse Values Byte Offset"
+msgstr ""
+
+#: modules/gltf/gltf_buffer_view.cpp
+msgid "Buffer"
+msgstr ""
+
+#: modules/gltf/gltf_buffer_view.cpp
+msgid "Byte Length"
+msgstr ""
+
+#: modules/gltf/gltf_buffer_view.cpp
+msgid "Byte Stride"
+msgstr ""
+
+#: modules/gltf/gltf_buffer_view.cpp
+msgid "Indices"
+msgstr ""
+
+#: modules/gltf/gltf_camera.cpp
+msgid "FOV Size"
+msgstr ""
+
+#: modules/gltf/gltf_camera.cpp
+msgid "Zfar"
+msgstr ""
+
+#: modules/gltf/gltf_camera.cpp
+#, fuzzy
+msgid "Znear"
+msgstr "Linearna"
+
+#: modules/gltf/gltf_light.cpp scene/2d/canvas_modulate.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp scene/2d/polygon_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/light.cpp
+#: scene/animation/root_motion_view.cpp scene/gui/color_picker.cpp
+#: scene/gui/color_rect.cpp scene/gui/rich_text_effect.cpp
+#: scene/resources/environment.cpp scene/resources/material.cpp
+#: scene/resources/particles_material.cpp scene/resources/sky.cpp
+#: scene/resources/style_box.cpp
+msgid "Color"
+msgstr ""
+
+#: modules/gltf/gltf_light.cpp scene/3d/reflection_probe.cpp
+#: scene/resources/environment.cpp
+msgid "Intensity"
+msgstr ""
+
+#: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp
+#, fuzzy
+msgid "Range"
+msgstr "Promeni"
+
+#: modules/gltf/gltf_light.cpp
+msgid "Inner Cone Angle"
+msgstr ""
+
+#: modules/gltf/gltf_light.cpp
+msgid "Outer Cone Angle"
+msgstr ""
+
+#: modules/gltf/gltf_mesh.cpp
+msgid "Blend Weights"
+msgstr ""
+
+#: modules/gltf/gltf_mesh.cpp
+#, fuzzy
+msgid "Instance Materials"
+msgstr "Instanciraj Scenu Ovde"
+
+#: modules/gltf/gltf_node.cpp
+msgid "Parent"
+msgstr ""
+
+#: modules/gltf/gltf_node.cpp
+msgid "Xform"
+msgstr ""
+
+#: modules/gltf/gltf_node.cpp scene/3d/mesh_instance.cpp
+msgid "Skin"
+msgstr ""
+
+#: modules/gltf/gltf_node.cpp scene/3d/spatial.cpp
+#, fuzzy
+msgid "Translation"
+msgstr "Tranzicija: "
+
+#: modules/gltf/gltf_node.cpp scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp
+#: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
+#: scene/3d/spatial.cpp scene/gui/control.cpp scene/main/canvas_layer.cpp
+msgid "Rotation"
+msgstr ""
+
+#: modules/gltf/gltf_node.cpp
+msgid "Children"
+msgstr ""
+
+#: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_skin.cpp
+#, fuzzy
+msgid "Joints"
+msgstr "Napravi"
+
+#: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_skin.cpp
+msgid "Roots"
+msgstr ""
+
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_state.cpp
 msgid "Unique Names"
 msgstr ""
@@ -15065,7 +15736,19 @@ msgid "Godot Bone Node"
 msgstr "Animacija Obriši Ključeve"
 
 #: modules/gltf/gltf_skin.cpp
+msgid "Skin Root"
+msgstr ""
+
+#: modules/gltf/gltf_skin.cpp
+msgid "Joints Original"
+msgstr ""
+
+#: modules/gltf/gltf_skin.cpp
 msgid "Inverse Binds"
+msgstr ""
+
+#: modules/gltf/gltf_skin.cpp
+msgid "Non Joints"
 msgstr ""
 
 #: modules/gltf/gltf_skin.cpp
@@ -15076,7 +15759,51 @@ msgstr ""
 msgid "Joint I To Name"
 msgstr ""
 
+#: modules/gltf/gltf_skin.cpp
+msgid "Godot Skin"
+msgstr ""
+
+#: modules/gltf/gltf_spec_gloss.cpp
+msgid "Diffuse Img"
+msgstr ""
+
+#: modules/gltf/gltf_spec_gloss.cpp
+msgid "Diffuse Factor"
+msgstr ""
+
+#: modules/gltf/gltf_spec_gloss.cpp
+msgid "Gloss Factor"
+msgstr ""
+
+#: modules/gltf/gltf_spec_gloss.cpp
+msgid "Specular Factor"
+msgstr ""
+
+#: modules/gltf/gltf_spec_gloss.cpp
+msgid "Spec Gloss Img"
+msgstr ""
+
 #: modules/gltf/gltf_state.cpp
+msgid "Json"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+msgid "Major Version"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+msgid "Minor Version"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+msgid "GLB Data"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+msgid "Use Named Skin Binds"
+msgstr ""
+
+#: modules/gltf/gltf_state.cpp scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Nodes"
 msgstr "Animacija Uduplaj Ključeve"
@@ -15096,6 +15823,16 @@ msgstr ""
 #: modules/gltf/gltf_state.cpp
 msgid "Materials"
 msgstr ""
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Scene Name"
+msgstr "Napravi"
+
+#: modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Root Nodes"
+msgstr "Animacija Obriši Ključeve"
 
 #: modules/gltf/gltf_state.cpp scene/2d/particles_2d.cpp
 #: scene/gui/texture_button.cpp scene/gui/texture_progress.cpp
@@ -15139,8 +15876,16 @@ msgstr "Ukloni Čvor"
 msgid "Animations"
 msgstr "Animacije:"
 
+#: modules/gltf/gltf_texture.cpp
+msgid "Src Image"
+msgstr ""
+
 #: modules/gridmap/grid_map.cpp
 msgid "Physics Material"
+msgstr ""
+
+#: modules/gridmap/grid_map.cpp
+msgid "Use In Baked Light"
 msgstr ""
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
@@ -15149,7 +15894,27 @@ msgid "Cell"
 msgstr ""
 
 #: modules/gridmap/grid_map.cpp
-msgid "Cell Octant Size"
+msgid "Octant Size"
+msgstr ""
+
+#: modules/gridmap/grid_map.cpp
+#, fuzzy
+msgid "Center X"
+msgstr "Centriraj Čvor"
+
+#: modules/gridmap/grid_map.cpp
+#, fuzzy
+msgid "Center Y"
+msgstr "Centriraj Čvor"
+
+#: modules/gridmap/grid_map.cpp
+#, fuzzy
+msgid "Center Z"
+msgstr "Centriraj Čvor"
+
+#: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
+#: scene/2d/tile_map.cpp scene/3d/collision_object.cpp scene/3d/soft_body.cpp
+msgid "Mask"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -15333,12 +16098,18 @@ msgstr ""
 msgid "Ultra Quality Ray Count"
 msgstr ""
 
+#: modules/minimp3/audio_stream_mp3.cpp
+#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
+#, fuzzy
+msgid "Loop Offset"
+msgstr "Napravi"
+
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Eye Height"
 msgstr ""
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
-msgid "Iod"
+msgid "IOD"
 msgstr ""
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
@@ -15354,11 +16125,11 @@ msgid "Oversample"
 msgstr ""
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
-msgid "K 1"
+msgid "K1"
 msgstr ""
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
-msgid "K 2"
+msgid "K2"
 msgstr ""
 
 #: modules/mono/csharp_script.cpp
@@ -15445,11 +16216,23 @@ msgid "Done!"
 msgstr ""
 
 #: modules/opensimplex/noise_texture.cpp
+msgid "Seamless"
+msgstr ""
+
+#: modules/opensimplex/noise_texture.cpp
+msgid "As Normal Map"
+msgstr ""
+
+#: modules/opensimplex/noise_texture.cpp
 msgid "Bump Strength"
 msgstr ""
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise"
+msgstr ""
+
+#: modules/opensimplex/noise_texture.cpp
+msgid "Noise Offset"
 msgstr ""
 
 #: modules/opensimplex/open_simplex_noise.cpp
@@ -15468,12 +16251,55 @@ msgstr ""
 msgid "Lacunarity"
 msgstr ""
 
+#: modules/regex/regex.cpp
+msgid "Subject"
+msgstr ""
+
+#: modules/regex/regex.cpp
+msgid "Names"
+msgstr ""
+
+#: modules/regex/regex.cpp
+#, fuzzy
+msgid "Strings"
+msgstr "Postavke Uređivača..."
+
+#: modules/upnp/upnp.cpp
+msgid "Discover Multicast If"
+msgstr ""
+
 #: modules/upnp/upnp.cpp
 msgid "Discover Local Port"
 msgstr ""
 
+#: modules/upnp/upnp.cpp
+msgid "Discover IPv6"
+msgstr ""
+
 #: modules/upnp/upnp_device.cpp
-msgid "Igd Status"
+#, fuzzy
+msgid "Description URL"
+msgstr "Opis:"
+
+#: modules/upnp/upnp_device.cpp
+#, fuzzy
+msgid "Service Type"
+msgstr "Promeni %s Tip"
+
+#: modules/upnp/upnp_device.cpp
+msgid "IGD Control URL"
+msgstr ""
+
+#: modules/upnp/upnp_device.cpp
+msgid "IGD Service Type"
+msgstr ""
+
+#: modules/upnp/upnp_device.cpp
+msgid "IGD Our Addr"
+msgstr ""
+
+#: modules/upnp/upnp_device.cpp
+msgid "IGD Status"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp scene/resources/visual_shader.cpp
@@ -15514,12 +16340,6 @@ msgstr ""
 #, fuzzy
 msgid "Visual Script"
 msgstr "Prethodna Skripta"
-
-#: modules/visual_script/visual_script_builtin_funcs.cpp
-#: modules/visual_script/visual_script_nodes.cpp
-#: scene/resources/visual_shader_nodes.cpp
-msgid "Function"
-msgstr "Funkcija"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Signal Arguments"
@@ -15842,12 +16662,18 @@ msgid "Edit Member"
 msgstr ""
 
 #: modules/visual_script/visual_script_expression.cpp
+#: scene/resources/visual_shader.cpp
 msgid "Expression"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return"
 msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Return Enabled"
+msgstr "Filtriraj signale"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
@@ -15947,12 +16773,28 @@ msgid "Basic Type"
 msgstr "Promeni %s Tip"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Node Path"
+msgstr "Putanja"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Argument Cache"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Rpc Call Mode"
+msgid "Use Default Args"
 msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Validate"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "RPC Call Mode"
+msgstr "Napravi"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Subtract %s"
@@ -16009,10 +16851,6 @@ msgid "Get %s"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-msgid "Index"
-msgstr ""
-
-#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
 msgstr ""
 
@@ -16051,6 +16889,10 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Var Name"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -16130,6 +16972,10 @@ msgstr ""
 msgid "SubCall"
 msgstr ""
 
+#: modules/visual_script/visual_script_nodes.cpp scene/gui/graph_node.cpp
+msgid "Title"
+msgstr ""
+
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
 msgid "Construct %s"
@@ -16185,6 +17031,10 @@ msgstr ""
 msgid "%s sec(s)"
 msgstr ""
 
+#: modules/visual_script/visual_script_yield_nodes.cpp scene/main/timer.cpp
+msgid "Wait Time"
+msgstr ""
+
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "WaitSignal"
 msgstr ""
@@ -16210,6 +17060,10 @@ msgid "Trusted SSL Certificate"
 msgstr ""
 
 #: modules/websocket/websocket_server.cpp
+msgid "Bind IP"
+msgstr ""
+
+#: modules/websocket/websocket_server.cpp
 msgid "Private Key"
 msgstr ""
 
@@ -16218,8 +17072,13 @@ msgid "SSL Certificate"
 msgstr ""
 
 #: modules/websocket/websocket_server.cpp
-msgid "Ca Chain"
+msgid "CA Chain"
 msgstr ""
+
+#: modules/websocket/websocket_server.cpp
+#, fuzzy
+msgid "Handshake Timeout"
+msgstr "Istek vremena."
 
 #: modules/webxr/webxr_interface.cpp
 #, fuzzy
@@ -16244,6 +17103,10 @@ msgstr ""
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Visibility State"
+msgstr ""
+
+#: modules/webxr/webxr_interface.cpp
+msgid "Bounds Geometry"
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -17026,6 +17889,55 @@ msgid ""
 "order for AnimatedSprite to display frames."
 msgstr ""
 
+#: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+msgid "Frame"
+msgstr ""
+
+#: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Speed Scale"
+msgstr "Razmera"
+
+#: scene/2d/animated_sprite.cpp scene/2d/audio_stream_player_2d.cpp
+#: scene/3d/audio_stream_player_3d.cpp scene/3d/sprite_3d.cpp
+#: scene/audio/audio_stream_player.cpp
+msgid "Playing"
+msgstr ""
+
+#: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#, fuzzy
+msgid "Centered"
+msgstr "Centriraj Čvor"
+
+#: scene/2d/animated_sprite.cpp scene/2d/camera_2d.cpp scene/2d/light_2d.cpp
+#: scene/2d/parallax_background.cpp scene/2d/parallax_layer.cpp
+#: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
+#: scene/3d/path.cpp scene/3d/physics_body.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
+#: scene/main/canvas_layer.cpp scene/resources/material.cpp
+#: scene/resources/style_box.cpp
+msgid "Offset"
+msgstr ""
+
+#: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/texture_button.cpp scene/gui/texture_rect.cpp
+msgid "Flip H"
+msgstr ""
+
+#: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/texture_button.cpp scene/gui/texture_rect.cpp
+msgid "Flip V"
+msgstr ""
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+msgid "Monitoring"
+msgstr ""
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+msgid "Monitorable"
+msgstr ""
+
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Physics Overrides"
 msgstr ""
@@ -17035,7 +17947,16 @@ msgid "Space Override"
 msgstr ""
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
+#, fuzzy
+msgid "Gravity Point"
+msgstr "Generiši Tačke"
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Gravity Distance Scale"
+msgstr ""
+
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
+msgid "Gravity Vec"
 msgstr ""
 
 #: scene/2d/area_2d.cpp scene/2d/cpu_particles_2d.cpp scene/3d/area.cpp
@@ -17043,14 +17964,12 @@ msgstr ""
 msgid "Gravity"
 msgstr ""
 
-#: scene/2d/area_2d.cpp scene/2d/physics_body_2d.cpp scene/3d/area.cpp
-#: scene/3d/physics_body.cpp
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
 #, fuzzy
 msgid "Linear Damp"
 msgstr "Linearna"
 
-#: scene/2d/area_2d.cpp scene/2d/physics_body_2d.cpp scene/3d/area.cpp
-#: scene/3d/physics_body.cpp
+#: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Angular Damp"
 msgstr ""
 
@@ -17060,7 +17979,7 @@ msgid "Audio Bus"
 msgstr "Audio Klipovi"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-msgid "Audio Bus Name"
+msgid "Override"
 msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
@@ -17081,8 +18000,9 @@ msgid "Pitch Scale"
 msgstr "Razmera"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/audio/audio_stream_player.cpp
-msgid "Playing"
+#: scene/animation/animation_player.cpp scene/audio/audio_stream_player.cpp
+#: scene/gui/video_player.cpp
+msgid "Autoplay"
 msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
@@ -17091,7 +18011,8 @@ msgid "Stream Paused"
 msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/3d/reflection_probe.cpp
+#: scene/3d/reflection_probe.cpp scene/3d/visual_instance.cpp
+#: scene/resources/material.cpp
 msgid "Max Distance"
 msgstr ""
 
@@ -17118,12 +18039,28 @@ msgstr "Kopiraj Tekst"
 msgid "Anchor Mode"
 msgstr ""
 
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Rotating"
+msgstr "Kontanta"
+
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#, fuzzy
+msgid "Current"
+msgstr "Obeleži Trenutno"
+
+#: scene/2d/camera_2d.cpp scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom"
+msgstr "Uveličaj"
+
 #: scene/2d/camera_2d.cpp scene/main/canvas_layer.cpp
 msgid "Custom Viewport"
 msgstr ""
 
 #: scene/2d/camera_2d.cpp scene/3d/camera.cpp
-#: scene/animation/animation_tree.cpp scene/main/timer.cpp
+#: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
+#: scene/animation/animation_tree_player.cpp scene/main/timer.cpp
 msgid "Process Mode"
 msgstr ""
 
@@ -17132,31 +18069,52 @@ msgid "Limit"
 msgstr ""
 
 #: scene/2d/camera_2d.cpp
+msgid "Smoothed"
+msgstr ""
+
+#: scene/2d/camera_2d.cpp
 msgid "Draw Margin"
+msgstr ""
+
+#: scene/2d/camera_2d.cpp
+msgid "Drag Margin H Enabled"
+msgstr ""
+
+#: scene/2d/camera_2d.cpp
+msgid "Drag Margin V Enabled"
 msgstr ""
 
 #: scene/2d/camera_2d.cpp
 msgid "Smoothing"
 msgstr ""
 
-#: scene/2d/camera_2d.cpp scene/2d/path_2d.cpp scene/2d/sprite.cpp
-#: scene/3d/path.cpp
-msgid "Offset"
+#: scene/2d/camera_2d.cpp
+msgid "H"
 msgstr ""
 
 #: scene/2d/camera_2d.cpp
-msgid "Offset H"
-msgstr ""
-
-#: scene/2d/camera_2d.cpp
-msgid "Offset V"
+msgid "V"
 msgstr ""
 
 #: scene/2d/camera_2d.cpp
 msgid "Drag Margin"
 msgstr ""
 
+#: scene/2d/camera_2d.cpp
+msgid "Draw Screen"
+msgstr ""
+
+#: scene/2d/camera_2d.cpp
+msgid "Draw Limits"
+msgstr ""
+
+#: scene/2d/camera_2d.cpp
+#, fuzzy
+msgid "Draw Drag Margin"
+msgstr "Dodatni Argumenti Poziva:"
+
 #: scene/2d/canvas_item.cpp scene/animation/animation_blend_space_2d.cpp
+#: scene/resources/environment.cpp scene/resources/material.cpp
 msgid "Blend Mode"
 msgstr ""
 
@@ -17165,16 +18123,44 @@ msgstr ""
 msgid "Light Mode"
 msgstr "Desna Široka"
 
-#: scene/2d/canvas_item.cpp scene/resources/material.cpp
+#: scene/2d/canvas_item.cpp
+#, fuzzy
+msgid "Particles Animation"
+msgstr "Optimizuj Animaciju"
+
+#: scene/2d/canvas_item.cpp
 msgid "Particles Anim H Frames"
 msgstr ""
 
-#: scene/2d/canvas_item.cpp scene/resources/material.cpp
+#: scene/2d/canvas_item.cpp
 msgid "Particles Anim V Frames"
 msgstr ""
 
+#: scene/2d/canvas_item.cpp
+#, fuzzy
+msgid "Particles Anim Loop"
+msgstr "Promeni Ponavljanje Animacije"
+
 #: scene/2d/canvas_item.cpp scene/3d/spatial.cpp
 msgid "Visibility"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp scene/3d/spatial.cpp scene/gui/progress_bar.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+msgid "Visible"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/style_box.cpp
+msgid "Modulate"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp
+msgid "Self Modulate"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp
+msgid "Show Behind Parent"
 msgstr ""
 
 #: scene/2d/canvas_item.cpp
@@ -17182,7 +18168,12 @@ msgid "Show On Top"
 msgstr ""
 
 #: scene/2d/canvas_item.cpp scene/2d/light_occluder_2d.cpp
+#: scene/2d/tile_map.cpp
 msgid "Light Mask"
+msgstr ""
+
+#: scene/2d/canvas_item.cpp
+msgid "Use Parent Material"
 msgstr ""
 
 #: scene/2d/canvas_item.cpp
@@ -17200,6 +18191,10 @@ msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
+msgstr ""
+
+#: scene/2d/collision_object_2d.cpp
+msgid "Pickable"
 msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -17224,6 +18219,19 @@ msgstr ""
 #: scene/2d/collision_polygon_2d.cpp
 msgid "Build Mode"
 msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+#: scene/3d/collision_polygon.cpp scene/3d/collision_shape.cpp
+#: scene/animation/animation_node_state_machine.cpp scene/gui/base_button.cpp
+#: scene/gui/texture_button.cpp
+#, fuzzy
+msgid "Disabled"
+msgstr "Onemogućeno"
+
+#: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
+#, fuzzy
+msgid "One Way Collision"
+msgstr "Napravi"
 
 #: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
 #, fuzzy
@@ -17257,6 +18265,13 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Emitting"
+msgstr "Postavke Uređivača..."
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp scene/3d/area.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#: scene/resources/environment.cpp
 msgid "Amount"
 msgstr ""
 
@@ -17266,15 +18281,14 @@ msgid "Lifetime"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-msgid "Preprocess"
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp scene/main/timer.cpp
+msgid "One Shot"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
-msgid "Speed Scale"
-msgstr "Razmera"
+msgid "Preprocess"
+msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -17298,8 +18312,19 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+msgid "Fract Delta"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 msgid "Drawing"
 msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
+#, fuzzy
+msgid "Local Coords"
+msgstr "Cele Reči"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -17316,8 +18341,10 @@ msgstr ""
 msgid "Texture"
 msgstr "Obriši Selekciju"
 
-#: scene/2d/cpu_particles_2d.cpp
-msgid "Normalmap"
+#: scene/2d/cpu_particles_2d.cpp scene/2d/mesh_instance_2d.cpp
+#: scene/2d/multimesh_instance_2d.cpp scene/2d/particles_2d.cpp
+#: scene/2d/sprite.cpp scene/resources/style_box.cpp
+msgid "Normal Map"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
@@ -17327,7 +18354,15 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
-msgid "Emission Sphere Radius"
+msgid "Sphere Radius"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp
+msgid "Rect Extents"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+msgid "Normals"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
@@ -17354,7 +18389,8 @@ msgid "Initial Velocity"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
-#: scene/resources/particles_material.cpp
+#: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
 msgid "Angular Velocity"
 msgstr ""
 
@@ -17393,11 +18429,6 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
-msgid "Color"
-msgstr ""
-
-#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
-#: scene/resources/particles_material.cpp
 msgid "Color Ramp"
 msgstr ""
 
@@ -17432,16 +18463,32 @@ msgstr ""
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr ""
 
+#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Node A"
+msgstr "Animacija Uduplaj Ključeve"
+
+#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Node B"
+msgstr "Animacija Uduplaj Ključeve"
+
 #: scene/2d/joints_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/resources/environment.cpp
 msgid "Bias"
 msgstr ""
+
+#: scene/2d/joints_2d.cpp
+#, fuzzy
+msgid "Disable Collision"
+msgstr "Onemogućeno"
 
 #: scene/2d/joints_2d.cpp
 msgid "Softness"
 msgstr ""
 
 #: scene/2d/joints_2d.cpp scene/resources/animation.cpp
-#: scene/resources/ray_shape.cpp
+#: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
 msgid "Length"
 msgstr ""
 
@@ -17449,11 +18496,11 @@ msgstr ""
 msgid "Initial Offset"
 msgstr ""
 
-#: scene/2d/joints_2d.cpp
+#: scene/2d/joints_2d.cpp scene/3d/vehicle_body.cpp
 msgid "Rest Length"
 msgstr ""
 
-#: scene/2d/joints_2d.cpp
+#: scene/2d/joints_2d.cpp scene/3d/vehicle_body.cpp
 msgid "Stiffness"
 msgstr ""
 
@@ -17463,41 +18510,38 @@ msgid ""
 "property."
 msgstr ""
 
+#: scene/2d/light_2d.cpp scene/3d/light.cpp scene/gui/reference_rect.cpp
+#, fuzzy
+msgid "Editor Only"
+msgstr "Uredi"
+
 #: scene/2d/light_2d.cpp
 msgid "Texture Scale"
 msgstr ""
 
 #: scene/2d/light_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/resources/environment.cpp scene/resources/sky.cpp
 msgid "Energy"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-#, fuzzy
-msgid "Range"
-msgstr "Promeni"
-
-#: scene/2d/light_2d.cpp
-msgid "Range Height"
+msgid "Z Min"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-msgid "Range Z Min"
+msgid "Z Max"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-msgid "Range Z Max"
+msgid "Layer Min"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-msgid "Range Layer Min"
+msgid "Layer Max"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-msgid "Range Layer Max"
-msgstr ""
-
-#: scene/2d/light_2d.cpp
-msgid "Range Item Cull Mask"
+msgid "Item Cull Mask"
 msgstr ""
 
 #: scene/2d/light_2d.cpp scene/3d/light.cpp scene/resources/style_box.cpp
@@ -17505,26 +18549,30 @@ msgid "Shadow"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-msgid "Shadow Buffer Size"
+msgid "Buffer Size"
 msgstr ""
 
 #: scene/2d/light_2d.cpp
-msgid "Shadow Gradient Length"
+msgid "Gradient Length"
 msgstr ""
 
-#: scene/2d/light_2d.cpp
-msgid "Shadow Filter"
-msgstr ""
+#: scene/2d/light_2d.cpp scene/gui/control.cpp
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Filter"
+msgstr "Filtriraj signale"
 
 #: scene/2d/light_2d.cpp
-msgid "Shadow Filter Smooth"
-msgstr ""
-
-#: scene/2d/light_2d.cpp
-msgid "Shadow Item Cull Mask"
-msgstr ""
+#, fuzzy
+msgid "Filter Smooth"
+msgstr "Centriraj Čvor"
 
 #: scene/2d/light_occluder_2d.cpp
+#, fuzzy
+msgid "Closed"
+msgstr "Zatvori"
+
+#: scene/2d/light_occluder_2d.cpp scene/resources/material.cpp
 #, fuzzy
 msgid "Cull Mode"
 msgstr "Napravi"
@@ -17542,6 +18590,11 @@ msgstr ""
 #, fuzzy
 msgid "Width Curve"
 msgstr "Razdeli Krivu"
+
+#: scene/2d/line_2d.cpp
+#, fuzzy
+msgid "Default Color"
+msgstr "Traži Zamenu za:"
 
 #: scene/2d/line_2d.cpp scene/resources/texture.cpp
 msgid "Fill"
@@ -17572,22 +18625,37 @@ msgstr ""
 msgid "End Cap Mode"
 msgstr ""
 
-#: scene/2d/line_2d.cpp scene/resources/style_box.cpp
+#: scene/2d/line_2d.cpp scene/2d/polygon_2d.cpp scene/resources/style_box.cpp
 msgid "Border"
+msgstr ""
+
+#: scene/2d/line_2d.cpp
+msgid "Sharp Limit"
 msgstr ""
 
 #: scene/2d/line_2d.cpp
 msgid "Round Precision"
 msgstr ""
 
-#: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
-#: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
-msgid "Normal Map"
+#: scene/2d/line_2d.cpp scene/2d/polygon_2d.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Antialiased"
 msgstr ""
 
 #: scene/2d/multimesh_instance_2d.cpp scene/3d/multimesh_instance.cpp
 msgid "Multimesh"
 msgstr ""
+
+#: scene/2d/navigation_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/3d/navigation.cpp scene/animation/root_motion_view.cpp
+#: scene/resources/world_2d.cpp servers/physics_2d/physics_2d_server_sw.cpp
+msgid "Cell Size"
+msgstr ""
+
+#: scene/2d/navigation_2d.cpp scene/3d/navigation.cpp
+#, fuzzy
+msgid "Edge Connection Margin"
+msgstr "Izmeni Konekciju:"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
@@ -17617,10 +18685,18 @@ msgstr ""
 msgid "The NavigationAgent2D can be used only under a Node2D node."
 msgstr ""
 
+#: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_obstacle.cpp
+msgid "Estimate Radius"
+msgstr ""
+
 #: scene/2d/navigation_obstacle_2d.cpp
 msgid ""
 "The NavigationObstacle2D only serves to provide collision avoidance to a "
 "Node2D object."
+msgstr ""
+
+#: scene/2d/navigation_polygon.cpp scene/resources/navigation_mesh.cpp
+msgid "Vertices"
 msgstr ""
 
 #: scene/2d/navigation_polygon.cpp
@@ -17643,11 +18719,8 @@ msgstr ""
 msgid "Navpoly"
 msgstr ""
 
-#: scene/2d/node_2d.cpp scene/main/canvas_layer.cpp
-msgid "Rotation"
-msgstr ""
-
-#: scene/2d/node_2d.cpp scene/main/canvas_layer.cpp
+#: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
+#: scene/main/canvas_layer.cpp
 msgid "Rotation Degrees"
 msgstr ""
 
@@ -17660,8 +18733,43 @@ msgstr "Kontanta"
 msgid "Global Rotation Degrees"
 msgstr ""
 
+#: scene/2d/node_2d.cpp
+msgid "Global Scale"
+msgstr ""
+
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Transform"
+msgstr "Animacija Promjeni Transformaciju"
+
+#: scene/2d/node_2d.cpp
+msgid "Z As Relative"
+msgstr ""
+
 #: scene/2d/parallax_background.cpp scene/gui/scroll_container.cpp
 msgid "Scroll"
+msgstr ""
+
+#: scene/2d/parallax_background.cpp
+#, fuzzy
+msgid "Base Offset"
+msgstr "Obriši Selekciju"
+
+#: scene/2d/parallax_background.cpp
+#, fuzzy
+msgid "Base Scale"
+msgstr "Prethodna Skripta"
+
+#: scene/2d/parallax_background.cpp
+msgid "Limit Begin"
+msgstr ""
+
+#: scene/2d/parallax_background.cpp
+msgid "Limit End"
+msgstr ""
+
+#: scene/2d/parallax_background.cpp
+msgid "Ignore Camera Zoom"
 msgstr ""
 
 #: scene/2d/parallax_layer.cpp
@@ -17669,10 +18777,17 @@ msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
 
-#: scene/2d/parallax_layer.cpp scene/3d/vehicle_body.cpp
+#: scene/2d/parallax_layer.cpp scene/2d/physics_body_2d.cpp
+#: scene/3d/physics_body.cpp scene/3d/vehicle_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
 #, fuzzy
 msgid "Motion"
 msgstr "Sve sekcije"
+
+#: scene/2d/parallax_layer.cpp
+#, fuzzy
+msgid "Mirroring"
+msgstr "Ogledalo"
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -17702,11 +18817,16 @@ msgid ""
 "\"Particles Animation\" enabled."
 msgstr ""
 
+#: scene/2d/particles_2d.cpp
+msgid "Visibility Rect"
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid "Process Material"
 msgstr ""
 
-#: scene/2d/path_2d.cpp scene/3d/path.cpp scene/resources/texture.cpp
+#: scene/2d/path_2d.cpp scene/3d/path.cpp scene/resources/sky.cpp
+#: scene/resources/texture.cpp
 #, fuzzy
 msgid "Curve"
 msgstr "Razdeli Krivu"
@@ -17719,6 +18839,18 @@ msgstr ""
 msgid "Unit Offset"
 msgstr ""
 
+#: scene/2d/path_2d.cpp scene/3d/camera.cpp scene/3d/path.cpp
+msgid "H Offset"
+msgstr ""
+
+#: scene/2d/path_2d.cpp scene/3d/camera.cpp scene/3d/path.cpp
+msgid "V Offset"
+msgstr ""
+
+#: scene/2d/path_2d.cpp scene/3d/path.cpp
+msgid "Cubic Interp"
+msgstr ""
+
 #: scene/2d/path_2d.cpp
 msgid "Lookahead"
 msgstr ""
@@ -17728,12 +18860,22 @@ msgid "Layers"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Constant Linear Velocity"
+msgstr "Samo Konstante"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Constant Angular Velocity"
+msgstr "Samo Konstante"
+
+#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp scene/3d/physics_body.cpp
 #: scene/resources/physics_material.cpp
 #, fuzzy
 msgid "Friction"
 msgstr "Funkcija"
 
-#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp scene/3d/physics_body.cpp
 #: scene/resources/physics_material.cpp
 msgid "Bounce"
 msgstr ""
@@ -17770,13 +18912,36 @@ msgstr ""
 msgid "Gravity Scale"
 msgstr ""
 
-#: scene/2d/physics_body_2d.cpp
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
-msgid "Continuous Cd"
+msgid "Custom Integrator"
+msgstr "Animacija Uduplaj Ključeve"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Continuous CD"
 msgstr "Neprekidna"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 msgid "Contacts Reported"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Contact Monitor"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Sleeping"
+msgstr "Kačenje:"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Can Sleep"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Damp"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
@@ -17787,8 +18952,20 @@ msgstr ""
 msgid "Applied Forces"
 msgstr ""
 
+#: scene/2d/physics_body_2d.cpp
+msgid "Force"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp
+msgid "Torque"
+msgstr ""
+
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 msgid "Safe Margin"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Sync To Physics"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
@@ -17796,7 +18973,53 @@ msgid "Moving platform"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
-msgid "Moving Platform Apply Velocity On Leave"
+msgid "Apply Velocity On Leave"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/2d/touch_screen_button.cpp
+#: scene/3d/physics_body.cpp scene/gui/texture_button.cpp
+#: scene/resources/line_shape_2d.cpp
+msgid "Normal"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Remainder"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+msgid "Local Shape"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collider"
+msgstr "Napravi"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Collider ID"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Collider RID"
+msgstr ""
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collider Shape"
+msgstr "Napravi"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Collider Shape Index"
+msgstr "Napravi"
+
+#: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Collider Velocity"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
@@ -17804,21 +19027,12 @@ msgid "Collider Metadata"
 msgstr ""
 
 #: scene/2d/polygon_2d.cpp
-msgid "Texture Rotation Degrees"
-msgstr ""
-
-#: scene/2d/polygon_2d.cpp
-msgid "Texture Rotation"
-msgstr ""
-
-#: scene/2d/polygon_2d.cpp
 msgid "Invert"
 msgstr ""
 
 #: scene/2d/polygon_2d.cpp
-#, fuzzy
-msgid "Invert Border"
-msgstr "Unesi Ključ"
+msgid "Vertex Colors"
+msgstr ""
 
 #: scene/2d/polygon_2d.cpp
 msgid "Internal Vertex Count"
@@ -17829,20 +19043,41 @@ msgid "Gizmo Extents"
 msgstr ""
 
 #: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
+msgid "Exclude Parent"
+msgstr ""
+
+#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
+msgid "Cast To"
+msgstr ""
+
+#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
 msgid "Collide With"
 msgstr ""
 
-#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
-msgid "Collide With Areas"
+#: scene/2d/ray_cast_2d.cpp scene/3d/camera.cpp scene/3d/ray_cast.cpp
+msgid "Areas"
 msgstr ""
 
-#: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
-#, fuzzy
-msgid "Collide With Bodies"
-msgstr "Napravi"
+#: scene/2d/ray_cast_2d.cpp scene/3d/camera.cpp scene/3d/ray_cast.cpp
+msgid "Bodies"
+msgstr ""
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+
+#: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
+#, fuzzy
+msgid "Remote Path"
+msgstr "Ukloni Tačku"
+
+#: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
+#, fuzzy
+msgid "Use Global Coordinates"
+msgstr "Kontanta"
+
+#: scene/2d/skeleton_2d.cpp
+msgid "Rest"
 msgstr ""
 
 #: scene/2d/skeleton_2d.cpp
@@ -17870,6 +19105,15 @@ msgstr ""
 msgid "Vframes"
 msgstr ""
 
+#: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+msgid "Frame Coords"
+msgstr ""
+
+#: scene/2d/sprite.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Filter Clip"
+msgstr "Filtriraj signale"
+
 #: scene/2d/tile_map.cpp
 msgid ""
 "TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
@@ -17882,47 +19126,64 @@ msgid "Tile Set"
 msgstr ""
 
 #: scene/2d/tile_map.cpp
-msgid "Cell Quadrant Size"
-msgstr ""
-
-#: scene/2d/tile_map.cpp
-msgid "Cell Half Offset"
-msgstr ""
-
-#: scene/2d/tile_map.cpp
-msgid "Cell Tile Origin"
+msgid "Quadrant Size"
 msgstr ""
 
 #: scene/2d/tile_map.cpp
 #, fuzzy
-msgid "Collision Use Parent"
-msgstr "Napravi"
+msgid "Custom Transform"
+msgstr "Animacija Promjeni Transformaciju"
 
 #: scene/2d/tile_map.cpp
-msgid "Collision Use Kinematic"
+msgid "Half Offset"
+msgstr ""
+
+#: scene/2d/tile_map.cpp
+msgid "Tile Origin"
+msgstr ""
+
+#: scene/2d/tile_map.cpp
+msgid "Y Sort"
 msgstr ""
 
 #: scene/2d/tile_map.cpp
 #, fuzzy
-msgid "Collision Friction"
-msgstr "Napravi"
-
-#: scene/2d/tile_map.cpp
-#, fuzzy
-msgid "Collision Bounce"
+msgid "Show Collision"
 msgstr "Napravi"
 
 #: scene/2d/tile_map.cpp
 #, fuzzy
-msgid "Occluder Light Mask"
-msgstr "Postavi Transformaciju Okludera"
+msgid "Compatibility Mode"
+msgstr "Kopiraj Tekst"
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Centered Textures"
+msgstr "Obriši Selekciju"
+
+#: scene/2d/tile_map.cpp
+msgid "Cell Clip UV"
+msgstr ""
+
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Use Parent"
+msgstr "Napravi"
+
+#: scene/2d/tile_map.cpp
+msgid "Use Kinematic"
+msgstr ""
 
 #: scene/2d/touch_screen_button.cpp
-msgid "Normal"
+msgid "Shape Centered"
 msgstr ""
 
 #: scene/2d/touch_screen_button.cpp
-msgid "Pressed"
+msgid "Shape Visible"
+msgstr ""
+
+#: scene/2d/touch_screen_button.cpp
+msgid "Passby Press"
 msgstr ""
 
 #: scene/2d/touch_screen_button.cpp
@@ -17940,16 +19201,7 @@ msgid "Reverb Bus"
 msgstr ""
 
 #: scene/3d/area.cpp
-#, fuzzy
-msgid "Reverb Bus Name"
-msgstr "Obriši Selekciju"
-
-#: scene/3d/area.cpp
-msgid "Reverb Bus Amount"
-msgstr ""
-
-#: scene/3d/area.cpp
-msgid "Reverb Bus Uniformity"
+msgid "Uniformity"
 msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
@@ -17957,10 +19209,10 @@ msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
-msgid "Controller Id"
+msgid "Controller ID"
 msgstr ""
 
-#: scene/3d/arvr_nodes.cpp
+#: scene/3d/arvr_nodes.cpp servers/arvr/arvr_positional_tracker.cpp
 msgid "Rumble"
 msgstr ""
 
@@ -17975,7 +19227,7 @@ msgid ""
 msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
-msgid "Anchor Id"
+msgid "Anchor ID"
 msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
@@ -17991,6 +19243,11 @@ msgstr ""
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr ""
+
+#: scene/3d/arvr_nodes.cpp servers/arvr_server.cpp
+#, fuzzy
+msgid "World Scale"
+msgstr "Razmera"
 
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
@@ -18018,32 +19275,36 @@ msgid "Emission Angle"
 msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
-msgid "Emission Angle Degrees"
+msgid "Degrees"
 msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
-msgid "Emission Angle Filter Attenuation dB"
-msgstr ""
+#, fuzzy
+msgid "Filter Attenuation dB"
+msgstr "Animacije:"
 
 #: scene/3d/audio_stream_player_3d.cpp
 msgid "Attenuation Filter"
 msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
-msgid "Attenuation Filter Cutoff Hz"
+#: servers/audio/effects/audio_effect_filter.cpp
+msgid "Cutoff Hz"
 msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
-msgid "Attenuation Filter dB"
-msgstr ""
+#: servers/audio/effects/audio_effect_filter.cpp
+#, fuzzy
+msgid "dB"
+msgstr "B"
 
 #: scene/3d/audio_stream_player_3d.cpp
 msgid "Doppler"
 msgstr ""
 
-#: scene/3d/audio_stream_player_3d.cpp scene/3d/camera.cpp
+#: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
-msgid "Doppler Tracking"
+msgid "Tracking"
 msgstr "Osobine Trake"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
@@ -18057,6 +19318,15 @@ msgstr "Animacija Promjeni Transformaciju"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Cell Subdiv"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/3d/reflection_probe.cpp
+msgid "Interior"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Octree"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
@@ -18087,6 +19357,12 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/3d/reflection_probe.cpp scene/resources/box_shape.cpp
+#: scene/resources/rectangle_shape_2d.cpp
+msgid "Extents"
+msgstr ""
+
 #: scene/3d/baked_lightmap.cpp
 msgid "Tweaks"
 msgstr ""
@@ -18100,6 +19376,19 @@ msgid "Bounce Indirect Energy"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
+msgid "Use Denoiser"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp scene/resources/texture.cpp
+msgid "Use HDR"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Use Color"
+msgstr "Promeni %s Tip"
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Default Texels Per Unit"
 msgstr ""
 
@@ -18108,37 +19397,41 @@ msgid "Atlas"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Environment Mode"
-msgstr ""
+#, fuzzy
+msgid "Generate"
+msgstr "Opšta"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Environment Custom Sky"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Environment Custom Color"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Environment Custom Energy"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Environment Min Light"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp
-msgid "Capture Cell Size"
+msgid "Max Size"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Capture Quality"
-msgstr "Ulovi"
+msgid "Custom Sky"
+msgstr "Animacija Uduplaj Ključeve"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Capture Propagation"
+msgid "Custom Sky Rotation Degrees"
 msgstr ""
+
+#: scene/3d/baked_lightmap.cpp scene/3d/ray_cast.cpp
+#, fuzzy
+msgid "Custom Color"
+msgstr "Animacija Uduplaj Ključeve"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Custom Energy"
+msgstr "Animacija Uduplaj Ključeve"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Min Light"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#, fuzzy
+msgid "Propagation"
+msgstr "Napravi"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Image Path"
@@ -18148,13 +19441,23 @@ msgstr ""
 msgid "Light Data"
 msgstr ""
 
+#: scene/3d/bone_attachment.cpp
+#, fuzzy
+msgid "Bone Name"
+msgstr "Obriši Selekciju"
+
 #: scene/3d/camera.cpp
 msgid "Keep Aspect"
 msgstr ""
 
-#: scene/3d/camera.cpp scene/3d/reflection_probe.cpp
+#: scene/3d/camera.cpp scene/3d/light.cpp scene/3d/reflection_probe.cpp
 msgid "Cull Mask"
 msgstr ""
+
+#: scene/3d/camera.cpp
+#, fuzzy
+msgid "Doppler Tracking"
+msgstr "Osobine Trake"
 
 #: scene/3d/camera.cpp
 #, fuzzy
@@ -18166,6 +19469,10 @@ msgid "FOV"
 msgstr ""
 
 #: scene/3d/camera.cpp
+msgid "Frustum Offset"
+msgstr ""
+
+#: scene/3d/camera.cpp
 #, fuzzy
 msgid "Near"
 msgstr "Najbliža"
@@ -18174,8 +19481,9 @@ msgstr "Najbliža"
 msgid "Far"
 msgstr ""
 
-#: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/gui/control.cpp
-#: scene/resources/shape.cpp scene/resources/style_box.cpp
+#: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/3d/spring_arm.cpp
+#: scene/gui/control.cpp scene/resources/shape.cpp
+#: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Margin"
 msgstr ""
@@ -18184,13 +19492,14 @@ msgstr ""
 msgid "Clip To"
 msgstr ""
 
-#: scene/3d/camera.cpp
-msgid "Clip To Areas"
+#: scene/3d/collision_object.cpp scene/3d/soft_body.cpp
+msgid "Ray Pickable"
 msgstr ""
 
-#: scene/3d/camera.cpp
-msgid "Clip To Bodies"
-msgstr ""
+#: scene/3d/collision_object.cpp
+#, fuzzy
+msgid "Capture On Drag"
+msgstr "Ulovi"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -18245,16 +19554,26 @@ msgid ""
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-msgid "Emission Ring Radius"
+msgid "Box Extents"
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-msgid "Emission Ring Inner Radius"
+#, fuzzy
+msgid "Ring Radius"
+msgstr "Upozorenja"
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+msgid "Ring Inner Radius"
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-msgid "Emission Ring Height"
+msgid "Ring Height"
 msgstr ""
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Ring Axis"
+msgstr "Upozorenja"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
 msgid "Flatness"
@@ -18269,16 +19588,23 @@ msgid "Portal Mode"
 msgstr ""
 
 #: scene/3d/cull_instance.cpp
-msgid "Autoplace Priority"
+msgid "Include In Bound"
 msgstr ""
 
-#: scene/3d/gi_probe.cpp scene/animation/root_motion_view.cpp
-#: scene/resources/world_2d.cpp servers/physics_2d/physics_2d_server_sw.cpp
-msgid "Cell Size"
+#: scene/3d/cull_instance.cpp
+msgid "Allow Merging"
+msgstr ""
+
+#: scene/3d/cull_instance.cpp
+msgid "Autoplace Priority"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "To Cell Xform"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid "Dynamic Data"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
@@ -18287,15 +19613,6 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Normal Bias"
-msgstr ""
-
-#: scene/3d/gi_probe.cpp
-#, fuzzy
-msgid "Propagation"
-msgstr "Napravi"
-
-#: scene/3d/gi_probe.cpp scene/3d/reflection_probe.cpp
-msgid "Interior"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
@@ -18328,43 +19645,43 @@ msgid "Subdiv"
 msgstr ""
 
 #: scene/3d/light.cpp
-msgid "Light Color"
+msgid "Negative"
 msgstr ""
 
 #: scene/3d/light.cpp
-msgid "Light Bake Mode"
-msgstr ""
+#, fuzzy
+msgid "Bake Mode"
+msgstr "Animacija Uduplaj Ključeve"
 
 #: scene/3d/light.cpp
-msgid "Light Cull Mask"
-msgstr ""
-
-#: scene/3d/light.cpp
-msgid "Shadow Color"
-msgstr ""
+#, fuzzy
+msgid "Reverse Cull Face"
+msgstr "Obriši Selekciju"
 
 #: scene/3d/light.cpp servers/visual_server.cpp
 msgid "Directional Shadow"
 msgstr ""
 
 #: scene/3d/light.cpp
-msgid "Directional Shadow Mode"
+msgid "Blend Splits"
 msgstr ""
 
 #: scene/3d/light.cpp
-msgid "Directional Shadow Depth Range"
-msgstr ""
+#, fuzzy
+msgid "Depth Range"
+msgstr "Razmera"
 
 #: scene/3d/light.cpp
 msgid "Omni"
 msgstr ""
 
 #: scene/3d/light.cpp
-msgid "Omni Shadow Mode"
-msgstr ""
+#, fuzzy
+msgid "Shadow Mode"
+msgstr "Napravi"
 
 #: scene/3d/light.cpp
-msgid "Omni Shadow Detail"
+msgid "Shadow Detail"
 msgstr ""
 
 #: scene/3d/light.cpp
@@ -18376,15 +19693,28 @@ msgid "Spot"
 msgstr ""
 
 #: scene/3d/mesh_instance.cpp
-msgid "Skin"
+msgid "Software Skinning"
 msgstr ""
 
 #: scene/3d/mesh_instance.cpp
-msgid "Software Skinning"
+#, fuzzy
+msgid "Transform Normals"
+msgstr "Transformacija homogenosti."
+
+#: scene/3d/navigation.cpp scene/resources/curve.cpp
+msgid "Up Vector"
+msgstr ""
+
+#: scene/3d/navigation.cpp
+msgid "Cell Height"
 msgstr ""
 
 #: scene/3d/navigation_agent.cpp
 msgid "Agent Height Offset"
+msgstr ""
+
+#: scene/3d/navigation_agent.cpp
+msgid "Ignore Y"
 msgstr ""
 
 #: scene/3d/navigation_agent.cpp
@@ -18442,7 +19772,15 @@ msgid ""
 msgstr ""
 
 #: scene/3d/particles.cpp
+msgid "Visibility AABB"
+msgstr ""
+
+#: scene/3d/particles.cpp
 msgid "Draw Passes"
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid "Passes"
 msgstr ""
 
 #: scene/3d/path.cpp
@@ -18472,7 +19810,7 @@ msgid "Axis Lock"
 msgstr ""
 
 #: scene/3d/physics_body.cpp
-msgid "Joint Type"
+msgid "Body Offset"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
@@ -18498,6 +19836,11 @@ msgstr ""
 #: scene/3d/physics_joint.cpp
 msgid "Solver"
 msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Exclude Nodes"
+msgstr "Animacija Obriši Ključeve"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Limit"
@@ -18551,38 +19894,74 @@ msgstr ""
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
 msgstr ""
 
+#: scene/3d/portal.cpp
+msgid "Portal Active"
+msgstr ""
+
+#: scene/3d/portal.cpp scene/resources/occluder_shape_polygon.cpp
+msgid "Two Way"
+msgstr ""
+
+#: scene/3d/portal.cpp
+msgid "Linked Room"
+msgstr ""
+
+#: scene/3d/portal.cpp
+msgid "Use Default Margin"
+msgstr ""
+
+#: scene/3d/proximity_group.cpp
+#, fuzzy
+msgid "Group Name"
+msgstr "Grupisane"
+
 #: scene/3d/proximity_group.cpp
 msgid "Dispatch Mode"
+msgstr ""
+
+#: scene/3d/proximity_group.cpp
+msgid "Grid Radius"
 msgstr ""
 
 #: scene/3d/ray_cast.cpp
 msgid "Debug Shape"
 msgstr ""
 
-#: scene/3d/ray_cast.cpp
-msgid "Debug Shape Thickness"
+#: scene/3d/ray_cast.cpp scene/resources/style_box.cpp
+msgid "Thickness"
 msgstr ""
 
-#: scene/3d/reflection_probe.cpp
+#: scene/3d/reflection_probe.cpp scene/main/viewport.cpp
 #, fuzzy
 msgid "Update Mode"
 msgstr "Animacija Uduplaj Ključeve"
 
 #: scene/3d/reflection_probe.cpp
-msgid "Intensity"
+msgid "Origin Offset"
 msgstr ""
 
 #: scene/3d/reflection_probe.cpp
-msgid "Interior Ambient Color"
+#, fuzzy
+msgid "Box Projection"
+msgstr "Izmjeni Selekciju Krivulje"
+
+#: scene/3d/reflection_probe.cpp
+msgid "Enable Shadows"
 msgstr ""
 
 #: scene/3d/reflection_probe.cpp
-msgid "Interior Ambient Energy"
+#, fuzzy
+msgid "Ambient Color"
+msgstr "Napravi"
+
+#: scene/3d/reflection_probe.cpp
+msgid "Ambient Energy"
 msgstr ""
 
 #: scene/3d/reflection_probe.cpp
-msgid "Interior Ambient Contrib"
-msgstr ""
+#, fuzzy
+msgid "Ambient Contrib"
+msgstr "Napravi"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -18606,6 +19985,10 @@ msgstr ""
 msgid ""
 "Room convex hull contains a large number of planes.\n"
 "Consider simplifying the room bound in order to increase performance."
+msgstr ""
+
+#: scene/3d/room.cpp
+msgid "Use Default Simplify"
 msgstr ""
 
 #: scene/3d/room.cpp
@@ -18644,6 +20027,10 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "Main"
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Roomlist"
 msgstr ""
 
 #: scene/3d/room_manager.cpp servers/visual_server.cpp
@@ -18700,6 +20087,16 @@ msgid ""
 msgstr ""
 
 #: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Physics Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/3d/soft_body.cpp
+#, fuzzy
+msgid "Parent Collision Ignore"
+msgstr "Napravi"
+
+#: scene/3d/soft_body.cpp
 msgid "Simulation Precision"
 msgstr ""
 
@@ -18717,6 +20114,10 @@ msgstr ""
 
 #: scene/3d/soft_body.cpp
 msgid "Volume Stiffness"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "Pressure Coefficient"
 msgstr ""
 
 #: scene/3d/soft_body.cpp
@@ -18743,11 +20144,6 @@ msgid ""
 msgstr ""
 
 #: scene/3d/spatial.cpp
-#, fuzzy
-msgid "Global Transform"
-msgstr "Animacija Promjeni Transformaciju"
-
-#: scene/3d/spatial.cpp
 msgid "Matrix"
 msgstr ""
 
@@ -18755,7 +20151,15 @@ msgstr ""
 msgid "Gizmo"
 msgstr ""
 
-#: scene/3d/sprite_3d.cpp
+#: scene/3d/spatial_velocity_tracker.cpp
+msgid "Track Physics Step"
+msgstr ""
+
+#: scene/3d/spring_arm.cpp
+msgid "Spring Length"
+msgstr ""
+
+#: scene/3d/sprite_3d.cpp scene/gui/graph_edit.cpp
 msgid "Opacity"
 msgstr ""
 
@@ -18804,11 +20208,43 @@ msgid "VehicleBody Motion"
 msgstr ""
 
 #: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Use As Traction"
+msgstr "Odvajanje:"
+
+#: scene/3d/vehicle_body.cpp
+msgid "Use As Steering"
+msgstr ""
+
+#: scene/3d/vehicle_body.cpp
 msgid "Wheel"
 msgstr ""
 
 #: scene/3d/vehicle_body.cpp
+msgid "Roll Influence"
+msgstr ""
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Friction Slip"
+msgstr "Funkcija"
+
+#: scene/3d/vehicle_body.cpp
 msgid "Suspension"
+msgstr ""
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Max Force"
+msgstr "%s Greška"
+
+#: scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Relaxation"
+msgstr "Odvajanje:"
+
+#: scene/3d/visibility_notifier.cpp
+msgid "AABB"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
@@ -18837,6 +20273,11 @@ msgid "Baked Light"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Generate Lightmap"
+msgstr "Generiši Tačke"
+
+#: scene/3d/visual_instance.cpp
 msgid "Lightmap Scale"
 msgstr ""
 
@@ -18844,20 +20285,17 @@ msgstr ""
 msgid "LOD"
 msgstr ""
 
-#: scene/3d/visual_instance.cpp
-msgid "LOD Min Distance"
+#: scene/3d/visual_instance.cpp scene/animation/skeleton_ik.cpp
+#: scene/resources/material.cpp
+msgid "Min Distance"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp
-msgid "LOD Min Hysteresis"
+msgid "Min Hysteresis"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp
-msgid "LOD Max Distance"
-msgstr ""
-
-#: scene/3d/visual_instance.cpp
-msgid "LOD Max Hysteresis"
+msgid "Max Hysteresis"
 msgstr ""
 
 #: scene/3d/world_environment.cpp
@@ -18878,10 +20316,12 @@ msgid ""
 msgstr ""
 
 #: scene/animation/animation_blend_space_1d.cpp
+#: scene/animation/animation_blend_space_2d.cpp
 msgid "Min Space"
 msgstr ""
 
 #: scene/animation/animation_blend_space_1d.cpp
+#: scene/animation/animation_blend_space_2d.cpp
 msgid "Max Space"
 msgstr ""
 
@@ -18892,6 +20332,11 @@ msgstr ""
 #: scene/animation/animation_blend_space_2d.cpp
 #, fuzzy
 msgid "Auto Triangles"
+msgstr "Dodaj Trougao"
+
+#: scene/animation/animation_blend_space_2d.cpp
+#, fuzzy
+msgid "Triangles"
 msgstr "Dodaj Trougao"
 
 #: scene/animation/animation_blend_space_2d.cpp
@@ -18929,6 +20374,11 @@ msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
+msgid "Autorestart"
+msgstr "Automatski Ubaci Ključ"
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
 msgid "Autorestart Delay"
 msgstr "Automatski Ubaci Ključ"
 
@@ -18946,9 +20396,23 @@ msgstr "Optimizuj Animaciju"
 msgid "Xfade Time"
 msgstr ""
 
+#: scene/animation/animation_blend_tree.cpp scene/resources/visual_shader.cpp
+msgid "Graph Offset"
+msgstr ""
+
 #: scene/animation/animation_node_state_machine.cpp
 msgid "Switch Mode"
 msgstr ""
+
+#: scene/animation/animation_node_state_machine.cpp
+#, fuzzy
+msgid "Auto Advance"
+msgstr "Napredno"
+
+#: scene/animation/animation_node_state_machine.cpp
+#, fuzzy
+msgid "Advance Condition"
+msgstr "Optimizuj Animaciju"
 
 #: scene/animation/animation_player.cpp
 msgid "Anim Apply Reset"
@@ -18963,10 +20427,6 @@ msgstr "Postavi Animaciju"
 #, fuzzy
 msgid "Assigned Animation"
 msgstr "Postavi Animaciju"
-
-#: scene/animation/animation_player.cpp
-msgid "Autoplay"
-msgstr ""
 
 #: scene/animation/animation_player.cpp
 msgid "Reset On Save"
@@ -18987,21 +20447,15 @@ msgid "Playback Options"
 msgstr ""
 
 #: scene/animation/animation_player.cpp
-#: scene/animation/animation_tree_player.cpp scene/animation/tween.cpp
-msgid "Playback Process Mode"
+msgid "Default Blend Time"
 msgstr ""
 
-#: scene/animation/animation_player.cpp
-msgid "Playback Default Blend Time"
-msgstr ""
-
-#: scene/animation/animation_player.cpp
-msgid "Playback Active"
-msgstr ""
-
-#: scene/animation/animation_player.cpp scene/animation/tween.cpp
-msgid "Playback Speed"
-msgstr ""
+#: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
+#: scene/animation/animation_tree_player.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+#, fuzzy
+msgid "Active"
+msgstr "Sve sekcije"
 
 #: scene/animation/animation_player.cpp
 msgid "Method Call Mode"
@@ -19045,8 +20499,18 @@ msgid "Tree Root"
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Anim Player"
+msgstr "Anim Ubaci"
+
+#: scene/animation/animation_tree.cpp
 msgid "Root Motion"
 msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Track"
+msgstr "Dodaj Traku"
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -19056,13 +20520,79 @@ msgstr ""
 msgid "Playback"
 msgstr ""
 
+#: scene/animation/animation_tree_player.cpp
+msgid "Master Player"
+msgstr ""
+
+#: scene/animation/animation_tree_player.cpp
+#, fuzzy
+msgid "Base Path"
+msgstr "Putanja"
+
+#: scene/animation/root_motion_view.cpp
+#, fuzzy
+msgid "Animation Path"
+msgstr "Animacije:"
+
+#: scene/animation/root_motion_view.cpp
+msgid "Zero Y"
+msgstr ""
+
+#: scene/animation/skeleton_ik.cpp
+#, fuzzy
+msgid "Root Bone"
+msgstr "Animacija Obriši Ključeve"
+
+#: scene/animation/skeleton_ik.cpp
+msgid "Tip Bone"
+msgstr ""
+
 #: scene/animation/skeleton_ik.cpp
 #, fuzzy
 msgid "Interpolation"
 msgstr "Način Interpolacije"
 
+#: scene/animation/skeleton_ik.cpp
+msgid "Override Tip Basis"
+msgstr ""
+
+#: scene/animation/skeleton_ik.cpp
+msgid "Use Magnet"
+msgstr ""
+
+#: scene/animation/skeleton_ik.cpp
+msgid "Magnet"
+msgstr ""
+
+#: scene/animation/skeleton_ik.cpp
+#, fuzzy
+msgid "Target Node"
+msgstr "Ukloni Čvor"
+
+#: scene/animation/skeleton_ik.cpp
+#, fuzzy
+msgid "Max Iterations"
+msgstr "Napravi Funkciju"
+
+#: scene/animation/tween.cpp scene/resources/texture.cpp
+msgid "Repeat"
+msgstr ""
+
+#: scene/animation/tween.cpp
+msgid "Playback Process Mode"
+msgstr ""
+
+#: scene/animation/tween.cpp
+msgid "Playback Speed"
+msgstr ""
+
 #: scene/audio/audio_stream_player.cpp
 msgid "Mix Target"
+msgstr ""
+
+#: scene/gui/aspect_ratio_container.cpp scene/gui/range.cpp
+#: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Ratio"
 msgstr ""
 
 #: scene/gui/aspect_ratio_container.cpp scene/gui/texture_button.cpp
@@ -19074,13 +20604,21 @@ msgstr ""
 msgid "Alignment"
 msgstr ""
 
-#: scene/gui/aspect_ratio_container.cpp
+#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
-msgid "Alignment Horizontal"
+msgid "Horizontal"
 msgstr "Ukloni Horizontalni Vodič"
 
-#: scene/gui/aspect_ratio_container.cpp
-msgid "Alignment Vertical"
+#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
+#: scene/resources/style_box.cpp
+msgid "Vertical"
+msgstr ""
+
+#: scene/gui/base_button.cpp
+msgid "Shortcut In Tooltip"
 msgstr ""
 
 #: scene/gui/base_button.cpp
@@ -19089,11 +20627,11 @@ msgid "Action Mode"
 msgstr "Napravi"
 
 #: scene/gui/base_button.cpp
-msgid "Button Mask"
+msgid "Enabled Focus Mode"
 msgstr ""
 
 #: scene/gui/base_button.cpp
-msgid "Enabled Focus Mode"
+msgid "Keep Pressed Outside"
 msgstr ""
 
 #: scene/gui/base_button.cpp scene/gui/shortcut.cpp
@@ -19105,6 +20643,11 @@ msgstr ""
 msgid "Group"
 msgstr "Grupisane"
 
+#: scene/gui/button.cpp scene/gui/label.cpp
+#, fuzzy
+msgid "Clip Text"
+msgstr "Kopiraj Tekst"
+
 #: scene/gui/button.cpp scene/gui/label.cpp scene/gui/line_edit.cpp
 #: scene/gui/spin_box.cpp
 msgid "Align"
@@ -19114,11 +20657,47 @@ msgstr ""
 msgid "Icon Align"
 msgstr ""
 
+#: scene/gui/button.cpp
+msgid "Expand Icon"
+msgstr ""
+
+#: scene/gui/center_container.cpp
+msgid "Use Top Left"
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Edit Alpha"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "HSV Mode"
+msgstr "Napravi"
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Raw Mode"
+msgstr "Napravi"
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Deferred Mode"
+msgstr "Odložen"
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Presets Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/color_picker.cpp
+msgid "Presets Visible"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -19162,26 +20741,25 @@ msgstr ""
 msgid "Grow Direction"
 msgstr ""
 
-#: scene/gui/control.cpp
-#, fuzzy
-msgid "Grow Horizontal"
-msgstr "Ukloni Horizontalni Vodič"
+#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+msgid "Min Size"
+msgstr ""
 
 #: scene/gui/control.cpp
-msgid "Grow Vertical"
+msgid "Pivot Offset"
 msgstr ""
 
 #: scene/gui/control.cpp
 #, fuzzy
-msgid "Rect Rotation"
-msgstr "Postavi Animaciju"
+msgid "Clip Content"
+msgstr "Kontanta"
 
 #: scene/gui/control.cpp scene/resources/visual_shader_nodes.cpp
 msgid "Hint"
 msgstr ""
 
 #: scene/gui/control.cpp
-msgid "Hint Tooltip"
+msgid "Tooltip"
 msgstr ""
 
 #: scene/gui/control.cpp
@@ -19189,20 +20767,16 @@ msgid "Focus"
 msgstr ""
 
 #: scene/gui/control.cpp
-#, fuzzy
-msgid "Focus Mode"
-msgstr "Napravi"
-
-#: scene/gui/control.cpp
 msgid "Mouse"
 msgstr ""
 
 #: scene/gui/control.cpp
-msgid "Mouse Filter"
-msgstr ""
+#, fuzzy
+msgid "Default Cursor Shape"
+msgstr "Levi Linearni"
 
 #: scene/gui/control.cpp
-msgid "Mouse Default Cursor Shape"
+msgid "Pass On Modal Close Click"
 msgstr ""
 
 #: scene/gui/control.cpp
@@ -19210,16 +20784,9 @@ msgid "Size Flags"
 msgstr ""
 
 #: scene/gui/control.cpp
-msgid "Size Flags Horizontal"
-msgstr ""
-
-#: scene/gui/control.cpp
-msgid "Size Flags Vertical"
-msgstr ""
-
-#: scene/gui/control.cpp
-msgid "Size Flags Stretch Ratio"
-msgstr ""
+#, fuzzy
+msgid "Stretch Ratio"
+msgstr "Razmera:"
 
 #: scene/gui/control.cpp
 msgid "Theme Type Variation"
@@ -19234,9 +20801,12 @@ msgid "Dialog"
 msgstr ""
 
 #: scene/gui/dialogs.cpp
-#, fuzzy
-msgid "Dialog Text"
-msgstr "Kopiraj Tekst"
+msgid "Hide On Ok"
+msgstr ""
+
+#: scene/gui/dialogs.cpp scene/gui/label.cpp
+msgid "Autowrap"
+msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -19247,13 +20817,44 @@ msgid "Please Confirm..."
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
+msgid "Mode Overrides Title"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr ""
 
 #: scene/gui/graph_edit.cpp
 #, fuzzy
-msgid "Zoom"
+msgid "Right Disconnects"
+msgstr "Odveži"
+
+#: scene/gui/graph_edit.cpp
+msgid "Scroll Offset"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Snap Distance"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom Min"
 msgstr "Uveličaj"
+
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom Max"
+msgstr "Uveličaj"
+
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom Step"
+msgstr "Umanji"
+
+#: scene/gui/graph_edit.cpp
+msgid "Show Zoom Label"
+msgstr ""
 
 #: scene/gui/graph_edit.cpp scene/gui/text_edit.cpp
 msgid "Minimap"
@@ -19264,10 +20865,25 @@ msgid "Enable grid minimap."
 msgstr ""
 
 #: scene/gui/graph_node.cpp
+#, fuzzy
+msgid "Show Close"
+msgstr "Zatvori"
+
+#: scene/gui/graph_node.cpp scene/gui/option_button.cpp
+#, fuzzy
+msgid "Selected"
+msgstr "Grupiši Označeno"
+
+#: scene/gui/graph_node.cpp
+#, fuzzy
+msgid "Comment"
+msgstr "Zajednica"
+
+#: scene/gui/graph_node.cpp
 msgid "Overlay"
 msgstr ""
 
-#: scene/gui/grid_container.cpp scene/gui/item_list.cpp
+#: scene/gui/grid_container.cpp scene/gui/item_list.cpp scene/gui/tree.cpp
 msgid "Columns"
 msgstr ""
 
@@ -19278,11 +20894,25 @@ msgid "Timers"
 msgstr "Vreme:"
 
 #: scene/gui/item_list.cpp scene/gui/popup_menu.cpp scene/gui/tree.cpp
-msgid "Incremental Search Max Interval Msec"
+msgid "Incremental Search Max Interval (msec)"
 msgstr ""
+
+#: scene/gui/item_list.cpp scene/gui/tree.cpp
+#, fuzzy
+msgid "Allow Reselect"
+msgstr "Primeni Reset"
+
+#: scene/gui/item_list.cpp scene/gui/tree.cpp
+#, fuzzy
+msgid "Allow RMB Select"
+msgstr "Sve sekcije"
 
 #: scene/gui/item_list.cpp
 msgid "Max Text Lines"
+msgstr ""
+
+#: scene/gui/item_list.cpp
+msgid "Auto Height"
 msgstr ""
 
 #: scene/gui/item_list.cpp
@@ -19290,7 +20920,20 @@ msgid "Max Columns"
 msgstr ""
 
 #: scene/gui/item_list.cpp
+msgid "Same Column Width"
+msgstr ""
+
+#: scene/gui/item_list.cpp
 msgid "Fixed Column Width"
+msgstr ""
+
+#: scene/gui/item_list.cpp
+#, fuzzy
+msgid "Icon Scale"
+msgstr "Razmera"
+
+#: scene/gui/item_list.cpp
+msgid "Fixed Icon Size"
 msgstr ""
 
 #: scene/gui/label.cpp
@@ -19318,6 +20961,51 @@ msgid "Max Length"
 msgstr ""
 
 #: scene/gui/line_edit.cpp
+msgid "Secret"
+msgstr ""
+
+#: scene/gui/line_edit.cpp
+msgid "Secret Character"
+msgstr ""
+
+#: scene/gui/line_edit.cpp
+msgid "Expand To Text Length"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Context Menu Enabled"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Virtual Keyboard Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/line_edit.cpp
+#, fuzzy
+msgid "Clear Button Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Shortcut Keys Enabled"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Middle Mouse Paste Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Selecting Enabled"
+msgstr "Samo Obeleženo"
+
+#: scene/gui/line_edit.cpp scene/gui/rich_text_label.cpp
+#: scene/gui/text_edit.cpp
+msgid "Deselect On Focus Loss Enabled"
+msgstr ""
+
+#: scene/gui/line_edit.cpp
 #, fuzzy
 msgid "Right Icon"
 msgstr "Desni Linearni"
@@ -19327,20 +21015,35 @@ msgid "Placeholder"
 msgstr ""
 
 #: scene/gui/line_edit.cpp
-msgid "Placeholder Alpha"
+msgid "Alpha"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Caret"
 msgstr ""
 
-#: scene/gui/line_edit.cpp
-#, fuzzy
-msgid "Caret Position"
-msgstr "Napravi"
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Blink"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Blink Speed"
+msgstr ""
 
 #: scene/gui/link_button.cpp
 msgid "Underline"
+msgstr ""
+
+#: scene/gui/menu_button.cpp
+msgid "Switch On Hover"
+msgstr ""
+
+#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
+msgid "Draw Center"
+msgstr ""
+
+#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
+msgid "Region Rect"
 msgstr ""
 
 #: scene/gui/nine_patch_rect.cpp
@@ -19349,14 +21052,6 @@ msgstr ""
 
 #: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
 msgid "Axis Stretch"
-msgstr ""
-
-#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
-msgid "Axis Stretch Horizontal"
-msgstr ""
-
-#: scene/gui/nine_patch_rect.cpp scene/resources/style_box.cpp
-msgid "Axis Stretch Vertical"
 msgstr ""
 
 #: scene/gui/nine_patch_rect.cpp
@@ -19372,11 +21067,39 @@ msgid "Popup"
 msgstr ""
 
 #: scene/gui/popup.cpp
+msgid "Exclusive"
+msgstr ""
+
+#: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
+
+#: scene/gui/popup_menu.cpp
+#, fuzzy
+msgid "Hide On Item Selection"
+msgstr "Ukloni oznaku"
+
+#: scene/gui/popup_menu.cpp
+#, fuzzy
+msgid "Hide On Checkable Item Selection"
+msgstr "Ukloni oznaku"
+
+#: scene/gui/popup_menu.cpp
+#, fuzzy
+msgid "Hide On State Item Selection"
+msgstr "Ukloni oznaku"
+
+#: scene/gui/popup_menu.cpp
+msgid "Submenu Popup Delay"
+msgstr ""
+
+#: scene/gui/popup_menu.cpp
+#, fuzzy
+msgid "Allow Search"
+msgstr "Pretraga:"
 
 #: scene/gui/progress_bar.cpp
 #, fuzzy
@@ -19387,12 +21110,66 @@ msgstr "Nedavno:"
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 
-#: scene/gui/range.cpp servers/audio/effects/audio_effect_compressor.cpp
-msgid "Ratio"
+#: scene/gui/range.cpp scene/resources/curve.cpp
+#, fuzzy
+msgid "Min Value"
+msgstr "Zakači vrednost"
+
+#: scene/gui/range.cpp scene/resources/curve.cpp
+#, fuzzy
+msgid "Max Value"
+msgstr "Vrednost:"
+
+#: scene/gui/range.cpp
+msgid "Page"
 msgstr ""
+
+#: scene/gui/range.cpp
+#, fuzzy
+msgid "Exp Edit"
+msgstr "Uredi"
+
+#: scene/gui/range.cpp
+#, fuzzy
+msgid "Rounded"
+msgstr "Grupisane"
+
+#: scene/gui/range.cpp
+msgid "Allow Greater"
+msgstr ""
+
+#: scene/gui/range.cpp
+msgid "Allow Lesser"
+msgstr ""
+
+#: scene/gui/reference_rect.cpp
+#, fuzzy
+msgid "Border Color"
+msgstr "Tačke Prekida"
 
 #: scene/gui/reference_rect.cpp scene/resources/style_box.cpp
 msgid "Border Width"
+msgstr ""
+
+#: scene/gui/rich_text_effect.cpp
+msgid "Relative Index"
+msgstr ""
+
+#: scene/gui/rich_text_effect.cpp
+msgid "Absolute Index"
+msgstr ""
+
+#: scene/gui/rich_text_effect.cpp
+#, fuzzy
+msgid "Elapsed Time"
+msgstr "Vreme Frejma(ms)"
+
+#: scene/gui/rich_text_effect.cpp
+msgid "Env"
+msgstr ""
+
+#: scene/gui/rich_text_effect.cpp
+msgid "Character"
 msgstr ""
 
 #: scene/gui/rich_text_label.cpp
@@ -19400,13 +21177,34 @@ msgid "BBCode"
 msgstr ""
 
 #: scene/gui/rich_text_label.cpp
-#, fuzzy
-msgid "Bbcode Text"
-msgstr "Kopiraj Tekst"
+msgid "Meta Underlined"
+msgstr ""
 
 #: scene/gui/rich_text_label.cpp
 msgid "Tab Size"
 msgstr ""
+
+#: scene/gui/rich_text_label.cpp
+msgid "Fit Content Height"
+msgstr ""
+
+#: scene/gui/rich_text_label.cpp
+msgid "Scroll Active"
+msgstr ""
+
+#: scene/gui/rich_text_label.cpp
+msgid "Scroll Following"
+msgstr ""
+
+#: scene/gui/rich_text_label.cpp
+#, fuzzy
+msgid "Selection Enabled"
+msgstr "Samo Obeleženo"
+
+#: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Override Selected Font Color"
+msgstr "Grupiši Označeno"
 
 #: scene/gui/rich_text_label.cpp
 msgid "Custom Effects"
@@ -19425,11 +21223,50 @@ msgid ""
 msgstr ""
 
 #: scene/gui/scroll_container.cpp
+msgid "Follow Focus"
+msgstr ""
+
+#: scene/gui/scroll_container.cpp
+#, fuzzy
+msgid "Horizontal Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/scroll_container.cpp
+#, fuzzy
+msgid "Vertical Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/scroll_container.cpp
 msgid "Default Scroll Deadzone"
 msgstr ""
 
 #: scene/gui/slider.cpp
+msgid "Scrollable"
+msgstr ""
+
+#: scene/gui/slider.cpp
 msgid "Tick Count"
+msgstr ""
+
+#: scene/gui/slider.cpp
+msgid "Ticks On Borders"
+msgstr ""
+
+#: scene/gui/spin_box.cpp
+msgid "Prefix"
+msgstr ""
+
+#: scene/gui/spin_box.cpp
+msgid "Suffix"
+msgstr ""
+
+#: scene/gui/split_container.cpp
+#, fuzzy
+msgid "Split Offset"
+msgstr "Razdeli Krivu"
+
+#: scene/gui/split_container.cpp scene/gui/tree.cpp
+msgid "Collapsed"
 msgstr ""
 
 #: scene/gui/split_container.cpp
@@ -19444,12 +21281,81 @@ msgstr ""
 msgid "Current Tab"
 msgstr ""
 
+#: scene/gui/tab_container.cpp
+msgid "Tabs Visible"
+msgstr ""
+
+#: scene/gui/tab_container.cpp
+msgid "All Tabs In Front"
+msgstr ""
+
+#: scene/gui/tab_container.cpp scene/gui/tabs.cpp
+msgid "Drag To Rearrange Enabled"
+msgstr ""
+
+#: scene/gui/tab_container.cpp
+msgid "Use Hidden Tabs For Min Size"
+msgstr ""
+
 #: scene/gui/tabs.cpp
 msgid "Tab Close Display Policy"
 msgstr ""
 
+#: scene/gui/tabs.cpp
+msgid "Scrolling Enabled"
+msgstr ""
+
 #: scene/gui/text_edit.cpp
-msgid "Text Edit Idle Detect Sec"
+msgid "Readonly"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+msgid "Bookmark Gutter"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Breakpoint Gutter"
+msgstr "Napravi"
+
+#: scene/gui/text_edit.cpp
+msgid "Fold Gutter"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Hiding Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Wrap Enabled"
+msgstr "Filtriraj signale"
+
+#: scene/gui/text_edit.cpp
+msgid "Scroll Vertical"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Scroll Horizontal"
+msgstr "Ukloni Horizontalni Vodič"
+
+#: scene/gui/text_edit.cpp
+msgid "Draw"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Block Mode"
+msgstr "Napravi"
+
+#: scene/gui/text_edit.cpp
+msgid "Moving By Right Click"
+msgstr ""
+
+#: scene/gui/text_edit.cpp
+msgid "Text Edit Idle Detect (sec)"
 msgstr ""
 
 #: scene/gui/text_edit.cpp
@@ -19457,52 +21363,38 @@ msgid "Text Edit Undo Stack Max Size"
 msgstr ""
 
 #: scene/gui/texture_button.cpp
-msgid "Texture Normal"
-msgstr ""
-
-#: scene/gui/texture_button.cpp
-msgid "Texture Pressed"
-msgstr ""
-
-#: scene/gui/texture_button.cpp
-msgid "Texture Hover"
+msgid "Hover"
 msgstr ""
 
 #: scene/gui/texture_button.cpp
 #, fuzzy
-msgid "Texture Disabled"
-msgstr "(Uređivač Onemogućen)"
+msgid "Focused"
+msgstr "Napravi"
 
 #: scene/gui/texture_button.cpp
-msgid "Texture Focused"
-msgstr ""
+#, fuzzy
+msgid "Click Mask"
+msgstr "Napravi"
 
-#: scene/gui/texture_button.cpp
-msgid "Texture Click Mask"
-msgstr ""
-
-#: scene/gui/texture_button.cpp
+#: scene/gui/texture_button.cpp scene/gui/texture_rect.cpp
+#: scene/gui/video_player.cpp
 msgid "Expand"
 msgstr ""
 
-#: scene/gui/texture_button.cpp
-msgid "Flip H"
-msgstr ""
-
-#: scene/gui/texture_button.cpp
-msgid "Flip V"
+#: scene/gui/texture_progress.cpp
+msgid "Under"
 msgstr ""
 
 #: scene/gui/texture_progress.cpp
-msgid "Texture Under"
+msgid "Over"
 msgstr ""
 
 #: scene/gui/texture_progress.cpp
-msgid "Texture Over"
+msgid "Progress"
 msgstr ""
 
 #: scene/gui/texture_progress.cpp
-msgid "Texture Progress"
+msgid "Progress Offset"
 msgstr ""
 
 #: scene/gui/texture_progress.cpp
@@ -19519,12 +21411,22 @@ msgid "Radial Fill"
 msgstr ""
 
 #: scene/gui/texture_progress.cpp
-msgid "Radial Initial Angle"
+msgid "Initial Angle"
 msgstr ""
 
 #: scene/gui/texture_progress.cpp
-msgid "Radial Fill Degrees"
+msgid "Fill Degrees"
 msgstr ""
+
+#: scene/gui/texture_progress.cpp scene/resources/primitive_meshes.cpp
+#, fuzzy
+msgid "Center Offset"
+msgstr "Centriraj Čvor"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Nine Patch Stretch"
+msgstr "Način Interpolacije"
 
 #: scene/gui/tree.cpp
 msgid "Custom Minimum Height"
@@ -19532,6 +21434,19 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
+msgstr ""
+
+#: scene/gui/tree.cpp
+msgid "Column Titles Visible"
+msgstr ""
+
+#: scene/gui/tree.cpp
+#, fuzzy
+msgid "Hide Folding"
+msgstr "Onemogućeno"
+
+#: scene/gui/tree.cpp
+msgid "Hide Root"
 msgstr ""
 
 #: scene/gui/tree.cpp
@@ -19543,20 +21458,24 @@ msgstr ""
 msgid "Audio Track"
 msgstr "Dodaj Traku"
 
+#: scene/gui/video_player.cpp scene/main/scene_tree.cpp scene/main/timer.cpp
+msgid "Paused"
+msgstr ""
+
 #: scene/gui/video_player.cpp
-msgid "Buffering Msec"
+msgid "Buffering (msec)"
 msgstr ""
 
 #: scene/gui/video_player.cpp
 msgid "Stream Position"
 msgstr ""
 
-#: scene/main/canvas_layer.cpp
-msgid "Follow Viewport"
+#: scene/gui/viewport_container.cpp
+msgid "Stretch Shrink"
 msgstr ""
 
 #: scene/main/canvas_layer.cpp
-msgid "Follow Viewport Scale"
+msgid "Follow Viewport"
 msgstr ""
 
 #: scene/main/http_request.cpp
@@ -19594,6 +21513,11 @@ msgid "Editor Description"
 msgstr "Opis:"
 
 #: scene/main/node.cpp
+#, fuzzy
+msgid "Import Path"
+msgstr "Putanja"
+
+#: scene/main/node.cpp
 msgid "Pause Mode"
 msgstr ""
 
@@ -19619,6 +21543,33 @@ msgstr ""
 msgid "Custom Multiplayer"
 msgstr ""
 
+#: scene/main/node.cpp
+msgid "Process Priority"
+msgstr ""
+
+#: scene/main/node.cpp
+#, fuzzy
+msgid "Physics Interpolated"
+msgstr "Način Interpolacije"
+
+#: scene/main/scene_tree.cpp scene/main/timer.cpp
+msgid "Time Left"
+msgstr ""
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Debug Collisions Hint"
+msgstr "Napravi"
+
+#: scene/main/scene_tree.cpp
+#, fuzzy
+msgid "Debug Navigation Hint"
+msgstr "Napravi"
+
+#: scene/main/scene_tree.cpp
+msgid "Use Font Oversampling"
+msgstr ""
+
 #: scene/main/scene_tree.cpp
 msgid "Edited Scene Root"
 msgstr ""
@@ -19626,6 +21577,15 @@ msgstr ""
 #: scene/main/scene_tree.cpp
 msgid "Root"
 msgstr ""
+
+#: scene/main/scene_tree.cpp
+msgid "Multiplayer Poll"
+msgstr ""
+
+#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Physics Interpolation"
+msgstr "Način Interpolacije"
 
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 msgid "Shapes"
@@ -19656,11 +21616,6 @@ msgstr ""
 msgid "Draw 2D Outlines"
 msgstr ""
 
-#: scene/main/scene_tree.cpp scene/resources/multimesh.cpp
-#, fuzzy
-msgid "Physics Interpolation"
-msgstr "Način Interpolacije"
-
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
 #, fuzzy
 msgid "Reflections"
@@ -19686,12 +21641,12 @@ msgstr ""
 msgid "Use Debanding"
 msgstr ""
 
-#: scene/main/scene_tree.cpp
+#: scene/main/scene_tree.cpp scene/main/viewport.cpp
 msgid "HDR"
 msgstr ""
 
-#: scene/main/scene_tree.cpp
-msgid "Use 32 Bpc Depth"
+#: scene/main/scene_tree.cpp scene/main/viewport.cpp
+msgid "Use 32 BPC Depth"
 msgstr ""
 
 #: scene/main/scene_tree.cpp
@@ -19717,16 +21672,14 @@ msgid ""
 msgstr ""
 
 #: scene/main/timer.cpp
-msgid "Wait Time"
-msgstr ""
+#, fuzzy
+msgid "Autostart"
+msgstr "Automatski Ubaci Ključ"
 
-#: scene/main/timer.cpp
-msgid "Paused"
-msgstr ""
-
-#: scene/main/timer.cpp
-msgid "Time Left"
-msgstr ""
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Viewport Path"
+msgstr "Putanja"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -19742,12 +21695,54 @@ msgid ""
 "dimensions to render anything."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "ARVR"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Size Override Stretch"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Own World"
+msgstr ""
+
 #: scene/main/viewport.cpp scene/resources/world_2d.cpp
 msgid "World"
 msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "World 2D"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Transparent BG"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Handle Input Locally"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "FXAA"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Debanding"
+msgstr ""
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Disable 3D"
+msgstr "Onemogućeno"
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Keep 3D Linear"
+msgstr "Levi Linearni"
+
+#: scene/main/viewport.cpp
+msgid "Render Direct To Screen"
 msgstr ""
 
 #: scene/main/viewport.cpp
@@ -19759,20 +21754,47 @@ msgid "Render Target"
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Render Target Clear Mode"
+msgid "V Flip"
 msgstr ""
 
 #: scene/main/viewport.cpp
 #, fuzzy
-msgid "Render Target Update Mode"
-msgstr "Promijeni Način Ažuriranja Animacije"
+msgid "Clear Mode"
+msgstr "Očisti Kosti"
+
+#: scene/main/viewport.cpp
+msgid "Enable 2D"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Enable 3D"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Object Picking"
+msgstr ""
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Disable Input"
+msgstr "Onemogućeno"
 
 #: scene/main/viewport.cpp servers/visual_server.cpp
 msgid "Shadow Atlas"
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Tooltip Delay Sec"
+#, fuzzy
+msgid "Canvas Transform"
+msgstr "Animacija Promjeni Transformaciju"
+
+#: scene/main/viewport.cpp
+#, fuzzy
+msgid "Global Canvas Transform"
+msgstr "Animacija Promjeni Transformaciju"
+
+#: scene/main/viewport.cpp
+msgid "Tooltip Delay (sec)"
 msgstr ""
 
 #: scene/register_scene_types.cpp
@@ -19794,15 +21816,28 @@ msgstr "Animacija Uduplaj Ključeve"
 msgid "Loop Mode"
 msgstr "Napravi"
 
-#: scene/resources/curve.cpp
+#: scene/resources/audio_stream_sample.cpp
 #, fuzzy
-msgid "Min Value"
-msgstr "Zakači vrednost"
+msgid "Loop Begin"
+msgstr "Napravi"
 
-#: scene/resources/curve.cpp
+#: scene/resources/audio_stream_sample.cpp
 #, fuzzy
-msgid "Max Value"
-msgstr "Vrednost:"
+msgid "Loop End"
+msgstr "Napravi"
+
+#: scene/resources/audio_stream_sample.cpp
+#: servers/audio/effects/audio_stream_generator.cpp servers/audio_server.cpp
+msgid "Mix Rate"
+msgstr ""
+
+#: scene/resources/audio_stream_sample.cpp
+msgid "Stereo"
+msgstr ""
+
+#: scene/resources/concave_polygon_shape_2d.cpp
+msgid "Segments"
+msgstr ""
 
 #: scene/resources/curve.cpp
 #, fuzzy
@@ -19813,12 +21848,12 @@ msgstr "Napravi Funkciju"
 msgid "Bake Interval"
 msgstr ""
 
-#: scene/resources/curve.cpp
-msgid "Up Vector"
+#: scene/resources/dynamic_font.cpp
+msgid "Hinting"
 msgstr ""
 
 #: scene/resources/dynamic_font.cpp
-msgid "Hinting"
+msgid "Override Oversampling"
 msgstr ""
 
 #: scene/resources/dynamic_font.cpp
@@ -19829,6 +21864,16 @@ msgstr "Putanja"
 #: scene/resources/dynamic_font.cpp
 msgid "Outline Size"
 msgstr ""
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Outline Color"
+msgstr "Funkcija"
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Use Mipmaps"
+msgstr "Signali"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Extra Spacing"
@@ -19846,29 +21891,36 @@ msgstr ""
 msgid "Background"
 msgstr ""
 
+#: scene/resources/environment.cpp scene/resources/sky.cpp
+msgid "Sky"
+msgstr ""
+
 #: scene/resources/environment.cpp
 #, fuzzy
-msgid "Background Mode"
+msgid "Sky Custom FOV"
+msgstr "Animacija Uduplaj Ključeve"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Sky Orientation"
+msgstr "Optimizuj Animaciju"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Sky Rotation"
+msgstr "Kontanta"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Sky Rotation Degrees"
 msgstr "Napravi"
 
 #: scene/resources/environment.cpp
-msgid "Background Sky"
+msgid "Canvas Max Layer"
 msgstr ""
 
-#: scene/resources/environment.cpp
-msgid "Background Sky Custom FOV"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Background Energy"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Background Canvas Max Layer"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Background Camera Feed Id"
+#: scene/resources/environment.cpp scene/resources/texture.cpp
+msgid "Camera Feed ID"
 msgstr ""
 
 #: scene/resources/environment.cpp
@@ -19876,64 +21928,83 @@ msgid "Ambient Light"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Ambient Light Energy"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Ambient Light Sky Contribution"
-msgstr ""
+#, fuzzy
+msgid "Sky Contribution"
+msgstr "Optimizuj Animaciju"
 
 #: scene/resources/environment.cpp
 msgid "Fog"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Fog Sun Amount"
-msgstr ""
+#, fuzzy
+msgid "Sun Color"
+msgstr "Funkcija"
 
 #: scene/resources/environment.cpp
-msgid "Fog Depth Begin"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Fog Depth End"
+msgid "Sun Amount"
 msgstr ""
 
 #: scene/resources/environment.cpp
 #, fuzzy
-msgid "Fog Depth Curve"
+msgid "Depth Enabled"
+msgstr "Razmera"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Depth Begin"
+msgstr "Razmera"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Depth End"
+msgstr "Razmera"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Depth Curve"
 msgstr "Razdeli Krivu"
 
 #: scene/resources/environment.cpp
-msgid "Fog Transmit Curve"
-msgstr ""
+#, fuzzy
+msgid "Transmit Enabled"
+msgstr "Filtriraj signale"
 
 #: scene/resources/environment.cpp
-msgid "Fog Height Min"
-msgstr ""
+#, fuzzy
+msgid "Transmit Curve"
+msgstr "Razdeli Krivu"
 
 #: scene/resources/environment.cpp
-msgid "Fog Height Max"
-msgstr ""
+#, fuzzy
+msgid "Height Enabled"
+msgstr "Filtriraj signale"
 
 #: scene/resources/environment.cpp
-msgid "Fog Height Curve"
-msgstr ""
+#, fuzzy
+msgid "Height Min"
+msgstr "Desni Linearni"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Height Max"
+msgstr "Desna Široka"
+
+#: scene/resources/environment.cpp
+#, fuzzy
+msgid "Height Curve"
+msgstr "Razdeli Krivu"
 
 #: scene/resources/environment.cpp
 msgid "Tonemap"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Tonemap Mode"
+msgid "Exposure"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Tonemap Exposure"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Tonemap White"
+msgid "White"
 msgstr ""
 
 #: scene/resources/environment.cpp
@@ -19941,19 +22012,11 @@ msgid "Auto Exposure"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Auto Exposure Scale"
+msgid "Min Luma"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Auto Exposure Min Luma"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Auto Exposure Max Luma"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Auto Exposure Speed"
+msgid "Max Luma"
 msgstr ""
 
 #: scene/resources/environment.cpp
@@ -19962,20 +22025,25 @@ msgid "SS Reflections"
 msgstr "Skaliraj Selekciju"
 
 #: scene/resources/environment.cpp
-msgid "Ss Reflections Max Steps"
+#, fuzzy
+msgid "Max Steps"
+msgstr "Skaliraj Korak:"
+
+#: scene/resources/environment.cpp
+msgid "Fade In"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "Fade Out"
 msgstr ""
 
 #: scene/resources/environment.cpp
 #, fuzzy
-msgid "Ss Reflections Fade In"
-msgstr "Samo Obeleženo"
+msgid "Depth Tolerance"
+msgstr "Razmera"
 
-#: scene/resources/environment.cpp
-msgid "Ss Reflections Fade Out"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Ss Reflections Depth Tolerance"
+#: scene/resources/environment.cpp scene/resources/material.cpp
+msgid "Roughness"
 msgstr ""
 
 #: scene/resources/environment.cpp
@@ -19983,87 +22051,45 @@ msgid "SSAO"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "SSAO Radius"
+msgid "Radius 2"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "SSAO Intensity"
+msgid "Intensity 2"
+msgstr ""
+
+#: scene/resources/environment.cpp scene/resources/material.cpp
+#, fuzzy
+msgid "Light Affect"
+msgstr "Desna Široka"
+
+#: scene/resources/environment.cpp
+msgid "AO Channel Affect"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "SSAO Radius 2"
+msgid "Blur"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "SSAO Intensity 2"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO Bias"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO Light Affect"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO AO Channel Affect"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO Color"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO Quality"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO Blur"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "SSAO Edge Sharpness"
+msgid "Edge Sharpness"
 msgstr ""
 
 #: scene/resources/environment.cpp
 msgid "DOF Far Blur"
 msgstr ""
 
-#: scene/resources/environment.cpp
-msgid "DoF Blur Far Distance"
+#: scene/resources/environment.cpp scene/resources/material.cpp
+msgid "Distance"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "DoF Blur Far Transition"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "DoF Blur Far Amount"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "DoF Blur Far Quality"
-msgstr ""
+#, fuzzy
+msgid "Transition"
+msgstr "Tranzicija: "
 
 #: scene/resources/environment.cpp
 msgid "DOF Near Blur"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "DoF Blur Near Distance"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "DoF Blur Near Transition"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "DoF Blur Near Amount"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "DoF Blur Near Quality"
 msgstr ""
 
 #: scene/resources/environment.cpp
@@ -20071,31 +22097,24 @@ msgid "Glow"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Glow Intensity"
+msgid "Bloom"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Glow Strength"
+msgid "HDR Threshold"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Glow Bloom"
+msgid "HDR Luminance Cap"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Glow Blend Mode"
-msgstr ""
+#, fuzzy
+msgid "HDR Scale"
+msgstr "Razmera"
 
 #: scene/resources/environment.cpp
-msgid "Glow HDR Threshold"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Glow HDR Luminance Cap"
-msgstr ""
-
-#: scene/resources/environment.cpp
-msgid "Glow HDR Scale"
+msgid "Bicubic Upscale"
 msgstr ""
 
 #: scene/resources/environment.cpp
@@ -20103,25 +22122,40 @@ msgid "Adjustments"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Adjustment Brightness"
+msgid "Brightness"
 msgstr ""
 
 #: scene/resources/environment.cpp
-msgid "Adjustment Contrast"
-msgstr ""
+#, fuzzy
+msgid "Saturation"
+msgstr "Odvajanje:"
 
 #: scene/resources/environment.cpp
-msgid "Adjustment Saturation"
+#, fuzzy
+msgid "Color Correction"
+msgstr "Napravi"
+
+#: scene/resources/font.cpp
+msgid "Chars"
 msgstr ""
 
-#: scene/resources/environment.cpp
-msgid "Adjustment Color Correction"
-msgstr ""
+#: scene/resources/font.cpp
+#, fuzzy
+msgid "Kernings"
+msgstr "Upozorenja"
 
 #: scene/resources/font.cpp
 #, fuzzy
 msgid "Ascent"
 msgstr "Nedavno:"
+
+#: scene/resources/font.cpp
+msgid "Distance Field"
+msgstr ""
+
+#: scene/resources/gradient.cpp
+msgid "Offsets"
+msgstr ""
 
 #: scene/resources/height_map_shape.cpp
 msgid "Map Width"
@@ -20129,6 +22163,14 @@ msgstr ""
 
 #: scene/resources/height_map_shape.cpp
 msgid "Map Depth"
+msgstr ""
+
+#: scene/resources/height_map_shape.cpp
+msgid "Map Data"
+msgstr ""
+
+#: scene/resources/line_shape_2d.cpp
+msgid "D"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20148,47 +22190,58 @@ msgid "Parameters"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "Params Diffuse Mode"
+#, fuzzy
+msgid "Diffuse Mode"
+msgstr "Napravi"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Specular Mode"
+msgstr "Napravi"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Depth Draw Mode"
+msgstr "Način Interpolacije"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Line Width"
+msgstr "Leva Široka"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Point Size"
+msgstr "Animacija Dodaj Kanal"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Billboard Mode"
+msgstr "Napravi"
+
+#: scene/resources/material.cpp
+msgid "Grow"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "Params Specular Mode"
-msgstr ""
+#, fuzzy
+msgid "Grow Amount"
+msgstr "Ukloni Horizontalni Vodič"
 
 #: scene/resources/material.cpp
-msgid "Params Blend Mode"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Cull Mode"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Depth Draw Mode"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Line Width"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Point Size"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Billboard Mode"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Grow Amount"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Params Alpha Scissor Threshold"
+msgid "Alpha Scissor Threshold"
 msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Particles Anim"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "H Frames"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "V Frames"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20205,10 +22258,6 @@ msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Metallic Texture Channel"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Roughness"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20229,10 +22278,6 @@ msgstr ""
 
 #: scene/resources/material.cpp
 msgid "NormalMap"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Normal Scale"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20263,32 +22308,34 @@ msgid "Ambient Occlusion"
 msgstr "Napravi"
 
 #: scene/resources/material.cpp
-msgid "AO Light Affect"
-msgstr ""
+#, fuzzy
+msgid "Texture Channel"
+msgstr "(Uređivač Onemogućen)"
 
 #: scene/resources/material.cpp
-msgid "AO Texture Channel"
+msgid "Deep Parallax"
 msgstr ""
 
 #: scene/resources/material.cpp
 #, fuzzy
-msgid "Depth Scale"
-msgstr "Razmera"
+msgid "Min Layers"
+msgstr "Napravi"
 
 #: scene/resources/material.cpp
-msgid "Depth Min Layers"
+#, fuzzy
+msgid "Max Layers"
+msgstr "Vrednost:"
+
+#: scene/resources/material.cpp
+msgid "Flip Tangent"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "Depth Max Layers"
+msgid "Flip Binormal"
 msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Subsurf Scatter"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Subsurf Scatter Strength"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20301,24 +22348,12 @@ msgstr "Tranzicija: "
 msgid "Refraction"
 msgstr "Odvajanje:"
 
-#: scene/resources/material.cpp
-msgid "Refraction Scale"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Refraction Texture Channel"
-msgstr ""
-
 #: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
 msgid "Detail"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "Detail Blend Mode"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Detail UV Layer"
+msgid "UV Layer"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20326,7 +22361,7 @@ msgid "UV1"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "UV1 Triplanar Sharpness"
+msgid "Triplanar Sharpness"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20334,15 +22369,7 @@ msgid "UV2"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "UV2 Triplanar Sharpness"
-msgstr ""
-
-#: scene/resources/material.cpp
 msgid "Proximity Fade"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Proximity Fade Distance"
 msgstr ""
 
 #: scene/resources/material.cpp
@@ -20350,19 +22377,11 @@ msgid "Distance Fade"
 msgstr ""
 
 #: scene/resources/material.cpp
-msgid "Distance Fade Mode"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Distance Fade Min Distance"
-msgstr ""
-
-#: scene/resources/material.cpp
-msgid "Distance Fade Max Distance"
-msgstr ""
-
-#: scene/resources/material.cpp
 msgid "Async Mode"
+msgstr ""
+
+#: scene/resources/mesh.cpp
+msgid "Lightmap Size Hint"
 msgstr ""
 
 #: scene/resources/mesh.cpp
@@ -20397,7 +22416,22 @@ msgid "Visible Instance Count"
 msgstr ""
 
 #: scene/resources/multimesh.cpp
-msgid "Physics Interpolation Quality"
+#, fuzzy
+msgid "Transform Array"
+msgstr "Transformacija homogenosti."
+
+#: scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Transform 2D Array"
+msgstr "Transformacija homogenosti."
+
+#: scene/resources/multimesh.cpp
+#, fuzzy
+msgid "Color Array"
+msgstr "Homogenost Boje."
+
+#: scene/resources/multimesh.cpp
+msgid "Custom Data Array"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
@@ -20413,6 +22447,10 @@ msgid "Source Geometry Mode"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
+msgid "Source Group Name"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
 msgid "Agent"
 msgstr ""
 
@@ -20422,10 +22460,6 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Slope"
-msgstr ""
-
-#: scene/resources/navigation_mesh.cpp
-msgid "Min Size"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
@@ -20442,11 +22476,6 @@ msgid "Max Error"
 msgstr "%s Greška"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
-msgid "Polygon"
-msgstr "Poligoni"
-
-#: scene/resources/navigation_mesh.cpp
 msgid "Verts Per Poly"
 msgstr ""
 
@@ -20458,6 +22487,18 @@ msgstr ""
 msgid "Sample Max Error"
 msgstr ""
 
+#: scene/resources/navigation_mesh.cpp
+msgid "Low Hanging Obstacles"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Ledge Spans"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Filter Walkable Low Height Spans"
+msgstr ""
+
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
 msgstr ""
@@ -20466,36 +22507,71 @@ msgstr ""
 msgid "OccluderShapeSphere Set Spheres"
 msgstr ""
 
+#: scene/resources/occluder_shape_polygon.cpp
+#, fuzzy
+msgid "Polygon Points"
+msgstr "Poligoni"
+
+#: scene/resources/occluder_shape_polygon.cpp
+#, fuzzy
+msgid "Hole Points"
+msgstr "Ukloni Tačku"
+
+#: scene/resources/packed_scene.cpp
+msgid "Bundled"
+msgstr ""
+
 #: scene/resources/particles_material.cpp
 msgid "Trail"
 msgstr ""
 
 #: scene/resources/particles_material.cpp
-msgid "Trail Divisor"
+msgid "Divisor"
 msgstr ""
 
 #: scene/resources/particles_material.cpp
-msgid "Trail Size Modifier"
+msgid "Size Modifier"
 msgstr ""
 
 #: scene/resources/particles_material.cpp
-msgid "Trail Color Modifier"
-msgstr ""
+#, fuzzy
+msgid "Color Modifier"
+msgstr "Homogenost Boje."
 
 #: scene/resources/particles_material.cpp
-msgid "Emission Point Texture"
-msgstr ""
+#, fuzzy
+msgid "Point Texture"
+msgstr "Obriši Selekciju"
 
 #: scene/resources/particles_material.cpp
-msgid "Emission Normal Texture"
-msgstr ""
+#, fuzzy
+msgid "Normal Texture"
+msgstr "Obriši Selekciju"
 
 #: scene/resources/particles_material.cpp
-msgid "Emission Color Texture"
-msgstr ""
+#, fuzzy
+msgid "Color Texture"
+msgstr "Izmjeni Selekciju Krivulje"
 
 #: scene/resources/particles_material.cpp
-msgid "Emission Point Count"
+#, fuzzy
+msgid "Point Count"
+msgstr "Optimizuj Animaciju"
+
+#: scene/resources/physics_material.cpp
+msgid "Rough"
+msgstr ""
+
+#: scene/resources/physics_material.cpp
+msgid "Absorbent"
+msgstr ""
+
+#: scene/resources/plane_shape.cpp
+msgid "Plane"
+msgstr ""
+
+#: scene/resources/primitive_meshes.cpp
+msgid "Flip Faces"
 msgstr ""
 
 #: scene/resources/primitive_meshes.cpp
@@ -20526,6 +22602,18 @@ msgstr ""
 msgid "Left To Right"
 msgstr ""
 
+#: scene/resources/primitive_meshes.cpp
+msgid "Is Hemisphere"
+msgstr ""
+
+#: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
+msgid "Slips On Slope"
+msgstr ""
+
+#: scene/resources/segment_shape_2d.cpp
+msgid "A"
+msgstr ""
+
 #: scene/resources/shader.cpp
 msgid "Code"
 msgstr ""
@@ -20547,17 +22635,14 @@ msgid "Panorama"
 msgstr ""
 
 #: scene/resources/sky.cpp
-msgid "Sky"
-msgstr ""
+#, fuzzy
+msgid "Top Color"
+msgstr "Promeni %s Tip"
 
 #: scene/resources/sky.cpp
 #, fuzzy
-msgid "Sky Curve"
-msgstr "Razdeli Krivu"
-
-#: scene/resources/sky.cpp
-msgid "Sky Energy"
-msgstr ""
+msgid "Horizon Color"
+msgstr "Funkcija"
 
 #: scene/resources/sky.cpp
 #, fuzzy
@@ -20565,44 +22650,28 @@ msgid "Ground"
 msgstr "Grupisane"
 
 #: scene/resources/sky.cpp
-msgid "Ground Curve"
-msgstr ""
-
-#: scene/resources/sky.cpp
-msgid "Ground Energy"
-msgstr ""
+#, fuzzy
+msgid "Bottom Color"
+msgstr "Tačke Prekida"
 
 #: scene/resources/sky.cpp
 msgid "Sun"
 msgstr ""
 
 #: scene/resources/sky.cpp
-msgid "Sun Latitude"
+msgid "Latitude"
 msgstr ""
 
 #: scene/resources/sky.cpp
-msgid "Sun Longitude"
+msgid "Longitude"
 msgstr ""
 
 #: scene/resources/sky.cpp
-msgid "Sun Angle Min"
+msgid "Angle Min"
 msgstr ""
 
 #: scene/resources/sky.cpp
-msgid "Sun Angle Max"
-msgstr ""
-
-#: scene/resources/sky.cpp
-#, fuzzy
-msgid "Sun Curve"
-msgstr "Razdeli Krivu"
-
-#: scene/resources/sky.cpp
-msgid "Sun Energy"
-msgstr ""
-
-#: scene/resources/sky.cpp
-msgid "Texture Size"
+msgid "Angle Max"
 msgstr ""
 
 #: scene/resources/style_box.cpp
@@ -20614,19 +22683,11 @@ msgid "Expand Margin"
 msgstr ""
 
 #: scene/resources/style_box.cpp
-msgid "Modulate"
-msgstr ""
-
-#: scene/resources/style_box.cpp
 msgid "Corner Radius"
 msgstr ""
 
 #: scene/resources/style_box.cpp
 msgid "Corner Detail"
-msgstr ""
-
-#: scene/resources/style_box.cpp
-msgid "Shadow Size"
 msgstr ""
 
 #: scene/resources/style_box.cpp
@@ -20643,10 +22704,6 @@ msgstr ""
 
 #: scene/resources/style_box.cpp
 msgid "Grow End"
-msgstr ""
-
-#: scene/resources/style_box.cpp
-msgid "Thickness"
 msgstr ""
 
 #: scene/resources/texture.cpp
@@ -20668,12 +22725,27 @@ msgid "Base Texture"
 msgstr "Obriši Selekciju"
 
 #: scene/resources/texture.cpp
+msgid "Image Size"
+msgstr ""
+
+#: scene/resources/texture.cpp
 msgid "Storage Mode"
 msgstr ""
 
 #: scene/resources/texture.cpp
-msgid "Repeat"
-msgstr ""
+#, fuzzy
+msgid "Lossy Storage Quality"
+msgstr "Ulovi"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Fill From"
+msgstr "Napravi"
+
+#: scene/resources/texture.cpp
+#, fuzzy
+msgid "Fill To"
+msgstr "Napravi"
 
 #: scene/resources/texture.cpp
 #, fuzzy
@@ -20684,8 +22756,24 @@ msgstr "Promeni %s Tip"
 msgid "Current Frame"
 msgstr ""
 
+#: scene/resources/texture.cpp
+msgid "Pause"
+msgstr ""
+
+#: scene/resources/texture.cpp
+msgid "Which Feed"
+msgstr ""
+
+#: scene/resources/texture.cpp
+msgid "Camera Is Active"
+msgstr ""
+
 #: scene/resources/theme.cpp
 msgid "Default Font"
+msgstr ""
+
+#: scene/resources/visual_shader.cpp
+msgid "Output Port For Preview"
 msgstr ""
 
 #: scene/resources/visual_shader.cpp
@@ -20723,6 +22811,16 @@ msgid "Cube Map"
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Default Value Enabled"
+msgstr "Napravi Profil"
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Default Value"
+msgstr "Vrednost:"
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Color Default"
 msgstr ""
 
@@ -20732,6 +22830,14 @@ msgstr ""
 
 #: scene/resources/world.cpp
 msgid "Fallback Environment"
+msgstr ""
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+msgid "Space"
+msgstr ""
+
+#: scene/resources/world.cpp
+msgid "Scenario"
 msgstr ""
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
@@ -20751,8 +22857,28 @@ msgstr "Levi Linearni"
 msgid "Default Angular Damp"
 msgstr ""
 
+#: scene/resources/world_2d.cpp
+msgid "Canvas"
+msgstr ""
+
+#: servers/arvr/arvr_interface.cpp
+msgid "Is Primary"
+msgstr ""
+
+#: servers/arvr/arvr_interface.cpp
+msgid "Is Initialized"
+msgstr ""
+
 #: servers/arvr/arvr_interface.cpp
 msgid "AR"
+msgstr ""
+
+#: servers/arvr/arvr_interface.cpp
+msgid "Is Anchor Detection Enabled"
+msgstr ""
+
+#: servers/arvr_server.cpp
+msgid "Primary Interface"
 msgstr ""
 
 #: servers/audio/audio_stream.cpp
@@ -20794,11 +22920,11 @@ msgid "Gain"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_compressor.cpp
-msgid "Attack Us"
+msgid "Attack (µs)"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_compressor.cpp
-msgid "Release Ms"
+msgid "Release (ms)"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_compressor.cpp
@@ -20810,7 +22936,7 @@ msgid "Tap 1"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_delay.cpp
-msgid "Delay Ms"
+msgid "Delay (ms)"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_delay.cpp
@@ -20828,11 +22954,12 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_delay.cpp
 #: servers/audio/effects/audio_effect_phaser.cpp
+#: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Feedback"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_delay.cpp
-msgid "Lowpass"
+msgid "Low-pass"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_distortion.cpp
@@ -20852,18 +22979,9 @@ msgid "Post Gain"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_filter.cpp
-msgid "Cutoff Hz"
-msgstr ""
-
-#: servers/audio/effects/audio_effect_filter.cpp
 #, fuzzy
 msgid "Resonance"
 msgstr "Resurs"
-
-#: servers/audio/effects/audio_effect_filter.cpp
-#, fuzzy
-msgid "dB"
-msgstr "B"
 
 #: servers/audio/effects/audio_effect_limiter.cpp
 msgid "Ceiling dB"
@@ -20899,7 +23017,7 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
-msgid "Fft Size"
+msgid "FFT Size"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
@@ -20907,11 +23025,7 @@ msgid "Predelay"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
-msgid "Predelay Msec"
-msgstr ""
-
-#: servers/audio/effects/audio_effect_reverb.cpp
-msgid "Predelay Feedback"
+msgid "(msec)"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
@@ -20919,7 +23033,7 @@ msgid "Room Size"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
-msgid "Hipass"
+msgid "High-pass"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
@@ -20932,15 +23046,11 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_stereo_enhance.cpp
 #, fuzzy
-msgid "Time Pullout Ms"
+msgid "Time Pullout (ms)"
 msgstr "Istek vremena."
 
 #: servers/audio/effects/audio_effect_stereo_enhance.cpp
 msgid "Surround"
-msgstr ""
-
-#: servers/audio/effects/audio_stream_generator.cpp servers/audio_server.cpp
-msgid "Mix Rate"
 msgstr ""
 
 #: servers/audio_server.cpp
@@ -20960,11 +23070,30 @@ msgid "Channel Disable Time"
 msgstr ""
 
 #: servers/audio_server.cpp
-msgid "Video Delay Compensation Ms"
+msgid "Video Delay Compensation (ms)"
 msgstr ""
+
+#: servers/audio_server.cpp
+#, fuzzy
+msgid "Bus Count"
+msgstr "Optimizuj Animaciju"
+
+#: servers/audio_server.cpp
+#, fuzzy
+msgid "Capture Device"
+msgstr "Ulovi"
+
+#: servers/audio_server.cpp
+#, fuzzy
+msgid "Global Rate Scale"
+msgstr "Kontanta"
 
 #: servers/camera/camera_feed.cpp
 msgid "Feed"
+msgstr ""
+
+#: servers/camera/camera_feed.cpp
+msgid "Is Active"
 msgstr ""
 
 #: servers/physics/space_sw.cpp servers/physics_2d/space_2d_sw.cpp
@@ -20980,7 +23109,7 @@ msgid "Time Before Sleep"
 msgstr ""
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
-msgid "Bp Hash Table Size"
+msgid "BP Hash Table Size"
 msgstr ""
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
@@ -20988,11 +23117,83 @@ msgid "Large Object Surface Threshold In Cells"
 msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Inverse Mass"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Inverse Inertia"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Total Angular Damp"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Total Linear Damp"
+msgstr "Linearna"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Total Gravity"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Linear Velocity"
+msgstr "Linearna"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Exclude"
 msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-msgid "Collider Id"
+msgid "Shape RID"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collide With Bodies"
+msgstr "Napravi"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Collide With Areas"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+msgid "Motion Remainder"
+msgstr ""
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collision Point"
+msgstr "Napravi"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collision Normal"
+msgstr "Napravi"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collision Depth"
+msgstr "Napravi"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collision Safe Fraction"
+msgstr "Napravi"
+
+#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
+msgid "Collision Unsafe Fraction"
+msgstr "Napravi"
+
+#: servers/physics_server.cpp
+msgid "Center Of Mass"
+msgstr ""
+
+#: servers/physics_server.cpp
+msgid "Principal Inertia Axes"
 msgstr ""
 
 #: servers/visual/shader_language.cpp
@@ -21026,6 +23227,11 @@ msgstr ""
 #: servers/visual/visual_server_scene.cpp
 msgid "Spatial Partitioning"
 msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Render Loop Enabled"
+msgstr "Filtriraj signale"
 
 #: servers/visual_server.cpp
 msgid "VRAM Compression"
@@ -21177,7 +23383,7 @@ msgstr "Način Interpolacije"
 
 #: servers/visual_server.cpp
 #, fuzzy
-msgid "Opengl"
+msgid "OpenGL"
 msgstr "Otvori"
 
 #: servers/visual_server.cpp
@@ -21320,5 +23526,5 @@ msgid "Log Active Async Compiles Count"
 msgstr ""
 
 #: servers/visual_server.cpp
-msgid "Shader Cache Size Mb"
+msgid "Shader Cache Size (MB)"
 msgstr ""
