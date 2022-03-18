@@ -7,7 +7,7 @@
  * on files with these headers:
  *
  * <meta name="updated_at" content="2022-01-28 10:00 PM" />
- * File-Date: 2021-12-29
+ * File-Date: 2022-03-02
  */
 
 #ifndef HB_OT_TAG_TABLE_HH
@@ -54,6 +54,7 @@ static const LangTag ot_languages[] = {
 /*{"aio",	HB_TAG('A','I','O',' ')},*/	/* Aiton */
   {"aiw",	HB_TAG('A','R','I',' ')},	/* Aari */
   {"ajp",	HB_TAG('A','R','A',' ')},	/* South Levantine Arabic -> Arabic */
+  {"ajt",	HB_TAG('A','R','A',' ')},	/* Judeo-Tunisian Arabic (retired code) -> Arabic */
   {"ak",	HB_TAG('A','K','A',' ')},	/* Akan [macrolanguage] */
   {"akb",	HB_TAG('A','K','B',' ')},	/* Batak Angkola */
   {"akb",	HB_TAG('B','T','K',' ')},	/* Batak Angkola -> Batak */
@@ -809,7 +810,7 @@ static const LangTag ot_languages[] = {
   {"lac",	HB_TAG('M','Y','N',' ')},	/* Lacandon -> Mayan */
   {"lad",	HB_TAG('J','U','D',' ')},	/* Ladino */
   {"lah",	HB_TAG_NONE	       },	/* Lahnda [macrolanguage] != Lahuli */
-  {"lak",	HB_TAG_NONE	       },	/* Laka (Nigeria) != Lak */
+  {"lak",	HB_TAG_NONE	       },	/* Laka (Nigeria) (retired code) != Lak */
   {"lam",	HB_TAG_NONE	       },	/* Lamba != Lambani */
   {"laz",	HB_TAG_NONE	       },	/* Aribwatsa != Laz */
   {"lb",	HB_TAG('L','T','Z',' ')},	/* Luxembourgish */
@@ -1339,12 +1340,14 @@ static const LangTag ot_languages[] = {
   {"sla",	HB_TAG_NONE	       },	/* Slavic [collection] != Slavey */
   {"sm",	HB_TAG('S','M','O',' ')},	/* Samoan */
   {"sma",	HB_TAG('S','S','M',' ')},	/* Southern Sami */
+  {"smd",	HB_TAG('M','B','N',' ')},	/* Sama (retired code) -> Mbundu */
   {"smj",	HB_TAG('L','S','M',' ')},	/* Lule Sami */
   {"sml",	HB_TAG_NONE	       },	/* Central Sama != Somali */
   {"smn",	HB_TAG('I','S','M',' ')},	/* Inari Sami */
   {"sms",	HB_TAG('S','K','S',' ')},	/* Skolt Sami */
   {"smt",	HB_TAG('Q','I','N',' ')},	/* Simte -> Chin */
   {"sn",	HB_TAG('S','N','A','0')},	/* Shona */
+  {"snb",	HB_TAG('I','B','A',' ')},	/* Sebuyau (retired code) -> Iban */
   {"snh",	HB_TAG_NONE	       },	/* Shinabo (retired code) != Sinhala (Sinhalese) */
 /*{"snk",	HB_TAG('S','N','K',' ')},*/	/* Soninke */
   {"so",	HB_TAG('S','M','L',' ')},	/* Somali */

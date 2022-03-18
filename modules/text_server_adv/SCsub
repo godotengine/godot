@@ -103,6 +103,7 @@ if env["builtin_harfbuzz"]:
         "src/hb-subset-cff2.cc",
         "src/hb-subset-input.cc",
         "src/hb-subset-plan.cc",
+        "src/hb-subset-repacker.cc",
         "src/hb-subset.cc",
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
