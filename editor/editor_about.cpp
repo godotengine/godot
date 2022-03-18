@@ -164,9 +164,7 @@ EditorAbout::EditorAbout() {
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
 	// TRANSLATORS: This refers to a job title.
-	// The trailing space is used to distinguish with the project list application,
-	// you do not have to keep it in your translation.
-	dev_sections.push_back(TTR("Project Manager "));
+	dev_sections.push_back(TTR("Project Manager", "Job Title"));
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
 		AUTHORS_PROJECT_MANAGERS, AUTHORS_DEVELOPERS };
