@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  text_server_dummy.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef TEXT_SERVER_DUMMY_H
+#define TEXT_SERVER_DUMMY_H
 
-#include "text_server_fb.h"
+#include "servers/text/text_server_extension.h"
 
-void preregister_text_server_fb_types() {
-	GDREGISTER_CLASS(TextServerFallback);
-	TextServerManager *tsman = TextServerManager::get_singleton();
-	if (tsman) {
-		Ref<TextServerFallback> ts;
-		ts.instantiate();
-		tsman->add_interface(ts);
+/*************************************************************************/
+
+class TextServerDummy : public TextServerExtension {
+	GDCLASS(TextServerDummy, TextServerExtension);
+	_THREAD_SAFE_CLASS_
+
+public:
+	virtual String get_name() const override {
+		return "Dummy";
 	}
-}
+};
 
-void register_text_server_fb_types() {
-}
-
-void unregister_text_server_fb_types() {
-}
-
-#ifdef GDEXTENSION
-
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/core/memory.hpp>
-
-using namespace godot;
-
-extern "C" {
-
-GDNativeBool GDN_EXPORT textserver_fallback_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
-	GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
-
-	init_obj.register_server_initializer(&preregister_text_server_fb_types);
-	init_obj.register_server_terminator(&unregister_text_server_fb_types);
-
-	return init_obj.init();
-}
-
-} // ! extern "C"
-
-#endif // ! GDEXTENSION
+#endif // TEXT_SERVER_DUMMY_H

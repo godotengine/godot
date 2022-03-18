@@ -514,10 +514,28 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="num_int64" qualifiers="static">
+			<return type="String" />
+			<argument index="0" name="number" type="int" />
+			<argument index="1" name="base" type="int" default="10" />
+			<argument index="2" name="capitalize_hex" type="bool" default="false" />
+			<description>
+				Converts a signed [int] to a string representation of a number.
+			</description>
+		</method>
 		<method name="num_scientific" qualifiers="static">
 			<return type="String" />
 			<argument index="0" name="number" type="float" />
 			<description>
+			</description>
+		</method>
+		<method name="num_uint64" qualifiers="static">
+			<return type="String" />
+			<argument index="0" name="number" type="int" />
+			<argument index="1" name="base" type="int" default="10" />
+			<argument index="2" name="capitalize_hex" type="bool" default="false" />
+			<description>
+				Converts a unsigned [int] to a string representation of a number.
 			</description>
 		</method>
 		<method name="pad_decimals" qualifiers="const">
@@ -884,6 +902,12 @@
 		<operator name="operator +">
 			<return type="String" />
 			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</operator>

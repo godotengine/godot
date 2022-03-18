@@ -200,7 +200,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tag_to_name", "tag"), &TextServer::tag_to_name);
 
 	ClassDB::bind_method(D_METHOD("has", "rid"), &TextServer::has);
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &TextServer::free); // shouldn't conflict with Object::free()
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &TextServer::free_rid);
 
 	/* Font Interface */
 
@@ -493,13 +493,19 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_AUTO);
 	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_HALF);
 	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_QUARTER);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE);
 
 	/* Feature */
+	BIND_ENUM_CONSTANT(FEATURE_SIMPLE_LAYOUT);
 	BIND_ENUM_CONSTANT(FEATURE_BIDI_LAYOUT);
 	BIND_ENUM_CONSTANT(FEATURE_VERTICAL_LAYOUT);
 	BIND_ENUM_CONSTANT(FEATURE_SHAPING);
 	BIND_ENUM_CONSTANT(FEATURE_KASHIDA_JUSTIFICATION);
 	BIND_ENUM_CONSTANT(FEATURE_BREAK_ITERATORS);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_BITMAP);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_DYNAMIC);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_MSDF);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_SYSTEM);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
 	BIND_ENUM_CONSTANT(FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION);
@@ -522,7 +528,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FONT_FIXED_WIDTH);
 }
 
-Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
+Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
 	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
 	int sz = MAX(1, Math::round(p_size / 15.f));
@@ -530,7 +536,7 @@ Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
 	return Vector2(4 + 3 * w + sp + 1, 15) * sz;
 }
 
-void TextServer::_draw_hex_code_box_number(RID p_canvas, int p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const {
+void TextServer::_draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const {
 	static uint8_t chars[] = { 0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B, 0x77, 0x1F, 0x4E, 0x3D, 0x4F, 0x47, 0x00 };
 	uint8_t x = chars[p_index];
 	if (x & (1 << 6)) {
@@ -556,7 +562,7 @@ void TextServer::_draw_hex_code_box_number(RID p_canvas, int p_size, const Vecto
 	}
 }
 
-void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const {
+void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
 	if (p_index == 0) {
 		return;
 	}
@@ -600,7 +606,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	}
 }
 
-PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const PackedFloat32Array &p_width, int p_start, bool p_once, uint16_t /*TextBreakFlag*/ p_break_flags) const {
+PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start, bool p_once, int64_t /*TextBreakFlag*/ p_break_flags) const {
 	PackedInt32Array lines;
 
 	ERR_FAIL_COND_V(p_width.is_empty(), lines);
@@ -676,13 +682,13 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	return lines;
 }
 
-PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start, uint16_t /*TextBreakFlag*/ p_break_flags) const {
+PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start, int64_t /*TextBreakFlag*/ p_break_flags) const {
 	PackedInt32Array lines;
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
-	float width = 0.f;
+	double width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int word_count = 0;
@@ -744,7 +750,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 	return lines;
 }
 
-PackedInt32Array TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags) const {
+PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, int64_t p_grapheme_flags) const {
 	PackedInt32Array words;
 
 	const_cast<TextServer *>(this)->shaped_text_update_justification_ops(p_shaped);
@@ -776,7 +782,7 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_gra
 	return words;
 }
 
-CaretInfo TextServer::shaped_text_get_carets(RID p_shaped, int p_position) const {
+CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const {
 	Vector<Rect2> carets;
 
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
@@ -926,7 +932,7 @@ CaretInfo TextServer::shaped_text_get_carets(RID p_shaped, int p_position) const
 	return caret;
 }
 
-Dictionary TextServer::_shaped_text_get_carets_wrapper(RID p_shaped, int p_position) const {
+Dictionary TextServer::_shaped_text_get_carets_wrapper(const RID &p_shaped, int64_t p_position) const {
 	Dictionary ret;
 
 	CaretInfo caret = shaped_text_get_carets(p_shaped, p_position);
@@ -939,7 +945,7 @@ Dictionary TextServer::_shaped_text_get_carets_wrapper(RID p_shaped, int p_posit
 	return ret;
 }
 
-TextServer::Direction TextServer::shaped_text_get_dominant_direction_in_range(RID p_shaped, int p_start, int p_end) const {
+TextServer::Direction TextServer::shaped_text_get_dominant_direction_in_range(const RID &p_shaped, int64_t p_start, int64_t p_end) const {
 	if (p_start == p_end) {
 		return DIRECTION_AUTO;
 	}
@@ -973,7 +979,7 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direction_in_range(RI
 	}
 }
 
-Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start, int p_end) const {
+Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64_t p_start, int64_t p_end) const {
 	Vector<Vector2> ranges;
 
 	if (p_start == p_end) {
@@ -1066,9 +1072,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	return ranges;
 }
 
-int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const {
+int64_t TextServer::shaped_text_hit_test_grapheme(const RID &p_shaped, double p_coords) const {
 	// Exact grapheme hit test, return -1 if missed.
-	float off = 0.0f;
+	double off = 0.0f;
 
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
@@ -1084,7 +1090,7 @@ int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) cons
 	return -1;
 }
 
-int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) const {
+int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_coords) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
@@ -1177,7 +1183,7 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 	return 0;
 }
 
-Vector2 TextServer::shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const {
+Vector2 TextServer::shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
@@ -1198,7 +1204,7 @@ Vector2 TextServer::shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) con
 	return Vector2();
 }
 
-int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const {
+int64_t TextServer::shaped_text_next_grapheme_pos(const RID &p_shaped, int64_t p_pos) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	for (int i = 0; i < v_size; i++) {
@@ -1209,7 +1215,7 @@ int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const {
 	return p_pos;
 }
 
-int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const {
+int64_t TextServer::shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p_pos) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	for (int i = 0; i < v_size; i++) {
@@ -1221,7 +1227,7 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const {
 	return p_pos;
 }
 
-void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, const Color &p_color) const {
+void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
@@ -1318,7 +1324,7 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 	}
 }
 
-void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
+void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
 	bool rtl = (shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL);
@@ -1538,7 +1544,7 @@ String TextServer::strip_diacritics(const String &p_string) const {
 	return result;
 }
 
-Array TextServer::_shaped_text_get_glyphs_wrapper(RID p_shaped) const {
+Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
 	Array ret;
 
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
@@ -1563,7 +1569,7 @@ Array TextServer::_shaped_text_get_glyphs_wrapper(RID p_shaped) const {
 	return ret;
 }
 
-Array TextServer::_shaped_text_sort_logical_wrapper(RID p_shaped) {
+Array TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
 	Array ret;
 
 	const Glyph *glyphs = shaped_text_sort_logical(p_shaped);
@@ -1588,7 +1594,7 @@ Array TextServer::_shaped_text_sort_logical_wrapper(RID p_shaped) {
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(RID p_shaped) const {
+Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const {
 	Array ret;
 
 	const Glyph *glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);

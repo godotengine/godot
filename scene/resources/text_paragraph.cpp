@@ -140,7 +140,7 @@ void TextParagraph::_bind_methods() {
 void TextParagraph::_shape_lines() {
 	if (lines_dirty) {
 		for (int i = 0; i < lines_rid.size(); i++) {
-			TS->free(lines_rid[i]);
+			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
 
@@ -168,7 +168,7 @@ void TextParagraph::_shape_lines() {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
 				if (v_offset < h) {
-					TS->free(line);
+					TS->free_rid(line);
 					break;
 				}
 				if (!tab_stops.is_empty()) {
@@ -271,7 +271,7 @@ void TextParagraph::clear() {
 	spacing_top = 0;
 	spacing_bottom = 0;
 	for (int i = 0; i < lines_rid.size(); i++) {
-		TS->free(lines_rid[i]);
+		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();
 	TS->shaped_text_clear(rid);
@@ -847,9 +847,9 @@ TextParagraph::TextParagraph() {
 
 TextParagraph::~TextParagraph() {
 	for (int i = 0; i < lines_rid.size(); i++) {
-		TS->free(lines_rid[i]);
+		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();
-	TS->free(rid);
-	TS->free(dropcap_rid);
+	TS->free_rid(rid);
+	TS->free_rid(dropcap_rid);
 }

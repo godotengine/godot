@@ -155,14 +155,6 @@ protected:
 	static void _bind_methods();
 
 private:
-	void _create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-		create(p_width, p_height, p_use_mipmaps, p_format);
-	}
-
-	void _create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
-	}
-
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
 	int width = 0;
@@ -288,6 +280,14 @@ public:
 	Error save_png(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
 	Error save_exr(const String &p_path, bool p_grayscale) const;
+
+	void create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+		create(p_width, p_height, p_use_mipmaps, p_format);
+	}
+
+	void create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
+	}
 
 	/**
 	 * create an empty image
