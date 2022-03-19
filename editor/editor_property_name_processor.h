@@ -41,16 +41,27 @@ class EditorPropertyNameProcessor : public Node {
 	mutable Map<String, String> capitalize_string_cache;
 	Map<String, String> capitalize_string_remaps;
 
+	// Capitalizes property path segments.
 	String _capitalize_name(const String &p_name) const;
 
 public:
+	// Matches `interface/inspector/capitalize_properties` editor setting.
+	enum Style {
+		STYLE_RAW,
+		STYLE_CAPITALIZED,
+		STYLE_LOCALIZED,
+	};
+
 	static EditorPropertyNameProcessor *get_singleton() { return singleton; }
 
-	// Capitalize & localize property path segments.
-	String process_name(const String &p_name) const;
+	static Style get_default_inspector_style();
+	static Style get_settings_style();
+	static Style get_tooltip_style(Style p_style);
 
-	// Make tooltip string for names processed by process_name().
-	String make_tooltip_for_name(const String &p_name) const;
+	static bool is_localization_available();
+
+	// Turns property path segment into the given style.
+	String process_name(const String &p_name, Style p_style) const;
 
 	EditorPropertyNameProcessor();
 	~EditorPropertyNameProcessor();

@@ -5984,10 +5984,11 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/editor/show_update_spinner", false);
 	EDITOR_DEF("interface/editor/update_continuously", false);
 	EDITOR_DEF("interface/editor/update_vital_only", false);
-	EDITOR_DEF("interface/editor/translate_properties", true);
+	EDITOR_DEF("interface/editor/localize_settings", true);
 	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", false);
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
-	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
+	EDITOR_DEF_RST("interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_property_name_style", PROPERTY_HINT_ENUM, "Raw,Capitalized,Localized"));
 	EDITOR_DEF_RST("interface/inspector/default_float_step", 0.001);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));
 	EDITOR_DEF_RST("interface/inspector/disable_folding", false);

@@ -43,14 +43,14 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
-static bool _property_path_matches(const String &p_property_path, const String &p_filter) {
+static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
 		return true;
 	}
 
 	const Vector<String> sections = p_property_path.split("/");
 	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofi(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i]))) {
+		if (p_filter.is_subsequence_ofi(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
 			return true;
 		}
 	}
@@ -1463,6 +1463,8 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
+	bool in_script_variables = false;
+
 	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
 		PropertyInfo &p = I->get();
 
@@ -1502,6 +1504,8 @@ void EditorInspector::update_tree() {
 			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
 			main_vbox->add_child(category);
 			category_vbox = nullptr; //reset
+
+			in_script_variables = p.name == "Script Variables";
 
 			String type = p.name;
 			category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
@@ -1562,22 +1566,27 @@ void EditorInspector::update_tree() {
 
 		String name = (basename.find("/") != -1) ? basename.right(basename.rfind("/") + 1) : basename;
 		String name_override = name;
-
-		if (capitalize_paths) {
-			int dot = name.find(".");
+		String feature_tag;
+		{
+			const int dot = name.find(".");
 			if (dot != -1) {
 				name_override = name.substr(0, dot);
-				name = EditorPropertyNameProcessor::get_singleton()->process_name(name_override) + name.right(dot);
-			} else {
-				name = EditorPropertyNameProcessor::get_singleton()->process_name(name);
+				feature_tag = name.right(dot);
 			}
 		}
+
+		// Don't localize properties in Script Variables category.
+		EditorPropertyNameProcessor::Style name_style = property_name_style;
+		if (in_script_variables && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+		}
+		name = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
 
 		String path = basename.left(basename.rfind("/"));
 
 		if (use_filter && !filter.empty()) {
 			const String property_path = property_prefix + (path.empty() ? "" : path + "/") + name_override;
-			if (!_property_path_matches(property_path, filter)) {
+			if (!_property_path_matches(property_path, filter, property_name_style)) {
 				continue;
 			}
 		}
@@ -1603,15 +1612,13 @@ void EditorInspector::update_tree() {
 					current_vbox->add_child(section);
 					sections.push_back(section);
 
-					String label = path_name;
-					if (capitalize_paths) {
-						label = EditorPropertyNameProcessor::get_singleton()->process_name(label);
-					}
+					const String label = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, property_name_style);
+					const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
 
 					Color c = sscolor;
 					c.a /= level;
 					section->setup(acc_path, label, object, c, use_folding);
-					section->set_tooltip(EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(path_name));
+					section->set_tooltip(tooltip);
 
 					VBoxContainer *vb = section->get_vbox();
 					item_path[acc_path] = vb;
@@ -1853,11 +1860,15 @@ void EditorInspector::set_read_only(bool p_read_only) {
 	update_tree();
 }
 
-bool EditorInspector::is_capitalize_paths_enabled() const {
-	return capitalize_paths;
+EditorPropertyNameProcessor::Style EditorInspector::get_property_name_style() const {
+	return property_name_style;
 }
-void EditorInspector::set_enable_capitalize_paths(bool p_capitalize) {
-	capitalize_paths = p_capitalize;
+
+void EditorInspector::set_property_name_style(EditorPropertyNameProcessor::Style p_style) {
+	if (property_name_style == p_style) {
+		return;
+	}
+	property_name_style = p_style;
 	update_tree();
 }
 
@@ -2346,7 +2357,7 @@ EditorInspector::EditorInspector() {
 	show_categories = false;
 	hide_script = true;
 	use_doc_hints = false;
-	capitalize_paths = true;
+	property_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 	use_filter = false;
 	autoclear = false;
 	changing = 0;

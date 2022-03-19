@@ -56,6 +56,9 @@ class SectionedInspector : public HSplitContainer {
 
 	void _search_changed(const String &p_what);
 
+protected:
+	void _notification(int p_what);
+
 public:
 	void register_search_box(LineEdit *p_box);
 	EditorInspector *get_inspector();

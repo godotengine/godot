@@ -241,11 +241,20 @@ void ItemListEditor::_node_removed(Node *p_node) {
 }
 
 void ItemListEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
-		add_button->set_icon(get_icon("Add", "EditorIcons"));
-		del_button->set_icon(get_icon("Remove", "EditorIcons"));
-	} else if (p_notification == NOTIFICATION_READY) {
-		get_tree()->connect("node_removed", this, "_node_removed");
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			add_button->set_icon(get_icon("Add", "EditorIcons"));
+			del_button->set_icon(get_icon("Remove", "EditorIcons"));
+		} break;
+
+		case NOTIFICATION_READY: {
+			get_tree()->connect("node_removed", this, "_node_removed");
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			property_editor->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
 	}
 }
 
@@ -360,6 +369,7 @@ ItemListEditor::ItemListEditor() {
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	property_editor->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 }
 
 ItemListEditor::~ItemListEditor() {
