@@ -130,7 +130,7 @@ MaterialEditor::MaterialEditor() {
 	layout_2d = memnew(HBoxContainer);
 	layout_2d->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	add_child(layout_2d);
-	layout_2d->set_anchors_and_offsets_preset(PRESET_WIDE);
+	layout_2d->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	rect_instance = memnew(ColorRect);
 	layout_2d->add_child(rect_instance);
@@ -143,7 +143,7 @@ MaterialEditor::MaterialEditor() {
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
-	vc->set_anchors_and_offsets_preset(PRESET_WIDE);
+	vc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
 	world_3d.instantiate();
@@ -190,7 +190,7 @@ MaterialEditor::MaterialEditor() {
 
 	layout_3d = memnew(HBoxContainer);
 	add_child(layout_3d);
-	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
 	layout_3d->add_child(vb_shape);
