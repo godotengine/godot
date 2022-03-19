@@ -34,6 +34,28 @@
 
 EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
 
+EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_inspector_style() {
+	const Style style = (Style)EDITOR_GET("interface/inspector/default_property_name_style").operator int();
+	if (style == STYLE_LOCALIZED && !is_localization_available()) {
+		return STYLE_CAPITALIZED;
+	}
+	return style;
+}
+
+EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_style() {
+	const bool translate = EDITOR_GET("interface/editor/localize_settings");
+	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
+}
+
+EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_style(Style p_style) {
+	return p_style == STYLE_LOCALIZED ? STYLE_CAPITALIZED : STYLE_LOCALIZED;
+}
+
+bool EditorPropertyNameProcessor::is_localization_available() {
+	const Vector<String> forbidden = String("en").split(",");
+	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
+}
+
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
 	const Map<String, String>::Element *cached = capitalize_string_cache.find(p_name);
 	if (cached) {
@@ -55,20 +77,21 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	return capitalized;
 }
 
-String EditorPropertyNameProcessor::process_name(const String &p_name) const {
-	const String capitalized_string = _capitalize_name(p_name);
-	if (EDITOR_GET("interface/editor/translate_properties")) {
-		return TTRGET(capitalized_string);
-	}
-	return capitalized_string;
-}
+String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_style) const {
+	switch (p_style) {
+		case STYLE_RAW: {
+			return p_name;
+		} break;
 
-String EditorPropertyNameProcessor::make_tooltip_for_name(const String &p_name) const {
-	const String capitalized_string = _capitalize_name(p_name);
-	if (EDITOR_GET("interface/editor/translate_properties")) {
-		return capitalized_string;
+		case STYLE_CAPITALIZED: {
+			return _capitalize_name(p_name);
+		} break;
+
+		case STYLE_LOCALIZED: {
+			return TTRGET(_capitalize_name(p_name));
+		} break;
 	}
-	return TTRGET(capitalized_string);
+	ERR_FAIL_V_MSG(p_name, "Unexpected property name style.");
 }
 
 EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
@@ -84,6 +107,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["adb"] = "ADB";
 	capitalize_string_remaps["ao"] = "AO";
 	capitalize_string_remaps["apk"] = "APK";
+	capitalize_string_remaps["arm64-v8a"] = "arm64-v8a";
+	capitalize_string_remaps["armeabi-v7a"] = "armeabi-v7a";
 	capitalize_string_remaps["arvr"] = "ARVR";
 	capitalize_string_remaps["bg"] = "BG";
 	capitalize_string_remaps["bp"] = "BP";
@@ -130,6 +155,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ipad"] = "iPad";
 	capitalize_string_remaps["iphone"] = "iPhone";
 	capitalize_string_remaps["ipv6"] = "IPv6";
+	capitalize_string_remaps["ir"] = "IR";
 	capitalize_string_remaps["jit"] = "JIT";
 	capitalize_string_remaps["k1"] = "K1";
 	capitalize_string_remaps["k2"] = "K2";
@@ -139,10 +165,12 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["lowpass"] = "Low-pass";
 	capitalize_string_remaps["macos"] = "macOS";
 	capitalize_string_remaps["mb"] = "(MB)"; // Unit.
+	capitalize_string_remaps["mms"] = "MMS";
 	capitalize_string_remaps["ms"] = "(ms)"; // Unit
 	// Not used for now as AudioEffectReverb has a `msec` property.
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["msaa"] = "MSAA";
+	capitalize_string_remaps["nfc"] = "NFC";
 	capitalize_string_remaps["normalmap"] = "Normal Map";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
@@ -162,6 +190,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";
 	capitalize_string_remaps["sec"] = "(sec)"; // Unit.
+	capitalize_string_remaps["sms"] = "SMS";
 	capitalize_string_remaps["srgb"] = "sRGB";
 	capitalize_string_remaps["ssao"] = "SSAO";
 	capitalize_string_remaps["ssh"] = "SSH";
@@ -182,12 +211,15 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["uv2"] = "UV2";
 	capitalize_string_remaps["uwp"] = "UWP";
 	capitalize_string_remaps["vector2"] = "Vector2";
+	capitalize_string_remaps["vpn"] = "VPN";
 	capitalize_string_remaps["vram"] = "VRAM";
 	capitalize_string_remaps["vsync"] = "V-Sync";
+	capitalize_string_remaps["wap"] = "WAP";
 	capitalize_string_remaps["webp"] = "WebP";
 	capitalize_string_remaps["webrtc"] = "WebRTC";
 	capitalize_string_remaps["websocket"] = "WebSocket";
 	capitalize_string_remaps["wifi"] = "Wi-Fi";
+	capitalize_string_remaps["x86"] = "x86";
 	capitalize_string_remaps["xr"] = "XR";
 	capitalize_string_remaps["xy"] = "XY";
 	capitalize_string_remaps["xz"] = "XZ";

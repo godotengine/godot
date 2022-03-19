@@ -2606,7 +2606,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);
-				sub_inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+				sub_inspector->set_property_name_style(EditorNode::get_singleton()->get_inspector_dock()->get_property_name_style());
 
 				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
 				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");
