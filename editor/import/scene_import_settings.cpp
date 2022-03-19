@@ -447,7 +447,7 @@ void SceneImportSettings::_update_camera() {
 	camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
 
 	Transform3D xf;
-	xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
+	xf.basis = Basis(Vector3(1, 0, 0), rot_x) * Basis(Vector3(0, 1, 0), rot_y);
 	xf.origin = center;
 	xf.translate(0, 0, camera_size);
 

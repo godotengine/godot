@@ -62,7 +62,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-03-08 06:54+0000\n"
+"PO-Revision-Date: 2022-03-17 18:46+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
@@ -4177,8 +4177,8 @@ msgid ""
 "pick in a list specified via a hint string such as [code]\"Hello,Something,"
 "Else\"[/code]."
 msgstr ""
-"通过一个提示串，提示一个整数、浮点或字符串属性是枚举值，枚举值取值来自于形如"
-"[code]\"Hello,Something,Else\"[/code]的提示串。"
+"提示整数、浮点数或字符串属性为枚举值，可选值列表通过提示字符串指定，例如 "
+"[code]\"Hello,Something,Else\"[/code]。"
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4188,6 +4188,10 @@ msgid ""
 "arbitrary values and can be empty. The list of values serves to suggest "
 "possible values."
 msgstr ""
+"提示字符串属性为枚举值，可选值列表通过提示字符串指定，例如 [code]\"Hello,"
+"Something,Else\"[/code]。\n"
+"与 [constant PROPERTY_HINT_ENUM] 不同，具有这个提示的属性仍能够接受任意值，而"
+"且可以为空。可选值列表用于提示可能的值。"
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -5069,7 +5073,7 @@ msgstr "模式列举的最大值。"
 
 #: doc/classes/AnimatedSprite.xml
 msgid "Sprite node that can use multiple textures for animation."
-msgstr "可以使用多个纹理进行动画处理的 Sprite 节点。"
+msgstr "可以使用多个纹理进行动画处理的精灵节点。"
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
@@ -5176,7 +5180,7 @@ msgstr "当[member frame]更改时发出。"
 #: doc/classes/AnimatedSprite3D.xml
 msgid ""
 "2D sprite node in 3D world, that can use multiple 2D textures for animation."
-msgstr "3D世界中的2D精灵节点，可以使用多个2D纹理进行动画处理。"
+msgstr "3D 世界中的 2D 精灵节点，可以使用多个 2D 纹理进行动画处理。"
 
 #: doc/classes/AnimatedSprite3D.xml
 msgid ""
@@ -5704,7 +5708,7 @@ msgid ""
 "Sets the transition curve (easing) for a specific key (see the built-in math "
 "function [method @GDScript.ease])."
 msgstr ""
-"设置特定键的过渡曲线（缓动）（参阅内置数学函数[method @GDScript.ease]）。"
+"设置特定键的过渡曲线（缓动）（参阅内置数学函数 [method @GDScript.ease]）。"
 
 #: doc/classes/Animation.xml
 msgid "Sets the value of an existing key."
@@ -5837,15 +5841,15 @@ msgstr "动画曲目在其他 [AnimationPlayer] 节点中播放动画。"
 
 #: doc/classes/Animation.xml
 msgid "No interpolation (nearest value)."
-msgstr "无内插(最近值)。"
+msgstr "无插值（最近值）。"
 
 #: doc/classes/Animation.xml
 msgid "Linear interpolation."
-msgstr "线性插值."
+msgstr "线性插值。"
 
 #: doc/classes/Animation.xml
 msgid "Cubic interpolation."
-msgstr "三次插值."
+msgstr "三次插值。"
 
 #: doc/classes/Animation.xml
 msgid "Update between keyframes."
@@ -5864,8 +5868,8 @@ msgid ""
 "Same as linear interpolation, but also interpolates from the current value "
 "(i.e. dynamically at runtime) if the first key isn't at 0 seconds."
 msgstr ""
-"与线性插值相同，但如果第一个键不是在0秒时，也会从当前值进行插值（即在运行时动"
-"态插值）。"
+"与线性插值相同，但如果第一个关键帧不在第 0 秒，则会从当前值进行插值（即在运行"
+"时动态插值）。"
 
 #: doc/classes/AnimationNode.xml
 msgid "Base resource for [AnimationTree] nodes."
@@ -5955,7 +5959,7 @@ msgid ""
 "Gets the value of a parameter. Parameters are custom local memory used for "
 "your nodes, given a resource can be reused in multiple trees."
 msgstr ""
-"获取一个参数的值。参数是你的节点使用的自定义本地存储，给定的资源可以在多个树"
+"获取一个参数的值。参数是你的节点使用的自定义本地内存，给定的资源可以在多个树"
 "中重复使用。"
 
 #: doc/classes/AnimationNode.xml
@@ -5972,7 +5976,7 @@ msgid ""
 "memory used for your nodes, given a resource can be reused in multiple "
 "trees. Format is similar to [method Object.get_property_list]."
 msgstr ""
-"获取参数的属性信息。参数是你的节点使用的自定义本地存储，给定的资源可以在多个"
+"获取参数的属性信息。参数是你的节点使用的自定义本地内存，给定的资源可以在多个"
 "树中重复使用。格式类似于[method Object.get_property_list]。"
 
 #: doc/classes/AnimationNode.xml
@@ -5982,9 +5986,8 @@ msgid ""
 msgstr "返回[code]true[/code]，是否希望混合树编辑器在此节点上显示过滤器编辑。"
 
 #: doc/classes/AnimationNode.xml
-#, fuzzy
 msgid "Returns whether the given path is filtered."
-msgstr "返回[code]true[/code]是否对指定路径进行过滤。"
+msgstr "返回是否对给定的路径进行过滤。"
 
 #: doc/classes/AnimationNode.xml
 msgid ""
@@ -6001,7 +6004,7 @@ msgstr ""
 "对的增量，除非 [code]seek[/code] 是 [code]true[/code]，此时它是绝对的时间。\n"
 "请在这里调用 [method blend_input]、[method blend_node] 或 [method "
 "blend_animation] 函数。你也可以使用 [method get_parameter] 和 [method "
-"set_parameter] 来修改本地存储。\n"
+"set_parameter] 来修改本地内存。\n"
 "这个函数应该返回当前动画完成的剩余时间（如果不确定，请传递被调用的主混合"
 "值）。"
 
@@ -6014,12 +6017,11 @@ msgid "Adds or removes a path for the filter."
 msgstr "添加或删除筛选器的路径。"
 
 #: doc/classes/AnimationNode.xml
-#, fuzzy
 msgid ""
 "Sets a custom parameter. These are used as local memory, because resources "
 "can be reused across the tree or scenes."
 msgstr ""
-"设置一个自定义参数。这些参数被用作本地存储，因为资源可以在树或场景中重复使"
+"设置一个自定义参数。这些参数被用作本地内存，因为资源可以在树或场景中重复使"
 "用。"
 
 #: doc/classes/AnimationNode.xml
@@ -6027,9 +6029,8 @@ msgid "If [code]true[/code], filtering is enabled."
 msgstr "如果为 [code]true[/code]，则启用筛选功能。"
 
 #: doc/classes/AnimationNode.xml
-#, fuzzy
 msgid "Emitted when the node was removed from the graph."
-msgstr "当该节点从图中删除时调用。"
+msgstr "当该节点从图中删除时触发。"
 
 #: doc/classes/AnimationNode.xml
 msgid ""
@@ -6986,8 +6987,8 @@ msgid ""
 "Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] "
 "with key [code]name[/code]."
 msgstr ""
-"如果[AnimationPlayer]存储了带有[code]name[/code]with key[Animation]，返回"
-"[code]true[/code]。"
+"如果该 [AnimationPlayer] 存储了键名为 [code]name[/code] 的 [Animation]，则返"
+"回 [code]true[/code]。"
 
 #: doc/classes/AnimationPlayer.xml
 msgid "Returns [code]true[/code] if playing an animation."
@@ -7331,8 +7332,7 @@ msgid ""
 "[i]Deprecated.[/i] Animation player that uses a node graph for blending "
 "animations. Superseded by [AnimationTree]."
 msgstr ""
-"[i]已弃用。[/i] 使用节点图(node graph)来混合动画的动画播放器。由 "
-"[AnimationTree] 取代。"
+"[i]已弃用。[/i]使用节点图来混合动画的动画播放器。由 [AnimationTree] 取代。"
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -11960,7 +11960,6 @@ msgid "Number of available audio buses."
 msgstr "可用音频总线的数量。"
 
 #: doc/classes/AudioServer.xml
-#, fuzzy
 msgid ""
 "Name of the current device for audio input (see [method get_device_list]). "
 "On systems with multiple audio inputs (such as analog, USB and HDMI audio), "
@@ -11969,9 +11968,9 @@ msgid ""
 "input. If an invalid device name is set, the value will be reverted back to "
 "[code]\"Default\"[/code]."
 msgstr ""
-"当前音频输出设备名称（见 [method get_device_list]）。在具有多个音频输出的系统"
-"中（例如模拟、USB、HDMI 音频），可用于选择音频输出设备。将值设为 "
-"[code]\"Default\"[/code] 则会从系统默认的音频输出播放音频。如果设置了无效的设"
+"当前音频输出设备的名称（见 [method get_device_list]）。在具有多个音频输出的系"
+"统中（例如模拟、USB、HDMI 音频），可用于选择音频输出设备。为 "
+"[code]\"Default\"[/code] 时会从系统默认的音频输出播放音频。如果设置了无效的设"
 "备名称，该值会被恢复为 [code]\"Default\"[/code]。"
 
 #: doc/classes/AudioServer.xml
@@ -12194,7 +12193,7 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid "Plays back audio non-positionally."
-msgstr "非定位地播放音频。"
+msgstr "播放音频，不考虑所处位置。"
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid ""
@@ -12218,7 +12217,7 @@ msgstr "返回与此 [AudioStreamPlayer] 关联的 [AudioStreamPlayback] 对象�
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid "Plays the audio from the given [code]from_position[/code], in seconds."
-msgstr "从给定的 [code]from_position[/code] 播放音频，以秒为单位。"
+msgstr "从给定的位置 [code]from_position[/code] 播放音频，以秒为单位。"
 
 #: doc/classes/AudioStreamPlayer.xml doc/classes/AudioStreamPlayer2D.xml
 #: doc/classes/AudioStreamPlayer3D.xml
@@ -12280,20 +12279,20 @@ msgstr "当音频停止播放时发出。"
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid "The audio will be played only on the first channel."
-msgstr "音频将只在第一个频道播放。"
+msgstr "音频将只在第一个声道中播放。"
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid "The audio will be played on all surround channels."
-msgstr "音频将在所有环绕声频道播放。"
+msgstr "音频将在所有环绕声声道中播放。"
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid ""
 "The audio will be played on the second channel, which is usually the center."
-msgstr "音频将在第二通道，也就是通常的中央播放。"
+msgstr "音频将在第二个声道中播放，通常位于中央。"
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid "Plays positional sound in 2D space."
-msgstr "在 2D 空间中播放位置声音。"
+msgstr "在 2D 空间中播放与位置相关的声音。"
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid ""
@@ -12312,19 +12311,19 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
 msgid "Returns the position in the [AudioStream]."
-msgstr "返回[AudioStream]中的位置。"
+msgstr "返回 [AudioStream] 中的位置。"
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid ""
 "Returns the [AudioStreamPlayback] object associated with this "
 "[AudioStreamPlayer2D]."
-msgstr "返回与该[AudioStreamPlayer2D]相关联的[AudioStreamPlayback]对象。"
+msgstr "返回与该 [AudioStreamPlayer2D] 相关联的 [AudioStreamPlayback] 对象。"
 
 #: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
 msgid ""
 "Plays the audio from the given position [code]from_position[/code], in "
 "seconds."
-msgstr "从给定的位置[code]from_position[/code]播放音频，以秒为单位。"
+msgstr "从给定的位置 [code]from_position[/code] 播放音频，以秒为单位。"
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid ""
@@ -12352,7 +12351,7 @@ msgstr "基础音量，无衰减。"
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "Plays positional sound in 3D space."
-msgstr "在 3D 空间中播放位置声音。"
+msgstr "在 3D 空间中播放与位置相关的声音。"
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid ""
@@ -14244,8 +14243,8 @@ msgid ""
 "description). If the camera node is outside the scene tree, it will attempt "
 "to become current once it's added."
 msgstr ""
-"使此相机成为[Viewport]的当前相机（见类的说明）。如果相机节点在场景树之外，一"
-"旦添加，它将尝试成为当前相机。"
+"使此相机成为 [Viewport] 的当前相机（见类的说明）。如果相机节点在场景树之外，"
+"一旦添加，它将尝试成为当前相机。"
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -14537,7 +14536,7 @@ msgstr ""
 
 #: doc/classes/Camera2D.xml
 msgid "Camera node for 2D scenes."
-msgstr "二维场景的相机节点。"
+msgstr "2D 场景的相机节点。"
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15710,22 +15709,20 @@ msgid "Returns the RID of the canvas used by this layer."
 msgstr "返回此层使用的画布的 RID。"
 
 #: doc/classes/CanvasLayer.xml
-#, fuzzy
 msgid ""
 "Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
 "setting [member visible] to [code]false[/code]."
 msgstr ""
-"如果该 [CanvasItem] 目前是可见的，则将其隐藏。等价于将 [member visible] 设为 "
+"隐藏该 [CanvasLayer] 下的所有 [CanvasItem]。等价于将 [member visible] 设为 "
 "[code]false[/code]。"
 
 #: doc/classes/CanvasLayer.xml
-#, fuzzy
 msgid ""
 "Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
 "setting [member visible] to [code]true[/code]."
 msgstr ""
-"如果该 [CanvasItem] 目前是可见的，则将其隐藏。等价于将 [member visible] 设为 "
-"[code]false[/code]。"
+"显示该 [CanvasLayer] 下的所有 [CanvasItem]。等价于将 [member visible] 设为 "
+"[code]true[/code]。"
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
@@ -19198,7 +19195,6 @@ msgstr ""
 "rect_position]。"
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "Returns a [Color] from the first matching [Theme] in the tree if that "
 "[Theme] has a color item with the specified [code]name[/code] and "
@@ -19223,7 +19219,8 @@ msgid ""
 msgstr ""
 "如果该 [Theme] 具有指定 [code]name[/code] 和 [code]theme_type[/code] 的颜色"
 "项，则从树中第一个匹配的 [Theme] 返回 [Color]。如果省略 [code]theme_type[/"
-"code]，则使用当前控件的类名作为类型。如果类型是类名，则还会按继承顺序检查其父"
+"code]，则使用当前控件的类名作为类型，如果定义了 [member "
+"theme_type_variation] 则也会使用。如果类型是类名，则还会按继承顺序检查其父"
 "类。\n"
 "对于当前控件，首先考虑其本地覆盖项，参阅 [method add_color_override]，然后是"
 "其分配的 [member theme]。在当前控件之后，考虑每个父控件及其分配的 [member "
@@ -19563,6 +19560,11 @@ msgstr ""
 "如果在此 [Control] 节点中具有指定 [code]name[/code] 的主题 [StyleBox] 的本地"
 "覆盖项，则返回 [code]true[/code]。\n"
 "参阅 [method add_stylebox_override]。"
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid "Returns [code]true[/code] if drag operation is successful."
+msgstr "如果正在播放动画，返回[code]true[/code]。"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20153,10 +20155,12 @@ msgstr ""
 "内容，无论是纹理还是子节点。"
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
 "By default, the node's pivot is its top-left corner. When you change its "
-"[member rect_scale], it will scale around this pivot. Set this property to "
-"[member rect_size] / 2 to center the pivot in the node's rectangle."
+"[member rect_rotation] or [member rect_scale], it will rotate or scale "
+"around this pivot. Set this property to [member rect_size] / 2 to pivot "
+"around the Control's center."
 msgstr ""
 "默认情况下，该节点的轴心位于其左上角。当您更改其 [member rect_scale] 时，它将"
 "围绕此轴心进行缩放。将此属性设置为 [member rect_size] / 2，以将轴心在节点的矩"
@@ -20268,6 +20272,17 @@ msgid ""
 "The earliest match against any type/class name is returned. The project-"
 "level Theme and the default Theme are checked last."
 msgstr ""
+"主题类型变种的名称，这个 [Control] 用它来查询自身的主题项目。为空时，会使用该"
+"节点的类名（例如 [Button] 控件使用 [code]Button[/code]）与所有父类的类名（按"
+"照继承的顺序）。\n"
+"设值后，这个属性会为其指定的名称赋予最高优先级。这个类型可以扩展另一个类型，"
+"形成依赖链。请参阅 [method Theme.set_type_variation]。如果无法使用这个类型或"
+"者其基础类型找到主题项目，会使用类名进行查询。\n"
+"[b]注意：[/b]要查询 [Control] 自身的项目，请勿在使用各种 [code]get_*[/code] "
+"方法时指定 [code]theme_type[/code]。\n"
+"[b]注意：[/b]主题项目的查询是按照树顺序进行的，从枝到根，会检查各个 "
+"[Control] 节点的 [member theme] 属性。返回的是最早符合条件的类型/类名。项目级"
+"别的主题和默认主题会在最后检查。"
 
 #: doc/classes/Control.xml
 msgid "Emitted when the node gains keyboard focus."
@@ -20889,7 +20904,7 @@ msgstr ""
 
 #: doc/classes/CPUParticles.xml
 msgid "CPU-based 3D particle emitter."
-msgstr "基于CPU的3D粒子发射器。"
+msgstr "基于 CPU 的 3D 粒子发射器。"
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -20900,9 +20915,9 @@ msgid ""
 "[b]Note:[/b] Unlike [Particles], the visibility rect is generated on-the-fly "
 "and doesn't need to be configured by the user."
 msgstr ""
-"基于CPU的3D粒子节点，用于创建各种粒子系统和效果。\n"
-"参阅[Particles]，它是以硬件加速提供相同的功能，但可能无法在旧设备上运行。\n"
-"[b]注意：[/b] 与[Particles]不同，其可见性矩形是即时生成的，不需要用户配置。"
+"基于 CPU 的 3D 粒子节点，用于创建各种粒子系统和效果。\n"
+"参阅 [Particles]，它是以硬件加速提供相同的功能，但可能无法在旧设备上运行。\n"
+"[b]注意：[/b]与 [Particles] 不同，其可见性矩形是即时生成的，不需要用户配置。"
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -21541,7 +21556,7 @@ msgstr "表示[enum EmissionShape]枚举的大小。"
 
 #: doc/classes/CPUParticles2D.xml
 msgid "CPU-based 2D particle emitter."
-msgstr "基于CPU的2D粒子发射器。"
+msgstr "基于 CPU 的 2D 粒子发射器。"
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
@@ -21552,9 +21567,11 @@ msgid ""
 "[b]Note:[/b] Unlike [Particles2D], the visibility rect is generated on-the-"
 "fly and doesn't need to be configured by the user."
 msgstr ""
-"基于CPU的2D粒子节点，用于创建各种粒子系统和效果。\n"
-"参阅[Particles2D]，它通过硬件加速提供相同的功能，但可能无法在旧设备上运行。\n"
-"[b]注意：[/b] 其与[Particles2D]不同，可见性矩形是即时生成的，不需要用户配置。"
+"基于 CPU 的 2D 粒子节点，用于创建各种粒子系统和效果。\n"
+"参阅 [Particles2D]，它通过硬件加速提供相同的功能，但可能无法在旧设备上运"
+"行。\n"
+"[b]注意：[/b]其与 [Particles2D] 不同，可见性矩形是即时生成的，不需要用户配"
+"置。"
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
@@ -23002,10 +23019,11 @@ msgstr ""
 "采样用于其他目的。\n"
 "它保留了沿曲线的预计算点的缓存，以加快进一步的计算。"
 
-#: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
+#: doc/classes/Curve2D.xml
+#, fuzzy
 msgid ""
-"Adds a point to a curve at [code]position[/code], with control points "
-"[code]in[/code] and [code]out[/code].\n"
+"Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s "
+"position, with control points [code]in[/code] and [code]out[/code].\n"
 "If [code]at_position[/code] is given, the point is inserted before the point "
 "number [code]at_position[/code], moving that point (and every point after) "
 "after the inserted point. If [code]at_position[/code] is not given, or is an "
@@ -23214,6 +23232,26 @@ msgstr ""
 "该类描述了 3D 空间中的贝塞尔曲线。它主要用于给 [Path] 提供一个形状，但也可以"
 "为其他目的手动取样。\n"
 "它沿曲线保留了一个预先计算好的点缓存，以加快进一步的计算。"
+
+#: doc/classes/Curve3D.xml
+#, fuzzy
+msgid ""
+"Adds a point to a curve at [code]position[/code] relative to the [Curve3D]'s "
+"position, with control points [code]in[/code] and [code]out[/code].\n"
+"If [code]at_position[/code] is given, the point is inserted before the point "
+"number [code]at_position[/code], moving that point (and every point after) "
+"after the inserted point. If [code]at_position[/code] is not given, or is an "
+"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
+"get_point_count][/code]), the point will be appended at the end of the point "
+"list."
+msgstr ""
+"在曲线的 [code]position[/code] 上添加一个点，控制点 [code]in[/code] 和 "
+"[code]out[/code]。\n"
+"如果给定了 [code]at_position[/code]，这个点会被插入到点号 [code]at_position[/"
+"code] 之前，并将这个点（以及之后的每一个点）移到被插入点之后。如果"
+"[code]at_position[/code]没有给定，或者是一个非法值([code]at_position <0[/"
+"code]或[code]at_position >= [method get_point_count][/code])，该点将被追加在"
+"点列表的最后。"
 
 #: doc/classes/Curve3D.xml
 msgid "Returns the cache of points as a [PoolVector3Array]."
@@ -28244,7 +28282,7 @@ msgid ""
 "Returns the fraction through the current physics tick we are at the time of "
 "rendering the frame. This can be used to implement fixed timestep "
 "interpolation."
-msgstr "返回渲染框架时当前物理滴标记中的分数。这可用于实现固定的时间步插值。"
+msgstr "返回渲染帧时当前物理周期中的分数。可用于实现固定的时间步插值。"
 
 #: doc/classes/Engine.xml
 msgid ""
@@ -28385,8 +28423,8 @@ msgstr ""
 "可以让输入变得更加灵敏、也可以绕过碰撞隧道问题，但请记得这么做也会提升 CPU 的"
 "占用率。另请参阅 [member target_fps] 和 [member ProjectSettings.physics/"
 "common/physics_fps]。\n"
-"[b]注意：[/b]每个渲染帧最多只能模拟 8 次物理迭代。如果为了追赶渲染，需要在每"
-"个渲染帧中模拟多于 8 次物理迭代，游戏看上去会是降速的（即便在物理计算中始终使"
+"[b]注意：[/b]每个渲染帧最多只能模拟 8 个物理周期。如果为了追赶渲染，需要在每"
+"个渲染帧中模拟多于 8 个物理周期，游戏看上去会是降速的（即便在物理计算中始终使"
 "用 [code]delta[/code]）。因此，建议不要将 [member Engine."
 "iterations_per_second] 设为大于 240 的值。否则，渲染帧率低于 30 FPS 时游戏就"
 "会低速运行。"
@@ -28404,10 +28442,10 @@ msgid ""
 "solution, the physics jitter fix should be disabled by setting [member "
 "physics_jitter_fix] to [code]0[/code]."
 msgstr ""
-"控制物理时钟与实时同步程度。如果是0或更少，时钟是同步的。这样的值建议用于网络"
-"游戏，因为时钟的同步性很重要。较高的值会导致游戏中的时钟和真实时钟之间的偏差"
-"较大，但可以平滑帧速率的抖动。默认值0.5对大多数人来说应该是良好的；超过2的值"
-"可能导致游戏对掉帧的反应有明显的延迟，因此不推荐使用。\n"
+"控制物理周期与实际时间的同步程度。如果小于等于 0，则周期是同步的。这样的值建"
+"议用于网络游戏，因为时钟的同步性很重要。较高的值会导致游戏中的时钟和真实时钟"
+"之间的偏差较大，但可以平滑帧速率的抖动。默认值0.5对大多数人来说应该是良好的；"
+"超过2的值可能导致游戏对掉帧的反应有明显的延迟，因此不推荐使用。\n"
 "[b]注意：[/b]为了获得最佳效果，当使用自定义物理插值这种解决方案时，应通过将 "
 "[member physics_jitter_fix] 设置为 [code]0[/code] 来禁用物理抖动修复。"
 
@@ -28448,8 +28486,8 @@ msgid ""
 "real life, whilst a value of 0.5 means the game moves at half the regular "
 "speed."
 msgstr ""
-"控制游戏中的时钟与现实生活中的时钟的快慢。默认值为1.0。值为2.0意味着游戏的移"
-"动速度是现实生活的两倍，而值为0.5意味着游戏的移动速度是常规速度的一半。"
+"控制游戏中的时钟与现实生活中的时钟的快慢。默认值为 1.0。值为 2.0 意味着游戏的"
+"移动速度是现实生活的两倍，而值为 0.5 意味着游戏的移动速度是常规速度的一半。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -28870,6 +28908,18 @@ msgid ""
 "[member ProjectSettings.rendering/quality/depth/hdr]'s [code].mobile[/code] "
 "override."
 msgstr ""
+"为 [code]true[/code] 时，启用发光效果。\n"
+"[b]注意：[/b]仅在 [member ProjectSettings.rendering/quality/intended_usage/"
+"framebuffer_allocation] 为 [b]3D[/b]（[i]不是[/i] [b]3D Without Effects[/b]）"
+"时有效。在移动平台，[member ProjectSettings.rendering/quality/intended_usage/"
+"framebuffer_allocation] 默认为 [b]3D Without Effects[/b]，因此需要将 [code]."
+"mobile[/code] 覆盖项改为 [b]3D[/b]。\n"
+"[b]注意：[/b]在移动平台上使用 GLES3 时，因为性能原因默认禁用了 HDR 渲染。也就"
+"是说发光效果只会在 [member glow_hdr_threshold] 低于 [code]1.0[/code] 或者 "
+"[member glow_bloom] 大于 [code]0.0[/code] 时可见。也可以考虑将 [member "
+"glow_intensity] 增加到 [code]1.5[/code]。如果想要让移动平台上的发光效果与桌面"
+"平台一致（以牺牲性能为代价），可以启用 [member ProjectSettings.rendering/"
+"quality/depth/hdr] 的 [code].mobile[/code] 覆盖项。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -28888,8 +28938,8 @@ msgid ""
 "doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be "
 "visible. A value of [code]0.9[/code] works well in this case."
 msgstr ""
-"HDR glow的下限。当使用GLES2渲染器（不支持HDR）时，需要低于[code]1.0[/code]才"
-"能看到glow。在这种情况下，值[code]0.9[/code]的效果很好。"
+"HDR 发光的下限。当使用（不支持 HDR 的）GLES2 渲染器时，需要低于 [code]1.0[/"
+"code] 才能看到发光。在这种情况下，值 [code]0.9[/code] 的效果很好。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -28906,48 +28956,49 @@ msgstr ""
 msgid ""
 "The glow intensity. When using the GLES2 renderer, this should be increased "
 "to 1.5 to compensate for the lack of HDR rendering."
-msgstr "发光强度。使用GLES2渲染器时，应将其增加到1.5以弥补HDR渲染的不足。"
+msgstr ""
+"发光强度。使用 GLES2 渲染器时，应将其增加到 1.5 以弥补 HDR 渲染的不足。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "If [code]true[/code], the 1st level of glow is enabled. This is the most "
 "\"local\" level (least blurry)."
 msgstr ""
-"如果为[code]true[/code]，则启用第1级glow。这是最 \"局部 \"的级别（最不模"
-"糊）。"
+"如果为 [code]true[/code]，则启用第 1 级发光。这是最“局部”的级别（最不模糊）。"
 
 #: doc/classes/Environment.xml
 msgid "If [code]true[/code], the 2th level of glow is enabled."
-msgstr "如果为[code]true[/code]，则启用第2级glow。"
+msgstr "如果为 [code]true[/code]，则启用第 2 级发光。"
 
 #: doc/classes/Environment.xml
 msgid "If [code]true[/code], the 3th level of glow is enabled."
-msgstr "如果[code]true[/code]，则启用第3几glow。"
+msgstr "如果为 [code]true[/code]，则启用第 3 级发光。"
 
 #: doc/classes/Environment.xml
 msgid "If [code]true[/code], the 4th level of glow is enabled."
-msgstr "如果[code]true[/code]，则启用第四级glow。"
+msgstr "如果为 [code]true[/code]，则启用第 4 级发光。"
 
 #: doc/classes/Environment.xml
 msgid "If [code]true[/code], the 5th level of glow is enabled."
-msgstr "如果[code]true[/code]，则启用第五级glow。"
+msgstr "如果为 [code]true[/code]，则启用第 5 级发光。"
 
 #: doc/classes/Environment.xml
 msgid "If [code]true[/code], the 6th level of glow is enabled."
-msgstr "如果[code]true[/code]，则启用第六级glow。"
+msgstr "如果为 [code]true[/code]，则启用第 6 级发光。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "If [code]true[/code], the 7th level of glow is enabled. This is the most "
 "\"global\" level (blurriest)."
 msgstr ""
-"如果[code]true[/code]，则启用第七级glow。这是最 \"全局 \"的级别（最模糊）。"
+"如果为 [code]true[/code]，则启用第 7 级发光。这是最“全局”的级别（最模糊）。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "The glow strength. When using the GLES2 renderer, this should be increased "
 "to 1.3 to compensate for the lack of HDR rendering."
-msgstr "辉光强度。当使用GLES2渲染器时，应将其提高到1.3，以弥补HDR渲染的不足。"
+msgstr ""
+"辉光强度。当使用 GLES2 渲染器时，应将其提高到 1.3，以弥补 HDR 渲染的不足。"
 
 #: doc/classes/Environment.xml
 msgid "The depth tolerance for screen-space reflections."
@@ -28960,8 +29011,9 @@ msgid ""
 "[ReflectionProbe]s, but are slower and can't reflect surfaces occluded by "
 "others."
 msgstr ""
-"如果[code]true[/code]，启用屏幕空间反射。屏幕空间反射比[GIProbe]或"
-"[ReflectionProbe]的反射更精确，但速度较慢，而且不能反射被其他物体遮挡的表面。"
+"如果为 [code]true[/code]，则启用屏幕空间反射。屏幕空间反射比 [GIProbe] 或 "
+"[ReflectionProbe] 的反射更精确，但速度较慢，而且不能反射被其他物体遮挡的表"
+"面。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -28973,7 +29025,7 @@ msgstr "屏幕空间反射的淡入距离。影响从反射材质到屏幕空间
 msgid ""
 "The fade-out distance for screen-space reflections. Affects the area from "
 "the screen-space reflection to the \"global\" reflection."
-msgstr "屏幕空间反射的淡出距离。影响从屏幕空间反射到 \"全局 \"反射的区域。"
+msgstr "屏幕空间反射的淡出距离。影响从屏幕空间反射到“全局”反射的区域。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -29001,14 +29053,14 @@ msgid ""
 "The screen-space ambient occlusion bias. This should be kept high enough to "
 "prevent \"smooth\" curves from being affected by ambient occlusion."
 msgstr ""
-"屏幕空间的环境遮挡偏差。该值应保持在足够高的水平，以防止 \"平滑 \"曲线受到环"
-"境遮挡的影响。"
+"屏幕空间环境光遮蔽偏差。该值应保持在足够高的水平，以防止“平滑”曲线受到环境光"
+"遮蔽的影响。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "The screen-space ambient occlusion blur quality. See [enum SSAOBlur] for "
 "possible values."
-msgstr "屏幕空间环境遮挡质量。可能的值请参阅[enum SSAOBlur]。"
+msgstr "屏幕空间环境光遮蔽质量。可能的值请参阅 [enum SSAOBlur]。"
 
 #: doc/classes/Environment.xml
 msgid "The screen-space ambient occlusion color."
@@ -29016,7 +29068,7 @@ msgstr "屏幕空间环境光遮蔽颜色。"
 
 #: doc/classes/Environment.xml
 msgid "The screen-space ambient occlusion edge sharpness."
-msgstr "屏幕空间环境遮挡边缘锐度。"
+msgstr "屏幕空间环境光遮蔽边缘锐度。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -29028,22 +29080,22 @@ msgid ""
 "a costly effect and should be disabled first when running into performance "
 "issues."
 msgstr ""
-"如果[code]true[/code]，启用屏幕空间环境遮挡效果。这将使物体的角落和空洞变暗，"
-"以模拟现实生活中环境光无法到达整个物体。这对于小型的动态物体来说效果很好，但"
-"在大型静态物体上，烘焙的照明或环境遮挡纹理会更好地显示环境遮挡。这是一个昂贵"
-"的效果，当遇到性能问题时，应该首先禁用。"
+"如果[code]true[/code]，启用屏幕空间环境光遮蔽效果。这将使物体的角落和空洞变"
+"暗，以模拟现实生活中环境光无法到达整个物体。这对于小型的动态物体来说效果很"
+"好，但在大型静态物体上，烘焙的照明或环境光遮蔽纹理会更好地显示环境光遮蔽。这"
+"是一个昂贵的效果，当遇到性能问题时，应该首先禁用。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "The primary screen-space ambient occlusion intensity. See also [member "
 "ssao_radius]."
-msgstr "主要的屏幕空间环境遮挡强度。参阅[member ssao_radius]。"
+msgstr "主要的屏幕空间环境光遮蔽强度。参阅[member ssao_radius]。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "The secondary screen-space ambient occlusion intensity. See also [member "
 "ssao_radius2]."
-msgstr "主要的屏幕空间环境光遮挡强度。参阅 [member ssao_radius]。"
+msgstr "主要的屏幕空间环境光遮蔽强度。参阅 [member ssao_radius]。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -29052,21 +29104,21 @@ msgid ""
 "can't be seen in direct light. Values higher than [code]0[/code] will make "
 "the SSAO effect visible in direct light."
 msgstr ""
-"直射光下的屏幕空间环境遮挡强度。在现实生活中，环境遮挡只适用于间接光，也就是"
-"说在直射光下无法看到其效果。高于[code]0[/code]的数值将使SSAO效果在直射光下可"
-"见。"
+"直射光下的屏幕空间环境光遮蔽强度。在现实生活中，环境遮挡只适用于间接光，也就"
+"是说在直射光下无法看到其效果。高于[code]0[/code]的数值将使SSAO效果在直射光下"
+"可见。"
 
 #: doc/classes/Environment.xml
 msgid ""
 "The screen-space ambient occlusion quality. Higher qualities will make "
 "better use of small objects for ambient occlusion, but are slower."
 msgstr ""
-"屏幕空间的环境遮蔽质量。更高的质量将更好地利用小物体进行环境遮蔽，但速度较"
-"慢。"
+"屏幕空间的环境光遮蔽质量。更高的质量将更好地利用小物体进行环境光遮蔽，但速度"
+"较慢。"
 
 #: doc/classes/Environment.xml
 msgid "The primary screen-space ambient occlusion radius."
-msgstr "主屏空间环境遮挡半径。"
+msgstr "主屏空间环境光遮蔽半径。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -29075,8 +29127,8 @@ msgid ""
 "occlusion effect which can be used to improve the effect's appearance (at "
 "the cost of performance)."
 msgstr ""
-"次要屏幕空间环境遮蔽半径。如果设置为高于[code]0[/code]的值，则启用次要屏幕空"
-"间的环境遮蔽效果，可以用来改善效果表现，但以性能为代价。"
+"次要屏幕空间环境光遮蔽半径。如果设置为高于[code]0[/code]的值，则启用次要屏幕"
+"空间的环境光遮蔽效果，可以用来改善效果表现，但以性能为代价。"
 
 #: doc/classes/Environment.xml
 msgid "The default exposure used for tonemapping."
@@ -29088,23 +29140,27 @@ msgid ""
 "HDR values to be suitable for rendering on a LDR display. (Godot doesn't "
 "support rendering on HDR displays yet.)"
 msgstr ""
-"要使用的色调映射模式。色调映射是“转换” HDR值以适合在LDR显示器上呈现的过程。 "
-"（Godot尚不支持在HDR显示器上进行渲染。）"
+"要使用的色调映射模式。色调映射是“转换”HDR 值以适合在 LDR 显示器上呈现的过程。"
+"（Godot 尚不支持在 HDR 显示器上进行渲染。）"
 
 #: doc/classes/Environment.xml
 msgid ""
 "The white reference value for tonemapping. Only effective if the [member "
 "tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR]."
 msgstr ""
-"调色映射的白色参考值。只有当[member tonemap_mode]没有设置为[constant "
-"TONE_MAPPER_LINEAR]时才有效。"
+"调色映射的白色参考值。只有当 [member tonemap_mode] 没有设置为 [constant "
+"TONE_MAPPER_LINEAR] 时才有效。"
 
 #: doc/classes/Environment.xml
+#, fuzzy
 msgid ""
-"Keeps on screen every pixel drawn in the background. This is the fastest "
-"background mode, but it can only be safely used in fully-interior scenes (no "
-"visible sky or sky reflections). If enabled in a scene where the background "
-"is visible, \"ghost trail\" artifacts will be visible when moving the camera."
+"Keeps on screen every pixel drawn in the background. Only select this mode "
+"if you really need to keep the old data. On modern GPUs it will generally "
+"not be faster than clearing the background, and can be significantly slower, "
+"particularly on mobile.\n"
+"It can only be safely used in fully-interior scenes (no visible sky or sky "
+"reflections). If enabled in a scene where the background is visible, \"ghost "
+"trail\" artifacts will be visible when moving the camera."
 msgstr ""
 "在屏幕上保留背景中绘制的每个像素。这是最快的背景模式，但它只能在完全室内场景"
 "（没有可见的天空或天空反射）中安全使用。如果在背景可见的场景中启用，当移动相"
@@ -31482,7 +31538,6 @@ msgstr ""
 "一个空的 [PoolIntArray]。"
 
 #: doc/classes/Geometry.xml
-#, fuzzy
 msgid ""
 "Triangulates the polygon specified by the points in [code]polygon[/code]. "
 "Returns a [PoolIntArray] where each triangle consists of three consecutive "
@@ -31495,7 +31550,8 @@ msgstr ""
 "对多边形 [code]polygon[/code] 中的点指定的多边形进行三角化。返回一个 "
 "[PoolIntArray]，其中每个三角形由 [code]polygon[/code] 中三个连续的点索引组成"
 "（即返回的数组将有 [code]n * 3[/code] 个元素，[code]n[/code] 是找到的三角形的"
-"数量）。如果三角化没有成功，将返回一个空的 [PoolIntArray]。"
+"数量）。输出的三角始终是逆时针的，如果为顺时针则会将轮廓翻转。如果三角化没有"
+"成功，将返回一个空的 [PoolIntArray]。"
 
 #: doc/classes/Geometry.xml
 msgid ""
@@ -31803,7 +31859,6 @@ msgid "GI probes"
 msgstr "GI 探针"
 
 #: doc/classes/GIProbe.xml
-#, fuzzy
 msgid ""
 "Bakes the effect from all [GeometryInstance]s marked with [member "
 "GeometryInstance.use_in_baked_light] and [Light]s marked with either "
@@ -31829,9 +31884,12 @@ msgstr ""
 "[code]true[/code]，在烘焙光线后，这将生成一个[MultiMesh]，其中有一个立方体代"
 "表每个实体单元，每个立方体的颜色与该单元的反照率颜色一致。这可以用来可视化 "
 "[GIProbe] 的数据，以调试任何可能发生的问题。\n"
-"[b]注意：[/b] [method bake] 在编辑器和导出后的项目中都是有效的。因此适用于程"
-"序化生成或者用户构建的关卡。在多数场景中，烘焙 [GIProbe] 通常需要花费 5 到 "
-"20 秒。减少 [member subdiv] 可以加速烘焙。"
+"[b]注意：[/b][method bake] 在编辑器和导出后的项目中都是有效的。因此适用于程序"
+"化生成或者用户构建的关卡。在多数场景中，烘焙 [GIProbe] 通常需要花费 5 到 20 "
+"秒。减少 [member subdiv] 可以加速烘焙。\n"
+"[b]注意：[/b]调用 [method bake] 前 [GeometryInstance] 和 [Light] 必须完全就"
+"绪。如果这些是使用程序创建的，并且烘焙后的 [GIProbe] 中缺少某些网格和灯光，请"
+"使用 [code]call_deferred(\"bake\")[/code]，不要直接调用 [method bake]。"
 
 #: doc/classes/GIProbe.xml
 msgid "Calls [method bake] with [code]create_visual_debug[/code] enabled."
@@ -32588,8 +32646,8 @@ msgid ""
 "allowing connections between GraphNodes. Slots can have different, "
 "incompatible types."
 msgstr ""
-"图形节点GraphNode是一个允许多个图形节点GraphNode之间连接的输入和输出槽容器。"
-"槽位可以有不同的、不兼容的类型。"
+"GraphNode 是一种可能包含若干输入输出槽的容器，GraphNode 之间能够通过槽位相"
+"连。槽位的类型可以互不相同、互不兼容。"
 
 #: doc/classes/GraphNode.xml
 msgid ""
@@ -32610,59 +32668,58 @@ msgid ""
 "are on the right side of GraphNode. Only enabled slots are counted as "
 "connections."
 msgstr ""
-"图形节点GraphNode是一个容器。每个图形节点GraphNode可以有几个输入和输出槽，有"
-"时被称为端口，允许图形节点GraphNode之间的连接。要在图形节点GraphNode上添加一"
-"个槽，需要向它添加任何控件[Control]派生的子节点。\n"
-"在为图形节点GraphNode添加至少一个子节点后，将在检查器中自动创建名为 \"插槽"
-"Slot \"的新部分。当 \"插槽\"被展开时，你会看到带有每个槽索引号的列表。你可以"
-"点击它们来进一步展开。\n"
+"GraphNode 是一种容器。每个 GraphNode 都可以有若干个输入和输出槽，有时被称为端"
+"口，能够让 GraphNode 之间相连。向 GraphNode 添加任何派生自 [Control] 的子节点"
+"后，才能添加槽位。\n"
+"在为 GraphNode 添加至少一个子节点后，将在检查器中自动创建名为“Slot”的新部分。"
+"展开“Slot”后，你会看到带有每个槽索引号的列表。你可以点击它们来进一步展开。\n"
 "在检查器中，你可以启用（显示）或禁用（隐藏）插槽。默认情况下，所有槽都是禁用"
-"的，所以你最初可能看不到图形节点GraphNode上的任何槽。你可以给每个插槽指定一个"
-"类型。只有相同类型的插槽才能够相互连接。你还可以给插槽指定颜色。为图形节点"
-"GraphNode中的每个GUI元素定义了一个输入和输出槽的元组。输入连接在图形节点"
-"GraphNode的左边，输出连接在右边。只有启用的插槽才被算作连接。"
+"的，所以你最初可能看不到 GraphNode 上的任何槽。你可以给每个插槽指定一个类型。"
+"只有相同类型的插槽才能够相互连接。你还可以给插槽指定颜色。为 GraphNode 中的每"
+"个 GUI 元素定义了一个输入和输出槽的元组。输入连接在 GraphNode 的左边，输出连"
+"接在右边。只有启用的插槽才被算作连接。"
 
 #: doc/classes/GraphNode.xml
 msgid "Disables all input and output slots of the GraphNode."
-msgstr "禁用GraphNode的所有输入和输出槽。"
+msgstr "禁用 GraphNode 的所有输入和输出槽。"
 
 #: doc/classes/GraphNode.xml
 msgid "Disables input and output slot whose index is [code]idx[/code]."
-msgstr "禁用索引为[code]idx[/code]的输入和输出槽。"
+msgstr "禁用索引为 [code]idx[/code] 的输入和输出槽。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the [Color] of the input connection [code]idx[/code]."
-msgstr "返回输入连接[code]idx[/code]的颜色[Color]。"
+msgstr "返回输入连接 [code]idx[/code] 的颜色 [Color]。"
 
 #: doc/classes/GraphNode.xml
 msgid ""
 "Returns the number of enabled input slots (connections) to the GraphNode."
-msgstr "返回图形节点GraphNode的启用输入槽（连接）的数量。"
+msgstr "返回 GraphNode 的启用输入槽（连接）的数量。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the position of the input connection [code]idx[/code]."
-msgstr "返回输入连接[code]idx[/code]的位置。"
+msgstr "返回输入连接 [code]idx[/code] 的位置。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the type of the input connection [code]idx[/code]."
-msgstr "返回输入连接的类型[code]idx[/code]。"
+msgstr "返回输入连接的类型 [code]idx[/code]。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the [Color] of the output connection [code]idx[/code]."
-msgstr "返回输出连接[code]idx[/code]的颜色[Color]。"
+msgstr "返回输出连接 [code]idx[/code] 的颜色 [Color]。"
 
 #: doc/classes/GraphNode.xml
 msgid ""
 "Returns the number of enabled output slots (connections) of the GraphNode."
-msgstr "返回图形节点GraphNode的启用输出槽（连接）的数量。"
+msgstr "返回 GraphNode 的启用输出槽（连接）的数量。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the position of the output connection [code]idx[/code]."
-msgstr "返回输出连接[code]idx[/code]的位置。"
+msgstr "返回输出连接 [code]idx[/code] 的位置。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the type of the output connection [code]idx[/code]."
-msgstr "返回输出连接的类型[code]idx[/code]。"
+msgstr "返回输出连接的类型 [code]idx[/code]。"
 
 #: doc/classes/GraphNode.xml
 msgid "Returns the left (input) [Color] of the slot [code]idx[/code]."
@@ -32923,23 +32980,23 @@ msgstr "当[member comment]被启用，且[GraphNode]获得焦点时使用的[St
 
 #: doc/classes/GraphNode.xml
 msgid "The default background for [GraphNode]."
-msgstr "[GraphNode]的默认背景。"
+msgstr "[GraphNode] 的默认背景。"
 
 #: doc/classes/GraphNode.xml
 msgid ""
 "The background used when [member overlay] is set to [constant "
 "OVERLAY_POSITION]."
-msgstr "当[member overlay]设置为[constant OVERLAY_POSITION]时使用的背景。"
+msgstr "当 [member overlay] 设置为 [constant OVERLAY_POSITION] 时使用的背景。"
 
 #: doc/classes/GraphNode.xml
 msgid "The background used when the [GraphNode] is selected."
-msgstr "[GraphNode]被选中时使用的背景。"
+msgstr "[GraphNode] 被选中时使用的背景。"
 
 #: doc/classes/GridContainer.xml
 msgid ""
 "Grid container used to arrange Control-derived children in a grid like "
 "layout."
-msgstr "网格容器，用于在类似网格的布局中排列Control派生的子项。"
+msgstr "网格容器，用于将派生自 Control 的子节点按照类似网格的形式排列。"
 
 #: doc/classes/GridContainer.xml
 msgid ""
@@ -32954,20 +33011,20 @@ msgid ""
 "[b]Note:[/b] GridContainer only works with child nodes inheriting from "
 "Control. It won't rearrange child nodes inheriting from Node2D."
 msgstr ""
-"GridContainer将把它的Control派生的子级排布在一个类似网格的结构中，网格列是"
-"[member columns]属性指定，行的数量等于容器中子级的数量除以列的数量。例如，如"
-"果容器有5个子级，2个列，容器中就会有3行。\n"
+"GridContainer 将把它的 Control 派生的子节点排布在一个类似网格的结构中，网格的"
+"列数由 [member columns] 属性指定，行数等于容器中子节点的数量除以列数。例如，"
+"如果容器有 5 个子节点、2 列，那么容器中就会有 3 行。\n"
 "请注意，网格布局将保留每个大小的容器的列和行，并且空列将自动扩展。\n"
-"[b]注意：[/b] GridContainer只对继承自Control的子节点生效。它不会重新排列继承"
-"自Node2D的子节点。"
+"[b]注意：[/b]GridContainer 只对继承自 Control 的子节点生效。它不会重新排列继"
+"承自 Node2D 的子节点。"
 
 #: doc/classes/GridContainer.xml
 msgid ""
 "The number of columns in the [GridContainer]. If modified, [GridContainer] "
 "reorders its Control-derived children to accommodate the new layout."
 msgstr ""
-"在[GridContainer]中的列的数量。如果修改，[GridContainer]会重新排列其Control派"
-"生的子代，以适应新的布局。"
+"[GridContainer] 中的列数。修改后，[GridContainer] 会重新排列其派生自 Control "
+"的子节点，以适应新的布局。"
 
 #: doc/classes/GridContainer.xml doc/classes/HFlowContainer.xml
 #: doc/classes/VFlowContainer.xml
@@ -33334,15 +33391,17 @@ msgstr ""
 "高度图数据，池数组的大小必须是 [member map_width] * [member map_depth]。"
 
 #: doc/classes/HeightMapShape.xml
+#, fuzzy
 msgid ""
-"Depth of the height map data. Changing this will resize the [member "
-"map_data]."
+"Number of vertices in the depth of the height map. Changing this will resize "
+"the [member map_data]."
 msgstr "高度图数据的深度。更改此设置将调整 [member map_data] 的大小。"
 
 #: doc/classes/HeightMapShape.xml
+#, fuzzy
 msgid ""
-"Width of the height map data. Changing this will resize the [member "
-"map_data]."
+"Number of vertices in the width of the height map. Changing this will resize "
+"the [member map_data]."
 msgstr "高度图数据的宽度。更改此设置将调整 [member map_data] 的大小。"
 
 #: doc/classes/HFlowContainer.xml
@@ -33672,7 +33731,7 @@ msgstr "抓取器获得焦点时的材质。"
 msgid ""
 "The texture for the ticks, visible when [member Slider.tick_count] is "
 "greater than 0."
-msgstr "刻度的纹理。当[member Slider.tick_count]大于0时可见。"
+msgstr "刻度的纹理。当 [member Slider.tick_count] 大于 0 时可见。"
 
 #: doc/classes/HSlider.xml
 msgid "The background of the area to the left of the grabber."
@@ -40120,6 +40179,10 @@ msgid ""
 "[b]Note:[/b] Contact shadows can look broken, so leaving this property to "
 "[code]0.0[/code] is recommended."
 msgstr ""
+"通过渲染屏幕空间的接触阴影，尝试减小 [member shadow_bias] 带来的空隙。会影响"
+"性能，尤其是取值较高时。\n"
+"[b]注意：[/b]接触阴影可能会破坏视觉效果，所以建议将这个属性保持为 [code]0.0[/"
+"code]。"
 
 #: doc/classes/Light.xml
 msgid "If [code]true[/code], the light will cast shadows."
@@ -40544,6 +40607,10 @@ msgid ""
 "width]. For thin lines, this value should be reduced to a number between "
 "[code]2[/code] and [code]4[/code] to improve performance."
 msgstr ""
+"连接点及端点的圆角平滑度。取值越高，边角越平滑，不过渲染和更新的消耗也越大。"
+"只会在端点或连接点被设为圆角时使用。\n"
+"[b]注意：[/b]默认值针对的是使用默认 [member width] 的线条。针对更细的线条，应"
+"该将这个值减小到 [code]2[/code] 和 [code]4[/code] 之间，提升性能。"
 
 #: doc/classes/Line2D.xml
 msgid ""
@@ -40785,6 +40852,14 @@ msgstr ""
 msgid "If [code]true[/code], the context menu will appear when right-clicked."
 msgstr "如果为[code]true[/code]，右键单击将出现上下文菜单。"
 
+#: doc/classes/LineEdit.xml doc/classes/RichTextLabel.xml
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the selected text will be deselected when focus is "
+"lost."
+msgstr "如果为[code]true[/code]，则可以再次选择当前选中的项目。"
+
 #: doc/classes/LineEdit.xml
 msgid ""
 "If [code]false[/code], existing text cannot be modified and new text cannot "
@@ -40836,6 +40911,16 @@ msgstr ""
 "# `text` becomes \"Hello good\".\n"
 "# `text_change_rejected` is emitted with \"bye\" as parameter.\n"
 "[/codeblock]"
+
+#: doc/classes/LineEdit.xml doc/classes/TextEdit.xml
+#, fuzzy
+msgid ""
+"If [code]false[/code], using middle mouse button to paste clipboard will be "
+"disabled.\n"
+"[b]Note:[/b] This method is only implemented on Linux."
+msgstr ""
+"如果本地视频正在播放，返回[code]true[/code]。\n"
+"[b]注意：[/b] 这个方法只在iOS上实现。"
 
 #: doc/classes/LineEdit.xml
 msgid ""
@@ -41602,7 +41687,7 @@ msgid ""
 "Returns a decoded string corresponding to the Base64-encoded string "
 "[code]base64_str[/code]."
 msgstr ""
-"返回一个与Base64编码的字符串[code]base64_str[/code]相对应的解码字符串。"
+"返回与 Base64 编码的字符串 [code]base64_str[/code] 相对应的解码字符串。"
 
 #: doc/classes/Marshalls.xml
 msgid ""
@@ -41633,13 +41718,13 @@ msgid ""
 "[code]full_objects[/code] is [code]true[/code], encoding objects is allowed "
 "(and can potentially include code)."
 msgstr ""
-"返回一个Base64编码的[Variant][code]variant[/code]的字符串。如果"
-"[code]full_objects[/code]是[code]true[/code]，允许对对象进行编码（有可能包括"
-"代码）。"
+"返回经过 Base64 编码的 [Variant] [code]variant[/code] 的字符串。如果 "
+"[code]full_objects[/code] 为 [code]true[/code]，则允许将对象进行编码（有可能"
+"包括代码）。"
 
 #: doc/classes/Material.xml
 msgid "Abstract base [Resource] for coloring and shading geometry."
-msgstr "用于为几何体上色(Coloring)和着色(Shading)的[Resource]抽象子类。"
+msgstr "用于为几何体上色（Coloring）和着色（Shading）的 [Resource] 抽象基类。"
 
 #: doc/classes/Material.xml
 msgid ""
@@ -41648,9 +41733,9 @@ msgid ""
 "carry a Material. A few flags and parameters are shared between all material "
 "types and are configured here."
 msgstr ""
-"材质是基本[Resource]，用于几何体着色器和上色。所有的材质都继承自它，几乎所有"
-"的[VisualInstance]派生节点都带有材质。有几个标志和参数在所有材质类型之间是共"
-"享的，并在这里进行配置。"
+"Material 是用于为几何体上色和着色的 [Resource] 基类。所有的材质都继承自它，几"
+"乎所有的 [VisualInstance] 派生节点都带有材质。有几个标志和参数在所有材质类型"
+"之间是共享的，并在这里进行配置。"
 
 #: doc/classes/Material.xml
 msgid ""
@@ -42763,6 +42848,9 @@ msgid ""
 "used when initially placing an instance such as a bullet to prevent "
 "graphical glitches."
 msgstr ""
+"使用[i]物理插值[/i]时，这个函数可以让你在当前物理周期中阻止实例的插值。\n"
+"这样你就可以对实例进行即时移动，对子弹等实例进行初始定位时应该使用这个函数，"
+"可以防止图像问题。"
 
 #: doc/classes/MultiMesh.xml
 msgid ""
@@ -42795,6 +42883,12 @@ msgid ""
 "When the order of instances is coherent, the simpler [method MultiMesh."
 "set_as_bulk_array] can still be used with interpolation."
 msgstr ""
+"[method MultiMesh.set_as_bulk_array] 的备选版本，可用于[i]物理插值[/i]。这个"
+"方法接受两个数组，能够一次性设置当前周期和上一周期的数据。渲染器会自动在每一"
+"帧进行插值。\n"
+"可用于实例的顺序每个物理周期都会发生变化的情况，例如粒子系统。\n"
+"如果实例的顺序是连贯的，仍旧可以使用更简单的 [method MultiMesh."
+"set_as_bulk_array] 也可以进行插值。"
 
 #: doc/classes/MultiMesh.xml
 msgid ""
@@ -42856,6 +42950,11 @@ msgid ""
 "special cases mentioned above, the quality should be comparable to high "
 "quality."
 msgstr ""
+"选择所使用的插值方法倾向于速度还是质量。\n"
+"使用较低的物理周期率（一般低于 20）或较高的对象旋转率时，使用高质量设置可能带"
+"来更好的效果。\n"
+"[b]注意：[/b]快速并不意味着低质。除了上面提到的特殊情况外，质量应该与高质量选"
+"项相当。"
 
 #: doc/classes/MultiMesh.xml
 msgid "Format of transform used to transform mesh, either 2D or 3D."
@@ -42923,13 +43022,13 @@ msgstr ""
 msgid ""
 "Always interpolate using Basis lerping, which can produce warping artifacts "
 "in some situations."
-msgstr ""
+msgstr "总是使用 Basis 线性插值，某些情况下可能造成变形问题。"
 
 #: doc/classes/MultiMesh.xml
 msgid ""
 "Attempt to interpolate using Basis slerping (spherical linear interpolation) "
 "where possible, otherwise fall back to lerping."
-msgstr ""
+msgstr "尽可能尝试使用 Basis 球面线性插值，否则使用线性插值。"
 
 #: doc/classes/MultiMeshInstance.xml
 msgid "Node that instances a [MultiMesh]."
@@ -45888,6 +45987,10 @@ msgid ""
 "[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
 "be tested using [method is_physics_interpolated_and_enabled]."
 msgstr ""
+"如果这个 Node 设置了物理插值标志，则返回 [code]true[/code]（见 [method "
+"set_physics_interpolated]）。\n"
+"[b]注意：[/b]只有在设置了标志[b]并且[/b]该 [SceneTree] 启用了物理插值时，才会"
+"启用插值。可以使用 [method is_physics_interpolated_and_enabled] 进行检查。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -45898,6 +46001,12 @@ msgid ""
 "See [member SceneTree.physics_interpolation] and [member ProjectSettings."
 "physics/common/physics_interpolation]."
 msgstr ""
+"如果启用了物理插值（见 [method set_physics_interpolated]）[b]并且[/b]该 "
+"[SceneTree] 也启用了物理插值，则返回 [code]true[/code]。\n"
+"这是 [method is_physics_interpolated] 的简便版本，还会检查是否全局启用了物理"
+"插值。\n"
+"见 [member SceneTree.physics_interpolation] 和 [member ProjectSettings."
+"physics/common/physics_interpolation]。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -46149,6 +46258,13 @@ msgid ""
 "[b]Note:[/b] This function should be called [b]after[/b] moving the node, "
 "rather than before."
 msgstr ""
+"启用物理插值时，将节点移动到显著不同的变换（例如在关卡中进行放置）可能造成可"
+"见的问题，因为渲染出的效果就是在该物理周期内从旧位置移动到了新位置。\n"
+"这个问题可以通过调用 [code]reset_physics_interpolation[/code] 解决，会在该物"
+"理周期完成前暂时关闭插值。\n"
+"该节点及其子项会递归地接收到 [constant "
+"NOTIFICATION_RESET_PHYSICS_INTERPOLATION]。\n"
+"[b]注意：[/b]这个函数应该在移动节点[b]之后[/b]调用，而不是之前。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -46295,6 +46411,8 @@ msgid ""
 "[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
 "interpolation can sometimes give superior results."
 msgstr ""
+"启用或禁用该节点的物理插值，可以在开关全局物理插值的基础上进行微调。\n"
+"[b]注意：[/b]对 [Camera] 尤其有用，自定义插值有时会带来更好的效果。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -46612,11 +46730,12 @@ msgstr ""
 "同，它每次节点进入树时都会发送，而不是只发送一次。"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Notification received when [method reset_physics_interpolation] is called on "
 "the node or parent nodes."
-msgstr "在父节点中移动节点时收到该通知。"
+msgstr ""
+"在该节点或其父节点上调用 [method reset_physics_interpolation] 时会收到该通"
+"知。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -47200,9 +47319,9 @@ msgstr ""
 "[b]注意：[/b]与对 [Reference] 的引用不同，对存储在变量中的对象的引用可能会在"
 "没有警告的情况下变得无效。因此，建议对数据类使用 [Reference] 而不是 "
 "[Object]。\n"
-"[b]注意：[/b]由于一个 bug，你无法使用 [code]Object.new()[/code] 创建“普通” "
-"Object 对象。请换用 [code]ClassDB.instance(\"Object\")[/code]。这个 bug 仅限"
-"于 Object 本身，[Reference] 等派生类不受影响。"
+"[b]注意：[/b]由于一个 bug，你无法使用 [code]Object.new()[/code] 创建“普"
+"通”Object 对象。请换用 [code]ClassDB.instance(\"Object\")[/code]。这个 bug 仅"
+"限于 Object 本身，[Reference] 等派生类不受影响。"
 
 #: doc/classes/Object.xml doc/classes/Reference.xml doc/classes/Resource.xml
 msgid "When and how to avoid using nodes for everything"
@@ -47534,9 +47653,9 @@ msgid ""
 "This ID can be saved in [EncodedObjectAsID], and can be used to retrieve the "
 "object instance with [method @GDScript.instance_from_id]."
 msgstr ""
-"返回对象的唯一实例ID。\n"
-"这个ID可以保存在[EncodedObjectAsID]中，并且可以用[method @GDScript."
-"instance_from_id]来检索对象实例。"
+"返回该对象的唯一实例 ID。\n"
+"这个 ID 可以保存在 [EncodedObjectAsID] 中，并且可以用 [method @GDScript."
+"instance_from_id] 来检索对象实例。"
 
 #: doc/classes/Object.xml
 msgid "Returns the object's metadata entry for the given [code]name[/code]."
@@ -47569,11 +47688,11 @@ msgstr ""
 msgid ""
 "Returns the object's [Script] instance, or [code]null[/code] if none is "
 "assigned."
-msgstr "返回该对象的[Script]实例，如果没有指定，则返回[code]null[/code]。"
+msgstr "返回该对象的 [Script] 实例，如果没有指定，则返回 [code]null[/code]。"
 
 #: doc/classes/Object.xml
 msgid "Returns an [Array] of connections for the given [code]signal[/code]."
-msgstr "返回给定[code]signal[/code]的连接的[Array]。"
+msgstr "返回给定信号 [code]signal[/code] 的连接的 [Array]。"
 
 #: doc/classes/Object.xml
 msgid "Returns the list of signals as an [Array] of dictionaries."
@@ -47584,17 +47703,18 @@ msgid ""
 "Returns [code]true[/code] if a metadata entry is found with the given "
 "[code]name[/code]."
 msgstr ""
-"如果找到一个具有给定[code]name[/code]的元数据条目，则返回[code]true[/code]。"
+"如果能够找到具有给定名称 [code]name[/code] 的元数据条目，则返回 [code]true[/"
+"code]。"
 
 #: doc/classes/Object.xml
 msgid ""
 "Returns [code]true[/code] if the object contains the given [code]method[/"
 "code]."
-msgstr "如果对象包含给定的[code]method[/code]，返回[code]true[/code]。"
+msgstr "如果对象包含给定的方法 [code]method[/code]，则返回 [code]true[/code]。"
 
 #: doc/classes/Object.xml
 msgid "Returns [code]true[/code] if the given [code]signal[/code] exists."
-msgstr "如果给定的[code]signal[/code]存在，返回[code]true[/code]。"
+msgstr "如果给定的信号 [code]signal[/code] 存在，则返回 [code]true[/code]。"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -47602,12 +47722,12 @@ msgid ""
 "exists. Only signals added using [method add_user_signal] are taken into "
 "account."
 msgstr ""
-"如果给定的用户定义的[code]signal[/code]存在，返回[code]true[/code]。只有使用"
-"[method add_user_signal]添加的信号才被考虑在内。"
+"如果给定的用户定义的信号 [code]signal[/code] 存在，则返回 [code]true[/code]。"
+"只有使用 [method add_user_signal] 添加的信号才被考虑在内。"
 
 #: doc/classes/Object.xml
 msgid "Returns [code]true[/code] if signal emission blocking is enabled."
-msgstr "如果启用了信号发射阻断，则返回[code]true[/code]。"
+msgstr "如果启用了信号发射阻断，则返回 [code]true[/code]。"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -47628,15 +47748,15 @@ msgid ""
 "Returns [code]true[/code] if a connection exists for a given [code]signal[/"
 "code], [code]target[/code], and [code]method[/code]."
 msgstr ""
-"如果给定 [code]信号[/code]、[code]目标[/code] 和 [code]方法[/code] 存在连接，"
-"则返回 [code]true[/code]。"
+"如果给定的信号 [code]signal[/code]、目标 [code]target[/code]、方法 "
+"[code]method[/code] 存在连接，则返回 [code]true[/code]。"
 
 #: doc/classes/Object.xml
 msgid ""
 "Returns [code]true[/code] if the [method Node.queue_free] method was called "
 "for the object."
 msgstr ""
-"如果为该对象调用了[method Node.queue_free]方法，返回[code]true[/code]。"
+"如果为该对象调用了 [method Node.queue_free] 方法，则返回 [code]true[/code]。"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -47649,12 +47769,12 @@ msgid ""
 "_notification] is called first on the highest ancestor ([Object] itself), "
 "and then down to its successive inheriting classes."
 msgstr ""
-"向对象发送一个给定的通知，这也将触发对该对象继承的所有类的[method "
-"_notification]方法的调用。\n"
-"如果[code]reversed[/code]是[code]true[/code]，[method _notification]首先在对"
-"象自己的类上被调用，然后再到其连续的父类上。如果[code]reversed[/code]是"
-"[code]false[/code]，[method _notification]首先在最高的祖先（[Object]本身）上"
-"被调用，然后向下到其连续的继承类。"
+"向对象发送给定的通知，这也将触发对该对象继承的所有类的 [method "
+"_notification] 方法的调用。\n"
+"如果 [code]reversed[/code] 是 [code]true[/code]，[method _notification] 首先"
+"在对象自己的类上被调用，然后再到其连续的父类上。如果 [code]reversed[/code] "
+"是 [code]false[/code]，[method _notification] 首先在最高的祖先（[Object] 本"
+"身）上被调用，然后向下到其后续的继承类。"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -47716,8 +47836,8 @@ msgid ""
 "print(position) # (42, -10)\n"
 "[/codeblock]"
 msgstr ""
-"为[NodePath]标识的属性分配一个新值。节点路径应该相对于当前对象，可以使用冒号"
-"([code]:[/code])访问嵌套属性。举例如下:\n"
+"为 [NodePath] 标识的属性分配新值。节点路径应该相对于当前对象，可以使用冒号"
+"（[code]:[/code]）访问嵌套属性。示例：\n"
 "[codeblock]\n"
 "set_indexed(\"position\", Vector2(42, 0))\n"
 "set_indexed(\"position:y\", -10)\n"
@@ -47764,7 +47884,7 @@ msgid ""
 "Override the method [method _to_string] to customize the [String] "
 "representation."
 msgstr ""
-"返回一个表示对象的 [String]。如果没有覆盖，默认为 [code]\"[ClassName:RID]\"[/"
+"返回表示对象的 [String]。如果没有覆盖，默认为 [code]\"[ClassName:RID]\"[/"
 "code]。\n"
 "可以通过重写 [method _to_string] 方法来自定义 [String] 表示。"
 
@@ -47797,16 +47917,15 @@ msgid ""
 "Connects a signal in deferred mode. This way, signal emissions are stored in "
 "a queue, then set on idle time."
 msgstr ""
-"在延迟模式下连接一个信号。这样，信号发射被储存在一个队列中，然后在空闲时间发"
-"出。"
+"以延迟模式连接信号。这样，信号发射会被储存在一个队列中，然后在空闲时间发出。"
 
 #: doc/classes/Object.xml
 msgid "Persisting connections are saved when the object is serialized to file."
-msgstr "当对象序列化为文件时，将保存持久连接。"
+msgstr "持久化连接，会在该对象序列化为文件时保存。"
 
 #: doc/classes/Object.xml
 msgid "One-shot connections disconnect themselves after emission."
-msgstr "信号触发后断开一次性连接。"
+msgstr "一次性连接，会在触发后自行断开。"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -47814,8 +47933,8 @@ msgid ""
 "connected several times to the same target, and will only be fully "
 "disconnected once no references are left."
 msgstr ""
-"连接一个信号作为引用计数。这意味着一个给定的信号可以多次连接到同一个目标，并"
-"且只有在没有引用时才会完全断开连接。"
+"以引用计数形式连接信号。这意味着一个给定的信号可以多次连接到同一个目标，并且"
+"只有在没有引用时才会完全断开连接。"
 
 #: doc/classes/Occluder.xml
 msgid "Allows [OccluderShape]s to be used for occlusion culling."
@@ -47959,11 +48078,10 @@ msgid "Allows changing the polygon geometry from code."
 msgstr "允许通过代码修改多边形形状。"
 
 #: doc/classes/OccluderShapePolygon.xml
-#, fuzzy
 msgid ""
 "Specifies whether the occluder should operate from both sides. If "
 "[code]false[/code], the occluder will operate one way only."
-msgstr "指定该遮挡器是应该为单向还是双向。"
+msgstr "指定该遮挡器是否为双向。为 [code]false[/code] 时，遮挡器为单向。"
 
 #: doc/classes/OccluderShapeSphere.xml
 msgid "Spherical occlusion primitive for use with the [Occluder] node."
@@ -48277,6 +48395,11 @@ msgid "Returns the text of the item at index [code]idx[/code]."
 msgstr "返回索引[code]idx[/code]处项目的文本。"
 
 #: doc/classes/OptionButton.xml
+#, fuzzy
+msgid "Returns the tooltip of the item at index [code]idx[/code]."
+msgstr "返回索引[code]idx[/code]处项目的文本。"
+
+#: doc/classes/OptionButton.xml
 msgid ""
 "Returns the ID of the selected item, or [code]0[/code] if no item is "
 "selected."
@@ -48332,6 +48455,11 @@ msgstr ""
 
 #: doc/classes/OptionButton.xml doc/classes/PopupMenu.xml
 msgid "Sets the text of the item at index [code]idx[/code]."
+msgstr "在索引[code]idx[/code]处设置项的文本。"
+
+#: doc/classes/OptionButton.xml
+#, fuzzy
+msgid "Sets the tooltip of the item at index [code]idx[/code]."
 msgstr "在索引[code]idx[/code]处设置项的文本。"
 
 #: doc/classes/OptionButton.xml
@@ -48433,7 +48561,7 @@ msgid ""
 "driver, date and time, timers, environment variables, execution of binaries, "
 "command line, etc."
 msgstr ""
-"操作系统的功能。OS包装了与主机操作系统通信的最常见功能，如剪贴板、视频驱动程"
+"操作系统的功能。OS 包装了与主机操作系统通信的最常见功能，如剪贴板、视频驱动程"
 "序、日期和时间、计时器、环境变量、二进制文件的执行、命令行等。"
 
 #: doc/classes/OS.xml
@@ -49019,6 +49147,8 @@ msgid ""
 "machine. On CPUs with HyperThreading enabled, this number will be greater "
 "than the number of [i]physical[/i] CPU cores."
 msgstr ""
+"返回主机的[i]逻辑[/i] CPU 核心数。对于启用了超线程的 CPU，这个数会比[i]物理[/"
+"i] CPU 核心数大。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -49028,6 +49158,9 @@ msgid ""
 "iOS. On Android, HTML5 and UWP, [method get_processor_name] returns an empty "
 "string."
 msgstr ""
+"返回主机的 CPU 型号名称（例如“Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz”）。\n"
+"[b]注意：[/b]这个方法仅在 Windows、macOS、Linux 和 iOS 上实现。在 Android、"
+"HTML5 和 UWP 上，[method get_processor_name] 返回的是空字符串。"
 
 #: doc/classes/OS.xml
 msgid "Returns the window size including decorations like window borders."
@@ -49047,7 +49180,7 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Returns the number of displays attached to the host machine."
-msgstr "返回连接到宿主机的显示器数量。"
+msgstr "返回连接到主机的显示器数量。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -49105,6 +49238,23 @@ msgid ""
 msgstr ""
 "返回索引所指定屏幕的位置。如果 [code]screen[/code] 为 [code]-1[/code]（默认"
 "值），将使用当前屏幕。"
+
+#: doc/classes/OS.xml
+msgid ""
+"Returns the current refresh rate of the specified screen. If [code]screen[/"
+"code] is [code]-1[/code] (the default value), the current screen will be "
+"used.\n"
+"[b]Note:[/b] Returns [code]-1.0[/code] if Godot fails to find the refresh "
+"rate for the specified screen. On HTML5, [method get_screen_refresh_rate] "
+"will always return [code]-1.0[/code] as there is no way to retrieve the "
+"refresh rate on that platform.\n"
+"To fallback to a default refresh rate if the method fails, try:\n"
+"[codeblock]\n"
+"var refresh_rate = OS.get_screen_refresh_rate()\n"
+"if refresh_rate < 0:\n"
+"    refresh_rate = 60.0\n"
+"[/codeblock]"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
@@ -49847,7 +49997,7 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "The clipboard from the host OS. Might be unavailable on some platforms."
-msgstr "宿主操作系统的剪贴板。在某些平台上可能不可用。"
+msgstr "主机操作系统的剪贴板。在某些平台上可能不可用。"
 
 #: doc/classes/OS.xml
 msgid "The current screen index (starting from 0)."
@@ -56518,7 +56668,7 @@ msgstr "项目的描述，在项目管理器中悬停时显示为工具提示。
 msgid ""
 "Icon used for the project, set when project loads. Exporters will also use "
 "this icon when possible."
-msgstr "用于项目的图标，在项目加载时设置。导出时也将尽可能使用此图标。"
+msgstr "项目所使用的图标，在项目加载时设置。导出时也将尽可能使用此图标。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -56790,9 +56940,9 @@ msgstr ""
 "指定偏好的音频输出延迟，单位为毫秒。值越低，音频延迟越小，代价是 CPU 占用率会"
 "更高。在较慢的硬件上，使用较低的值可能产生爆裂声。\n"
 "音频输出延迟可能受到宿主的操作系统和音频硬件驱动的限制。如果宿主无法提供指定"
-"的音频输出延迟，Godot 会尝试使用宿主所允许范围内与其最接近的值。因此你应当始"
+"的音频输出延迟，Godot 会尝试使用主机所允许范围内与其最接近的值。因此你应当始"
 "终使用 [method AudioServer.get_output_latency] 获取实际的音频输出延迟。\n"
-"[b]注意：[/b] 此设置在 Windows 上会被忽略。"
+"[b]注意：[/b]此设置在 Windows 上会被忽略。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -56902,6 +57052,14 @@ msgid ""
 msgstr ""
 "如果为 [code]true[/code]，则 [code]res://addons[/code] 文件夹中的脚本不会生成"
 "警告。"
+
+#: doc/classes/ProjectSettings.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], enables warnings when the type of the default value "
+"set to an exported variable is different than the specified export type."
+msgstr ""
+"如果[code]true[/code]，则当三元运算符可能发出类型不兼容的值时，将启用警告。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -57432,6 +57590,19 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"If enabled, the moment [member Viewport.gui_disable_input] is set to "
+"[code]false[/code] to disable GUI input in a viewport, current mouse over "
+"and mouse focus will be dropped.\n"
+"That behavior helps to keep a robust GUI state, with no surprises when input "
+"is resumed regardless what has happened in the meantime.\n"
+"If disabled, the legacy behavior is used, which consists in just not doing "
+"anything besides the GUI input disable itself.\n"
+"[b]Note:[/b] This is set to [code]true[/code] by default for new projects "
+"and is the recommended setting."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and "
 "UWP to follow interface conventions."
 msgstr ""
@@ -57443,14 +57614,14 @@ msgid ""
 "Path to a custom [Theme] resource file to use for the project ([code]theme[/"
 "code] or generic [code]tres[/code]/[code]res[/code] extension)."
 msgstr ""
-"用于项目的自定义[Theme]资源文件的路径([code]theme[/code]或通用[code]tres[/"
-"code]/[code]res[/code]扩展名)。"
+"用于项目的自定义 [Theme] 资源文件的路径（[code]theme[/code] 或通用 "
+"[code]tres[/code]/[code]res[/code] 扩展名）。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Path to a custom [Font] resource to use as default for all GUI elements of "
 "the project."
-msgstr "自定义[Font]资源的路径，用于项目的所有GUI元素的默认字体。"
+msgstr "自定义 [Font] 资源的路径，用于项目的所有 GUI 元素的默认字体。"
 
 #: doc/classes/ProjectSettings.xml
 msgid "If [code]true[/code], makes sure the theme used works with HiDPI."
@@ -58590,6 +58761,16 @@ msgstr ""
 "支持\"GodotPhysics\"引擎作为替代。"
 
 #: doc/classes/ProjectSettings.xml
+msgid ""
+"If [code]true[/code], smooths out collision with trimesh shapes "
+"([ConcavePolygonShape]) by telling the Bullet physics engine to generate "
+"internal edge information for every trimesh shape created.\n"
+"[b]Note:[/b] Only effective if [member physics/3d/physics_engine] is set to "
+"[code]DEFAULT[/code] or [code]Bullet[/code], [i]not[/i] [code]GodotPhysics[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
 msgstr "在根视图上启用 [member Viewport.physics_object_picking]。"
 
@@ -58634,8 +58815,8 @@ msgstr ""
 "执行频率。另请参见 [member debug/settings/fps/force_fps]。\n"
 "[b]注意：[/b]本属性在程序开始运行时是只读的。要在运行时修改物理 FPS，请设置 "
 "[member Engine.iterations_per_second]。\n"
-"[b]注意：[/b]每个渲染帧最多只能模拟 8 次物理迭代。如果为了追赶渲染，需要在每"
-"个渲染帧中模拟多于 8 次物理迭代，游戏看上去会是降速的（即便在物理计算中始终使"
+"[b]注意：[/b]每个渲染帧最多只能模拟 8 个物理周期。如果为了追赶渲染，需要在每"
+"个渲染帧中模拟多于 8 个物理周期，游戏看上去会是降速的（即便在物理计算中始终使"
 "用 [code]delta[/code]）。因此，建议不要将 [member physics/common/"
 "physics_fps] 设为大于 240 的值。否则，渲染帧率低于 30 FPS 时游戏就会低速运"
 "行。"
@@ -58650,9 +58831,13 @@ msgid ""
 "prevent a visible glitch. You can do this using the [method Node."
 "reset_physics_interpolation] function."
 msgstr ""
+"为 [code]true[/code] 时，渲染器会根据物理对象最近两次的变换对其变换进行插值，"
+"从而在物理周期与渲染帧不一致时得到平滑的运动。\n"
+"[b]注意：[/b]将对象移动到新位置时（并非一般的物理运动）你可能会想要临时关闭插"
+"值，避免显示问题。你可以使用 [method Node.reset_physics_interpolation] 函数实"
+"现。"
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid ""
 "Controls how much physics ticks are synchronized with real time. For 0 or "
 "less, the ticks are synchronized. Such values are recommended for network "
@@ -58669,14 +58854,16 @@ msgid ""
 "[b]Note:[/b] This property is only read when the project starts. To change "
 "the value at runtime, set [member Engine.physics_jitter_fix] instead."
 msgstr ""
-"控制物理时钟实时同步的程度。如果是0或更少，时钟是同步的。这样的值建议用于网络"
-"游戏，因为时钟的同步性很重要。较高的值会导致游戏中的时钟和真实时钟的偏差较"
-"大，但可以平滑帧速率的抖动。默认值0.5对大多数人来说应是不错的；超过2的值可能"
-"会导致游戏对掉帧的反应有明显的延迟，因此不建议使用。\n"
-"[b]注意：[/b]为了获得最佳效果，当使用自定义物理插值解决方案时，应该通过将"
-"[member physics/common/physics_jitter_fix]设置为[code]0[/code]来禁用物理抖动"
-"修复。\n"
-"[b]注意：[/b] 这个属性只在项目启动时被读取。要在运行时改变物理FPS，请设置"
+"控制物理周期与实际时间的同步程度。如果小于等于 0，则周期是同步的。这样的值建"
+"议用于网络游戏，因为时钟的同步性很重要。较高的值会导致游戏中的时钟和真实时钟"
+"的偏差较大，但可以平滑帧速率的抖动。默认值 0.5 对大多数人来说应是不错的；超"
+"过 2 的值可能会导致游戏对掉帧的反应有明显的延迟，因此不建议使用。\n"
+"[b]注意：[/b]为了获得最佳效果，当使用自定义物理插值解决方案时，应该通过将 "
+"[member physics/common/physics_jitter_fix] 设置为 [code]0[/code] 来禁用物理抖"
+"动修复。\n"
+"[b]注意：[/b]如果启用了 [member physics/common/physics_interpolation]，运行时"
+"会自动禁用抖动修复。\n"
+"[b]注意：[/b]这个属性只在项目启动时被读取。要在运行时改变物理 FPS，请设置 "
 "[member Engine.physics_jitter_fix]。"
 
 #: doc/classes/ProjectSettings.xml
@@ -59162,6 +59349,14 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"An override for [code]rendering/gles3/shaders/shader_compilation_mode[/"
+"code], so asynchronous compilation can be disabled for mobile.\n"
+"You may want to do that since mobile GPUs generally won't support "
+"ubershaders due to their complexity."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "Max buffer size for blend shapes. Any blend shape bigger than this will not "
 "work."
 msgstr "混合形状的最大缓冲区大小。任何比这更大的混合形状都不起作用。"
@@ -59368,7 +59563,6 @@ msgstr ""
 "时，才应该使用该选项。"
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], allocates the root [Viewport]'s framebuffer with high "
 "dynamic range. High dynamic range allows the use of [Color] values greater "
@@ -59378,7 +59572,9 @@ msgid ""
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 "如果为 [code]true[/code]，分配根 [Viewport] 的帧缓冲时将使用高动态范围。高动"
-"态范围允许使用大于 1 的 [Color] 值。\n"
+"态范围允许使用大于 1 的 [Color] 值。如果 [member Environment."
+"glow_hdr_threshold] 大于等于 [code]1.0[/code]，那么就必须将其设为 "
+"[code]true[/code]，发光渲染才能正常工作。\n"
 "[b]注意：[/b]仅在 GLES3 后端中可用。"
 
 #: doc/classes/ProjectSettings.xml
@@ -59389,6 +59585,11 @@ msgid ""
 "glow_hdr_threshold] is greater than or equal to [code]1.0[/code].\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
+"[member rendering/quality/depth/hdr] 在移动设备上的低端的覆盖项，为的是性能考"
+"量或驱动支持。如果 [member Environment.glow_hdr_threshold] 大于等于 "
+"[code]1.0[/code]，那么就必须将其设为 [code]true[/code]，发光渲染才能正常工"
+"作。\n"
+"[b]注意：[/b]仅在 GLES3 后端中可用。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -59560,7 +59761,6 @@ msgstr ""
 "称为“三线性过滤”）。"
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid ""
 "Strategy used for framebuffer allocation. The simpler it is, the less "
 "resources it uses (but the less features it supports). If set to \"2D "
@@ -59572,7 +59772,7 @@ msgstr ""
 "用于帧缓冲区的分配策略。它越简单，使用的资源就越少（但支持的功能也越少）。如"
 "果设置为“2D Without Sampling”（2D 无采样）或“3D Without Effects”（3D 无特"
 "效），将不分配采样缓冲区。这意味着 [code]SCREEN_TEXTURE[/code] 和 "
-"[code]DEPTH_TEXTURE[/code] 将不能在着色器中使用，后期处理特效将不能在 "
+"[code]DEPTH_TEXTURE[/code] 将不能在着色器中使用，发光等后期处理特效将不能在 "
 "[Environment] 中使用。"
 
 #: doc/classes/ProjectSettings.xml
@@ -60397,8 +60597,9 @@ msgstr ""
 "一个浮点[i]值[/i]，用于[i]步进[/i]和[i]页面[/i]，例如[ScrollBar]。"
 
 #: doc/classes/Range.xml
+#, fuzzy
 msgid ""
-"Binds two ranges together along with any ranges previously grouped with "
+"Binds two [Range]s together along with any ranges previously grouped with "
 "either of them. When any of range's member variables change, it will share "
 "the new value with all other ranges in its group."
 msgstr ""
@@ -60406,7 +60607,8 @@ msgstr ""
 "员变量改变时，它将与它的组中的所有其他范围共享新的值。"
 
 #: doc/classes/Range.xml
-msgid "Stops range from sharing its member variables with any other."
+#, fuzzy
+msgid "Stops the [Range] from sharing its member variables with any other."
 msgstr "停止与任何其他成员变量共享其成员变量的范围。"
 
 #: doc/classes/Range.xml
@@ -60485,8 +60687,15 @@ msgstr ""
 "变时释放信号。"
 
 #: doc/classes/Range.xml
-msgid "Emitted when [member value] changes."
-msgstr "在 [member value] 改变时释放信号。"
+msgid ""
+"Emitted when [member value] changes. When used on a [Slider], this is called "
+"continuously while dragging (potentially every frame). If you are performing "
+"an expensive operation in a function connected to [signal value_changed], "
+"consider using a [i]debouncing[/i] [Timer] to call the function less often.\n"
+"[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal "
+"value_changed] is also emitted when [code]value[/code] is set directly via "
+"code."
+msgstr ""
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
 msgid "Query the closest object intersecting a ray."
@@ -61648,8 +61857,8 @@ msgid ""
 "from a [PackedScene] instantiation, returns the local scene where this "
 "resource's unique copy is in use. Otherwise, returns [code]null[/code]."
 msgstr ""
-"如果[member resource_local_to_scene]被启用，并且该资源是从一个[PackedScene]实"
-"例中加载的，则返回该资源的唯一副本正在使用的本地场景。否则，返回[code]null[/"
+"如果启用了 [member resource_local_to_scene]，并且该资源是从 [PackedScene] 实"
+"例中加载的，则返回该资源的唯一副本正在使用的本地场景。否则返回 [code]null[/"
 "code]。"
 
 #: doc/classes/Resource.xml
@@ -61658,8 +61867,8 @@ msgid ""
 "[Texture], [Mesh], etc) are high-level abstractions of resources stored in a "
 "server, so this function will return the original RID."
 msgstr ""
-"返回资源的RID（或者一个空的RID）。许多资源（如[Texture]、[Mesh]等）是存储在服"
-"务器server中的资源的高级抽象，所以这个函数将返回原始的RID。"
+"返回该资源的 RID（或者空的 RID）。许多资源（如 [Texture]、[Mesh] 等）是存储在"
+"服务器中的资源的高级抽象，所以这个函数将返回原始的 RID。"
 
 #: doc/classes/Resource.xml
 msgid ""
@@ -61683,8 +61892,8 @@ msgid ""
 "the latter would error out if another resource was already cached for the "
 "given path."
 msgstr ""
-"设置资源的路径，可能会覆盖这个路径的现有缓存条目。这与设置[member "
-"resource_path]不同，因为后者会在其他资源已经被缓存在给定的路径上时出错。"
+"设置资源的路径，可能会覆盖这个路径的现有缓存条目。这与设置 [member "
+"resource_path] 不同，因为后者会在其他资源已经被缓存在给定的路径上时出错。"
 
 #: doc/classes/Resource.xml
 msgid ""
@@ -61702,9 +61911,9 @@ msgid ""
 "current resource in the editor inspector. For built-in scripts, the [member "
 "resource_name] will be displayed as the tab name in the script editor."
 msgstr ""
-"资源名称。这是一个可选的标识符。如果 [member resource_name] 资源名不是空的，"
-"则将显示其值，以表示编辑器检查器中的当前资源。对于内置脚本，[member "
-"resource_name]将作为脚本编辑器中的选项卡名称显示。"
+"资源的名称，是可选的标识符。如果 [member resource_name] 不为空，则编辑器检查"
+"器中将用这个值来表示当前的资源。对于内置脚本，[member resource_name] 将作为脚"
+"本编辑器中的选项卡名称显示。"
 
 #: doc/classes/Resource.xml
 msgid ""
@@ -61721,9 +61930,9 @@ msgid ""
 "[b]Note:[/b] This signal is not emitted automatically for custom resources, "
 "which means that you need to create a setter and emit the signal yourself."
 msgstr ""
-"每当资源发生变化时就会发射。\n"
-"[b]注意：[/b]对于自定义资源，这个信号不会自动发射，这意味着你需要自己创建一个"
-"设置器setter并发射信号。"
+"每当资源发生变化时就会触发。\n"
+"[b]注意：[/b]自定义资源不会自动触发这个信号，这意味着你需要自己创建一个 "
+"Setter 并触发信号。"
 
 #: doc/classes/ResourceFormatLoader.xml
 msgid "Loads a specific resource type from a file."
@@ -62229,14 +62438,14 @@ msgid ""
 "[RichTextEffect], it will continuously process the effect unless the project "
 "is paused. This may impact battery life negatively."
 msgstr ""
-"一个用于[RichTextLabel]的自定义效果。\n"
-"[b]注意:[/b] 为了使[RichTextEffect]能够使用，必须在脚本中定义一个名为"
-"[code]bbcode[/code]的BBCode标签作为成员变量。\n"
+"用于 [RichTextLabel] 的自定义效果。\n"
+"[b]注意：[/b] 为了使 [RichTextEffect] 能够使用，必须在脚本中定义一个名为 "
+"[code]bbcode[/code] 的 BBCode 标签作为成员变量。\n"
 "[codeblock]\n"
-"# RichTextEffect将可以像这样使用:`[example]一些文本[/example]`.\n"
+"# 这个 RichTextEffect 的用法就会是：`[example]一些文本[/example]`.\n"
 "var bbcode = \"example\"\n"
 "[/codeblock]\n"
-"[b]注意：[/b]只要一个[RichTextLabel]包含至少一个[RichTextEffect]，它就会持续"
+"[b]注意：[/b]只要 [RichTextLabel] 中包含至少一个 [RichTextEffect]，它就会持续"
 "处理这个效果，除非项目暂停。这可能会对电池寿命产生负面影响。"
 
 #: doc/classes/RichTextEffect.xml
@@ -63264,7 +63473,7 @@ msgstr ""
 
 #: doc/classes/RigidBody2D.xml
 msgid "A body that is controlled by the 2D physics engine."
-msgstr "由2D物理引擎控制的实体。"
+msgstr "由 2D 物理引擎控制的实体。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -64749,6 +64958,8 @@ msgid ""
 "using [member ProjectSettings.physics/common/physics_interpolation], this "
 "property allows control over interpolation at runtime."
 msgstr ""
+"尽管一般是使用 [member ProjectSettings.physics/common/physics_interpolation] "
+"来全局开关物理插值的，这个属性可以在运行时控制插值。"
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -65794,8 +66005,8 @@ msgid ""
 "SkeletonIK is used to place the end bone of a [Skeleton] bone chain at a "
 "certain point in 3D by rotating all bones in the chain accordingly."
 msgstr ""
-"SkeletonIK用于将[Skeleton]骨链的末端骨骼置于3D中的某一点，并相应地旋转骨链中"
-"的所有骨骼。"
+"SkeletonIK 可用于将 [Skeleton] 骨链的末端骨骼置于 3D 中的某一点，并相应地旋转"
+"骨链中的所有骨骼。"
 
 #: doc/classes/SkeletonIK.xml
 msgid ""
@@ -66299,6 +66510,11 @@ msgid ""
 "include [Camera]s focusing on a node, or finding where to fire lasers from "
 "on a frame rather than physics tick."
 msgstr ""
+"使用物理插值时，你可能会想要知道节点在插值后（显示）的变换，而不是标准的变换"
+"（只有对最近的一次物理周期而言才准确）。\n"
+"这对于基于帧的操作而言尤为重要，这些操作是在 [method Node._process] 中进行"
+"的，而不是 [method Node._physics_process]。例如让 [Camera] 聚焦到某个节点上，"
+"在某一帧中查找应该从哪里发射激光，而不是物理帧。"
 
 #: doc/classes/Spatial.xml
 msgid ""
@@ -68477,7 +68693,6 @@ msgstr ""
 "则从后面看它是不可见的。"
 
 #: doc/classes/SpriteBase3D.xml
-#, fuzzy
 msgid ""
 "A color value used to [i]multiply[/i] the texture's colors. Can be used for "
 "mood-coloring or to simulate the color of light.\n"
@@ -68495,10 +68710,9 @@ msgstr ""
 "色。否则会忽略 [member modulate] 中所定义的颜色。对于 [SpatialMaterial]，必须"
 "让 [member SpatialMaterial.vertex_color_use_as_albedo] 为 [code]true[/code]。"
 "对于 [ShaderMaterial]，着色器的 [code]fragment()[/code] 函数中必须插入 "
-"[code]ALBEDO *= COLOR.rgb;[/color]。"
+"[code]ALBEDO *= COLOR.rgb;[/code]。"
 
 #: doc/classes/SpriteBase3D.xml
-#, fuzzy
 msgid ""
 "The texture's visibility on a scale from [code]0[/code] (fully invisible) to "
 "[code]1[/code] (fully visible). [member opacity] is a multiplier for the "
@@ -68518,7 +68732,7 @@ msgstr ""
 "色。否则会忽略 [member opacity] 中所定义的不透明度。对于 [SpatialMaterial]，"
 "必须让 [member SpatialMaterial.vertex_color_use_as_albedo] 为 [code]true[/"
 "code]。对于 [ShaderMaterial]，着色器的 [code]fragment()[/code] 函数中必须插"
-"入 [code]ALPHA *= COLOR.a;[/color]。"
+"入 [code]ALPHA *= COLOR.a;[/code]。"
 
 #: doc/classes/SpriteBase3D.xml
 msgid "The size of one pixel's width on the sprite to scale it in 3D."
@@ -69293,6 +69507,10 @@ msgid ""
 "print(\"Bigrams\".bigrams()) # Prints \"[Bi, ig, gr, ra, am, ms]\"\n"
 "[/codeblock]"
 msgstr ""
+"返回包含该字符串的双字母组（连续字母的组合）的数组。\n"
+"[codeblock]\n"
+"print(\"Bigrams\".bigrams()) # 输出“[Bi, ig, gr, ra, am, ms]”\n"
+"[/codeblock]"
 
 #: doc/classes/String.xml
 msgid ""
@@ -69658,17 +69876,27 @@ msgstr ""
 "[code]: / \\ ? * \" | % < >[/code]"
 
 #: doc/classes/String.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this string contains a valid float. This is "
 "inclusive of integers, and also supports exponents:\n"
 "[codeblock]\n"
-"print(\"1.7\".is_valid_float()) # Prints \"true\"\n"
-"print(\"24\".is_valid_float()) # Prints \"true\"\n"
-"print(\"7e3\".is_valid_float()) # Prints \"true\"\n"
-"print(\"24\".is_valid_float()) # Prints \"true\"\n"
-"print(\"Hello\".is_valid_float()) # Prints \"false\"\n"
+"print(\"1.7\".is_valid_float()) # Prints \"True\"\n"
+"print(\"24\".is_valid_float()) # Prints \"True\"\n"
+"print(\"7e3\".is_valid_float()) # Prints \"True\"\n"
+"print(\"24\".is_valid_float()) # Prints \"True\"\n"
+"print(\"Hello\".is_valid_float()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
+"如果该字符串包含有效的浮点数，则返回 [code]true[/code]。包含整数，也支持指数"
+"幂：\n"
+"[codeblock]\n"
+"print(\"1.7\".is_valid_float()) # 输出“true”\n"
+"print(\"24\".is_valid_float()) # 输出“true”\n"
+"print(\"7e3\".is_valid_float()) # 输出“true”\n"
+"print(\"24\".is_valid_float()) # 输出“true”\n"
+"print(\"Hello\".is_valid_float()) # 输出“false”\n"
+"[/codeblock]"
 
 #: doc/classes/String.xml
 msgid ""
@@ -69699,25 +69927,39 @@ msgid ""
 "identifier may contain only letters, digits and underscores ([code]_[/code]) "
 "and the first character may not be a digit.\n"
 "[codeblock]\n"
-"print(\"good_ident_1\".is_valid_identifier()) # Prints \"true\"\n"
-"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"false\"\n"
-"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"false\"\n"
+"print(\"good_ident_1\".is_valid_identifier()) # Prints \"True\"\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"False\"\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
 "该字符串为有效标识符时，返回 [code]true[/code]。有效标识符仅能够包含字母、数"
-"字、下划线（[code]_[/code]），并且不能以数字开头。"
+"字、下划线（[code]_[/code]），并且不能以数字开头。\n"
+"[codeblock]\n"
+"print(\"good_ident_1\".is_valid_identifier()) # 输出“true”\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # 输出“false”\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # 输出“false”\n"
+"[/codeblock]"
 
 #: doc/classes/String.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this string contains a valid integer.\n"
 "[codeblock]\n"
-"print(\"7\".is_valid_int()) # Prints \"true\"\n"
-"print(\"14.6\".is_valid_int()) # Prints \"false\"\n"
-"print(\"L\".is_valid_int()) # Prints \"false\"\n"
-"print(\"+3\".is_valid_int()) # Prints \"true\"\n"
-"print(\"-12\".is_valid_int()) # Prints \"true\"\n"
+"print(\"7\".is_valid_int()) # Prints \"True\"\n"
+"print(\"14.6\".is_valid_int()) # Prints \"False\"\n"
+"print(\"L\".is_valid_int()) # Prints \"False\"\n"
+"print(\"+3\".is_valid_int()) # Prints \"True\"\n"
+"print(\"-12\".is_valid_int()) # Prints \"True\"\n"
 "[/codeblock]"
 msgstr ""
+"如果该字符串包含有效的整数，则返回 [code]true[/code]\n"
+"[codeblock]\n"
+"print(\"7\".is_valid_int()) # 输出“true”\n"
+"print(\"14.6\".is_valid_int()) # 输出“false”\n"
+"print(\"L\".is_valid_int()) # 输出“false”\n"
+"print(\"+3\".is_valid_int()) # 输出“true”\n"
+"print(\"-12\".is_valid_int()) # 输出“true”\n"
+"[/codeblock]"
 
 #: doc/classes/String.xml
 msgid ""
@@ -69775,34 +70017,34 @@ msgstr ""
 "一的前缀字符串，请参阅 [method trim_prefix]。"
 
 #: doc/classes/String.xml
-#, fuzzy
 msgid ""
 "Does a simple case-sensitive expression match, where [code]\"*\"[/code] "
 "matches zero or more arbitrary characters and [code]\"?\"[/code] matches any "
 "single character except a period ([code]\".\"[/code]). An empty string or "
 "empty expression always evaluates to [code]false[/code]."
 msgstr ""
-"判断表达式是否匹配(区分大小写)，其中 [code]\"*\"[/code] 匹配零个或多个任意字"
-"符并且 [code]\"?\"[/code] 匹配除句点( [code]\".\"[/code] ）外的任意字符。"
+"判断表达式是否匹配，区分大小写，其中 [code]\"*\"[/code] 匹配零个或多个任意字"
+"符并且 [code]\"?\"[/code] 匹配除句点( [code]\".\"[/code] ）外的任意字符。如果"
+"字符串或表达式为空，则始终返回 [code]false[/code]。"
 
 #: doc/classes/String.xml
-#, fuzzy
 msgid ""
 "Does a simple case-insensitive expression match, where [code]\"*\"[/code] "
 "matches zero or more arbitrary characters and [code]\"?\"[/code] matches any "
 "single character except a period ([code]\".\"[/code]). An empty string or "
 "empty expression always evaluates to [code]false[/code]."
 msgstr ""
-"判断表达式是否匹配(不区分大小写)，其中 [code]\"*\"[/code] 匹配零个或多个任意"
-"字符并且 [code]\"?\"[/code] 匹配除句点( [code]\".\"[/code] ）外的任意字符。"
+"判断表达式是否匹配，不区分大小写，其中 [code]\"*\"[/code] 匹配零个或多个任意"
+"字符并且 [code]\"?\"[/code] 匹配除句点( [code]\".\"[/code] ）外的任意字符。如"
+"果字符串或表达式为空，则始终返回 [code]false[/code]。"
 
 #: doc/classes/String.xml
 msgid "Returns the MD5 hash of the string as an array of bytes."
-msgstr "以一个字节数组的形式返回字符串的MD5哈希值。"
+msgstr "以字节数组的形式返回该字符串的 MD5 哈希值。"
 
 #: doc/classes/String.xml
 msgid "Returns the MD5 hash of the string as a string."
-msgstr "以一个字符串的形式返回字符串的MD5哈希值。"
+msgstr "以字符串的形式返回该字符串的 MD5 哈希值。"
 
 #: doc/classes/String.xml
 msgid ""
@@ -70025,6 +70267,15 @@ msgid ""
 "print(\"ABC123\".similarity(\"abc123\")) # Prints \"0.4\"\n"
 "[/codeblock]"
 msgstr ""
+"返回该字符串与另一个字符串的相似指数（[url=https://zh.wikipedia.org/wiki/"
+"Dice%E7%B3%BB%E6%95%B0]索伦森-骰子系数[/url]）。1.0 表示完全相似，0.0 表示完"
+"全不相似。\n"
+"[codeblock]\n"
+"print(\"ABC123\".similarity(\"ABC123\")) # 输出“1”\n"
+"print(\"ABC123\".similarity(\"XYZ456\")) # 输出“0”\n"
+"print(\"ABC123\".similarity(\"123ABC\")) # 输出“0.8”\n"
+"print(\"ABC123\".similarity(\"abc123\")) # 输出“0.4”\n"
+"[/codeblock]"
 
 #: doc/classes/String.xml
 msgid "Returns a simplified canonical path."
@@ -71841,14 +72092,12 @@ msgid "Returns the total width of all gutters and internal padding."
 msgstr "返回所有栏位及内部边距的总宽度。"
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid "Returns the total amount of lines that could be drawn."
-msgstr "返回该 Label 的文本行数。"
+msgstr "返回可绘制的总行数。"
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid "Returns the number of visible lines, including wrapped text."
-msgstr "返回可见行数。"
+msgstr "返回可见行数，包括自动换行。"
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -71901,6 +72150,13 @@ msgstr "当指定的行 [code]line[/code] 被标记为安全时返回 [code]true
 #: doc/classes/TextEdit.xml
 msgid "Returns if the given line is wrapped."
 msgstr "返回给定的行是否换行。"
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid ""
+"Returns whether the mouse is over selection. If [code]edges[/code] is "
+"[code]true[/code], the edges are considered part of the selection."
+msgstr "返回节点[code]id[/code]和[code]dst_id[/code]是否在指定的插槽上连接。"
 
 #: doc/classes/TextEdit.xml
 msgid "Returns [code]true[/code] if the selection is active."
@@ -73089,6 +73345,8 @@ msgid ""
 "Unmarks [code]theme_type[/code] as being a variation of another theme type. "
 "See [method set_type_variation]."
 msgstr ""
+"取消将主题类型 [code]theme_type[/code] 标记为任何主题类型的变种。见 [method "
+"set_type_variation]。"
 
 #: doc/classes/Theme.xml
 msgid "Sets the theme's values to a copy of the default theme values."
@@ -73274,17 +73532,17 @@ msgstr ""
 "[b]注意：[/b][code]node_type[/code]没有生效，在未来的版本中会被删除。"
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns the name of the base theme type if [code]theme_type[/code] is a "
 "valid variation type. Returns an empty string otherwise."
-msgstr "返回正在播放的场景名称。如果当前没有场景正在播放，返回一个空字符串。"
+msgstr ""
+"如果主题类型 [code]theme_type[/code] 为有效的变种类型，则返回其基础主题类型的"
+"名称。否则返回空字符串。"
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns a list of all type variations for the given [code]base_type[/code]."
-msgstr "返回给定[code]signal[/code]的连接的[Array]。"
+msgstr "返回给定的基础类型 [code]base_type[/code] 的所有类型变种。"
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -73354,12 +73612,12 @@ msgstr ""
 "如果该主题没有[code]node_type[/code]，则返回[code]false[/code]。"
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [code]theme_type[/code] is marked as a "
 "variation of [code]base_type[/code]."
 msgstr ""
-"如果预加载器包含一个与[code]name[/code]相关的资源，则返回[code]true[/code]。"
+"如果主题类型 [code]theme_type[/code] 被标记为基础类型 [code]base_type[/code] "
+"的变种，则返回 [code]true[/code]。"
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -73504,6 +73762,15 @@ msgid ""
 "[b]Note:[/b] Suggestions only show up if this theme resource is set as the "
 "project default theme. See [member ProjectSettings.gui/theme/custom]."
 msgstr ""
+"将主题类型 [code]theme_type[/code] 标记为基础类型 [code]base_type[/code] 的变"
+"种。\n"
+"这会将 [code]theme_type[/code] 添加为 [code]base_type[/code] 类的 [Control] "
+"的 [member Control.theme_type_variation] 的建议选项。\n"
+"变种可以嵌套，即 [code]base_type[/code] 也可以是变种。如果 [code]base_type[/"
+"code] 与该 [Control] 相匹配，且存在以它结尾的变种链，则整条链上的变种都会作为"
+"建议选项。\n"
+"[b]注意：[/b]只有该主题资源被设为项目默认主题时才会出现建议。见 [member "
+"ProjectSettings.gui/theme/custom]。"
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -74094,9 +74361,9 @@ msgid ""
 "[b]Note:[/b] [code]neighbor_id[/code] will be [code]-1[/code] ([constant "
 "TileMap.INVALID_CELL]) when checking a tile against an empty neighbor tile."
 msgstr ""
-"确定什么时候自动图块器应该考虑将两个不同的自动图块器ID绑定在一起。\n"
-"[b]注意：[/b] [code]neighbour_id[/code]当检查一个图块与一个空的相邻图块时，将"
-"是[code]-1[/code]，即[constant TileMap.INVALID_CELL]。"
+"确定什么时候自动图块器应该考虑将两个不同的自动图块器 ID 绑定在一起。\n"
+"[b]注意：[/b]当检查一个图块与一个空的相邻图块时，[code]neighbour_id[/code] 将"
+"是 [code]-1[/code]，即 [constant TileMap.INVALID_CELL]。"
 
 #: doc/classes/TileSet.xml
 msgid "Clears all bitmask information of the autotile."
@@ -74611,6 +74878,13 @@ msgstr ""
 "将给定的 Unix 时间戳转换为 ISO 8601 日期和时间字符串（YYYY-MM-DDTHH:MM:"
 "SS）。\n"
 "[code]use_space[/code] 为真时，将使用空格代替中间的字母 T。"
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given timezone offset in minutes to a timezone offset string. "
+"For example, -480 returns \"-08:00\", 345 returns \"+05:45\", and 0 returns "
+"\"+00:00\"."
+msgstr ""
 
 #: doc/classes/Time.xml
 msgid ""
@@ -75996,7 +76270,7 @@ msgstr "每个项内的垂直填充，即项内容与上或下边框之间的距
 
 #: doc/classes/Tree.xml
 msgid "[Font] of the title button's text."
-msgstr "标题按钮文本的[Font]字体。"
+msgstr "标题按钮文本的 [Font] 字体。"
 
 #: doc/classes/Tree.xml
 msgid "The arrow icon used when a foldable item is not collapsed."
@@ -76011,89 +76285,90 @@ msgid ""
 "The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode "
 "cell is checked."
 msgstr ""
-"当[constant TreeItem.CELL_MODE_CHECK]模式单元格被选中时，显示的选中图标。"
+"当 [constant TreeItem.CELL_MODE_CHECK] 模式单元格被选中时，显示的选中图标。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode "
 "cell."
-msgstr "为[constant TreeItem.CELL_MODE_RANGE]模式单元显示的箭头图标。"
+msgstr "为 [constant TreeItem.CELL_MODE_RANGE] 模式单元显示的箭头图标。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode "
 "cell is unchecked."
 msgstr ""
-"当[constant TreeItem.CELL_MODE_CHECK]模式单元未被选中时，要显示的选中图标。"
+"当 [constant TreeItem.CELL_MODE_CHECK] 模式单元未被选中时，要显示的选中图标。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] "
 "mode cell."
-msgstr "为[constant TreeItem.CELL_MODE_RANGE]模式单元显示的向下箭头图标。"
+msgstr "为 [constant TreeItem.CELL_MODE_RANGE] 模式单元显示的向下箭头图标。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "Default [StyleBox] for the [Tree], i.e. used when the control is not being "
 "focused."
-msgstr "[Tree]的默认[StyleBox]，即在控件没有获得焦点时使用。"
+msgstr "[Tree] 的默认 [StyleBox]，即在控件没有获得焦点时使用。"
 
 #: doc/classes/Tree.xml
 msgid "[StyleBox] used when the [Tree] is being focused."
-msgstr "当[Tree]获得焦点时使用的[StyleBox]。"
+msgstr "当 [Tree] 获得焦点时使用的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid "[StyleBox] used when a button in the tree is pressed."
-msgstr "当树中的按钮被按下时使用的[StyleBox]。"
+msgstr "当树中的按钮被按下时使用的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid "[StyleBox] used for the cursor, when the [Tree] is being focused."
-msgstr "当[Tree]获得焦点时，用于光标的[StyleBox]。"
+msgstr "当 [Tree] 获得焦点时，用于光标的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid "[StyleBox] used for the cursor, when the [Tree] is not being focused."
-msgstr "当[Tree]未获聚焦时，用于光标的[StyleBox]。"
+msgstr "当 [Tree] 未获聚焦时，用于光标的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell."
-msgstr "为[constant TreeItem.CELL_MODE_CUSTOM]模式的单元格默认的[StyleBox]。"
+msgstr ""
+"为 [constant TreeItem.CELL_MODE_CUSTOM] 模式的单元格默认的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
 "hovered."
 msgstr ""
-"当[constant TreeItem.CELL_MODE_CUSTOM]模式的单元格被悬停时的[StyleBox]。"
+"当 [constant TreeItem.CELL_MODE_CUSTOM] 模式的单元格被悬停时的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
 "pressed."
 msgstr ""
-"当[constant TreeItem.CELL_MODE_CUSTOM]模式的单元格被按下时的[StyleBox]。"
+"当 [constant TreeItem.CELL_MODE_CUSTOM] 模式的单元格被按下时的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "[StyleBox] for the selected items, used when the [Tree] is not being focused."
-msgstr "所选项的[StyleBox]，当[Tree]没有获得焦点时使用。"
+msgstr "所选项目的 [StyleBox]，当 [Tree] 没有获得焦点时使用。"
 
 #: doc/classes/Tree.xml
 msgid ""
 "[StyleBox] for the selected items, used when the [Tree] is being focused."
-msgstr "所选项目的[StyleBox]，在[Tree]获得焦点时使用。"
+msgstr "所选项目的 [StyleBox]，在 [Tree] 获得焦点时使用。"
 
 #: doc/classes/Tree.xml
 msgid "[StyleBox] used when the title button is being hovered."
-msgstr "当标题按钮被悬停时使用的[StyleBox]。"
+msgstr "当标题按钮被悬停时使用的 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid "Default [StyleBox] for the title button."
-msgstr "标题按钮的默认[StyleBox]。"
+msgstr "标题按钮的默认 [StyleBox]。"
 
 #: doc/classes/Tree.xml
 msgid "[StyleBox] used when the title button is being pressed."
-msgstr "当标题按钮被按下时使用的[StyleBox]。"
+msgstr "当标题按钮被按下时使用的 [StyleBox]。"
 
 #: doc/classes/TreeItem.xml
 msgid "Control for a single item inside a [Tree]."
@@ -76105,11 +76380,10 @@ msgid ""
 "styled as well as contain buttons.\n"
 "You can remove a [TreeItem] by using [method Object.free]."
 msgstr ""
-"控件[Tree]中的单个项目。可以有子级[TreeItem]， 样式， 以及包含按钮。\n"
-"您可以使用[method Object.free]删除[TreeItem]。"
+"控件 [Tree] 中的单个项目。可以有子级 [TreeItem]， 样式， 以及包含按钮。\n"
+"您可以使用 [method Object.free] 删除 [TreeItem]。"
 
 #: doc/classes/TreeItem.xml
-#, fuzzy
 msgid ""
 "Adds a button with [Texture] [code]button[/code] at column [code]column[/"
 "code]. The [code]id[/code] is used to identify the button. If not specified, "
@@ -76118,9 +76392,9 @@ msgid ""
 "be [code]disabled[/code] and have a [code]tooltip[/code]."
 msgstr ""
 "在 [code]column[/code] 列添加一个带有 [Texture] [code]button[/code] 的按钮。 "
-"[code]id[/code] 用于标识按钮。如果未指定，则使用下一个可用索引，可以通过在此"
-"方法之后调用 [method get_button_count] 来检索该索引。可选，该按钮可以 "
-"[code]disabled[/code] 和具有 [code]tooltip[/code]。"
+"[code]id[/code] 用于标识按钮。如果未指定，则使用下一个可用索引，可以在此方法"
+"之前调用 [method get_button_count] 来获取该索引。另外，该按钮还可以通过 "
+"[code]disabled[/code] 禁用、通过 [code]tooltip[/code] 设置工具提示。"
 
 #: doc/classes/TreeItem.xml
 msgid ""
@@ -76165,9 +76439,8 @@ msgstr ""
 "引号，否则返回 -1。"
 
 #: doc/classes/TreeItem.xml
-#, fuzzy
 msgid "Returns the number of buttons in column [code]column[/code]."
-msgstr "返回列[code]column[/code]的自定义颜色。"
+msgstr "返回在 [code]column[/code] 列中按钮的数量。"
 
 #: doc/classes/TreeItem.xml
 msgid ""
@@ -78973,26 +79246,26 @@ msgstr ""
 "org/]WebM[/url] 视频格式的 [VideoStream] 资源。支持 VP8 和 VP9 编解码器。VP8 "
 "和 VP9 编解码器比 [VideoStreamTheora] 更高效，但其需要更多的 CPU 资源来解码，"
 "尤其是 VP9。VP8 和 VP9 编解码器是在 CPU 上解码的。\n"
-"[b]注意：[/b] 不支持 Alpha 通道（也称为不透明度）。视频将始终显示为黑色背景，"
+"[b]注意：[/b]不支持 Alpha 通道（也称为不透明度）。视频将始终显示为黑色背景，"
 "即使它最初包含 Alpha 通道。\n"
-"[b]注意：[/b] Godot 中的 WebM 视频播放存在已知的错误和性能问题。如果你遇到问"
+"[b]注意：[/b]Godot 中的 WebM 视频播放存在已知的错误和性能问题。如果你遇到问"
 "题，可以尝试用 Ogg Theora 格式代替：[VideoStreamTheora]"
 
 #: modules/webm/doc_classes/VideoStreamWebm.xml
 msgid "Returns the WebM video file handled by this [VideoStreamWebm]."
-msgstr "返回由这个[VideoStreamWebm]处理的WebM视频文件。"
+msgstr "返回由这个 [VideoStreamWebm] 处理的 WebM 视频文件。"
 
 #: modules/webm/doc_classes/VideoStreamWebm.xml
 msgid ""
 "Sets the WebM video file that this [VideoStreamWebm] resource handles. The "
 "[code]file[/code] name should have the [code].webm[/code] extension."
 msgstr ""
-"设置这个[VideoStreamWebm]资源处理的WebM视频文件。[code]file[/code]名称具有"
-"[code].webm[/code]扩展名。"
+"设置这个 [VideoStreamWebm] 资源处理的 WebM 视频文件。文件名 [code]file[/"
+"code] 具有 [code].webm[/code] 扩展名。"
 
 #: doc/classes/Viewport.xml
 msgid "Creates a sub-view into the screen."
-msgstr "在屏幕中创建一个子视图。"
+msgstr "在屏幕中创建子视图。"
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -79131,6 +79404,11 @@ msgstr ""
 #: doc/classes/Viewport.xml
 msgid "Returns [code]true[/code] if there are visible modals on-screen."
 msgstr "如果屏幕上有可见的模型，返回[code]true[/code]。"
+
+#: doc/classes/Viewport.xml
+#, fuzzy
+msgid "Returns [code]true[/code] if the drag operation is successful."
+msgstr "如果选择处于活动状态，则返回 [code]true[/code]。"
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -89382,13 +89660,13 @@ msgstr "获取当前元素中的属性数量。"
 msgid ""
 "Gets the name of the attribute specified by the index in [code]idx[/code] "
 "argument."
-msgstr "获取由[code]idx[/code]参数中的索引指定的属性名称。"
+msgstr "获取由 [code]idx[/code] 参数中的索引指定的属性名称。"
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Gets the value of the attribute specified by the index in [code]idx[/code] "
 "argument."
-msgstr "获取由[code]idx[/code]参数中的索引指定的属性值。"
+msgstr "获取由 [code]idx[/code] 参数中的索引指定的属性值。"
 
 #: doc/classes/XMLParser.xml
 msgid "Gets the current line in the parsed file (currently not implemented)."
@@ -89398,21 +89676,20 @@ msgstr "获取被解析文件中的当前行（目前未实现）。"
 msgid ""
 "Gets the value of a certain attribute of the current element by name. This "
 "will raise an error if the element has no such attribute."
-msgstr ""
-"通过名称获取当前元素的某个属性的值。如果该元素没有该属性，将引发一个错误。"
+msgstr "通过名称获取当前元素的某个属性的值。如果该元素没有该属性，将引发错误。"
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Gets the value of a certain attribute of the current element by name. This "
 "will return an empty [String] if the attribute is not found."
 msgstr ""
-"通过名称获取当前元素的某个属性值。如果没有找到该属性，将返回空的[String]。"
+"通过名称获取当前元素的某个属性值。如果没有找到该属性，将返回空的 [String]。"
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Gets the contents of a text node. This will raise an error in any other type "
 "of node."
-msgstr "获取文本节点的内容。若在任何其他类型的节点中，这将引发一个错误。"
+msgstr "获取文本节点的内容。若在任何其他类型的节点中，将引发错误。"
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -89447,23 +89724,23 @@ msgstr ""
 
 #: doc/classes/XMLParser.xml
 msgid "Opens an XML file for parsing. This returns an error code."
-msgstr "打开一个 XML 文件进行解析。这将返回一个错误代码。"
+msgstr "打开一个 XML 文件进行解析。返回的是错误码。"
 
 #: doc/classes/XMLParser.xml
 msgid "Opens an XML raw buffer for parsing. This returns an error code."
-msgstr "打开一个 XML 原始缓冲区进行解析。这将返回一个错误代码。"
+msgstr "打开一个 XML 原始缓冲区进行解析。返回的是错误码。"
 
 #: doc/classes/XMLParser.xml
 msgid "Reads the next node of the file. This returns an error code."
-msgstr "读取文件的下一个节点。这将返回一个错误代码。"
+msgstr "读取文件的下一个节点。返回的是错误码。"
 
 #: doc/classes/XMLParser.xml
 msgid ""
 "Moves the buffer cursor to a certain offset (since the beginning) and read "
 "the next node there. This returns an error code."
 msgstr ""
-"将缓冲区光标移动到某一偏移量（相对于开始位置）并在那里读取下一个节点。这将返"
-"回一个错误代码。"
+"将缓冲区光标移动到某一偏移量（相对于开始位置）并在那里读取下一个节点。返回的"
+"是错误码。"
 
 #: doc/classes/XMLParser.xml
 msgid ""

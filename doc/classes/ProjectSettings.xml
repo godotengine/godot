@@ -1655,11 +1655,8 @@
 		<member name="rendering/environment/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
 			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion at great distances.
 		</member>
-		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
-		</member>
-		<member name="rendering/environment/ssao/half_size.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/environment/ssao/half_size] on mobile devices, due to performance concerns.
+		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.

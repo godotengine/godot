@@ -559,7 +559,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
@@ -617,6 +616,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
+	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));

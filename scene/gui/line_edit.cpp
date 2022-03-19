@@ -2458,5 +2458,5 @@ LineEdit::LineEdit(const String &p_placeholder) {
 }
 
 LineEdit::~LineEdit() {
-	TS->free(text_rid);
+	TS->free_rid(text_rid);
 }

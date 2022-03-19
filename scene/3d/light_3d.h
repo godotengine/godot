@@ -156,10 +156,16 @@ public:
 		SHADOW_PARALLEL_4_SPLITS,
 	};
 
+	enum SkyMode {
+		SKY_MODE_LIGHT_AND_SKY,
+		SKY_MODE_LIGHT_ONLY,
+		SKY_MODE_SKY_ONLY,
+	};
+
 private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
-	bool sky_only = false;
+	SkyMode sky_mode = SKY_MODE_LIGHT_AND_SKY;
 
 protected:
 	static void _bind_methods();
@@ -172,13 +178,14 @@ public:
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
 
-	void set_sky_only(bool p_sky_only);
-	bool is_sky_only() const;
+	void set_sky_mode(SkyMode p_mode);
+	SkyMode get_sky_mode() const;
 
 	DirectionalLight3D();
 };
 
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
+VARIANT_ENUM_CAST(DirectionalLight3D::SkyMode)
 
 class OmniLight3D : public Light3D {
 	GDCLASS(OmniLight3D, Light3D);

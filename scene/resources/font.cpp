@@ -40,7 +40,7 @@
 _FORCE_INLINE_ void FontData::_clear_cache() {
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
-			TS->free(cache[i]);
+			TS->free_rid(cache[i]);
 			cache.write[i] = RID();
 		}
 	}
@@ -1499,7 +1499,7 @@ void FontData::clear_cache() {
 void FontData::remove_cache(int p_cache_index) {
 	ERR_FAIL_INDEX(p_cache_index, cache.size());
 	if (cache[p_cache_index].is_valid()) {
-		TS->free(cache.write[p_cache_index]);
+		TS->free_rid(cache.write[p_cache_index]);
 	}
 	cache.remove_at(p_cache_index);
 	emit_changed();
@@ -1924,6 +1924,8 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &Font::get_supported_chars);
 
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
+
+	ClassDB::bind_method(D_METHOD("get_rids"), &Font::get_rids);
 }
 
 bool Font::_set(const StringName &p_name, const Variant &p_value) {
@@ -2427,11 +2429,15 @@ String Font::get_supported_chars() const {
 	return chars;
 }
 
-Vector<RID> Font::get_rids() const {
+Array Font::get_rids() const {
+	Array _rids;
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
+		if (rids[i].is_valid()) {
+			_rids.push_back(rids[i]);
+		}
 	}
-	return rids;
+	return _rids;
 }
 
 void Font::update_changes() {

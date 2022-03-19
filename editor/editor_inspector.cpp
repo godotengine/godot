@@ -43,6 +43,20 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
+static bool _property_path_matches(const String &p_property_path, const String &p_filter) {
+	if (p_property_path.findn(p_filter) != -1) {
+		return true;
+	}
+
+	const Vector<String> sections = p_property_path.split("/");
+	for (int i = 0; i < sections.size(); i++) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i]))) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
@@ -2657,15 +2671,14 @@ void EditorInspector::update_tree() {
 		}
 
 		// Get the property label's string.
-		String property_label_string = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
+		String name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
+		String property_label_string = name_override;
 		if (capitalize_paths) {
 			// Capitalize paths.
 			int dot = property_label_string.find(".");
 			if (dot != -1) {
-				String ov = property_label_string.substr(dot);
-				property_label_string = property_label_string.substr(0, dot);
-				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
-				property_label_string += ov;
+				name_override = name_override.substr(0, dot);
+				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override) + property_label_string.substr(dot);
 			} else {
 				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
 			}
@@ -2681,7 +2694,8 @@ void EditorInspector::update_tree() {
 
 		// Ignore properties that do not fit the filter.
 		if (use_filter && !filter.is_empty()) {
-			if (!filter.is_subsequence_ofn(path) && !filter.is_subsequence_ofn(property_label_string) && !property_prefix.to_lower().contains(filter.to_lower())) {
+			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
+			if (!_property_path_matches(property_path, filter)) {
 				continue;
 			}
 		}

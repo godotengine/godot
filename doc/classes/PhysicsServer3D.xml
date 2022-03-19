@@ -733,7 +733,7 @@
 			<return type="int" />
 			<argument index="0" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
 			<description>
-				Returns an Info defined by the [enum ProcessInfo] input given.
+				Returns information about the current state of the 3D physics engine. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
 		<method name="heightmap_shape_create">

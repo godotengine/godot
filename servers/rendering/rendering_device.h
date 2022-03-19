@@ -1222,7 +1222,7 @@ public:
 		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z,
 	};
 
-	virtual int limit_get(Limit p_limit) = 0;
+	virtual uint64_t limit_get(Limit p_limit) = 0;
 
 	//methods below not exposed, used by RenderingDeviceRD
 	virtual void prepare_screen_for_drawing() = 0;

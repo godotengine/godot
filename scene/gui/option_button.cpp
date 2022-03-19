@@ -240,6 +240,10 @@ void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
 	popup->set_item_metadata(p_idx, p_metadata);
 }
 
+void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
+	popup->set_item_tooltip(p_idx, p_tooltip);
+}
+
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
 	popup->set_item_disabled(p_idx, p_disabled);
 }
@@ -266,6 +270,10 @@ int OptionButton::get_item_index(int p_id) const {
 
 Variant OptionButton::get_item_metadata(int p_idx) const {
 	return popup->get_item_metadata(p_idx);
+}
+
+String OptionButton::get_item_tooltip(int p_idx) const {
+	return popup->get_item_tooltip(p_idx);
 }
 
 bool OptionButton::is_item_disabled(int p_idx) const {
@@ -377,6 +385,12 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
 
+void OptionButton::_validate_property(PropertyInfo &property) const {
+	if (property.name == "text" || property.name == "icon") {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
@@ -385,11 +399,13 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &OptionButton::set_item_disabled);
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);

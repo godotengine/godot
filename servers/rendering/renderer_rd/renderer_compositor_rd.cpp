@@ -46,7 +46,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	for (int i = 0; i < p_amount; i++) {
 		RID texture = storage->render_target_get_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(texture.is_null());
-		RID rd_texture = storage->texture_get_rd_texture(texture);
+		RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
 
 		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
@@ -155,6 +155,8 @@ void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(storage);
+	memdelete(texture_storage);
+	memdelete(canvas_texture_storage);
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
@@ -165,9 +167,9 @@ void RendererCompositorRD::finalize() {
 void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 	RD::get_singleton()->prepare_screen_for_drawing();
 
-	RID texture = storage->texture_allocate();
-	storage->texture_2d_initialize(texture, p_image);
-	RID rd_texture = storage->texture_get_rd_texture(texture);
+	RID texture = texture_storage->texture_allocate();
+	texture_storage->texture_2d_initialize(texture, p_image);
+	RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 
 	RID uset;
 	{
@@ -235,7 +237,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->swap_buffers();
 
-	storage->free(texture);
+	texture_storage->texture_free(texture);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
@@ -283,11 +285,13 @@ RendererCompositorRD::RendererCompositorRD() {
 	singleton = this;
 	time = 0;
 
+	canvas_texture_storage = memnew(RendererRD::CanvasTextureStorage);
+	texture_storage = memnew(RendererRD::TextureStorage);
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 
 	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
-	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (back_end || textures_per_stage < 48) {
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile(storage));

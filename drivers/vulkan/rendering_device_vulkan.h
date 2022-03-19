@@ -1203,7 +1203,7 @@ public:
 	/**** Limits ****/
 	/****************/
 
-	virtual int limit_get(Limit p_limit);
+	virtual uint64_t limit_get(Limit p_limit);
 
 	virtual void prepare_screen_for_drawing();
 	void initialize(VulkanContext *p_context, bool p_local_device = false);

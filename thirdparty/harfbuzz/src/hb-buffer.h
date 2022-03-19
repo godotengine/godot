@@ -117,7 +117,7 @@ typedef struct hb_glyph_info_t {
  * 				   from there, and repeat.
  * 				   At the start of next line a similar algorithm can
  * 				   be implemented. That is: 1. Iterate forward from
- * 				   the line-break position untill the first cluster
+ * 				   the line-break position until the first cluster
  * 				   start position that is NOT unsafe-to-concat, 2.
  * 				   shape the segment from beginning of the line to
  * 				   that position, 3. check whether the resulting

@@ -293,7 +293,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				RendererCanvasRender::Light *cl = F->get();
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
-					Size2 tsize = RSG::storage->texture_size_with_proxy(cl->texture);
+					Size2 tsize = RSG::texture_storage->texture_size_with_proxy(cl->texture);
 					tsize *= cl->scale;
 
 					Vector2 offset = tsize / 2.0;

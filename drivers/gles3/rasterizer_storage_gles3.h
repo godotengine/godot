@@ -40,6 +40,10 @@
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
+#include "storage/canvas_texture_storage.h"
+#include "storage/config.h"
+#include "storage/render_target_storage.h"
+#include "storage/texture_storage.h"
 
 #include "shaders/copy.glsl.gen.h"
 
@@ -47,66 +51,13 @@ class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
 
 class RasterizerStorageGLES3 : public RendererStorage {
-	friend class RasterizerGLES3;
-
-	Thread::ID _main_thread_id = 0;
-	bool _is_main_thread();
-
 public:
 	RasterizerCanvasGLES3 *canvas;
 	RasterizerSceneGLES3 *scene;
 
 	static GLuint system_fbo;
 
-	struct Config {
-		bool shrink_textures_x2;
-		bool use_fast_texture_filter;
-		bool use_skeleton_software;
-
-		int max_vertex_texture_image_units;
-		int max_texture_image_units;
-		int max_texture_size;
-
-		// TODO implement wireframe in OpenGL
-		// bool generate_wireframes;
-
-		Set<String> extensions;
-
-		bool float_texture_supported;
-		bool s3tc_supported;
-		bool latc_supported;
-		bool rgtc_supported;
-		bool bptc_supported;
-		bool etc_supported;
-		bool etc2_supported;
-		bool srgb_decode_supported;
-
-		bool keep_original_textures;
-
-		bool force_vertex_shading;
-
-		bool use_rgba_2d_shadows;
-		bool use_rgba_3d_shadows;
-
-		bool support_32_bits_indices;
-		bool support_write_depth;
-		bool support_half_float_vertices;
-		bool support_npot_repeat_mipmap;
-		bool support_depth_texture;
-		bool support_depth_cubemaps;
-
-		bool support_shadow_cubemaps;
-
-		bool render_to_mipmap_supported;
-
-		GLuint depth_internalformat;
-		GLuint depth_type;
-		GLuint depth_buffer_internalformat;
-
-		// in some cases the legacy render didn't orphan. We will mark these
-		// so the user can switch orphaning off for them.
-		bool should_orphan;
-	} config;
+	GLES3::Config *config;
 
 	struct Resources {
 		GLuint white_tex;
@@ -180,334 +131,7 @@ public:
 	//////////////////////////////////API////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	bool can_create_resources_async() const override;
-
-	// TEXTURE API
-
-	enum OpenGLTextureFlags {
-		TEXTURE_FLAG_MIPMAPS = 1, /// Enable automatic mipmap generation - when available
-		TEXTURE_FLAG_REPEAT = 2, /// Repeat texture (Tiling), otherwise Clamping
-		TEXTURE_FLAG_FILTER = 4, /// Create texture with linear (or available) filter
-		TEXTURE_FLAG_ANISOTROPIC_FILTER = 8,
-		TEXTURE_FLAG_CONVERT_TO_LINEAR = 16,
-		TEXTURE_FLAG_MIRRORED_REPEAT = 32, /// Repeat texture, with alternate sections mirrored
-		TEXTURE_FLAG_USED_FOR_STREAMING = 2048,
-		TEXTURE_FLAGS_DEFAULT = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_FILTER
-	};
-
-	/* CANVAS TEXTURE API (2D) */
-
-	struct CanvasTexture {
-		RID diffuse;
-		RID normal_map;
-		RID specular;
-		Color specular_color = Color(1, 1, 1, 1);
-		float shininess = 1.0;
-
-		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-
-		Size2i size_cache = Size2i(1, 1);
-		bool use_normal_cache = false;
-		bool use_specular_cache = false;
-		bool cleared_cache = true;
-	};
-
-	RID_Owner<CanvasTexture, true> canvas_texture_owner;
-
-	struct RenderTarget;
-
-	struct Texture {
-		RID self;
-
-		Texture *proxy;
-		Set<Texture *> proxy_owners;
-
-		String path;
-		uint32_t flags;
-		int width, height, depth;
-		int alloc_width, alloc_height;
-		Image::Format format;
-		RenderingDevice::TextureType type;
-
-		GLenum target;
-		GLenum gl_format_cache;
-		GLenum gl_internal_format_cache;
-		GLenum gl_type_cache;
-
-		int data_size;
-		int total_data_size;
-		bool ignore_mipmaps;
-
-		bool compressed;
-
-		bool srgb;
-
-		int mipmaps;
-
-		bool resize_to_po2;
-
-		bool active;
-		GLenum tex_id;
-
-		uint16_t stored_cube_sides;
-
-		RenderTarget *render_target;
-
-		Vector<Ref<Image>> images;
-
-		bool redraw_if_visible;
-
-		RS::TextureDetectCallback detect_3d;
-		void *detect_3d_ud;
-
-		RS::TextureDetectCallback detect_srgb;
-		void *detect_srgb_ud;
-
-		RS::TextureDetectCallback detect_normal;
-		void *detect_normal_ud;
-
-		CanvasTexture *canvas_texture = nullptr;
-
-		// some silly opengl shenanigans where
-		// texture coords start from bottom left, means we need to draw render target textures upside down
-		// to be compatible with vulkan etc.
-		bool is_upside_down() const {
-			if (proxy) {
-				return proxy->is_upside_down();
-			}
-
-			return render_target != nullptr;
-		}
-
-		Texture() {
-			create();
-		}
-
-		_ALWAYS_INLINE_ Texture *get_ptr() {
-			if (proxy) {
-				return proxy; //->get_ptr(); only one level of indirection, else not inlining possible.
-			} else {
-				return this;
-			}
-		}
-
-		~Texture() {
-			destroy();
-
-			if (tex_id != 0) {
-				glDeleteTextures(1, &tex_id);
-			}
-		}
-
-		void copy_from(const Texture &o) {
-			proxy = o.proxy;
-			flags = o.flags;
-			width = o.width;
-			height = o.height;
-			alloc_width = o.alloc_width;
-			alloc_height = o.alloc_height;
-			format = o.format;
-			type = o.type;
-			target = o.target;
-			data_size = o.data_size;
-			total_data_size = o.total_data_size;
-			ignore_mipmaps = o.ignore_mipmaps;
-			compressed = o.compressed;
-			mipmaps = o.mipmaps;
-			resize_to_po2 = o.resize_to_po2;
-			active = o.active;
-			tex_id = o.tex_id;
-			stored_cube_sides = o.stored_cube_sides;
-			render_target = o.render_target;
-			redraw_if_visible = o.redraw_if_visible;
-			detect_3d = o.detect_3d;
-			detect_3d_ud = o.detect_3d_ud;
-			detect_srgb = o.detect_srgb;
-			detect_srgb_ud = o.detect_srgb_ud;
-			detect_normal = o.detect_normal;
-			detect_normal_ud = o.detect_normal_ud;
-
-			images.clear();
-		}
-
-		void create() {
-			proxy = nullptr;
-			flags = 0;
-			width = 0;
-			height = 0;
-			alloc_width = 0;
-			alloc_height = 0;
-			format = Image::FORMAT_L8;
-			type = RenderingDevice::TEXTURE_TYPE_2D;
-			target = 0;
-			data_size = 0;
-			total_data_size = 0;
-			ignore_mipmaps = false;
-			compressed = false;
-			mipmaps = 0;
-			resize_to_po2 = false;
-			active = false;
-			tex_id = 0;
-			stored_cube_sides = 0;
-			render_target = nullptr;
-			redraw_if_visible = false;
-			detect_3d = nullptr;
-			detect_3d_ud = nullptr;
-			detect_srgb = nullptr;
-			detect_srgb_ud = nullptr;
-			detect_normal = nullptr;
-			detect_normal_ud = nullptr;
-		}
-		void destroy() {
-			images.clear();
-
-			for (Set<Texture *>::Element *E = proxy_owners.front(); E; E = E->next()) {
-				E->get()->proxy = nullptr;
-			}
-
-			if (proxy) {
-				proxy->proxy_owners.erase(this);
-			}
-		}
-
-		// texture state
-		void GLSetFilter(GLenum p_target, RS::CanvasItemTextureFilter p_filter) {
-			if (p_filter == state_filter) {
-				return;
-			}
-			state_filter = p_filter;
-			GLint pmin = GL_LINEAR; // param min
-			GLint pmag = GL_LINEAR; // param mag
-			switch (state_filter) {
-				default: {
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
-					pmin = GL_LINEAR_MIPMAP_LINEAR;
-					pmag = GL_LINEAR;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
-					pmin = GL_NEAREST;
-					pmag = GL_NEAREST;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
-					pmin = GL_NEAREST_MIPMAP_NEAREST;
-					pmag = GL_NEAREST;
-				} break;
-			}
-			glTexParameteri(p_target, GL_TEXTURE_MIN_FILTER, pmin);
-			glTexParameteri(p_target, GL_TEXTURE_MAG_FILTER, pmag);
-		}
-		void GLSetRepeat(GLenum p_target, RS::CanvasItemTextureRepeat p_repeat) {
-			if (p_repeat == state_repeat) {
-				return;
-			}
-			state_repeat = p_repeat;
-			GLint prep = GL_CLAMP_TO_EDGE; // parameter repeat
-			switch (state_repeat) {
-				default: {
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
-					prep = GL_REPEAT;
-				} break;
-				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
-					prep = GL_MIRRORED_REPEAT;
-				} break;
-			}
-			glTexParameteri(p_target, GL_TEXTURE_WRAP_S, prep);
-			glTexParameteri(p_target, GL_TEXTURE_WRAP_T, prep);
-		}
-
-	private:
-		RS::CanvasItemTextureFilter state_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-		RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
-	};
-
-	mutable RID_PtrOwner<Texture> texture_owner;
-
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
-
-	void _texture_set_state_from_flags(Texture *p_tex);
-
-	// new
-	RID texture_allocate() override;
-	void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override;
-	void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override;
-	void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
-	void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
-
-	void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
-	void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override {}
-	void texture_proxy_update(RID p_proxy, RID p_base) override {}
-
-	void texture_2d_placeholder_initialize(RID p_texture) override;
-	void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) override;
-	void texture_3d_placeholder_initialize(RID p_texture) override;
-
-	Ref<Image> texture_2d_get(RID p_texture) const override;
-	Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); }
-	Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); }
-
-	void texture_replace(RID p_texture, RID p_by_texture) override;
-	//void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
-
-	void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-	void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-
-	// old
-	uint32_t texture_get_width(RID p_texture) const;
-	uint32_t texture_get_height(RID p_texture) const;
-
-private:
-	RID texture_create();
-
-	//void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, RenderingDevice::TextureType p_type, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT);
-	void _texture_allocate_internal(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, RenderingDevice::TextureType p_type, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT);
-
-	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
-	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
-	//Ref<Image> texture_get_data(RID p_texture, int p_layer = 0) const;
-	void texture_set_flags(RID p_texture, uint32_t p_flags);
-	uint32_t texture_get_flags(RID p_texture) const;
-	Image::Format texture_get_format(RID p_texture) const;
-	RenderingDevice::TextureType texture_get_type(RID p_texture) const;
-	uint32_t texture_get_texid(RID p_texture) const;
-	uint32_t texture_get_depth(RID p_texture) const;
-	void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
-
-	void texture_bind(RID p_texture, uint32_t p_texture_no);
-
-	void texture_set_path(RID p_texture, const String &p_path) override;
-	String texture_get_path(RID p_texture) const override;
-
-	void texture_set_shrink_all_x2_on_set_data(bool p_enable);
-
-	void texture_debug_usage(List<RS::TextureInfo> *r_info) override;
-
-	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
-
-	void textures_keep_original(bool p_enable);
-
-	void texture_set_proxy(RID p_texture, RID p_proxy);
-	Size2 texture_size_with_proxy(RID p_texture) override;
-
-	void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
-	void texture_set_detect_srgb_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata);
-	void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
-	void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override {}
-
-	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override;
-
 public:
-	RID canvas_texture_allocate() override;
-	void canvas_texture_initialize(RID p_rid) override;
-
-	void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override;
-	void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) override;
-
-	void canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) override;
-	void canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) override;
-
 	/* SKY API */
 	// not sure if used in godot 4?
 	struct Sky {
@@ -578,7 +202,7 @@ public:
 			bool uses_vertex;
 
 			// all these should disable item joining if used in a custom shader
-			bool uses_world_matrix;
+			bool uses_model_matrix;
 			bool uses_extra_matrix;
 			bool uses_projection_matrix;
 			bool uses_instance_custom;
@@ -911,8 +535,8 @@ public:
 	void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) override;
 	void light_directional_set_blend_splits(RID p_light, bool p_enable) override;
 	bool light_directional_get_blend_splits(RID p_light) const override;
-	void light_directional_set_sky_only(RID p_light, bool p_sky_only) override;
-	bool light_directional_is_sky_only(RID p_light) const override;
+	void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) override;
+	RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const override;
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override;
 	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override;
@@ -970,6 +594,9 @@ public:
 	void decal_set_normal_fade(RID p_decal, float p_fade) override;
 
 	AABB decal_get_aabb(RID p_decal) const override;
+
+	void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 
 	/* VOXEL GI API */
 
@@ -1151,85 +778,10 @@ public:
 
 	// RENDER TARGET
 
-	struct RenderTarget {
-		RID self;
-		GLuint fbo = 0;
-		GLuint color = 0;
-		GLuint depth = 0;
+	mutable RID_PtrOwner<GLES3::RenderTarget> render_target_owner;
 
-		GLuint multisample_fbo = 0;
-		GLuint multisample_color = 0;
-		GLuint multisample_depth = 0;
-		bool multisample_active = false;
-
-		struct Effect {
-			GLuint fbo = 0;
-			int width = 0;
-			int height = 0;
-
-			GLuint color = 0;
-		};
-
-		Effect copy_screen_effect;
-
-		struct MipMaps {
-			struct Size {
-				GLuint fbo = 0;
-				GLuint color = 0;
-				int width = 0;
-				int height = 0;
-			};
-
-			Vector<Size> sizes;
-			GLuint color = 0;
-			int levels = 0;
-		};
-
-		MipMaps mip_maps[2];
-
-		struct External {
-			GLuint fbo = 0;
-			GLuint color = 0;
-			GLuint depth = 0;
-			RID texture;
-		} external;
-
-		int x = 0;
-		int y = 0;
-		int width = 0;
-		int height = 0;
-
-		bool flags[RENDER_TARGET_FLAG_MAX] = {};
-
-		// instead of allocating sized render targets immediately,
-		// defer this for faster startup
-		bool allocate_is_dirty = false;
-		bool used_in_frame = false;
-		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
-
-		bool use_fxaa = false;
-		bool use_debanding = false;
-
-		RID texture;
-
-		bool used_dof_blur_near = false;
-		bool mip_maps_allocated = false;
-
-		Color clear_color = Color(1, 1, 1, 1);
-		bool clear_requested = false;
-
-		RenderTarget() {
-			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
-				flags[i] = false;
-			}
-			external.fbo = 0;
-		}
-	};
-
-	mutable RID_PtrOwner<RenderTarget> render_target_owner;
-
-	void _render_target_clear(RenderTarget *rt);
-	void _render_target_allocate(RenderTarget *rt);
+	void _render_target_clear(GLES3::RenderTarget *rt);
+	void _render_target_allocate(GLES3::RenderTarget *rt);
 	void _set_current_render_target(RID p_render_target);
 
 	RID render_target_create() override;
@@ -1262,7 +814,7 @@ public:
 	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
 
 	// access from canvas
-	//	RenderTarget * render_target_get(RID p_render_target);
+	//	GLES3::RenderTarget * render_target_get(RID p_render_target);
 
 	/* CANVAS SHADOW */
 
@@ -1301,7 +853,7 @@ public:
 	bool free(RID p_rid) override;
 
 	struct Frame {
-		RenderTarget *current_rt;
+		GLES3::RenderTarget *current_rt;
 
 		// these 2 may have been superseded by the equivalents in the render target.
 		// these may be able to be removed.
@@ -1408,7 +960,7 @@ inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_bu
 inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
-	if (!p_optional_orphan || (config.should_orphan)) {
+	if (!p_optional_orphan || (config->should_orphan)) {
 		glBufferData(p_target, p_buffer_size, nullptr, p_usage);
 #ifdef RASTERIZER_EXTRA_CHECKS
 		// fill with garbage off the end of the array

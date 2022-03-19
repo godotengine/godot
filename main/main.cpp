@@ -70,6 +70,7 @@
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
 #include "servers/xr_server.h"
 
@@ -399,6 +400,12 @@ Error Main::test_setup() {
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
+	if (tsman) {
+		Ref<TextServerDummy> ts;
+		ts.instantiate();
+		tsman->add_interface(ts);
+	}
+
 	register_core_extensions();
 
 	// From `Main::setup2()`.
@@ -435,7 +442,26 @@ Error Main::test_setup() {
 	initialize_theme();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
-	TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(0));
+
+	/* Use one with the most features available. */
+	int max_features = 0;
+	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		uint32_t features = TextServerManager::get_singleton()->get_interface(i)->get_features();
+		int feature_number = 0;
+		while (features) {
+			feature_number += features & 1;
+			features >>= 1;
+		}
+		if (feature_number >= max_features) {
+			max_features = feature_number;
+			text_driver_idx = i;
+		}
+	}
+	if (text_driver_idx >= 0) {
+		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
+	} else {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
+	}
 
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
@@ -1532,6 +1558,12 @@ error:
 Error Main::setup2(Thread::ID p_main_tid_override) {
 	tsman = memnew(TextServerManager);
 
+	if (tsman) {
+		Ref<TextServerDummy> ts;
+		ts.instantiate();
+		tsman->add_interface(ts);
+	}
+
 	preregister_module_types();
 	preregister_server_types();
 
@@ -1867,8 +1899,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (text_driver_idx >= 0) {
 		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
 	} else {
-		ERR_PRINT("TextServer: Unable to create TextServer interface.");
-		return ERR_CANT_CREATE;
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
 	MAIN_PRINT("Main: Load Scene Types");
@@ -2399,10 +2430,10 @@ bool Main::start() {
 							"display/window/stretch/aspect",
 							PROPERTY_HINT_ENUM,
 							"ignore,keep,keep_width,keep_height,expand"));
-			GLOBAL_DEF_BASIC("display/window/stretch/shrink", 1.0);
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink",
+			GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
 					PropertyInfo(Variant::FLOAT,
-							"display/window/stretch/shrink",
+							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
 							"1.0,8.0,0.1"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));

@@ -674,7 +674,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
 	add_child(tabs);
 

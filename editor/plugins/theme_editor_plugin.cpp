@@ -1887,7 +1887,6 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	theme_type_editor = p_theme_type_editor;
 
 	tc = memnew(TabContainer);
-	tc->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	add_child(tc);
 
 	// Edit Items tab.
@@ -2046,6 +2045,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
+	import_tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->add_child(import_tc);
 	tc->set_tab_title(1, TTR("Import Items"));
 
@@ -3393,6 +3393,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	add_default_items_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_add_default_type_items));
 
 	data_type_tabs = memnew(TabContainer);
+	data_type_tabs->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	main_vb->add_child(data_type_tabs);
 	data_type_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	data_type_tabs->set_use_hidden_tabs_for_min_size(true);
@@ -3640,7 +3641,6 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs_vb->add_child(preview_tabs_content);
 
 	preview_tabs = memnew(TabBar);
-	preview_tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));

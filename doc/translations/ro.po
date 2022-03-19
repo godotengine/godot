@@ -15867,6 +15867,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
+msgid "Returns [code]true[/code] if drag operation is successful."
+msgstr ""
+
+#: doc/classes/Control.xml
 msgid ""
 "Invalidates the size cache in this node and in parent nodes up to toplevel. "
 "Intended to be used with [method get_minimum_size] when the return value is "
@@ -16287,8 +16291,9 @@ msgstr ""
 #: doc/classes/Control.xml
 msgid ""
 "By default, the node's pivot is its top-left corner. When you change its "
-"[member rect_scale], it will scale around this pivot. Set this property to "
-"[member rect_size] / 2 to center the pivot in the node's rectangle."
+"[member rect_rotation] or [member rect_scale], it will rotate or scale "
+"around this pivot. Set this property to [member rect_size] / 2 to pivot "
+"around the Control's center."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -18632,10 +18637,10 @@ msgid ""
 "further calculations."
 msgstr ""
 
-#: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
+#: doc/classes/Curve2D.xml
 msgid ""
-"Adds a point to a curve at [code]position[/code], with control points "
-"[code]in[/code] and [code]out[/code].\n"
+"Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s "
+"position, with control points [code]in[/code] and [code]out[/code].\n"
 "If [code]at_position[/code] is given, the point is inserted before the point "
 "number [code]at_position[/code], moving that point (and every point after) "
 "after the inserted point. If [code]at_position[/code] is not given, or is an "
@@ -18783,6 +18788,18 @@ msgid ""
 "shape to a [Path], but can be manually sampled for other purposes.\n"
 "It keeps a cache of precalculated points along the curve, to speed up "
 "further calculations."
+msgstr ""
+
+#: doc/classes/Curve3D.xml
+msgid ""
+"Adds a point to a curve at [code]position[/code] relative to the [Curve3D]'s "
+"position, with control points [code]in[/code] and [code]out[/code].\n"
+"If [code]at_position[/code] is given, the point is inserted before the point "
+"number [code]at_position[/code], moving that point (and every point after) "
+"after the inserted point. If [code]at_position[/code] is not given, or is an "
+"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
+"get_point_count][/code]), the point will be appended at the end of the point "
+"list."
 msgstr ""
 
 #: doc/classes/Curve3D.xml
@@ -23269,10 +23286,13 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Keeps on screen every pixel drawn in the background. This is the fastest "
-"background mode, but it can only be safely used in fully-interior scenes (no "
-"visible sky or sky reflections). If enabled in a scene where the background "
-"is visible, \"ghost trail\" artifacts will be visible when moving the camera."
+"Keeps on screen every pixel drawn in the background. Only select this mode "
+"if you really need to keep the old data. On modern GPUs it will generally "
+"not be faster than clearing the background, and can be significantly slower, "
+"particularly on mobile.\n"
+"It can only be safely used in fully-interior scenes (no visible sky or sky "
+"reflections). If enabled in a scene where the background is visible, \"ghost "
+"trail\" artifacts will be visible when moving the camera."
 msgstr ""
 
 #: doc/classes/Environment.xml
@@ -26723,14 +26743,14 @@ msgstr ""
 
 #: doc/classes/HeightMapShape.xml
 msgid ""
-"Depth of the height map data. Changing this will resize the [member "
-"map_data]."
+"Number of vertices in the depth of the height map. Changing this will resize "
+"the [member map_data]."
 msgstr ""
 
 #: doc/classes/HeightMapShape.xml
 msgid ""
-"Width of the height map data. Changing this will resize the [member "
-"map_data]."
+"Number of vertices in the width of the height map. Changing this will resize "
+"the [member map_data]."
 msgstr ""
 
 #: doc/classes/HFlowContainer.xml
@@ -32569,6 +32589,13 @@ msgstr ""
 msgid "If [code]true[/code], the context menu will appear when right-clicked."
 msgstr ""
 
+#: doc/classes/LineEdit.xml doc/classes/RichTextLabel.xml
+#: doc/classes/TextEdit.xml
+msgid ""
+"If [code]true[/code], the selected text will be deselected when focus is "
+"lost."
+msgstr ""
+
 #: doc/classes/LineEdit.xml
 msgid ""
 "If [code]false[/code], existing text cannot be modified and new text cannot "
@@ -32602,6 +32629,13 @@ msgid ""
 "# `text` becomes \"Hello good\".\n"
 "# `text_change_rejected` is emitted with \"bye\" as parameter.\n"
 "[/codeblock]"
+msgstr ""
+
+#: doc/classes/LineEdit.xml doc/classes/TextEdit.xml
+msgid ""
+"If [code]false[/code], using middle mouse button to paste clipboard will be "
+"disabled.\n"
+"[b]Note:[/b] This method is only implemented on Linux."
 msgstr ""
 
 #: doc/classes/LineEdit.xml
@@ -38463,6 +38497,10 @@ msgid "Returns the text of the item at index [code]idx[/code]."
 msgstr ""
 
 #: doc/classes/OptionButton.xml
+msgid "Returns the tooltip of the item at index [code]idx[/code]."
+msgstr ""
+
+#: doc/classes/OptionButton.xml
 msgid ""
 "Returns the ID of the selected item, or [code]0[/code] if no item is "
 "selected."
@@ -38513,6 +38551,10 @@ msgstr ""
 
 #: doc/classes/OptionButton.xml doc/classes/PopupMenu.xml
 msgid "Sets the text of the item at index [code]idx[/code]."
+msgstr ""
+
+#: doc/classes/OptionButton.xml
+msgid "Sets the tooltip of the item at index [code]idx[/code]."
 msgstr ""
 
 #: doc/classes/OptionButton.xml
@@ -39068,6 +39110,23 @@ msgid ""
 "Returns the position of the specified screen by index. If [code]screen[/"
 "code] is [code]-1[/code] (the default value), the current screen will be "
 "used."
+msgstr ""
+
+#: doc/classes/OS.xml
+msgid ""
+"Returns the current refresh rate of the specified screen. If [code]screen[/"
+"code] is [code]-1[/code] (the default value), the current screen will be "
+"used.\n"
+"[b]Note:[/b] Returns [code]-1.0[/code] if Godot fails to find the refresh "
+"rate for the specified screen. On HTML5, [method get_screen_refresh_rate] "
+"will always return [code]-1.0[/code] as there is no way to retrieve the "
+"refresh rate on that platform.\n"
+"To fallback to a default refresh rate if the method fails, try:\n"
+"[codeblock]\n"
+"var refresh_rate = OS.get_screen_refresh_rate()\n"
+"if refresh_rate < 0:\n"
+"    refresh_rate = 60.0\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -45428,6 +45487,12 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"If [code]true[/code], enables warnings when the type of the default value "
+"set to an exported variable is different than the specified export type."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "If [code]true[/code], enables warnings when a function is declared with the "
 "same name as a constant."
 msgstr ""
@@ -45847,6 +45912,19 @@ msgstr ""
 msgid ""
 "Default value for [member ScrollContainer.scroll_deadzone], which will be "
 "used for all [ScrollContainer]s unless overridden."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"If enabled, the moment [member Viewport.gui_disable_input] is set to "
+"[code]false[/code] to disable GUI input in a viewport, current mouse over "
+"and mouse focus will be dropped.\n"
+"That behavior helps to keep a robust GUI state, with no surprises when input "
+"is resumed regardless what has happened in the meantime.\n"
+"If disabled, the legacy behavior is used, which consists in just not doing "
+"anything besides the GUI input disable itself.\n"
+"[b]Note:[/b] This is set to [code]true[/code] by default for new projects "
+"and is the recommended setting."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -46820,6 +46898,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
+msgid ""
+"If [code]true[/code], smooths out collision with trimesh shapes "
+"([ConcavePolygonShape]) by telling the Bullet physics engine to generate "
+"internal edge information for every trimesh shape created.\n"
+"[b]Note:[/b] Only effective if [member physics/3d/physics_engine] is set to "
+"[code]DEFAULT[/code] or [code]Bullet[/code], [i]not[/i] [code]GodotPhysics[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
 msgstr ""
 
@@ -47229,6 +47317,14 @@ msgid ""
 "spatial (3D) and particle materials/shaders. CanvasItem (2D) shaders will "
 "not use asynchronous compilation even if this setting is set to "
 "[code]Asynchronous[/code] or [code]Asynchronous + Cache[/code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"An override for [code]rendering/gles3/shaders/shader_compilation_mode[/"
+"code], so asynchronous compilation can be disabled for mobile.\n"
+"You may want to do that since mobile GPUs generally won't support "
+"ubershaders due to their complexity."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -48165,13 +48261,13 @@ msgstr ""
 
 #: doc/classes/Range.xml
 msgid ""
-"Binds two ranges together along with any ranges previously grouped with "
+"Binds two [Range]s together along with any ranges previously grouped with "
 "either of them. When any of range's member variables change, it will share "
 "the new value with all other ranges in its group."
 msgstr ""
 
 #: doc/classes/Range.xml
-msgid "Stops range from sharing its member variables with any other."
+msgid "Stops the [Range] from sharing its member variables with any other."
 msgstr ""
 
 #: doc/classes/Range.xml
@@ -48238,7 +48334,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Range.xml
-msgid "Emitted when [member value] changes."
+msgid ""
+"Emitted when [member value] changes. When used on a [Slider], this is called "
+"continuously while dragging (potentially every frame). If you are performing "
+"an expensive operation in a function connected to [signal value_changed], "
+"consider using a [i]debouncing[/i] [Timer] to call the function less often.\n"
+"[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal "
+"value_changed] is also emitted when [code]value[/code] is set directly via "
+"code."
 msgstr ""
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
@@ -55538,11 +55641,11 @@ msgid ""
 "Returns [code]true[/code] if this string contains a valid float. This is "
 "inclusive of integers, and also supports exponents:\n"
 "[codeblock]\n"
-"print(\"1.7\".is_valid_float()) # Prints \"true\"\n"
-"print(\"24\".is_valid_float()) # Prints \"true\"\n"
-"print(\"7e3\".is_valid_float()) # Prints \"true\"\n"
-"print(\"24\".is_valid_float()) # Prints \"true\"\n"
-"print(\"Hello\".is_valid_float()) # Prints \"false\"\n"
+"print(\"1.7\".is_valid_float()) # Prints \"True\"\n"
+"print(\"24\".is_valid_float()) # Prints \"True\"\n"
+"print(\"7e3\".is_valid_float()) # Prints \"True\"\n"
+"print(\"24\".is_valid_float()) # Prints \"True\"\n"
+"print(\"Hello\".is_valid_float()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -55568,9 +55671,9 @@ msgid ""
 "identifier may contain only letters, digits and underscores ([code]_[/code]) "
 "and the first character may not be a digit.\n"
 "[codeblock]\n"
-"print(\"good_ident_1\".is_valid_identifier()) # Prints \"true\"\n"
-"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"false\"\n"
-"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"false\"\n"
+"print(\"good_ident_1\".is_valid_identifier()) # Prints \"True\"\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"False\"\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -55578,11 +55681,11 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if this string contains a valid integer.\n"
 "[codeblock]\n"
-"print(\"7\".is_valid_int()) # Prints \"true\"\n"
-"print(\"14.6\".is_valid_int()) # Prints \"false\"\n"
-"print(\"L\".is_valid_int()) # Prints \"false\"\n"
-"print(\"+3\".is_valid_int()) # Prints \"true\"\n"
-"print(\"-12\".is_valid_int()) # Prints \"true\"\n"
+"print(\"7\".is_valid_int()) # Prints \"True\"\n"
+"print(\"14.6\".is_valid_int()) # Prints \"False\"\n"
+"print(\"L\".is_valid_int()) # Prints \"False\"\n"
+"print(\"+3\".is_valid_int()) # Prints \"True\"\n"
+"print(\"-12\".is_valid_int()) # Prints \"True\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -57366,6 +57469,12 @@ msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid "Returns if the given line is wrapped."
+msgstr ""
+
+#: doc/classes/TextEdit.xml
+msgid ""
+"Returns whether the mouse is over selection. If [code]edges[/code] is "
+"[code]true[/code], the edges are considered part of the selection."
 msgstr ""
 
 #: doc/classes/TextEdit.xml
@@ -59580,6 +59689,13 @@ msgid ""
 "MM-DDTHH:MM:SS).\n"
 "If [code]use_space[/code] is true, use a space instead of the letter T in "
 "the middle."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given timezone offset in minutes to a timezone offset string. "
+"For example, -480 returns \"-08:00\", 345 returns \"+05:45\", and 0 returns "
+"\"+00:00\"."
 msgstr ""
 
 #: doc/classes/Time.xml
@@ -63235,6 +63351,10 @@ msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid "Returns [code]true[/code] if there are visible modals on-screen."
+msgstr ""
+
+#: doc/classes/Viewport.xml
+msgid "Returns [code]true[/code] if the drag operation is successful."
 msgstr ""
 
 #: doc/classes/Viewport.xml

@@ -33,6 +33,7 @@
 #include "core/math/math_defs.h"
 #include "renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -621,6 +622,8 @@ void RendererSceneSkyRD::Sky::free(RendererStorageRD *p_storage) {
 }
 
 RID RendererSceneSkyRD::Sky::get_textures(RendererStorageRD *p_storage, SkyTextureSetVersion p_version, RID p_default_shader_rd) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	if (texture_uniform_sets[p_version].is_valid() && RD::get_singleton()->uniform_set_is_valid(texture_uniform_sets[p_version])) {
 		return texture_uniform_sets[p_version];
 	}
@@ -632,7 +635,7 @@ RID RendererSceneSkyRD::Sky::get_textures(RendererStorageRD *p_storage, SkyTextu
 		if (radiance.is_valid() && p_version <= SKY_TEXTURE_SET_QUARTER_RES) {
 			u.append_id(radiance);
 		} else {
-			u.append_id(p_storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 		}
 		uniforms.push_back(u);
 	}
@@ -648,9 +651,9 @@ RID RendererSceneSkyRD::Sky::get_textures(RendererStorageRD *p_storage, SkyTextu
 			}
 		} else {
 			if (p_version < SKY_TEXTURE_SET_CUBEMAP) {
-				u.append_id(p_storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
 			} else {
-				u.append_id(p_storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			}
 		}
 		uniforms.push_back(u);
@@ -667,9 +670,9 @@ RID RendererSceneSkyRD::Sky::get_textures(RendererStorageRD *p_storage, SkyTextu
 			}
 		} else {
 			if (p_version < SKY_TEXTURE_SET_CUBEMAP) {
-				u.append_id(p_storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
 			} else {
-				u.append_id(p_storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			}
 		}
 		uniforms.push_back(u);
@@ -793,6 +796,7 @@ RendererSceneSkyRD::RendererSceneSkyRD() {
 }
 
 void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	storage = p_storage;
 
 	{
@@ -972,7 +976,7 @@ void sky() {
 			RD::Uniform u;
 			u.binding = 0;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			RID vfog = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+			RID vfog = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 			u.append_id(vfog);
 			uniforms.push_back(u);
 		}
@@ -1006,21 +1010,21 @@ void sky() {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 0;
-			u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
-			u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
-			u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 
@@ -1163,7 +1167,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 				ERR_CONTINUE(base.is_null());
 
 				RS::LightType type = storage->light_get_type(base);
-				if (type == RS::LIGHT_DIRECTIONAL) {
+				if (type == RS::LIGHT_DIRECTIONAL && storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
 					Transform3D light_transform = li->transform;
 					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
