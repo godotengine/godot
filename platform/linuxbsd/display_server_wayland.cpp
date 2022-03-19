@@ -213,6 +213,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 	WaylandGlobals &globals = wls->globals;
 
+	if (strcmp(interface, wl_shm_interface.name) == 0) {
+		globals.wl_shm = (struct wl_shm *)wl_registry_bind(wl_registry, name, &wl_shm_interface, 1);
+		globals.wl_shm_name = name;
+		return;
+	}
+
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		globals.wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4);
 		globals.wl_compositor_name = name;
@@ -399,6 +405,14 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->pointer_state.data_buffer;
+
+	if (!wls->pointer_state.cursor_surface) {
+		wls->pointer_state.cursor_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
+	}
+
+	wl_pointer_set_cursor(wls->pointer_state.wl_pointer, serial, wls->pointer_state.cursor_surface, 0, 0);
+
+	wl_surface_commit(wls->pointer_state.cursor_surface);
 
 	pd.focused_window_id = INVALID_WINDOW_ID;
 
@@ -845,15 +859,31 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
+	MutexLock mutex_lock(wls.mutex);
+
 	struct wl_pointer *wp = wls.pointer_state.wl_pointer;
 	struct zwp_pointer_constraints_v1 *pc = wls.globals.wp_pointer_constraints;
 
 	struct zwp_locked_pointer_v1 *&lp = wls.pointer_state.wp_locked_pointer;
 	struct zwp_confined_pointer_v1 *&cp = wls.pointer_state.wp_confined_pointer;
 
-	// TODO: Implement cursor visibility and improve this block.
-	// This block has been built only with pointer constraining in mind.
+	// All modes but `MOUSE_MODE_VISIBLE` and `MOUSE_MODE_CONFINED` are hidden.
+	if (p_mode != MOUSE_MODE_VISIBLE && p_mode != MOUSE_MODE_CONFINED) {
+		// Reset the cursor's hotspot.
+		wl_pointer_set_cursor(wls.pointer_state.wl_pointer, 0, wls.pointer_state.cursor_surface, 0, 0);
+
+		// Unmap the cursor.
+		wl_surface_attach(wls.pointer_state.cursor_surface, nullptr, 0, 0);
+
+		wl_surface_commit(wls.pointer_state.cursor_surface);
+	} else {
+		// Unhide the cursor by resetting its shape.
+		cursor_set_shape(wls.pointer_state.cursor_shape);
+	}
+
+	// Constrain/Free pointer movement depending on its mode.
 	switch (p_mode) {
+		// Unconstrained pointer.
 		case MOUSE_MODE_VISIBLE:
 		case MOUSE_MODE_HIDDEN: {
 			if (lp) {
@@ -867,6 +897,7 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 			}
 		} break;
 
+		// Locked pointer.
 		case MOUSE_MODE_CAPTURED: {
 			if (!lp) {
 				WindowData &wd = wls.windows[MAIN_WINDOW_ID];
@@ -880,16 +911,13 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 			}
 		} break;
 
+		// Confined pointer.
 		case MOUSE_MODE_CONFINED:
 		case MOUSE_MODE_CONFINED_HIDDEN: {
 			if (!cp) {
 				WindowData &wd = wls.windows[MAIN_WINDOW_ID];
 				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 			}
-		}
-
-		default: {
-			// TODO: Implement other modes.
 		}
 	}
 
@@ -1290,14 +1318,41 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 }
 
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
-	// TODO
-	print_verbose("wayland stub cursor_set_shape");
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
+	MutexLock mutex_lock(wls.mutex);
+
+	PointerState &ps = wls.pointer_state;
+
+	// This should've been already been created by `wl_pointer_on_enter`.
+	ERR_FAIL_NULL(ps.cursor_surface);
+
+	struct wl_cursor_image *cursor_image = ps.cursor_images[p_shape];
+
+	// Other than returning if we don't have an image or if the shape is the same,
+	// we also return if the mode isn't supposed to be invisible, as otherwise
+	// setting a cursor would make it visible again.
+	if (p_shape == ps.cursor_shape || !cursor_image || (ps.mode != MOUSE_MODE_VISIBLE && ps.mode != MOUSE_MODE_CONFINED)) {
+		return;
+	}
+
+	// Update the cursor's hotspot.
+	wl_pointer_set_cursor(ps.wl_pointer, 0, ps.cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+
+	// Attach the new cursor's buffer and damage it.
+	wl_surface_attach(ps.cursor_surface, ps.cursor_bufs[p_shape], 0, 0);
+	wl_surface_damage_buffer(ps.cursor_surface, 0, 0, INT_MAX, INT_MAX);
+
+	// Commit everything.
+	wl_surface_commit(ps.cursor_surface);
+
+	ps.cursor_shape = p_shape;
 }
 
 DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const {
-	// TODO
-	print_verbose("wayland stub cursot_get_shape");
-	return CURSOR_ARROW;
+	MutexLock mutex_lock(wls.mutex);
+
+	return wls.pointer_state.cursor_shape;
 }
 
 void DisplayServerWayland::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -1579,6 +1634,70 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		}
 	}
 #endif
+
+	// FIXME: We should get the cursor size from the user, somehow.
+	wls.pointer_state.wl_cursor_theme = wl_cursor_theme_load(nullptr, 24, wls.globals.wl_shm);
+
+	ERR_FAIL_NULL(wls.pointer_state.wl_cursor_theme);
+
+	static const char *cursor_names[] = {
+		"left_ptr",
+		"xterm",
+		"hand2",
+		"cross",
+		"watch",
+		"left_ptr_watch",
+		"fleur",
+		"dnd-move",
+		"crossed_circle",
+		"v_double_arrow",
+		"h_double_arrow",
+		"size_bdiag",
+		"size_fdiag",
+		"move",
+		"row_resize",
+		"col_resize",
+		"question_arrow"
+	};
+
+	static const char *cursor_names_fallback[] = {
+		nullptr,
+		nullptr,
+		"pointer",
+		"cross",
+		"wait",
+		"progress",
+		"grabbing",
+		"hand1",
+		"forbidden",
+		"ns-resize",
+		"ew-resize",
+		"fd_double_arrow",
+		"bd_double_arrow",
+		"fleur",
+		"sb_v_double_arrow",
+		"sb_h_double_arrow",
+		"help"
+	};
+
+	for (int i = 0; i < CURSOR_MAX; i++) {
+		struct wl_cursor *cursor = wl_cursor_theme_get_cursor(wls.pointer_state.wl_cursor_theme, cursor_names[i]);
+
+		if (!cursor && cursor_names_fallback[i]) {
+			cursor = wl_cursor_theme_get_cursor(wls.pointer_state.wl_cursor_theme, cursor_names[i]);
+		}
+
+		if (cursor && cursor->image_count > 0) {
+			wls.pointer_state.cursor_images[i] = cursor->images[0];
+			wls.pointer_state.cursor_bufs[i] = wl_cursor_image_get_buffer(cursor->images[0]);
+		} else {
+			wls.pointer_state.cursor_images[i] = nullptr;
+			wls.pointer_state.cursor_bufs[i] = nullptr;
+			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
+		}
+	}
+
+	cursor_set_shape(CURSOR_BUSY);
 
 	WindowID main_window_id = _create_window(p_mode, p_vsync_mode, p_flags, screen_get_usable_rect());
 	show_window(main_window_id);

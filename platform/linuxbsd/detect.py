@@ -76,6 +76,11 @@ def check_wayland_dependencies():
         print("Error: wayland-client library not found. Aborting.")
         return False
 
+    wayland_error = os.system("pkg-config wayland-cursor --modversion > /dev/null")
+    if wayland_error:
+        print("Error: wayland-cursor library not found. Aborting.")
+        return False
+
     wayland_error = os.system("pkg-config wayland-scanner --modversion > /dev/null")
     if wayland_error:
         print("Error: wayland-scanner not found. Aborting.")
@@ -275,6 +280,7 @@ def configure(env):
 
     if env["wayland"]:
         env.ParseConfig("pkg-config wayland-client --cflags --libs")
+        env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
         env.ParseConfig("pkg-config xkbcommon --cflags --libs")
 
     if env["touch"]:

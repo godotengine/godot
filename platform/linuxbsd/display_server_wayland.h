@@ -34,11 +34,14 @@
 #ifdef WAYLAND_ENABLED
 
 // FIXME: Linux only?
+#include <limits.h>
 #include <poll.h>
 #include <sys/mman.h>
 
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
+
+#include "wayland-cursor.h"
 
 #include "wayland.gen.h"
 #include "xdg_shell.gen.h"
@@ -87,6 +90,9 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct WaylandGlobals {
+		struct wl_shm *wl_shm = nullptr;
+		uint32_t wl_shm_name = 0;
+
 		struct wl_compositor *wl_compositor = nullptr;
 		uint32_t wl_compositor_name = 0;
 
@@ -151,6 +157,7 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t relative_motion_time = 0;
 
 		WindowID focused_window_id = INVALID_WINDOW_ID;
+
 		MouseButton pressed_button_mask = MouseButton::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
@@ -167,6 +174,12 @@ class DisplayServerWayland : public DisplayServer {
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
 
+		struct wl_cursor_theme *wl_cursor_theme = nullptr;
+		struct wl_cursor_image *cursor_images[CURSOR_MAX];
+		struct wl_buffer *cursor_bufs[CURSOR_MAX];
+		struct wl_surface *cursor_surface = nullptr;
+
+		CursorShape cursor_shape = CURSOR_ARROW;
 		MouseMode mode = MOUSE_MODE_VISIBLE;
 
 		// This variable is needed to buffer all pointer changes until a
