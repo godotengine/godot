@@ -173,6 +173,7 @@
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories. The array is sorted alphabetically.
 				Affected by [member include_hidden].
+				[b]Note:[/code] This method returns the factual list of files and the results may be different when used in exported project (e.g. for importable files, like images or sounds, only the [code].import[/code] files will be in the directory). To get the list of original files based on their remaps, use [method get_remapped_files].
 			</description>
 		</method>
 		<method name="get_files_at" qualifiers="static">
@@ -194,6 +195,13 @@
 			<return type="int" enum="Error" />
 			<description>
 				Returns the result of the last [method open] call in the current thread.
+			</description>
+		</method>
+		<method name="get_remapped_files">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of files in a directory, with imported or remapped files listed as their original files. The list is consistent between editor and exported project (excluding files that weren't exported).
+				For example, for this file list: [code]icon.png.import, icon.wav.import, player.tscn.remap, player.gdc, player.gd.remap[/code], the returned list by this method will be [code]icon.png, icon.wav, player.tscn, player.gd[/code].
 			</description>
 		</method>
 		<method name="get_space_left">

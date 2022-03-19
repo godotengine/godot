@@ -150,6 +150,8 @@ public:
 
 	PackedStringArray get_files();
 	static PackedStringArray get_files_at(const String &p_path);
+	PackedStringArray get_remapped_files();
+	static PackedStringArray get_remapped_files_at(const String &p_path);
 	PackedStringArray get_directories();
 	static PackedStringArray get_directories_at(const String &p_path);
 	String _get_next();

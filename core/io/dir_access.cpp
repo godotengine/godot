@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
@@ -496,6 +497,40 @@ PackedStringArray DirAccess::get_files_at(const String &p_path) {
 	return da->get_files();
 }
 
+PackedStringArray DirAccess::get_remapped_files() {
+	PackedStringArray files = get_files();
+
+	HashSet<String> unique_files;
+	for (const String &file : files) {
+		if (file.get_extension() == "import") {
+			unique_files.insert(file.trim_suffix(".import"));
+		} else if (file.get_extension() == "remap") {
+			unique_files.insert(file.trim_suffix(".remap"));
+		} else if (file.get_extension() == "gdc") {
+			unique_files.insert(file.trim_suffix("c")); // .gdc -> .gd
+		} else {
+			unique_files.insert(file);
+		}
+	}
+
+	PackedStringArray ret;
+	ret.resize(unique_files.size());
+	String *retw = ret.ptrw();
+
+	int i = 0;
+	for (const String &file : unique_files) {
+		retw[i] = file;
+		i++;
+	}
+	return ret;
+}
+
+PackedStringArray DirAccess::get_remapped_files_at(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V_MSG(da.is_null(), PackedStringArray(), vformat("Couldn't open directory at path \"%s\".", p_path));
+	return da->get_remapped_files();
+}
+
 PackedStringArray DirAccess::get_directories() {
 	return _get_contents(true);
 }
@@ -556,6 +591,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
 	ClassDB::bind_method(D_METHOD("get_files"), &DirAccess::get_files);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_files_at", "path"), &DirAccess::get_files_at);
+	ClassDB::bind_method(D_METHOD("get_remapped_files"), &DirAccess::get_remapped_files);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_remapped_files_at", "path"), &DirAccess::get_remapped_files_at);
 	ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
