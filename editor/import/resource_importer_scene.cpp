@@ -1030,7 +1030,16 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
 			};
 
-			if (anims.size() > 1 && (import_tracks_mode[0] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[1] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[2] != ANIMATION_IMPORT_TRACKS_IF_PRESENT)) {
+			// optimize track usage only if import options differ from default behaviour
+			bool should_optimize_track_usage = false;
+			for (int i = 0; i < TRACK_CHANNEL_MAX; i++) {
+				if (import_tracks_mode[i] != ANIMATION_IMPORT_TRACKS_IF_PRESENT) {
+					should_optimize_track_usage = true;
+					break;
+				}
+			}
+
+			if (should_optimize_track_usage) {
 				_optimize_track_usage(ap, import_tracks_mode);
 			}
 		}
