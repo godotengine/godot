@@ -412,9 +412,11 @@ void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat,
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	WaylandState *wls = (WaylandState *)data;
 
-	PointerData &pd = wls->pointer_state.data_buffer;
+	PointerState &ps = wls->pointer_state;
+	PointerData &pd = ps.data_buffer;
+	struct wl_cursor_image *cursor_image = ps.cursor_images[ps.cursor_shape];
 
-	wl_pointer_set_cursor(wls->pointer_state.wl_pointer, serial, wls->pointer_state.cursor_surface, 0, 0);
+	wl_pointer_set_cursor(ps.wl_pointer, serial, ps.cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
 
 	wl_surface_commit(wls->pointer_state.cursor_surface);
 
