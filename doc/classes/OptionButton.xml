@@ -6,6 +6,7 @@
 	<description>
 		OptionButton is a type button that provides a selectable list of items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] Properties [member Button.text] and [member Button.icon] are automatically set based on the selected item. They shouldn't be changed manually.
 	</description>
 	<tutorials>
 	</tutorials>
