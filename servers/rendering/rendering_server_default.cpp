@@ -398,6 +398,8 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RendererSceneCull *sr = memnew(RendererSceneCull);
 	RSG::scene = sr;
 	RSG::rasterizer = RendererCompositor::create();
+	RSG::canvas_texture_storage = RSG::rasterizer->get_canvas_texture_storage();
+	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());

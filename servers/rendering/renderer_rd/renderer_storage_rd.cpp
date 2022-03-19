@@ -35,1113 +35,12 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
 
-bool RendererStorageRD::can_create_resources_async() const {
-	return true;
-}
-
-Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
-	Ref<Image> image = p_image->duplicate();
-
-	switch (p_image->get_format()) {
-		case Image::FORMAT_L8: {
-			r_format.format = RD::DATA_FORMAT_R8_UNORM;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break; //luminance
-		case Image::FORMAT_LA8: {
-			r_format.format = RD::DATA_FORMAT_R8G8_UNORM;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_G;
-		} break; //luminance-alpha
-		case Image::FORMAT_R8: {
-			r_format.format = RD::DATA_FORMAT_R8_UNORM;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_RG8: {
-			r_format.format = RD::DATA_FORMAT_R8G8_UNORM;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_RGB8: {
-			//this format is not mandatory for specification, check if supported first
-			if (false && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT) && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_SRGB, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_R8G8B8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8_SRGB;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break;
-		case Image::FORMAT_RGBA8: {
-			r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-			r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
-		case Image::FORMAT_RGBA4444: {
-			r_format.format = RD::DATA_FORMAT_B4G4R4A4_UNORM_PACK16;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_B; //needs swizzle
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
-		case Image::FORMAT_RGB565: {
-			r_format.format = RD::DATA_FORMAT_B5G6R5_UNORM_PACK16;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
-		case Image::FORMAT_RF: {
-			r_format.format = RD::DATA_FORMAT_R32_SFLOAT;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break; //float
-		case Image::FORMAT_RGF: {
-			r_format.format = RD::DATA_FORMAT_R32G32_SFLOAT;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_RGBF: {
-			//this format is not mandatory for specification, check if supported first
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-				image->convert(Image::FORMAT_RGBAF);
-			}
-
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_RGBAF: {
-			r_format.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-
-		} break;
-		case Image::FORMAT_RH: {
-			r_format.format = RD::DATA_FORMAT_R16_SFLOAT;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break; //half float
-		case Image::FORMAT_RGH: {
-			r_format.format = RD::DATA_FORMAT_R16G16_SFLOAT;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break;
-		case Image::FORMAT_RGBH: {
-			//this format is not mandatory for specification, check if supported first
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R16G16B16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_R16G16B16_SFLOAT;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				image->convert(Image::FORMAT_RGBAH);
-			}
-
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_RGBAH: {
-			r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-
-		} break;
-		case Image::FORMAT_RGBE9995: {
-			r_format.format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-#ifndef _MSC_VER
-#warning TODO need to make a function in Image to swap bits for this
-#endif
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_IDENTITY;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_IDENTITY;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_IDENTITY;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_IDENTITY;
-		} break;
-		case Image::FORMAT_DXT1: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_BC1_RGB_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break; //s3tc bc1
-		case Image::FORMAT_DXT3: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC2_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC2_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_BC2_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-
-		} break; //bc2
-		case Image::FORMAT_DXT5: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC3_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC3_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_BC3_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break; //bc3
-		case Image::FORMAT_RGTC_R: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC4_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC4_UNORM_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8_UNORM;
-				image->decompress();
-				image->convert(Image::FORMAT_R8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break;
-		case Image::FORMAT_RGTC_RG: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC5_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC5_UNORM_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8_UNORM;
-				image->decompress();
-				image->convert(Image::FORMAT_RG8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break;
-		case Image::FORMAT_BPTC_RGBA: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC7_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC7_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_BC7_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-
-		} break; //btpc bc7
-		case Image::FORMAT_BPTC_RGBF: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC6H_SFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC6H_SFLOAT_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBAH);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break; //float bc6h
-		case Image::FORMAT_BPTC_RGBFU: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC6H_UFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC6H_UFLOAT_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBAH);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break; //unsigned float bc6hu
-		case Image::FORMAT_ETC2_R11: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_EAC_R11_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_EAC_R11_UNORM_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8_UNORM;
-				image->decompress();
-				image->convert(Image::FORMAT_R8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break; //etc2
-		case Image::FORMAT_ETC2_R11S: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_EAC_R11_SNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_EAC_R11_SNORM_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8_SNORM;
-				image->decompress();
-				image->convert(Image::FORMAT_R8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break; //signed: {} break; NOT srgb.
-		case Image::FORMAT_ETC2_RG11: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_EAC_R11G11_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_EAC_R11G11_UNORM_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8_UNORM;
-				image->decompress();
-				image->convert(Image::FORMAT_RG8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_ETC2_RG11S: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_EAC_R11G11_SNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_EAC_R11G11_SNORM_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8_SNORM;
-				image->decompress();
-				image->convert(Image::FORMAT_RG8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_ETC:
-		case Image::FORMAT_ETC2_RGB8: {
-			//ETC2 is backwards compatible with ETC1, and all modern platforms support it
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break;
-		case Image::FORMAT_ETC2_RGBA8: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
-		case Image::FORMAT_ETC2_RGB8A1: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
-		case Image::FORMAT_ETC2_RA_AS_RG: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_DXT5_RA_AS_RG: {
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC3_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_BC3_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_BC3_SRGB_BLOCK;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-
-		default: {
-		}
-	}
-
-	return image;
-}
-
-RID RendererStorageRD::texture_allocate() {
-	return texture_owner.allocate_rid();
-}
-
-void RendererStorageRD::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) {
-	ERR_FAIL_COND(p_image.is_null());
-	ERR_FAIL_COND(p_image->is_empty());
-
-	TextureToRDFormat ret_format;
-	Ref<Image> image = _validate_texture_format(p_image, ret_format);
-
-	Texture texture;
-
-	texture.type = Texture::TYPE_2D;
-
-	texture.width = p_image->get_width();
-	texture.height = p_image->get_height();
-	texture.layers = 1;
-	texture.mipmaps = p_image->get_mipmap_count() + 1;
-	texture.depth = 1;
-	texture.format = p_image->get_format();
-	texture.validated_format = image->get_format();
-
-	texture.rd_type = RD::TEXTURE_TYPE_2D;
-	texture.rd_format = ret_format.format;
-	texture.rd_format_srgb = ret_format.format_srgb;
-
-	RD::TextureFormat rd_format;
-	RD::TextureView rd_view;
-	{ //attempt register
-		rd_format.format = texture.rd_format;
-		rd_format.width = texture.width;
-		rd_format.height = texture.height;
-		rd_format.depth = 1;
-		rd_format.array_layers = 1;
-		rd_format.mipmaps = texture.mipmaps;
-		rd_format.texture_type = texture.rd_type;
-		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-			rd_format.shareable_formats.push_back(texture.rd_format);
-			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
-		}
-	}
-	{
-		rd_view.swizzle_r = ret_format.swizzle_r;
-		rd_view.swizzle_g = ret_format.swizzle_g;
-		rd_view.swizzle_b = ret_format.swizzle_b;
-		rd_view.swizzle_a = ret_format.swizzle_a;
-	}
-	Vector<uint8_t> data = image->get_data(); //use image data
-	Vector<Vector<uint8_t>> data_slices;
-	data_slices.push_back(data);
-	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
-	ERR_FAIL_COND(texture.rd_texture.is_null());
-	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-		rd_view.format_override = texture.rd_format_srgb;
-		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
-		if (texture.rd_texture_srgb.is_null()) {
-			RD::get_singleton()->free(texture.rd_texture);
-			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
-		}
-	}
-
-	//used for 2D, overridable
-	texture.width_2d = texture.width;
-	texture.height_2d = texture.height;
-	texture.is_render_target = false;
-	texture.rd_view = rd_view;
-	texture.is_proxy = false;
-
-	texture_owner.initialize_rid(p_texture, texture);
-}
-
-void RendererStorageRD::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
-	ERR_FAIL_COND(p_layers.size() == 0);
-
-	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
-	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY && (p_layers.size() < 6 || (p_layers.size() % 6) != 0));
-
-	TextureToRDFormat ret_format;
-	Vector<Ref<Image>> images;
-	{
-		int valid_width = 0;
-		int valid_height = 0;
-		bool valid_mipmaps = false;
-		Image::Format valid_format = Image::FORMAT_MAX;
-
-		for (int i = 0; i < p_layers.size(); i++) {
-			ERR_FAIL_COND(p_layers[i]->is_empty());
-
-			if (i == 0) {
-				valid_width = p_layers[i]->get_width();
-				valid_height = p_layers[i]->get_height();
-				valid_format = p_layers[i]->get_format();
-				valid_mipmaps = p_layers[i]->has_mipmaps();
-			} else {
-				ERR_FAIL_COND(p_layers[i]->get_width() != valid_width);
-				ERR_FAIL_COND(p_layers[i]->get_height() != valid_height);
-				ERR_FAIL_COND(p_layers[i]->get_format() != valid_format);
-				ERR_FAIL_COND(p_layers[i]->has_mipmaps() != valid_mipmaps);
-			}
-
-			images.push_back(_validate_texture_format(p_layers[i], ret_format));
-		}
-	}
-
-	Texture texture;
-
-	texture.type = Texture::TYPE_LAYERED;
-	texture.layered_type = p_layered_type;
-
-	texture.width = p_layers[0]->get_width();
-	texture.height = p_layers[0]->get_height();
-	texture.layers = p_layers.size();
-	texture.mipmaps = p_layers[0]->get_mipmap_count() + 1;
-	texture.depth = 1;
-	texture.format = p_layers[0]->get_format();
-	texture.validated_format = images[0]->get_format();
-
-	switch (p_layered_type) {
-		case RS::TEXTURE_LAYERED_2D_ARRAY: {
-			texture.rd_type = RD::TEXTURE_TYPE_2D_ARRAY;
-		} break;
-		case RS::TEXTURE_LAYERED_CUBEMAP: {
-			texture.rd_type = RD::TEXTURE_TYPE_CUBE;
-		} break;
-		case RS::TEXTURE_LAYERED_CUBEMAP_ARRAY: {
-			texture.rd_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
-		} break;
-	}
-
-	texture.rd_format = ret_format.format;
-	texture.rd_format_srgb = ret_format.format_srgb;
-
-	RD::TextureFormat rd_format;
-	RD::TextureView rd_view;
-	{ //attempt register
-		rd_format.format = texture.rd_format;
-		rd_format.width = texture.width;
-		rd_format.height = texture.height;
-		rd_format.depth = 1;
-		rd_format.array_layers = texture.layers;
-		rd_format.mipmaps = texture.mipmaps;
-		rd_format.texture_type = texture.rd_type;
-		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-			rd_format.shareable_formats.push_back(texture.rd_format);
-			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
-		}
-	}
-	{
-		rd_view.swizzle_r = ret_format.swizzle_r;
-		rd_view.swizzle_g = ret_format.swizzle_g;
-		rd_view.swizzle_b = ret_format.swizzle_b;
-		rd_view.swizzle_a = ret_format.swizzle_a;
-	}
-	Vector<Vector<uint8_t>> data_slices;
-	for (int i = 0; i < images.size(); i++) {
-		Vector<uint8_t> data = images[i]->get_data(); //use image data
-		data_slices.push_back(data);
-	}
-	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
-	ERR_FAIL_COND(texture.rd_texture.is_null());
-	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-		rd_view.format_override = texture.rd_format_srgb;
-		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
-		if (texture.rd_texture_srgb.is_null()) {
-			RD::get_singleton()->free(texture.rd_texture);
-			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
-		}
-	}
-
-	//used for 2D, overridable
-	texture.width_2d = texture.width;
-	texture.height_2d = texture.height;
-	texture.is_render_target = false;
-	texture.rd_view = rd_view;
-	texture.is_proxy = false;
-
-	texture_owner.initialize_rid(p_texture, texture);
-}
-
-void RendererStorageRD::texture_3d_initialize(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
-	ERR_FAIL_COND(p_data.size() == 0);
-	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
-	if (verr != Image::VALIDATE_3D_OK) {
-		ERR_FAIL_MSG(Image::get_3d_image_validation_error_text(verr));
-	}
-
-	TextureToRDFormat ret_format;
-	Image::Format validated_format = Image::FORMAT_MAX;
-	Vector<uint8_t> all_data;
-	uint32_t mipmap_count = 0;
-	Vector<Texture::BufferSlice3D> slices;
-	{
-		Vector<Ref<Image>> images;
-		uint32_t all_data_size = 0;
-		images.resize(p_data.size());
-		for (int i = 0; i < p_data.size(); i++) {
-			TextureToRDFormat f;
-			images.write[i] = _validate_texture_format(p_data[i], f);
-			if (i == 0) {
-				ret_format = f;
-				validated_format = images[0]->get_format();
-			}
-
-			all_data_size += images[i]->get_data().size();
-		}
-
-		all_data.resize(all_data_size); //consolidate all data here
-		uint32_t offset = 0;
-		Size2i prev_size;
-		for (int i = 0; i < p_data.size(); i++) {
-			uint32_t s = images[i]->get_data().size();
-
-			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
-			{
-				Texture::BufferSlice3D slice;
-				slice.size.width = images[i]->get_width();
-				slice.size.height = images[i]->get_height();
-				slice.offset = offset;
-				slice.buffer_size = s;
-				slices.push_back(slice);
-			}
-			offset += s;
-
-			Size2i img_size(images[i]->get_width(), images[i]->get_height());
-			if (img_size != prev_size) {
-				mipmap_count++;
-			}
-			prev_size = img_size;
-		}
-	}
-
-	Texture texture;
-
-	texture.type = Texture::TYPE_3D;
-	texture.width = p_width;
-	texture.height = p_height;
-	texture.depth = p_depth;
-	texture.mipmaps = mipmap_count;
-	texture.format = p_data[0]->get_format();
-	texture.validated_format = validated_format;
-
-	texture.buffer_size_3d = all_data.size();
-	texture.buffer_slices_3d = slices;
-
-	texture.rd_type = RD::TEXTURE_TYPE_3D;
-	texture.rd_format = ret_format.format;
-	texture.rd_format_srgb = ret_format.format_srgb;
-
-	RD::TextureFormat rd_format;
-	RD::TextureView rd_view;
-	{ //attempt register
-		rd_format.format = texture.rd_format;
-		rd_format.width = texture.width;
-		rd_format.height = texture.height;
-		rd_format.depth = texture.depth;
-		rd_format.array_layers = 1;
-		rd_format.mipmaps = texture.mipmaps;
-		rd_format.texture_type = texture.rd_type;
-		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-			rd_format.shareable_formats.push_back(texture.rd_format);
-			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
-		}
-	}
-	{
-		rd_view.swizzle_r = ret_format.swizzle_r;
-		rd_view.swizzle_g = ret_format.swizzle_g;
-		rd_view.swizzle_b = ret_format.swizzle_b;
-		rd_view.swizzle_a = ret_format.swizzle_a;
-	}
-	Vector<Vector<uint8_t>> data_slices;
-	data_slices.push_back(all_data); //one slice
-
-	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
-	ERR_FAIL_COND(texture.rd_texture.is_null());
-	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-		rd_view.format_override = texture.rd_format_srgb;
-		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
-		if (texture.rd_texture_srgb.is_null()) {
-			RD::get_singleton()->free(texture.rd_texture);
-			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
-		}
-	}
-
-	//used for 2D, overridable
-	texture.width_2d = texture.width;
-	texture.height_2d = texture.height;
-	texture.is_render_target = false;
-	texture.rd_view = rd_view;
-	texture.is_proxy = false;
-
-	texture_owner.initialize_rid(p_texture, texture);
-}
-
-void RendererStorageRD::texture_proxy_initialize(RID p_texture, RID p_base) {
-	Texture *tex = texture_owner.get_or_null(p_base);
-	ERR_FAIL_COND(!tex);
-	Texture proxy_tex = *tex;
-
-	proxy_tex.rd_view.format_override = tex->rd_format;
-	proxy_tex.rd_texture = RD::get_singleton()->texture_create_shared(proxy_tex.rd_view, tex->rd_texture);
-	if (proxy_tex.rd_texture_srgb.is_valid()) {
-		proxy_tex.rd_view.format_override = tex->rd_format_srgb;
-		proxy_tex.rd_texture_srgb = RD::get_singleton()->texture_create_shared(proxy_tex.rd_view, tex->rd_texture);
-	}
-	proxy_tex.proxy_to = p_base;
-	proxy_tex.is_render_target = false;
-	proxy_tex.is_proxy = true;
-	proxy_tex.proxies.clear();
-
-	texture_owner.initialize_rid(p_texture, proxy_tex);
-
-	tex->proxies.push_back(p_texture);
-}
-
-void RendererStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
-	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
-
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(tex->is_render_target);
-	ERR_FAIL_COND(p_image->get_width() != tex->width || p_image->get_height() != tex->height);
-	ERR_FAIL_COND(p_image->get_format() != tex->format);
-
-	if (tex->type == Texture::TYPE_LAYERED) {
-		ERR_FAIL_INDEX(p_layer, tex->layers);
-	}
-
-#ifdef TOOLS_ENABLED
-	tex->image_cache_2d.unref();
-#endif
-	TextureToRDFormat f;
-	Ref<Image> validated = _validate_texture_format(p_image, f);
-
-	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data());
-}
-
-void RendererStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
-	_texture_2d_update(p_texture, p_image, p_layer, false);
-}
-
-void RendererStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(tex->type != Texture::TYPE_3D);
-	Image::Image3DValidateError verr = Image::validate_3d_image(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps > 1, p_data);
-	if (verr != Image::VALIDATE_3D_OK) {
-		ERR_FAIL_MSG(Image::get_3d_image_validation_error_text(verr));
-	}
-
-	Vector<uint8_t> all_data;
-	{
-		Vector<Ref<Image>> images;
-		uint32_t all_data_size = 0;
-		images.resize(p_data.size());
-		for (int i = 0; i < p_data.size(); i++) {
-			Ref<Image> image = p_data[i];
-			if (image->get_format() != tex->validated_format) {
-				image = image->duplicate();
-				image->convert(tex->validated_format);
-			}
-			all_data_size += images[i]->get_data().size();
-			images.push_back(image);
-		}
-
-		all_data.resize(all_data_size); //consolidate all data here
-		uint32_t offset = 0;
-
-		for (int i = 0; i < p_data.size(); i++) {
-			uint32_t s = images[i]->get_data().size();
-			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
-			offset += s;
-		}
-	}
-
-	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data);
-}
-
-void RendererStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(!tex->is_proxy);
-	Texture *proxy_to = texture_owner.get_or_null(p_proxy_to);
-	ERR_FAIL_COND(!proxy_to);
-	ERR_FAIL_COND(proxy_to->is_proxy);
-
-	if (tex->proxy_to.is_valid()) {
-		//unlink proxy
-		if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
-			RD::get_singleton()->free(tex->rd_texture);
-			tex->rd_texture = RID();
-		}
-		if (RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
-			RD::get_singleton()->free(tex->rd_texture_srgb);
-			tex->rd_texture_srgb = RID();
-		}
-		Texture *prev_tex = texture_owner.get_or_null(tex->proxy_to);
-		ERR_FAIL_COND(!prev_tex);
-		prev_tex->proxies.erase(p_texture);
-	}
-
-	*tex = *proxy_to;
-
-	tex->proxy_to = p_proxy_to;
-	tex->is_render_target = false;
-	tex->is_proxy = true;
-	tex->proxies.clear();
-	proxy_to->proxies.push_back(p_texture);
-
-	tex->rd_view.format_override = tex->rd_format;
-	tex->rd_texture = RD::get_singleton()->texture_create_shared(tex->rd_view, proxy_to->rd_texture);
-	if (tex->rd_texture_srgb.is_valid()) {
-		tex->rd_view.format_override = tex->rd_format_srgb;
-		tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(tex->rd_view, proxy_to->rd_texture);
-	}
-}
-
-//these two APIs can be used together or in combination with the others.
-void RendererStorageRD::texture_2d_placeholder_initialize(RID p_texture) {
-	//this could be better optimized to reuse an existing image , done this way
-	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
-	image->fill(Color(1, 0, 1, 1));
-
-	texture_2d_initialize(p_texture, image);
-}
-
-void RendererStorageRD::texture_2d_layered_placeholder_initialize(RID p_texture, RS::TextureLayeredType p_layered_type) {
-	//this could be better optimized to reuse an existing image , done this way
-	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
-	image->fill(Color(1, 0, 1, 1));
-
-	Vector<Ref<Image>> images;
-	if (p_layered_type == RS::TEXTURE_LAYERED_2D_ARRAY) {
-		images.push_back(image);
-	} else {
-		//cube
-		for (int i = 0; i < 6; i++) {
-			images.push_back(image);
-		}
-	}
-
-	texture_2d_layered_initialize(p_texture, images, p_layered_type);
-}
-
-void RendererStorageRD::texture_3d_placeholder_initialize(RID p_texture) {
-	//this could be better optimized to reuse an existing image , done this way
-	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
-	image->fill(Color(1, 0, 1, 1));
-
-	Vector<Ref<Image>> images;
-	//cube
-	for (int i = 0; i < 4; i++) {
-		images.push_back(image);
-	}
-
-	texture_3d_initialize(p_texture, Image::FORMAT_RGBA8, 4, 4, 4, false, images);
-}
-
-Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Ref<Image>());
-
-#ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
-		return tex->image_cache_2d;
-	}
-#endif
-	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
-	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
-	if (tex->format != tex->validated_format) {
-		image->convert(tex->format);
-	}
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
-		tex->image_cache_2d = image;
-	}
-#endif
-
-	return image;
-}
-
-Ref<Image> RendererStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) const {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Ref<Image>());
-
-	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
-	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
-	if (tex->format != tex->validated_format) {
-		image->convert(tex->format);
-	}
-
-	return image;
-}
-
-Vector<Ref<Image>> RendererStorageRD::texture_3d_get(RID p_texture) const {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Vector<Ref<Image>>());
-	ERR_FAIL_COND_V(tex->type != Texture::TYPE_3D, Vector<Ref<Image>>());
-
-	Vector<uint8_t> all_data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
-
-	ERR_FAIL_COND_V(all_data.size() != (int)tex->buffer_size_3d, Vector<Ref<Image>>());
-
-	Vector<Ref<Image>> ret;
-
-	for (int i = 0; i < tex->buffer_slices_3d.size(); i++) {
-		const Texture::BufferSlice3D &bs = tex->buffer_slices_3d[i];
-		ERR_FAIL_COND_V(bs.offset >= (uint32_t)all_data.size(), Vector<Ref<Image>>());
-		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
-		Vector<uint8_t> sub_region = all_data.slice(bs.offset, bs.offset + bs.buffer_size);
-
-		Ref<Image> img;
-		img.instantiate();
-		img->create(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
-		ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
-		if (tex->format != tex->validated_format) {
-			img->convert(tex->format);
-		}
-
-		ret.push_back(img);
-	}
-
-	return ret;
-}
-
-void RendererStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(tex->proxy_to.is_valid()); //can't replace proxy
-	Texture *by_tex = texture_owner.get_or_null(p_by_texture);
-	ERR_FAIL_COND(!by_tex);
-	ERR_FAIL_COND(by_tex->proxy_to.is_valid()); //can't replace proxy
-
-	if (tex == by_tex) {
-		return;
-	}
-
-	if (tex->rd_texture_srgb.is_valid()) {
-		RD::get_singleton()->free(tex->rd_texture_srgb);
-	}
-	RD::get_singleton()->free(tex->rd_texture);
-
-	if (tex->canvas_texture) {
-		memdelete(tex->canvas_texture);
-		tex->canvas_texture = nullptr;
-	}
-
-	Vector<RID> proxies_to_update = tex->proxies;
-	Vector<RID> proxies_to_redirect = by_tex->proxies;
-
-	*tex = *by_tex;
-
-	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
-
-	if (tex->canvas_texture) {
-		tex->canvas_texture->diffuse = p_texture; //update
-	}
-
-	for (int i = 0; i < proxies_to_update.size(); i++) {
-		texture_proxy_update(proxies_to_update[i], p_texture);
-	}
-	for (int i = 0; i < proxies_to_redirect.size(); i++) {
-		texture_proxy_update(proxies_to_redirect[i], p_texture);
-	}
-	//delete last, so proxies can be updated
-	texture_owner.free(p_by_texture);
-
-	if (decal_atlas.textures.has(p_texture)) {
-		//belongs to decal atlas..
-
-		decal_atlas.dirty = true; //mark it dirty since it was most likely modified
-	}
-}
-
-void RendererStorageRD::texture_set_size_override(RID p_texture, int p_width, int p_height) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	ERR_FAIL_COND(tex->type != Texture::TYPE_2D);
-	tex->width_2d = p_width;
-	tex->height_2d = p_height;
-}
-
-void RendererStorageRD::texture_set_path(RID p_texture, const String &p_path) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	tex->path = p_path;
-}
-
-String RendererStorageRD::texture_get_path(RID p_texture) const {
-	return String();
-}
-
-void RendererStorageRD::texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	tex->detect_3d_callback_ud = p_userdata;
-	tex->detect_3d_callback = p_callback;
-}
-
-void RendererStorageRD::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	tex->detect_normal_callback_ud = p_userdata;
-	tex->detect_normal_callback = p_callback;
-}
-
-void RendererStorageRD::texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
-	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
-	tex->detect_roughness_callback_ud = p_userdata;
-	tex->detect_roughness_callback = p_callback;
-}
-
-void RendererStorageRD::texture_debug_usage(List<RS::TextureInfo> *r_info) {
-}
-
-void RendererStorageRD::texture_set_proxy(RID p_proxy, RID p_base) {
-}
-
-void RendererStorageRD::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
-}
-
-Size2 RendererStorageRD::texture_size_with_proxy(RID p_proxy) {
-	return texture_2d_get_size(p_proxy);
-}
-
 /* CANVAS TEXTURE */
-
-void RendererStorageRD::CanvasTexture::clear_sets() {
-	if (cleared_cache) {
-		return;
-	}
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j])) {
-				RD::get_singleton()->free(uniform_sets[i][j]);
-				uniform_sets[i][j] = RID();
-			}
-		}
-	}
-	cleared_cache = true;
-}
-
-RendererStorageRD::CanvasTexture::~CanvasTexture() {
-	clear_sets();
-}
 
 void RendererStorageRD::sampler_rd_configure_custom(float p_mipmap_bias) {
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
@@ -1235,149 +134,6 @@ void RendererStorageRD::sampler_rd_configure_custom(float p_mipmap_bias) {
 			custom_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
 		}
 	}
-}
-
-RID RendererStorageRD::canvas_texture_allocate() {
-	return canvas_texture_owner.allocate_rid();
-}
-void RendererStorageRD::canvas_texture_initialize(RID p_rid) {
-	canvas_texture_owner.initialize_rid(p_rid);
-}
-
-void RendererStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
-	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
-	switch (p_channel) {
-		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
-			ct->diffuse = p_texture;
-		} break;
-		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
-			ct->normal_map = p_texture;
-		} break;
-		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
-			ct->specular = p_texture;
-		} break;
-	}
-
-	ct->clear_sets();
-}
-
-void RendererStorageRD::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
-	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
-	ct->specular_color.r = p_specular_color.r;
-	ct->specular_color.g = p_specular_color.g;
-	ct->specular_color.b = p_specular_color.b;
-	ct->specular_color.a = p_shininess;
-	ct->clear_sets();
-}
-
-void RendererStorageRD::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
-	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
-	ct->texture_filter = p_filter;
-	ct->clear_sets();
-}
-
-void RendererStorageRD::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
-	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
-	ct->texture_repeat = p_repeat;
-	ct->clear_sets();
-}
-
-bool RendererStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
-	CanvasTexture *ct = nullptr;
-
-	Texture *t = texture_owner.get_or_null(p_texture);
-
-	if (t) {
-		//regular texture
-		if (!t->canvas_texture) {
-			t->canvas_texture = memnew(CanvasTexture);
-			t->canvas_texture->diffuse = p_texture;
-		}
-
-		ct = t->canvas_texture;
-	} else {
-		ct = canvas_texture_owner.get_or_null(p_texture);
-	}
-
-	if (!ct) {
-		return false; //invalid texture RID
-	}
-
-	RS::CanvasItemTextureFilter filter = ct->texture_filter != RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? ct->texture_filter : p_base_filter;
-	ERR_FAIL_COND_V(filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, false);
-
-	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
-	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, false);
-
-	RID uniform_set = ct->uniform_sets[filter][repeat];
-	if (!RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		//create and update
-		Vector<RD::Uniform> uniforms;
-		{ //diffuse
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 0;
-
-			t = texture_owner.get_or_null(ct->diffuse);
-			if (!t) {
-				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
-				ct->size_cache = Size2i(1, 1);
-			} else {
-				u.append_id(t->rd_texture);
-				ct->size_cache = Size2i(t->width_2d, t->height_2d);
-			}
-			uniforms.push_back(u);
-		}
-		{ //normal
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 1;
-
-			t = texture_owner.get_or_null(ct->normal_map);
-			if (!t) {
-				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
-				ct->use_normal_cache = false;
-			} else {
-				u.append_id(t->rd_texture);
-				ct->use_normal_cache = true;
-			}
-			uniforms.push_back(u);
-		}
-		{ //specular
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 2;
-
-			t = texture_owner.get_or_null(ct->specular);
-			if (!t) {
-				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
-				ct->use_specular_cache = false;
-			} else {
-				u.append_id(t->rd_texture);
-				ct->use_specular_cache = true;
-			}
-			uniforms.push_back(u);
-		}
-		{ //sampler
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 3;
-			u.append_id(sampler_rd_get_default(filter, repeat));
-			uniforms.push_back(u);
-		}
-
-		uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, p_base_set);
-		ct->uniform_sets[filter][repeat] = uniform_set;
-		ct->cleared_cache = false;
-	}
-
-	r_uniform_set = uniform_set;
-	r_size = ct->size_cache;
-	r_specular_shininess = ct->specular_color;
-	r_use_normal = ct->use_normal_cache;
-	r_use_specular = ct->use_specular_cache;
-
-	return true;
 }
 
 /* SHADER API */
@@ -1487,7 +243,7 @@ void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const Str
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 
-	if (p_texture.is_valid() && texture_owner.owns(p_texture)) {
+	if (p_texture.is_valid() && RendererRD::TextureStorage::get_singleton()->owns_texture(p_texture)) {
 		if (!shader->default_texture_parameter.has(p_name)) {
 			shader->default_texture_parameter[p_name] = Map<int, RID>();
 		}
@@ -2642,11 +1398,12 @@ RendererStorageRD::MaterialData::~MaterialData() {
 }
 
 void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
-	RendererStorageRD *singleton = (RendererStorageRD *)RendererStorage::base_singleton;
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 #ifdef TOOLS_ENABLED
-	Texture *roughness_detect_texture = nullptr;
+	RendererRD::Texture *roughness_detect_texture = nullptr;
 	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGHNESS_R;
-	Texture *normal_detect_texture = nullptr;
+	RendererRD::Texture *normal_detect_texture = nullptr;
 #endif
 
 	bool uses_global_textures = false;
@@ -2732,19 +1489,19 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 					switch (p_texture_uniforms[i].hint) {
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_ANISO);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_NORMAL);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_NORMAL);
 						} break;
 						default: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 						} break;
 					}
 				} break;
@@ -2753,27 +1510,27 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 					switch (p_texture_uniforms[i].hint) {
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 						} break;
 						default: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_WHITE);
+							rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE);
 						} break;
 					}
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK);
+					rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK);
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
 				case ShaderLanguage::TYPE_USAMPLER3D:
 				case ShaderLanguage::TYPE_SAMPLER3D: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_3D_WHITE);
+					rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+					rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 				} break;
 
 				default: {
@@ -2795,7 +1552,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 			bool srgb = p_use_linear_color && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO);
 
 			for (int j = 0; j < textures.size(); j++) {
-				Texture *tex = singleton->texture_owner.get_or_null(textures[j]);
+				RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(textures[j]);
 
 				if (tex) {
 					rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
@@ -2817,7 +1574,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 #endif
 				}
 				if (rd_texture.is_null()) {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+					rd_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 				}
 #ifdef TOOLS_ENABLED
 				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
@@ -4946,6 +3703,8 @@ void RendererStorageRD::particles_set_canvas_sdf_collision(RID p_particles, bool
 }
 
 void RendererStorageRD::_particles_process(Particles *p_particles, double p_delta) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 
@@ -5248,14 +4007,14 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 				for (uint32_t i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
 					RID rd_tex;
 					if (i < collision_3d_textures_used) {
-						Texture *t = texture_owner.get_or_null(collision_3d_textures[i]);
-						if (t && t->type == Texture::TYPE_3D) {
+						RendererRD::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(collision_3d_textures[i]);
+						if (t && t->type == RendererRD::Texture::TYPE_3D) {
 							rd_tex = t->rd_texture;
 						}
 					}
 
 					if (rd_tex == RID()) {
-						rd_tex = default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE];
+						rd_tex = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 					}
 					u.append_id(rd_tex);
 				}
@@ -5268,7 +4027,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 				if (collision_heightmap_texture.is_valid()) {
 					u.append_id(collision_heightmap_texture);
 				} else {
-					u.append_id(default_rd_textures[DEFAULT_RD_TEXTURE_BLACK]);
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
 				}
 				uniforms.push_back(u);
 			}
@@ -6676,18 +5435,18 @@ bool RendererStorageRD::light_directional_get_blend_splits(RID p_light) const {
 	return light->directional_blend_splits;
 }
 
-void RendererStorageRD::light_directional_set_sky_only(RID p_light, bool p_sky_only) {
+void RendererStorageRD::light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->directional_sky_only = p_sky_only;
+	light->directional_sky_mode = p_mode;
 }
 
-bool RendererStorageRD::light_directional_is_sky_only(RID p_light) const {
+RS::LightDirectionalSkyMode RendererStorageRD::light_directional_get_sky_mode(RID p_light) const {
 	const Light *light = light_owner.get_or_null(p_light);
-	ERR_FAIL_COND_V(!light, false);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
 
-	return light->directional_sky_only;
+	return light->directional_sky_mode;
 }
 
 RS::LightDirectionalShadowMode RendererStorageRD::light_directional_get_shadow_mode(RID p_light) {
@@ -6991,9 +5750,9 @@ void RendererStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type, 
 		return;
 	}
 
-	ERR_FAIL_COND(p_texture.is_valid() && !texture_owner.owns(p_texture));
+	ERR_FAIL_COND(p_texture.is_valid() && !RendererRD::TextureStorage::get_singleton()->owns_texture(p_texture));
 
-	if (decal->textures[p_type].is_valid() && texture_owner.owns(decal->textures[p_type])) {
+	if (decal->textures[p_type].is_valid() && RendererRD::TextureStorage::get_singleton()->owns_texture(decal->textures[p_type])) {
 		texture_remove_from_decal_atlas(decal->textures[p_type]);
 	}
 
@@ -7398,6 +6157,8 @@ void RendererStorageRD::lightmap_initialize(RID p_lightmap) {
 }
 
 void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_COND(!lm);
 
@@ -7405,17 +6166,17 @@ void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool 
 
 	//erase lightmap users
 	if (lm->light_texture.is_valid()) {
-		Texture *t = texture_owner.get_or_null(lm->light_texture);
+		RendererRD::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(lm->light_texture);
 		if (t) {
 			t->lightmap_users.erase(p_lightmap);
 		}
 	}
 
-	Texture *t = texture_owner.get_or_null(p_light);
+	RendererRD::Texture *t = RendererRD::TextureStorage::get_singleton()->get_texture(p_light);
 	lm->light_texture = p_light;
 	lm->uses_spherical_harmonics = p_uses_spherical_haromics;
 
-	RID default_2d_array = default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE];
+	RID default_2d_array = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 	if (!t) {
 		if (using_lightmap_array) {
 			if (lm->array_index >= 0) {
@@ -7593,9 +6354,9 @@ void RendererStorageRD::_clear_render_target(RenderTarget *rt) {
 void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 	if (rt->texture.is_null()) {
 		//create a placeholder until updated
-		rt->texture = texture_allocate();
-		texture_2d_placeholder_initialize(rt->texture);
-		Texture *tex = texture_owner.get_or_null(rt->texture);
+		rt->texture = RendererRD::TextureStorage::get_singleton()->texture_allocate();
+		RendererRD::TextureStorage::get_singleton()->texture_2d_placeholder_initialize(rt->texture);
+		RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(rt->texture);
 		tex->is_render_target = true;
 	}
 
@@ -7642,7 +6403,7 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 
 	{ //update texture
 
-		Texture *tex = texture_owner.get_or_null(rt->texture);
+		RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(rt->texture);
 
 		//free existing textures
 		if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
@@ -7678,7 +6439,7 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 
 		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
 		for (int i = 0; i < proxies.size(); i++) {
-			texture_proxy_update(proxies[i], rt->texture);
+			RendererRD::TextureStorage::get_singleton()->texture_proxy_update(proxies[i], rt->texture);
 		}
 	}
 }
@@ -8341,6 +7102,21 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	return RS::INSTANCE_NONE;
 }
 
+void RendererStorageRD::decal_atlas_remove_texture(RID p_texture) {
+	if (decal_atlas.textures.has(p_texture)) {
+		decal_atlas.textures.erase(p_texture);
+		//there is not much a point of making it dirty, just let it be.
+	}
+}
+
+void RendererStorageRD::decal_atlas_mark_dirty_on_texture(RID p_texture) {
+	if (decal_atlas.textures.has(p_texture)) {
+		//belongs to decal atlas..
+
+		decal_atlas.dirty = true; //mark it dirty since it was most likely modified
+	}
+}
+
 void RendererStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	if (!decal_atlas.textures.has(p_texture)) {
 		DecalAtlas::Texture t;
@@ -8406,7 +7182,7 @@ void RendererStorageRD::_update_decal_atlas() {
 		while ((K = decal_atlas.textures.next(K))) {
 			DecalAtlas::SortItem &si = itemsv.write[idx];
 
-			Texture *src_tex = texture_owner.get_or_null(*K);
+			RendererRD::Texture *src_tex = RendererRD::TextureStorage::get_singleton()->get_texture(*K);
 
 			si.size.width = (src_tex->width / border) + 1;
 			si.size.height = (src_tex->height / border) + 1;
@@ -8555,7 +7331,7 @@ void RendererStorageRD::_update_decal_atlas() {
 				const RID *K = nullptr;
 				while ((K = decal_atlas.textures.next(K))) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
-					Texture *src_tex = texture_owner.get_or_null(*K);
+					RendererRD::Texture *src_tex = RendererRD::TextureStorage::get_singleton()->get_texture(*K);
 					effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 				}
 
@@ -9265,47 +8041,10 @@ bool RendererStorageRD::has_os_feature(const String &p_feature) const {
 }
 
 bool RendererStorageRD::free(RID p_rid) {
-	if (texture_owner.owns(p_rid)) {
-		Texture *t = texture_owner.get_or_null(p_rid);
-
-		ERR_FAIL_COND_V(!t, false);
-		ERR_FAIL_COND_V(t->is_render_target, false);
-
-		if (RD::get_singleton()->texture_is_valid(t->rd_texture_srgb)) {
-			//erase this first, as it's a dependency of the one below
-			RD::get_singleton()->free(t->rd_texture_srgb);
-		}
-		if (RD::get_singleton()->texture_is_valid(t->rd_texture)) {
-			RD::get_singleton()->free(t->rd_texture);
-		}
-
-		if (t->is_proxy && t->proxy_to.is_valid()) {
-			Texture *proxy_to = texture_owner.get_or_null(t->proxy_to);
-			if (proxy_to) {
-				proxy_to->proxies.erase(p_rid);
-			}
-		}
-
-		if (decal_atlas.textures.has(p_rid)) {
-			decal_atlas.textures.erase(p_rid);
-			//there is not much a point of making it dirty, just let it be.
-		}
-
-		for (int i = 0; i < t->proxies.size(); i++) {
-			Texture *p = texture_owner.get_or_null(t->proxies[i]);
-			ERR_CONTINUE(!p);
-			p->proxy_to = RID();
-			p->rd_texture = RID();
-			p->rd_texture_srgb = RID();
-		}
-
-		if (t->canvas_texture) {
-			memdelete(t->canvas_texture);
-		}
-		texture_owner.free(p_rid);
-
-	} else if (canvas_texture_owner.owns(p_rid)) {
-		canvas_texture_owner.free(p_rid);
+	if (RendererRD::TextureStorage::get_singleton()->owns_texture(p_rid)) {
+		RendererRD::TextureStorage::get_singleton()->texture_free(p_rid);
+	} else if (RendererRD::CanvasTextureStorage::get_singleton()->owns_canvas_texture(p_rid)) {
+		RendererRD::CanvasTextureStorage::get_singleton()->canvas_texture_free(p_rid);
 	} else if (shader_owner.owns(p_rid)) {
 		Shader *shader = shader_owner.get_or_null(p_rid);
 		//make material unreference this
@@ -9367,7 +8106,7 @@ bool RendererStorageRD::free(RID p_rid) {
 	} else if (decal_owner.owns(p_rid)) {
 		Decal *decal = decal_owner.get_or_null(p_rid);
 		for (int i = 0; i < RS::DECAL_TEXTURE_MAX; i++) {
-			if (decal->textures[i].is_valid() && texture_owner.owns(decal->textures[i])) {
+			if (decal->textures[i].is_valid() && RendererRD::TextureStorage::get_singleton()->owns_texture(decal->textures[i])) {
 				texture_remove_from_decal_atlas(decal->textures[i]);
 			}
 		}
@@ -9421,7 +8160,7 @@ bool RendererStorageRD::free(RID p_rid) {
 		_clear_render_target(rt);
 
 		if (rt->texture.is_valid()) {
-			Texture *tex = texture_owner.get_or_null(rt->texture);
+			RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(rt->texture);
 			tex->is_render_target = false;
 			free(rt->texture);
 		}
@@ -9504,6 +8243,8 @@ RendererStorageRD *RendererStorageRD::base_singleton = nullptr;
 RendererStorageRD::RendererStorageRD() {
 	base_singleton = this;
 
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		shader_data_request_func[i] = nullptr;
 	}
@@ -9518,8 +8259,7 @@ RendererStorageRD::RendererStorageRD() {
 	memset(global_variables.buffer_dirty_regions, 0, sizeof(bool) * global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
 	global_variables.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalVariables::Value) * global_variables.buffer_size);
 
-	{ //create default textures
-
+	{ // default atlas texture
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 		tformat.width = 4;
@@ -9529,18 +8269,6 @@ RendererStorageRD::RendererStorageRD() {
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 255);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
 
 		for (int i = 0; i < 16; i++) {
 			pv.set(i * 4 + 0, 0);
@@ -9550,210 +8278,11 @@ RendererStorageRD::RendererStorageRD() {
 		}
 
 		{
+			//take the chance and initialize decal atlas to something
 			Vector<Vector<uint8_t>> vpv;
 			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-
-			//take the chance and initialize decal atlas to something
 			decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 			decal_atlas.texture_srgb = decal_atlas.texture;
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 128);
-			pv.set(i * 4 + 1, 128);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_NORMAL] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 128);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_ANISO] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		default_rd_textures[DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER] = RD::get_singleton()->texture_buffer_create(16, RD::DATA_FORMAT_R8G8B8A8_UNORM, pv);
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		{
-			tformat.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_2D_UINT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-	}
-
-	{ //create default cubemap
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.array_layers = 6;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
-
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			for (int i = 0; i < 6; i++) {
-				vpv.push_back(pv);
-			}
-			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-	}
-
-	{ //create default cubemap array
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.array_layers = 6;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_CUBE;
-
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			for (int i = 0; i < 6; i++) {
-				vpv.push_back(pv);
-			}
-			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-	}
-
-	{ //create default cubemap white array
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.array_layers = 6;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_CUBE;
-
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 255);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			for (int i = 0; i < 6; i++) {
-				vpv.push_back(pv);
-			}
-			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-	}
-
-	{ //create default 3D
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.depth = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_3D;
-
-		Vector<uint8_t> pv;
-		pv.resize(64 * 4);
-		for (int i = 0; i < 64; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_3D_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-		for (int i = 0; i < 64; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 255);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-	}
-
-	{ //create default array
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.array_layers = 1;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 255);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 	}
 
@@ -9961,7 +8490,7 @@ RendererStorageRD::RendererStorageRD() {
 
 	using_lightmap_array = true; // high end
 	if (using_lightmap_array) {
-		uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+		uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 		if (textures_per_stage <= 256) {
 			lightmap_textures.resize(32);
@@ -9970,7 +8499,7 @@ RendererStorageRD::RendererStorageRD() {
 		}
 
 		for (int i = 0; i < lightmap_textures.size(); i++) {
-			lightmap_textures.write[i] = default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE];
+			lightmap_textures.write[i] = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		}
 	}
 
@@ -10176,11 +8705,6 @@ RendererStorageRD::~RendererStorageRD() {
 	memdelete_arr(global_variables.buffer_usage);
 	memdelete_arr(global_variables.buffer_dirty_regions);
 	RD::get_singleton()->free(global_variables.buffer);
-
-	//def textures
-	for (int i = 0; i < DEFAULT_RD_TEXTURE_MAX; i++) {
-		RD::get_singleton()->free(default_rd_textures[i]);
-	}
 
 	//def samplers
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {

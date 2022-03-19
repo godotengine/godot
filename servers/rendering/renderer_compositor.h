@@ -34,6 +34,8 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/storage/canvas_texture_storage.h"
+#include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering_server.h"
 
 class RendererSceneRender;
@@ -70,6 +72,8 @@ protected:
 public:
 	static RendererCompositor *create();
 
+	virtual RendererCanvasTextureStorage *get_canvas_texture_storage() = 0;
+	virtual RendererTextureStorage *get_texture_storage() = 0;
 	virtual RendererStorage *get_storage() = 0;
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;

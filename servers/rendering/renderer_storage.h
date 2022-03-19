@@ -121,59 +121,6 @@ public:
 		Set<Dependency *> dependencies;
 	};
 
-	virtual bool can_create_resources_async() const = 0;
-	/* TEXTURE API */
-
-	virtual RID texture_allocate() = 0;
-
-	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) = 0;
-	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
-	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
-	virtual void texture_proxy_initialize(RID p_texture, RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
-
-	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
-	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
-	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
-
-	//these two APIs can be used together or in combination with the others.
-	virtual void texture_2d_placeholder_initialize(RID p_texture) = 0;
-	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) = 0;
-	virtual void texture_3d_placeholder_initialize(RID p_texture) = 0;
-
-	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
-	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const = 0;
-	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const = 0;
-
-	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
-	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
-
-	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
-	virtual String texture_get_path(RID p_texture) const = 0;
-
-	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
-
-	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) = 0;
-
-	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
-
-	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
-
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
-
-	/* CANVAS TEXTURE API */
-
-	virtual RID canvas_texture_allocate() = 0;
-	virtual void canvas_texture_initialize(RID p_rid) = 0;
-
-	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) = 0;
-	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) = 0;
-
-	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) = 0;
-	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) = 0;
-
 	/* SHADER API */
 
 	virtual RID shader_allocate() = 0;
@@ -330,8 +277,8 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual bool light_directional_get_blend_splits(RID p_light) const = 0;
-	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
-	virtual bool light_directional_is_sky_only(RID p_light) const = 0;
+	virtual void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) = 0;
+	virtual RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const = 0;
 
 	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
@@ -396,6 +343,9 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
 
 	virtual AABB decal_get_aabb(RID p_decal) const = 0;
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 
 	/* VOXEL GI API */
 

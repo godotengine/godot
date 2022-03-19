@@ -34,7 +34,7 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 #include "platform/javascript/os_javascript.h"
-#include "servers/rendering/rasterizer_dummy.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #include <emscripten.h>
 #include <png.h>

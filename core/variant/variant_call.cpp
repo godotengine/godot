@@ -1467,6 +1467,8 @@ static void _register_variant_builtin_methods() {
 
 	bind_static_method(String, num_scientific, sarray("number"), varray());
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
+	bind_static_method(String, num_int64, sarray("number", "base", "capitalize_hex"), varray(10, false));
+	bind_static_method(String, num_uint64, sarray("number", "base", "capitalize_hex"), varray(10, false));
 	bind_static_method(String, chr, sarray("char"), varray());
 	bind_static_method(String, humanize_size, sarray("size"), varray());
 
@@ -1626,6 +1628,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, is_normalized, sarray(), varray());
 	bind_method(Quaternion, is_equal_approx, sarray("to"), varray());
 	bind_method(Quaternion, inverse, sarray(), varray());
+	bind_method(Quaternion, log, sarray(), varray());
+	bind_method(Quaternion, exp, sarray(), varray());
 	bind_method(Quaternion, angle_to, sarray("to"), varray());
 	bind_method(Quaternion, dot, sarray("with"), varray());
 	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());

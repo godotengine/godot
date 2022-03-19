@@ -2490,7 +2490,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.exposure_texture = rb->luminance.current;
 			tonemap.auto_exposure_grey = env->auto_exp_scale;
 		} else {
-			tonemap.exposure_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (can_use_effects && env && env->glow_enabled) {
@@ -2506,15 +2506,15 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.glow_texture = rb->blur[1].texture;
 			if (env->glow_map.is_valid()) {
 				tonemap.glow_map_strength = env->glow_map_strength;
-				tonemap.glow_map = storage->texture_get_rd_texture(env->glow_map);
+				tonemap.glow_map = texture_storage->texture_get_rd_texture(env->glow_map);
 			} else {
 				tonemap.glow_map_strength = 0.0f;
-				tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+				tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 			}
 
 		} else {
-			tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
-			tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+			tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
+			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (rb->screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
@@ -2536,7 +2536,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		tonemap.use_color_correction = false;
 		tonemap.use_1d_color_correction = false;
-		tonemap.color_correction_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 		if (can_use_effects && env) {
 			tonemap.use_bcs = env->adjustments_enabled;
@@ -2546,7 +2546,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			if (env->adjustments_enabled && env->color_correction.is_valid()) {
 				tonemap.use_color_correction = true;
 				tonemap.use_1d_color_correction = env->use_1d_color_correction;
-				tonemap.color_correction_texture = storage->texture_get_rd_texture(env->color_correction);
+				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(env->color_correction);
 			}
 		}
 
@@ -2606,14 +2606,14 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	}
 
 	tonemap.use_glow = false;
-	tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
-	tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
+	tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 	tonemap.use_auto_exposure = false;
-	tonemap.exposure_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+	tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 
 	tonemap.use_color_correction = false;
 	tonemap.use_1d_color_correction = false;
-	tonemap.color_correction_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 	if (can_use_effects && env) {
 		tonemap.use_bcs = env->adjustments_enabled;
@@ -2623,7 +2623,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		if (env->adjustments_enabled && env->color_correction.is_valid()) {
 			tonemap.use_color_correction = true;
 			tonemap.use_1d_color_correction = env->use_1d_color_correction;
-			tonemap.color_correction_texture = storage->texture_get_rd_texture(env->color_correction);
+			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(env->color_correction);
 		}
 	}
 
@@ -2656,7 +2656,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
 
 			if (shadow_atlas_texture.is_null()) {
-				shadow_atlas_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+				shadow_atlas_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
 			}
 
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
@@ -2716,7 +2716,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
 		if (p_occlusion_buffer.is_valid()) {
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
-			effects->copy_to_fb_rect(storage->texture_get_rd_texture(p_occlusion_buffer), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize), true, false);
+			effects->copy_to_fb_rect(texture_storage->texture_get_rd_texture(p_occlusion_buffer), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize), true, false);
 		}
 	}
 }
@@ -3286,7 +3286,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		RS::LightType type = storage->light_get_type(base);
 		switch (type) {
 			case RS::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_is_sky_only(base)) {
+				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_get_sky_mode(base) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					continue;
 				}
 
@@ -4364,7 +4364,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.binding = 1;
 			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
 			if (shadow_atlas == nullptr || shadow_atlas->depth.is_null()) {
-				u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
 			} else {
 				u.append_id(shadow_atlas->depth);
 			}
@@ -4380,7 +4380,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			if (directional_shadow.depth.is_valid()) {
 				u.append_id(directional_shadow.depth);
 			} else {
-				u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
 			}
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -4545,7 +4545,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 19;
-			RID radiance_texture = storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			RID radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 			RID sky_texture = env->sky.is_valid() ? sky.sky_get_radiance_texture_rd(env->sky) : RID();
 			u.append_id(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);
@@ -5600,6 +5600,7 @@ uint32_t RendererSceneRenderRD::get_max_elements() const {
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
+	texture_storage = RendererRD::TextureStorage::get_singleton();
 	storage = p_storage;
 	singleton = this;
 }

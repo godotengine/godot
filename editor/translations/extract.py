@@ -1,5 +1,6 @@
 #!/bin/python
 
+import enum
 import fnmatch
 import os
 import re
@@ -63,22 +64,30 @@ msgstr ""
 """
 
 
+class ExtractType(enum.IntEnum):
+    TEXT = 1
+    PROPERTY_PATH = 2
+    GROUP = 3
+
+
 # Regex "(?P<name>(?:[^"\\]|\\.)*)" creates a group named `name` that matches a string.
 message_patterns = {
-    re.compile(r'RTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): False,
-    re.compile(r'TTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): False,
-    re.compile(r'TTRC\("(?P<message>(?:[^"\\]|\\.)*)"\)'): False,
+    re.compile(r'RTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): ExtractType.TEXT,
+    re.compile(r'TTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): ExtractType.TEXT,
+    re.compile(r'TTRC\("(?P<message>(?:[^"\\]|\\.)*)"\)'): ExtractType.TEXT,
     re.compile(
         r'TTRN\("(?P<message>(?:[^"\\]|\\.)*)", "(?P<plural_message>(?:[^"\\]|\\.)*)",[^,)]+?(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'
-    ): False,
+    ): ExtractType.TEXT,
     re.compile(
         r'RTRN\("(?P<message>(?:[^"\\]|\\.)*)", "(?P<plural_message>(?:[^"\\]|\\.)*)",[^,)]+?(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'
-    ): False,
-    re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): True,
-    re.compile(r'GLOBAL_DEF(?:_RST)?\("(?P<message>[^".]+?)",'): True,
-    re.compile(r'EDITOR_DEF(?:_RST)?\("(?P<message>[^"]+?)",'): True,
-    re.compile(r'ADD_PROPERTY\(PropertyInfo\(Variant::[A-Z]+,\s*"(?P<message>[^"]+?)",'): True,
-    re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)",'): False,
+    ): ExtractType.TEXT,
+    re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(r'GLOBAL_DEF(?:_RST)?\("(?P<message>[^".]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(r'EDITOR_DEF(?:_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(
+        r'ADD_PROPERTY\(PropertyInfo\(Variant::[_A-Z0-9]+, "(?P<message>[^"]+?)"[,)]'
+    ): ExtractType.PROPERTY_PATH,
+    re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)", "(?P<prefix>[^"]*?)"\)'): ExtractType.GROUP,
 }
 
 
@@ -87,17 +96,24 @@ capitalize_re = re.compile(r"(?<=\D)(?=\d)|(?<=\d)(?=\D([a-z]|\d))")
 
 
 def _process_editor_string(name):
-    # See String::capitalize().
-    # fmt: off
-    capitalized = " ".join(
-        part.title()
-        for part in capitalize_re.sub("_", name).replace("_", " ").split()
-    )
-    # fmt: on
-    # See EditorStringProcessor::process_string().
-    for key, value in remaps.items():
-        capitalized = capitalized.replace(key, value)
-    return capitalized
+    # See EditorPropertyNameProcessor::process_string().
+    capitalized_parts = []
+    for segment in name.split("_"):
+        if not segment:
+            continue
+        remapped = remaps.get(segment)
+        if remapped:
+            capitalized_parts.append(remapped)
+        else:
+            # See String::capitalize().
+            # fmt: off
+            capitalized_parts.append(" ".join(
+                part.title()
+                for part in capitalize_re.sub("_", segment).replace("_", " ").split()
+            ))
+            # fmt: on
+
+    return " ".join(capitalized_parts)
 
 
 def _write_message(msgctx, msg, msg_plural, location):
@@ -232,6 +248,7 @@ def process_file(f, fname):
     reading_translator_comment = False
     is_block_translator_comment = False
     translator_comment = ""
+    current_group = ""
 
     while l:
 
@@ -250,22 +267,30 @@ def process_file(f, fname):
                 translator_comment = translator_comment[:-1]  # Remove extra \n at the end.
 
         if not reading_translator_comment:
-            for pattern, is_property_path in message_patterns.items():
+            for pattern, extract_type in message_patterns.items():
                 for m in pattern.finditer(l):
                     location = os.path.relpath(fname).replace("\\", "/")
                     if line_nb:
                         location += ":" + str(lc)
 
-                    groups = m.groupdict("")
-                    msg = groups.get("message", "")
-                    msg_plural = groups.get("plural_message", "")
-                    msgctx = groups.get("context", "")
+                    captures = m.groupdict("")
+                    msg = captures.get("message", "")
+                    msg_plural = captures.get("plural_message", "")
+                    msgctx = captures.get("context", "")
 
-                    if is_property_path:
+                    if extract_type == ExtractType.TEXT:
+                        _add_message(msg, msg_plural, msgctx, location, translator_comment)
+                    elif extract_type == ExtractType.PROPERTY_PATH:
+                        if current_group:
+                            if msg.startswith(current_group):
+                                msg = msg[len(current_group) :]
+                            else:
+                                current_group = ""
                         for part in msg.split("/"):
                             _add_message(_process_editor_string(part), msg_plural, msgctx, location, translator_comment)
-                    else:
+                    elif extract_type == ExtractType.GROUP:
                         _add_message(msg, msg_plural, msgctx, location, translator_comment)
+                        current_group = captures["prefix"]
             translator_comment = ""
 
         l = f.readline()

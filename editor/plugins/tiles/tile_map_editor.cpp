@@ -3989,6 +3989,7 @@ TileMapEditor::TileMapEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
+	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	for (int plugin_index = 0; plugin_index < tile_map_editor_plugins.size(); plugin_index++) {
 		Vector<TileMapEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();

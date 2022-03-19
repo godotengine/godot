@@ -41,6 +41,18 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 	}
 }
 
+Error EditorExportPlatformWindows::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+
+	f->store_line("@echo off");
+	f->store_line("title \"" + p_app_name + "\"");
+	f->store_line("\"%~dp0" + p_pkg_name + "\" \"%*\"");
+	f->store_line("pause > nul");
+
+	return OK;
+}
+
 Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, p_path, p_flags);
 
@@ -52,6 +64,23 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 
 	if (p_preset->get("codesign/enable") && err == OK) {
 		err = _code_sign(p_preset, p_path);
+	}
+
+	String app_name;
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+		app_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	} else {
+		app_name = "Unnamed";
+	}
+	app_name = OS::get_singleton()->get_safe_dir_name(app_name);
+
+	// Save console script.
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_script");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			String scr_path = p_path.get_basename() + ".cmd";
+			err = _export_debug_script(p_preset, app_name, p_path.get_file(), scr_path);
+		}
 	}
 
 	return err;

@@ -53,6 +53,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
 public:
@@ -68,6 +69,7 @@ public:
 	void set_item_id(int p_idx, int p_id);
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	void set_item_disabled(int p_idx, bool p_disabled);
+	void set_item_tooltip(int p_idx, const String &p_tooltip);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -75,6 +77,7 @@ public:
 	int get_item_index(int p_id) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
+	String get_item_tooltip(int p_idx) const;
 
 	void set_item_count(int p_count);
 	int get_item_count() const;

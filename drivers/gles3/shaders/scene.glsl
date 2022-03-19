@@ -73,8 +73,8 @@ layout(location = 12) in highp vec4 instance_custom_data;
 // uniforms
 //
 
-uniform highp mat4 camera_matrix;
-uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 inv_view_matrix;
+uniform highp mat4 view_matrix;
 uniform highp mat4 projection_matrix;
 uniform highp mat4 projection_inverse_matrix;
 
@@ -314,7 +314,7 @@ uniform mediump float fog_height_curve;
 void main() {
 	highp vec4 vertex = vertex_attrib;
 
-	mat4 world_matrix = world_transform;
+	mat4 model_matrix = world_transform;
 
 #ifdef USE_INSTANCING
 	{
@@ -323,7 +323,7 @@ void main() {
 				instance_xform_row_1,
 				instance_xform_row_2,
 				vec4(0.0, 0.0, 0.0, 1.0));
-		world_matrix = world_matrix * transpose(m);
+		model_matrix = model_matrix * transpose(m);
 	}
 
 #endif
@@ -356,12 +356,12 @@ void main() {
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-	vertex = world_matrix * vertex;
-	normal = normalize((world_matrix * vec4(normal, 0.0)).xyz);
+	vertex = model_matrix * vertex;
+	normal = normalize((model_matrix * vec4(normal, 0.0)).xyz);
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 
-	tangent = normalize((world_matrix * vec4(tangent, 0.0)).xyz);
-	binormal = normalize((world_matrix * vec4(binormal, 0.0)).xyz);
+	tangent = normalize((model_matrix * vec4(tangent, 0.0)).xyz);
+	binormal = normalize((model_matrix * vec4(binormal, 0.0)).xyz);
 #endif
 #endif
 
@@ -395,7 +395,7 @@ void main() {
 
 #endif
 
-	world_matrix = world_matrix * bone_transform;
+	model_matrix = model_matrix * bone_transform;
 
 #endif
 
@@ -408,11 +408,11 @@ void main() {
 
 	mat4 local_projection_matrix = projection_matrix;
 
-	mat4 modelview = camera_inverse_matrix * world_matrix;
+	mat4 modelview = view_matrix * model_matrix;
 	float roughness = 1.0;
 
 #define projection_matrix local_projection_matrix
-#define world_transform world_matrix
+#define world_transform model_matrix
 
 	float point_size = 1.0;
 
@@ -439,11 +439,11 @@ VERTEX_SHADER_CODE
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-	vertex = camera_inverse_matrix * vertex;
-	normal = normalize((camera_inverse_matrix * vec4(normal, 0.0)).xyz);
+	vertex = view_matrix * vertex;
+	normal = normalize((view_matrix * vec4(normal, 0.0)).xyz);
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-	tangent = normalize((camera_inverse_matrix * vec4(tangent, 0.0)).xyz);
-	binormal = normalize((camera_inverse_matrix * vec4(binormal, 0.0)).xyz);
+	tangent = normalize((view_matrix * vec4(tangent, 0.0)).xyz);
+	binormal = normalize((view_matrix * vec4(binormal, 0.0)).xyz);
 #endif
 #endif
 
@@ -635,7 +635,7 @@ VERTEX_SHADER_CODE
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-		float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
+		float y = (inv_view_matrix * vec4(vertex_interp, 1.0)).y;
 		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif
@@ -680,9 +680,9 @@ precision mediump int;
 // uniforms
 //
 
-uniform highp mat4 camera_matrix;
+uniform highp mat4 inv_view_matrix;
 /* clang-format on */
-uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 view_matrix;
 uniform highp mat4 projection_matrix;
 uniform highp mat4 projection_inverse_matrix;
 
@@ -1644,7 +1644,7 @@ FRAGMENT_SHADER_CODE
 		cone_dirs[10] = vec3(-0.700629, -0.509037, -0.5);
 		cone_dirs[11] = vec3(0.267617, -0.823639, -0.5);
 
-		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
+		vec3 local_normal = normalize(inv_view_matrix * vec4(normal, 0.0)).xyz;
 		vec4 captured = vec4(0.0);
 		float sum = 0.0;
 		for (int i = 0; i < 12; i++) {
@@ -2122,7 +2122,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-		float y = (camera_matrix * vec4(vertex, 1.0)).y;
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif

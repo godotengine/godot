@@ -102,6 +102,22 @@ Quaternion Quaternion::inverse() const {
 	return Quaternion(-x, -y, -z, w);
 }
 
+Quaternion Quaternion::log() const {
+	Quaternion src = *this;
+	Vector3 src_v = src.get_axis() * src.get_angle();
+	return Quaternion(src_v.x, src_v.y, src_v.z, 0);
+}
+
+Quaternion Quaternion::exp() const {
+	Quaternion src = *this;
+	Vector3 src_v = Vector3(src.x, src.y, src.z);
+	float theta = src_v.length();
+	if (theta < CMP_EPSILON) {
+		return Quaternion(0, 0, 0, 1);
+	}
+	return Quaternion(src_v.normalized(), theta);
+}
+
 Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
@@ -190,6 +206,9 @@ Quaternion::operator String() const {
 }
 
 Vector3 Quaternion::get_axis() const {
+	if (Math::abs(w) > 1 - CMP_EPSILON) {
+		return Vector3(x, y, z);
+	}
 	real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
 	return Vector3(x * r, y * r, z * r);
 }

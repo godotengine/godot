@@ -256,6 +256,13 @@
 				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
+		<method name="push_hint">
+			<return type="void" />
+			<argument index="0" name="description" type="String" />
+			<description>
+				Adds a [code][hint][/code] tag to the tag stack. Same as BBCode [code][hint=something]{text}[/hint][/code].
+			</description>
+		</method>
 		<method name="push_indent">
 			<return type="void" />
 			<argument index="0" name="level" type="int" />
@@ -424,6 +431,9 @@
 			If [code]true[/code], the label's height will be automatically updated to fit its content.
 			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
 		</member>
+		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
+			If [code]true[/code], the label underlines hint tags such as [code][hint=description]{text}[/hint][/code].
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
@@ -563,9 +573,11 @@
 		</constant>
 		<constant name="ITEM_META" value="23" enum="ItemType">
 		</constant>
-		<constant name="ITEM_DROPCAP" value="24" enum="ItemType">
+		<constant name="ITEM_HINT" value="24" enum="ItemType">
 		</constant>
-		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
+		<constant name="ITEM_DROPCAP" value="25" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="26" enum="ItemType">
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member visible_characters] value is visually identical to typing the text.
