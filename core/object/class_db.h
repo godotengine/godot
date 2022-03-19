@@ -227,75 +227,27 @@ public:
 
 	static uint64_t get_api_hash(APIType p_api);
 
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method) {
+	template <class N, class M, typename... VarArgs>
+	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
 		MethodBind *bind = create_method_bind(p_method);
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, nullptr, 0); //use static function, much smaller binary usage
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[1] = { &p_def1 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 1);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[2] = { &p_def1, &p_def2 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 2);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[3] = { &p_def1, &p_def2, &p_def3 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 3);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[4] = { &p_def1, &p_def2, &p_def3, &p_def4 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 4);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[5] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 5);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[6] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 6);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[7] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 7);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7, const Variant &p_def8) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[8] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7, &p_def8 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 8);
+	template <class N, class M, typename... VarArgs>
+	static MethodBind *bind_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		MethodBind *bind = create_static_method_bind(p_method);
+		bind->set_instance_class(p_class);
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
 	template <class M>
