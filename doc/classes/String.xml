@@ -181,6 +181,14 @@
 			<argument index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [code]placeholder[/code] with [code]values[/code].
+				[b]Note:[/b] There must be one and only one [code]_[/code] in the [code]placeholder[/code].
+				[b]Note:[/b] The [code]values[/code] can be a dictionary, an one-dimensional array, or a two-dimensional array. When it's a two-dimensional array, the length of the inner arrays must be [code]2[/code], or an error will be generated.
+				[b]Note:[/b] The function will iterate over the [code]values[/code]. For a dictionary, first, it will replace the [code]_[/code] with the key; Then use the result to find the first matched word; At last, use the value to replace the result (see [method replace]). For an one-dimensional array, like the dictionary, but the index number acts as the key, the element of the array acts as the value. For a two-dimensional array, the first element of the inner array acts as the key, the second one acts as the value.
+				[codeblock]
+				var string = "The NPC {name} lives in {location}.".format({"name": "Tom", "location": "the village"})
+				print(string)  # The NPC Tom lives in the village.
+				[/codeblock]
+				See [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html#format-method-examples]Format method examples[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="get_base_dir" qualifiers="const">
