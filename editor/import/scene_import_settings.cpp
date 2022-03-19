@@ -249,6 +249,23 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
 	if (src_mesh_node) {
+		Ref<Skin> skin = src_mesh_node->get_skin();
+		if (skin.is_valid()) {
+			int bind_count = skin->get_bind_count();
+			bool should_warn = false;
+			for (int i = 0; i < bind_count; i++) {
+				Vector3 bind_pose_scale = skin->get_bind_pose(i).get_basis().get_scale();
+				if (abs(bind_pose_scale.x) > 2.0 || abs(bind_pose_scale.y) > 2.0 || abs(bind_pose_scale.y) > 2.0) {
+					should_warn = true;
+					break;
+				}
+			}
+			if (should_warn) {
+				String warning_text = vformat("The mesh '%s' of '%s' has scaling issues. ", src_mesh_node->get_name(), base_path.get_file());
+				WARN_PRINT(warning_text + "Consider authoring the scene with the scale of all objects set to (1, 1, 1) to avoid issues.");
+			}
+		}
+
 		MeshInstance3D *mesh_node = memnew(MeshInstance3D);
 		mesh_node->set_name(src_mesh_node->get_name());
 		mesh_node->set_transform(src_mesh_node->get_transform());
