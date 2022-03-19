@@ -3226,32 +3226,21 @@ String String::format(const Variant &values, String placeholder) const {
 		Array values_arr = values;
 
 		for (int i = 0; i < values_arr.size(); i++) {
-			String i_as_str = String::num_int64(i);
+			String val;
 
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
 				Array value_arr = values_arr[i];
 
 				if (value_arr.size() == 2) {
-					Variant v_key = value_arr[0];
-					String key = v_key;
-
-					Variant v_val = value_arr[1];
-					String val = v_val;
-
-					new_string = new_string.replace(placeholder.replace("_", key), val);
+					val = value_arr[1];
 				} else {
 					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
-				Variant v_val = values_arr[i];
-				String val = v_val;
-
-				if (placeholder.find("_") > -1) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
-				} else {
-					new_string = new_string.replace_first(placeholder, val);
-				}
+				val = values_arr[i];
 			}
+
+			new_string = new_string.replace_first(placeholder, val);
 		}
 	} else if (values.get_type() == Variant::DICTIONARY) {
 		Dictionary d = values;
@@ -3259,7 +3248,7 @@ String String::format(const Variant &values, String placeholder) const {
 		d.get_key_list(&keys);
 
 		for (const Variant &key : keys) {
-			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
+			new_string = new_string.replace_first(placeholder, d[key]);
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());
