@@ -440,7 +440,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	// Export pck and shared objects
 	Vector<SharedObject> shared_objects;
 	String pck_path = base_path + ".pck";
-	Error error = save_pack(p_preset, pck_path, &shared_objects);
+	Error error = save_pack(p_preset, p_debug, pck_path, &shared_objects);
 	if (error != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + pck_path);
 		return error;

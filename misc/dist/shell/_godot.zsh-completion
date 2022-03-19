@@ -66,6 +66,7 @@ _arguments \
   '--remote-debug[enable remote debugging]:remote debugger address' \
   '--debug-collisions[show collision shapes when running the scene]' \
   '--debug-navigation[show navigation polygons when running the scene]' \
+  '--debug-stringnames[print all StringName allocations to stdout when the engine quits]' \
   '--frame-delay[simulate high CPU load (delay each frame by the given number of milliseconds)]:number of milliseconds' \
   '--time-scale[force time scale (higher values are faster, 1.0 is normal speed)]:time scale' \
   '--disable-render-loop[disable render loop so rendering only occurs when called explicitly from script]' \

@@ -566,8 +566,8 @@ void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p
 	extra_files.push_back(ef);
 }
 
-void EditorExportPlugin::add_shared_object(const String &p_path, const Vector<String> &tags) {
-	shared_objects.push_back(SharedObject(p_path, tags));
+void EditorExportPlugin::add_shared_object(const String &p_path, const Vector<String> &p_tags, const String &p_target) {
+	shared_objects.push_back(SharedObject(p_path, p_tags, p_target));
 }
 
 void EditorExportPlugin::add_ios_framework(const String &p_path) {
@@ -660,7 +660,7 @@ void EditorExportPlugin::skip() {
 }
 
 void EditorExportPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_shared_object", "path", "tags"), &EditorExportPlugin::add_shared_object);
+	ClassDB::bind_method(D_METHOD("add_shared_object", "path", "tags", "target"), &EditorExportPlugin::add_shared_object);
 	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_ios_project_static_lib);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
 	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_ios_framework);
@@ -680,7 +680,7 @@ void EditorExportPlugin::_bind_methods() {
 EditorExportPlugin::EditorExportPlugin() {
 }
 
-EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset) {
+EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset, bool p_debug) {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
 	List<String> feature_list;
 	platform->get_platform_features(&feature_list);
@@ -690,6 +690,14 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 	for (const String &E : feature_list) {
 		result.features.insert(E);
 		result.features_pv.push_back(E);
+	}
+
+	if (p_debug) {
+		result.features.insert("debug");
+		result.features_pv.push_back("debug");
+	} else {
+		result.features.insert("release");
+		result.features_pv.push_back("release");
 	}
 
 	if (!p_preset->get_custom_features().is_empty()) {
@@ -708,7 +716,7 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 }
 
 EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	FeatureContainers features = p_platform.get_feature_containers(p_preset);
+	FeatureContainers features = p_platform.get_feature_containers(p_preset, p_debug);
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	//initial export plugin callback
 	for (int i = 0; i < export_plugins.size(); i++) {
@@ -730,7 +738,7 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	}
 }
 
-Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
+Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
 	//figure out paths of files that will be exported
 	Set<String> paths;
 	Vector<String> path_remaps;
@@ -864,7 +872,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		export_plugins.write[i]->_clear();
 	}
 
-	FeatureContainers feature_containers = get_feature_containers(p_preset);
+	FeatureContainers feature_containers = get_feature_containers(p_preset, p_debug);
 	Set<String> &features = feature_containers.features;
 	Vector<String> &features_pv = feature_containers.features_pv;
 
@@ -1118,7 +1126,7 @@ Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObj
 	return OK;
 }
 
-Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files, bool p_embed, int64_t *r_embedded_start, int64_t *r_embedded_size) {
+Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files, bool p_embed, int64_t *r_embedded_start, int64_t *r_embedded_size) {
 	EditorProgress ep("savepack", TTR("Packing"), 102, true);
 
 	// Create the temporary export directory if it doesn't exist.
@@ -1134,7 +1142,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	pd.f = ftmp;
 	pd.so_files = p_so_files;
 
-	Error err = export_project_files(p_preset, _save_pack_file, &pd, _add_shared_object);
+	Error err = export_project_files(p_preset, p_debug, _save_pack_file, &pd, _add_shared_object);
 
 	memdelete(ftmp); //close tmp file
 
@@ -1324,7 +1332,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	return OK;
 }
 
-Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	EditorProgress ep("savezip", TTR("Packing"), 102, true);
 
 	FileAccess *src_f;
@@ -1335,7 +1343,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 	zd.ep = &ep;
 	zd.zip = zip;
 
-	Error err = export_project_files(p_preset, _save_zip_file, &zd);
+	Error err = export_project_files(p_preset, p_debug, _save_zip_file, &zd);
 	if (err != OK && err != ERR_SKIP) {
 		ERR_PRINT("Failed to export project files");
 	}
@@ -1347,12 +1355,12 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 
 Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	return save_pack(p_preset, p_path);
+	return save_pack(p_preset, p_debug, p_path);
 }
 
 Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	return save_zip(p_preset, p_path);
+	return save_zip(p_preset, p_debug, p_path);
 }
 
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
@@ -1755,6 +1763,8 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
@@ -1873,7 +1883,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 		int64_t embedded_pos;
 		int64_t embedded_size;
-		err = save_pack(p_preset, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+		err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 		if (err == OK && p_preset->get("binary_format/embed_pck")) {
 			if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
 				EditorNode::get_singleton()->show_warning(TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
@@ -1887,12 +1897,27 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 		}
 
 		if (err == OK && !so_files.is_empty()) {
-			//if shared object files, copy them
+			// If shared object files, copy them.
 			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
-				err = da->copy(so_files[i].path, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
-				if (err == OK) {
-					err = sign_shared_object(p_preset, p_debug, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
+				String src_path = ProjectSettings::get_singleton()->globalize_path(so_files[i].path);
+				String target_path;
+				if (so_files[i].target.is_empty()) {
+					target_path = p_path.get_base_dir().plus_file(src_path.get_file());
+				} else {
+					target_path = p_path.get_base_dir().plus_file(so_files[i].target).plus_file(src_path.get_file());
+				}
+
+				if (da->dir_exists(src_path)) {
+					err = da->make_dir_recursive(target_path);
+					if (err == OK) {
+						err = da->copy_dir(src_path, target_path, -1, true);
+					}
+				} else {
+					err = da->copy(src_path, target_path);
+					if (err == OK) {
+						err = sign_shared_object(p_preset, p_debug, target_path);
+					}
 				}
 			}
 		}

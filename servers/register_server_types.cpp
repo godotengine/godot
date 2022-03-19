@@ -70,7 +70,9 @@
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
+#include "servers/extensions/physics_server_3d_extension.h"
 #include "servers/rendering/shader_types.h"
+#include "text/text_server_dummy.h"
 #include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_interface.h"
@@ -112,6 +114,10 @@ void preregister_server_types() {
 	GDREGISTER_CLASS(TextServerManager);
 	GDREGISTER_ABSTRACT_CLASS(TextServer);
 	GDREGISTER_CLASS(TextServerExtension);
+	GDREGISTER_CLASS(TextServerDummy);
+
+	GDREGISTER_NATIVE_STRUCT(Glyph, "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0");
+	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 }
@@ -125,6 +131,18 @@ void register_server_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer2D);
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3DExtension)
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DRenderingServerHandler)
+
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionRayResult, "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionShapeResult, "RID rid;ObjectID collider_id;Object *collider;int shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionShapeRestInfo, "Vector3 point;Vector3 normal;RID rid;ObjectID collider_id;int shape;Vector3 linear_velocity");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionCollision, "Vector3 position;Vector3 normal;Vector3 collider_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionStateCallback, "void *instance;void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state)");
+
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
 	GDREGISTER_CLASS(XRServer);

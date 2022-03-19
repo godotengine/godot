@@ -346,7 +346,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			text_ofs.x += glyphs[i].advance;
 		}
 	}
-	TS->free(num_rid);
+	TS->free_rid(num_rid);
 
 	if (get_step() == 1) {
 		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
@@ -443,6 +443,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		case NOTIFICATION_WM_CLOSE_REQUEST:
 		case NOTIFICATION_EXIT_TREE: {
 			if (grabbing_spinner) {
 				grabber->hide();

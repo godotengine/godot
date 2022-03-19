@@ -72,6 +72,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
@@ -458,7 +459,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	return OK;
 }
 
-Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path) {
+Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn) {
 	bool force_builtin_codesign = EditorSettings::get_singleton()->get("export/macos/force_builtin_codesign");
 	bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
 
@@ -467,10 +468,10 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 #ifdef MODULE_REGEX_ENABLED
 
 #ifdef OSX_ENABLED
-		if (p_preset->get("codesign/timestamp")) {
+		if (p_preset->get("codesign/timestamp") && p_warn) {
 			WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
 		}
-		if (p_preset->get("codesign/hardened_runtime")) {
+		if (p_preset->get("codesign/hardened_runtime") && p_warn) {
 			WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
 		}
 #endif
@@ -490,14 +491,18 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		List<String> args;
 		if (p_preset->get("codesign/timestamp")) {
 			if (ad_hoc) {
-				WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+				if (p_warn) {
+					WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+				}
 			} else {
 				args.push_back("--timestamp");
 			}
 		}
 		if (p_preset->get("codesign/hardened_runtime")) {
 			if (ad_hoc) {
-				WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+				if (p_warn) {
+					WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+				}
 			} else {
 				args.push_back("--options");
 				args.push_back("runtime");
@@ -577,7 +582,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 		}
 
 		if (extensions_to_sign.find(current_file.get_extension()) > -1) {
-			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path) };
+			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path, false) };
 			if (code_sign_error != OK) {
 				return code_sign_error;
 			}
@@ -621,7 +626,7 @@ Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, co
 			// If it is a directory, find and sign all dynamic libraries.
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_should_error_on_non_code_sign);
 		} else {
-			err = _code_sign(p_preset, p_in_app_path, p_ent_path);
+			err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
 		}
 	}
 	return err;
@@ -673,6 +678,19 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 		}
 		return FAILED;
 	}
+
+	return OK;
+}
+
+Error EditorExportPlatformOSX::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+
+	f->store_line("#!/bin/sh");
+	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
+	f->store_line("function realpath() { python -c \"import os,sys; print(os.path.realpath(sys.argv[1]))\" \"$0\"; }");
+	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
+	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
 
 	return OK;
 }
@@ -743,22 +761,30 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Create our application bundle.
 	String tmp_app_dir_name = pkg_name + ".app";
+	String tmp_base_path_name;
 	String tmp_app_path_name;
+	String scr_path;
 	if (export_format == "app") {
+		tmp_base_path_name = p_path.get_base_dir();
 		tmp_app_path_name = p_path;
+		scr_path = p_path.get_basename() + ".command";
 	} else {
-		tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name);
+		tmp_app_path_name = tmp_base_path_name.plus_file(tmp_app_dir_name);
+		scr_path = tmp_base_path_name.plus_file(pkg_name + ".command");
 	}
+
 	print_verbose("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
 
-	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_app_path_name);
+	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
 	if (!tmp_app_dir) {
 		err = ERR_CANT_CREATE;
 	}
 
-	if (DirAccess::exists(tmp_app_dir_name)) {
+	DirAccess::remove_file_or_error(scr_path);
+	if (DirAccess::exists(tmp_app_path_name)) {
 		if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
 			tmp_app_dir->erase_contents_recursive();
 		}
@@ -1039,6 +1065,15 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = ERR_FILE_NOT_FOUND;
 	}
 
+	// Save console script.
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_script");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
+			FileAccess::set_unix_permissions(scr_path, 0755);
+		}
+	}
+
 	if (err == OK) {
 		if (ep.step(TTR("Making PKG"), 1)) {
 			return ERR_SKIP;
@@ -1046,7 +1081,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 		Vector<SharedObject> shared_objects;
-		err = save_pack(p_preset, pack_path, &shared_objects);
+		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
 		// See if we can code sign our new package.
 		bool sign_enabled = p_preset->get("codesign/enable");
@@ -1213,7 +1248,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				String hlp_path = helpers[i];
 				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
 				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path, false);
 				}
 				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
 			}
@@ -1238,8 +1273,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
-				String path_in_app{ tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file() };
-				err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				if (shared_objects[i].target.is_empty()) {
+					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				} else {
+					String path_in_app = tmp_app_path_name.plus_file(shared_objects[i].target).plus_file(src_path.get_file());
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, false);
+				}
 				if (err != OK) {
 					break;
 				}
@@ -1257,7 +1297,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (sign_enabled) {
 			for (int i = 0; i < dylibs_found.size(); i++) {
 				if (err == OK) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path, false);
 				}
 			}
 		}
@@ -1275,14 +1315,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (ep.step(TTR("Making DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
+				err = _create_dmg(p_path, pkg_name, tmp_base_path_name);
 			}
 			// Sign DMG.
 			if (err == OK && sign_enabled && !ad_hoc) {
 				if (ep.step(TTR("Code signing DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _code_sign(p_preset, p_path, ent_path);
+				err = _code_sign(p_preset, p_path, ent_path, false);
 			}
 		} else if (export_format == "zip") {
 			// Create ZIP.
@@ -1298,7 +1338,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
-				_zip_folder_recursive(zip, EditorPaths::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
+				_zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
 
 				zipClose(zip, nullptr);
 			}
@@ -1326,10 +1366,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			tmp_app_dir->remove(ent_path);
 		}
 		if (export_format != "app") {
-			if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
+			if (tmp_app_dir->change_dir(tmp_base_path_name) == OK) {
 				tmp_app_dir->erase_contents_recursive();
 				tmp_app_dir->change_dir("..");
-				tmp_app_dir->remove(tmp_app_dir_name);
+				tmp_app_dir->remove(pkg_name);
 			}
 		}
 	}
@@ -1338,7 +1378,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_root_path.plus_file(p_folder);
+	String dir = p_folder.is_empty() ? p_root_path : p_root_path.plus_file(p_folder);
 
 	DirAccessRef da = DirAccess::open(dir);
 	da->list_dir_begin();
@@ -1392,7 +1432,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
 		} else {
-			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers");
+			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
 
 			OS::Time time = OS::get_singleton()->get_time();
 			OS::Date date = OS::get_singleton()->get_date();

@@ -411,5 +411,5 @@ TextLine::TextLine() {
 }
 
 TextLine::~TextLine() {
-	TS->free(rid);
+	TS->free_rid(rid);
 }

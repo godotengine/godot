@@ -128,8 +128,8 @@ global_variables;
 layout(set = 1, binding = 0, std140) uniform SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 inv_projection_matrix;
-	highp mat4 camera_matrix;
-	highp mat4 inv_camera_matrix;
+	highp mat4 inv_view_matrix;
+	highp mat4 view_matrix;
 
 	// only used for multiview
 	highp mat4 projection_matrix_view[MAX_VIEWS];

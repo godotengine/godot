@@ -2,6 +2,7 @@
 #define ROUGHNESS_MAX_LOD 5
 
 #define MAX_VOXEL_GI_INSTANCES 8
+#define MAX_VIEWS 2
 
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
 
@@ -10,6 +11,10 @@
 
 #define USE_SUBGROUPS
 
+#endif
+
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
 #endif
 
 #include "cluster_data_inc.glsl"
@@ -169,9 +174,12 @@ sdfgi;
 layout(set = 1, binding = 0, std140) uniform SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
+	mat4 inv_view_matrix;
+	mat4 view_matrix;
 
-	mat4 camera_matrix;
-	mat4 inv_camera_matrix;
+	// only used for multiview
+	mat4 projection_matrix_view[MAX_VIEWS];
+	mat4 inv_projection_matrix_view[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;

@@ -34,10 +34,11 @@
 
 void preregister_text_server_adv_types() {
 	GDREGISTER_CLASS(TextServerAdvanced);
-	if (TextServerManager::get_singleton()) {
+	TextServerManager *tsman = TextServerManager::get_singleton();
+	if (tsman) {
 		Ref<TextServerAdvanced> ts;
 		ts.instantiate();
-		TextServerManager::get_singleton()->add_interface(ts);
+		tsman->add_interface(ts);
 	}
 }
 
@@ -46,3 +47,26 @@ void register_text_server_adv_types() {
 
 void unregister_text_server_adv_types() {
 }
+
+#ifdef GDEXTENSION
+
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/core/memory.hpp>
+
+using namespace godot;
+
+extern "C" {
+
+GDNativeBool GDN_EXPORT textserver_advanced_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
+	GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
+
+	init_obj.register_server_initializer(&preregister_text_server_adv_types);
+	init_obj.register_server_terminator(&unregister_text_server_adv_types);
+
+	return init_obj.init();
+}
+
+} // ! extern "C"
+
+#endif // ! GDEXTENSION

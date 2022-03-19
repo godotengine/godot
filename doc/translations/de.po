@@ -43,12 +43,13 @@
 # ‎ <artism90@googlemail.com>, 2022.
 # Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
 # Leon Marz <main@lmarz.org>, 2022.
+# Robin <robin.janzen@gmx.net>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-03-02 18:39+0000\n"
-"Last-Translator: Leon Marz <main@lmarz.org>\n"
+"PO-Revision-Date: 2022-03-13 22:11+0000\n"
+"Last-Translator: Robin <robin.janzen@gmx.net>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -3863,13 +3864,12 @@ msgid "Gamepad right Shoulder button."
 msgstr "Game-Controller SDL rechte Schultertaste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad right trigger."
 msgstr "Gamecontroller rechte Trigger-Achse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right stick click."
-msgstr "Klick auf dem rechten Stick des Gamepads."
+msgstr "Klick des rechten Stick des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left stick horizontal axis."
@@ -3958,6 +3958,7 @@ msgid ""
 "MIDI note OFF message. See the documentation of [InputEventMIDI] for "
 "information of how to use MIDI inputs."
 msgstr ""
+"MIDI Note AUS Nachricht. Für mehr Informationen, siehe [InputEvendMIDI]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -8311,7 +8312,6 @@ msgid "GUI in 3D Demo"
 msgstr ""
 
 #: doc/classes/Area.xml
-#, fuzzy
 msgid ""
 "Returns a list of intersecting [Area]s. The overlapping area's [member "
 "CollisionObject.collision_layer] must be part of this area's [member "
@@ -8320,14 +8320,16 @@ msgid ""
 "list is modified once during the physics step, not immediately after objects "
 "are moved. Consider using signals instead."
 msgstr ""
-"Gibt eine Liste der sich schneidenden [PhysicsBody2D]s zurück. Aus "
-"Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
-"diese Liste einmal während des Physikschritts geändert, nicht sofort nach "
-"dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
-"Signalen."
+"Gibt zurück eine Liste der sich überschneidenden [Area]s. Das [member "
+"CollisionObject.collision_layer] des überlappenden Areas muss mit der "
+"[member CollisionObject.collision_mask] dieser Area übereinstimmen, um "
+"erkannt zu werden.\n"
+"Aus Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
+"diese Liste nur einmal während des Physikschritts geändert, nicht sofort "
+"nach dem Verschieben von Objekten. Dafür sollte die Verwendung von Signalen "
+"erwogen werden."
 
 #: doc/classes/Area.xml
-#, fuzzy
 msgid ""
 "Returns a list of intersecting [PhysicsBody]s. The overlapping body's "
 "[member CollisionObject.collision_layer] must be part of this area's [member "
@@ -8336,11 +8338,14 @@ msgid ""
 "list is modified once during the physics step, not immediately after objects "
 "are moved. Consider using signals instead."
 msgstr ""
-"Gibt eine Liste der sich schneidenden [PhysicsBody2D]s zurück. Aus "
-"Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
-"diese Liste einmal während des Physikschritts geändert, nicht sofort nach "
-"dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
-"Signalen."
+"Gibt zurück eine Liste der sich überschneidenden [PhysicsBody2D]s. Das "
+"[member CollisionObject.collision_layer] des überlappenden Bodys muss mit "
+"der [member CollisionObject.collision_mask] dieser Area übereinstimmen, um "
+"erkannt zu werden.\n"
+"Aus Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
+"diese Liste nur einmal während des Physikschritts geändert, nicht sofort "
+"nach dem Verschieben von Objekten. Dafür sollte die Verwendung von Signalen "
+"erwogen werden."
 
 #: doc/classes/Area.xml
 #, fuzzy
@@ -8391,25 +8396,24 @@ msgstr ""
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid "The name of the area's audio bus."
-msgstr "Der Name des Audiobusses des Bereichs."
+msgstr "Der Name des zugewiesenen Audio-Bus für diese Area."
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid ""
 "If [code]true[/code], the area's audio bus overrides the default audio bus."
 msgstr ""
-"Wenn [code]true[/code], hat der Audiobus des Bereichs Vorrang vor dem "
+"Wenn [code]true[/code], hat der Audiobus der Area Vorrang gegenüber dem "
 "Standard-Audiobus."
 
 #: doc/classes/Area.xml
-#, fuzzy
 msgid ""
 "The area's gravity intensity (in meters per second squared). This value "
 "multiplies the gravity vector. This is useful to alter the force of gravity "
 "without altering its direction."
 msgstr ""
-"Die Schwerkraftintensität des Bereichs (reicht von -1024 bis 1024). Dieser "
-"Wert multipliziert den Schwerkraftvektor. Dies ist nützlich, um die "
-"Schwerkraft zu ändern, ohne ihre Richtung zu ändern."
+"Die Gravitationsintensität des Area (in m/s²). Dieser Wert multipliziert den "
+"Gravitationsvektor. Dies ist nützlich, um die Schwerkraft zu beeinflussen, "
+"ohne ihre Richtung zu ändern."
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid ""
@@ -8432,8 +8436,9 @@ msgid ""
 "The area's gravity vector (not normalized). If gravity is a point (see "
 "[member gravity_point]), this will be the point of attraction."
 msgstr ""
-"Der Gravitationsvektor der Fläche (nicht normiert). Wenn die Schwerkraft ein "
-"Punkt ist (siehe [member gravity_point]), wird dies der Anziehungspunkt sein."
+"Der Gravitationsvektor der Area (nicht normalisiert). Ist Gravitation als "
+"Punkt festgelegt (siehe [member gravity_point]), wird dies der "
+"Anziehungspunkt sein."
 
 #: doc/classes/Area.xml
 #, fuzzy
@@ -8458,13 +8463,13 @@ msgid ""
 "If [code]true[/code], the area detects bodies or areas entering and exiting "
 "it."
 msgstr ""
-"If [code]true[/code], erkennt die area ob andere Körper oder area's ihn "
+"If [code]true[/code], erkennt die Area, ob Bodys oder andere Areas ihn "
 "betreten oder verlassen."
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid "The area's priority. Higher priority areas are processed first."
 msgstr ""
-"Die Area Priorität. Area's mit höherer Priorität werden zuerst bearbeitet."
+"Die Priorität der Area. Areas mit höherer Priorität werden zuerst bearbeitet."
 
 #: doc/classes/Area.xml
 msgid ""
@@ -8478,13 +8483,16 @@ msgstr ""
 
 #: doc/classes/Area.xml
 msgid "The reverb bus name to use for this area's associated audio."
-msgstr ""
+msgstr "Der Name des zugewiesenen Reverb-Bus für diese Area."
 
 #: doc/classes/Area.xml
 msgid ""
 "The degree to which this area's reverb is a uniform effect. Ranges from "
 "[code]0[/code] to [code]1[/code] with [code]0.1[/code] precision."
 msgstr ""
+"Der Grad, bis zu dem der Reverb der Area gleichmäßig wirkt. Reicht von "
+"[code]0[/code] bis [code]1[/code], mit einer Schrittgenauigkeit von "
+"[code]0.1[/code]."
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid ""
@@ -8618,7 +8626,6 @@ msgid "2D Platformer Demo"
 msgstr ""
 
 #: doc/classes/Area2D.xml
-#, fuzzy
 msgid ""
 "Returns a list of intersecting [Area2D]s. The overlapping area's [member "
 "CollisionObject2D.collision_layer] must be part of this area's [member "
@@ -8627,13 +8634,16 @@ msgid ""
 "list is modified once during the physics step, not immediately after objects "
 "are moved. Consider using signals instead."
 msgstr ""
-"Gibt eine Liste der sich schneidenden [Area2D]s zurück. Aus Leistungsgründen "
-"(Kollisionen werden alle gleichzeitig verarbeitet) wird diese Liste einmal "
-"während des Physikschritts geändert, nicht sofort nach dem Verschieben von "
-"Objekten. Erwägen Sie stattdessen die Verwendung von Signalen."
+"Gibt zurück eine Liste der sich überschneidenden [Area2D]s. Das [member "
+"CollisionObject2D.collision_layer] des überlappenden Areas muss mit der "
+"[member CollisionObject2D.collision_mask] dieser Area übereinstimmen, um "
+"erkannt zu werden.\n"
+"Aus Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
+"diese Liste nur einmal während des Physikschritts geändert, nicht sofort "
+"nach dem Verschieben von Objekten. Dafür sollte die Verwendung von Signalen "
+"erwogen werden."
 
 #: doc/classes/Area2D.xml
-#, fuzzy
 msgid ""
 "Returns a list of intersecting [PhysicsBody2D]s. The overlapping body's "
 "[member CollisionObject2D.collision_layer] must be part of this area's "
@@ -8642,11 +8652,14 @@ msgid ""
 "list is modified once during the physics step, not immediately after objects "
 "are moved. Consider using signals instead."
 msgstr ""
-"Gibt eine Liste der sich schneidenden [PhysicsBody2D]s zurück. Aus "
-"Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
-"diese Liste einmal während des Physikschritts geändert, nicht sofort nach "
-"dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
-"Signalen."
+"Gibt zurück eine Liste der sich überschneidenden [PhysicsBody2D]s. Das "
+"[member CollisionObject2D.collision_layer] des überlappenden Areas muss mit "
+"der [member CollisionObject2D.collision_mask] dieser Area übereinstimmen, um "
+"erkannt zu werden.\n"
+"Aus Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
+"diese Liste nur einmal während des Physikschritts geändert, nicht sofort "
+"nach dem Verschieben von Objekten. Dafür sollte die Verwendung von Signalen "
+"erwogen werden."
 
 #: doc/classes/Area2D.xml
 #, fuzzy
@@ -8696,15 +8709,14 @@ msgstr ""
 "[code]0[/code] (keine Dämpfung) bis [code]1[/code] (volle Dämpfung)."
 
 #: doc/classes/Area2D.xml
-#, fuzzy
 msgid ""
 "The area's gravity intensity (in pixels per second squared). This value "
 "multiplies the gravity vector. This is useful to alter the force of gravity "
 "without altering its direction."
 msgstr ""
-"Die Schwerkraftintensität des Bereichs (reicht von -1024 bis 1024). Dieser "
-"Wert multipliziert den Schwerkraftvektor. Dies ist nützlich, um die "
-"Schwerkraft zu ändern, ohne ihre Richtung zu ändern."
+"Die Gravitationsintensität des Area (in px/s²). Dieser Wert multipliziert "
+"den Gravitationsvektor. Dies ist nützlich, um die Schwerkraft zu "
+"beeinflussen, ohne ihre Richtung zu ändern."
 
 #: doc/classes/Area2D.xml
 #, fuzzy
@@ -13436,7 +13448,7 @@ msgstr ""
 
 #: doc/classes/Button.xml doc/classes/LinkButton.xml
 msgid "The button's text that will be displayed inside the button's area."
-msgstr ""
+msgstr "Die Beschriftung, die auf der Schaltfläche eingeblendet wird."
 
 #: doc/classes/Button.xml
 msgid "Align the text to the left."
@@ -18073,6 +18085,11 @@ msgstr ""
 "code]angegeben ist, existiert, ansonsten [code]false[/code]."
 
 #: doc/classes/Control.xml
+#, fuzzy
+msgid "Returns [code]true[/code] if drag operation is successful."
+msgstr "Gibt [code]true[/code] zurück, wenn eine Animation abgespielt wird."
+
+#: doc/classes/Control.xml
 msgid ""
 "Invalidates the size cache in this node and in parent nodes up to toplevel. "
 "Intended to be used with [method get_minimum_size] when the return value is "
@@ -18499,8 +18516,9 @@ msgstr ""
 #: doc/classes/Control.xml
 msgid ""
 "By default, the node's pivot is its top-left corner. When you change its "
-"[member rect_scale], it will scale around this pivot. Set this property to "
-"[member rect_size] / 2 to center the pivot in the node's rectangle."
+"[member rect_rotation] or [member rect_scale], it will rotate or scale "
+"around this pivot. Set this property to [member rect_size] / 2 to pivot "
+"around the Control's center."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -20857,10 +20875,10 @@ msgid ""
 "further calculations."
 msgstr ""
 
-#: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
+#: doc/classes/Curve2D.xml
 msgid ""
-"Adds a point to a curve at [code]position[/code], with control points "
-"[code]in[/code] and [code]out[/code].\n"
+"Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s "
+"position, with control points [code]in[/code] and [code]out[/code].\n"
 "If [code]at_position[/code] is given, the point is inserted before the point "
 "number [code]at_position[/code], moving that point (and every point after) "
 "after the inserted point. If [code]at_position[/code] is not given, or is an "
@@ -21009,6 +21027,18 @@ msgid ""
 "shape to a [Path], but can be manually sampled for other purposes.\n"
 "It keeps a cache of precalculated points along the curve, to speed up "
 "further calculations."
+msgstr ""
+
+#: doc/classes/Curve3D.xml
+msgid ""
+"Adds a point to a curve at [code]position[/code] relative to the [Curve3D]'s "
+"position, with control points [code]in[/code] and [code]out[/code].\n"
+"If [code]at_position[/code] is given, the point is inserted before the point "
+"number [code]at_position[/code], moving that point (and every point after) "
+"after the inserted point. If [code]at_position[/code] is not given, or is an "
+"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
+"get_point_count][/code]), the point will be appended at the end of the point "
+"list."
 msgstr ""
 
 #: doc/classes/Curve3D.xml
@@ -25304,6 +25334,9 @@ msgid ""
 "The bloom's intensity. If set to a value higher than [code]0[/code], this "
 "will make glow visible in areas darker than the [member glow_hdr_threshold]."
 msgstr ""
+"Die Intensität des Bloom-Effekts. Wenn höher eingestellt als [code]0[/code], "
+"macht es den Glow sichtbar in dunklen Bereichen, die den [member "
+"glow_hdr_threshold]-Wert unterschreiten."
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -25524,10 +25557,13 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Keeps on screen every pixel drawn in the background. This is the fastest "
-"background mode, but it can only be safely used in fully-interior scenes (no "
-"visible sky or sky reflections). If enabled in a scene where the background "
-"is visible, \"ghost trail\" artifacts will be visible when moving the camera."
+"Keeps on screen every pixel drawn in the background. Only select this mode "
+"if you really need to keep the old data. On modern GPUs it will generally "
+"not be faster than clearing the background, and can be significantly slower, "
+"particularly on mobile.\n"
+"It can only be safely used in fully-interior scenes (no visible sky or sky "
+"reflections). If enabled in a scene where the background is visible, \"ghost "
+"trail\" artifacts will be visible when moving the camera."
 msgstr ""
 
 #: doc/classes/Environment.xml
@@ -29022,14 +29058,14 @@ msgstr ""
 
 #: doc/classes/HeightMapShape.xml
 msgid ""
-"Depth of the height map data. Changing this will resize the [member "
-"map_data]."
+"Number of vertices in the depth of the height map. Changing this will resize "
+"the [member map_data]."
 msgstr ""
 
 #: doc/classes/HeightMapShape.xml
 msgid ""
-"Width of the height map data. Changing this will resize the [member "
-"map_data]."
+"Number of vertices in the width of the height map. Changing this will resize "
+"the [member map_data]."
 msgstr ""
 
 #: doc/classes/HFlowContainer.xml
@@ -34899,6 +34935,14 @@ msgstr ""
 msgid "If [code]true[/code], the context menu will appear when right-clicked."
 msgstr ""
 
+#: doc/classes/LineEdit.xml doc/classes/RichTextLabel.xml
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], the selected text will be deselected when focus is "
+"lost."
+msgstr "Wenn [code]true[/code], wird die Textur zentriert."
+
 #: doc/classes/LineEdit.xml
 msgid ""
 "If [code]false[/code], existing text cannot be modified and new text cannot "
@@ -34932,6 +34976,13 @@ msgid ""
 "# `text` becomes \"Hello good\".\n"
 "# `text_change_rejected` is emitted with \"bye\" as parameter.\n"
 "[/codeblock]"
+msgstr ""
+
+#: doc/classes/LineEdit.xml doc/classes/TextEdit.xml
+msgid ""
+"If [code]false[/code], using middle mouse button to paste clipboard will be "
+"disabled.\n"
+"[b]Note:[/b] This method is only implemented on Linux."
 msgstr ""
 
 #: doc/classes/LineEdit.xml
@@ -40861,6 +40912,11 @@ msgid "Returns the text of the item at index [code]idx[/code]."
 msgstr ""
 
 #: doc/classes/OptionButton.xml
+#, fuzzy
+msgid "Returns the tooltip of the item at index [code]idx[/code]."
+msgstr "Liefert die Position des Punktes bei Index [code]Punkt[/code]."
+
+#: doc/classes/OptionButton.xml
 msgid ""
 "Returns the ID of the selected item, or [code]0[/code] if no item is "
 "selected."
@@ -40912,6 +40968,11 @@ msgstr ""
 #: doc/classes/OptionButton.xml doc/classes/PopupMenu.xml
 msgid "Sets the text of the item at index [code]idx[/code]."
 msgstr ""
+
+#: doc/classes/OptionButton.xml
+#, fuzzy
+msgid "Sets the tooltip of the item at index [code]idx[/code]."
+msgstr "Liefert die Position des Punktes bei Index [code]Punkt[/code]."
 
 #: doc/classes/OptionButton.xml
 msgid ""
@@ -41472,6 +41533,23 @@ msgid ""
 "Returns the position of the specified screen by index. If [code]screen[/"
 "code] is [code]-1[/code] (the default value), the current screen will be "
 "used."
+msgstr ""
+
+#: doc/classes/OS.xml
+msgid ""
+"Returns the current refresh rate of the specified screen. If [code]screen[/"
+"code] is [code]-1[/code] (the default value), the current screen will be "
+"used.\n"
+"[b]Note:[/b] Returns [code]-1.0[/code] if Godot fails to find the refresh "
+"rate for the specified screen. On HTML5, [method get_screen_refresh_rate] "
+"will always return [code]-1.0[/code] as there is no way to retrieve the "
+"refresh rate on that platform.\n"
+"To fallback to a default refresh rate if the method fails, try:\n"
+"[codeblock]\n"
+"var refresh_rate = OS.get_screen_refresh_rate()\n"
+"if refresh_rate < 0:\n"
+"    refresh_rate = 60.0\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -47977,6 +48055,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
+msgid ""
+"If [code]true[/code], enables warnings when the type of the default value "
+"set to an exported variable is different than the specified export type."
+msgstr "Wenn [code]true[/code], ist die Filterung aktiviert."
+
+#: doc/classes/ProjectSettings.xml
 msgid ""
 "If [code]true[/code], enables warnings when a function is declared with the "
 "same name as a constant."
@@ -48401,6 +48486,19 @@ msgstr ""
 msgid ""
 "Default value for [member ScrollContainer.scroll_deadzone], which will be "
 "used for all [ScrollContainer]s unless overridden."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"If enabled, the moment [member Viewport.gui_disable_input] is set to "
+"[code]false[/code] to disable GUI input in a viewport, current mouse over "
+"and mouse focus will be dropped.\n"
+"That behavior helps to keep a robust GUI state, with no surprises when input "
+"is resumed regardless what has happened in the meantime.\n"
+"If disabled, the legacy behavior is used, which consists in just not doing "
+"anything besides the GUI input disable itself.\n"
+"[b]Note:[/b] This is set to [code]true[/code] by default for new projects "
+"and is the recommended setting."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -49374,6 +49472,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
+msgid ""
+"If [code]true[/code], smooths out collision with trimesh shapes "
+"([ConcavePolygonShape]) by telling the Bullet physics engine to generate "
+"internal edge information for every trimesh shape created.\n"
+"[b]Note:[/b] Only effective if [member physics/3d/physics_engine] is set to "
+"[code]DEFAULT[/code] or [code]Bullet[/code], [i]not[/i] [code]GodotPhysics[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
 msgstr ""
 
@@ -49783,6 +49891,14 @@ msgid ""
 "spatial (3D) and particle materials/shaders. CanvasItem (2D) shaders will "
 "not use asynchronous compilation even if this setting is set to "
 "[code]Asynchronous[/code] or [code]Asynchronous + Cache[/code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"An override for [code]rendering/gles3/shaders/shader_compilation_mode[/"
+"code], so asynchronous compilation can be disabled for mobile.\n"
+"You may want to do that since mobile GPUs generally won't support "
+"ubershaders due to their complexity."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -50740,13 +50856,13 @@ msgstr ""
 
 #: doc/classes/Range.xml
 msgid ""
-"Binds two ranges together along with any ranges previously grouped with "
+"Binds two [Range]s together along with any ranges previously grouped with "
 "either of them. When any of range's member variables change, it will share "
 "the new value with all other ranges in its group."
 msgstr ""
 
 #: doc/classes/Range.xml
-msgid "Stops range from sharing its member variables with any other."
+msgid "Stops the [Range] from sharing its member variables with any other."
 msgstr ""
 
 #: doc/classes/Range.xml
@@ -50813,7 +50929,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Range.xml
-msgid "Emitted when [member value] changes."
+msgid ""
+"Emitted when [member value] changes. When used on a [Slider], this is called "
+"continuously while dragging (potentially every frame). If you are performing "
+"an expensive operation in a function connected to [signal value_changed], "
+"consider using a [i]debouncing[/i] [Timer] to call the function less often.\n"
+"[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal "
+"value_changed] is also emitted when [code]value[/code] is set directly via "
+"code."
 msgstr ""
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
@@ -58208,11 +58331,11 @@ msgid ""
 "Returns [code]true[/code] if this string contains a valid float. This is "
 "inclusive of integers, and also supports exponents:\n"
 "[codeblock]\n"
-"print(\"1.7\".is_valid_float()) # Prints \"true\"\n"
-"print(\"24\".is_valid_float()) # Prints \"true\"\n"
-"print(\"7e3\".is_valid_float()) # Prints \"true\"\n"
-"print(\"24\".is_valid_float()) # Prints \"true\"\n"
-"print(\"Hello\".is_valid_float()) # Prints \"false\"\n"
+"print(\"1.7\".is_valid_float()) # Prints \"True\"\n"
+"print(\"24\".is_valid_float()) # Prints \"True\"\n"
+"print(\"7e3\".is_valid_float()) # Prints \"True\"\n"
+"print(\"24\".is_valid_float()) # Prints \"True\"\n"
+"print(\"Hello\".is_valid_float()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -58238,9 +58361,9 @@ msgid ""
 "identifier may contain only letters, digits and underscores ([code]_[/code]) "
 "and the first character may not be a digit.\n"
 "[codeblock]\n"
-"print(\"good_ident_1\".is_valid_identifier()) # Prints \"true\"\n"
-"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"false\"\n"
-"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"false\"\n"
+"print(\"good_ident_1\".is_valid_identifier()) # Prints \"True\"\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"False\"\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"False\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -58248,11 +58371,11 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if this string contains a valid integer.\n"
 "[codeblock]\n"
-"print(\"7\".is_valid_int()) # Prints \"true\"\n"
-"print(\"14.6\".is_valid_int()) # Prints \"false\"\n"
-"print(\"L\".is_valid_int()) # Prints \"false\"\n"
-"print(\"+3\".is_valid_int()) # Prints \"true\"\n"
-"print(\"-12\".is_valid_int()) # Prints \"true\"\n"
+"print(\"7\".is_valid_int()) # Prints \"True\"\n"
+"print(\"14.6\".is_valid_int()) # Prints \"False\"\n"
+"print(\"L\".is_valid_int()) # Prints \"False\"\n"
+"print(\"+3\".is_valid_int()) # Prints \"True\"\n"
+"print(\"-12\".is_valid_int()) # Prints \"True\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -60074,6 +60197,15 @@ msgstr ""
 #, fuzzy
 msgid "Returns if the given line is wrapped."
 msgstr "Gibt den Namen des übergebenen AnimationNode zurück."
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid ""
+"Returns whether the mouse is over selection. If [code]edges[/code] is "
+"[code]true[/code], the edges are considered part of the selection."
+msgstr ""
+"Liefert [code]wahr[/code] als Ergebnis wenn [code]a[/code] und [code]b[/"
+"code] ungefähr gleich sind."
 
 #: doc/classes/TextEdit.xml
 msgid "Returns [code]true[/code] if the selection is active."
@@ -62330,6 +62462,13 @@ msgid ""
 "MM-DDTHH:MM:SS).\n"
 "If [code]use_space[/code] is true, use a space instead of the letter T in "
 "the middle."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given timezone offset in minutes to a timezone offset string. "
+"For example, -480 returns \"-08:00\", 345 returns \"+05:45\", and 0 returns "
+"\"+00:00\"."
 msgstr ""
 
 #: doc/classes/Time.xml
@@ -66162,6 +66301,11 @@ msgstr ""
 #: doc/classes/Viewport.xml
 #, fuzzy
 msgid "Returns [code]true[/code] if there are visible modals on-screen."
+msgstr "Gibt [code]true[/code] zurück falls das Array leer ist."
+
+#: doc/classes/Viewport.xml
+#, fuzzy
+msgid "Returns [code]true[/code] if the drag operation is successful."
 msgstr "Gibt [code]true[/code] zurück falls das Array leer ist."
 
 #: doc/classes/Viewport.xml
@@ -74172,7 +74316,7 @@ msgstr ""
 
 #: modules/websocket/doc_classes/WebSocketPeer.xml
 msgid "A class representing a specific WebSocket connection."
-msgstr ""
+msgstr "Eine Klasse die eine spezifische WebSocket-Verbindung repräsentiert."
 
 #: modules/websocket/doc_classes/WebSocketPeer.xml
 msgid ""
@@ -74253,7 +74397,7 @@ msgstr ""
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid "A WebSocket server implementation."
-msgstr ""
+msgstr "Eine WebSocket Server Implementierung."
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid ""
@@ -74275,6 +74419,8 @@ msgstr ""
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid "Returns [code]true[/code] if a peer with the given ID is connected."
 msgstr ""
+"Gibt [code]true[/code] zurück, wenn ein Peer mir der angegebenen ID "
+"verbunden ist."
 
 #: modules/websocket/doc_classes/WebSocketServer.xml
 msgid ""
@@ -74494,7 +74640,7 @@ msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid "How to make a VR game for WebXR with Godot"
-msgstr ""
+msgstr "Wie man ein VR-Spiel mit WebXR mit Godot erstellt"
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid ""
@@ -74757,7 +74903,7 @@ msgstr "Die Farbe des spiegelnden Lichteffekts."
 
 #: doc/classes/WindowDialog.xml
 msgid "The horizontal offset of the close button."
-msgstr ""
+msgstr "Die horizontale Verschiebung des \"Schließen\"-Buttons."
 
 #: doc/classes/WindowDialog.xml
 msgid ""
@@ -74767,11 +74913,11 @@ msgstr ""
 
 #: doc/classes/WindowDialog.xml
 msgid "The vertical offset of the title text."
-msgstr ""
+msgstr "Die vertikale Verschiebung des Titel-Textes."
 
 #: doc/classes/WindowDialog.xml
 msgid "The font used to draw the title."
-msgstr ""
+msgstr "Die Schriftart die für den Titel verwendet wird."
 
 #: doc/classes/WindowDialog.xml
 #, fuzzy
@@ -74782,6 +74928,8 @@ msgstr "Linke Maustaste."
 msgid ""
 "The icon used for the close button when it's hovered with the mouse cursor."
 msgstr ""
+"Das Bild, das für den \"Schließen\"-Button verwendet wird, wenn mit der Maus "
+"über diesem ist."
 
 #: doc/classes/WindowDialog.xml
 msgid ""
@@ -74809,7 +74957,7 @@ msgstr ""
 
 #: doc/classes/World.xml
 msgid "The World's [Environment]."
-msgstr ""
+msgstr "Das [Environment] der Welt."
 
 #: doc/classes/World.xml
 msgid ""
@@ -74860,6 +75008,8 @@ msgid ""
 "Default environment properties for the entire scene (post-processing "
 "effects, lighting and background settings)."
 msgstr ""
+"Standartmäßige Umwelteigenschaften für die gesamte Szene "
+"(Bildnachbearbeitungs-Effekte, Beleuchtung und Hintergrund)."
 
 #: doc/classes/WorldEnvironment.xml
 msgid ""
@@ -74883,7 +75033,7 @@ msgstr ""
 
 #: doc/classes/X509Certificate.xml
 msgid "An X509 certificate (e.g. for SSL)."
-msgstr ""
+msgstr "Ein X509-Zertifikat (z.B. für SSL)."
 
 #: doc/classes/X509Certificate.xml
 msgid ""
@@ -74898,13 +75048,15 @@ msgstr ""
 
 #: doc/classes/X509Certificate.xml
 msgid "Loads a certificate from [code]path[/code] (\"*.crt\" file)."
-msgstr ""
+msgstr "Lädt ein Zertifikat vom Pfad [code]path[/code] (\"*.crt\" Datei)."
 
 #: doc/classes/X509Certificate.xml
 msgid ""
 "Saves a certificate to the given [code]path[/code] (should be a \"*.crt\" "
 "file)."
 msgstr ""
+"Speichert ein Zertifikat am angegebenen [code]path[/code] (sollte eine \"*."
+"crt\" Datei sein)."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -74921,7 +75073,7 @@ msgstr ""
 
 #: doc/classes/XMLParser.xml
 msgid "Gets the amount of attributes in the current element."
-msgstr ""
+msgstr "Gibt die Anzahl an Attributen des aktuellen Elements zurück."
 
 #: doc/classes/XMLParser.xml
 msgid ""
@@ -75019,7 +75171,7 @@ msgstr ""
 
 #: doc/classes/XMLParser.xml
 msgid "End of element."
-msgstr ""
+msgstr "Ende des Elements."
 
 #: doc/classes/XMLParser.xml
 msgid "Text node."

@@ -7483,8 +7483,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int uniforms = 0;
 	int instance_index = 0;
 #ifdef DEBUG_ENABLED
-	int uniform_buffer_size = 0;
-	int max_uniform_buffer_size = 0;
+	uint64_t uniform_buffer_size = 0;
+	uint64_t max_uniform_buffer_size = 0;
 	int uniform_buffer_exceeded_line = -1;
 
 	bool check_device_limit_warnings = false;

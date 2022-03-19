@@ -269,7 +269,7 @@ public:
 
 	FUNCRID(soft_body)
 
-	FUNC2(soft_body_update_rendering_server, RID, class RenderingServerHandler *)
+	FUNC2(soft_body_update_rendering_server, RID, PhysicsServer3DRenderingServerHandler *)
 
 	FUNC2(soft_body_set_space, RID, RID)
 	FUNC1RC(RID, soft_body_get_space, RID)
@@ -369,7 +369,7 @@ public:
 	FUNC2(joint_set_solver_priority, RID, int);
 	FUNC1RC(int, joint_get_solver_priority, RID);
 
-	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
+	FUNC2(joint_disable_collisions_between_bodies, RID, bool);
 	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
 
 	/* MISC */

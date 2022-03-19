@@ -699,7 +699,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 	Item *it_from = l.from;
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
-	Variant meta;
 
 	if (it_from == nullptr) {
 		return 0;
@@ -1070,23 +1069,60 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
+		Vector2 ul_start;
+		bool ul_started = false;
+		Color ul_color;
+
+		Vector2 dot_ul_start;
+		bool dot_ul_started = false;
+		Color dot_ul_color;
+
+		Vector2 st_start;
+		bool st_started = false;
+		Color st_color;
+
 		for (int i = 0; i < gl_size; i++) {
 			bool selected = selection.active && (sel_start != -1) && (glyphs[i].start >= sel_start) && (glyphs[i].end <= sel_end);
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			Color font_color = _find_color(it, p_base_color);
-			if (_find_underline(it) || (_find_meta(it, &meta) && underline_meta)) {
-				Color uc = font_color;
-				uc.a *= 0.5;
+			if (_find_underline(it) || (_find_meta(it, nullptr) && underline_meta)) {
+				if (!ul_started) {
+					ul_started = true;
+					ul_start = p_ofs + Vector2(off.x, off.y);
+					ul_color = font_color;
+					ul_color.a *= 0.5;
+				}
+			} else if (ul_started) {
+				ul_started = false;
 				float y_off = TS->shaped_text_get_underline_position(rid);
 				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
-				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
+				draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
+			}
+			if (_find_hint(it, nullptr) && underline_hint) {
+				if (!dot_ul_started) {
+					dot_ul_started = true;
+					dot_ul_start = p_ofs + Vector2(off.x, off.y);
+					dot_ul_color = font_color;
+					dot_ul_color.a *= 0.5;
+				}
+			} else if (dot_ul_started) {
+				dot_ul_started = false;
+				float y_off = TS->shaped_text_get_underline_position(rid);
+				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
+				draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, underline_width * 2);
 			}
 			if (_find_strikethrough(it)) {
-				Color uc = font_color;
-				uc.a *= 0.5;
+				if (!st_started) {
+					st_started = true;
+					st_start = p_ofs + Vector2(off.x, off.y);
+					st_color = font_color;
+					st_color.a *= 0.5;
+				}
+			} else if (st_started) {
+				st_started = false;
 				float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
 				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
-				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
+				draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
 			}
 
 			// Get FX.
@@ -1221,6 +1257,24 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 				off.x += glyphs[i].advance;
 			}
+		}
+		if (ul_started) {
+			ul_started = false;
+			float y_off = TS->shaped_text_get_underline_position(rid);
+			float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
+			draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
+		}
+		if (dot_ul_started) {
+			dot_ul_started = false;
+			float y_off = TS->shaped_text_get_underline_position(rid);
+			float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
+			draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, underline_width * 2);
+		}
+		if (st_started) {
+			st_started = false;
+			float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
+			float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
+			draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
 		}
 		// Draw foreground color box
 		_draw_fbg_boxes(ci, rid, fbg_line_off, it_from, it_to, chr_range.x, chr_range.y, 1);
@@ -1907,6 +1961,20 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+String RichTextLabel::get_tooltip(const Point2 &p_pos) const {
+	Item *c_item = nullptr;
+	bool outside;
+
+	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &c_item, nullptr, &outside);
+
+	String description;
+	if (c_item && !outside && const_cast<RichTextLabel *>(this)->_find_hint(c_item, &description)) {
+		return description;
+	} else {
+		return Control::get_tooltip(p_pos);
+	}
+}
+
 void RichTextLabel::_find_frame(Item *p_item, ItemFrame **r_frame, int *r_line) {
 	if (r_frame != nullptr) {
 		*r_frame = nullptr;
@@ -2234,6 +2302,24 @@ bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item)
 			}
 			if (r_item) {
 				*r_item = meta;
+			}
+			return true;
+		}
+
+		item = item->parent;
+	}
+
+	return false;
+}
+
+bool RichTextLabel::_find_hint(Item *p_item, String *r_description) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_HINT) {
+			ItemHint *hint = static_cast<ItemHint *>(item);
+			if (r_description) {
+				*r_description = hint->description;
 			}
 			return true;
 		}
@@ -2736,6 +2822,14 @@ void RichTextLabel::push_meta(const Variant &p_meta) {
 	_add_item(item, true);
 }
 
+void RichTextLabel::push_hint(const String &p_string) {
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemHint *item = memnew(ItemHint);
+
+	item->description = p_string;
+	_add_item(item, true);
+}
+
 void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment) {
 	ERR_FAIL_COND(p_columns < 1);
 	ItemTable *item = memnew(ItemTable);
@@ -2928,6 +3022,15 @@ void RichTextLabel::set_meta_underline(bool p_underline) {
 
 bool RichTextLabel::is_meta_underlined() const {
 	return underline_meta;
+}
+
+void RichTextLabel::set_hint_underline(bool p_underline) {
+	underline_hint = p_underline;
+	update();
+}
+
+bool RichTextLabel::is_hint_underlined() const {
+	return underline_hint;
 }
 
 void RichTextLabel::set_override_selected_font_color(bool p_override_selected_font_color) {
@@ -3367,6 +3470,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_meta(url);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
+		} else if (tag.begins_with("hint=")) {
+			String description = tag.substr(5, tag.length());
+			push_hint(description);
+			pos = brk_end + 1;
+			tag_stack.push_front("hint");
 		} else if (tag.begins_with("dropcap")) {
 			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
 			Ref<Font> f = get_theme_font(SNAME("normal_font"));
@@ -4287,6 +4395,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize"), &RichTextLabel::push_list);
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);
+	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP));
@@ -4317,6 +4426,9 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_meta_underline", "enable"), &RichTextLabel::set_meta_underline);
 	ClassDB::bind_method(D_METHOD("is_meta_underlined"), &RichTextLabel::is_meta_underlined);
+
+	ClassDB::bind_method(D_METHOD("set_hint_underline", "enable"), &RichTextLabel::set_hint_underline);
+	ClassDB::bind_method(D_METHOD("is_hint_underlined"), &RichTextLabel::is_hint_underlined);
 
 	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &RichTextLabel::set_override_selected_font_color);
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &RichTextLabel::is_overriding_selected_font_color);
@@ -4401,6 +4513,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hint_underlined"), "set_hint_underline", "is_hint_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 
 	// Note: "visible_characters" and "percent_visible" should be set after "text" to be correctly applied.
@@ -4454,6 +4567,7 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(ITEM_BGCOLOR);
 	BIND_ENUM_CONSTANT(ITEM_FGCOLOR);
 	BIND_ENUM_CONSTANT(ITEM_META);
+	BIND_ENUM_CONSTANT(ITEM_HINT);
 	BIND_ENUM_CONSTANT(ITEM_DROPCAP);
 	BIND_ENUM_CONSTANT(ITEM_CUSTOMFX);
 

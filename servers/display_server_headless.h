@@ -33,7 +33,7 @@
 
 #include "servers/display_server.h"
 
-#include "servers/rendering/rasterizer_dummy.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 class DisplayServerHeadless : public DisplayServer {
 private:

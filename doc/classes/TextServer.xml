@@ -57,7 +57,7 @@
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Removes all font sizes from the cache entry
+				Removes all font sizes from the cache entry.
 			</description>
 		</method>
 		<method name="font_clear_textures">
@@ -509,7 +509,7 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="index" type="int" />
 			<description>
-				Renders specified glyph the the font cache texture.
+				Renders specified glyph to the font cache texture.
 			</description>
 		</method>
 		<method name="font_render_range">
@@ -1112,7 +1112,7 @@
 			<return type="Array" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
-				Returns text glyphs in the visual order.
+				Returns an array of glyphs in the visual order.
 			</description>
 		</method>
 		<method name="shaped_text_get_grapheme_bounds" qualifiers="const">
@@ -1177,7 +1177,7 @@
 			<return type="RID" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
-				Sets text orientation.
+				Returns the parent buffer from which the substring originates.
 			</description>
 		</method>
 		<method name="shaped_text_get_preserve_control" qualifiers="const">
@@ -1222,7 +1222,7 @@
 			<return type="int" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
-				Returns position of the trim.
+				Returns the position of the overrun trim.
 			</description>
 		</method>
 		<method name="shaped_text_get_underline_position" qualifiers="const">
@@ -1420,6 +1420,7 @@
 			<argument index="0" name="string" type="String" />
 			<description>
 				Strips diacritics from the string.
+				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
 		</method>
 		<method name="tag_to_name" qualifiers="const">
@@ -1544,8 +1545,8 @@
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_AUTO" value="1" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded based on font size.
-			- To one quarter of the pixel size if font size is smaller or equal to [code]16[/code].
-			- To one half of the pixel size if font size is smaller or equal to [code]20[/code].
+			- To one quarter of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE].
+			- To one half of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE].
 			- To the whole pixel size for larger fonts.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_HALF" value="2" enum="SubpixelPositioning">
@@ -1554,31 +1555,49 @@
 		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER" value="3" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
-		<constant name="FEATURE_BIDI_LAYOUT" value="1" enum="Feature">
-			TextServer supports bidirectional layouts.
+		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
+			Maximum font size which will use one half of the pixel subpixel positioning in [constants SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
-		<constant name="FEATURE_VERTICAL_LAYOUT" value="2" enum="Feature">
+		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
+			Maximum font size which will use one quarter of the pixel subpixel positioning in [constants SUBPIXEL_POSITIONING_AUTO] mode.
+		</constant>
+		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
+			TextServer supports simple text layouts.
+		</constant>
+		<constant name="FEATURE_BIDI_LAYOUT" value="2" enum="Feature">
+			TextServer supports bidirectional text layouts.
+		</constant>
+		<constant name="FEATURE_VERTICAL_LAYOUT" value="4" enum="Feature">
 			TextServer supports vertical layouts.
 		</constant>
-		<constant name="FEATURE_SHAPING" value="4" enum="Feature">
+		<constant name="FEATURE_SHAPING" value="8" enum="Feature">
 			TextServer supports complex text shaping.
 		</constant>
-		<constant name="FEATURE_KASHIDA_JUSTIFICATION" value="8" enum="Feature">
+		<constant name="FEATURE_KASHIDA_JUSTIFICATION" value="16" enum="Feature">
 			TextServer supports justification using kashidas.
 		</constant>
-		<constant name="FEATURE_BREAK_ITERATORS" value="16" enum="Feature">
+		<constant name="FEATURE_BREAK_ITERATORS" value="32" enum="Feature">
 			TextServer supports complex line/word breaking rules (e.g. dictionary based).
 		</constant>
-		<constant name="FEATURE_FONT_SYSTEM" value="32" enum="Feature">
+		<constant name="FEATURE_FONT_BITMAP" value="64" enum="Feature">
+			TextServer supports loading bitmap fonts.
+		</constant>
+		<constant name="FEATURE_FONT_DYNAMIC" value="128" enum="Feature">
+			TextServer supports loading dynamic (TrueType, OpeType, etc.) fonts.
+		</constant>
+		<constant name="FEATURE_FONT_MSDF" value="256" enum="Feature">
+			TextServer supports multichannel signed distance field dynamic font rendering.
+		</constant>
+		<constant name="FEATURE_FONT_SYSTEM" value="512" enum="Feature">
 			TextServer supports loading system fonts.
 		</constant>
-		<constant name="FEATURE_FONT_VARIABLE" value="64" enum="Feature">
+		<constant name="FEATURE_FONT_VARIABLE" value="1024" enum="Feature">
 			TextServer supports variable fonts.
 		</constant>
-		<constant name="FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION" value="128" enum="Feature">
+		<constant name="FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION" value="2048" enum="Feature">
 			TextServer supports locale dependent and context sensitive case conversion.
 		</constant>
-		<constant name="FEATURE_USE_SUPPORT_DATA" value="256" enum="Feature">
+		<constant name="FEATURE_USE_SUPPORT_DATA" value="4096" enum="Feature">
 			TextServer require external data file for some features.
 		</constant>
 		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">

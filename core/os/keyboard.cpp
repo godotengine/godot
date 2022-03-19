@@ -41,8 +41,8 @@ static const _KeyCodeText _keycodes[] = {
 	/* clang-format off */
 	{Key::ESCAPE                ,"Escape"},
 	{Key::TAB                   ,"Tab"},
-	{Key::BACKTAB               ,"BackTab"},
-	{Key::BACKSPACE             ,"BackSpace"},
+	{Key::BACKTAB               ,"Backtab"},
+	{Key::BACKSPACE             ,"Backspace"},
 	{Key::ENTER                 ,"Enter"},
 	{Key::KP_ENTER              ,"Kp Enter"},
 	{Key::INSERT                ,"Insert"},

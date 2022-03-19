@@ -1532,6 +1532,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("Information3dViewport", "EditorStyles", style_info_3d_viewport);
 
 	// Asset Library.
+	theme->set_stylebox("bg", "AssetLib", style_empty);
 	theme->set_stylebox("panel", "AssetLib", style_content_panel);
 	theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5));
 	theme->set_icon("dismiss", "AssetLib", theme->get_icon(SNAME("Close"), SNAME("EditorIcons")));

@@ -157,7 +157,7 @@ public:
 
 	void set_mesh(RID p_mesh);
 
-	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
+	void update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler);
 
 	Vector3 get_vertex_position(int p_index) const;
 	void set_vertex_position(int p_index, const Vector3 &p_position);

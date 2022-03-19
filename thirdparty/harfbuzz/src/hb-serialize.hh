@@ -36,6 +36,9 @@
 #include "hb-map.hh"
 #include "hb-pool.hh"
 
+#ifdef HB_EXPERIMENTAL_API
+#include "hb-subset-repacker.h"
+#endif
 
 /*
  * Serialize
@@ -70,6 +73,24 @@ struct hb_serialize_context_t
       virtual_links.fini ();
     }
 
+    object_t () = default;
+    
+#ifdef HB_EXPERIMENTAL_API
+    object_t (const hb_object_t &o)
+    {
+      head = o.head;
+      tail = o.tail;
+      next = nullptr;
+      real_links.alloc (o.num_real_links);
+      for (unsigned i = 0 ; i < o.num_real_links; i++)
+        real_links.push (o.real_links[i]);
+
+      virtual_links.alloc (o.num_virtual_links);
+      for (unsigned i = 0; i < o.num_virtual_links; i++)
+        virtual_links.push (o.virtual_links[i]);
+    }
+#endif
+
     bool operator == (const object_t &o) const
     {
       // Virtual links aren't considered for equality since they don't affect the functionality
@@ -95,6 +116,20 @@ struct hb_serialize_context_t
       unsigned position: 28;
       unsigned bias;
       objidx_t objidx;
+
+      link_t () = default;
+
+#ifdef HB_EXPERIMENTAL_API
+      link_t (const hb_link_t &o)
+      {
+        width = o.width;
+        is_signed = 0;
+        whence = 0;
+        position = o.position;
+        bias = 0;
+        objidx = o.objidx;
+      }
+#endif
     };
 
     char *head;

@@ -107,6 +107,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID color_specular_fb;
 		RID specular_only_fb;
 		int width, height;
+		uint32_t view_count;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -155,6 +156,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		bool reverse_cull = false;
 		PassMode pass_mode = PASS_MODE_COLOR;
 		bool no_gi = false;
+		uint32_t view_count = 1;
 		RID render_pass_uniform_set;
 		bool force_wireframe = false;
 		Vector2 uv_offset;
@@ -166,13 +168,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t barrier = RD::BARRIER_MASK_ALL;
 		bool use_directional_soft_shadow = false;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;
 			pass_mode = p_pass_mode;
 			no_gi = p_no_gi;
+			view_count = p_view_count;
 			render_pass_uniform_set = p_render_pass_uniform_set;
 			force_wireframe = p_force_wireframe;
 			uv_offset = p_uv_offset;
@@ -216,8 +219,11 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		struct UBO {
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+			float inv_view_matrix[16];
+			float view_matrix[16];
+
+			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 
 			float viewport_size[2];
 			float screen_pixel_size[2];

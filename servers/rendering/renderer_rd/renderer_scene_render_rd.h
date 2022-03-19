@@ -41,6 +41,7 @@
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog_process.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -92,6 +93,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
+	RendererRD::TextureStorage *texture_storage;
 	RendererStorageRD *storage;
 	double time;
 	double time_step = 0;

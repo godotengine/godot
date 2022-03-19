@@ -476,7 +476,6 @@ LocalizationEditor::LocalizationEditor() {
 	localization_changed = "localization_changed";
 
 	TabContainer *translations = memnew(TabContainer);
-	translations->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	translations->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(translations);
 

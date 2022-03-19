@@ -417,8 +417,8 @@ void SoftDynamicBody3D::_draw_soft_mesh() {
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
 	}
 
-	if (!rendering_server_handler.is_ready(mesh_rid)) {
-		rendering_server_handler.prepare(mesh_rid, 0);
+	if (!rendering_server_handler->is_ready(mesh_rid)) {
+		rendering_server_handler->prepare(mesh_rid, 0);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
@@ -428,11 +428,11 @@ void SoftDynamicBody3D::_draw_soft_mesh() {
 
 	_update_physics_server();
 
-	rendering_server_handler.open();
-	PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, &rendering_server_handler);
-	rendering_server_handler.close();
+	rendering_server_handler->open();
+	PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, rendering_server_handler);
+	rendering_server_handler->close();
 
-	rendering_server_handler.commit_changes();
+	rendering_server_handler->commit_changes();
 }
 
 void SoftDynamicBody3D::_prepare_physics_server() {
@@ -688,10 +688,12 @@ bool SoftDynamicBody3D::is_ray_pickable() const {
 
 SoftDynamicBody3D::SoftDynamicBody3D() :
 		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()) {
+	rendering_server_handler = memnew(SoftDynamicBodyRenderingServerHandler);
 	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }
 
 SoftDynamicBody3D::~SoftDynamicBody3D() {
+	memdelete(rendering_server_handler);
 	PhysicsServer3D::get_singleton()->free(physics_rid);
 }
 
