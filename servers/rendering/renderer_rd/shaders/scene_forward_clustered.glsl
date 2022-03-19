@@ -456,8 +456,10 @@ layout(location = 9) in flat uint instance_index_interp;
 #define model_matrix instances.data[instance_index].transform
 #ifdef USE_MULTIVIEW
 #define projection_matrix scene_data.projection_matrix_view[ViewIndex]
+#define inv_projection_matrix scene_data.inv_projection_matrix_view[ViewIndex]
 #else
 #define projection_matrix scene_data.projection_matrix
+#define inv_projection_matrix scene_data.inv_projection_matrix
 #endif
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
