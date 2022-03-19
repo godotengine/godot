@@ -365,6 +365,9 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		ps.wl_pointer = wl_seat_get_pointer(wl_seat);
 		ERR_FAIL_NULL(ps.wl_pointer);
 
+		ps.cursor_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
+		ERR_FAIL_NULL(ps.cursor_surface);
+
 		ps.wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(wls->globals.wp_relative_pointer_manager, ps.wl_pointer);
 		ERR_FAIL_NULL(ps.wp_relative_pointer);
 
@@ -374,6 +377,11 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		if (ps.wl_pointer) {
 			wl_pointer_destroy(ps.wl_pointer);
 			ps.wl_pointer = nullptr;
+		}
+
+		if (ps.cursor_surface) {
+			wl_surface_destroy(ps.cursor_surface);
+			ps.cursor_surface = nullptr;
 		}
 
 		if (ps.wp_relative_pointer) {
@@ -405,10 +413,6 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->pointer_state.data_buffer;
-
-	if (!wls->pointer_state.cursor_surface) {
-		wls->pointer_state.cursor_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
-	}
 
 	wl_pointer_set_cursor(wls->pointer_state.wl_pointer, serial, wls->pointer_state.cursor_surface, 0, 0);
 
@@ -1324,7 +1328,6 @@ void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 
 	PointerState &ps = wls.pointer_state;
 
-	// This should've been already been created by `wl_pointer_on_enter`.
 	ERR_FAIL_NULL(ps.cursor_surface);
 
 	struct wl_cursor_image *cursor_image = ps.cursor_images[p_shape];
