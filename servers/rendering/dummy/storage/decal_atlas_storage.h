@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  decal_atlas_storage.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifndef DECAL_ATLAS_STORAGE_DUMMY_H
+#define DECAL_ATLAS_STORAGE_DUMMY_H
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
 #include "servers/rendering/storage/decal_atlas_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+namespace RendererDummy {
 
-class RenderingServerGlobals {
+class DecalAtlasStorage : public RendererDecalAtlasStorage {
 public:
-	static bool threaded;
+	virtual RID decal_allocate() override { return RID(); }
+	virtual void decal_initialize(RID p_rid) override {}
+	virtual void decal_free(RID p_rid) override{};
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererDecalAtlasStorage *decal_atlas_storage;
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
+	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override {}
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override {}
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) override {}
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) override {}
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) override {}
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) override {}
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override {}
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
+	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 };
 
-#define RSG RenderingServerGlobals
+} // namespace RendererDummy
 
-#endif // RENDERING_SERVER_GLOBALS_H
+#endif // !DECAL_ATLAS_STORAGE_DUMMY_H

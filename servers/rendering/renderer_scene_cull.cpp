@@ -1887,7 +1887,7 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 
 		} break;
 		case RenderingServer::INSTANCE_DECAL: {
-			new_aabb = RSG::storage->decal_get_aabb(p_instance->base);
+			new_aabb = RSG::decal_atlas_storage->decal_get_aabb(p_instance->base);
 
 		} break;
 		case RenderingServer::INSTANCE_VOXEL_GI: {

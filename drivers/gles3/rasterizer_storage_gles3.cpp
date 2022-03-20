@@ -1202,46 +1202,6 @@ void RasterizerStorageGLES3::base_update_dependency(RID p_base, DependencyTracke
 void RasterizerStorageGLES3::skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) {
 }
 
-/* DECAL API */
-
-RID RasterizerStorageGLES3::decal_allocate() {
-	return RID();
-}
-
-void RasterizerStorageGLES3::decal_initialize(RID p_rid) {
-}
-
-void RasterizerStorageGLES3::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
-}
-
-void RasterizerStorageGLES3::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
-}
-
-void RasterizerStorageGLES3::decal_set_emission_energy(RID p_decal, float p_energy) {
-}
-
-void RasterizerStorageGLES3::decal_set_albedo_mix(RID p_decal, float p_mix) {
-}
-
-void RasterizerStorageGLES3::decal_set_modulate(RID p_decal, const Color &p_modulate) {
-}
-
-void RasterizerStorageGLES3::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
-}
-
-void RasterizerStorageGLES3::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
-}
-
-void RasterizerStorageGLES3::decal_set_fade(RID p_decal, float p_above, float p_below) {
-}
-
-void RasterizerStorageGLES3::decal_set_normal_fade(RID p_decal, float p_fade) {
-}
-
-AABB RasterizerStorageGLES3::decal_get_aabb(RID p_decal) const {
-	return AABB();
-}
-
 /* VOXEL GI API */
 
 RID RasterizerStorageGLES3::voxel_gi_allocate() {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  decal_atlas_storage.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifdef GLES3_ENABLED
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/decal_atlas_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
+#include "decal_atlas_storage.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
+using namespace GLES3;
 
-class RenderingServerGlobals {
-public:
-	static bool threaded;
+RID DecalAtlasStorage::decal_allocate() {
+	return RID();
+}
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererDecalAtlasStorage *decal_atlas_storage;
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+void DecalAtlasStorage::decal_initialize(RID p_rid) {
+}
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
-};
+void DecalAtlasStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+}
 
-#define RSG RenderingServerGlobals
+void DecalAtlasStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
+}
 
-#endif // RENDERING_SERVER_GLOBALS_H
+void DecalAtlasStorage::decal_set_emission_energy(RID p_decal, float p_energy) {
+}
+
+void DecalAtlasStorage::decal_set_albedo_mix(RID p_decal, float p_mix) {
+}
+
+void DecalAtlasStorage::decal_set_modulate(RID p_decal, const Color &p_modulate) {
+}
+
+void DecalAtlasStorage::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
+}
+
+void DecalAtlasStorage::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
+}
+
+void DecalAtlasStorage::decal_set_fade(RID p_decal, float p_above, float p_below) {
+}
+
+void DecalAtlasStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
+}
+
+AABB DecalAtlasStorage::decal_get_aabb(RID p_decal) const {
+	return AABB();
+}
+
+#endif // !GLES3_ENABLED
