@@ -439,14 +439,14 @@
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], children will be updated with local transform data.
+				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
 			</description>
 		</method>
 		<method name="set_notify_transform">
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], children will be updated with global transform data.
+				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
 			</description>
 		</method>
 		<method name="show">
@@ -524,7 +524,10 @@
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
-			The [CanvasItem]'s transform has changed. This notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].
+			The [CanvasItem]'s global transform has changed. This notification is only received if enabled by [method set_notify_transform].
+		</constant>
+		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="35">
+			The [CanvasItem]'s local transform has changed. This notification is only received if enabled by [method set_notify_local_transform].
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			The [CanvasItem] is requested to draw.
