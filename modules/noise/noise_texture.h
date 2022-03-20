@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.h                                                     */
+/*  noise_texture.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,82 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENSIMPLEX_REGISTER_TYPES_H
-#define OPENSIMPLEX_REGISTER_TYPES_H
+#ifndef NOISE_TEXTURE_H
+#define NOISE_TEXTURE_H
 
-void register_opensimplex_types();
-void unregister_opensimplex_types();
+#include "noise.h"
 
-#endif // OPENSIMPLEX_REGISTER_TYPES_H
+#include "core/object/ref_counted.h"
+#include "scene/resources/texture.h"
+
+class NoiseTexture : public Texture2D {
+	GDCLASS(NoiseTexture, Texture2D);
+
+private:
+	Ref<Image> image;
+
+	Thread noise_thread;
+
+	bool first_time = true;
+	bool update_queued = false;
+	bool regen_queued = false;
+
+	mutable RID texture;
+	uint32_t flags = 0;
+
+	Ref<Noise> noise;
+	bool invert = false;
+	Vector2i size = Vector2i(512, 512);
+	Vector2 noise_offset;
+	bool seamless = false;
+	real_t seamless_blend_skirt = 0.1;
+	bool as_normal_map = false;
+	float bump_strength = 8.0;
+
+	void _thread_done(const Ref<Image> &p_image);
+	static void _thread_function(void *p_ud);
+
+	void _queue_update();
+	Ref<Image> _generate_texture();
+	void _update_texture();
+	void _set_texture_image(const Ref<Image> &p_image);
+
+protected:
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
+
+public:
+	void set_noise(Ref<Noise> p_noise);
+	Ref<Noise> get_noise();
+
+	void set_width(int p_width);
+	void set_height(int p_height);
+
+	void set_invert(bool p_invert);
+	bool get_invert() const;
+
+	void set_seamless(bool p_seamless);
+	bool get_seamless();
+
+	void set_seamless_blend_skirt(real_t p_blend_skirt);
+	real_t get_seamless_blend_skirt();
+
+	void set_as_normal_map(bool p_as_normal_map);
+	bool is_normal_map();
+
+	void set_bump_strength(float p_bump_strength);
+	float get_bump_strength();
+
+	int get_width() const override;
+	int get_height() const override;
+
+	virtual RID get_rid() const override;
+	virtual bool has_alpha() const override { return false; }
+
+	virtual Ref<Image> get_image() const override;
+
+	NoiseTexture();
+	virtual ~NoiseTexture();
+};
+
+#endif // NOISE_TEXTURE_H
