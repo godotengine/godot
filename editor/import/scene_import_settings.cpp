@@ -529,6 +529,8 @@ void SceneImportSettings::open_settings(const String &p_path) {
 
 	base_viewport->add_child(scene);
 
+	inspector->edit(nullptr);
+
 	if (first_aabb) {
 		contents_aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 		first_aabb = false;
