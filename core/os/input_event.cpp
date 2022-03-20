@@ -300,8 +300,13 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 	} else {
 		match = physical_scancode == key->physical_scancode;
 	}
+	uint32_t action_mask = get_modifiers_mask();
+	uint32_t key_mask = key->get_modifiers_mask();
+	if (key->is_pressed()) {
+		match &= (action_mask & key_mask) == action_mask;
+	}
 	if (p_exact_match) {
-		match &= get_modifiers_mask() == key->get_modifiers_mask();
+		match &= action_mask == key_mask;
 	}
 	if (match) {
 		bool pressed = key->is_pressed();
@@ -469,8 +474,13 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_
 	}
 
 	bool match = mb->button_index == button_index;
+	uint32_t action_mask = get_modifiers_mask();
+	uint32_t button_mask = mb->get_modifiers_mask();
+	if (mb->is_pressed()) {
+		match &= (action_mask & button_mask) == action_mask;
+	}
 	if (p_exact_match) {
-		match &= get_modifiers_mask() == mb->get_modifiers_mask();
+		match &= action_mask == button_mask;
 	}
 	if (match) {
 		bool pressed = mb->is_pressed();
