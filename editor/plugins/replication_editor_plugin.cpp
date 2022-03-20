@@ -38,7 +38,8 @@
 #include "scene/multiplayer/multiplayer_synchronizer.h"
 
 /// ReplicationEditor
-ReplicationEditor::ReplicationEditor() {
+ReplicationEditor::ReplicationEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
@@ -97,7 +98,7 @@ void ReplicationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", plugin->get_editor_interface()->get_base_control()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -125,7 +126,7 @@ void ReplicationEditor::_add_pressed() {
 	if (prop.is_empty()) {
 		return;
 	}
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add property"));
 	config = current->get_replication_config();
 	if (config.is_null()) {
@@ -150,7 +151,7 @@ void ReplicationEditor::_tree_item_edited() {
 	int column = tree->get_edited_column();
 	ERR_FAIL_COND(column < 1 || column > 2);
 	const NodePath prop = ti->get_metadata(0);
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	bool value = ti->is_checked(column);
 	String method;
 	if (column == 1) {
@@ -186,7 +187,7 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 		int idx = config->property_get_index(prop);
 		bool spawn = config->property_get_spawn(prop);
 		bool sync = config->property_get_sync(prop);
-		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+		UndoRedo *undo_redo = plugin->get_undo_redo();
 		undo_redo->create_action(TTR("Remove Property"));
 		undo_redo->add_do_method(config.ptr(), "remove_property", prop);
 		undo_redo->add_undo_method(config.ptr(), "add_property", prop, idx);
@@ -329,7 +330,7 @@ void ReplicationEditor::property_keyed(const String &p_property) {
 	path += ":" + p_property;
 
 	NodePath prop = path;
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add property"));
 	undo_redo->add_do_method(config.ptr(), "add_property", prop);
 	undo_redo->add_undo_method(config.ptr(), "remove_property", prop);
@@ -340,8 +341,8 @@ void ReplicationEditor::property_keyed(const String &p_property) {
 
 /// ReplicationEditorPlugin
 ReplicationEditorPlugin::ReplicationEditorPlugin() {
-	repl_editor = memnew(ReplicationEditor);
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Replication"), repl_editor);
+	repl_editor = memnew(ReplicationEditor(this));
+	add_control_to_bottom_panel(repl_editor, TTR("Replication"));
 }
 
 ReplicationEditorPlugin::~ReplicationEditorPlugin() {
@@ -376,7 +377,7 @@ void ReplicationEditorPlugin::_node_removed(Node *p_node) {
 	if (p_node && p_node == repl_editor->get_current()) {
 		repl_editor->edit(nullptr);
 		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 		}
 	}
 }
@@ -391,6 +392,6 @@ bool ReplicationEditorPlugin::handles(Object *p_object) const {
 
 void ReplicationEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(repl_editor);
+		make_bottom_panel_item_visible(repl_editor);
 	}
 }

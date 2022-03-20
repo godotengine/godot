@@ -35,7 +35,6 @@
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_help_search.h"
-#include "editor/editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
@@ -43,6 +42,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/text_file.h"
@@ -241,6 +241,7 @@ class ScriptEditor : public PanelContainer {
 		DISPLAY_DIR_AND_NAME,
 		DISPLAY_FULL_PATH,
 	};
+	EditorPlugin *plugin = nullptr;
 
 	HBoxContainer *menu_hb = nullptr;
 	MenuButton *file_menu = nullptr;
@@ -522,7 +523,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor();
+	ScriptEditor(EditorPlugin *p_plugin);
 	~ScriptEditor();
 };
 

@@ -75,7 +75,7 @@ public:
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
 
-	MeshLibraryEditor();
+	MeshLibraryEditor(EditorPlugin *p_plugin);
 };
 
 class MeshLibraryEditorPlugin : public EditorPlugin {

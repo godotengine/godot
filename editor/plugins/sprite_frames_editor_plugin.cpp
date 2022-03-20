@@ -228,6 +228,7 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	int frame_count_y = split_sheet_v->get_value();
 	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
@@ -376,6 +377,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 		return;
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add Frame"));
 	int fc = frames->get_frame_count(edited_anim);
 
@@ -420,6 +422,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		return; ///beh should show an error i guess
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Paste Frame"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, r);
 	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, frames->get_frame_count(edited_anim));
@@ -457,6 +460,7 @@ void SpriteFramesEditor::_empty_pressed() {
 
 	Ref<Texture2D> r;
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, r, from);
 	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, from);
@@ -480,6 +484,7 @@ void SpriteFramesEditor::_empty2_pressed() {
 
 	Ref<Texture2D> r;
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, r, from + 1);
 	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, from + 1);
@@ -503,6 +508,7 @@ void SpriteFramesEditor::_up_pressed() {
 	sel = to_move;
 	sel -= 1;
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move - 1));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame(edited_anim, to_move));
@@ -528,6 +534,7 @@ void SpriteFramesEditor::_down_pressed() {
 	sel = to_move;
 	sel += 1;
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move + 1));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame(edited_anim, to_move));
@@ -550,6 +557,7 @@ void SpriteFramesEditor::_delete_pressed() {
 		return;
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames, "remove_frame", edited_anim, to_delete);
 	undo_redo->add_undo_method(frames, "add_frame", edited_anim, frames->get_frame(edited_anim, to_delete), to_delete);
@@ -634,8 +642,9 @@ void SpriteFramesEditor::_animation_name_edited() {
 	}
 
 	List<Node *> nodes;
-	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
+	_find_anim_sprites(plugin->get_editor_interface()->get_edited_scene_root(), &nodes, Ref<SpriteFrames>(frames));
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Rename Animation"));
 	undo_redo->add_do_method(frames, "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
@@ -663,8 +672,9 @@ void SpriteFramesEditor::_animation_add() {
 	}
 
 	List<Node *> nodes;
-	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
+	_find_anim_sprites(plugin->get_editor_interface()->get_edited_scene_root(), &nodes, Ref<SpriteFrames>(frames));
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Add Animation"));
 	undo_redo->add_do_method(frames, "add_animation", name);
 	undo_redo->add_undo_method(frames, "remove_animation", name);
@@ -697,6 +707,7 @@ void SpriteFramesEditor::_animation_remove() {
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Remove Animation"));
 	undo_redo->add_do_method(frames, "remove_animation", edited_anim);
 	undo_redo->add_undo_method(frames, "add_animation", edited_anim);
@@ -720,6 +731,7 @@ void SpriteFramesEditor::_animation_loop_changed() {
 		return;
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Animation Loop"));
 	undo_redo->add_do_method(frames, "set_animation_loop", edited_anim, anim_loop->is_pressed());
 	undo_redo->add_undo_method(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
@@ -733,6 +745,7 @@ void SpriteFramesEditor::_animation_fps_changed(double p_value) {
 		return;
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Animation FPS"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(frames, "set_animation_speed", edited_anim, p_value);
 	undo_redo->add_undo_method(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
@@ -989,6 +1002,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				reorder = true;
 			}
 
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 			if (reorder) { //drop is from reordering frames
 				int from_frame = -1;
 				if (d.has("frame")) {
@@ -1032,7 +1046,8 @@ void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
 }
 
-SpriteFramesEditor::SpriteFramesEditor() {
+SpriteFramesEditor::SpriteFramesEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	VBoxContainer *vbc_animlist = memnew(VBoxContainer);
 	add_child(vbc_animlist);
 	vbc_animlist->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
@@ -1307,8 +1322,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 }
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
-	frames_editor->set_undo_redo(&get_undo_redo());
-
 	SpriteFrames *s;
 	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);
 	if (animated_sprite) {
@@ -1340,19 +1353,19 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(frames_editor);
+		make_bottom_panel_item_visible(frames_editor);
 	} else {
 		button->hide();
 		if (frames_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 		}
 	}
 }
 
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
-	frames_editor = memnew(SpriteFramesEditor);
+	frames_editor = memnew(SpriteFramesEditor(this));
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
+	button = add_control_to_bottom_panel(frames_editor, TTR("SpriteFrames"));
 	button->hide();
 }
 

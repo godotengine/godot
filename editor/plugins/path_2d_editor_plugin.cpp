@@ -30,12 +30,12 @@
 
 #include "path_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/io/file_access.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -516,9 +516,9 @@ void Path2DEditor::_handle_option_pressed(int p_option) {
 	}
 }
 
-Path2DEditor::Path2DEditor() {
+Path2DEditor::Path2DEditor(EditorPlugin *p_plugin) {
 	canvas_item_editor = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = p_plugin->get_undo_redo();
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 	on_edge = false;
@@ -610,7 +610,7 @@ void Path2DEditorPlugin::make_visible(bool p_visible) {
 }
 
 Path2DEditorPlugin::Path2DEditorPlugin() {
-	path2d_editor = memnew(Path2DEditor);
+	path2d_editor = memnew(Path2DEditor(this));
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(path2d_editor);
 	path2d_editor->hide();
 }

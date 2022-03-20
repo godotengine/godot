@@ -421,15 +421,16 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 	if (((is_snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, (real_t)360.0) == 0.0) {
 		// Guides
-		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+		Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+		if (edited_scene && edited_scene->has_meta("_edit_vertical_guides_")) {
+			Array vguides = edited_scene->get_meta("_edit_vertical_guides_");
 			for (int i = 0; i < vguides.size(); i++) {
 				_snap_if_closer_float(p_target.x, output.x, snap_target[0], vguides[i], SNAP_TARGET_GUIDE);
 			}
 		}
 
-		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-			Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+		if (edited_scene && edited_scene->has_meta("_edit_horizontal_guides_")) {
+			Array hguides = edited_scene->get_meta("_edit_horizontal_guides_");
 			for (int i = 0; i < hguides.size(); i++) {
 				_snap_if_closer_float(p_target.y, output.y, snap_target[1], hguides[i], SNAP_TARGET_GUIDE);
 			}
@@ -625,7 +626,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 }
 
 void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked) {
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *scene = plugin->get_editor_interface()->get_edited_scene_root();
 
 	_find_canvas_items_at_pos(p_pos, scene, r_items);
 
@@ -678,9 +679,9 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	}
 
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
 
-	bool editable = p_node == scene || p_node->get_owner() == scene || p_node == scene->get_deepest_editable_node(p_node);
+	bool editable = p_node == edited_scene || p_node->get_owner() == edited_scene || p_node == edited_scene->get_deepest_editable_node(p_node);
 	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
 	bool locked = _is_node_locked(p_node);
 
@@ -741,7 +742,7 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 			// Reselect
 			if (Engine::get_singleton()->is_editor_hint()) {
 				selected_from_canvas = true;
-				EditorNode::get_singleton()->edit_node(item);
+				plugin->get_editor_interface()->edit_node(item);
 			}
 		}
 	}
@@ -839,6 +840,8 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 		return;
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+
 	undo_redo->create_action(action_name);
 	for (CanvasItem *canvas_item : modified_canvas_items) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -899,11 +902,13 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 		}
 		case ADD_MOVE: {
 			if (p_result == ADD_MOVE) {
-				nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+				nodes_to_move = plugin->get_editor_interface()->get_selection()->get_selected_node_list();
 			}
 			if (nodes_to_move.is_empty()) {
 				return;
 			}
+
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 
 			undo_redo->create_action(TTR("Move Node(s) to Position"));
 			for (Node *node : nodes_to_move) {
@@ -997,16 +1002,17 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (drag_type == DRAG_NONE) {
-		if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
+		Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+		if (show_guides && show_rulers && edited_scene) {
 			Transform2D xform = viewport_scrollable->get_transform() * transform;
 			// Retrieve the guide lists
 			Array vguides;
-			if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-				vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+			if (edited_scene->has_meta("_edit_vertical_guides_")) {
+				vguides = edited_scene->get_meta("_edit_vertical_guides_");
 			}
 			Array hguides;
-			if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-				hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+			if (edited_scene->has_meta("_edit_horizontal_guides_")) {
+				hguides = edited_scene->get_meta("_edit_horizontal_guides_");
 			}
 
 			// Hover over guides
@@ -1096,20 +1102,23 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 		// Release confirms the guide move
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
-			if (show_guides && EditorNode::get_singleton()->get_edited_scene()) {
+			Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+			if (show_guides && edited_scene) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
 				// Retrieve the guide lists
 				Array vguides;
-				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+				if (edited_scene->has_meta("_edit_vertical_guides_")) {
+					vguides = edited_scene->get_meta("_edit_vertical_guides_");
 				}
 				Array hguides;
-				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-					hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+				if (edited_scene->has_meta("_edit_horizontal_guides_")) {
+					hguides = edited_scene->get_meta("_edit_horizontal_guides_");
 				}
 
 				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
+				UndoRedo *undo_redo = plugin->get_undo_redo();
+
 				if (drag_type == DRAG_V_GUIDE) {
 					Array prev_vguides = vguides.duplicate();
 					if (b->get_position().x > RULER_WIDTH) {
@@ -1117,15 +1126,15 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							vguides[dragged_guide_index] = edited.x;
 							undo_redo->create_action(TTR("Move Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							undo_redo->add_undo_method(viewport, "update");
 							undo_redo->commit_action();
 						} else {
 							vguides.push_back(edited.x);
 							undo_redo->create_action(TTR("Create Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							undo_redo->add_undo_method(viewport, "update");
 							undo_redo->commit_action();
 						}
@@ -1134,11 +1143,11 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							vguides.remove_at(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Vertical Guide"));
 							if (vguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+								undo_redo->add_do_method(edited_scene, "remove_meta", "_edit_vertical_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+								undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							undo_redo->add_undo_method(viewport, "update");
 							undo_redo->commit_action();
 						}
@@ -1150,15 +1159,15 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							hguides[dragged_guide_index] = edited.y;
 							undo_redo->create_action(TTR("Move Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							undo_redo->add_undo_method(viewport, "update");
 							undo_redo->commit_action();
 						} else {
 							hguides.push_back(edited.y);
 							undo_redo->create_action(TTR("Create Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							undo_redo->add_undo_method(viewport, "update");
 							undo_redo->commit_action();
 						}
@@ -1167,11 +1176,11 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							hguides.remove_at(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Horizontal Guide"));
 							if (hguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+								undo_redo->add_do_method(edited_scene, "remove_meta", "_edit_horizontal_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+								undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							undo_redo->add_undo_method(viewport, "update");
 							undo_redo->commit_action();
 						}
@@ -1184,10 +1193,10 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						vguides.push_back(edited.x);
 						hguides.push_back(edited.y);
 						undo_redo->create_action(TTR("Create Horizontal and Vertical Guides"));
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-						undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
-						undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+						undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
+						undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
+						undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
+						undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 						undo_redo->add_undo_method(viewport, "update");
 						undo_redo->commit_action();
 					}
@@ -1467,7 +1476,7 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (selection.size() == 1) {
 			CanvasItem *canvas_item = selection[0];
-			if (!canvas_item->get_scene_file_path().is_empty() && canvas_item != EditorNode::get_singleton()->get_edited_scene()) {
+			if (!canvas_item->get_scene_file_path().is_empty() && canvas_item != plugin->get_editor_interface()->get_edited_scene_root()) {
 				EditorNode::get_singleton()->open_request(canvas_item->get_scene_file_path());
 				return true;
 			}
@@ -2248,10 +2257,10 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					if (_is_node_locked(item)) {
 						locked = 1;
 					} else {
-						Node *scene = EditorNode::get_singleton()->get_edited_scene();
+						Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
 						Node *node = item;
 
-						while (node && node != scene->get_parent()) {
+						while (node && node != edited_scene->get_parent()) {
 							CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
 							if (canvas_item_tmp && node->has_meta("_edit_group_")) {
 								locked = 2;
@@ -2266,7 +2275,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					} else if (locked == 2) {
 						suffix = " (" + TTR("Grouped") + ")";
 					}
-					selection_menu->add_item((String)item->get_name() + suffix);
+					selection_menu->add_item(String(item->get_name()) + suffix);
 					selection_menu->set_item_icon(i, icon);
 					selection_menu->set_item_metadata(i, node_path);
 					selection_menu->set_item_tooltip(i, String(item->get_name()) + "\nType: " + item->get_class() + "\nPath: " + node_path);
@@ -2290,7 +2299,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()) {
+			for (Node *node : plugin->get_editor_interface()->get_selection()->get_selected_node_list()) {
 				if (Object::cast_to<CanvasItem>(node)) {
 					add_node_menu->add_icon_item(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")), TTR("Move Node(s) Here"), ADD_MOVE);
 					break;
@@ -2308,8 +2317,8 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Single item selection
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
-			Node *scene = EditorNode::get_singleton()->get_edited_scene();
-			if (!scene) {
+			Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+			if (!edited_scene) {
 				return true;
 			}
 
@@ -2381,8 +2390,8 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_BOX_SELECTION) {
 		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
 			// Confirms box selection
-			Node *scene = EditorNode::get_singleton()->get_edited_scene();
-			if (scene) {
+			Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+			if (edited_scene) {
 				List<CanvasItem *> selitems;
 
 				Point2 bsfrom = drag_from;
@@ -2394,7 +2403,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					SWAP(bsfrom.y, bsto.y);
 				}
 
-				_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
+				_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), edited_scene, &selitems);
 				if (selitems.size() == 1 && editor_selection->get_selected_node_list().is_empty()) {
 					EditorNode::get_singleton()->push_item(selitems[0]);
 				}
@@ -2713,8 +2722,9 @@ void CanvasItemEditor::_draw_guides() {
 	Transform2D xform = viewport_scrollable->get_transform() * transform;
 
 	// Guides already there
-	if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-		Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+	if (edited_scene && edited_scene->has_meta("_edit_vertical_guides_")) {
+		Array vguides = edited_scene->get_meta("_edit_vertical_guides_");
 		for (int i = 0; i < vguides.size(); i++) {
 			if (drag_type == DRAG_V_GUIDE && i == dragged_guide_index) {
 				continue;
@@ -2724,8 +2734,8 @@ void CanvasItemEditor::_draw_guides() {
 		}
 	}
 
-	if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-		Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+	if (edited_scene && edited_scene->has_meta("_edit_horizontal_guides_")) {
+		Array hguides = edited_scene->get_meta("_edit_horizontal_guides_");
 		for (int i = 0; i < hguides.size(); i++) {
 			if (drag_type == DRAG_H_GUIDE && i == dragged_guide_index) {
 				continue;
@@ -3559,7 +3569,7 @@ void CanvasItemEditor::_draw_axis() {
 void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	ERR_FAIL_COND(!p_node);
 
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *scene = plugin->get_editor_interface()->get_edited_scene_root();
 	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner())) {
 		return;
 	}
@@ -3629,8 +3639,8 @@ void CanvasItemEditor::_draw_hover() {
 void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	ERR_FAIL_COND(!p_node);
 
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
-	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner())) {
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+	if (p_node != edited_scene && p_node->get_owner() != edited_scene && !edited_scene->is_editable_instance(p_node->get_owner())) {
 		return;
 	}
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
@@ -3710,9 +3720,11 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_grid();
 	_draw_ruler_tool();
 	_draw_axis();
-	if (EditorNode::get_singleton()->get_edited_scene()) {
-		_draw_locks_and_groups(EditorNode::get_singleton()->get_edited_scene());
-		_draw_invisible_nodes_positions(EditorNode::get_singleton()->get_edited_scene());
+
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+	if (edited_scene) {
+		_draw_locks_and_groups(edited_scene);
+		_draw_invisible_nodes_positions(edited_scene);
 	}
 	_draw_selection();
 
@@ -3920,7 +3932,7 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 void CanvasItemEditor::_update_context_menu_stylebox() {
 	// This must be called when the theme changes to follow the new accent color.
 	Ref<StyleBoxFlat> context_menu_stylebox = memnew(StyleBoxFlat);
-	const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	const Color accent_color = plugin->get_editor_interface()->get_base_control()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 	context_menu_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
 	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
 	context_menu_stylebox->set_border_color(accent_color);
@@ -3946,8 +3958,9 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	// Calculate scrollable area.
 	Rect2 canvas_item_rect = Rect2(Point2(), screen_rect);
-	if (EditorNode::get_singleton()->is_inside_tree() && EditorNode::get_singleton()->get_edited_scene()) {
-		Rect2 content_rect = _get_encompassing_rect(EditorNode::get_singleton()->get_edited_scene());
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+	if (EditorNode::get_singleton()->is_inside_tree() && edited_scene) {
+		Rect2 content_rect = _get_encompassing_rect(edited_scene);
 		canvas_item_rect.expand_to(content_rect.position);
 		canvas_item_rect.expand_to(content_rect.position + content_rect.size);
 	}
@@ -4305,6 +4318,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			viewport->update();
 		} break;
 		case LOCK_SELECTED: {
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 			undo_redo->create_action(TTR("Lock Selected"));
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -4327,6 +4341,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->commit_action();
 		} break;
 		case UNLOCK_SELECTED: {
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 			undo_redo->create_action(TTR("Unlock Selected"));
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -4349,6 +4364,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->commit_action();
 		} break;
 		case GROUP_SELECTED: {
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 			undo_redo->create_action(TTR("Group Selected"));
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -4371,6 +4387,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->commit_action();
 		} break;
 		case UNGROUP_SELECTED: {
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 			undo_redo->create_action(TTR("Ungroup Selected"));
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -4440,6 +4457,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			if (!pose_clipboard.size()) {
 				break;
 			}
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 
 			undo_redo->create_action(TTR("Paste Pose"));
 			for (const PoseClipboard &E : pose_clipboard) {
@@ -4493,21 +4511,22 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case CLEAR_GUIDES: {
-			Node *const root = EditorNode::get_singleton()->get_edited_scene();
+			Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 
-			if (root && (root->has_meta("_edit_horizontal_guides_") || root->has_meta("_edit_vertical_guides_"))) {
+			if (edited_scene && (edited_scene->has_meta("_edit_horizontal_guides_") || edited_scene->has_meta("_edit_vertical_guides_"))) {
 				undo_redo->create_action(TTR("Clear Guides"));
-				if (root->has_meta("_edit_horizontal_guides_")) {
-					Array hguides = root->get_meta("_edit_horizontal_guides_");
+				if (edited_scene->has_meta("_edit_horizontal_guides_")) {
+					Array hguides = edited_scene->get_meta("_edit_horizontal_guides_");
 
-					undo_redo->add_do_method(root, "remove_meta", "_edit_horizontal_guides_");
-					undo_redo->add_undo_method(root, "set_meta", "_edit_horizontal_guides_", hguides);
+					undo_redo->add_do_method(edited_scene, "remove_meta", "_edit_horizontal_guides_");
+					undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
 				}
-				if (root->has_meta("_edit_vertical_guides_")) {
-					Array vguides = root->get_meta("_edit_vertical_guides_");
+				if (edited_scene->has_meta("_edit_vertical_guides_")) {
+					Array vguides = edited_scene->get_meta("_edit_vertical_guides_");
 
-					undo_redo->add_do_method(root, "remove_meta", "_edit_vertical_guides_");
-					undo_redo->add_undo_method(root, "set_meta", "_edit_vertical_guides_", vguides);
+					undo_redo->add_do_method(edited_scene, "remove_meta", "_edit_vertical_guides_");
+					undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
 				}
 				undo_redo->add_undo_method(viewport, "update");
 				undo_redo->commit_action();
@@ -4528,8 +4547,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SKELETON_MAKE_BONES: {
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
-			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
+			Node *editor_root = plugin->get_editor_interface()->get_edited_scene_root()->get_tree()->get_edited_scene_root();
 
+			UndoRedo *undo_redo = plugin->get_undo_redo();
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				Node2D *n2d = Object::cast_to<Node2D>(E.key);
@@ -4883,7 +4903,8 @@ void CanvasItemEditor::focus_selection() {
 	_focus_selection(VIEW_CENTER_TO_SELECTION);
 }
 
-CanvasItemEditor::CanvasItemEditor() {
+CanvasItemEditor::CanvasItemEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	zoom = 1.0 / MAX(1, EDSCALE);
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
@@ -4899,8 +4920,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-	editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	editor_selection = plugin->get_editor_interface()->get_selection();
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	editor_selection->connect("selection_changed", callable_mp(this, &CanvasItemEditor::_selection_changed));
@@ -4952,7 +4972,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
-	viewport = memnew(CanvasItemEditorViewport(this));
+	viewport = memnew(CanvasItemEditorViewport(this, p_plugin));
 	viewport_scrollable->add_child(viewport);
 	viewport->set_mouse_filter(MOUSE_FILTER_PASS);
 	viewport->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
@@ -5329,7 +5349,6 @@ CanvasItemEditor::CanvasItemEditor() {
 CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
 
 void CanvasItemEditorPlugin::edit(Object *p_object) {
-	canvas_item_editor->set_undo_redo(&get_undo_redo());
 	canvas_item_editor->edit(Object::cast_to<CanvasItem>(p_object));
 }
 
@@ -5359,9 +5378,9 @@ void CanvasItemEditorPlugin::set_state(const Dictionary &p_state) {
 }
 
 CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
-	canvas_item_editor = memnew(CanvasItemEditor);
+	canvas_item_editor = memnew(CanvasItemEditor(this));
 	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_control()->add_child(canvas_item_editor);
+	get_editor_interface()->get_editor_main_control()->add_child(canvas_item_editor);
 	canvas_item_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	canvas_item_editor->hide();
 }
@@ -5481,14 +5500,15 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 
 	Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(ResourceCache::get(path)));
 
+	Node *edited_node = plugin->get_editor_interface()->get_edited_scene_root();
 	if (parent) {
 		editor_data->get_undo_redo().add_do_method(parent, "add_child", child, true);
-		editor_data->get_undo_redo().add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_node);
 		editor_data->get_undo_redo().add_do_reference(child);
 		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
 	} else { // If no parent is selected, set as root node of the scene.
 		editor_data->get_undo_redo().add_do_method(EditorNode::get_singleton(), "set_edited_scene", child);
-		editor_data->get_undo_redo().add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_node);
 		editor_data->get_undo_redo().add_do_reference(child);
 		editor_data->get_undo_redo().add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
 	}
@@ -5496,8 +5516,8 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	if (parent) {
 		String new_name = parent->validate_child_name(child);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		editor_data->get_undo_redo().add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), child->get_class(), new_name);
-		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+		editor_data->get_undo_redo().add_do_method(ed, "live_debug_create_node", edited_node->get_path_to(parent), child->get_class(), new_name);
+		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(plugin->get_editor_interface()->get_edited_scene_root()->get_path_to(parent)) + "/" + new_name));
 	}
 
 	if (Object::cast_to<TouchScreenButton>(child) || Object::cast_to<TextureButton>(child)) {
@@ -5541,7 +5561,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 		return false;
 	}
 
-	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
 
 	if (!edited_scene->get_scene_file_path().is_empty()) { // cyclical instancing
 		if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
@@ -5719,8 +5739,8 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 		return;
 	}
 
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
-	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
+	List<Node *> selected_nodes = plugin->get_editor_interface()->get_selection()->get_selected_node_list();
+	Node *root_node = plugin->get_editor_interface()->get_edited_scene_root();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
 		target_node = root_node;
@@ -5802,7 +5822,8 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 void CanvasItemEditorViewport::_bind_methods() {
 }
 
-CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor) {
+CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor, EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	default_texture_node_type = "Sprite2D";
 	// Node2D
 	texture_node_types.push_back("Sprite2D");
@@ -5822,10 +5843,10 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	preview_node = memnew(Control);
 
 	accept = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
+	plugin->get_editor_interface()->get_base_control()->add_child(accept);
 
 	selector = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(selector);
+	plugin->get_editor_interface()->get_base_control()->add_child(selector);
 	selector->set_title(TTR("Change Default Type"));
 	selector->connect("confirmed", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_confirmed));
 	selector->connect("cancelled", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_closed));

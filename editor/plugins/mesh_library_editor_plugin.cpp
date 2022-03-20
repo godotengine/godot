@@ -31,8 +31,8 @@
 #include "mesh_library_editor_plugin.h"
 
 #include "editor/editor_file_dialog.h"
-#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/inspector_dock.h"
 #include "main/main.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -254,7 +254,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 void MeshLibraryEditor::_bind_methods() {
 }
 
-MeshLibraryEditor::MeshLibraryEditor() {
+MeshLibraryEditor::MeshLibraryEditor(EditorPlugin *p_plugin) {
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
@@ -272,7 +272,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
-	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshLibrary"), SNAME("EditorIcons")));
+	menu->set_icon(p_plugin->get_editor_interface()->get_base_control()->get_theme_icon(SNAME("MeshLibrary"), SNAME("EditorIcons")));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();
@@ -317,9 +317,9 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 }
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
-	mesh_library_editor = memnew(MeshLibraryEditor);
+	mesh_library_editor = memnew(MeshLibraryEditor(this));
 
-	EditorNode::get_singleton()->get_main_control()->add_child(mesh_library_editor);
+	get_editor_interface()->get_editor_main_control()->add_child(mesh_library_editor);
 	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();

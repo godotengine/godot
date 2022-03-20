@@ -30,14 +30,16 @@
 
 #include "curve_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
 #include "core/input/input.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 
-CurveEditor::CurveEditor() {
+CurveEditor::CurveEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	_selected_point = -1;
 	_hover_point = -1;
 	_selected_tangent = TANGENT_NONE;
@@ -138,14 +140,14 @@ void CurveEditor::gui_input(const Ref<InputEvent> &p_event) {
 		if (!mb.is_pressed() && _dragging && mb.get_button_index() == MouseButton::LEFT) {
 			_dragging = false;
 			if (_has_undo_data) {
-				UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
+				UndoRedo *undo_redo = plugin->get_undo_redo();
 
-				ur.create_action(_selected_tangent == TANGENT_NONE ? TTR("Modify Curve Point") : TTR("Modify Curve Tangent"));
-				ur.add_do_method(*_curve_ref, "_set_data", _curve_ref->get_data());
-				ur.add_undo_method(*_curve_ref, "_set_data", _undo_data);
+				undo_redo->create_action(_selected_tangent == TANGENT_NONE ? TTR("Modify Curve Point") : TTR("Modify Curve Tangent"));
+				undo_redo->add_do_method(*_curve_ref, "_set_data", _curve_ref->get_data());
+				undo_redo->add_undo_method(*_curve_ref, "_set_data", _undo_data);
 				// Note: this will trigger one more "changed" signal even if nothing changes,
 				// but it's ok since it would have fired every frame during the drag anyways
-				ur.commit_action();
+				undo_redo->commit_action();
 
 				_has_undo_data = false;
 			}
@@ -300,13 +302,13 @@ void CurveEditor::on_preset_item_selected(int preset_id) {
 			break;
 	}
 
-	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
-	ur.create_action(TTR("Load Curve Preset"));
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+	undo_redo->create_action(TTR("Load Curve Preset"));
 
-	ur.add_do_method(&curve, "_set_data", curve.get_data());
-	ur.add_undo_method(&curve, "_set_data", previous_data);
+	undo_redo->add_do_method(&curve, "_set_data", curve.get_data());
+	undo_redo->add_undo_method(&curve, "_set_data", previous_data);
 
-	ur.commit_action();
+	undo_redo->commit_action();
 }
 
 void CurveEditor::_curve_changed() {
@@ -434,8 +436,8 @@ CurveEditor::TangentIndex CurveEditor::get_tangent_at(Vector2 pos) const {
 void CurveEditor::add_point(Vector2 pos) {
 	ERR_FAIL_COND(_curve_ref.is_null());
 
-	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
-	ur.create_action(TTR("Remove Curve Point"));
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+	undo_redo->create_action(TTR("Remove Curve Point"));
 
 	Vector2 point_pos = get_world_pos(pos);
 	if (point_pos.y < 0.0) {
@@ -448,22 +450,22 @@ void CurveEditor::add_point(Vector2 pos) {
 	int i = _curve_ref->add_point(point_pos);
 	_curve_ref->remove_point(i);
 
-	ur.add_do_method(*_curve_ref, "add_point", point_pos);
-	ur.add_undo_method(*_curve_ref, "remove_point", i);
+	undo_redo->add_do_method(*_curve_ref, "add_point", point_pos);
+	undo_redo->add_undo_method(*_curve_ref, "remove_point", i);
 
-	ur.commit_action();
+	undo_redo->commit_action();
 }
 
 void CurveEditor::remove_point(int index) {
 	ERR_FAIL_COND(_curve_ref.is_null());
 
-	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
-	ur.create_action(TTR("Remove Curve Point"));
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+	undo_redo->create_action(TTR("Remove Curve Point"));
 
 	Curve::Point p = _curve_ref->get_point(index);
 
-	ur.add_do_method(*_curve_ref, "remove_point", index);
-	ur.add_undo_method(*_curve_ref, "add_point", p.position, p.left_tangent, p.right_tangent, p.left_mode, p.right_mode);
+	undo_redo->add_do_method(*_curve_ref, "remove_point", index);
+	undo_redo->add_undo_method(*_curve_ref, "add_point", p.position, p.left_tangent, p.right_tangent, p.left_mode, p.right_mode);
 
 	if (index == _selected_point) {
 		set_selected_point(-1);
@@ -473,14 +475,14 @@ void CurveEditor::remove_point(int index) {
 		set_hover_point_index(-1);
 	}
 
-	ur.commit_action();
+	undo_redo->commit_action();
 }
 
 void CurveEditor::toggle_linear(TangentIndex tangent) {
 	ERR_FAIL_COND(_curve_ref.is_null());
 
-	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
-	ur.create_action(TTR("Toggle Curve Linear Tangent"));
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+	undo_redo->create_action(TTR("Toggle Curve Linear Tangent"));
 
 	if (tangent == TANGENT_NONE) {
 		tangent = _selected_tangent;
@@ -492,8 +494,8 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 		Curve::TangentMode prev_mode = _curve_ref->get_point_left_mode(_selected_point);
 		Curve::TangentMode mode = is_linear ? Curve::TANGENT_FREE : Curve::TANGENT_LINEAR;
 
-		ur.add_do_method(*_curve_ref, "set_point_left_mode", _selected_point, mode);
-		ur.add_undo_method(*_curve_ref, "set_point_left_mode", _selected_point, prev_mode);
+		undo_redo->add_do_method(*_curve_ref, "set_point_left_mode", _selected_point, mode);
+		undo_redo->add_undo_method(*_curve_ref, "set_point_left_mode", _selected_point, prev_mode);
 
 	} else {
 		bool is_linear = _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
@@ -501,11 +503,11 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 		Curve::TangentMode prev_mode = _curve_ref->get_point_right_mode(_selected_point);
 		Curve::TangentMode mode = is_linear ? Curve::TANGENT_FREE : Curve::TANGENT_LINEAR;
 
-		ur.add_do_method(*_curve_ref, "set_point_right_mode", _selected_point, mode);
-		ur.add_undo_method(*_curve_ref, "set_point_right_mode", _selected_point, prev_mode);
+		undo_redo->add_do_method(*_curve_ref, "set_point_right_mode", _selected_point, mode);
+		undo_redo->add_undo_method(*_curve_ref, "set_point_right_mode", _selected_point, prev_mode);
 	}
 
-	ur.commit_action();
+	undo_redo->commit_action();
 }
 
 void CurveEditor::set_selected_point(int index) {
@@ -771,15 +773,18 @@ void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	ERR_FAIL_COND(!curve);
 	Ref<Curve> c(curve);
 
-	CurveEditor *editor = memnew(CurveEditor);
+	CurveEditor *editor = memnew(CurveEditor(plugin));
 	editor->set_curve(curve);
 	add_custom_control(editor);
 }
 
+EditorInspectorPluginCurve::EditorInspectorPluginCurve(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+}
+
 CurveEditorPlugin::CurveEditorPlugin() {
-	Ref<EditorInspectorPluginCurve> curve_plugin;
-	curve_plugin.instantiate();
-	EditorInspector::add_inspector_plugin(curve_plugin);
+	Ref<EditorInspectorPluginCurve> curve_plugin = memnew(EditorInspectorPluginCurve(this));
+	add_inspector_plugin(curve_plugin);
 
 	get_editor_interface()->get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
 }

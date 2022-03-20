@@ -69,7 +69,7 @@ protected:
 
 public:
 	void edit(Ref<AudioStream> p_stream);
-	AudioStreamEditor();
+	AudioStreamEditor(EditorPlugin *p_plugin);
 };
 
 class AudioStreamEditorPlugin : public EditorPlugin {

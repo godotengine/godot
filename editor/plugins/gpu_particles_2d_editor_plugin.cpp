@@ -61,7 +61,7 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 }
 
 void GPUParticles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = get_editor_interface()->get_selection()->get_selected_node_list();
 
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
@@ -111,7 +111,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_process_mode(particles->get_process_mode());
 			cpu_particles->set_z_index(particles->get_z_index());
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
@@ -158,6 +158,8 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	if (!was_emitting) {
 		particles->set_emitting(false);
 	}
+
+	UndoRedo *undo_redo = get_undo_redo();
 
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
 	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
@@ -359,7 +361,7 @@ void GPUParticles2DEditorPlugin::_notification(int p_what) {
 			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
 			menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
 			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
-			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
+			get_editor_interface()->get_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
 		} break;
 	}
 }
@@ -369,7 +371,6 @@ void GPUParticles2DEditorPlugin::_bind_methods() {
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

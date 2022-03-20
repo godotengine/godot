@@ -271,6 +271,7 @@ private:
 	ProjectExportDialog *project_export = nullptr;
 	ProjectSettingsEditor *project_settings_editor = nullptr;
 
+	Node *editor_plugins_container = nullptr;
 	Vector<EditorPlugin *> editor_plugins;
 	bool _initializing_plugins = false;
 	Map<String, EditorPlugin *> addon_name_to_plugin;

@@ -33,6 +33,9 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 
 class SceneTreeDialog;
@@ -67,6 +70,8 @@ public:
 class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 	GDCLASS(GPUParticles3DEditor, GPUParticles3DEditorBase);
 
+	EditorPlugin *plugin = nullptr;
+
 	ConfirmationDialog *generate_aabb = nullptr;
 	SpinBox *generate_seconds = nullptr;
 	GPUParticles3D *node = nullptr;
@@ -95,7 +100,7 @@ protected:
 
 public:
 	void edit(GPUParticles3D *p_particles);
-	GPUParticles3DEditor();
+	GPUParticles3DEditor(EditorPlugin *p_plugin);
 };
 
 class GPUParticles3DEditorPlugin : public EditorPlugin {

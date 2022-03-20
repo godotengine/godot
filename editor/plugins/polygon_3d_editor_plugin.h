@@ -34,6 +34,8 @@
 #include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
 #include "scene/resources/immediate_mesh.h"
 
 class CanvasItemEditor;
@@ -91,7 +93,7 @@ protected:
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_node);
-	Polygon3DEditor();
+	Polygon3DEditor(EditorPlugin *p_plugin);
 	~Polygon3DEditor();
 };
 

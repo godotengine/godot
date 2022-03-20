@@ -34,10 +34,10 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
+#include "scene/gui/item_list.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
@@ -303,12 +303,12 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
+		make_bottom_panel_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 		}
 	}
 }
@@ -317,7 +317,7 @@ ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor = memnew(ShaderFileEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ShaderFile"), shader_editor);
+	button = add_control_to_bottom_panel(shader_editor, TTR("ShaderFile"));
 	button->hide();
 }
 

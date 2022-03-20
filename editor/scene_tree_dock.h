@@ -36,6 +36,7 @@
 #include "editor/groups_editor.h"
 #include "editor/quick_open.h"
 #include "editor/reparent_dialog.h"
+#include "editor/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/box_container.h"
@@ -43,8 +44,8 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
-#include "scene_tree_editor.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED

@@ -31,8 +31,10 @@
 #ifndef GRADIENT_TEXTURE_2D_EDITOR
 #define GRADIENT_TEXTURE_2D_EDITOR
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_spin_slider.h"
+#include "scene/gui/box_container.h"
 
 class GradientTexture2DEditorRect : public Control {
 	GDCLASS(GradientTexture2DEditorRect, Control);

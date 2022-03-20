@@ -42,6 +42,8 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_scene.h"
 #include "editor/import_dock.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/shader_create_dialog.h"

@@ -33,6 +33,7 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/material.h"
 
 class EditorFileDialog;

@@ -36,8 +36,13 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
 
 constexpr double REFRESH_TIMER = 1.5;

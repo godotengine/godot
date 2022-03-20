@@ -30,7 +30,8 @@
 
 #include "mesh_instance_3d_editor_plugin.h"
 
-#include "editor/editor_node.h"
+#include "core/object/undo_redo.h"
+#include "editor/editor_data.h"
 #include "editor/editor_scale.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
@@ -59,8 +60,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
-			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorSelection *editor_selection = plugin->get_editor_interface()->get_selection();
+			UndoRedo *ur = plugin->get_undo_redo();
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
@@ -143,7 +144,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = node->get_owner();
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 
 			ur->create_action(TTR("Create Trimesh Static Shape"));
 
@@ -172,7 +173,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 
 			if (simplify) {
 				ur->create_action(TTR("Create Simplified Convex Shape"));
@@ -211,7 +212,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 
 			ur->create_action(TTR("Create Multiple Convex Shapes"));
 
@@ -245,7 +246,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 			ur->create_action(TTR("Create Navigation Mesh"));
 
 			ur->add_do_method(node, "add_child", nmi, true);
@@ -423,7 +424,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 		owner = node;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 
 	ur->create_action(TTR("Create Outline"));
 
@@ -438,13 +439,15 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 void MeshInstance3DEditor::_bind_methods() {
 }
 
-MeshInstance3DEditor::MeshInstance3DEditor() {
+MeshInstance3DEditor::MeshInstance3DEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Mesh"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshInstance3D"), SNAME("EditorIcons")));
+	options->set_icon(plugin->get_editor_interface()->get_base_control()->get_theme_icon(SNAME("MeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
@@ -517,8 +520,8 @@ void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
 }
 
 MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin() {
-	mesh_editor = memnew(MeshInstance3DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(mesh_editor);
+	mesh_editor = memnew(MeshInstance3DEditor(this));
+	get_editor_interface()->get_editor_main_control()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
 }

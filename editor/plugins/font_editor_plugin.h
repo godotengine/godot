@@ -31,6 +31,7 @@
 #ifndef FONT_EDITOR_PLUGIN_H
 #define FONT_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/resources/font.h"
 #include "scene/resources/text_line.h"

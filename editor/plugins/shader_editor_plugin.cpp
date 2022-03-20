@@ -35,7 +35,6 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version_generated.gen.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"
@@ -188,9 +187,10 @@ void ShaderTextEditor::_load_theme_settings() {
 	}
 
 	if (warnings_panel) {
+		Control *control_base = plugin->get_editor_interface()->get_base_control();
 		// Warnings panel
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_override("normal_font", control_base->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_size_override("normal_font_size", control_base->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 }
 
@@ -336,7 +336,8 @@ void ShaderTextEditor::_update_warning_panel() {
 void ShaderTextEditor::_bind_methods() {
 }
 
-ShaderTextEditor::ShaderTextEditor() {
+ShaderTextEditor::ShaderTextEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	syntax_highlighter.instantiate();
 	get_text_editor()->set_syntax_highlighter(syntax_highlighter);
 }
@@ -691,7 +692,7 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
-ShaderEditor::ShaderEditor() {
+ShaderEditor::ShaderEditor(EditorPlugin *p_plugin) {
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
 	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
@@ -699,7 +700,7 @@ ShaderEditor::ShaderEditor() {
 	}
 	_update_warnings(false);
 
-	shader_editor = memnew(ShaderTextEditor);
+	shader_editor = memnew(ShaderTextEditor(p_plugin));
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
@@ -777,6 +778,8 @@ ShaderEditor::ShaderEditor() {
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ShaderEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ShaderEditor::_bookmark_item_pressed));
 
+	Control *base_control = p_plugin->get_editor_interface()->get_base_control();
+
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
@@ -789,7 +792,7 @@ ShaderEditor::ShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	hbc->add_theme_style_override("panel", base_control->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
@@ -849,12 +852,12 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
+		make_bottom_panel_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 		}
 		shader_editor->apply_shaders();
 	}
@@ -873,10 +876,10 @@ void ShaderEditorPlugin::apply_changes() {
 }
 
 ShaderEditorPlugin::ShaderEditorPlugin() {
-	shader_editor = memnew(ShaderEditor);
+	shader_editor = memnew(ShaderEditor(this));
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader"), shader_editor);
+	button = add_control_to_bottom_panel(shader_editor, TTR("Shader"));
 	button->hide();
 
 	_2d = false;

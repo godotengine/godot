@@ -271,7 +271,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_visible(node->is_visible());
 			cpu_particles->set_process_mode(node->get_process_mode());
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
@@ -321,7 +321,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 		node->set_emitting(false);
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Generate Visibility AABB"));
 	ur->add_do_method(node, "set_visibility_aabb", rect);
 	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());
@@ -408,7 +408,8 @@ void GPUParticles3DEditor::_generate_emission_points() {
 void GPUParticles3DEditor::_bind_methods() {
 }
 
-GPUParticles3DEditor::GPUParticles3DEditor() {
+GPUParticles3DEditor::GPUParticles3DEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	node = nullptr;
 	particles_editor_hb = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
@@ -460,8 +461,8 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 }
 
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
-	particles_editor = memnew(GPUParticles3DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(particles_editor);
+	particles_editor = memnew(GPUParticles3DEditor(this));
+	get_editor_interface()->get_editor_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

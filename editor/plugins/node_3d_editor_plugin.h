@@ -40,6 +40,7 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -51,6 +52,10 @@ class EditorData;
 class Node3DEditor;
 class Node3DEditorViewport;
 class SubViewportContainer;
+class ConfirmationDialog;
+class AcceptDialog;
+class CheckBox;
+class OptionButton;
 class DirectionalLight3D;
 class WorldEnvironment;
 
@@ -181,6 +186,8 @@ public:
 	};
 
 private:
+	EditorPlugin *plugin;
+
 	double cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
 	double gpu_time_history[FRAME_TIME_HISTORY];
@@ -442,7 +449,7 @@ public:
 	SubViewport *get_viewport_node() { return viewport; }
 	Camera3D *get_camera_3d() { return camera; } // return the default camera object.
 
-	Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index);
+	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorPlugin *p_plugin, int p_index);
 	~Node3DEditorViewport();
 };
 
@@ -537,6 +544,7 @@ public:
 	};
 
 private:
+	EditorPlugin *plugin = nullptr;
 	EditorSelection *editor_selection = nullptr;
 
 	Node3DEditorViewportContainer *viewport_base = nullptr;
@@ -861,7 +869,7 @@ public:
 	void edit(Node3D *p_spatial);
 	void clear();
 
-	Node3DEditor();
+	Node3DEditor(EditorPlugin *p_plugin);
 	~Node3DEditor();
 };
 

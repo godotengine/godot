@@ -34,6 +34,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/editor_plugin.h"
+#include "scene/gui/dialogs.h"
 
 class NavigationRegion3D;
 

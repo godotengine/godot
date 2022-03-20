@@ -32,27 +32,31 @@
 
 #include "core/core_string_names.h"
 #include "core/input/input.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 
-void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
+void TextureRegionEditor::_draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
 
 	// Draw a translucent background line to make the foreground line visible on any background.
+	Control *theme_base = plugin->get_editor_interface()->get_base_control()->get_parent_control();
+
 	edit_draw->draw_line(
 			from,
 			to,
-			EditorNode::get_singleton()->get_theme_base()->get_theme_color(SNAME("mono_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5),
+			theme_base->get_theme_color(SNAME("mono_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5),
 			Math::round(2 * EDSCALE));
 
 	while (from.distance_squared_to(to) > 200) {
 		edit_draw->draw_line(
 				from,
 				from + line,
-				EditorNode::get_singleton()->get_theme_base()->get_theme_color(SNAME("mono_color"), SNAME("Editor")),
+				theme_base->get_theme_color(SNAME("mono_color"), SNAME("Editor")),
 				Math::round(2 * EDSCALE));
 
 		from += line * 2;
@@ -254,10 +258,10 @@ void TextureRegionEditor::_region_draw() {
 			-mtx.basis_xform(Vector2(margins[3], 0)) + Vector2(endpoints[2].x - draw_ofs.x * draw_zoom, 0)
 		};
 
-		draw_margin_line(edit_draw, pos[0], pos[0] + Vector2(edit_draw->get_size().x, 0));
-		draw_margin_line(edit_draw, pos[1], pos[1] + Vector2(edit_draw->get_size().x, 0));
-		draw_margin_line(edit_draw, pos[2], pos[2] + Vector2(0, edit_draw->get_size().y));
-		draw_margin_line(edit_draw, pos[3], pos[3] + Vector2(0, edit_draw->get_size().y));
+		_draw_margin_line(edit_draw, pos[0], pos[0] + Vector2(edit_draw->get_size().x, 0));
+		_draw_margin_line(edit_draw, pos[1], pos[1] + Vector2(edit_draw->get_size().x, 0));
+		_draw_margin_line(edit_draw, pos[2], pos[2] + Vector2(0, edit_draw->get_size().y));
+		_draw_margin_line(edit_draw, pos[3], pos[3] + Vector2(0, edit_draw->get_size().y));
 	}
 }
 
@@ -349,6 +353,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 								rect.expand_to(r.position);
 								rect.expand_to(r.get_end());
 							}
+
+							UndoRedo *undo_redo = plugin->get_undo_redo();
 							undo_redo->create_action(TTR("Set Region Rect"));
 							if (atlas_tex.is_valid()) {
 								undo_redo->add_do_method(atlas_tex.ptr(), "set_region", rect);
@@ -408,6 +414,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				}
 
 			} else if (!mb->is_pressed() && drag) {
+				UndoRedo *undo_redo = plugin->get_undo_redo();
 				if (edited_margin >= 0) {
 					undo_redo->create_action(TTR("Set Margin"));
 					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
@@ -982,13 +989,14 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
-TextureRegionEditor::TextureRegionEditor() {
+TextureRegionEditor::TextureRegionEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+
 	node_sprite_2d = nullptr;
 	node_sprite_3d = nullptr;
 	node_ninepatch = nullptr;
 	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 	atlas_tex = Ref<AtlasTexture>(nullptr);
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	snap_step = Vector2(10, 10);
 	snap_separation = Vector2(0, 0);
@@ -1146,11 +1154,11 @@ void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 		is_node_configured |= region_editor->get_sprite_2d() && region_editor->get_sprite_2d()->is_region_enabled();
 		is_node_configured |= region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region_enabled();
 		if ((is_node_configured && !manually_hidden) || texture_region_button->is_pressed()) {
-			EditorNode::get_singleton()->make_bottom_panel_item_visible(region_editor);
+			make_bottom_panel_item_visible(region_editor);
 		}
 	} else {
 		if (region_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 			manually_hidden = false;
 		}
 		texture_region_button->hide();
@@ -1202,11 +1210,11 @@ void TextureRegionEditorPlugin::_bind_methods() {
 TextureRegionEditorPlugin::TextureRegionEditorPlugin() {
 	manually_hidden = false;
 
-	region_editor = memnew(TextureRegionEditor);
+	region_editor = memnew(TextureRegionEditor(this));
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
 	region_editor->connect("visibility_changed", callable_mp(this, &TextureRegionEditorPlugin::_editor_visiblity_changed));
 
-	texture_region_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
+	texture_region_button = add_control_to_bottom_panel(region_editor, TTR("TextureRegion"));
 	texture_region_button->hide();
 }

@@ -35,7 +35,9 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/nine_patch_rect.h"
+#include "scene/gui/option_button.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
@@ -52,6 +54,9 @@ class TextureRegionEditor : public VBoxContainer {
 	};
 
 	friend class TextureRegionEditorPlugin;
+
+	EditorPlugin *plugin = nullptr;
+
 	OptionButton *snap_mode_button = nullptr;
 	Button *zoom_in = nullptr;
 	Button *zoom_reset = nullptr;
@@ -67,8 +72,6 @@ class TextureRegionEditor : public VBoxContainer {
 
 	VScrollBar *vscroll = nullptr;
 	HScrollBar *hscroll = nullptr;
-
-	UndoRedo *undo_redo = nullptr;
 
 	Vector2 draw_ofs;
 	float draw_zoom;
@@ -99,6 +102,9 @@ class TextureRegionEditor : public VBoxContainer {
 	int drag_index;
 
 	Ref<ViewPanner> panner;
+
+	void _draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to);
+
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _pan_callback(Vector2 p_scroll_vec);
 	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
@@ -139,7 +145,7 @@ public:
 	Sprite3D *get_sprite_3d();
 
 	void edit(Object *p_obj);
-	TextureRegionEditor();
+	TextureRegionEditor(EditorPlugin *p_plugin);
 };
 
 class TextureRegionEditorPlugin : public EditorPlugin {

@@ -61,9 +61,8 @@ class BoneTransformEditor : public VBoxContainer {
 	Rect2 background_rects[5];
 
 	Skeleton3D *skeleton = nullptr;
+	EditorPlugin *plugin = nullptr;
 	// String property;
-
-	UndoRedo *undo_redo = nullptr;
 
 	bool toggle_enabled = false;
 	bool updating = false;
@@ -80,7 +79,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	BoneTransformEditor(Skeleton3D *p_skeleton);
+	BoneTransformEditor(Skeleton3D *p_skeleton, EditorPlugin *p_plugin);
 
 	// Which transform target to modify.
 	void set_target(const String &p_prop);
@@ -108,7 +107,9 @@ class Skeleton3DEditor : public VBoxContainer {
 		Transform3D relative_rest; // Relative to skeleton node.
 	};
 
-	EditorInspectorPluginSkeleton *editor_plugin = nullptr;
+	EditorPlugin *plugin = nullptr;
+
+	EditorInspectorPluginSkeleton *inspector_plugin = nullptr;
 
 	Skeleton3D *skeleton = nullptr;
 
@@ -211,7 +212,7 @@ public:
 	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
 	Vector3 get_bone_original_scale() const { return bone_original_scale; };
 
-	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *skeleton);
+	Skeleton3DEditor(EditorInspectorPluginSkeleton *p_inspector_plugin, EditorPlugin *p_plugin, Skeleton3D *skeleton);
 	~Skeleton3DEditor();
 };
 
@@ -221,10 +222,13 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 	friend class Skeleton3DEditorPlugin;
 
 	Skeleton3DEditor *skel_editor = nullptr;
+	EditorPlugin *plugin = nullptr;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
+
+	EditorInspectorPluginSkeleton(EditorPlugin *p_plugin);
 };
 
 class Skeleton3DEditorPlugin : public EditorPlugin {

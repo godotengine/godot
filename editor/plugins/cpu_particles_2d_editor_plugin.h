@@ -35,8 +35,11 @@
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 
-class EditorPlugin;
 class SpinBox;
 class EditorFileDialog;
 
@@ -70,7 +73,6 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 
 	String source_emission_file;
 
-	UndoRedo *undo_redo = nullptr;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_emission_mask();

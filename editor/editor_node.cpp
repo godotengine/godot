@@ -107,6 +107,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/editor_import_collada.h"
+#include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -3236,7 +3237,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		singleton->distraction_free->raise();
 	}
 	singleton->editor_data.add_editor_plugin(p_editor);
-	singleton->add_child(p_editor);
+	singleton->editor_plugins_container->add_child(p_editor);
 	if (p_config_changed) {
 		p_editor->enable_plugin();
 	}
@@ -6956,6 +6957,9 @@ EditorNode::EditorNode() {
 	audio_preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(audio_preview_gen);
 
+	editor_plugins_container = memnew(Node);
+	add_child(editor_plugins_container);
+
 	add_editor_plugin(memnew(DebuggerEditorPlugin(debug_menu)));
 	add_editor_plugin(memnew(DebugAdapterServer()));
 
@@ -6982,6 +6986,10 @@ EditorNode::EditorNode() {
 
 	gui_base->add_child(disk_changed);
 
+	// Add interface before adding plugins
+	editor_interface = memnew(EditorInterface);
+	add_child(editor_interface);
+
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin));
 	add_editor_plugin(memnew(Node3DEditorPlugin));
@@ -6997,11 +7005,6 @@ EditorNode::EditorNode() {
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
-
-	// Add interface before adding plugins.
-
-	editor_interface = memnew(EditorInterface);
-	add_child(editor_interface);
 
 	// More visually meaningful to have this later.
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
@@ -7240,6 +7243,10 @@ EditorNode::EditorNode() {
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+
+	// Move EditorInterface and the EditorPlugin container to the top, so they are the last nodes to free.
+	editor_interface->raise();
+	editor_plugins_container->raise();
 }
 
 EditorNode::~EditorNode() {

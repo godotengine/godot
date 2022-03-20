@@ -33,6 +33,8 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
 
 class Sprite2DEditor : public Control {
@@ -44,6 +46,8 @@ class Sprite2DEditor : public Control {
 		MENU_OPTION_CREATE_COLLISION_POLY_2D,
 		MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D
 	};
+
+	EditorPlugin *plugin;
 
 	Menu selected_menu_item;
 
@@ -92,7 +96,7 @@ protected:
 
 public:
 	void edit(Sprite2D *p_sprite);
-	Sprite2DEditor();
+	Sprite2DEditor(EditorPlugin *p_plugin);
 };
 
 class Sprite2DEditorPlugin : public EditorPlugin {

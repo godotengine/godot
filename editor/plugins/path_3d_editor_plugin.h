@@ -35,6 +35,7 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 
 class Path3DGizmo : public EditorNode3DGizmo {

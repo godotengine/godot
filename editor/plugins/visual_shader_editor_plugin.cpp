@@ -42,6 +42,7 @@
 #include "editor/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
@@ -97,7 +98,8 @@ static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_
 
 ///////////////////
 
-VisualShaderGraphPlugin::VisualShaderGraphPlugin() {
+VisualShaderGraphPlugin::VisualShaderGraphPlugin(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 }
 
 void VisualShaderGraphPlugin::_bind_methods() {
@@ -508,7 +510,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			curve->get_texture()->connect("changed", ce, varray(p_id));
 		}
 
-		CurveEditor *curve_editor = memnew(CurveEditor);
+		CurveEditor *curve_editor = memnew(CurveEditor(plugin));
 		node->add_child(curve_editor);
 		register_curve_editor(p_id, 0, curve_editor);
 		curve_editor->set_custom_minimum_size(Size2(300, 0));
@@ -526,7 +528,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			curve_xyz->get_texture()->connect("changed", ce, varray(p_id));
 		}
 
-		CurveEditor *curve_editor_x = memnew(CurveEditor);
+		CurveEditor *curve_editor_x = memnew(CurveEditor(plugin));
 		node->add_child(curve_editor_x);
 		register_curve_editor(p_id, 0, curve_editor_x);
 		curve_editor_x->set_custom_minimum_size(Size2(300, 0));
@@ -535,7 +537,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			curve_editor_x->set_curve(curve_xyz->get_texture()->get_curve_x());
 		}
 
-		CurveEditor *curve_editor_y = memnew(CurveEditor);
+		CurveEditor *curve_editor_y = memnew(CurveEditor(plugin));
 		node->add_child(curve_editor_y);
 		register_curve_editor(p_id, 1, curve_editor_y);
 		curve_editor_y->set_custom_minimum_size(Size2(300, 0));
@@ -544,7 +546,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			curve_editor_y->set_curve(curve_xyz->get_texture()->get_curve_y());
 		}
 
-		CurveEditor *curve_editor_z = memnew(CurveEditor);
+		CurveEditor *curve_editor_z = memnew(CurveEditor(plugin));
 		node->add_child(curve_editor_z);
 		register_curve_editor(p_id, 2, curve_editor_z);
 		curve_editor_z->set_custom_minimum_size(Size2(300, 0));
@@ -702,6 +704,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			hb->add_child(custom_editor);
 			custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		} else {
+			Control *base_control = plugin->get_editor_interface()->get_base_control();
 			if (valid_left) {
 				if (is_group) {
 					OptionButton *type_box = memnew(OptionButton);
@@ -726,7 +729,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
-					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+					remove_btn->set_icon(base_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
 					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port), varray(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
@@ -753,7 +756,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			if (valid_right) {
 				if (is_group) {
 					Button *remove_btn = memnew(Button);
-					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+					remove_btn->set_icon(base_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
 					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_output_port), varray(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
@@ -1454,27 +1457,30 @@ void VisualShaderEditor::_update_options_menu() {
 			node_desc->set_text(options[i].description);
 			is_first_item = false;
 		}
+
+		Control *base_control = plugin->get_editor_interface()->get_base_control();
+
 		switch (options[i].return_type) {
 			case VisualShaderNode::PORT_TYPE_SCALAR:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SCALAR_INT:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_2D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_3D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_BOOLEAN:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SAMPLER:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
+				item->set_icon(0, base_control->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
 				break;
 			default:
 				break;
@@ -3640,8 +3646,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 				error_label->add_theme_color_override("font_color", error_color);
 			}
-
-			tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
+			tools->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
 			if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 				_update_graph();
@@ -3945,7 +3950,7 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, 
 
 	bool type_changed = p_input->get_input_type_by_name(p_name) != p_input->get_input_type_by_name(prev_name);
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Visual Shader Input Type Changed"));
 
 	undo_redo->add_do_method(p_input.ptr(), "set_input_name", p_name);
@@ -3991,7 +3996,7 @@ void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_
 
 	bool type_changed = p_uniform_ref->get_uniform_type_by_name(p_name) != p_uniform_ref->get_uniform_type_by_name(prev_name);
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("UniformRef Name Changed"));
 
 	undo_redo->add_do_method(p_uniform_ref.ptr(), "set_uniform_name", p_name);
@@ -4035,7 +4040,7 @@ void VisualShaderEditor::_varying_select_item(Ref<VisualShaderNodeVarying> p_var
 
 	bool is_getter = Ref<VisualShaderNodeVaryingGetter>(p_varying.ptr()).is_valid();
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Varying Name Changed"));
 
 	undo_redo->add_do_method(p_varying.ptr(), "set_varying_name", p_name);
@@ -4165,22 +4170,22 @@ void VisualShaderEditor::_update_varying_tree() {
 			if (i == 0) {
 				item->select(0);
 			}
-
+			Control *base_control = plugin->get_editor_interface()->get_base_control();
 			switch (varying->type) {
 				case VisualShader::VARYING_TYPE_FLOAT:
-					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
+					item->set_icon(0, base_control->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
 					break;
 				case VisualShader::VARYING_TYPE_VECTOR_2D:
-					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
+					item->set_icon(0, base_control->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
 					break;
 				case VisualShader::VARYING_TYPE_VECTOR_3D:
-					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
+					item->set_icon(0, base_control->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
 					break;
 				case VisualShader::VARYING_TYPE_COLOR:
-					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")));
+					item->set_icon(0, base_control->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")));
 					break;
 				case VisualShader::VARYING_TYPE_TRANSFORM:
-					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
+					item->set_icon(0, base_control->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
 					break;
 				default:
 					break;
@@ -4530,8 +4535,10 @@ void VisualShaderEditor::_bind_methods() {
 
 VisualShaderEditor *VisualShaderEditor::singleton = nullptr;
 
-VisualShaderEditor::VisualShaderEditor() {
+VisualShaderEditor::VisualShaderEditor(EditorPlugin *p_plugin) {
 	singleton = this;
+
+	plugin = p_plugin;
 	ShaderLanguage::get_keyword_list(&keyword_list);
 
 	graph = memnew(GraphEdit);
@@ -5446,13 +5453,13 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	_update_options_menu();
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = plugin->get_undo_redo();
 
 	Ref<VisualShaderNodePluginDefault> default_plugin;
 	default_plugin.instantiate();
 	add_plugin(default_plugin);
 
-	graph_plugin.instantiate();
+	graph_plugin.reference_ptr(memnew(VisualShaderGraphPlugin(plugin)));
 
 	property_editor = memnew(CustomPropertyEditor);
 	add_child(property_editor);
@@ -5475,13 +5482,13 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(visual_shader_editor);
+		make_bottom_panel_item_visible(visual_shader_editor);
 		visual_shader_editor->update_nodes();
 		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
 		if (visual_shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 		}
 		button->hide();
 		visual_shader_editor->set_process_input(false);
@@ -5490,10 +5497,10 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 }
 
 VisualShaderEditorPlugin::VisualShaderEditorPlugin() {
-	visual_shader_editor = memnew(VisualShaderEditor);
+	visual_shader_editor = memnew(VisualShaderEditor(this));
 	visual_shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("VisualShader"), visual_shader_editor);
+	button = add_control_to_bottom_panel(visual_shader_editor, TTR("VisualShader"));
 	button->hide();
 }
 
@@ -5525,14 +5532,16 @@ public:
 
 	void setup(const Ref<VisualShaderNodeInput> &p_input) {
 		input = p_input;
+		Control *base_control = EditorNode::get_singleton()->get_gui_base();
+
 		Ref<Texture2D> type_icon[7] = {
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")),
 		};
 
 		add_item("[None]");
@@ -5573,13 +5582,13 @@ public:
 
 	void setup(const Ref<VisualShaderNodeVarying> &p_varying, VisualShader::Type p_type) {
 		varying = p_varying;
-
+		Control *base_control = EditorNode::get_singleton()->get_gui_base();
 		Ref<Texture2D> type_icon[] = {
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
 		};
 
 		bool is_getter = Ref<VisualShaderNodeVaryingGetter>(p_varying.ptr()).is_valid();
@@ -5652,15 +5661,16 @@ public:
 	void setup(const Ref<VisualShaderNodeUniformRef> &p_uniform_ref) {
 		uniform_ref = p_uniform_ref;
 
+		Control *base_control = EditorNode::get_singleton()->get_gui_base();
 		Ref<Texture2D> type_icon[8] = {
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+			base_control->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")),
 		};
 
 		add_item("[None]");
@@ -6009,7 +6019,6 @@ bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, const Var
 }
 
 //////////////////////////////////
-
 void VisualShaderNodePortPreview::_shader_changed() {
 	if (shader.is_null()) {
 		return;
@@ -6032,9 +6041,9 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	material->set_shader(preview_shader);
 
 	//find if a material is also being edited and copy parameters to this one
-
-	for (int i = EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() - 1; i >= 0; i--) {
-		Object *object = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(i));
+	EditorSelectionHistory *selection_history = EditorNode::get_singleton()->get_editor_selection_history();
+	for (int i = selection_history->get_path_size() - 1; i >= 0; i--) {
+		Object *object = ObjectDB::get_instance(selection_history->get_path_object(i));
 		ShaderMaterial *src_mat;
 		if (!object) {
 			continue;

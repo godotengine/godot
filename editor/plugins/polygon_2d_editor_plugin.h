@@ -35,8 +35,12 @@
 
 class HSlider;
 class Panel;
+class MenuButton;
 class ScrollContainer;
 class SpinBox;
+class HScrollBar;
+class VScrollBar;
+class TextureRect;
 class ViewPanner;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {

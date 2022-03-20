@@ -1137,8 +1137,8 @@ void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
 }
 
-GridMapEditor::GridMapEditor() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+GridMapEditor::GridMapEditor(EditorPlugin *p_plugin) {
+	undo_redo = p_plugin->get_undo_redo();
 
 	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
 	Control *ec = memnew(Control);
@@ -1467,7 +1467,7 @@ GridMapEditorPlugin::GridMapEditorPlugin() {
 	EDITOR_DEF("editors/grid_map/editor_side", 1);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
-	grid_map_editor = memnew(GridMapEditor);
+	grid_map_editor = memnew(GridMapEditor(this));
 	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 		case 0: { // Left.
 			Node3DEditor::get_singleton()->add_control_to_left_panel(grid_map_editor);

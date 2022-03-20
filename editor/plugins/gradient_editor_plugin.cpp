@@ -30,10 +30,11 @@
 
 #include "gradient_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_node.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_scale.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/editor_settings.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 
 Size2 GradientEditor::get_minimum_size() const {
 	return Size2(0, 60) * EDSCALE;
@@ -54,7 +55,7 @@ void GradientEditor::_gradient_changed() {
 
 void GradientEditor::_ramp_changed() {
 	editing = true;
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Gradient Edited"));
 	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
 	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
@@ -84,7 +85,8 @@ void GradientEditor::reverse_gradient() {
 	update();
 }
 
-GradientEditor::GradientEditor() {
+GradientEditor::GradientEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	editing = false;
 }
 
@@ -117,7 +119,7 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	Gradient *gradient = Object::cast_to<Gradient>(p_object);
 	Ref<Gradient> g(gradient);
 
-	editor = memnew(GradientEditor);
+	editor = memnew(GradientEditor(plugin));
 	editor->set_gradient(g);
 	add_custom_control(editor);
 
@@ -135,12 +137,15 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	reverse_btn->set_tooltip(TTR("Reverse/mirror gradient."));
 }
 
+EditorInspectorPluginGradient::EditorInspectorPluginGradient(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+}
+
 void EditorInspectorPluginGradient::_reverse_button_pressed() {
 	editor->reverse_gradient();
 }
 
 GradientEditorPlugin::GradientEditorPlugin() {
-	Ref<EditorInspectorPluginGradient> plugin;
-	plugin.instantiate();
+	Ref<EditorInspectorPluginGradient> plugin = memnew(EditorInspectorPluginGradient(this));
 	add_inspector_plugin(plugin);
 }

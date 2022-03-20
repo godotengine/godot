@@ -455,6 +455,7 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 void ControlEditorToolbar::_set_anchors_and_offsets_preset(Control::LayoutPreset p_preset) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Anchors and Offsets"));
 
 	for (Node *E : selection) {
@@ -496,6 +497,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_preset(Control::LayoutPreset
 void ControlEditorToolbar::_set_anchors_and_offsets_to_keep_ratio() {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Anchors and Offsets"));
 
 	for (Node *E : selection) {
@@ -528,6 +530,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_to_keep_ratio() {
 void ControlEditorToolbar::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Anchors"));
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
@@ -543,6 +546,7 @@ void ControlEditorToolbar::_set_anchors_preset(Control::LayoutPreset p_preset) {
 void ControlEditorToolbar::_set_container_h_preset(Control::SizeFlags p_preset) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Horizontal Size Flags"));
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
@@ -558,6 +562,7 @@ void ControlEditorToolbar::_set_container_h_preset(Control::SizeFlags p_preset) 
 void ControlEditorToolbar::_set_container_v_preset(Control::SizeFlags p_preset) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Horizontal Size Flags"));
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
@@ -947,7 +952,8 @@ void ControlEditorToolbar::_notification(int p_what) {
 	}
 }
 
-ControlEditorToolbar::ControlEditorToolbar() {
+ControlEditorToolbar::ControlEditorToolbar(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	anchor_presets_menu = memnew(MenuButton);
 	anchor_presets_menu->set_shortcut_context(this);
 	anchor_presets_menu->set_text(TTR("Anchors"));
@@ -992,8 +998,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	p = container_v_presets_menu->get_popup();
 	p->connect("id_pressed", callable_mp(this, &ControlEditorToolbar::_popup_callback));
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-	editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	editor_selection = plugin->get_editor_interface()->get_selection();
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", callable_mp(this, &ControlEditorToolbar::_selection_changed));
 
@@ -1003,7 +1008,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 ControlEditorToolbar *ControlEditorToolbar::singleton = nullptr;
 
 ControlEditorPlugin::ControlEditorPlugin() {
-	toolbar = memnew(ControlEditorToolbar);
+	toolbar = memnew(ControlEditorToolbar(this));
 	toolbar->hide();
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 

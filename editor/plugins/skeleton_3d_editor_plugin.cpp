@@ -111,6 +111,8 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 	if (updating) {
 		return;
 	}
+
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	if (skeleton) {
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
@@ -119,9 +121,8 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 	}
 }
 
-BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
-		skeleton(p_skeleton) {
-	undo_redo = EditorNode::get_undo_redo();
+BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton, EditorPlugin *p_plugin) :
+		skeleton(p_skeleton), plugin(p_plugin) {
 }
 
 void BoneTransformEditor::set_keyable(const bool p_keyable) {
@@ -262,7 +263,7 @@ void Skeleton3DEditor::init_pose(const bool p_all_bones) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
@@ -301,8 +302,7 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 	bool scl_enabled = key_scale_button->is_pressed();
 
 	int bone_len = skeleton->get_bone_count();
-	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
-	String path = root->get_path_to(skeleton);
+	String path = skeleton->get_path();
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	te->make_insert_queue();
@@ -335,7 +335,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Bone Rest"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
@@ -355,7 +355,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::create_physical_skeleton() {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ERR_FAIL_COND(!get_tree());
 	Node *owner = skeleton == get_tree()->get_edited_scene_root() ? skeleton : skeleton->get_owner();
 
@@ -510,7 +510,7 @@ void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_se
 	Node *node = get_node_or_null(p_skeleton_path);
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 	ERR_FAIL_NULL(skeleton);
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Bone Parentage"));
 	// If the target is a child of ourselves, we move only *us* and not our children.
 	if (skeleton->is_bone_parent_of(p_target_boneidx, p_selected_boneidx)) {
@@ -628,8 +628,9 @@ void Skeleton3DEditor::create_editors() {
 	skeleton_options = memnew(MenuButton);
 	ne->add_control_to_menu_panel(skeleton_options);
 
+	Control *base_control = plugin->get_editor_interface()->get_base_control();
 	skeleton_options->set_text(TTR("Skeleton3D"));
-	skeleton_options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
+	skeleton_options->set_icon(base_control->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
@@ -730,7 +731,7 @@ void Skeleton3DEditor::create_editors() {
 	joint_tree->set_drag_forwarding(this);
 	s_con->add_child(joint_tree);
 
-	pose_editor = memnew(BoneTransformEditor(skeleton));
+	pose_editor = memnew(BoneTransformEditor(skeleton, plugin));
 	pose_editor->set_label(TTR("Bone Transform"));
 	pose_editor->set_visible(false);
 	add_child(pose_editor);
@@ -797,10 +798,11 @@ void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
 	_update_gizmo_visible();
 }
 
-Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *p_skeleton) :
-		editor_plugin(e_plugin),
+Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *p_inspector_plugin, EditorPlugin *p_plugin, Skeleton3D *p_skeleton) :
+		inspector_plugin(p_inspector_plugin),
 		skeleton(p_skeleton) {
 	singleton = this;
+	plugin = p_plugin;
 
 	// Handle.
 	handle_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
@@ -831,7 +833,8 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
+	Control *base_control = plugin->get_editor_interface()->get_base_control();
+	Ref<Texture2D> handle = base_control->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
 	handle_material->set_shader_param("point_size", handle->get_width());
 	handle_material->set_shader_param("texture_albedo", handle);
 
@@ -1022,14 +1025,18 @@ void EditorInspectorPluginSkeleton::parse_begin(Object *p_object) {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_object);
 	ERR_FAIL_COND(!skeleton);
 
-	skel_editor = memnew(Skeleton3DEditor(this, skeleton));
+	skel_editor = memnew(Skeleton3DEditor(this, plugin, skeleton));
 	add_custom_control(skel_editor);
 }
 
-Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
-	skeleton_plugin = memnew(EditorInspectorPluginSkeleton);
+EditorInspectorPluginSkeleton::EditorInspectorPluginSkeleton(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+}
 
-	EditorInspector::add_inspector_plugin(skeleton_plugin);
+Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
+	skeleton_plugin = memnew(EditorInspectorPluginSkeleton(this));
+
+	add_inspector_plugin(skeleton_plugin);
 
 	Ref<Skeleton3DGizmoPlugin> gizmo_plugin = Ref<Skeleton3DGizmoPlugin>(memnew(Skeleton3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);

@@ -38,8 +38,10 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tab_bar.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
@@ -48,6 +50,8 @@ class EditorFileDialog;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);
+
+	EditorPlugin *plugin;
 
 	Ref<Theme> edited_theme;
 	Ref<Theme> base_theme;
@@ -178,13 +182,15 @@ public:
 
 	bool has_selected_items() const;
 
-	ThemeItemImportTree();
+	ThemeItemImportTree(EditorPlugin *p_plugin);
 };
 
 class ThemeTypeEditor;
 
 class ThemeItemEditorDialog : public AcceptDialog {
 	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
+
+	EditorPlugin *plugin = nullptr;
 
 	ThemeTypeEditor *theme_type_editor = nullptr;
 
@@ -277,7 +283,7 @@ protected:
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
 
-	ThemeItemEditorDialog(ThemeTypeEditor *p_theme_editor);
+	ThemeItemEditorDialog(ThemeTypeEditor *p_theme_editor, EditorPlugin *p_plugin);
 };
 
 class ThemeTypeDialog : public ConfirmationDialog {
@@ -319,6 +325,7 @@ public:
 class ThemeTypeEditor : public MarginContainer {
 	GDCLASS(ThemeTypeEditor, MarginContainer);
 
+	EditorPlugin *plugin;
 	Ref<Theme> edited_theme;
 	String edited_type;
 	bool updating = false;
@@ -409,11 +416,13 @@ public:
 	void select_type(String p_type_name);
 	bool is_stylebox_pinned(Ref<StyleBox> p_stylebox);
 
-	ThemeTypeEditor();
+	ThemeTypeEditor(EditorPlugin *p_plugin);
 };
 
 class ThemeEditor : public VBoxContainer {
 	GDCLASS(ThemeEditor, VBoxContainer);
+
+	EditorPlugin *plugin;
 
 	Ref<Theme> theme;
 
@@ -446,7 +455,7 @@ public:
 	void edit(const Ref<Theme> &p_theme);
 	Ref<Theme> get_edited_theme();
 
-	ThemeEditor();
+	ThemeEditor(EditorPlugin *p_plugin);
 };
 
 class ThemeEditorPlugin : public EditorPlugin {

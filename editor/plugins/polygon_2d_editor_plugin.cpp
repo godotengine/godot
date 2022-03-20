@@ -32,6 +32,7 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"

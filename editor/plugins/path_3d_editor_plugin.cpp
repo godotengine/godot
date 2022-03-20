@@ -32,9 +32,10 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_node.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/editor_settings.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
@@ -379,7 +380,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				}
 			}
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = get_undo_redo();
 			if (closest_seg != -1) {
 				//subdivide
 
@@ -420,22 +421,20 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.
+				UndoRedo *ur = get_undo_redo();
 				if (dist_to_p < click_dist) {
-					UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 					ur->create_action(TTR("Remove Path Point"));
 					ur->add_do_method(c.ptr(), "remove_point", i);
 					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_out < click_dist) {
-					UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 					ur->create_action(TTR("Remove Out-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_out", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_out", i, c->get_point_out(i));
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_in < click_dist) {
-					UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 					ur->create_action(TTR("Remove In-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
@@ -514,7 +513,7 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
 		return;
 	}
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = get_undo_redo();
 	ur->create_action(TTR("Close Curve"));
 	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
 	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());

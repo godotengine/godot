@@ -35,7 +35,10 @@
 
 #include "../grid_map.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 
@@ -227,7 +230,7 @@ public:
 	EditorPlugin::AfterGUIInput forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 
 	void edit(GridMap *p_gridmap);
-	GridMapEditor();
+	GridMapEditor(EditorPlugin *p_plugin);
 	~GridMapEditor();
 };
 

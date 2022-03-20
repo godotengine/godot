@@ -31,11 +31,14 @@
 #ifndef MESH_EDITOR_PLUGIN_H
 #define MESH_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/gui/texture_button.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/material.h"
 
 class MeshEditor : public SubViewportContainer {

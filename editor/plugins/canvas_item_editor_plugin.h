@@ -35,7 +35,9 @@
 #include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -181,6 +183,8 @@ private:
 	};
 
 	bool selection_menu_additive_selection;
+
+	EditorPlugin *plugin;
 
 	Tool tool = TOOL_SELECT;
 	Control *viewport = nullptr;
@@ -400,8 +404,6 @@ private:
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 
-	UndoRedo *undo_redo = nullptr;
-
 	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
@@ -550,14 +552,13 @@ public:
 	Tool get_current_tool() { return tool; }
 	void set_current_tool(Tool p_tool);
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
 
 	EditorSelection *editor_selection = nullptr;
 
-	CanvasItemEditor();
+	CanvasItemEditor(EditorPlugin *p_plugin);
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
@@ -595,6 +596,7 @@ class CanvasItemEditorViewport : public Control {
 	EditorData *editor_data = nullptr;
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Control *preview_node = nullptr;
+	EditorPlugin *plugin = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *selector = nullptr;
 	Label *selector_label = nullptr;
@@ -629,7 +631,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
+	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor, EditorPlugin *p_plugin);
 	~CanvasItemEditorViewport();
 };
 

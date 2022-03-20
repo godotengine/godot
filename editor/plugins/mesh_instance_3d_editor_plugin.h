@@ -33,10 +33,14 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
+
+	EditorPlugin *plugin;
 
 	enum Menu {
 		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
@@ -78,7 +82,7 @@ protected:
 
 public:
 	void edit(MeshInstance3D *p_mesh);
-	MeshInstance3DEditor();
+	MeshInstance3DEditor(EditorPlugin *p_plugin);
 };
 
 class MeshInstance3DEditorPlugin : public EditorPlugin {

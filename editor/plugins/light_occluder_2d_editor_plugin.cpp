@@ -30,6 +30,8 @@
 
 #include "light_occluder_2d_editor_plugin.h"
 
+#include "core/object/undo_redo.h"
+
 Ref<OccluderPolygon2D> LightOccluder2DEditor::_ensure_occluder() const {
 	Ref<OccluderPolygon2D> occluder = node->get_occluder_polygon();
 	if (!occluder.is_valid()) {
@@ -93,7 +95,6 @@ void LightOccluder2DEditor::_create_resource() {
 	if (!node) {
 		return;
 	}
-
 	undo_redo->create_action(TTR("Create Occluder Polygon"));
 	undo_redo->add_do_method(node, "set_occluder_polygon", Ref<OccluderPolygon2D>(memnew(OccluderPolygon2D)));
 	undo_redo->add_undo_method(node, "set_occluder_polygon", Variant(REF()));

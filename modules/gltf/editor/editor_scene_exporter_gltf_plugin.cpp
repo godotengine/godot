@@ -56,7 +56,7 @@ bool SceneExporterGLTFPlugin::has_main_screen() const {
 
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	file_export_lib = memnew(EditorFileDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(file_export_lib);
+	get_editor_interface()->get_base_control()->add_child(file_export_lib);
 	file_export_lib->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_gltf2_dialog_action));
 	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -70,7 +70,7 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 }
 
 void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
-	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
+	Node *root = get_editor_interface()->get_edited_scene_root();
 	if (!root) {
 		EditorNode::get_singleton()->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
 		return;
@@ -93,7 +93,7 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 }
 
 void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {
-	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
+	Node *root = get_editor_interface()->get_edited_scene_root();
 	if (!root) {
 		EditorNode::get_singleton()->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
 		return;

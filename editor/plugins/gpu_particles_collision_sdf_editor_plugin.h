@@ -33,6 +33,7 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/material.h"
 
 struct EditorProgress;

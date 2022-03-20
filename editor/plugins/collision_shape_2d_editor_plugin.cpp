@@ -31,8 +31,8 @@
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_node.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
@@ -116,6 +116,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 }
 
 void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
+	CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
 			if (idx < 2) {
@@ -218,6 +219,8 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 }
 
 void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+	CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 	undo_redo->create_action(TTR("Set Handle"));
 
 	switch (shape_type) {
@@ -333,7 +336,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 
 	if (mb.is_valid()) {
 		Vector2 gpoint = mb->get_position();
@@ -382,6 +385,8 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		if (edit_handle == -1 || !pressed) {
 			return false;
 		}
+
+		CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 
 		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
 		cpoint = original_transform.affine_inverse().xform(cpoint);
@@ -438,7 +443,7 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 		shape_type = -1;
 	}
 
-	canvas_item_editor->update_viewport();
+	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
 void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
@@ -460,7 +465,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		return;
 	}
 
-	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D gt = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 
 	Ref<Texture2D> h = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 	Vector2 size = h->get_size() * 0.5;
@@ -560,10 +565,6 @@ void CollisionShape2DEditor::_notification(int p_what) {
 }
 
 void CollisionShape2DEditor::edit(Node *p_node) {
-	if (!canvas_item_editor) {
-		canvas_item_editor = CanvasItemEditor::get_singleton();
-	}
-
 	if (p_node) {
 		node = Object::cast_to<CollisionShape2D>(p_node);
 
@@ -576,18 +577,16 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 		node = nullptr;
 	}
 
-	canvas_item_editor->update_viewport();
+	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
 void CollisionShape2DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_current_shape_type", &CollisionShape2DEditor::_get_current_shape_type);
 }
 
-CollisionShape2DEditor::CollisionShape2DEditor() {
+CollisionShape2DEditor::CollisionShape2DEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	node = nullptr;
-	canvas_item_editor = nullptr;
-
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	edit_handle = -1;
 	pressed = false;
@@ -610,8 +609,8 @@ void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 }
 
 CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin() {
-	collision_shape_2d_editor = memnew(CollisionShape2DEditor);
-	EditorNode::get_singleton()->get_gui_base()->add_child(collision_shape_2d_editor);
+	collision_shape_2d_editor = memnew(CollisionShape2DEditor(this));
+	get_editor_interface()->get_base_control()->add_child(collision_shape_2d_editor);
 }
 
 CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {

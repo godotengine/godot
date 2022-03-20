@@ -33,6 +33,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_plugin.h"
 #include "editor_scene_importer_gltf.h"
 

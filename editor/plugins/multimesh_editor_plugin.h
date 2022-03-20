@@ -33,6 +33,9 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 
@@ -79,7 +82,7 @@ protected:
 
 public:
 	void edit(MultiMeshInstance3D *p_multimesh);
-	MultiMeshEditor();
+	MultiMeshEditor(EditorPlugin *p_plugin);
 };
 
 class MultiMeshEditorPlugin : public EditorPlugin {

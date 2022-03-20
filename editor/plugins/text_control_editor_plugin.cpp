@@ -285,7 +285,7 @@ void TextControlEditor::_set_font() {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Font"));
 
 	int count = edited_controls.size();
@@ -341,7 +341,7 @@ void TextControlEditor::_font_size_selected(double p_size) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Font Size"));
 
 	int count = edited_controls.size();
@@ -374,7 +374,7 @@ void TextControlEditor::_outline_size_selected(double p_size) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Font Outline Size"));
 
 	int count = edited_controls.size();
@@ -400,7 +400,7 @@ void TextControlEditor::_font_color_changed(const Color &p_color) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Font Color"), UndoRedo::MERGE_ENDS);
 
 	int count = edited_controls.size();
@@ -433,7 +433,7 @@ void TextControlEditor::_outline_color_changed(const Color &p_color) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Set Font Outline Color"), UndoRedo::MERGE_ENDS);
 
 	int count = edited_controls.size();
@@ -459,7 +459,7 @@ void TextControlEditor::_clear_formatting() {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = plugin->get_undo_redo();
 	ur->create_action(TTR("Clear Control Formatting"));
 
 	int count = edited_controls.size();
@@ -530,7 +530,8 @@ void TextControlEditor::edit(Object *p_object) {
 		_update_control();
 	} else if (multi_node && handles(multi_node)) {
 		int count = multi_node->get_node_count();
-		Node *scene = EditorNode::get_singleton()->get_edited_scene();
+
+		Node *scene = plugin->get_editor_interface()->get_edited_scene_root();
 
 		for (int i = 0; i < count; ++i) {
 			Control *child = Object::cast_to<Control>(scene->get_node(multi_node->get_node(i)));
@@ -572,7 +573,8 @@ bool TextControlEditor::handles(Object *p_object) const {
 	}
 }
 
-TextControlEditor::TextControlEditor() {
+TextControlEditor::TextControlEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	add_child(memnew(VSeparator));
 
 	font_list = memnew(OptionButton);
@@ -653,7 +655,7 @@ void TextControlEditorPlugin::make_visible(bool p_visible) {
 }
 
 TextControlEditorPlugin::TextControlEditorPlugin() {
-	text_ctl_editor = memnew(TextControlEditor);
+	text_ctl_editor = memnew(TextControlEditor(this));
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(text_ctl_editor);
 
 	text_ctl_editor->hide();

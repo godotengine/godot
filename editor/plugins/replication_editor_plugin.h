@@ -32,16 +32,21 @@
 #define REPLICATION_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/scene_replication_config.h"
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
 class Tree;
+class AcceptDialog;
+class LineEdit;
 
 class ReplicationEditor : public VBoxContainer {
 	GDCLASS(ReplicationEditor, VBoxContainer);
 
 private:
+	EditorPlugin *plugin;
+
 	MultiplayerSynchronizer *current = nullptr;
 
 	AcceptDialog *error_dialog = nullptr;
@@ -76,7 +81,7 @@ public:
 	MultiplayerSynchronizer *get_current() const { return current; }
 	void property_keyed(const String &p_property);
 
-	ReplicationEditor();
+	ReplicationEditor(EditorPlugin *p_plugin);
 	~ReplicationEditor() {}
 };
 

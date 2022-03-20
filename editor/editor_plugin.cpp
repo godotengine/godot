@@ -30,13 +30,17 @@
 
 #include "editor_plugin.h"
 
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_scene.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -371,6 +375,10 @@ void EditorInterface::_bind_methods() {
 
 EditorInterface::EditorInterface() {
 	singleton = this;
+}
+
+EditorInterface::~EditorInterface() {
+	singleton = nullptr;
 }
 
 ///////////////////////////////////////////
@@ -881,7 +889,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
-	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
+	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::get_undo_redo);
 	ClassDB::bind_method(D_METHOD("add_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::add_undo_redo_inspector_hook_callback);
 	ClassDB::bind_method(D_METHOD("remove_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::remove_undo_redo_inspector_hook_callback);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);

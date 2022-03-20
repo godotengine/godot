@@ -70,6 +70,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
 			name = basename + " " + itos(counter);
 		}
 
+		UndoRedo *undo_redo = plugin->get_undo_redo();
 		undo_redo->create_action(TTR("Add Resource"));
 		undo_redo->add_do_method(preloader, "add_resource", name, resource);
 		undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -114,6 +115,8 @@ void ResourcePreloaderEditor::_item_edited() {
 		}
 
 		RES samp = preloader->get_resource(old_name);
+
+		UndoRedo *undo_redo = plugin->get_undo_redo();
 		undo_redo->create_action(TTR("Rename Resource"));
 		undo_redo->add_do_method(preloader, "remove_resource", old_name);
 		undo_redo->add_do_method(preloader, "add_resource", new_name, samp);
@@ -126,6 +129,7 @@ void ResourcePreloaderEditor::_item_edited() {
 }
 
 void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(preloader, "remove_resource", p_to_remove);
 	undo_redo->add_undo_method(preloader, "add_resource", p_to_remove, preloader->get_resource(p_to_remove));
@@ -159,6 +163,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 		name = basename + " " + itos(counter);
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Paste Resource"));
 	undo_redo->add_do_method(preloader, "add_resource", name, r);
 	undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -219,11 +224,11 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 
 	if (p_id == BUTTON_OPEN_SCENE) {
 		String rpath = item->get_text(p_column);
-		EditorInterface::get_singleton()->open_scene_from_path(rpath);
+		plugin->get_editor_interface()->open_scene_from_path(rpath);
 
 	} else if (p_id == BUTTON_EDIT_RESOURCE) {
 		RES r = preloader->get_resource(item->get_text(0));
-		EditorInterface::get_singleton()->edit_resource(r);
+		plugin->get_editor_interface()->edit_resource(r);
 
 	} else if (p_id == BUTTON_REMOVE) {
 		_remove_resource(item->get_text(0));
@@ -313,6 +318,8 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 				name = basename + "_" + itos(counter);
 			}
 
+			UndoRedo *undo_redo = plugin->get_undo_redo();
+
 			undo_redo->create_action(TTR("Add Resource"));
 			undo_redo->add_do_method(preloader, "add_resource", name, r);
 			undo_redo->add_undo_method(preloader, "remove_resource", name);
@@ -338,8 +345,9 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 }
 
-ResourcePreloaderEditor::ResourcePreloaderEditor() {
-	//add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel","Panel"));
+ResourcePreloaderEditor::ResourcePreloaderEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+	//add_style_override("panel", plugin->get_editor_interface()->get_base_control()->get_stylebox("panel","Panel"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -383,7 +391,6 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 }
 
 void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
-	preloader_editor->set_undo_redo(&get_undo_redo());
 	ResourcePreloader *s = Object::cast_to<ResourcePreloader>(p_object);
 	if (!s) {
 		return;
@@ -400,11 +407,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
+		make_bottom_panel_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -413,10 +420,10 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 }
 
 ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
-	preloader_editor = memnew(ResourcePreloaderEditor);
+	preloader_editor = memnew(ResourcePreloaderEditor(this));
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
+	button = add_control_to_bottom_panel(preloader_editor, TTR("ResourcePreloader"));
 	button->hide();
 
 	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);

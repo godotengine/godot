@@ -34,9 +34,11 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
 
 void AudioStreamEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -205,8 +207,10 @@ void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 void AudioStreamEditor::_bind_methods() {
 }
 
-AudioStreamEditor::AudioStreamEditor() {
+AudioStreamEditor::AudioStreamEditor(EditorPlugin *p_plugin) {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
+
+	Control *gui_base = p_plugin->get_editor_interface()->get_base_control();
 
 	_player = memnew(AudioStreamPlayer);
 	_player->connect("finished", callable_mp(this, &AudioStreamEditor::_on_finished));
@@ -247,14 +251,14 @@ AudioStreamEditor::AudioStreamEditor() {
 	_current_label = memnew(Label);
 	_current_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	_current_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	_current_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	_current_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+	_current_label->add_theme_font_override("font", gui_base->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+	_current_label->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 	_current_label->set_modulate(Color(1, 1, 1, 0.5));
 	hbox->add_child(_current_label);
 
 	_duration_label = memnew(Label);
-	_duration_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	_duration_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+	_duration_label->add_theme_font_override("font", gui_base->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+	_duration_label->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 	hbox->add_child(_duration_label);
 }
 
@@ -276,7 +280,7 @@ void AudioStreamEditorPlugin::make_visible(bool p_visible) {
 }
 
 AudioStreamEditorPlugin::AudioStreamEditorPlugin() {
-	audio_editor = memnew(AudioStreamEditor);
+	audio_editor = memnew(AudioStreamEditor(this));
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, audio_editor);
 	audio_editor->hide();
 }

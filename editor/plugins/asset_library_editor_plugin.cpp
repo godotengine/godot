@@ -35,7 +35,6 @@
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
-#include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -1562,7 +1561,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_control()->add_child(addon_library);
+	get_editor_interface()->get_editor_main_control()->add_child(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }

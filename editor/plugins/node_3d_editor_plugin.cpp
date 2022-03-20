@@ -478,7 +478,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 
 	if (!p_allow_locked) {
 		// Replace the node by the group if grouped
-		while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+		while (node && node != plugin->get_editor_interface()->get_edited_scene_root()->get_parent()) {
 			Node3D *selected_tmp = Object::cast_to<Node3D>(node);
 			if (selected_tmp && node->has_meta("_edit_group_")) {
 				selected = selected_tmp;
@@ -498,12 +498,12 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 			if (!editor_selection->is_selected(selected)) {
 				editor_selection->clear();
 				editor_selection->add_node(selected);
-				EditorNode::get_singleton()->edit_node(selected);
+				plugin->get_editor_interface()->edit_node(selected);
 			}
 		}
 
 		if (editor_selection->get_selected_node_list().size() == 1) {
-			EditorNode::get_singleton()->edit_node(editor_selection->get_selected_node_list()[0]);
+			plugin->get_editor_interface()->edit_node(editor_selection->get_selected_node_list()[0]);
 		}
 	}
 }
@@ -789,7 +789,7 @@ void Node3DEditorViewport::_select_region() {
 		// Replace the node by the group if grouped
 		if (item->is_class("Node3D")) {
 			Node3D *sel = Object::cast_to<Node3D>(item);
-			while (item && item != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+			while (item && item != plugin->get_editor_interface()->get_edited_scene_root()->get_parent()) {
 				Node3D *selected_tmp = Object::cast_to<Node3D>(item);
 				if (selected_tmp && item->has_meta("_edit_group_")) {
 					sel = selected_tmp;
@@ -823,7 +823,7 @@ void Node3DEditorViewport::_select_region() {
 	}
 
 	if (editor_selection->get_selected_node_list().size() == 1) {
-		EditorNode::get_singleton()->edit_node(editor_selection->get_selected_node_list()[0]);
+		plugin->get_editor_interface()->edit_node(editor_selection->get_selected_node_list()[0]);
 	}
 }
 
@@ -1271,7 +1271,7 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	_find_items_at_pos(b->get_position(), selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *scene = plugin->get_editor_interface()->get_edited_scene_root();
 
 	for (int i = 0; i < selection_results.size(); i++) {
 		Node3D *item = selection_results[i].item;
@@ -1306,7 +1306,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			if (_is_node_locked(spat)) {
 				locked = 1;
 			} else {
-				Node *ed_scene = EditorNode::get_singleton()->get_edited_scene();
+				Node *ed_scene = plugin->get_editor_interface()->get_edited_scene_root();
 				Node *node = spat;
 
 				while (node && node != ed_scene->get_parent()) {
@@ -3568,7 +3568,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		preview_camera->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	}
 	if (p_state.has("previewing")) {
-		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
+		Node *pv = plugin->get_editor_interface()->get_edited_scene_root()->get_node(p_state["previewing"]);
 		if (Object::cast_to<Camera3D>(pv)) {
 			previewing = Object::cast_to<Camera3D>(pv);
 			previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
@@ -3609,7 +3609,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
 	d["cinematic_preview"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 	if (previewing) {
-		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
+		d["previewing"] = plugin->get_editor_interface()->get_edited_scene_root()->get_path_to(previewing);
 	}
 	if (lock_rotation) {
 		d["lock_rotation"] = lock_rotation;
@@ -3863,8 +3863,8 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		return false;
 	}
 
-	if (!EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path().is_empty()) { // cyclical instancing
-		if (_cyclical_dependency_exists(EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
+	if (!plugin->get_editor_interface()->get_edited_scene_root()->get_scene_file_path().is_empty()) { // cyclical instancing
+		if (_cyclical_dependency_exists(plugin->get_editor_interface()->get_edited_scene_root()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
 		}
@@ -3875,14 +3875,14 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	}
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene, true);
-	editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_owner", plugin->get_editor_interface()->get_edited_scene_root());
 	editor_data->get_undo_redo().add_do_reference(instantiated_scene);
 	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instantiated_scene);
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent), path, new_name);
-	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", plugin->get_editor_interface()->get_edited_scene_root()->get_path_to(parent), path, new_name);
+	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(plugin->get_editor_interface()->get_edited_scene_root()->get_path_to(parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
@@ -3999,8 +3999,8 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 		selected_files = d["files"];
 	}
 
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
-	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
+	List<Node *> selected_nodes = editor_selection->get_selected_node_list();
+	Node *root_node = plugin->get_editor_interface()->get_edited_scene_root();
 	if (selected_nodes.size() == 1) {
 		Node *selected_node = selected_nodes[0];
 		target_node = root_node;
@@ -4437,7 +4437,7 @@ void Node3DEditorViewport::shortcut_changed_callback(const Ref<Shortcut> p_short
 	}
 }
 
-Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
+Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorPlugin *p_plugin, int p_index) {
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
 
@@ -4450,9 +4450,10 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_edit.gizmo_handle_secondary = false;
 
 	index = p_index;
+	plugin = p_plugin;
 	editor_data = SceneTreeDock::get_singleton()->get_editor_data();
-	editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	editor_selection = plugin->get_editor_interface()->get_selection();
+	undo_redo = plugin->get_undo_redo();
 
 	orthogonal = false;
 	auto_orthogonal = false;
@@ -6356,7 +6357,7 @@ void fragment() {
 void Node3DEditor::_update_context_menu_stylebox() {
 	// This must be called when the theme changes to follow the new accent color.
 	Ref<StyleBoxFlat> context_menu_stylebox = memnew(StyleBoxFlat);
-	const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	const Color accent_color = plugin->get_editor_interface()->get_base_control()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 	context_menu_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
 	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
 	context_menu_stylebox->set_border_color(accent_color);
@@ -7107,7 +7108,7 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 
 	bool is_selected = (sp == selected);
 
-	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited_scene = plugin->get_editor_interface()->get_edited_scene_root();
 	if (edited_scene && (sp == edited_scene || (sp->get_owner() && edited_scene->is_ancestor_of(sp)))) {
 		for (int i = 0; i < gizmo_plugins_by_priority.size(); ++i) {
 			Ref<EditorNode3DGizmo> seg = gizmo_plugins_by_priority.write[i]->get_gizmo(sp);
@@ -7475,17 +7476,20 @@ void Node3DEditor::_sun_direction_angle_set() {
 	_preview_settings_changed();
 }
 
-Node3DEditor::Node3DEditor() {
+Node3DEditor::Node3DEditor(EditorPlugin *p_plugin) {
+	singleton = this;
+
+	plugin = p_plugin;
+
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
 
 	viewport_environment = Ref<Environment>(memnew(Environment));
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = plugin->get_undo_redo();
 	VBoxContainer *vbc = this;
 
 	custom_camera = nullptr;
-	singleton = this;
-	editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	editor_selection = plugin->get_editor_interface()->get_selection();
 	editor_selection->add_editor_plugin(this);
 
 	snap_enabled = false;
@@ -7717,7 +7721,7 @@ Node3DEditor::Node3DEditor() {
 	p->set_hide_on_checkable_item_selection(false);
 
 	accept = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
+	plugin->get_editor_interface()->get_base_control()->add_child(accept);
 
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/1_viewport", TTR("1 Viewport"), KeyModifierMask::CMD + Key::KEY_1), MENU_VIEW_USE_1_VIEWPORT);
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports", TTR("2 Viewports"), KeyModifierMask::CMD + Key::KEY_2), MENU_VIEW_USE_2_VIEWPORTS);
@@ -7764,7 +7768,7 @@ Node3DEditor::Node3DEditor() {
 	shader_split->add_child(viewport_base);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
-		viewports[i] = memnew(Node3DEditorViewport(this, i));
+		viewports[i] = memnew(Node3DEditorViewport(this, plugin, i));
 		viewports[i]->connect("toggle_maximize_view", callable_mp(this, &Node3DEditor::_toggle_maximize_view));
 		viewports[i]->connect("clicked", callable_mp(this, &Node3DEditor::_update_camera_override_viewport));
 		viewports[i]->assign_pending_data_pointers(preview_node, &preview_bounds, accept);
@@ -8214,9 +8218,9 @@ void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 }
 
 Node3DEditorPlugin::Node3DEditorPlugin() {
-	spatial_editor = memnew(Node3DEditor);
+	spatial_editor = memnew(Node3DEditor(this));
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_control()->add_child(spatial_editor);
+	get_editor_interface()->get_editor_main_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();
 }

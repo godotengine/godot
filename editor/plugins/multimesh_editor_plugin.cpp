@@ -30,9 +30,8 @@
 
 #include "multimesh_editor_plugin.h"
 
-#include "editor/editor_node.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_editor.h"
-#include "node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 
@@ -264,13 +263,13 @@ void MultiMeshEditor::_browse(bool p_source) {
 void MultiMeshEditor::_bind_methods() {
 }
 
-MultiMeshEditor::MultiMeshEditor() {
+MultiMeshEditor::MultiMeshEditor(EditorPlugin *p_plugin) {
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MultiMeshInstance3D"), SNAME("EditorIcons")));
+	options->set_icon(p_plugin->get_editor_interface()->get_base_control()->get_theme_icon(SNAME("MultiMeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));
@@ -378,8 +377,8 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 }
 
 MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
-	multimesh_editor = memnew(MultiMeshEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(multimesh_editor);
+	multimesh_editor = memnew(MultiMeshEditor(this));
+	get_editor_interface()->get_editor_main_control()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }

@@ -34,6 +34,7 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 
 class CanvasItemEditor;
 

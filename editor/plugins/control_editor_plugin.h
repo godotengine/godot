@@ -31,12 +31,15 @@
 #ifndef CONTROL_EDITOR_PLUGIN_H
 #define CONTROL_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
@@ -128,7 +131,7 @@ public:
 class ControlEditorToolbar : public HBoxContainer {
 	GDCLASS(ControlEditorToolbar, HBoxContainer);
 
-	UndoRedo *undo_redo = nullptr;
+	EditorPlugin *plugin = nullptr;
 	EditorSelection *editor_selection = nullptr;
 
 	enum MenuOption {
@@ -233,7 +236,7 @@ public:
 
 	static ControlEditorToolbar *get_singleton() { return singleton; }
 
-	ControlEditorToolbar();
+	ControlEditorToolbar(EditorPlugin *p_plugin);
 };
 
 class ControlEditorPlugin : public EditorPlugin {

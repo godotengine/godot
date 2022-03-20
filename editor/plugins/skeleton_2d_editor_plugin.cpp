@@ -30,8 +30,8 @@
 
 #include "skeleton_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_node.h"
+#include "core/object/undo_redo.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/gui/box_container.h"
 #include "thirdparty/misc/clipper.hpp"
@@ -59,7 +59,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 			ur->create_action(TTR("Set Rest Pose to Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -75,7 +75,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = plugin->get_undo_redo();
 			ur->create_action(TTR("Create Rest Pose from Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -91,13 +91,14 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 void Skeleton2DEditor::_bind_methods() {
 }
 
-Skeleton2DEditor::Skeleton2DEditor() {
+Skeleton2DEditor::Skeleton2DEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	options = memnew(MenuButton);
 
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
+	options->set_icon(plugin->get_editor_interface()->get_base_control()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();
@@ -129,8 +130,8 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 }
 
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
-	sprite_editor = memnew(Skeleton2DEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(sprite_editor);
+	sprite_editor = memnew(Skeleton2DEditor(this));
+	get_editor_interface()->get_editor_main_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

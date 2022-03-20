@@ -32,19 +32,22 @@
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "core/object/undo_redo.h"
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_translation_parser.h"
-#include "editor/import/editor_import_plugin.h"
-#include "editor/import/resource_importer_scene.h"
-#include "editor/script_create_dialog.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/main/node.h"
-#include "scene/resources/texture.h"
+#include "scene/gui/control.h"
 
+class UndoRedo;
 class Node3D;
-class Camera3D;
+class Button;
+class PopupMenu;
+class EditorImportPlugin;
+class EditorInspectorPlugin;
+class EditorInspector;
+class EditorTranslationParserPlugin;
+class EditorImportPlugin;
+class EditorExportPlugin;
+class EditorSceneFormatImporter;
+class EditorScenePostImportPlugin;
+class ScriptCreateDialog;
 class EditorCommandPalette;
 class EditorSelection;
 class EditorExport;
@@ -124,14 +127,13 @@ public:
 	bool is_distraction_free_mode_enabled() const;
 
 	EditorInterface();
+	~EditorInterface();
 };
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
 	UndoRedo *undo_redo = nullptr;
-
-	UndoRedo *_get_undo_redo() { return undo_redo; }
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
@@ -144,7 +146,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	UndoRedo &get_undo_redo() { return *undo_redo; }
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
@@ -206,6 +207,8 @@ public:
 		AFTER_GUI_INPUT_STOP,
 		AFTER_GUI_INPUT_DESELECT
 	};
+
+	UndoRedo *get_undo_redo() { return undo_redo; }
 
 	//TODO: send a resource for editing to the editor node?
 

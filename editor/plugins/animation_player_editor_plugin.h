@@ -36,6 +36,7 @@
 #include "editor/plugins/animation_library_editor.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_button.h"
@@ -100,7 +101,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	LineEdit *name = nullptr;
 	OptionButton *library = nullptr;
 	Label *name_title = nullptr;
-	UndoRedo *undo_redo = nullptr;
 
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
@@ -232,7 +232,6 @@ public:
 
 	void ensure_visibility();
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(AnimationPlayer *p_player);
 	void forward_force_draw_over_viewport(Control *p_overlay);
 

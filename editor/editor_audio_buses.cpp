@@ -1367,9 +1367,6 @@ bool AudioBusesEditorPlugin::handles(Object *p_node) const {
 	return (Object::cast_to<AudioBusLayout>(p_node) != nullptr);
 }
 
-void AudioBusesEditorPlugin::make_visible(bool p_visible) {
-}
-
 AudioBusesEditorPlugin::AudioBusesEditorPlugin(EditorAudioBuses *p_node) {
 	audio_bus_editor = p_node;
 }

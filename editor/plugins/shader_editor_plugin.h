@@ -51,6 +51,8 @@ class ShaderTextEditor : public CodeTextEditor {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
 	};
 
+	EditorPlugin *plugin;
+
 	Ref<CodeHighlighter> syntax_highlighter;
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
@@ -75,7 +77,7 @@ public:
 
 	Ref<Shader> get_edited_shader() const;
 	void set_edited_shader(const Ref<Shader> &p_shader);
-	ShaderTextEditor();
+	ShaderTextEditor(EditorPlugin *p_plugin);
 };
 
 class ShaderEditor : public PanelContainer {
@@ -154,7 +156,7 @@ public:
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 	void save_external_data(const String &p_str = "");
 
-	ShaderEditor();
+	ShaderEditor(EditorPlugin *p_plugin);
 };
 
 class ShaderEditorPlugin : public EditorPlugin {

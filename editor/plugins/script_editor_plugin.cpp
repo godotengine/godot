@@ -1400,7 +1400,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				es->_run();
 
-				EditorNode::get_undo_redo()->clear_history();
+				plugin->get_undo_redo()->clear_history();
 			} break;
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
@@ -1628,7 +1628,7 @@ void ScriptEditor::_notification(int p_what) {
 			filter_scripts->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter_methods->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-			filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			filename->add_theme_style_override("normal", plugin->get_editor_interface()->get_base_control()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 
 			recent_scripts->reset_size();
 
@@ -1658,7 +1658,7 @@ void ScriptEditor::_notification(int p_what) {
 				find_in_files_button->show();
 			} else {
 				if (find_in_files->is_visible_in_tree()) {
-					EditorNode::get_singleton()->hide_bottom_panel();
+					plugin->hide_bottom_panel();
 				}
 				find_in_files_button->hide();
 			}
@@ -1973,7 +1973,7 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	Set<Ref<Script>> used;
-	Node *edited = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited = plugin->get_editor_interface()->get_edited_scene_root();
 	if (edited) {
 		_find_scripts(edited, edited, used);
 	}
@@ -2678,7 +2678,7 @@ void ScriptEditor::_save_layout() {
 		return;
 	}
 
-	EditorNode::get_singleton()->save_layout();
+	plugin->queue_save_layout();
 }
 
 void ScriptEditor::_editor_settings_changed() {
@@ -3584,7 +3584,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(find_in_files);
+	plugin->make_bottom_panel_item_visible(find_in_files);
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
@@ -3633,8 +3633,11 @@ void ScriptEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 }
 
-ScriptEditor::ScriptEditor() {
+ScriptEditor::ScriptEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
 	current_theme = "";
+
+	Control *base_control = plugin->get_editor_interface()->get_base_control();
 
 	script_editor_cache.instantiate();
 	script_editor_cache->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
@@ -3696,7 +3699,7 @@ ScriptEditor::ScriptEditor() {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	filename->add_theme_style_override("normal", base_control->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
@@ -3935,7 +3938,7 @@ ScriptEditor::ScriptEditor() {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files), varray(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
-	find_in_files_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Search Results"), find_in_files);
+	find_in_files_button = plugin->add_control_to_bottom_panel(find_in_files, TTR("Search Results"));
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
@@ -3951,8 +3954,8 @@ ScriptEditor::ScriptEditor() {
 
 	ScriptServer::edit_request_func = _open_script_request;
 
-	add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
-	tab_container->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
+	add_theme_style_override("panel", base_control->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	tab_container->add_theme_style_override("panel", base_control->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
 }
 
 ScriptEditor::~ScriptEditor() {
@@ -4037,8 +4040,8 @@ void ScriptEditorPlugin::edited_scene_changed() {
 }
 
 ScriptEditorPlugin::ScriptEditorPlugin() {
-	script_editor = memnew(ScriptEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(script_editor);
+	script_editor = memnew(ScriptEditor(this));
+	get_editor_interface()->get_editor_main_control()->add_child(script_editor);
 	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();

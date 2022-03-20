@@ -33,6 +33,8 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
 
 class Skeleton2DEditor : public Control {
@@ -43,6 +45,7 @@ class Skeleton2DEditor : public Control {
 		MENU_OPTION_MAKE_REST,
 	};
 
+	EditorPlugin *plugin = nullptr;
 	Skeleton2D *node = nullptr;
 
 	MenuButton *options = nullptr;
@@ -59,7 +62,7 @@ protected:
 
 public:
 	void edit(Skeleton2D *p_sprite);
-	Skeleton2DEditor();
+	Skeleton2DEditor(EditorPlugin *p_plugin);
 };
 
 class Skeleton2DEditorPlugin : public EditorPlugin {

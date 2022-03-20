@@ -58,6 +58,8 @@ class VisualShaderGraphPlugin : public RefCounted {
 	GDCLASS(VisualShaderGraphPlugin, RefCounted);
 
 private:
+	EditorPlugin *plugin;
+
 	struct InputPort {
 		Button *default_input_button = nullptr;
 	};
@@ -124,7 +126,7 @@ public:
 	void update_theme();
 	VisualShader::Type get_shader_type() const;
 
-	VisualShaderGraphPlugin();
+	VisualShaderGraphPlugin(EditorPlugin *p_plugin);
 	~VisualShaderGraphPlugin();
 };
 
@@ -132,6 +134,7 @@ class VisualShaderEditor : public VBoxContainer {
 	GDCLASS(VisualShaderEditor, VBoxContainer);
 	friend class VisualShaderGraphPlugin;
 
+	EditorPlugin *plugin;
 	CustomPropertyEditor *property_editor = nullptr;
 	int editing_node = -1;
 	int editing_port = -1;
@@ -490,7 +493,7 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 	void edit(VisualShader *p_visual_shader);
-	VisualShaderEditor();
+	VisualShaderEditor(EditorPlugin *p_plugin);
 };
 
 class VisualShaderEditorPlugin : public EditorPlugin {

@@ -31,6 +31,7 @@
 #ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
 #define TEXTURE_LAYERED_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"

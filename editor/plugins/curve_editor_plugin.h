@@ -31,6 +31,7 @@
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
@@ -40,7 +41,7 @@ class CurveEditor : public Control {
 	GDCLASS(CurveEditor, Control);
 
 public:
-	CurveEditor();
+	CurveEditor(EditorPlugin *p_plugin);
 
 	Size2 get_minimum_size() const override;
 
@@ -96,6 +97,8 @@ private:
 	void _draw();
 
 private:
+	EditorPlugin *plugin;
+
 	Transform2D _world_to_view;
 
 	Ref<Curve> _curve_ref;
@@ -119,9 +122,13 @@ private:
 class EditorInspectorPluginCurve : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginCurve, EditorInspectorPlugin);
 
+	EditorPlugin *plugin;
+
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
+
+	EditorInspectorPluginCurve(EditorPlugin *p_plugin);
 };
 
 class CurveEditorPlugin : public EditorPlugin {

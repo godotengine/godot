@@ -46,6 +46,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
+class EditorFileDialog;
+
 class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
@@ -269,7 +271,6 @@ public:
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
-	virtual void make_visible(bool p_visible) override;
 
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
 	~AudioBusesEditorPlugin();

@@ -33,6 +33,8 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 
 class CanvasItemEditor;
@@ -104,7 +106,7 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_path2d);
-	Path2DEditor();
+	Path2DEditor(EditorPlugin *p_plugin);
 };
 
 class Path2DEditorPlugin : public EditorPlugin {

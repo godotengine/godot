@@ -61,8 +61,7 @@ class CollisionShape2DEditor : public Control {
 		Point2(1, -1),
 	};
 
-	UndoRedo *undo_redo = nullptr;
-	CanvasItemEditor *canvas_item_editor = nullptr;
+	EditorPlugin *plugin = nullptr;
 	CollisionShape2D *node = nullptr;
 
 	Vector<Point2> handles;
@@ -90,7 +89,7 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_node);
 
-	CollisionShape2DEditor();
+	CollisionShape2DEditor(EditorPlugin *p_plugin);
 };
 
 class CollisionShape2DEditorPlugin : public EditorPlugin {

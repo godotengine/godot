@@ -31,11 +31,14 @@
 #ifndef GRADIENT_EDITOR_PLUGIN_H
 #define GRADIENT_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
 
 class GradientEditor : public GradientEdit {
 	GDCLASS(GradientEditor, GradientEdit);
+
+	EditorPlugin *plugin;
 
 	bool editing;
 	Ref<Gradient> gradient;
@@ -50,7 +53,7 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	void set_gradient(const Ref<Gradient> &p_gradient);
 	void reverse_gradient();
-	GradientEditor();
+	GradientEditor(EditorPlugin *p_plugin);
 };
 
 class GradientReverseButton : public BaseButton {
@@ -65,6 +68,7 @@ class GradientReverseButton : public BaseButton {
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
 
+	EditorPlugin *plugin = nullptr;
 	GradientEditor *editor = nullptr;
 	HBoxContainer *gradient_tools_hbox = nullptr;
 	GradientReverseButton *reverse_btn = nullptr;
@@ -74,6 +78,8 @@ class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
+
+	EditorInspectorPluginGradient(EditorPlugin *p_plugin);
 };
 
 class GradientEditorPlugin : public EditorPlugin {

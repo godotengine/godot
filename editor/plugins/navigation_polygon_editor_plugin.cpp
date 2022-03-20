@@ -30,6 +30,8 @@
 
 #include "navigation_polygon_editor_plugin.h"
 
+#include "core/object/undo_redo.h"
+
 Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
 	if (!navpoly.is_valid()) {

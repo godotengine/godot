@@ -52,6 +52,8 @@ class TextControlEditor : public HBoxContainer {
 		FONT_INFO_ID = 100,
 	};
 
+	EditorPlugin *plugin;
+
 	Map<String, Map<String, String>> fonts;
 
 	OptionButton *font_list = nullptr;
@@ -92,7 +94,7 @@ public:
 	void edit(Object *p_object);
 	bool handles(Object *p_object) const;
 
-	TextControlEditor();
+	TextControlEditor(EditorPlugin *p_plugin);
 };
 
 /*************************************************************************/

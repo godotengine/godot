@@ -35,8 +35,8 @@
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -524,9 +524,9 @@ void Polygon3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_polygon_draw"), &Polygon3DEditor::_polygon_draw);
 }
 
-Polygon3DEditor::Polygon3DEditor() {
+Polygon3DEditor::Polygon3DEditor(EditorPlugin *p_plugin) {
 	node = nullptr;
-	undo_redo = EditorNode::get_undo_redo();
+	undo_redo = p_plugin->get_undo_redo();
 
 	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
@@ -561,7 +561,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = p_plugin->get_editor_interface()->get_base_control()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 
@@ -596,7 +596,7 @@ void Polygon3DEditorPlugin::make_visible(bool p_visible) {
 }
 
 Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
-	polygon_editor = memnew(Polygon3DEditor);
+	polygon_editor = memnew(Polygon3DEditor(this));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 
 	polygon_editor->hide();

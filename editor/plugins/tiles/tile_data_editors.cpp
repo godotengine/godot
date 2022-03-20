@@ -35,6 +35,8 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#include "scene/gui/option_button.h"
+
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"

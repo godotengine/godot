@@ -48,6 +48,8 @@ class EditorFileDialog;
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
+	EditorPlugin *plugin;
+
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
 	Button *_delete = nullptr;
@@ -129,8 +131,6 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	bool updating;
 
-	UndoRedo *undo_redo = nullptr;
-
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -155,10 +155,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
-
 	void edit(SpriteFrames *p_frames);
-	SpriteFramesEditor();
+	SpriteFramesEditor(EditorPlugin *p_plugin);
 };
 
 class SpriteFramesEditorPlugin : public EditorPlugin {

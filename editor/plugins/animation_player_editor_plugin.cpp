@@ -106,11 +106,14 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			Control *gui_base = plugin->get_editor_interface()->get_base_control();
+
+			add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			Control *gui_base = plugin->get_editor_interface()->get_base_control();
+			add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -171,6 +174,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	}
 
 	String current = animation->get_item_text(animation->get_selected());
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	if (player->get_autoplay() == current) {
 		//unset
 		undo_redo->create_action(TTR("Toggle Autoplay"));
@@ -375,6 +379,8 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	Ref<AnimationLibrary> al = player->get_animation_library(player->find_animation_library(anim));
 	ERR_FAIL_COND(al.is_null());
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
+
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -444,6 +450,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	switch (name_dialog_op) {
 		case TOOL_RENAME_ANIM: {
 			String current = animation->get_item_text(animation->get_selected());
@@ -533,6 +540,7 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	String current = animation->get_item_text(animation->get_selected());
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Blend Next Changed"));
 	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
 	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
@@ -619,6 +627,7 @@ void AnimationPlayerEditor::_blend_edited() {
 	float blend_time = selected->get_range(1);
 	float prev_blend_time = player->get_blend_time(current, to);
 
+	UndoRedo *undo_redo = plugin->get_undo_redo();
 	undo_redo->create_action(TTR("Change Blend Time"));
 	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
 	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
@@ -640,8 +649,8 @@ Dictionary AnimationPlayerEditor::get_state() const {
 	Dictionary d;
 
 	d["visible"] = is_visible_in_tree();
-	if (EditorNode::get_singleton()->get_edited_scene() && is_visible_in_tree() && player) {
-		d["player"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
+	if (plugin->get_editor_interface()->get_edited_scene_root() && is_visible_in_tree() && player) {
+		d["player"] = plugin->get_editor_interface()->get_edited_scene_root()->get_path_to(player);
 		d["animation"] = player->get_assigned_animation();
 		d["track_editor_state"] = track_editor->get_state();
 	}
@@ -653,16 +662,16 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 	if (!p_state.has("visible") || !p_state["visible"]) {
 		return;
 	}
-	if (!EditorNode::get_singleton()->get_edited_scene()) {
+	if (!plugin->get_editor_interface()->get_edited_scene_root()) {
 		return;
 	}
 
 	if (p_state.has("player")) {
-		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
-		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
+		Node *n = plugin->get_editor_interface()->get_edited_scene_root()->get_node(p_state["player"]);
+		if (Object::cast_to<AnimationPlayer>(n) && plugin->get_editor_interface()->get_selection()->is_selected(n)) {
 			player = Object::cast_to<AnimationPlayer>(n);
 			_update_player();
-			EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+			plugin->make_bottom_panel_item_visible(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -685,7 +694,7 @@ void AnimationPlayerEditor::_animation_resource_edit() {
 	String current = _get_current();
 	if (current != String()) {
 		Ref<Animation> anim = player->get_animation(current);
-		EditorNode::get_singleton()->edit_resource(anim);
+		plugin->get_editor_interface()->edit_resource(anim);
 	}
 }
 
@@ -1721,7 +1730,6 @@ void AnimationPlayerEditorPlugin::_update_keying() {
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {
-	anim_editor->set_undo_redo(&get_undo_redo());
 	if (!p_object) {
 		return;
 	}
@@ -1734,7 +1742,7 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_editor);
+		make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
@@ -1742,8 +1750,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	add_control_to_bottom_panel(anim_editor, TTR("Animation"));
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
