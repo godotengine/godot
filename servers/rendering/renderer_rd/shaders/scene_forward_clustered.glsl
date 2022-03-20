@@ -99,6 +99,10 @@ layout(location = 8) out float dp_clip;
 
 layout(location = 9) out flat uint instance_index_interp;
 
+#if defined(MODEL_NORMAL_MATRIX_USED)
+layout(location = 10) out mat3 model_normal_matrix_interp;
+#endif
+
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #define ViewIndex gl_ViewIndex
@@ -330,6 +334,10 @@ void main() {
 	binormal_interp = binormal;
 #endif
 
+#if defined(MODEL_NORMAL_MATRIX_USED)
+	model_normal_matrix_interp = model_normal_matrix;
+#endif
+
 #ifdef MODE_RENDER_DEPTH
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -438,6 +446,10 @@ layout(location = 8) in float dp_clip;
 #endif
 
 layout(location = 9) in flat uint instance_index_interp;
+
+#if defined(MODEL_NORMAL_MATRIX_USED)
+layout(location = 10) in mat3 model_normal_matrix_interp;
+#endif
 
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
@@ -634,6 +646,9 @@ void main() {
 #endif
 #if defined(CUSTOM_IRRADIANCE_USED)
 	vec4 custom_irradiance = vec4(0.0);
+#endif
+#if defined(MODEL_NORMAL_MATRIX_USED)
+	mat3 model_normal_matrix = model_normal_matrix_interp;
 #endif
 
 	float ao = 1.0;
