@@ -300,12 +300,14 @@ TextureStorage::TextureStorage() {
 }
 
 TextureStorage::~TextureStorage() {
-	singleton = nullptr;
-
 	//def textures
 	for (int i = 0; i < DEFAULT_RD_TEXTURE_MAX; i++) {
-		texture_free(default_rd_textures[i]);
+		if (default_rd_textures[i].is_valid()) {
+			RD::get_singleton()->free(default_rd_textures[i]);
+		}
 	}
+
+	singleton = nullptr;
 }
 
 bool TextureStorage::can_create_resources_async() const {
