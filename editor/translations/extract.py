@@ -34,12 +34,12 @@ matches.sort()
 
 
 remaps = {}
-remap_re = re.compile(r'capitalize_string_remaps\["(.+)"\] = "(.+)";')
+remap_re = re.compile(r'^\t*capitalize_string_remaps\["(?P<from>.+)"\] = (String::utf8\()?"(?P<to>.+)"')
 with open("editor/editor_property_name_processor.cpp") as f:
     for line in f:
         m = remap_re.search(line)
         if m:
-            remaps[m.group(1)] = m.group(2)
+            remaps[m.group("from")] = m.group("to")
 
 
 unique_str = []
@@ -70,22 +70,25 @@ class ExtractType(enum.IntEnum):
     GROUP = 3
 
 
-# Regex "(?P<name>(?:[^"\\]|\\.)*)" creates a group named `name` that matches a string.
+# Regex "(?P<name>([^"\\]|\\.)*)" creates a group named `name` that matches a string.
 message_patterns = {
-    re.compile(r'RTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): ExtractType.TEXT,
-    re.compile(r'TTR\("(?P<message>(?:[^"\\]|\\.)*)"(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'): ExtractType.TEXT,
-    re.compile(r'TTRC\("(?P<message>(?:[^"\\]|\\.)*)"\)'): ExtractType.TEXT,
+    re.compile(r'RTR\("(?P<message>([^"\\]|\\.)*)"(, "(?P<context>([^"\\]|\\.)*)")?\)'): ExtractType.TEXT,
+    re.compile(r'TTR\("(?P<message>([^"\\]|\\.)*)"(, "(?P<context>([^"\\]|\\.)*)")?\)'): ExtractType.TEXT,
+    re.compile(r'TTRC\("(?P<message>([^"\\]|\\.)*)"\)'): ExtractType.TEXT,
     re.compile(
-        r'TTRN\("(?P<message>(?:[^"\\]|\\.)*)", "(?P<plural_message>(?:[^"\\]|\\.)*)",[^,)]+?(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'
+        r'TTRN\("(?P<message>([^"\\]|\\.)*)", "(?P<plural_message>([^"\\]|\\.)*)",[^,)]+?(, "(?P<context>([^"\\]|\\.)*)")?\)'
     ): ExtractType.TEXT,
     re.compile(
-        r'RTRN\("(?P<message>(?:[^"\\]|\\.)*)", "(?P<plural_message>(?:[^"\\]|\\.)*)",[^,)]+?(?:, "(?P<context>(?:[^"\\]|\\.)*)")?\)'
+        r'RTRN\("(?P<message>([^"\\]|\\.)*)", "(?P<plural_message>([^"\\]|\\.)*)",[^,)]+?(, "(?P<context>([^"\\]|\\.)*)")?\)'
     ): ExtractType.TEXT,
     re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
-    re.compile(r'GLOBAL_DEF(?:_RST)?\("(?P<message>[^".]+?)",'): ExtractType.PROPERTY_PATH,
-    re.compile(r'EDITOR_DEF(?:_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(r'GLOBAL_DEF(_RST)?(_NOVAL)?\("(?P<message>[^".]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(r'EDITOR_DEF(_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(
-        r'ADD_PROPERTY\(PropertyInfo\(Variant::[_A-Z0-9]+, "(?P<message>[^"]+?)"[,)]'
+        r'(ADD_PROPERTYI?|ImportOption|ExportOption)\(PropertyInfo\(Variant::[_A-Z0-9]+, "(?P<message>[^"]+?)"[,)]'
+    ): ExtractType.PROPERTY_PATH,
+    re.compile(
+        r"(?!#define )LIMPL_PROPERTY(_RANGE)?\(Variant::[_A-Z0-9]+, (?P<message>[^,]+?),"
     ): ExtractType.PROPERTY_PATH,
     re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)", "(?P<prefix>[^"]*?)"\)'): ExtractType.GROUP,
 }
