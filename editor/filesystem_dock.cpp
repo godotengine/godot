@@ -301,11 +301,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-					toolbar2_hbc->show();
-				} else {
-					toolbar2_hbc->hide();
-				}
+				toolbar2_hbc->show();
 
 				_update_tree(_compute_uncollapsed_paths());
 				file_list_vb->hide();
@@ -457,6 +453,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			// Change full tree mode.
 			_update_display_mode();
+			show();
 		} break;
 	}
 }

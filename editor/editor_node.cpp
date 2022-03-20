@@ -4288,6 +4288,7 @@ void EditorNode::_dock_make_float() {
 	_update_dock_containers();
 
 	floating_docks.push_back(dock);
+	dock->show();
 
 	_edit_current();
 }
