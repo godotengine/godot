@@ -40,15 +40,27 @@ Size2 OptionButton::get_minimum_size() const {
 	if (has_theme_icon(SNAME("arrow"))) {
 		const Size2 padding = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
 		const Size2 arrow_size = Control::get_theme_icon(SNAME("arrow"))->get_size();
+		const int arrow_margin = get_theme_constant(SNAME("arrow_margin"));
 
 		Size2 content_size = minsize - padding;
-		content_size.width += arrow_size.width + get_theme_constant(SNAME("h_separation"));
+
+		content_size.width += arrow_size.width + get_theme_constant(SNAME("h_separation")) + arrow_margin;
+
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;
 	}
 
 	return minsize;
+}
+
+int OptionButton::_get_extra_width() const {
+	int _extra_width = Button::_get_extra_width();
+	_extra_width += get_theme_constant(SNAME("arrow_margin"));
+	if (has_theme_icon(SNAME("arrow"))) {
+		_extra_width += Control::get_theme_icon(SNAME("arrow"))->get_size().width;
+	}
+	return _extra_width;
 }
 
 void OptionButton::_notification(int p_what) {

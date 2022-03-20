@@ -35,42 +35,49 @@
 
 Size2 Button::get_minimum_size() const {
 	Size2 minsize = text_buf->get_size();
-	if (clip_text) {
-		minsize.width = 0;
-	}
-
-	if (!expand_icon) {
-		Ref<Texture2D> _icon;
-		if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
-			_icon = Control::get_theme_icon(SNAME("icon"));
-		} else {
-			_icon = icon;
-		}
-
-		if (!_icon.is_null()) {
-			minsize.height = MAX(minsize.height, _icon->get_height());
-
-			if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
-				minsize.width += _icon->get_width();
-				if (!xl_text.is_empty()) {
-					minsize.width += get_theme_constant(SNAME("h_separation"));
-				}
-			} else {
-				minsize.width = MAX(minsize.width, _icon->get_width());
-			}
-		}
-	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"));
 	float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
 
 	minsize.height = MAX(font_height, minsize.height);
 
+	if (clip_text) {
+		minsize.width = 0;
+	}
+
+	Ref<Texture2D> _icon = icon;
+	if (icon.is_null()) {
+		_icon = Control::get_theme_icon(SNAME("icon"));
+	}
+
+	if (!_icon.is_null()) {
+		float _icon_width_cached;
+		if (!expand_icon) {
+			minsize.height = MAX(minsize.height, _icon->get_height());
+			_icon_width_cached = _icon->get_width();
+		} else {
+			_icon_width_cached = minsize.height / _icon->get_height() * _icon->get_width();
+		}
+
+		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
+			minsize.width += _icon_width_cached;
+			if (!xl_text.is_empty()) {
+				minsize.width += get_theme_constant(SNAME("h_separation"));
+			}
+		} else {
+			minsize.width = MAX(minsize.width, _icon_width_cached);
+		}
+	}
+
 	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
 }
 
 void Button::_set_internal_margin(Side p_side, float p_value) {
 	_internal_margin[p_side] = p_value;
+}
+
+int Button::_get_extra_width() const {
+	return 0;
 }
 
 void Button::_notification(int p_what) {
@@ -257,7 +264,8 @@ void Button::_notification(int p_what) {
 				style_offset.y = style->get_margin(SIDE_TOP);
 
 				if (expand_icon) {
-					Size2 _size = get_size() - style->get_offset() * 2;
+					Size2 _size = get_size() - style->get_minimum_size();
+					_size.width -= _get_extra_width();
 					_size.width -= get_theme_constant(SNAME("h_separation")) + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
