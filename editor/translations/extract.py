@@ -9,6 +9,32 @@ import subprocess
 import sys
 
 
+class Message:
+    __slots__ = ("msgid", "msgctxt", "comments", "locations")
+
+    def format(self):
+        lines = []
+
+        if self.comments:
+            for i, content in enumerate(self.comments):
+                prefix = "#. TRANSLATORS:" if i == 0 else "#."
+                lines.append(prefix + content)
+
+        lines.append("#: " + " ".join(self.locations))
+
+        if self.msgctxt:
+            lines.append('msgctxt "{}"'.format(self.msgctxt))
+
+        lines += [
+            'msgid "{}"'.format(self.msgid),
+            'msgstr ""',
+        ]
+
+        return "\n".join(lines)
+
+
+messages_map = {}  # (id, context) -> Message.
+
 line_nb = False
 
 for arg in sys.argv[1:]:
@@ -42,9 +68,6 @@ with open("editor/editor_property_name_processor.cpp") as f:
             remaps[m.group("from")] = m.group("to")
 
 
-unique_str = []
-unique_loc = {}
-ctx_group = {}  # Store msgctx, msg, and locations.
 main_po = """
 # LANGUAGE translation of the Godot Engine editor.
 # Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
@@ -111,90 +134,6 @@ def _process_editor_string(name):
             # fmt: on
 
     return " ".join(capitalized_parts)
-
-
-def _write_message(msgctx, msg, location):
-    global main_po
-    main_po += "#: " + location + "\n"
-    if msgctx != "":
-        main_po += 'msgctxt "' + msgctx + '"\n'
-    main_po += 'msgid "' + msg + '"\n'
-    main_po += 'msgstr ""\n\n'
-
-
-def _add_additional_location(msgctx, msg, location):
-    global main_po
-    # Add additional location to previous occurrence.
-    if msgctx != "":
-        msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
-    else:
-        msg_pos = main_po.find('\nmsgid "' + msg + '"')
-
-    if msg_pos == -1:
-        print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-    main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
-
-
-def _write_translator_comment(msgctx, msg, translator_comment):
-    if translator_comment == "":
-        return
-
-    global main_po
-    if msgctx != "":
-        msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
-    else:
-        msg_pos = main_po.find('\nmsgid "' + msg + '"')
-
-    # If it's a new message, just append comment to the end of PO file.
-    if msg_pos == -1:
-        main_po += _format_translator_comment(translator_comment, True)
-        return
-
-    # Find position just before location. Translator comment will be added there.
-    translator_comment_pos = main_po.rfind("\n\n#", 0, msg_pos) + 2
-    if translator_comment_pos - 2 == -1:
-        print("translator_comment_pos not found")
-        return
-
-    # Check if a previous translator comment already exists. If so, merge them together.
-    if main_po.find("TRANSLATORS:", translator_comment_pos, msg_pos) != -1:
-        translator_comment_pos = main_po.find("\n#:", translator_comment_pos, msg_pos) + 1
-        if translator_comment_pos == 0:
-            print('translator_comment_pos after "TRANSLATORS:" not found')
-            return
-        main_po = (
-            main_po[:translator_comment_pos]
-            + _format_translator_comment(translator_comment, False)
-            + main_po[translator_comment_pos:]
-        )
-        return
-
-    main_po = (
-        main_po[:translator_comment_pos]
-        + _format_translator_comment(translator_comment, True)
-        + main_po[translator_comment_pos:]
-    )
-
-
-def _format_translator_comment(comment, new):
-    if not comment:
-        return ""
-
-    comment_lines = comment.split("\n")
-
-    formatted_comment = ""
-    if not new:
-        for comment in comment_lines:
-            formatted_comment += "#. " + comment.strip() + "\n"
-        return formatted_comment
-
-    formatted_comment = "#. TRANSLATORS: "
-    for i in range(len(comment_lines)):
-        if i == 0:
-            formatted_comment += comment_lines[i].strip() + "\n"
-        else:
-            formatted_comment += "#. " + comment_lines[i].strip() + "\n"
-    return formatted_comment
 
 
 def _is_block_translator_comment(translator_line):
@@ -289,32 +228,19 @@ def process_file(f, fname):
 
 
 def _add_message(msg, msgctx, location, translator_comment):
-    global main_po, unique_str, unique_loc
-
-    # Write translator comment.
-    _write_translator_comment(msgctx, msg, translator_comment)
-    translator_comment = ""
-
-    if msgctx != "":
-        # If it's a new context or a new message within an existing context, then write new msgid.
-        # Else add location to existing msgid.
-        if not msgctx in ctx_group:
-            _write_message(msgctx, msg, location)
-            ctx_group[msgctx] = {msg: [location]}
-        elif not msg in ctx_group[msgctx]:
-            _write_message(msgctx, msg, location)
-            ctx_group[msgctx][msg] = [location]
-        elif not location in ctx_group[msgctx][msg]:
-            _add_additional_location(msgctx, msg, location)
-            ctx_group[msgctx][msg].append(location)
-    else:
-        if not msg in unique_str:
-            _write_message(msgctx, msg, location)
-            unique_str.append(msg)
-            unique_loc[msg] = [location]
-        elif not location in unique_loc[msg]:
-            _add_additional_location(msgctx, msg, location)
-            unique_loc[msg].append(location)
+    key = (msg, msgctx)
+    message = messages_map.get(key)
+    if not message:
+        message = Message()
+        message.msgid = msg
+        message.msgctxt = msgctx
+        message.locations = []
+        message.comments = []
+        messages_map[key] = message
+    if location not in message.locations:
+        message.locations.append(location)
+    if translator_comment and translator_comment not in message.comments:
+        message.comments.append(translator_comment)
 
 
 print("Updating the editor.pot template...")
@@ -322,6 +248,8 @@ print("Updating the editor.pot template...")
 for fname in matches:
     with open(fname, "r", encoding="utf8") as f:
         process_file(f, fname)
+
+main_po += "\n\n".join(message.format() for message in messages_map.values())
 
 with open("editor.pot", "w") as f:
     f.write(main_po)
