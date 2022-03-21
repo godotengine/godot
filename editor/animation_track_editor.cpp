@@ -1961,11 +1961,21 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			int limit = timeline->get_name_limit();
 
+			if (track % 2 == 1) {
+				// Draw a background over odd lines to make long lists of tracks easier to read.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.05));
+			}
+
+			if (hovered) {
+				// Draw hover feedback.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.1));
+			}
+
 			if (has_focus()) {
 				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 				accent.a *= 0.7;
 				// Offside so the horizontal sides aren't cutoff.
-				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
+				draw_style_box(get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles")), Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
@@ -2236,7 +2246,14 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_MOUSE_ENTER:
+			hovered = true;
+			update();
+			break;
 		case NOTIFICATION_MOUSE_EXIT:
+			hovered = false;
+			update();
+			[[fallthrough]];
 		case NOTIFICATION_DRAG_END: {
 			cancel_drop();
 		} break;

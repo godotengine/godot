@@ -171,6 +171,7 @@ class AnimationTrackEdit : public Control {
 
 	PopupMenu *menu;
 
+	bool hovered = false;
 	bool clicking_on_name = false;
 
 	void _zoom_changed();
