@@ -86,6 +86,12 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	return err;
 }
 
+List<String> EditorExportPlatformWindows::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	List<String> list;
+	list.push_back("exe");
+	return list;
+}
+
 bool EditorExportPlatformWindows::get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 	// This option is not supported by "osslsigncode", used on non-Windows host.
 	if (!OS::get_singleton()->has_feature("windows") && p_option == "codesign/identity_type") {

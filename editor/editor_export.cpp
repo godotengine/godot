@@ -1819,23 +1819,6 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	return valid;
 }
 
-List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
-	List<String> list;
-	for (const KeyValue<String, String> &E : extensions) {
-		if (p_preset->get(E.key)) {
-			list.push_back(extensions[E.key]);
-			return list;
-		}
-	}
-
-	if (extensions.has("default")) {
-		list.push_back(extensions["default"]);
-		return list;
-	}
-
-	return list;
-}
-
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -1925,10 +1908,6 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 Error EditorExportPlatformPC::sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	return OK;
-}
-
-void EditorExportPlatformPC::set_extension(const String &p_extension, const String &p_feature_key) {
-	extensions[p_feature_key] = p_extension;
 }
 
 void EditorExportPlatformPC::set_name(const String &p_name) {
