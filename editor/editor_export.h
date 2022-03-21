@@ -421,9 +421,6 @@ public:
 class EditorExportPlatformPC : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);
 
-public:
-	typedef Error (*FixUpEmbeddedPckFunc)(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
-
 private:
 	Ref<ImageTexture> logo;
 	String name;
@@ -435,9 +432,7 @@ private:
 	String debug_file_32;
 	String debug_file_64;
 
-	int chmod_flags;
-
-	FixUpEmbeddedPckFunc fixup_embedded_pck_func;
+	int chmod_flags = -1;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
@@ -471,10 +466,9 @@ public:
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);
 
-	FixUpEmbeddedPckFunc get_fixup_embedded_pck_func() const;
-	void set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_fixup_embedded_pck_func);
-
-	EditorExportPlatformPC();
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
+		return Error::OK;
+	}
 };
 
 class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {

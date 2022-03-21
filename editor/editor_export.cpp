@@ -1890,10 +1890,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 				return ERR_INVALID_PARAMETER;
 			}
 
-			FixUpEmbeddedPckFunc fixup_func = get_fixup_embedded_pck_func();
-			if (fixup_func) {
-				err = fixup_func(p_path, embedded_pos, embedded_size);
-			}
+			err = fixup_embedded_pck(p_path, embedded_pos, embedded_size);
 		}
 
 		if (err == OK && !so_files.is_empty()) {
@@ -1982,19 +1979,6 @@ int EditorExportPlatformPC::get_chmod_flags() const {
 
 void EditorExportPlatformPC::set_chmod_flags(int p_flags) {
 	chmod_flags = p_flags;
-}
-
-EditorExportPlatformPC::FixUpEmbeddedPckFunc EditorExportPlatformPC::get_fixup_embedded_pck_func() const {
-	return fixup_embedded_pck_func;
-}
-
-void EditorExportPlatformPC::set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_fixup_embedded_pck_func) {
-	fixup_embedded_pck_func = p_fixup_embedded_pck_func;
-}
-
-EditorExportPlatformPC::EditorExportPlatformPC() {
-	chmod_flags = -1;
-	fixup_embedded_pck_func = nullptr;
 }
 
 ///////////////////////
