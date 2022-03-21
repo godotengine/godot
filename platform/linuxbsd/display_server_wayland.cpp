@@ -82,7 +82,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
+		// Send to a window.
 		ERR_FAIL_COND(!wls.windows.has(event_from_window->get_window_id()));
 		Callable callable = wls.windows[event_from_window->get_window_id()].input_event_callback;
 		if (callable.is_null()) {
@@ -90,7 +90,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		}
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
-		//send to all windows
+		// Send to all windows.
 		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_null()) {
