@@ -716,6 +716,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Profiler
 	_initial_set("debugger/profiler_frame_history_size", 600);
 
+	// HTTP Proxy
+	_initial_set("network/http_proxy/host", "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
+
 	/* Extra config */
 
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Name,Path,Last Edited")
