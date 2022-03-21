@@ -55,7 +55,6 @@ void register_windows_exporter() {
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 	platform->set_name("Windows Desktop");
-	platform->set_extension("exe");
 	platform->set_release_32("windows_32_release.exe");
 	platform->set_debug_32("windows_32_debug.exe");
 	platform->set_release_64("windows_64_release.exe");

@@ -73,6 +73,27 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	return err;
 }
 
+void EditorExportPlatformLinuxBSD::set_extension(const String &p_extension, const String &p_feature_key) {
+	extensions[p_feature_key] = p_extension;
+}
+
+List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	List<String> list;
+	for (const KeyValue<String, String> &E : extensions) {
+		if (p_preset->get(E.key)) {
+			list.push_back(extensions[E.key]);
+			return list;
+		}
+	}
+
+	if (extensions.has("default")) {
+		list.push_back(extensions["default"]);
+		return list;
+	}
+
+	return list;
+}
+
 Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
 	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data
 

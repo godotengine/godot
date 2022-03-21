@@ -45,6 +45,7 @@ class EditorExportPlatformWindows : public EditorExportPlatformPC {
 public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) override;
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
