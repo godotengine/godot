@@ -385,6 +385,12 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
 
+void OptionButton::_validate_property(PropertyInfo &property) const {
+	if (property.name == "text" || property.name == "icon") {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));

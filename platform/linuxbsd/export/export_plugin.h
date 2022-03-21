@@ -42,6 +42,7 @@ class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 
 public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const override;
 };
 
 #endif
