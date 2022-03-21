@@ -525,12 +525,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 	if (pd.focused_window_id != INVALID_WINDOW_ID) {
 		if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
-			WaylandMessage msg;
-			msg.type = WaylandMessageType::INPUT_EVENT;
-
-			// We need to use Ref's custom `->` operator, so we have to necessarily
-			// dereference its pointer.
-			Ref<InputEventMouseMotion> &mm = *memnew(Ref<InputEventMouseMotion>);
+			Ref<InputEventMouseMotion> mm;
 			mm.instantiate();
 
 			// Set all pressed modifiers.
@@ -557,7 +552,11 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				mm->set_relative(pd.position - old_pd.position);
 			}
 
-			msg.data = &mm;
+			Ref<WaylandInputEventMessage> msg;
+			msg.instantiate();
+
+			msg->event = mm;
+
 			wls->message_queue.push_back(msg);
 		}
 
@@ -570,12 +569,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 						 MouseButton::WHEEL_RIGHT }) {
 				MouseButton test_button_mask = mouse_button_to_mask(test_button);
 				if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
-					WaylandMessage msg;
-					msg.type = WaylandMessageType::INPUT_EVENT;
-
-					// We need to use Ref's custom `->` operator, so we have to necessarily
-					// dereference its pointer.
-					Ref<InputEventMouseButton> &mb = *memnew(Ref<InputEventMouseButton>);
+					Ref<InputEventMouseButton> mb;
 					mb.instantiate();
 
 					// Set all pressed modifiers.
@@ -602,7 +596,11 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 						mb->set_factor(abs(pd.scroll_vector.x));
 					}
 
-					msg.data = &mb;
+					Ref<WaylandInputEventMessage> msg;
+					msg.instantiate();
+
+					msg->event = mb;
+
 					wls->message_queue.push_back(msg);
 
 					// Send an event resetting immediately the wheel key.
@@ -610,30 +608,26 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					// treat all axis events as unterminated. As such, we have to manually do
 					// it ourselves.
 					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN || test_button == MouseButton::WHEEL_LEFT || test_button == MouseButton::WHEEL_RIGHT) {
-						WaylandMessage msg_up;
-						msg_up.type = WaylandMessageType::INPUT_EVENT;
-
 						// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
 						// This works for now, despite being horrible.
-						Ref<InputEventMouseButton> &mb_up = *memnew(Ref<InputEventMouseButton>);
-						mb_up.instantiate();
+						Ref<InputEventMouseButton> wh_up;
+						wh_up.instantiate();
 
-						// Set all pressed modifiers.
-						_get_key_modifier_state(ks, mb);
-
-						mb_up->set_window_id(pd.focused_window_id);
-						mb_up->set_position(pd.position);
+						wh_up->set_window_id(pd.focused_window_id);
+						wh_up->set_position(pd.position);
 						// FIXME: We're lying!
-						mb_up->set_global_position(pd.position);
+						wh_up->set_global_position(pd.position);
 
 						// We have to unset the button to avoid it getting stuck.
 						pd.pressed_button_mask &= ~test_button_mask;
-						mb_up->set_button_mask(pd.pressed_button_mask);
+						wh_up->set_button_mask(pd.pressed_button_mask);
 
-						mb_up->set_button_index(test_button);
-						mb_up->set_pressed(false);
+						wh_up->set_button_index(test_button);
+						wh_up->set_pressed(false);
 
-						msg_up.data = &mb_up;
+						Ref<WaylandInputEventMessage> msg_up;
+						msg_up.instantiate();
+						msg_up->event = wh_up;
 						wls->message_queue.push_back(msg_up);
 					}
 				}
@@ -694,15 +688,10 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 		}
 	}
 
-	WaylandMessage msg;
-	msg.type = WaylandMessageType::WINDOW_EVENT;
-
-	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
-	msg_data->id = ks.focused_window_id;
-	msg_data->event = WINDOW_EVENT_FOCUS_IN;
-
-	msg.data = msg_data;
-
+	Ref<WaylandWindowEventMessage> msg;
+	msg.instantiate();
+	msg->id = ks.focused_window_id;
+	msg->event = WINDOW_EVENT_FOCUS_IN;
 	wls->message_queue.push_back(msg);
 }
 
@@ -711,14 +700,11 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 	KeyboardState &ks = wls->keyboard_state;
 
-	WaylandMessage msg;
-	msg.type = WaylandMessageType::WINDOW_EVENT;
+	Ref<WaylandWindowEventMessage> msg;
+	msg.instantiate();
 
-	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
-	msg_data->id = ks.focused_window_id;
-	msg_data->event = WINDOW_EVENT_FOCUS_OUT;
-
-	msg.data = msg_data;
+	msg->id = ks.focused_window_id;
+	msg->event = WINDOW_EVENT_FOCUS_OUT;
 
 	wls->message_queue.push_back(msg);
 
@@ -745,19 +731,16 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 		ks.repeating_keycode = XKB_KEYCODE_INVALID;
 	}
 
-	// We need to use Ref's custom `->` operator, so we have to necessarily
-	// dereference its pointer.
-	Ref<InputEventKey> &k = *memnew(Ref<InputEventKey>);
+	Ref<InputEventKey> k;
 	k.instantiate();
 
 	if (!_keyboard_state_configure_key_event(ks, k, xkb_keycode, pressed)) {
-		memdelete(&k);
 		return;
 	}
 
-	WaylandMessage msg;
-	msg.type = WaylandMessageType::INPUT_EVENT;
-	msg.data = &k;
+	Ref<WaylandInputEventMessage> msg;
+	msg.instantiate();
+	msg->event = k;
 	wls->message_queue.push_back(msg);
 }
 
@@ -792,18 +775,13 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 
 	WindowData *wd = (WindowData *)data;
 
+	// `wd`'s rect has alread been changed by `_xdg_toplevel_on_configure`.
 	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
 
-	WaylandMessage msg;
-	msg.type = WaylandMessageType::WINDOW_RECT;
-
-	WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
-
-	msg_data->id = wd->id;
-	msg_data->rect = wd->rect;
-
-	msg.data = msg_data;
-
+	Ref<WaylandWindowRectMessage> msg;
+	msg.instantiate();
+	msg->id = wd->id;
+	msg->rect = wd->rect;
 	wd->message_queue->push_back(msg);
 }
 
@@ -819,16 +797,10 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
 	WindowData *wd = (WindowData *)data;
 
-	WaylandMessage msg;
-	msg.type = WaylandMessageType::WINDOW_EVENT;
-
-	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
-
-	msg_data->id = wd->id;
-	msg_data->event = WINDOW_EVENT_CLOSE_REQUEST;
-
-	msg.data = msg_data;
-
+	Ref<WaylandWindowEventMessage> msg;
+	msg.instantiate();
+	msg->id = wd->id;
+	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 	wd->message_queue->push_back(msg);
 }
 
@@ -1434,74 +1406,63 @@ void DisplayServerWayland::process_events() {
 	MutexLock mutex_lock(wls.mutex);
 
 	while (wls.message_queue.front()) {
-		WaylandMessage &msg = wls.message_queue.front()->get();
+		Ref<WaylandMessage> msg = wls.message_queue.front()->get();
 
-		switch (msg.type) {
-			case WaylandMessageType::WINDOW_RECT: {
-				// TODO: Assertions.
+		Ref<WaylandWindowRectMessage> winrect_msg = msg;
 
-				WaylandWindowRectMessage *msg_data = (WaylandWindowRectMessage *)msg.data;
-
-				if (wls.windows.has(msg_data->id)) {
-					WindowData &wd = wls.windows[msg_data->id];
+		if (winrect_msg.is_valid() && wls.windows.has(winrect_msg->id)) {
+			WindowID id = winrect_msg->id;
+			Rect2i rect = winrect_msg->rect;
+			WindowData &wd = wls.windows[id];
 
 #ifdef VULKAN_ENABLED
-					if (wd.buffer_created && context_vulkan) {
-						context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
-					}
+			if (wd.buffer_created && context_vulkan) {
+				context_vulkan->window_resize(id, rect.size.width, rect.size.height);
+			}
 #endif
 
-					if (!wd.rect_changed_callback.is_null()) {
-						Variant var_rect = Variant(msg_data->rect);
-						Variant *arg = &var_rect;
+			if (!wd.rect_changed_callback.is_null()) {
+				Variant var_rect = Variant(rect);
+				Variant *arg = &var_rect;
 
-						Variant ret;
-						Callable::CallError ce;
+				Variant ret;
+				Callable::CallError ce;
 
-						wd.rect_changed_callback.call((const Variant **)&arg, 1, ret, ce);
-					}
+				wd.rect_changed_callback.call((const Variant **)&arg, 1, ret, ce);
+			}
 
-					if (msg_data->id == MAIN_WINDOW_ID) {
-						if (wls.pointer_state.wp_locked_pointer) {
-							// Since the window changes size, we have to reset its position hint, to
-							// successfully have a centered cursor on unlock.
-							wl_fixed_t unlock_x = wl_fixed_from_int(wd.rect.size.width / 2);
-							wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
+			if (id == MAIN_WINDOW_ID) {
+				if (wls.pointer_state.wp_locked_pointer) {
+					// Since the window changes size, we have to reset its position hint, to
+					// successfully have a centered cursor on unlock.
+					wl_fixed_t unlock_x = wl_fixed_from_int(rect.size.width / 2);
+					wl_fixed_t unlock_y = wl_fixed_from_int(rect.size.height / 2);
 
-							zwp_locked_pointer_v1_set_cursor_position_hint(wls.pointer_state.wp_locked_pointer, unlock_x, unlock_y);
-						}
-					}
+					zwp_locked_pointer_v1_set_cursor_position_hint(wls.pointer_state.wp_locked_pointer, unlock_x, unlock_y);
 				}
+			}
+		}
 
-				memdelete(msg_data);
-			} break;
+		Ref<WaylandWindowEventMessage> winev_msg = msg;
 
-			case WaylandMessageType::WINDOW_EVENT: {
-				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage *)msg.data;
+		if (winev_msg.is_valid() && wls.windows.has(winev_msg->id)) {
+			WindowData &wd = wls.windows[winev_msg->id];
 
-				if (wls.windows.has(msg_data->id)) {
-					WindowData &wd = wls.windows[msg_data->id];
+			if (!wd.window_event_callback.is_null()) {
+				Variant var_event = Variant(winev_msg->event);
+				Variant *arg = &var_event;
 
-					if (!wd.window_event_callback.is_null()) {
-						Variant var_event = Variant(msg_data->event);
-						Variant *arg = &var_event;
+				Variant ret;
+				Callable::CallError ce;
 
-						Variant ret;
-						Callable::CallError ce;
+				wd.window_event_callback.call((const Variant **)&arg, 1, ret, ce);
+			}
+		}
 
-						wd.window_event_callback.call((const Variant **)&arg, 1, ret, ce);
-					}
-				}
+		Ref<WaylandInputEventMessage> inputev_msg = msg;
 
-				memdelete(msg_data);
-			} break;
-
-			case WaylandMessageType::INPUT_EVENT: {
-				Ref<InputEvent> *ev = (Ref<InputEvent> *)msg.data;
-				Input::get_singleton()->parse_input_event(*ev);
-
-				memdelete(ev);
-			} break;
+		if (inputev_msg.is_valid()) {
+			Input::get_singleton()->parse_input_event(inputev_msg->event);
 		}
 
 		wls.message_queue.pop_front();
@@ -1735,7 +1696,8 @@ DisplayServerWayland::~DisplayServerWayland() {
 		wls.screens[i] = nullptr;
 	}
 
-	// Wait for all events to be handled, and in turn unblock the events thread.
+	// Wait for all Wayland events to be handled, and in turn unblock the Wayland
+	// event thread.
 	wl_display_roundtrip(wls.display);
 
 	events_thread.wait_to_finish();

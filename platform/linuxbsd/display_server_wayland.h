@@ -65,28 +65,29 @@
 class DisplayServerWayland : public DisplayServer {
 	// Wayland stuff.
 
-	// TODO: Add the rest of the events.
-	enum class WaylandMessageType {
-		WINDOW_RECT, // WaylandWindowRectMessage
-		WINDOW_EVENT, // WaylandWindowEventMessage
-		INPUT_EVENT, // Ref<InputEvent>
-	};
-
 	// Messages used for sending stuff to the main thread to be dispatched there.
-	struct WaylandMessage {
-		WaylandMessageType type;
-		void *data;
+	class WaylandMessage : public RefCounted {
+	public:
+		WaylandMessage() {}
+		virtual ~WaylandMessage() = default;
 	};
 
 	// WaylandMessage data for window rect changes.
-	struct WaylandWindowRectMessage {
+	class WaylandWindowRectMessage : public WaylandMessage {
+	public:
 		WindowID id;
 		Rect2i rect;
 	};
 
-	struct WaylandWindowEventMessage {
+	class WaylandWindowEventMessage : public WaylandMessage {
+	public:
 		WindowID id;
 		WindowEvent event;
+	};
+
+	class WaylandInputEventMessage : public WaylandMessage {
+	public:
+		Ref<InputEvent> event;
 	};
 
 	struct WaylandGlobals {
@@ -128,7 +129,7 @@ class DisplayServerWayland : public DisplayServer {
 
 		// TODO: Handle more cleanly.
 		WindowID id;
-		List<WaylandMessage> *message_queue;
+		List<Ref<WaylandMessage>> *message_queue;
 	};
 
 	struct ScreenData {
@@ -238,7 +239,7 @@ class DisplayServerWayland : public DisplayServer {
 
 		SafeFlag events_thread_done;
 
-		List<WaylandMessage> message_queue;
+		List<Ref<WaylandMessage>> message_queue;
 	};
 
 	WaylandState wls;
