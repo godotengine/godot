@@ -30,6 +30,7 @@
 
 #include "csg_shape.h"
 
+#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
@@ -53,6 +54,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 		set_collision_layer(collision_layer);
 		set_collision_mask(collision_mask);
+
 		_make_dirty(); //force update
 	} else {
 		PhysicsServer3D::get_singleton()->free(root_collision_instance);
@@ -441,6 +443,7 @@ void CSGShape3D::_update_shape() {
 	set_base(root_mesh->get_rid());
 
 	_update_collision_faces();
+	_update_physics_params();
 }
 
 void CSGShape3D::_update_collision_faces() {
@@ -464,6 +467,20 @@ void CSGShape3D::_update_collision_faces() {
 		}
 
 		root_collision_shape->set_faces(physics_faces);
+	}
+}
+
+void CSGShape3D::_update_physics_params() {
+	if (!is_root_shape() || !use_collision) {
+		return;
+	}
+
+	if (physics_material_override.is_null()) {
+		PhysicsServer3D::get_singleton()->body_set_param(root_collision_instance, PhysicsServer3D::BODY_PARAM_BOUNCE, 0);
+		PhysicsServer3D::get_singleton()->body_set_param(root_collision_instance, PhysicsServer3D::BODY_PARAM_FRICTION, 1);
+	} else {
+		PhysicsServer3D::get_singleton()->body_set_param(root_collision_instance, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
+		PhysicsServer3D::get_singleton()->body_set_param(root_collision_instance, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
 }
 
@@ -584,8 +601,27 @@ bool CSGShape3D::is_calculating_tangents() const {
 	return calculate_tangents;
 }
 
+void CSGShape3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+	if (physics_material_override.is_valid()) {
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &CSGShape3D::_update_physics_params))) {
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CSGShape3D::_update_physics_params));
+		}
+	}
+
+	physics_material_override = p_physics_material_override;
+
+	if (physics_material_override.is_valid()) {
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CSGShape3D::_update_physics_params));
+	}
+	_update_physics_params();
+}
+
+Ref<PhysicsMaterial> CSGShape3D::get_physics_material_override() const {
+	return physics_material_override;
+}
+
 void CSGShape3D::_validate_property(PropertyInfo &property) const {
-	bool is_collision_prefixed = property.name.begins_with("collision_");
+	bool is_collision_prefixed = property.name.begins_with("collision_") || property.name.begins_with("physics_material");
 	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -632,6 +668,9 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &CSGShape3D::set_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CSGShape3D::get_collision_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &CSGShape3D::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &CSGShape3D::get_physics_material_override);
+
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape3D::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape3D::is_calculating_tangents);
 
@@ -645,6 +684,7 @@ void CSGShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
