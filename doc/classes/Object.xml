@@ -44,7 +44,8 @@
 		<method name="_init" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when the object is initialized.
+				Called when the object is initialized in memory. Can be defined to take in parameters, that are passed in when constructing.
+				[b]Note:[/b] If [method _init] is defined with required parameters, then explicit construction is the only valid means of creating an Object of the class. If any other means (such as [method PackedScene.instance]) is used, then initialization will fail.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
