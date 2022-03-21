@@ -2440,6 +2440,13 @@ ProjectManager::ProjectManager() {
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
 	set_anchors_and_margins_preset(Control::PRESET_WIDE);
+
+	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on OS.
+		// Swap on means OK first.
+		AcceptDialog::set_swap_ok_cancel(swap_cancel_ok == 2);
+	}
+
 	set_theme(create_custom_theme());
 
 	gui_base = memnew(Control);
