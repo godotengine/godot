@@ -328,9 +328,6 @@ void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *
 
 	sd->make.parse_utf8(make);
 	sd->model.parse_utf8(model);
-
-	// DEBUG
-	print_line("output geometry", x, y, physical_width, physical_height, subpixel, make, model, transform);
 }
 
 void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
@@ -340,9 +337,6 @@ void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_o
 	sd->size.height = height;
 
 	sd->refresh_rate = refresh ? refresh / 1000.0f : -1;
-
-	// DEBUG
-	print_line("output mode", flags, width, height, refresh);
 }
 
 void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
