@@ -83,7 +83,7 @@ void AudioDriverOpenSL::_buffer_callbacks(
 AudioDriverOpenSL *AudioDriverOpenSL::s_ad = nullptr;
 
 const char *AudioDriverOpenSL::get_name() const {
-	return "Android";
+	return "opensl";
 }
 
 Error AudioDriverOpenSL::init() {

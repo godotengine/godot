@@ -56,7 +56,7 @@ class AudioDriverDummy : public AudioDriver {
 
 public:
 	const char *get_name() const {
-		return "Dummy";
+		return "dummy";
 	};
 
 	virtual Error init();

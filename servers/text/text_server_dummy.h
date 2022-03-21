@@ -41,7 +41,7 @@ class TextServerDummy : public TextServerExtension {
 
 public:
 	virtual String get_name() const override {
-		return "Dummy";
+		return "dummy";
 	}
 };
 

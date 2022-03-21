@@ -225,8 +225,8 @@ void AudioDriverManager::initialize(int p_driver) {
 		}
 	}
 
-	if (driver_count > 1 && String(AudioDriver::get_singleton()->get_name()) == "Dummy") {
-		WARN_PRINT("All audio drivers failed, falling back to the dummy driver.");
+	if (driver_count > 1 && String(AudioDriver::get_singleton()->get_name()) == "dummy") {
+		WARN_PRINT("All audio drivers failed. Falling back to the dummy driver.");
 	}
 }
 

@@ -95,7 +95,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 
 public:
 	const char *get_name() const {
-		return "PulseAudio";
+		return "pulseaudio";
 	};
 
 	virtual Error init();

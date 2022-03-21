@@ -88,7 +88,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 public:
 	const char *get_name() const {
-		return "CoreAudio";
+		return "coreaudio";
 	};
 
 	virtual Error init();

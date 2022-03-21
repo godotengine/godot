@@ -95,7 +95,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 public:
 	virtual const char *get_name() const {
-		return "WASAPI";
+		return "wasapi";
 	}
 
 	virtual Error init();

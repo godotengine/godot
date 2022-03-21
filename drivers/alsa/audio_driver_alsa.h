@@ -70,7 +70,7 @@ class AudioDriverALSA : public AudioDriver {
 
 public:
 	const char *get_name() const {
-		return "ALSA";
+		return "alsa";
 	};
 
 	virtual Error init();

@@ -70,7 +70,7 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 }
 
 String DisplayServerAndroid::get_name() const {
-	return "Android";
+	return "android";
 }
 
 void DisplayServerAndroid::clipboard_set(const String &p_text) {

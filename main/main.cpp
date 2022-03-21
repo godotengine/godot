@@ -686,8 +686,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 
 				if (!found) {
-					OS::get_singleton()->print("Unknown audio driver '%s', aborting.\nValid options are ",
-							audio_driver.utf8().get_data());
+					// Audio driver options are generally OS-specific.
+					OS::get_singleton()->print("Unknown audio driver '%s', aborting.\nValid options on %s are ",
+							audio_driver.utf8().get_data(), OS::get_singleton()->get_name().utf8().get_data());
 
 					for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
 						if (i == AudioDriverManager::get_driver_count() - 1) {
@@ -731,8 +732,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 
 				if (!found) {
-					OS::get_singleton()->print("Unknown display driver '%s', aborting.\nValid options are ",
-							display_driver.utf8().get_data());
+					// Display driver options are generally OS-specific.
+					OS::get_singleton()->print("Unknown display driver '%s', aborting.\nValid options on %s are ",
+							display_driver.utf8().get_data(), OS::get_singleton()->get_name().utf8().get_data());
 
 					for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 						if (i == DisplayServer::get_create_function_count() - 1) {
@@ -892,7 +894,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (I->get() == "--headless") { // enable headless mode (no audio, no rendering).
 
-			audio_driver = "Dummy";
+			audio_driver = "dummy";
 			display_driver = "headless";
 
 		} else if (I->get() == "--profiling") { // enable profiling

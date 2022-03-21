@@ -34,7 +34,7 @@
 #include "core/os/os.h"
 
 const char *AudioDriverXAudio2::get_name() const {
-	return "XAudio2";
+	return "xaudio2";
 }
 
 Error AudioDriverXAudio2::init() {
