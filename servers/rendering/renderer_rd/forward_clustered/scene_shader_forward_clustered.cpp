@@ -33,6 +33,7 @@
 #include "core/math/math_defs.h"
 #include "render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
 using namespace RendererSceneRenderImplementation;
 
@@ -384,13 +385,13 @@ void SceneShaderForwardClustered::ShaderData::get_param_list(List<PropertyInfo> 
 	}
 }
 
-void SceneShaderForwardClustered::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
+void SceneShaderForwardClustered::ShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
-		RendererStorage::InstanceShaderParam p;
+		RendererMaterialStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E.value);
 		p.info.name = E.key; //supply name
 		p.index = E.value.instance_index;
@@ -445,7 +446,7 @@ SceneShaderForwardClustered::ShaderData::~ShaderData() {
 	}
 }
 
-RendererStorageRD::ShaderData *SceneShaderForwardClustered::_create_shader_func() {
+RendererRD::ShaderData *SceneShaderForwardClustered::_create_shader_func() {
 	ShaderData *shader_data = memnew(ShaderData);
 	singleton->shader_list.add(&shader_data->shader_list_element);
 	return shader_data;
@@ -469,7 +470,7 @@ SceneShaderForwardClustered::MaterialData::~MaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-RendererStorageRD::MaterialData *SceneShaderForwardClustered::_create_material_func(ShaderData *p_shader) {
+RendererRD::MaterialData *SceneShaderForwardClustered::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
@@ -484,17 +485,20 @@ SceneShaderForwardClustered::SceneShaderForwardClustered() {
 }
 
 SceneShaderForwardClustered::~SceneShaderForwardClustered() {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	RD::get_singleton()->free(default_vec4_xform_buffer);
 	RD::get_singleton()->free(shadow_sampler);
 
-	storage->free(overdraw_material_shader);
-	storage->free(default_shader);
+	material_storage->shader_free(overdraw_material_shader);
+	material_storage->shader_free(default_shader);
 
-	storage->free(overdraw_material);
-	storage->free(default_material);
+	material_storage->material_free(overdraw_material);
+	material_storage->material_free(default_material);
 }
 
 void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const String p_defines) {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	storage = p_storage;
 
 	{
@@ -524,8 +528,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		}
 	}
 
-	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_3D, _create_shader_funcs);
-	storage->material_set_data_request_function(RendererStorageRD::SHADER_TYPE_3D, _create_material_funcs);
+	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_shader_funcs);
+	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_material_funcs);
 
 	{
 		//shader compiler
@@ -710,9 +714,9 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 	{
 		//default material and shader
-		default_shader = storage->shader_allocate();
-		storage->shader_initialize(default_shader);
-		storage->shader_set_code(default_shader, R"(
+		default_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(default_shader);
+		material_storage->shader_set_code(default_shader, R"(
 // Default 3D material shader (clustered).
 
 shader_type spatial;
@@ -727,11 +731,11 @@ void fragment() {
 	METALLIC = 0.2;
 }
 )");
-		default_material = storage->material_allocate();
-		storage->material_initialize(default_material);
-		storage->material_set_shader(default_material, default_shader);
+		default_material = material_storage->material_allocate();
+		material_storage->material_initialize(default_material);
+		material_storage->material_set_shader(default_material, default_shader);
 
-		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
+		MaterialData *md = (MaterialData *)material_storage->material_get_data(default_material, RendererRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
 		default_shader_sdfgi_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_DEPTH_PASS_WITH_SDF);
 
@@ -740,10 +744,10 @@ void fragment() {
 	}
 
 	{
-		overdraw_material_shader = storage->shader_allocate();
-		storage->shader_initialize(overdraw_material_shader);
+		overdraw_material_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(overdraw_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
-		storage->shader_set_code(overdraw_material_shader, R"(
+		material_storage->shader_set_code(overdraw_material_shader, R"(
 // 3D editor Overdraw debug draw mode shader (clustered).
 
 shader_type spatial;
@@ -755,11 +759,11 @@ void fragment() {
 	ALPHA = 0.1;
 }
 )");
-		overdraw_material = storage->material_allocate();
-		storage->material_initialize(overdraw_material);
-		storage->material_set_shader(overdraw_material, overdraw_material_shader);
+		overdraw_material = material_storage->material_allocate();
+		material_storage->material_initialize(overdraw_material);
+		material_storage->material_set_shader(overdraw_material, overdraw_material_shader);
 
-		MaterialData *md = (MaterialData *)storage->material_get_data(overdraw_material, RendererStorageRD::SHADER_TYPE_3D);
+		MaterialData *md = (MaterialData *)material_storage->material_get_data(overdraw_material, RendererRD::SHADER_TYPE_3D);
 		overdraw_material_shader_ptr = md->shader_data;
 		overdraw_material_uniform_set = md->uniform_set;
 	}

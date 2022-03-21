@@ -213,14 +213,13 @@ public:
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
 
-//from now on, calls forwarded to this singleton
+	/* SHADER API */
+
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
-
-	/* SHADER API */
+#define ServerName RendererMaterialStorage
+#define server_name RSG::material_storage
 
 	FUNCRIDSPLIT(shader)
 
@@ -248,6 +247,13 @@ public:
 	FUNC2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
+
+//from now on, calls forwarded to this singleton
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
 		RID mesh = RSG::storage->mesh_allocate();
@@ -870,8 +876,8 @@ public:
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererMaterialStorage
+#define server_name RSG::material_storage
 
 	FUNC3(global_variable_add, const StringName &, GlobalVariableType, const Variant &)
 	FUNC1(global_variable_remove, const StringName &)

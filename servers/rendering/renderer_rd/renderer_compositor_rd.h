@@ -41,6 +41,7 @@
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
@@ -49,6 +50,7 @@ protected:
 	UniformSetCacheRD *uniform_set_cache;
 	RendererCanvasRenderRD *canvas;
 	RendererRD::CanvasTextureStorage *canvas_texture_storage;
+	RendererRD::MaterialStorage *material_storage;
 	RendererRD::TextureStorage *texture_storage;
 	RendererRD::DecalAtlasStorage *decal_atlas_storage;
 	RendererStorageRD *storage;
@@ -95,8 +97,9 @@ protected:
 
 public:
 	RendererCanvasTextureStorage *get_canvas_texture_storage() { return canvas_texture_storage; }
-	RendererTextureStorage *get_texture_storage() { return texture_storage; }
 	RendererDecalAtlasStorage *get_decal_atlas_storage() { return decal_atlas_storage; }
+	RendererMaterialStorage *get_material_storage() { return material_storage; };
+	RendererTextureStorage *get_texture_storage() { return texture_storage; };
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
