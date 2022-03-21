@@ -105,7 +105,8 @@ public:
 		enum DepthDraw {
 			DEPTH_DRAW_DISABLED,
 			DEPTH_DRAW_OPAQUE,
-			DEPTH_DRAW_ALWAYS
+			DEPTH_DRAW_ALWAYS,
+			DEPTH_DRAW_ALPHA_PREPASS
 		};
 
 		enum DepthTest {
@@ -152,6 +153,8 @@ public:
 		DepthDraw depth_draw;
 		DepthTest depth_test;
 
+		int blend_mode;
+
 		bool uses_point_size;
 		bool uses_alpha;
 		bool uses_blend_alpha;
@@ -173,6 +176,9 @@ public:
 		bool uses_time;
 		bool writes_modelview_or_projection;
 		bool uses_world_coordinates;
+
+		bool uses_fragment_time;
+		bool uses_vertex_time;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;

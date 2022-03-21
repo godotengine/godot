@@ -51,7 +51,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	ShaderCompiler::GeneratedCode gen_code;
 
-	int blend_mode = BLEND_MODE_MIX;
+	blend_mode = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
 	int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	int cull = CULL_BACK;
@@ -97,6 +97,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_never"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_DISABLED);
 	actions.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_OPAQUE);
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
+	actions.render_mode_values["depth_draw_alpha_prepass"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALPHA_PREPASS);
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
 
@@ -170,6 +171,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	ubo_offsets = gen_code.uniform_offsets;
 	texture_uniforms = gen_code.texture_uniforms;
 
+	uses_fragment_time = gen_code.uses_fragment_time;
+	uses_vertex_time = gen_code.uses_vertex_time;
 	//blend modes
 
 	// if any form of Alpha Antialiasing is enabled, set the blend mode to alpha to coverage
@@ -408,11 +411,11 @@ bool SceneShaderForwardClustered::ShaderData::is_param_texture(const StringName 
 }
 
 bool SceneShaderForwardClustered::ShaderData::is_animated() const {
-	return false;
+	return (uses_discard && uses_fragment_time) || (uses_vertex && uses_vertex_time);
 }
 
 bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
-	return false;
+	return (blend_mode == BLEND_MODE_MIX) && (!(uses_alpha && uses_alpha_clip) || (depth_draw == DEPTH_DRAW_ALPHA_PREPASS));
 }
 
 Variant SceneShaderForwardClustered::ShaderData::get_default_parameter(const StringName &p_parameter) const {
