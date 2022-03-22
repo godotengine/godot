@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AStar3D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An implementation of A* to find the shortest paths among connected points in space.
 	</brief_description>
 	<description>
 		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting short paths among vertices (points), passing through a given set of edges (segments). It enjoys widespread use due to its performance and accuracy. Godot's A* implementation uses points in three-dimensional space and Euclidean distances by default.
 		You must add points manually with [method add_point] and create segments manually with [method connect_points]. Then you can test if there is a path between two points with the [method are_points_connected] function, get a path containing indices by [method get_id_path], or one containing actual coordinates with [method get_point_path].
-		It is also possible to use non-Euclidean distances. To do so, create a class that extends [code]AStar[/code] and override methods [method _compute_cost] and [method _estimate_cost]. Both take two indices and return a length, as is shown in the following example.
+		It is also possible to use non-Euclidean distances. To do so, create a class that extends [code]AStar3D[/code] and override methods [method _compute_cost] and [method _estimate_cost]. Both take two indices and return a length, as is shown in the following example.
 		[codeblocks]
 		[gdscript]
 		class MyAStar:
-		    extends AStar
+		    extends AStar3D
 
 		    func _compute_cost(u, v):
 		        return abs(u - v)
@@ -19,7 +19,7 @@
 		        return min(0, abs(u - v) - 1)
 		[/gdscript]
 		[csharp]
-		public class MyAStar : AStar
+		public class MyAStar : AStar3D
 		{
 		    public override float _ComputeCost(int u, int v)
 		    {
@@ -44,7 +44,7 @@
 			<argument index="1" name="to_id" type="int" />
 			<description>
 				Called when computing the cost between two connected points.
-				Note that this function is hidden in the default [code]AStar[/code] class.
+				Note that this function is hidden in the default [code]AStar3D[/code] class.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual const">
@@ -53,7 +53,7 @@
 			<argument index="1" name="to_id" type="int" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
-				Note that this function is hidden in the default [code]AStar[/code] class.
+				Note that this function is hidden in the default [code]AStar3D[/code] class.
 			</description>
 		</method>
 		<method name="add_point">
@@ -66,11 +66,11 @@
 				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
 				[codeblocks]
 				[gdscript]
-				var astar = AStar.new()
+				var astar = AStar3D.new()
 				astar.add_point(1, Vector3(1, 0, 0), 4) # Adds the point (1, 0, 0) with weight_scale 4 and id 1
 				[/gdscript]
 				[csharp]
-				var astar = new AStar();
+				var astar = new AStar3D();
 				astar.AddPoint(1, new Vector3(1, 0, 0), 4); // Adds the point (1, 0, 0) with weight_scale 4 and id 1
 				[/csharp]
 				[/codeblocks]
@@ -101,13 +101,13 @@
 				Creates a segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is allowed, not the reverse direction.
 				[codeblocks]
 				[gdscript]
-				var astar = AStar.new()
+				var astar = AStar3D.new()
 				astar.add_point(1, Vector3(1, 1, 0))
 				astar.add_point(2, Vector3(0, 5, 0))
 				astar.connect_points(1, 2, false)
 				[/gdscript]
 				[csharp]
-				var astar = new AStar();
+				var astar = new AStar3D();
 				astar.AddPoint(1, new Vector3(1, 1, 0));
 				astar.AddPoint(2, new Vector3(0, 5, 0));
 				astar.ConnectPoints(1, 2, false);
@@ -146,14 +146,14 @@
 				Returns the closest position to [code]to_position[/code] that resides inside a segment between two connected points.
 				[codeblocks]
 				[gdscript]
-				var astar = AStar.new()
+				var astar = AStar3D.new()
 				astar.add_point(1, Vector3(0, 0, 0))
 				astar.add_point(2, Vector3(0, 5, 0))
 				astar.connect_points(1, 2)
 				var res = astar.get_closest_position_in_segment(Vector3(3, 3, 0)) # Returns (0, 3, 0)
 				[/gdscript]
 				[csharp]
-				var astar = new AStar();
+				var astar = new AStar3D();
 				astar.AddPoint(1, new Vector3(0, 0, 0));
 				astar.AddPoint(2, new Vector3(0, 5, 0));
 				astar.ConnectPoints(1, 2);
@@ -168,10 +168,10 @@
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
 			<description>
-				Returns an array with the IDs of the points that form the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the IDs of the points that form the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
 				[codeblocks]
 				[gdscript]
-				var astar = AStar.new()
+				var astar = AStar3D.new()
 				astar.add_point(1, Vector3(0, 0, 0))
 				astar.add_point(2, Vector3(0, 1, 0), 1) # Default weight is 1
 				astar.add_point(3, Vector3(1, 1, 0))
@@ -185,7 +185,7 @@
 				var res = astar.get_id_path(1, 3) # Returns [1, 2, 3]
 				[/gdscript]
 				[csharp]
-				var astar = new AStar();
+				var astar = new AStar3D();
 				astar.AddPoint(1, new Vector3(0, 0, 0));
 				astar.AddPoint(2, new Vector3(0, 1, 0), 1); // Default weight is 1
 				astar.AddPoint(3, new Vector3(1, 1, 0));
@@ -213,7 +213,7 @@
 				Returns an array with the IDs of the points that form the connection with the given point.
 				[codeblocks]
 				[gdscript]
-				var astar = AStar.new()
+				var astar = AStar3D.new()
 				astar.add_point(1, Vector3(0, 0, 0))
 				astar.add_point(2, Vector3(0, 1, 0))
 				astar.add_point(3, Vector3(1, 1, 0))
@@ -225,7 +225,7 @@
 				var neighbors = astar.get_point_connections(1) # Returns [2, 3]
 				[/gdscript]
 				[csharp]
-				var astar = new AStar();
+				var astar = new AStar3D();
 				astar.AddPoint(1, new Vector3(0, 0, 0));
 				astar.AddPoint(2, new Vector3(0, 1, 0));
 				astar.AddPoint(3, new Vector3(1, 1, 0));
@@ -255,7 +255,7 @@
 			<argument index="0" name="from_id" type="int" />
 			<argument index="1" name="to_id" type="int" />
 			<description>
-				Returns an array with the points that are in the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the points that are in the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
