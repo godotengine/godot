@@ -130,6 +130,7 @@ void Tween::stop() {
 	started = false;
 	running = false;
 	dead = false;
+	total_time = 0;
 }
 
 void Tween::pause() {
@@ -272,12 +273,14 @@ bool Tween::step(float p_delta) {
 		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
+		total_time = 0;
 		start_tweeners();
 		started = true;
 	}
 
 	float rem_delta = p_delta * speed_scale;
 	bool step_active = false;
+	total_time += rem_delta;
 
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
@@ -344,6 +347,10 @@ Node *Tween::get_bound_node() const {
 	} else {
 		return nullptr;
 	}
+}
+
+float Tween::get_total_time() const {
+	return total_time;
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
@@ -624,6 +631,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
+	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
