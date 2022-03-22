@@ -225,7 +225,6 @@ def configure(env):
     env.ParseConfig("pkg-config xrandr --cflags --libs")
     env.ParseConfig("pkg-config xrender --cflags --libs")
     env.ParseConfig("pkg-config xi --cflags --libs")
-    env.ParseConfig("pkg-config alsa --cflags --libs")
     env.ParseConfig("pkg-config xfixes --cflags --libs")
 
 
@@ -321,6 +320,7 @@ def configure(env):
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+        env.ParseConfig("pkg-config alsa --cflags --libs")
     else:
         print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
@@ -343,6 +343,7 @@ def configure(env):
         if env["udev"]:
             if os.system("pkg-config --exists libudev") == 0:  # 0 means found
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
+                env.ParseConfig("pkg-config libudev --cflags --libs")
             else:
                 print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
