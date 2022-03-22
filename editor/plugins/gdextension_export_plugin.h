@@ -81,9 +81,9 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 			}
 			add_shared_object(library_path, tags);
 
-			if (p_features.has("iOS") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
+			if ((p_features.has("iOS") || p_features.has("tvOS")) && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
 				String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
-										 "extern void add_ios_init_callback(void (*cb)());\n"
+										 "extern void add_$PLATFORM_init_callback(void (*cb)());\n"
 										 "\n"
 										 "extern \"C\" void $ENTRY();\n"
 										 "void $ENTRY_init() {\n"
@@ -91,15 +91,22 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 										 "}\n"
 										 "struct $ENTRY_struct {\n"
 										 "  $ENTRY_struct() {\n"
-										 "    add_ios_init_callback($ENTRY_init);\n"
+										 "    add_$PLATFORM_init_callback($ENTRY_init);\n"
 										 "  }\n"
 										 "};\n"
 										 "$ENTRY_struct $ENTRY_struct_instance;\n\n";
 				additional_code = additional_code.replace("$ENTRY", entry_symbol);
-				add_ios_cpp_code(additional_code);
-
 				String linker_flags = "-Wl,-U,_" + entry_symbol;
-				add_ios_linker_flags(linker_flags);
+
+				if (p_features.has("iOS")) {
+					additional_code = additional_code.replace("$PLATFORM", "ios");
+					add_ios_cpp_code(additional_code);
+					add_ios_linker_flags(linker_flags);
+				} else if (p_features.has("tvOS")) {
+					additional_code = additional_code.replace("$PLATFORM", "tvos");
+					add_tvos_cpp_code(additional_code);
+					add_tvos_linker_flags(linker_flags);
+				}
 			}
 			break;
 		}

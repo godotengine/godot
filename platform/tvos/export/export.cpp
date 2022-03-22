@@ -1069,7 +1069,7 @@ Error EditorExportPlatformTVOS::export_project(const Ref<EditorExportPreset> &p_
 	}
 	String pack_path = dest_dir + binary_name + ".pck";
 	Vector<SharedObject> libraries;
-	Error err = save_pack(p_preset, pack_path, &libraries);
+	Error err = save_pack(p_preset, p_debug, pack_path, &libraries);
 	if (err)
 		return err;
 
