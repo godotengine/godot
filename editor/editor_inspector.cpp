@@ -2455,6 +2455,13 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
+	bool is_instance_node = false;
+
+	Node *node = Object::cast_to<Node>(object);
+	if (node) {
+		is_instance_node = !node->get_scene_file_path().is_empty() && node->get_owner() != nullptr;
+	}
+
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
@@ -2582,6 +2589,10 @@ void EditorInspector::update_tree() {
 
 		} else if (!(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			// Ignore properties that are not supposed to be in the inspector.
+			continue;
+
+		} else if (is_instance_node && p.usage & PROPERTY_USAGE_NO_INSTANCE_STATE) {
+			// Ignore if the object is instance node and usage are no instance state.
 			continue;
 		}
 
