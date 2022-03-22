@@ -120,6 +120,8 @@ private:
 
 	float transparency = 0.0f;
 
+	float depth_offset = 0;
+
 	float lod_bias = 1.0;
 
 	mutable HashMap<StringName, Variant> instance_uniforms;
@@ -169,6 +171,9 @@ public:
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
+
+	void set_depth_offset(float p_depth_offset);
+	float get_depth_offset() const;
 
 	void set_lod_bias(float p_bias);
 	float get_lod_bias() const;

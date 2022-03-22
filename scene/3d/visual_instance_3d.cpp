@@ -309,6 +309,15 @@ float GeometryInstance3D::get_extra_cull_margin() const {
 	return extra_cull_margin;
 }
 
+void GeometryInstance3D::set_depth_offset(float p_depth_offset) {
+	depth_offset = p_depth_offset;
+	RenderingServer::get_singleton()->instance_set_depth_offset(get_instance(), depth_offset);
+}
+
+float GeometryInstance3D::get_depth_offset() const {
+	return depth_offset;
+}
+
 void GeometryInstance3D::set_lod_bias(float p_bias) {
 	ERR_FAIL_COND(p_bias < 0.0);
 	lod_bias = p_bias;
@@ -440,6 +449,9 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
 
+	ClassDB::bind_method(D_METHOD("set_depth_offset", "depth_offset"), &GeometryInstance3D::set_depth_offset);
+	ClassDB::bind_method(D_METHOD("get_depth_offset"), &GeometryInstance3D::get_depth_offset);
+
 	ClassDB::bind_method(D_METHOD("set_lightmap_scale", "scale"), &GeometryInstance3D::set_lightmap_scale);
 	ClassDB::bind_method(D_METHOD("get_lightmap_scale"), &GeometryInstance3D::get_lightmap_scale);
 
@@ -459,6 +471,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_offset"), "set_depth_offset", "get_depth_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
 	ADD_GROUP("Global Illumination", "gi_");

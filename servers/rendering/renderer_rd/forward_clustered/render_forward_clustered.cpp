@@ -1319,7 +1319,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_voxelgi);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
-	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
+	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority(RenderList::TransparencySortMode::Z_AXIS);
 	_fill_instance_data(RENDER_LIST_OPAQUE, p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr);
 	_fill_instance_data(RENDER_LIST_ALPHA);
 
@@ -2967,6 +2967,22 @@ void RenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p
 	ginstance->non_uniform_scale = max_scale >= 0.0 && (min_scale / max_scale) < 0.9;
 
 	ginstance->lod_model_scale = max_scale;
+}
+void RenderForwardClustered::geometry_instance_set_depth_offset(GeometryInstance *p_geometry_instance, float p_depth_offset) {
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
+	ERR_FAIL_COND(!ginstance);
+	ginstance->depth_offset = p_depth_offset;
+}
+void RenderForwardClustered::geometry_instance_set_sort_group(GeometryInstance *p_geometry_instance, uint32_t p_sort_group, int8_t p_sort_group_order) {
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
+	ERR_FAIL_COND(!ginstance);
+	ginstance->sort_group = p_sort_group;
+	ginstance->sort_group_order = p_sort_group_order;
+}
+void RenderForwardClustered::geometry_instance_set_sort_order(GeometryInstance *p_geometry_instance, int8_t p_sort_order) {
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
+	ERR_FAIL_COND(!ginstance);
+	ginstance->sort_order = p_sort_order;
 }
 void RenderForwardClustered::geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);

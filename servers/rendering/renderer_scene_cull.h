@@ -391,6 +391,11 @@ public:
 
 		Transform3D transform;
 
+		float depth_offset = 0;
+		uint32_t sort_group = 0;
+		int8_t sort_group_order = 0;
+		int8_t sort_order = 0;
+
 		float lod_bias;
 
 		bool ignore_occlusion_culling;
@@ -930,6 +935,9 @@ public:
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
+	virtual void instance_set_depth_offset(RID p_instance, float p_depth_offset);
+	virtual void instance_set_sort_group(RID p_instance, uint32_t p_sort_group, int8_t p_sort_group_order);
+	virtual void instance_set_sort_order(RID p_instance, int8_t p_sort_order);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);

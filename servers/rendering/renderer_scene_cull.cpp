@@ -639,6 +639,9 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				scene_render->geometry_instance_set_material_overlay(geom->geometry_instance, instance->material_overlay);
 				scene_render->geometry_instance_set_surface_materials(geom->geometry_instance, instance->materials);
 				scene_render->geometry_instance_set_transform(geom->geometry_instance, instance->transform, instance->aabb, instance->transformed_aabb);
+				scene_render->geometry_instance_set_depth_offset(geom->geometry_instance, instance->depth_offset);
+				scene_render->geometry_instance_set_sort_group(geom->geometry_instance, instance->sort_group, instance->sort_group_order);
+				scene_render->geometry_instance_set_sort_order(geom->geometry_instance, instance->sort_order);
 				scene_render->geometry_instance_set_layer_mask(geom->geometry_instance, instance->layer_mask);
 				scene_render->geometry_instance_set_lod_bias(geom->geometry_instance, instance->lod_bias);
 				scene_render->geometry_instance_set_use_baked_light(geom->geometry_instance, instance->baked_light);
@@ -871,6 +874,43 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 
 #endif
 	instance->transform = p_transform;
+	_instance_queue_update(instance, true);
+}
+
+void RendererSceneCull::instance_set_depth_offset(RID p_instance, float p_depth_offset) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if (instance->depth_offset == p_depth_offset) {
+		return;
+	}
+
+	instance->depth_offset = p_depth_offset;
+	_instance_queue_update(instance, true);
+}
+
+void RendererSceneCull::instance_set_sort_group(RID p_instance, uint32_t p_sort_group, int8_t p_sort_group_order) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if (instance->sort_group == p_sort_group && instance->sort_group_order == p_sort_group_order) {
+		return;
+	}
+
+	instance->sort_group = p_sort_group;
+	instance->sort_group_order = p_sort_group_order;
+	_instance_queue_update(instance, true);
+}
+
+void RendererSceneCull::instance_set_sort_order(RID p_instance, int8_t p_sort_order) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if (instance->sort_order == p_sort_order) {
+		return;
+	}
+
+	instance->sort_order = p_sort_order;
 	_instance_queue_update(instance, true);
 }
 
@@ -1589,6 +1629,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		}
 
 		scene_render->geometry_instance_set_transform(geom->geometry_instance, p_instance->transform, p_instance->aabb, p_instance->transformed_aabb);
+		scene_render->geometry_instance_set_depth_offset(geom->geometry_instance, p_instance->depth_offset);
+		scene_render->geometry_instance_set_sort_group(geom->geometry_instance, p_instance->sort_group, p_instance->sort_group_order);
+		scene_render->geometry_instance_set_sort_order(geom->geometry_instance, p_instance->sort_order);
 	}
 
 	// note: we had to remove is equal approx check here, it meant that det == 0.000004 won't work, which is the case for some of our scenes.

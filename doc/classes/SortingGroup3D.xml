@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SortingGroup3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Sorting group node for transparent 3D objects.
+	</brief_description>
+	<description>
+		A node that allows grouping transparent 3D objects to sort them as a single entity.
+		Sorting groups can be nested withing other sorting groups.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_visual_instance">
+			<return type="void" />
+			<argument index="0" name="instance" type="VisualInstance3D" />
+			<description>
+				Adds a [VisualInstance3D] to be sorted within the sorting group.
+			</description>
+		</method>
+		<method name="remove_visual_instance">
+			<return type="void" />
+			<argument index="0" name="instance" type="VisualInstance3D" />
+			<description>
+				Removes a [VisualInstance3D] from the sorting group.
+			</description>
+		</method>
+		<method name="update_all_groups">
+			<return type="void" />
+			<description>
+				Updates all sorting groups immediately if there are any changes, instead of waiting for the next idle time.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="sort_as_root" type="bool" setter="set_sort_as_root" getter="get_sort_as_root" default="false">
+			If [true] and this sorting group is nested, it won't be sorted within its parent sorting group.
+			This can be useful when you want to add a child to an entity, but you don't want it to be sorted as part of the entity.
+		</member>
+		<member name="sort_order" type="int" setter="set_sort_order" getter="get_sort_order" default="0">
+			The sort order of this sorting group relative to other sorting groups and transparent objects at the same depth.
+		</member>
+	</members>
+</class>

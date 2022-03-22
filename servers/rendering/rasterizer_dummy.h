@@ -47,6 +47,9 @@ public:
 	void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) override {}
 	void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override {}
 	void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) override {}
+	void geometry_instance_set_depth_offset(GeometryInstance *p_geometry_instance, float p_depth_offset) override {}
+	void geometry_instance_set_sort_group(GeometryInstance *p_geometry_instance, uint32_t p_sort_group, int8_t p_sort_group_order) override {}
+	void geometry_instance_set_sort_order(GeometryInstance *p_geometry_instance, int8_t p_sort_order) override {}
 	void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override {}
 	void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override {}
 	void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) override {}

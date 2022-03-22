@@ -2455,6 +2455,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_set_scenario", "instance", "scenario"), &RenderingServer::instance_set_scenario);
 	ClassDB::bind_method(D_METHOD("instance_set_layer_mask", "instance", "mask"), &RenderingServer::instance_set_layer_mask);
 	ClassDB::bind_method(D_METHOD("instance_set_transform", "instance", "transform"), &RenderingServer::instance_set_transform);
+	ClassDB::bind_method(D_METHOD("instance_set_depth_offset", "instance", "depth_offset"), &RenderingServer::instance_set_depth_offset);
+	ClassDB::bind_method(D_METHOD("instance_set_sort_group", "instance", "sort_group", "sort_group_order"), &RenderingServer::instance_set_sort_group);
+	ClassDB::bind_method(D_METHOD("instance_set_sort_order", "instance", "sort_order"), &RenderingServer::instance_set_sort_order);
 	ClassDB::bind_method(D_METHOD("instance_attach_object_instance_id", "instance", "id"), &RenderingServer::instance_attach_object_instance_id);
 	ClassDB::bind_method(D_METHOD("instance_set_blend_shape_weight", "instance", "shape", "weight"), &RenderingServer::instance_set_blend_shape_weight);
 	ClassDB::bind_method(D_METHOD("instance_set_surface_override_material", "instance", "surface", "material"), &RenderingServer::instance_set_surface_override_material);

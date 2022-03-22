@@ -62,6 +62,8 @@ private:
 	List<SpriteBase3D *> children;
 	List<SpriteBase3D *>::Element *pI = nullptr;
 
+	List<VisualInstance3D *>::Element *parent_sorting_group = nullptr;
+
 	bool centered = true;
 	Point2 offset;
 
@@ -69,6 +71,8 @@ private:
 	bool vflip = false;
 
 	Color modulate = Color(1, 1, 1, 1);
+
+	int8_t sort_order = 0;
 
 	Vector3::Axis axis = Vector3::AXIS_Z;
 	real_t pixel_size = 0.01;
@@ -125,6 +129,9 @@ public:
 
 	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;
+
+	void set_sort_order(int8_t p_sort_order);
+	int8_t get_sort_order() const;
 
 	void set_draw_flag(DrawFlags p_flag, bool p_enable);
 	bool get_draw_flag(DrawFlags p_flag) const;

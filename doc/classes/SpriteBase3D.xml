@@ -72,6 +72,9 @@
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
 			If [code]true[/code], the [Light3D] in the [Environment] has effects on the sprite.
 		</member>
+		<member name="sort_order" type="int" setter="set_sort_order" getter="get_sort_order" default="0">
+			The sort order of this sprite relative to other sprites and transparent objects at the same depth.
+		</member>
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
 		</member>

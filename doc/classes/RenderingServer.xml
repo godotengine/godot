@@ -1508,6 +1508,14 @@
 				Sets a custom AABB to use when culling objects from the view frustum. Equivalent to [method GeometryInstance3D.set_custom_aabb].
 			</description>
 		</method>
+		<method name="instance_set_depth_offset">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="depth_offset" type="float" />
+			<description>
+				Sets the depth offset that will be added to this instance's depth when sorting it as a transparent object.
+			</description>
+		</method>
 		<method name="instance_set_extra_visibility_margin">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
@@ -1537,6 +1545,24 @@
 			<argument index="1" name="scenario" type="RID" />
 			<description>
 				Sets the scenario that the instance is in. The scenario is the 3D world that the objects will be displayed in.
+			</description>
+		</method>
+		<method name="instance_set_sort_group">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="sort_group" type="int" />
+			<argument index="2" name="sort_group_order" type="int" />
+			<description>
+				Sets the sort group this instance belongs to. If [code]sort_group[/code] is [code]0[/code], the instance does not belong to any sort group.
+				Transparent objects within a sort group are sorted together with other transparent objects within the same sort group.
+			</description>
+		</method>
+		<method name="instance_set_sort_order">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="sort_order" type="int" />
+			<description>
+				Sets the sort order of this instance relative to other instances at the same depth when sorting as a transparent object.
 			</description>
 		</method>
 		<method name="instance_set_surface_override_material">

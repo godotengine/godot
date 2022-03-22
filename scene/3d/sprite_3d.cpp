@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "core/core_string_names.h"
+#include "scene/3d/sorting_group_3d.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -76,6 +77,18 @@ void SpriteBase3D::_notification(int p_what) {
 			if (parent_sprite) {
 				pI = parent_sprite->children.push_back(this);
 			}
+
+			if (SortingGroup3D::has_any()) {
+				Node *parent = get_parent();
+				while (parent) {
+					SortingGroup3D *group = Object::cast_to<SortingGroup3D>(parent);
+					if (group) {
+						group->add_visual_instance(this);
+						break;
+					}
+					parent = parent->get_parent();
+				}
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -83,6 +96,18 @@ void SpriteBase3D::_notification(int p_what) {
 				parent_sprite->children.erase(pI);
 				pI = nullptr;
 				parent_sprite = nullptr;
+			}
+
+			if (SortingGroup3D::has_any()) {
+				Node *parent = get_parent();
+				while (parent) {
+					SortingGroup3D *group = Object::cast_to<SortingGroup3D>(parent);
+					if (group) {
+						group->remove_visual_instance(this);
+						break;
+					}
+					parent = parent->get_parent();
+				}
 			}
 		} break;
 	}
@@ -151,6 +176,15 @@ void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 
 Vector3::Axis SpriteBase3D::get_axis() const {
 	return axis;
+}
+
+void SpriteBase3D::set_sort_order(int8_t p_sort_order) {
+	sort_order = p_sort_order;
+	RenderingServer::get_singleton()->instance_set_sort_order(get_instance(), sort_order);
+}
+
+int8_t SpriteBase3D::get_sort_order() const {
+	return sort_order;
 }
 
 void SpriteBase3D::_im_update() {
@@ -290,6 +324,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &SpriteBase3D::set_axis);
 	ClassDB::bind_method(D_METHOD("get_axis"), &SpriteBase3D::get_axis);
 
+	ClassDB::bind_method(D_METHOD("set_sort_order", "sort_order"), &SpriteBase3D::set_sort_order);
+	ClassDB::bind_method(D_METHOD("get_sort_order"), &SpriteBase3D::get_sort_order);
+
 	ClassDB::bind_method(D_METHOD("set_draw_flag", "flag", "enabled"), &SpriteBase3D::set_draw_flag);
 	ClassDB::bind_method(D_METHOD("get_draw_flag", "flag"), &SpriteBase3D::get_draw_flag);
 
@@ -312,6 +349,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_RANGE, "-128,127,1"), "set_sort_order", "get_sort_order");
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);

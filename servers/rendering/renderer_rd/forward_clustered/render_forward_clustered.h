@@ -454,6 +454,10 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		float lod_model_scale = 1.0;
 		AABB transformed_aabb; //needed for LOD
 		float depth = 0;
+		float depth_offset = 0;
+		uint32_t sort_group = 0;
+		int8_t sort_group_order = 0;
+		int8_t sort_order = 0;
 		uint32_t gi_offset_cache = 0;
 		uint32_t flags_cache = 0;
 		bool store_transform_cache = true;
@@ -569,16 +573,86 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
+		enum class TransparencySortMode {
+			DEPTH = -1,
+			X_AXIS = 0,
+			Y_AXIS = 1,
+			Z_AXIS = 2,
+		};
+
+		template <TransparencySortMode sort_mode>
 		struct SortByReverseDepthAndPriority {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+				static_assert(sort_mode >= TransparencySortMode::DEPTH && sort_mode <= TransparencySortMode::Z_AXIS);
+
+				if (A->sort.priority != B->sort.priority) {
+					return A->sort.priority < B->sort.priority;
+				}
+
+				real_t a_depth;
+				real_t b_depth;
+
+				if constexpr (sort_mode == TransparencySortMode::DEPTH) {
+					a_depth = A->owner->depth;
+					b_depth = B->owner->depth;
+				} else {
+					a_depth = A->owner->transform.origin[(int)sort_mode];
+					b_depth = B->owner->transform.origin[(int)sort_mode];
+				}
+
+				if constexpr (sort_mode == TransparencySortMode::DEPTH) {
+					a_depth += A->owner->depth_offset;
+					b_depth += B->owner->depth_offset;
+				} else {
+					a_depth -= A->owner->depth_offset;
+					b_depth -= B->owner->depth_offset;
+				}
+
+				if (a_depth == b_depth) {
+					int8_t a_sort_group_order = A->owner->sort_group != 0 ? A->owner->sort_group_order : A->owner->sort_order;
+					int8_t b_sort_group_order = B->owner->sort_group != 0 ? B->owner->sort_group_order : B->owner->sort_order;
+
+					if (a_sort_group_order == b_sort_group_order) {
+						if (A->owner->sort_group == B->owner->sort_group) {
+							return A->owner->sort_order < B->owner->sort_order;
+						} else {
+							return A->owner->sort_group < B->owner->sort_group;
+						}
+					} else {
+						return a_sort_group_order < b_sort_group_order;
+					}
+				}
+
+				if constexpr (sort_mode == TransparencySortMode::DEPTH) {
+					return a_depth > b_depth;
+				} else {
+					return a_depth < b_depth;
+				}
 			}
 		};
 
+		template <TransparencySortMode sort_mode>
 		void sort_by_reverse_depth_and_priority() { //used for alpha
 
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority<sort_mode>> sorter;
 			sorter.sort(elements.ptr(), elements.size());
+		}
+
+		void sort_by_reverse_depth_and_priority(TransparencySortMode sort_mode) {
+			switch (sort_mode) {
+				case TransparencySortMode::X_AXIS:
+					sort_by_reverse_depth_and_priority<TransparencySortMode::X_AXIS>();
+					break;
+				case TransparencySortMode::Y_AXIS:
+					sort_by_reverse_depth_and_priority<TransparencySortMode::Y_AXIS>();
+					break;
+				case TransparencySortMode::Z_AXIS:
+					sort_by_reverse_depth_and_priority<TransparencySortMode::Z_AXIS>();
+					break;
+				default:
+					sort_by_reverse_depth_and_priority<TransparencySortMode::DEPTH>();
+					break;
+			}
 		}
 
 		_FORCE_INLINE_ void add_element(GeometryInstanceSurfaceDataCache *p_element) {
@@ -616,6 +690,9 @@ public:
 	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) override;
 	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override;
 	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
+	virtual void geometry_instance_set_depth_offset(GeometryInstance *p_geometry_instance, float p_depth_offset) override;
+	virtual void geometry_instance_set_sort_group(GeometryInstance *p_geometry_instance, uint32_t p_sort_group, int8_t p_sort_group_order) override;
+	virtual void geometry_instance_set_sort_order(GeometryInstance *p_geometry_instance, int8_t p_sort_order) override;
 	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override;
 	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override;
 	virtual void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override;
