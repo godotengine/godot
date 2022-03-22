@@ -155,6 +155,7 @@ void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(storage);
+	memdelete(decal_atlas_storage);
 	memdelete(texture_storage);
 	memdelete(canvas_texture_storage);
 
@@ -287,6 +288,7 @@ RendererCompositorRD::RendererCompositorRD() {
 
 	canvas_texture_storage = memnew(RendererRD::CanvasTextureStorage);
 	texture_storage = memnew(RendererRD::TextureStorage);
+	decal_atlas_storage = memnew(RendererRD::DecalAtlasStorage);
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 

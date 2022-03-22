@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -2674,7 +2675,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
-		RID decal_atlas = storage->decal_atlas_get_texture();
+		RID decal_atlas = RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture();
 
 		if (decal_atlas.is_valid()) {
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
@@ -3262,6 +3263,8 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 }
 
 void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
+	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+
 	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
 	r_directional_light_count = 0;
@@ -3545,7 +3548,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		RID projector = storage->light_get_projector(base);
 
 		if (projector.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(projector);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(projector);
 
 			if (type == RS::LIGHT_SPOT) {
 				light_data.projector_rect[0] = rect.position.x;
@@ -3661,6 +3664,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 }
 
 void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform) {
+	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+
 	Transform3D uv_xform;
 	uv_xform.basis.scale(Vector3(2.0, 1.0, 2.0));
 	uv_xform.origin = Vector3(-1.0, 0.0, -1.0);
@@ -3684,9 +3689,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
 
-		if (storage->decal_is_distance_fade_enabled(decal)) {
-			float fade_begin = storage->decal_get_distance_fade_begin(decal);
-			float fade_length = storage->decal_get_distance_fade_length(decal);
+		if (decal_atlas_storage->decal_is_distance_fade_enabled(decal)) {
+			float fade_begin = decal_atlas_storage->decal_get_distance_fade_begin(decal);
+			float fade_length = decal_atlas_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
 				if (distance > fade_begin + fade_length) {
@@ -3714,15 +3719,15 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			_map_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id, i);
 		}
 
-		di->cull_mask = storage->decal_get_cull_mask(decal);
+		di->cull_mask = decal_atlas_storage->decal_get_cull_mask(decal);
 
 		Transform3D xform = di->transform;
 		float fade = 1.0;
 
-		if (storage->decal_is_distance_fade_enabled(decal)) {
+		if (decal_atlas_storage->decal_is_distance_fade_enabled(decal)) {
 			real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
-			float fade_begin = storage->decal_get_distance_fade_begin(decal);
-			float fade_length = storage->decal_get_distance_fade_length(decal);
+			float fade_begin = decal_atlas_storage->decal_get_distance_fade_begin(decal);
+			float fade_length = decal_atlas_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
 				fade = 1.0 - (distance - fade_begin) / fade_length;
@@ -3731,7 +3736,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		Cluster::DecalData &dd = cluster.decals[i];
 
-		Vector3 decal_extents = storage->decal_get_extents(decal);
+		Vector3 decal_extents = decal_atlas_storage->decal_get_extents(decal);
 
 		Transform3D scale_xform;
 		scale_xform.basis.scale(decal_extents);
@@ -3744,12 +3749,12 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		dd.normal[0] = normal.x;
 		dd.normal[1] = normal.y;
 		dd.normal[2] = normal.z;
-		dd.normal_fade = storage->decal_get_normal_fade(decal);
+		dd.normal_fade = decal_atlas_storage->decal_get_normal_fade(decal);
 
-		RID albedo_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
-		RID emission_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
+		RID albedo_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
+		RID emission_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
 		if (albedo_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(albedo_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(albedo_tex);
 			dd.albedo_rect[0] = rect.position.x;
 			dd.albedo_rect[1] = rect.position.y;
 			dd.albedo_rect[2] = rect.size.x;
@@ -3764,10 +3769,10 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.albedo_rect[3] = 0;
 		}
 
-		RID normal_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
+		RID normal_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
 
 		if (normal_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(normal_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(normal_tex);
 			dd.normal_rect[0] = rect.position.x;
 			dd.normal_rect[1] = rect.position.y;
 			dd.normal_rect[2] = rect.size.x;
@@ -3782,9 +3787,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.normal_rect[3] = 0;
 		}
 
-		RID orm_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ORM);
+		RID orm_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ORM);
 		if (orm_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(orm_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(orm_tex);
 			dd.orm_rect[0] = rect.position.x;
 			dd.orm_rect[1] = rect.position.y;
 			dd.orm_rect[2] = rect.size.x;
@@ -3797,7 +3802,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		}
 
 		if (emission_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(emission_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(emission_tex);
 			dd.emission_rect[0] = rect.position.x;
 			dd.emission_rect[1] = rect.position.y;
 			dd.emission_rect[2] = rect.size.x;
@@ -3809,16 +3814,16 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.emission_rect[3] = 0;
 		}
 
-		Color modulate = storage->decal_get_modulate(decal);
+		Color modulate = decal_atlas_storage->decal_get_modulate(decal);
 		dd.modulate[0] = modulate.r;
 		dd.modulate[1] = modulate.g;
 		dd.modulate[2] = modulate.b;
 		dd.modulate[3] = modulate.a * fade;
-		dd.emission_energy = storage->decal_get_emission_energy(decal) * fade;
-		dd.albedo_mix = storage->decal_get_albedo_mix(decal);
-		dd.mask = storage->decal_get_cull_mask(decal);
-		dd.upper_fade = storage->decal_get_upper_fade(decal);
-		dd.lower_fade = storage->decal_get_lower_fade(decal);
+		dd.emission_energy = decal_atlas_storage->decal_get_emission_energy(decal) * fade;
+		dd.albedo_mix = decal_atlas_storage->decal_get_albedo_mix(decal);
+		dd.mask = decal_atlas_storage->decal_get_cull_mask(decal);
+		dd.upper_fade = decal_atlas_storage->decal_get_upper_fade(decal);
+		dd.lower_fade = decal_atlas_storage->decal_get_lower_fade(decal);
 
 		if (current_cluster_builder != nullptr) {
 			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_DECAL, xform, decal_extents);

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.h                                           */
+/*  decal_atlas_storage.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_GLOBALS_H
-#define RENDERING_SERVER_GLOBALS_H
+#ifndef DECAL_ATLAS_STORAGE_H
+#define DECAL_ATLAS_STORAGE_H
 
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/decal_atlas_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
+#include "servers/rendering_server.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RendererScene;
-
-class RenderingServerGlobals {
+class RendererDecalAtlasStorage {
 public:
-	static bool threaded;
+	virtual ~RendererDecalAtlasStorage(){};
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererDecalAtlasStorage *decal_atlas_storage;
-	static RendererStorage *storage;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	virtual RID decal_allocate() = 0;
+	virtual void decal_initialize(RID p_rid) = 0;
+	virtual void decal_free(RID p_rid) = 0;
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RendererScene *scene;
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
+	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) = 0;
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) = 0;
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
+
+	virtual AABB decal_get_aabb(RID p_decal) const = 0;
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 };
 
-#define RSG RenderingServerGlobals
-
-#endif // RENDERING_SERVER_GLOBALS_H
+#endif // !DECAL_ATLAS_STORAGE_H

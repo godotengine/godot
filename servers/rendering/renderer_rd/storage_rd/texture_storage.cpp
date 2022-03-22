@@ -29,9 +29,7 @@
 /*************************************************************************/
 
 #include "texture_storage.h"
-
-// only include until we have DecalStorage sorted
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "decal_atlas_storage.h"
 
 using namespace RendererRD;
 
@@ -332,7 +330,7 @@ void TextureStorage::texture_free(RID p_texture) {
 		}
 	}
 
-	RendererStorageRD::base_singleton->decal_atlas_remove_texture(p_texture);
+	DecalAtlasStorage::get_singleton()->decal_atlas_remove_texture(p_texture);
 
 	for (int i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
@@ -931,7 +929,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	//delete last, so proxies can be updated
 	texture_owner.free(p_by_texture);
 
-	RendererStorageRD::base_singleton->decal_atlas_mark_dirty_on_texture(p_texture);
+	DecalAtlasStorage::get_singleton()->decal_atlas_mark_dirty_on_texture(p_texture);
 }
 
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
