@@ -1380,6 +1380,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		push_completion_call(annotation);
 		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0, true);
 		if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
+			push_multiline(true);
 			int argument_index = 0;
 			do {
 				make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
@@ -1391,6 +1392,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 				}
 				annotation->arguments.push_back(argument);
 			} while (match(GDScriptTokenizer::Token::COMMA));
+			pop_multiline();
 
 			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
 		}
