@@ -666,6 +666,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						Dictionary d2;
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
+						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
@@ -708,6 +709,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 						d2["is_const"] = method->is_const();
 						d2["is_vararg"] = method->is_vararg();
+						d2["is_static"] = method->is_static();
 						d2["is_virtual"] = false;
 						d2["hash"] = method->get_hash();
 

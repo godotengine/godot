@@ -83,6 +83,10 @@ void MethodBind::_set_const(bool p_const) {
 	_const = p_const;
 }
 
+void MethodBind::_set_static(bool p_static) {
+	_static = p_static;
+}
+
 void MethodBind::_set_returns(bool p_returns) {
 	_returns = p_returns;
 }
