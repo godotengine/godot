@@ -145,6 +145,12 @@
 				Sets the specified property's initial value. This is the value the property reverts to.
 			</description>
 		</method>
+		<method name="set_load_pack_enabled">
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="set_order">
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
