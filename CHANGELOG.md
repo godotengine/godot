@@ -4,9 +4,73 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
+## [3.4.4] - 2022-03-22
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-4) for details.
+
+### Fixed
+
+#### 3D
+
+- CSG: Fix visible seam on smoothed sphere, cylinder, and torus shapes ([GH-58208](https://github.com/godotengine/godot/pull/58208), [GH-59002](https://github.com/godotengine/godot/pull/59002)).
+- CSG: Fix mixed smoothed and non-smoothed face normals computation for CSG shapes ([GH-59039](https://github.com/godotengine/godot/pull/59039)).
+- Portals: Fix duplication of instanced scenes during conversion ([GH-58650](https://github.com/godotengine/godot/pull/58650)).
+
+#### Animation
+
+- Fix cubic interpolate when looping ([GH-58651](https://github.com/godotengine/godot/pull/58651)).
+
+#### Audio
+
+- Revert "PitchShift effect quality and performance tweaks for different pitch scale values" ([GH-58668](https://github.com/godotengine/godot/pull/58668)) **[regression fix]**.
+
+#### Core
+
+- Print every file exported with `PCKPacker.flush()`'s verbose parameter ([GH-58520](https://github.com/godotengine/godot/pull/58520)).
+- Fix `UndoRedo::create_action()` invalid memory usage ([GH-58652](https://github.com/godotengine/godot/pull/58652)).
+- Revert "Fix ProjectSettings `has_setting()` when used on a overriden setting with feature tags" ([GH-58859](https://github.com/godotengine/godot/pull/58859)).
+- Fix crash on `Input.get_joy_button_index_from_string` and `Input.get_joy_axis_index_from_string` for non-existing key ([GH-59195](https://github.com/godotengine/godot/pull/59195)).
+
+#### GUI
+
+- RichTextLabel: Fix shadow color when text has transparency ([GH-59054](https://github.com/godotengine/godot/pull/59054)).
+
+#### Editor
+
+- Fix showing Extend Script option without script attached to the node ([GH-58821](https://github.com/godotengine/godot/pull/58821)).
+
+#### Physics
+
+- Fix premature return in GodotPhysics Area `call_queries` ([GH-58531](https://github.com/godotengine/godot/pull/58531)).
+- Update joints on `NOTIFICATION_POST_ENTER_TREE` ([GH-58642](https://github.com/godotengine/godot/pull/58642)).
+
+#### Porting
+
+- HTML5: Revert "[HTML5] Fetch API now passes credentials." ([GH-58862](https://github.com/godotengine/godot/pull/58862)) **[regression fix]**.
+  * This turned out not to be a good option with the current state of the web standard.
+- iOS: Fix multitouch not working correctly ([GH-58586](https://github.com/godotengine/godot/pull/58586)) **[regression fix]**.
+- Windows: Fix reporting of DST in `OS.get_datetime()` ([GH-59223](https://github.com/godotengine/godot/pull/59223)).
+
+#### Rendering
+
+- GLES2: Fix compression on blend shapes ([GH-58838](https://github.com/godotengine/godot/pull/58838)) **[regression fix]**.
+- GLES2: Fix `VersionKey` comparison in shader binding ([GH-58855](https://github.com/godotengine/godot/pull/58855)).
+- GLES2: Fix incorrect buffer upload size in `draw_gui_primitive` ([GH-58150](https://github.com/godotengine/godot/pull/58150)).
+- GLES3: Fix shader state caching when blend shapes used ([GH-58808](https://github.com/godotengine/godot/pull/58808)) **[regression fix]**.
+- GLES3: Fix broken normals in meshes with blend shapes ([GH-59159](https://github.com/godotengine/godot/pull/59159)) **[regression fix]**.
+- Rendering: Fix alpha scissor support with `depth_draw_opaque` ([GH-58959](https://github.com/godotengine/godot/pull/58959)).
+
+### Added
+
+#### Porting
+
+- Android: Setup logic to publish the Godot Android library to MavenCentral ([GH-59146](https://github.com/godotengine/godot/pull/59146)).
+
+
 ## [3.4.3] - 2022-02-25
 
-See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-2) for details.
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-3) for details.
 
 ### Fixed
 
@@ -30,6 +94,8 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Replicate load-as-placeholder state on node duplication ([GH-56831](https://github.com/godotengine/godot/pull/56831)).
 - Add hexadecimal and binary literals support to `Expression` parser, fix parsing of exponent literals ([GH-57571](https://github.com/godotengine/godot/pull/57571), [GH-57620](https://github.com/godotengine/godot/pull/57620)).
 - Fix `ProjectSettings.has_setting()` to handle feature overrides like `get_setting()` ([GH-57972](https://github.com/godotengine/godot/pull/57972)).
+- Fix decompression functions not returning error codes ([GH-58278](https://github.com/godotengine/godot/pull/58278)).
+- Only store `_edit_use_anchors_` metadata if value is not the default ([GH-58254](https://github.com/godotengine/godot/pull/58254)).
 
 #### Editor
 
@@ -79,6 +145,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### Physics
 
 - Fix RayCast `clear_exceptions` clearing the parent node exception despite `exclude_parent` ([GH-57792](https://github.com/godotengine/godot/pull/57792)).
+- In final phase of `test_body_motion`, move and cull AABB for body once instead of for every shape ([GH-58391](https://github.com/godotengine/godot/pull/58391)).
 
 #### Porting
 
@@ -129,6 +196,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Allow configuring Mono debugger agent with command line arguments ([GH-56835](https://github.com/godotengine/godot/pull/56835)).
 - Add support for opening Visual Studio 2022 as external editor ([GH-57609](https://github.com/godotengine/godot/pull/57609)).
 
+
 ## [3.4.2] - 2021-12-21
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-2) for details.
@@ -165,6 +233,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### XR
 
 - Fix size issue for ARVR managed viewport ([GH-56072](https://github.com/godotengine/godot/pull/56072)).
+
 
 ## [3.4.1] - 2021-12-17
 
@@ -311,6 +380,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix incorrect VisualServer RID cleanup in various locations ([GH-55673](https://github.com/godotengine/godot/pull/55673), [GH-55669](https://github.com/godotengine/godot/pull/55669), [GH-55701](https://github.com/godotengine/godot/pull/55701), [GH-54650](https://github.com/godotengine/godot/pull/54650)).
 - Fix occasional dangling OmniLight RID ([GH-41360](https://github.com/godotengine/godot/issues/41360)).
 - GLES3: Fix incompatible addition in auto exposure shader ([GH-55983](https://github.com/godotengine/godot/pull/55983)).
+
 
 ## [3.4] - 2021-11-05
 
@@ -802,6 +872,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-4-is-rele
 - Add half frame to `floor()` for animated particles UV to compensate precision errors ([GH-53233](https://github.com/godotengine/godot/pull/53233)).
 - Prevent shaders from generating code before the constructor finishes ([GH-52475](https://github.com/godotengine/godot/pull/52475)).
 
+
 ## [3.3] - 2021-04-21
 
 See the [release announcement](https://godotengine.org/article/godot-3-3-has-arrived) for details.
@@ -1142,6 +1213,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
 - [Fade screen-space reflections towards the inner margin in GLES3](https://github.com/godotengine/godot/pull/41892).
 - [Ensure Reinhard tonemapping values are positive in GLES3](https://github.com/godotengine/godot/pull/42056).
 
+
 ## [3.2.3] - 2020-09-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-3) for details.
@@ -1213,6 +1285,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Tree: Fix crash when hovering columns after removing a column
 - Windows: DirectInput: Use correct joypad ID
 - Thirdparty library updates: mbedtls 2.16.8, stb_vorbis 1.20, wslay 1.1.1
+
 
 ## [3.2.2] - 2020-06-26
 
@@ -1299,6 +1372,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Windows: Do not probe joypads if `DirectInput` cannot be initializer
 - Windows: Fix overflow condition with QueryPerformanceCounter
 
+
 ## [3.2.1] - 2020-03-10
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-1) for details.
@@ -1326,6 +1400,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Video: Workaround WebM playback bug after AudioServer latency fixes
 - Windows: Fix UPNP regression after upstream update
 - Windows: Disable NetSocket address reuse
+
 
 ## [3.2] - 2020-01-29
 
@@ -2053,6 +2128,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - **X11:** `OS.set_window_maximized()` now gives up after 0.5 seconds.
   - This makes the editor no longer freeze on startup when using fvwm.
 
+
 ## [3.1] - 2019-03-13
 
 ### Added
@@ -2312,6 +2388,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 - Fixed a security issue relating to deserializing Variants.
 
+
 ## [3.0] - 2018-01-29
 
 ### Added
@@ -2445,6 +2522,9 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - HTML5 export using asm.js.
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
+---
+
+[3.4.4]: https://downloads.tuxfamily.org/godotengine/3.4.4/Godot_v3.4.4-stable_changelog_chrono.txt
 [3.4.3]: https://downloads.tuxfamily.org/godotengine/3.4.3/Godot_v3.4.3-stable_changelog_chrono.txt
 [3.4.2]: https://downloads.tuxfamily.org/godotengine/3.4.2/Godot_v3.4.2-stable_changelog_chrono.txt
 [3.4.1]: https://downloads.tuxfamily.org/godotengine/3.4.1/Godot_v3.4.1-stable_changelog_chrono.txt
