@@ -268,6 +268,12 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 	WaylandGlobals &globals = wls->globals;
 
+	if (name == globals.wl_shm_name) {
+		wl_shm_destroy(globals.wl_shm);
+		globals.wl_shm = nullptr;
+		return;
+	}
+
 	if (name == globals.wl_compositor_name) {
 		wl_compositor_destroy(globals.wl_compositor);
 		globals.wl_compositor = nullptr;
@@ -1572,7 +1578,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wl_display_roundtrip(wls.display);
 
 	// TODO: Perhaps gracefully handle missing protocols when possible?
-	ERR_FAIL_COND(!wls.globals.wl_compositor || !wls.globals.wl_seat || !wls.globals.wp_pointer_constraints || !wls.globals.xdg_wm_base);
+	ERR_FAIL_COND(!wls.globals.wl_shm || !wls.globals.wl_compositor || !wls.globals.wl_seat || !wls.globals.wp_pointer_constraints || !wls.globals.xdg_wm_base);
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
