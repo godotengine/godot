@@ -32,15 +32,16 @@
 
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
-static bool _property_path_matches(const String &p_property_path, const String &p_filter) {
+static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
 		return true;
 	}
 
 	const Vector<String> sections = p_property_path.split("/");
 	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i]))) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
 			return true;
 		}
 	}
@@ -235,6 +236,9 @@ void SectionedInspector::update_category_list() {
 		filter = search_box->get_text();
 	}
 
+	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
+	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
+
 	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
@@ -246,7 +250,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter.is_empty() && !_property_path_matches(pi.name, filter)) {
+		if (!filter.is_empty() && !_property_path_matches(pi.name, filter, name_style)) {
 			continue;
 		}
 
@@ -274,8 +278,12 @@ void SectionedInspector::update_category_list() {
 			if (!section_map.has(metasection)) {
 				TreeItem *ms = sections->create_item(parent);
 				section_map[metasection] = ms;
-				ms->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i]));
-				ms->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(sectionarr[i]));
+
+				const String text = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], name_style);
+				const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], tooltip_style);
+
+				ms->set_text(0, text);
+				ms->set_tooltip(0, tooltip);
 				ms->set_metadata(0, metasection);
 				ms->set_selectable(0, false);
 			}
@@ -302,6 +310,14 @@ void SectionedInspector::register_search_box(LineEdit *p_box) {
 
 void SectionedInspector::_search_changed(const String &p_what) {
 	update_category_list();
+}
+
+void SectionedInspector::_notification(int p_what) {
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
+	}
 }
 
 EditorInspector *SectionedInspector::get_inspector() {
@@ -337,6 +353,7 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

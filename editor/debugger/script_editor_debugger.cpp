@@ -1763,7 +1763,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector = memnew(EditorDebuggerInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->set_v_size_flags(SIZE_EXPAND_FILL);
-		inspector->set_enable_capitalize_paths(false);
+		inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 		inspector->set_read_only(true);
 		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 		inspector->connect("object_edited", callable_mp(this, &ScriptEditorDebugger::_remote_object_edited));

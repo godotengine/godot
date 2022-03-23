@@ -62,6 +62,11 @@ class InspectorDock : public VBoxContainer {
 		COLLAPSE_ALL,
 		EXPAND_ALL,
 
+		// Matches `EditorPropertyNameProcessor::Style`.
+		PROPERTY_NAME_STYLE_RAW,
+		PROPERTY_NAME_STYLE_CAPITALIZED,
+		PROPERTY_NAME_STYLE_LOCALIZED,
+
 		OBJECT_METHOD_BASE = 500
 	};
 
@@ -94,6 +99,9 @@ class InspectorDock : public VBoxContainer {
 	ConfirmationDialog *unique_resources_confirmation;
 	Tree *unique_resources_list_tree;
 
+	EditorPropertyNameProcessor::Style property_name_style;
+
+	void _prepare_menu();
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
@@ -138,6 +146,8 @@ public:
 	void update(Object *p_object);
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
+
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
 
 	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();

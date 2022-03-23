@@ -477,7 +477,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(inspector);
 	inspector->set_use_wide_editors(true);
-	inspector->set_enable_capitalize_paths(false);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 	inspector->set_use_deletable_properties(true);
 	inspector->connect("property_deleted", callable_mp(this, &ShaderGlobalsEditor::_variable_deleted), varray(), CONNECT_DEFERRED);
 
