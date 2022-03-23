@@ -60,6 +60,7 @@ class MethodBind {
 	int default_argument_count = 0;
 	int argument_count = 0;
 
+	bool _static = false;
 	bool _const = false;
 	bool _returns = false;
 
@@ -69,6 +70,7 @@ protected:
 	Vector<StringName> arg_names;
 #endif
 	void _set_const(bool p_const);
+	void _set_static(bool p_static);
 	void _set_returns(bool p_returns);
 	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
@@ -116,7 +118,7 @@ public:
 #endif
 
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
-	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
+	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0) | (is_static() ? METHOD_FLAG_STATIC : 0); }
 	_FORCE_INLINE_ StringName get_instance_class() const { return instance_class; }
 	_FORCE_INLINE_ void set_instance_class(const StringName &p_class) { instance_class = p_class; }
 
@@ -129,6 +131,7 @@ public:
 	void set_name(const StringName &p_name);
 	_FORCE_INLINE_ int get_method_id() const { return method_id; }
 	_FORCE_INLINE_ bool is_const() const { return _const; }
+	_FORCE_INLINE_ bool is_static() const { return _static; }
 	_FORCE_INLINE_ bool has_return() const { return _returns; }
 	virtual bool is_vararg() const { return false; }
 
@@ -308,7 +311,7 @@ MethodBind *create_method_bind(void (T::*p_method)(P...)) {
 	return a;
 }
 
-// no return, not const
+// no return, const
 
 #ifdef TYPED_METHOD_BIND
 template <class T, class... P>
@@ -555,6 +558,141 @@ MethodBind *create_method_bind(R (T::*p_method)(P...) const) {
 	MethodBind *a = memnew((MethodBindTRC<R, P...>)(reinterpret_cast<R (MB_T::*)(P...) const>(p_method)));
 #endif
 	a->set_instance_class(T::get_class_static());
+	return a;
+}
+
+/* STATIC BINDS */
+
+// no return
+
+template <class... P>
+class MethodBindTS : public MethodBind {
+	void (*function)(P...);
+
+protected:
+// GCC raises warnings in the case P = {} as the comparison is always false...
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			return call_get_argument_type<P...>(p_arg);
+		} else {
+			return Variant::NIL;
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+		PropertyInfo pi;
+		call_get_argument_type_info<P...>(p_arg, pi);
+		return pi;
+	}
+
+public:
+#ifdef DEBUG_METHODS_ENABLED
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		return call_get_argument_metadata<P...>(p_arg);
+	}
+
+#endif
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		(void)p_object; // unused
+		call_with_variant_args_static_dv(function, p_args, p_arg_count, r_error, get_default_arguments());
+		return Variant();
+	}
+
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+		(void)p_object;
+		(void)r_ret;
+		call_with_ptr_args_static_method(function, p_args);
+	}
+
+	MethodBindTS(void (*p_function)(P...)) {
+		function = p_function;
+		_generate_argument_types(sizeof...(P));
+		set_argument_count(sizeof...(P));
+		_set_static(true);
+	}
+};
+
+template <class... P>
+MethodBind *create_static_method_bind(void (*p_method)(P...)) {
+	MethodBind *a = memnew((MethodBindTS<P...>)(p_method));
+	return a;
+}
+
+// return
+
+template <class R, class... P>
+class MethodBindTRS : public MethodBind {
+	R(*function)
+	(P...);
+
+protected:
+// GCC raises warnings in the case P = {} as the comparison is always false...
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			return call_get_argument_type<P...>(p_arg);
+		} else {
+			return GetTypeInfo<R>::VARIANT_TYPE;
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			PropertyInfo pi;
+			call_get_argument_type_info<P...>(p_arg, pi);
+			return pi;
+		} else {
+			return GetTypeInfo<R>::get_class_info();
+		}
+	}
+
+public:
+#ifdef DEBUG_METHODS_ENABLED
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		if (p_arg >= 0) {
+			return call_get_argument_metadata<P...>(p_arg);
+		} else {
+			return GetTypeInfo<R>::METADATA;
+		}
+	}
+
+#endif
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		Variant ret;
+		call_with_variant_args_static_ret_dv(function, p_args, p_arg_count, ret, r_error, get_default_arguments());
+		return ret;
+	}
+
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+		(void)p_object;
+		call_with_ptr_args_static_method_ret(function, p_args, r_ret);
+	}
+
+	MethodBindTRS(R (*p_function)(P...)) {
+		function = p_function;
+		_generate_argument_types(sizeof...(P));
+		set_argument_count(sizeof...(P));
+		_set_static(true);
+		_set_returns(true);
+	}
+};
+
+template <class R, class... P>
+MethodBind *create_static_method_bind(R (*p_method)(P...)) {
+	MethodBind *a = memnew((MethodBindTRS<R, P...>)(p_method));
 	return a;
 }
 

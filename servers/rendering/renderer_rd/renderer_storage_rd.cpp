@@ -36,6 +36,7 @@
 #include "core/math/math_defs.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
@@ -5315,6 +5316,7 @@ void RendererStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
 }
 
 void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
+	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -5323,14 +5325,14 @@ void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	}
 
 	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
-		texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+		decal_atlas_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
 
 	light->projector = p_texture;
 
 	if (light->type != RS::LIGHT_DIRECTIONAL) {
 		if (light->projector.is_valid()) {
-			texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+			decal_atlas_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 		}
 		light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 	}
@@ -5725,97 +5727,6 @@ float RendererStorageRD::reflection_probe_get_ambient_color_energy(RID p_probe) 
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->ambient_color_energy;
-}
-
-RID RendererStorageRD::decal_allocate() {
-	return decal_owner.allocate_rid();
-}
-void RendererStorageRD::decal_initialize(RID p_decal) {
-	decal_owner.initialize_rid(p_decal, Decal());
-}
-
-void RendererStorageRD::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->extents = p_extents;
-	decal->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
-}
-
-void RendererStorageRD::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	ERR_FAIL_INDEX(p_type, RS::DECAL_TEXTURE_MAX);
-
-	if (decal->textures[p_type] == p_texture) {
-		return;
-	}
-
-	ERR_FAIL_COND(p_texture.is_valid() && !RendererRD::TextureStorage::get_singleton()->owns_texture(p_texture));
-
-	if (decal->textures[p_type].is_valid() && RendererRD::TextureStorage::get_singleton()->owns_texture(decal->textures[p_type])) {
-		texture_remove_from_decal_atlas(decal->textures[p_type]);
-	}
-
-	decal->textures[p_type] = p_texture;
-
-	if (decal->textures[p_type].is_valid()) {
-		texture_add_to_decal_atlas(decal->textures[p_type]);
-	}
-
-	decal->dependency.changed_notify(DEPENDENCY_CHANGED_DECAL);
-}
-
-void RendererStorageRD::decal_set_emission_energy(RID p_decal, float p_energy) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->emission_energy = p_energy;
-}
-
-void RendererStorageRD::decal_set_albedo_mix(RID p_decal, float p_mix) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->albedo_mix = p_mix;
-}
-
-void RendererStorageRD::decal_set_modulate(RID p_decal, const Color &p_modulate) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->modulate = p_modulate;
-}
-
-void RendererStorageRD::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->cull_mask = p_layers;
-	decal->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
-}
-
-void RendererStorageRD::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->distance_fade = p_enabled;
-	decal->distance_fade_begin = p_begin;
-	decal->distance_fade_length = p_length;
-}
-
-void RendererStorageRD::decal_set_fade(RID p_decal, float p_above, float p_below) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->upper_fade = p_above;
-	decal->lower_fade = p_below;
-}
-
-void RendererStorageRD::decal_set_normal_fade(RID p_decal, float p_fade) {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND(!decal);
-	decal->normal_fade = p_fade;
-}
-
-AABB RendererStorageRD::decal_get_aabb(RID p_decal) const {
-	Decal *decal = decal_owner.get_or_null(p_decal);
-	ERR_FAIL_COND_V(!decal, AABB());
-
-	return AABB(-decal->extents, decal->extents * 2.0);
 }
 
 RID RendererStorageRD::voxel_gi_allocate() {
@@ -7030,8 +6941,8 @@ void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_
 	} else if (reflection_probe_owner.owns(p_base)) {
 		ReflectionProbe *rp = reflection_probe_owner.get_or_null(p_base);
 		p_instance->update_dependency(&rp->dependency);
-	} else if (decal_owner.owns(p_base)) {
-		Decal *decal = decal_owner.get_or_null(p_base);
+	} else if (RendererRD::DecalAtlasStorage::get_singleton()->owns_decal(p_base)) {
+		RendererRD::Decal *decal = RendererRD::DecalAtlasStorage::get_singleton()->get_decal(p_base);
 		p_instance->update_dependency(&decal->dependency);
 	} else if (voxel_gi_owner.owns(p_base)) {
 		VoxelGI *gip = voxel_gi_owner.get_or_null(p_base);
@@ -7074,7 +6985,7 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	if (reflection_probe_owner.owns(p_rid)) {
 		return RS::INSTANCE_REFLECTION_PROBE;
 	}
-	if (decal_owner.owns(p_rid)) {
+	if (RendererRD::DecalAtlasStorage::get_singleton()->owns_decal(p_rid)) {
 		return RS::INSTANCE_DECAL;
 	}
 	if (voxel_gi_owner.owns(p_rid)) {
@@ -7100,252 +7011,6 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	}
 
 	return RS::INSTANCE_NONE;
-}
-
-void RendererStorageRD::decal_atlas_remove_texture(RID p_texture) {
-	if (decal_atlas.textures.has(p_texture)) {
-		decal_atlas.textures.erase(p_texture);
-		//there is not much a point of making it dirty, just let it be.
-	}
-}
-
-void RendererStorageRD::decal_atlas_mark_dirty_on_texture(RID p_texture) {
-	if (decal_atlas.textures.has(p_texture)) {
-		//belongs to decal atlas..
-
-		decal_atlas.dirty = true; //mark it dirty since it was most likely modified
-	}
-}
-
-void RendererStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
-	if (!decal_atlas.textures.has(p_texture)) {
-		DecalAtlas::Texture t;
-		t.users = 1;
-		t.panorama_to_dp_users = p_panorama_to_dp ? 1 : 0;
-		decal_atlas.textures[p_texture] = t;
-		decal_atlas.dirty = true;
-	} else {
-		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
-		t->users++;
-		if (p_panorama_to_dp) {
-			t->panorama_to_dp_users++;
-		}
-	}
-}
-
-void RendererStorageRD::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
-	DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
-	ERR_FAIL_COND(!t);
-	t->users--;
-	if (p_panorama_to_dp) {
-		ERR_FAIL_COND(t->panorama_to_dp_users == 0);
-		t->panorama_to_dp_users--;
-	}
-	if (t->users == 0) {
-		decal_atlas.textures.erase(p_texture);
-		//do not mark it dirty, there is no need to since it remains working
-	}
-}
-
-RID RendererStorageRD::decal_atlas_get_texture() const {
-	return decal_atlas.texture;
-}
-
-RID RendererStorageRD::decal_atlas_get_texture_srgb() const {
-	return decal_atlas.texture_srgb;
-}
-
-void RendererStorageRD::_update_decal_atlas() {
-	if (!decal_atlas.dirty) {
-		return; //nothing to do
-	}
-
-	decal_atlas.dirty = false;
-
-	if (decal_atlas.texture.is_valid()) {
-		RD::get_singleton()->free(decal_atlas.texture);
-		decal_atlas.texture = RID();
-		decal_atlas.texture_srgb = RID();
-		decal_atlas.texture_mipmaps.clear();
-	}
-
-	int border = 1 << decal_atlas.mipmaps;
-
-	if (decal_atlas.textures.size()) {
-		//generate atlas
-		Vector<DecalAtlas::SortItem> itemsv;
-		itemsv.resize(decal_atlas.textures.size());
-		int base_size = 8;
-		const RID *K = nullptr;
-
-		int idx = 0;
-		while ((K = decal_atlas.textures.next(K))) {
-			DecalAtlas::SortItem &si = itemsv.write[idx];
-
-			RendererRD::Texture *src_tex = RendererRD::TextureStorage::get_singleton()->get_texture(*K);
-
-			si.size.width = (src_tex->width / border) + 1;
-			si.size.height = (src_tex->height / border) + 1;
-			si.pixel_size = Size2i(src_tex->width, src_tex->height);
-
-			if (base_size < si.size.width) {
-				base_size = nearest_power_of_2_templated(si.size.width);
-			}
-
-			si.texture = *K;
-			idx++;
-		}
-
-		//sort items by size
-		itemsv.sort();
-
-		//attempt to create atlas
-		int item_count = itemsv.size();
-		DecalAtlas::SortItem *items = itemsv.ptrw();
-
-		int atlas_height = 0;
-
-		while (true) {
-			Vector<int> v_offsetsv;
-			v_offsetsv.resize(base_size);
-
-			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
-
-			int max_height = 0;
-
-			for (int i = 0; i < item_count; i++) {
-				//best fit
-				DecalAtlas::SortItem &si = items[i];
-				int best_idx = -1;
-				int best_height = 0x7FFFFFFF;
-				for (int j = 0; j <= base_size - si.size.width; j++) {
-					int height = 0;
-					for (int k = 0; k < si.size.width; k++) {
-						int h = v_offsets[k + j];
-						if (h > height) {
-							height = h;
-							if (height > best_height) {
-								break; //already bad
-							}
-						}
-					}
-
-					if (height < best_height) {
-						best_height = height;
-						best_idx = j;
-					}
-				}
-
-				//update
-				for (int k = 0; k < si.size.width; k++) {
-					v_offsets[k + best_idx] = best_height + si.size.height;
-				}
-
-				si.pos.x = best_idx;
-				si.pos.y = best_height;
-
-				if (si.pos.y + si.size.height > max_height) {
-					max_height = si.pos.y + si.size.height;
-				}
-			}
-
-			if (max_height <= base_size * 2) {
-				atlas_height = max_height;
-				break; //good ratio, break;
-			}
-
-			base_size *= 2;
-		}
-
-		decal_atlas.size.width = base_size * border;
-		decal_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
-
-		for (int i = 0; i < item_count; i++) {
-			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
-			t->uv_rect.size = items[i].pixel_size;
-
-			t->uv_rect.position /= Size2(decal_atlas.size);
-			t->uv_rect.size /= Size2(decal_atlas.size);
-		}
-	} else {
-		//use border as size, so it at least has enough mipmaps
-		decal_atlas.size.width = border;
-		decal_atlas.size.height = border;
-	}
-
-	//blit textures
-
-	RD::TextureFormat tformat;
-	tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-	tformat.width = decal_atlas.size.width;
-	tformat.height = decal_atlas.size.height;
-	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-	tformat.texture_type = RD::TEXTURE_TYPE_2D;
-	tformat.mipmaps = decal_atlas.mipmaps;
-	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
-	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
-
-	decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-	RD::get_singleton()->texture_clear(decal_atlas.texture, Color(0, 0, 0, 0), 0, decal_atlas.mipmaps, 0, 1);
-
-	{
-		//create the framebuffer
-
-		Size2i s = decal_atlas.size;
-
-		for (int i = 0; i < decal_atlas.mipmaps; i++) {
-			DecalAtlas::MipMap mm;
-			mm.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), decal_atlas.texture, 0, i);
-			Vector<RID> fb;
-			fb.push_back(mm.texture);
-			mm.fb = RD::get_singleton()->framebuffer_create(fb);
-			mm.size = s;
-			decal_atlas.texture_mipmaps.push_back(mm);
-
-			s.width = MAX(1, s.width >> 1);
-			s.height = MAX(1, s.height >> 1);
-		}
-		{
-			//create the SRGB variant
-			RD::TextureView rd_view;
-			rd_view.format_override = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-			decal_atlas.texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, decal_atlas.texture);
-		}
-	}
-
-	RID prev_texture;
-	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
-		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
-
-		Color clear_color(0, 0, 0, 0);
-
-		if (decal_atlas.textures.size()) {
-			if (i == 0) {
-				Vector<Color> cc;
-				cc.push_back(clear_color);
-
-				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, cc);
-
-				const RID *K = nullptr;
-				while ((K = decal_atlas.textures.next(K))) {
-					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
-					RendererRD::Texture *src_tex = RendererRD::TextureStorage::get_singleton()->get_texture(*K);
-					effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
-				}
-
-				RD::get_singleton()->draw_list_end();
-
-				prev_texture = mm.texture;
-			} else {
-				effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
-				prev_texture = mm.texture;
-			}
-		} else {
-			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
-		}
-	}
 }
 
 int32_t RendererStorageRD::_global_variable_allocate(uint32_t p_elements) {
@@ -8017,7 +7682,7 @@ void RendererStorageRD::update_dirty_resources() {
 	_update_queued_materials();
 	_update_dirty_multimeshes();
 	_update_dirty_skeletons();
-	_update_decal_atlas();
+	RendererRD::DecalAtlasStorage::get_singleton()->update_decal_atlas();
 }
 
 bool RendererStorageRD::has_os_feature(const String &p_feature) const {
@@ -8103,15 +7768,8 @@ bool RendererStorageRD::free(RID p_rid) {
 		ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
 		reflection_probe->dependency.deleted_notify(p_rid);
 		reflection_probe_owner.free(p_rid);
-	} else if (decal_owner.owns(p_rid)) {
-		Decal *decal = decal_owner.get_or_null(p_rid);
-		for (int i = 0; i < RS::DECAL_TEXTURE_MAX; i++) {
-			if (decal->textures[i].is_valid() && RendererRD::TextureStorage::get_singleton()->owns_texture(decal->textures[i])) {
-				texture_remove_from_decal_atlas(decal->textures[i]);
-			}
-		}
-		decal->dependency.deleted_notify(p_rid);
-		decal_owner.free(p_rid);
+	} else if (RendererRD::DecalAtlasStorage::get_singleton()->owns_decal(p_rid)) {
+		RendererRD::DecalAtlasStorage::get_singleton()->decal_free(p_rid);
 	} else if (voxel_gi_owner.owns(p_rid)) {
 		voxel_gi_allocate_data(p_rid, Transform3D(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
 		VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_rid);
@@ -8258,33 +7916,6 @@ RendererStorageRD::RendererStorageRD() {
 	global_variables.buffer_dirty_regions = memnew_arr(bool, global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
 	memset(global_variables.buffer_dirty_regions, 0, sizeof(bool) * global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
 	global_variables.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalVariables::Value) * global_variables.buffer_size);
-
-	{ // default atlas texture
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_2D;
-
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			//take the chance and initialize decal atlas to something
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(pv);
-			decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-			decal_atlas.texture_srgb = decal_atlas.texture;
-		}
-	}
 
 	//default samplers
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
@@ -8736,14 +8367,6 @@ RendererStorageRD::~RendererStorageRD() {
 	RenderingServer::get_singleton()->free(particles_shader.default_shader);
 
 	RD::get_singleton()->free(default_rd_storage_buffer);
-
-	if (decal_atlas.textures.size()) {
-		ERR_PRINT("Decal Atlas: " + itos(decal_atlas.textures.size()) + " textures were not removed from the atlas.");
-	}
-
-	if (decal_atlas.texture.is_valid()) {
-		RD::get_singleton()->free(decal_atlas.texture);
-	}
 
 	if (effects) {
 		memdelete(effects);

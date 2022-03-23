@@ -52,7 +52,7 @@ void ResourceImporterDynamicFont::get_recognized_extensions(List<String> *p_exte
 		p_extensions->push_back("ttf");
 		p_extensions->push_back("otf");
 		p_extensions->push_back("woff");
-		//p_extensions->push_back("woff2");
+		p_extensions->push_back("woff2");
 		p_extensions->push_back("pfb");
 		p_extensions->push_back("pfm");
 #endif

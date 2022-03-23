@@ -198,10 +198,8 @@ class ControlEditorToolbar : public HBoxContainer {
 		CONTAINERS_V_PRESET_SHRINK_END,
 	};
 
-	TextureRect *anchor_layouts_icon;
 	MenuButton *anchor_presets_menu;
 	PopupMenu *anchors_popup;
-	TextureRect *container_layouts_icon;
 	MenuButton *container_h_presets_menu;
 	MenuButton *container_v_presets_menu;
 

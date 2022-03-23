@@ -137,6 +137,11 @@ class BindingsGenerator {
 		bool is_vararg = false;
 
 		/**
+		 * Determines if the method is static.
+		 */
+		bool is_static = false;
+
+		/**
 		 * Virtual methods ("virtual" as defined by the Godot API) are methods that by default do nothing,
 		 * but can be overridden by the user to add custom functionality.
 		 * e.g.: _ready, _process, etc.

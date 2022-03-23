@@ -802,10 +802,13 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 
 		const TypeInterface *return_type = _get_type_or_placeholder(imethod.return_type);
 
-		String im_sig = "IntPtr " CS_PARAM_METHODBIND ", ";
-		String im_unique_sig = imethod.return_type.cname.operator String() + ",IntPtr,IntPtr";
+		String im_sig = "IntPtr " CS_PARAM_METHODBIND;
+		String im_unique_sig = imethod.return_type.cname.operator String() + ",IntPtr";
 
-		im_sig += "IntPtr " CS_PARAM_INSTANCE;
+		if (!imethod.is_static) {
+			im_sig += ", IntPtr " CS_PARAM_INSTANCE;
+			im_unique_sig += ",IntPtr";
+		}
 
 		// Get arguments information
 		int i = 0;
@@ -1733,8 +1736,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	String arguments_sig;
 	String cs_in_statements;
 
-	String icall_params = method_bind_field + ", ";
-	icall_params += sformat(p_itype.cs_in, "this");
+	String icall_params = method_bind_field;
+	if (!p_imethod.is_static) {
+		icall_params += ", " + sformat(p_itype.cs_in, "this");
+	}
 
 	StringBuilder default_args_doc;
 
@@ -1892,7 +1897,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		p_output.append(MEMBER_BEGIN);
 		p_output.append(p_imethod.is_internal ? "internal " : "public ");
 
-		if (p_itype.is_singleton) {
+		if (p_itype.is_singleton || p_imethod.is_static) {
 			p_output.append("static ");
 		} else if (p_imethod.is_virtual) {
 			p_output.append("virtual ");
@@ -2271,7 +2276,10 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 
 	String argc_str = itos(p_imethod.arguments.size());
 
-	String c_func_sig = "MethodBind* " CS_PARAM_METHODBIND ", " + p_itype.c_type_in + " " CS_PARAM_INSTANCE;
+	String c_func_sig = "MethodBind* " CS_PARAM_METHODBIND;
+	if (!p_imethod.is_static) {
+		c_func_sig += ", " + p_itype.c_type_in + " " CS_PARAM_INSTANCE;
+	}
 	String c_in_statements;
 	String c_args_var_content;
 
@@ -2363,17 +2371,21 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 
 			String fail_ret = return_type->c_type_out.ends_with("*") && !return_type->ret_as_byref_arg ? "nullptr" : return_type->c_type_out + "()";
 
-			if (return_type->ret_as_byref_arg) {
-				p_output.append("\tif (" CS_PARAM_INSTANCE " == nullptr) { *arg_ret = ");
-				p_output.append(fail_ret);
-				p_output.append("; ERR_FAIL_MSG(\"Parameter ' " CS_PARAM_INSTANCE " ' is null.\"); }\n");
-			} else {
-				p_output.append("\tERR_FAIL_NULL_V(" CS_PARAM_INSTANCE ", ");
-				p_output.append(fail_ret);
-				p_output.append(");\n");
+			if (!p_imethod.is_static) {
+				if (return_type->ret_as_byref_arg) {
+					p_output.append("\tif (" CS_PARAM_INSTANCE " == nullptr) { *arg_ret = ");
+					p_output.append(fail_ret);
+					p_output.append("; ERR_FAIL_MSG(\"Parameter ' " CS_PARAM_INSTANCE " ' is null.\"); }\n");
+				} else {
+					p_output.append("\tERR_FAIL_NULL_V(" CS_PARAM_INSTANCE ", ");
+					p_output.append(fail_ret);
+					p_output.append(");\n");
+				}
 			}
 		} else {
-			p_output.append("\tERR_FAIL_NULL(" CS_PARAM_INSTANCE ");\n");
+			if (!p_imethod.is_static) {
+				p_output.append("\tERR_FAIL_NULL(" CS_PARAM_INSTANCE ");\n");
+			}
 		}
 
 		if (p_imethod.arguments.size()) {
@@ -2417,7 +2429,9 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				}
 			}
 
-			p_output.append(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
+			p_output.append(CS_PARAM_METHODBIND "->call(");
+			p_output.append(p_imethod.is_static ? "nullptr" : CS_PARAM_INSTANCE);
+			p_output.append(", ");
 			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "nullptr");
 			p_output.append(", total_length, vcall_error);\n");
 
@@ -2428,7 +2442,9 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				}
 			}
 		} else {
-			p_output.append("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
+			p_output.append("\t" CS_PARAM_METHODBIND "->ptrcall(");
+			p_output.append(p_imethod.is_static ? "nullptr" : CS_PARAM_INSTANCE);
+			p_output.append(", ");
 			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "nullptr, ");
 			p_output.append(!ret_void ? "&" C_LOCAL_RET ");\n" : "nullptr);\n");
 		}
@@ -2771,6 +2787,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			MethodInterface imethod;
 			imethod.name = method_info.name;
 			imethod.cname = cname;
+
+			if (method_info.flags & METHOD_FLAG_STATIC) {
+				imethod.is_static = true;
+			}
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
 				imethod.is_virtual = true;

@@ -1334,7 +1334,7 @@ void File::store_buffer(const Vector<uint8_t> &p_buffer) {
 	f->store_buffer(&r[0], len);
 }
 
-bool File::file_exists(const String &p_name) const {
+bool File::file_exists(const String &p_name) {
 	return FileAccess::exists(p_name);
 }
 
@@ -1424,7 +1424,7 @@ void File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &File::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &File::get_pascal_string);
 
-	ClassDB::bind_method(D_METHOD("file_exists", "path"), &File::file_exists);
+	ClassDB::bind_static_method("File", D_METHOD("file_exists", "path"), &File::file_exists);
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &File::get_modified_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");

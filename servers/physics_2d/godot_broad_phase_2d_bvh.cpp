@@ -39,31 +39,37 @@ GodotBroadPhase2D::ID GodotBroadPhase2DBVH::create(GodotCollisionObject2D *p_obj
 }
 
 void GodotBroadPhase2DBVH::move(ID p_id, const Rect2 &p_aabb) {
+	ERR_FAIL_COND(!p_id);
 	bvh.move(p_id - 1, p_aabb);
 }
 
 void GodotBroadPhase2DBVH::set_static(ID p_id, bool p_static) {
+	ERR_FAIL_COND(!p_id);
 	uint32_t tree_id = p_static ? TREE_STATIC : TREE_DYNAMIC;
 	uint32_t tree_collision_mask = p_static ? TREE_FLAG_DYNAMIC : (TREE_FLAG_STATIC | TREE_FLAG_DYNAMIC);
 	bvh.set_tree(p_id - 1, tree_id, tree_collision_mask, false);
 }
 
 void GodotBroadPhase2DBVH::remove(ID p_id) {
+	ERR_FAIL_COND(!p_id);
 	bvh.erase(p_id - 1);
 }
 
 GodotCollisionObject2D *GodotBroadPhase2DBVH::get_object(ID p_id) const {
+	ERR_FAIL_COND_V(!p_id, nullptr);
 	GodotCollisionObject2D *it = bvh.get(p_id - 1);
 	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
 
 bool GodotBroadPhase2DBVH::is_static(ID p_id) const {
+	ERR_FAIL_COND_V(!p_id, false);
 	uint32_t tree_id = bvh.get_tree_id(p_id - 1);
 	return tree_id == 0;
 }
 
 int GodotBroadPhase2DBVH::get_subindex(ID p_id) const {
+	ERR_FAIL_COND_V(!p_id, 0);
 	return bvh.get_subindex(p_id - 1);
 }
 

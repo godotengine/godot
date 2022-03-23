@@ -40,8 +40,8 @@
 	A* pathfinding algorithm.
 */
 
-class AStar : public RefCounted {
-	GDCLASS(AStar, RefCounted);
+class AStar3D : public RefCounted {
+	GDCLASS(AStar3D, RefCounted);
 	friend class AStar2D;
 
 	struct Point {
@@ -156,15 +156,15 @@ public:
 	Vector<Vector3> get_point_path(int p_from_id, int p_to_id);
 	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar() {}
-	~AStar();
+	AStar3D() {}
+	~AStar3D();
 };
 
 class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
-	AStar astar;
+	AStar3D astar;
 
-	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
+	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point);
 
 protected:
 	static void _bind_methods();

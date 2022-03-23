@@ -35,6 +35,7 @@
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
 void RendererCanvasRenderRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
@@ -947,7 +948,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 3;
-		u.append_id(storage->decal_atlas_get_texture());
+		u.append_id(RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture());
 		uniforms.push_back(u);
 	}
 
@@ -1253,7 +1254,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 
 			if (clight->texture.is_valid()) {
-				Rect2 atlas_rect = storage->decal_atlas_get_texture_rect(clight->texture);
+				Rect2 atlas_rect = RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture_rect(clight->texture);
 				state.light_uniforms[index].atlas_rect[0] = atlas_rect.position.x;
 				state.light_uniforms[index].atlas_rect[1] = atlas_rect.position.y;
 				state.light_uniforms[index].atlas_rect[2] = atlas_rect.size.width;
@@ -1479,18 +1480,20 @@ RID RendererCanvasRenderRD::light_create() {
 }
 
 void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
+	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl);
 	if (cl->texture == p_texture) {
 		return;
 	}
 	if (cl->texture.is_valid()) {
-		storage->texture_remove_from_decal_atlas(cl->texture);
+		decal_atlas_storage->texture_remove_from_decal_atlas(cl->texture);
 	}
 	cl->texture = p_texture;
 
 	if (cl->texture.is_valid()) {
-		storage->texture_add_to_decal_atlas(cl->texture);
+		decal_atlas_storage->texture_add_to_decal_atlas(cl->texture);
 	}
 }
 
