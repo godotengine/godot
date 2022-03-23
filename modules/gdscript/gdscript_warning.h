@@ -79,6 +79,7 @@ public:
 		INT_ASSIGNED_TO_ENUM, // An integer value was assigned to an enum-typed variable without casting.
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
 		CONFUSABLE_IDENTIFIER, // The identifier contains misleading characters that can be confused. E.g. "usеr" (has Cyrillic "е" instead of Latin "e").
+		RENAMED_IN_GD4_HINT, // A variable or function that could not be found has been renamed in Godot 4
 		WARNING_MAX,
 	};
 

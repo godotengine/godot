@@ -159,6 +159,9 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
 		}
+		case RENAMED_IN_GD4_HINT: {
+			break; // Renamed identifier hint is taken care of by the GDScriptAnalyzer. No message needed here.
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -180,6 +183,9 @@ int GDScriptWarning::get_default_value(Code p_code) {
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
 	// Making this a separate function in case a warning needs different PropertyInfo in the future.
+	if (p_code == Code::RENAMED_IN_GD4_HINT) {
+		return PropertyInfo(Variant::BOOL, get_settings_path_from_code(p_code));
+	}
 	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
 }
 
@@ -224,6 +230,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"INT_ASSIGNED_TO_ENUM",
 		"STATIC_CALLED_ON_INSTANCE",
 		"CONFUSABLE_IDENTIFIER",
+		"RENAMED_IN_GODOT_4_HINT"
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
