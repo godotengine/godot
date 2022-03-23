@@ -278,6 +278,7 @@ public:
 		Vector3 remainder;
 		Vector3 travel;
 		int local_shape;
+		real_t collision_safe_fraction;
 
 		real_t get_angle(const Vector3 &p_up_direction) const {
 			return Math::acos(normal.dot(p_up_direction));

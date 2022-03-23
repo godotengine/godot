@@ -959,7 +959,11 @@ void RigidBody::_reload_physics_characteristics() {
 
 Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
 	Collision col;
-	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
+
+	bool collided = move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only);
+
+	// Don't report collision when the whole motion is done.
+	if (collided && col.collision_safe_fraction < 1) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instance();
@@ -1032,6 +1036,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 		r_collision.travel = result.motion;
 		r_collision.remainder = result.remainder;
 		r_collision.local_shape = result.collision_local_shape;
+		r_collision.collision_safe_fraction = result.collision_safe_fraction;
 	}
 
 	for (int i = 0; i < 3; i++) {
