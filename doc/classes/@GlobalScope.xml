@@ -1376,7 +1376,8 @@
 			Hints that a float property should be within an exponential range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"0.01,100,0.01,or_greater"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="3" enum="PropertyHint">
-			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
 			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
