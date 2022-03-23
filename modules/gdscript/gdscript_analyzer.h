@@ -119,6 +119,7 @@ class GDScriptAnalyzer {
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 #ifdef DEBUG_ENABLED
+	void enforce_static_type(GDScriptParser::Node *p_node, String p_identifier);
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif
 

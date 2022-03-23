@@ -334,6 +334,12 @@
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
+		<member name="debug/gdscript/type_inferencing/enforce_static_parameter_types" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code] prints a warning or an error when a function parameter is not statically typed.
+		</member>
+		<member name="debug/gdscript/type_inferencing/enforce_static_variable_types" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code] prints a warning or an error when a variable or constant is not statically typed.
+		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
 			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
 		</member>
@@ -341,13 +347,13 @@
 			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns true.
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a constant is used as a function.
+			If not set to [code]Ignore[/code], enables warnings when a constant is used as a function.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when deprecated keywords are used.
+			If [code]true[/code], enables warnings when deprecated keywords are used.
 		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an empty file is parsed.
+			If [code]true[/code], enables warnings when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.

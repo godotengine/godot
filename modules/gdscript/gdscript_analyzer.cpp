@@ -693,6 +693,13 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 						datatype.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 					}
 				}
+#ifdef DEBUG_ENABLED
+				if (GLOBAL_GET("debug/gdscript/type_inferencing/enforce_static_variable_types") && datatype.type_source != GDScriptParser::DataType::ANNOTATED_INFERRED) {
+					if (!member.variable->datatype_specifier && !(datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type == Variant::NIL)) {
+						enforce_static_type((GDScriptParser::Node *)member.variable, member.variable->identifier->name);
+					}
+				}
+#endif
 
 				datatype.is_constant = false;
 				member.variable->set_datatype(datatype);
@@ -745,6 +752,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 						}
 					}
 				}
+
 				datatype.is_constant = true;
 
 				member.constant->set_datatype(datatype);
@@ -1571,6 +1579,13 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 		type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (GLOBAL_GET("debug/gdscript/type_inferencing/enforce_static_variable_types") && p_constant->datatype.type_source != GDScriptParser::DataType::ANNOTATED_INFERRED) {
+		if (!p_constant->datatype_specifier && !(p_constant->datatype.kind == GDScriptParser::DataType::BUILTIN && p_constant->datatype.builtin_type == Variant::NIL)) {
+			enforce_static_type((GDScriptParser::Node *)p_constant, p_constant->identifier->name);
+		}
+	}
+#endif
 	type.is_constant = true;
 	p_constant->set_datatype(type);
 
@@ -1725,6 +1740,14 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 	if (result.builtin_type == Variant::Type::NIL && result.type_source == GDScriptParser::DataType::ANNOTATED_INFERRED && p_parameter->datatype_specifier == nullptr) {
 		push_error(vformat(R"(Could not infer the type of the variable "%s" because the initial value is "null".)", p_parameter->identifier->name), p_parameter->default_value);
 	}
+
+#ifdef DEBUG_ENABLED
+	if (GLOBAL_GET("debug/gdscript/type_inferencing/enforce_static_parameter_types") && result.type_source != GDScriptParser::DataType::ANNOTATED_INFERRED) {
+		if (!p_parameter->datatype_specifier && !(result.kind == GDScriptParser::DataType::BUILTIN && result.builtin_type == Variant::NIL)) {
+			enforce_static_type((GDScriptParser::Node *)p_parameter, p_parameter->identifier->name);
+		}
+	}
+#endif
 
 	p_parameter->set_datatype(result);
 }
@@ -4185,6 +4208,28 @@ void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser:
 	mark_node_unsafe(p_origin);
 	parser->push_error(p_message, p_origin);
 }
+
+#ifdef DEBUG_ENABLED
+void GDScriptAnalyzer::enforce_static_type(GDScriptParser::Node *p_node, String p_identifier) {
+	String identifier_type = "";
+	GDScriptWarning::Code warning_code = GDScriptWarning::Code::ENFORCE_STATIC_VARIABLE_TYPES;
+	switch (p_node->type) {
+		case GDScriptParser::Node::Type::CONSTANT:
+			identifier_type = "Constant";
+			break;
+		case GDScriptParser::Node::Type::VARIABLE:
+			identifier_type = "Variable";
+			break;
+		case GDScriptParser::Node::Type::PARAMETER:
+			identifier_type = "Parameter";
+			warning_code = GDScriptWarning::Code::ENFORCE_STATIC_PARAMETER_TYPES;
+			break;
+		default: // Only enforce static types on Variables and parameters
+			return;
+	}
+	parser->push_warning(p_node, warning_code, identifier_type, p_identifier);
+}
+#endif
 
 void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) {
 #ifdef DEBUG_ENABLED

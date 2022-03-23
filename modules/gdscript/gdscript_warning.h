@@ -78,6 +78,8 @@ public:
 		EMPTY_FILE, // A script file is empty.
 		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
 		INT_ASSIGNED_TO_ENUM, // An integer value was assigned to an enum-typed variable without casting.
+		ENFORCE_STATIC_VARIABLE_TYPES, // Disabled by default, some users would like to enforce static variable typing.
+		ENFORCE_STATIC_PARAMETER_TYPES,
 		WARNING_MAX,
 	};
 

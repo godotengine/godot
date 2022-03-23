@@ -136,6 +136,9 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	// Enable all warnings for GDScript, so we can test them.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		if (i == GDScriptWarning::ENFORCE_STATIC_VARIABLE_TYPES || i == GDScriptWarning::ENFORCE_STATIC_PARAMETER_TYPES) {
+			continue;
+		}
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
 		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
 	}
