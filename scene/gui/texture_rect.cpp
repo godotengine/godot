@@ -55,6 +55,8 @@ void TextureRect::_notification(int p_what) {
 				} break;
 				case STRETCH_KEEP: {
 					size = texture->get_size();
+					size = size.min(get_size());
+					region = Rect2(Point2(), size);
 				} break;
 				case STRETCH_KEEP_CENTERED: {
 					offset = (get_size() - texture->get_size()) / 2;

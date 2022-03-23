@@ -184,7 +184,8 @@ void TextureButton::_notification(int p_what) {
 				_tile = false;
 				switch (stretch_mode) {
 					case STRETCH_KEEP:
-						size = texdraw->get_size();
+						size = size.min(get_size());
+						_texture_region = Rect2(Point2(), size);
 						break;
 					case STRETCH_SCALE:
 						size = get_size();
