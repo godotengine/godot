@@ -58,7 +58,11 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(parameters, result, p_test_only)) {
+
+	bool collided = move_and_collide(parameters, result, p_test_only);
+
+	// Don't report collision when the whole motion is done.
+	if (collided && result.collision_safe_fraction < 1) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
