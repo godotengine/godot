@@ -1682,8 +1682,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 		}
 
 		if (err == OK && !so_files.empty()) {
-			//if shared object files, copy them
-			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			// If shared object files, copy them.
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
 				err = da->copy(so_files[i].path, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
 				if (err == OK) {
