@@ -184,7 +184,7 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String &p_hostname, IP::Typ
 }
 
 IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE);
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE, vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	IP::ResolverStatus res = resolver->queue[p_id].status.get();
 	if (res == IP::RESOLVER_STATUS_NONE) {
@@ -195,7 +195,7 @@ IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
 }
 
 IP_Address IP::get_resolve_item_address(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IP_Address());
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, IP_Address(), vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	MutexLock lock(resolver->mutex);
 
@@ -215,7 +215,7 @@ IP_Address IP::get_resolve_item_address(ResolverID p_id) const {
 }
 
 Array IP::get_resolve_item_addresses(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, Array());
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, Array(), vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	MutexLock lock(resolver->mutex);
 
@@ -236,7 +236,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 }
 
 void IP::erase_resolve_item(ResolverID p_id) {
-	ERR_FAIL_INDEX(p_id, IP::RESOLVER_MAX_QUERIES);
+	ERR_FAIL_INDEX_MSG(p_id, IP::RESOLVER_MAX_QUERIES, vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	resolver->queue[p_id].status.set(IP::RESOLVER_STATUS_NONE);
 }
