@@ -49,7 +49,7 @@ public:
 	};
 
 	struct StreamFile : public Stream {
-		FileAccess *f = nullptr;
+		Ref<FileAccess> f;
 
 		virtual char32_t get_char() override;
 		virtual bool is_utf8() const override;

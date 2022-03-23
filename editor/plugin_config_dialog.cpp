@@ -50,8 +50,8 @@ void PluginConfigDialog::_on_confirmed() {
 	String path = "res://addons/" + subfolder_edit->get_text();
 
 	if (!_edit_mode) {
-		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (!d || d->make_dir_recursive(path) != OK) {
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (d.is_null() || d->make_dir_recursive(path) != OK) {
 			return;
 		}
 	}
@@ -137,7 +137,7 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 		subfolder_validation->set_texture(invalid_icon);
 		subfolder_validation->set_tooltip(TTR("Subfolder name is not a valid folder name."));
 	} else {
-		DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		String path = "res://addons/" + subfolder_edit->get_text();
 		if (dir->dir_exists(path) && !_edit_mode) { // Only show this error if in "create" mode.
 			is_valid = false;

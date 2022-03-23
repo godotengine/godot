@@ -842,7 +842,7 @@ void EditorSettings::create() {
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
 		// Validate editor config file.
-		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
+		Ref<DirAccess> dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
@@ -1151,12 +1151,11 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	} else {
 		favorites_file = get_project_settings_dir().plus_file("favorites");
 	}
-	FileAccess *f = FileAccess::open(favorites_file, FileAccess::WRITE);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::WRITE);
+	if (f.is_valid()) {
 		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
 		}
-		memdelete(f);
 	}
 }
 
@@ -1172,12 +1171,11 @@ void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	} else {
 		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
 	}
-	FileAccess *f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
+	if (f.is_valid()) {
 		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
 		}
-		memdelete(f);
 	}
 }
 
@@ -1195,24 +1193,22 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 		favorites_file = get_project_settings_dir().plus_file("favorites");
 		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
 	}
-	FileAccess *f = FileAccess::open(favorites_file, FileAccess::READ);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::READ);
+	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
-		memdelete(f);
 	}
 
 	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
-	if (f) {
+	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
-		memdelete(f);
 	}
 }
 
@@ -1227,8 +1223,8 @@ bool EditorSettings::is_dark_theme() {
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 
-	DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
-	if (d) {
+	Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+	if (d.is_valid()) {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1293,8 +1289,8 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
-		if (d) {
+		Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+		if (d.is_valid()) {
 			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
 			return true;
 		}
@@ -1345,8 +1341,8 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
-	DirAccessRef d = DirAccess::open(template_dir);
-	if (d) {
+	Ref<DirAccess> d = DirAccess::open(template_dir);
+	if (d.is_valid()) {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (!file.is_empty()) {

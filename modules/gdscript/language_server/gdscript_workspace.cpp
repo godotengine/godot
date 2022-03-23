@@ -221,7 +221,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 
 void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String> &r_files) {
 	Error err;
-	DirAccessRef dir = DirAccess::open(p_root_dir, &err);
+	Ref<DirAccess> dir = DirAccess::open(p_root_dir, &err);
 	if (OK == err) {
 		dir->list_dir_begin();
 		String file_name = dir->get_next();

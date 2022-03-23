@@ -211,7 +211,7 @@ static Ref<Image> _webp_mem_loader_func(const uint8_t *p_png, int p_size) {
 	return img;
 }
 
-Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderWEBP::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale) {
 	Vector<uint8_t> src_image;
 	uint64_t src_image_len = f->get_length();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -220,8 +220,6 @@ Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_forc
 	uint8_t *w = src_image.ptrw();
 
 	f->get_buffer(&w[0], src_image_len);
-
-	f->close();
 
 	Error err = webp_load_image_from_buffer(p_image.ptr(), w, src_image_len);
 

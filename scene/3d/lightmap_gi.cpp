@@ -1101,7 +1101,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 //#define DEBUG_SIMPLICES_AS_OBJ_FILE
 #ifdef DEBUG_SIMPLICES_AS_OBJ_FILE
 		{
-			FileAccessRef f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
 			for (uint32_t i = 0; i < bsp_simplices.size(); i++) {
 				f->store_line("o Simplex" + itos(i));
 				for (int j = 0; j < 4; j++) {
@@ -1118,7 +1118,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					f->store_line(vformat("f %d %d %d", 4 * i + face_order[j][0], 4 * i + face_order[j][1], 4 * i + face_order[j][2]));
 				}
 			}
-			f->close();
 		}
 #endif
 
@@ -1150,7 +1149,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 //#define DEBUG_BSP_TREE
 #ifdef DEBUG_BSP_TREE
-			FileAccessRef f = FileAccess::open("res://bsp.txt", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open("res://bsp.txt", FileAccess::WRITE);
 			for (uint32_t i = 0; i < bsp_nodes.size(); i++) {
 				f->store_line(itos(i) + " - plane: " + bsp_nodes[i].plane + " over: " + itos(bsp_nodes[i].over) + " under: " + itos(bsp_nodes[i].under));
 			}

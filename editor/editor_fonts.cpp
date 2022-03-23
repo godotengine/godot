@@ -218,7 +218,7 @@ Ref<FontData> load_cached_internal_font(const uint8_t *p_data, size_t p_size, Te
 }
 
 void editor_register_fonts(Ref<Theme> p_theme) {
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	/* Custom font */
 

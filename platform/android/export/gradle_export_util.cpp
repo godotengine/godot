@@ -75,8 +75,8 @@ String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_or
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir) {
 	if (!DirAccess::exists(p_dir)) {
-		DirAccessRef filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
+		Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 		Error err = filesystem_da->make_dir_recursive(p_dir);
 		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 	}
@@ -91,10 +91,9 @@ Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
 	if (err != OK) {
 		return err;
 	}
-	FileAccess *fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_buffer(p_data.ptr(), p_data.size());
-	memdelete(fa);
 	return OK;
 }
 
@@ -109,10 +108,9 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 		}
 		return err;
 	}
-	FileAccess *fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_string(p_data);
-	memdelete(fa);
 	return OK;
 }
 
@@ -152,8 +150,8 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
-	DirAccessRef da = DirAccess::open("res://android/build/res");
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open("res://android/build/res");
+	if (da.is_null()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to open Android resources directory.");
 		}

@@ -1765,8 +1765,8 @@ void DisplayServerWindows::swap_buffers() {
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
-	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!f, "Cannot open file with icon '" + p_filename + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file with icon '" + p_filename + "'.");
 
 	ICONDIR *icon_dir = (ICONDIR *)memalloc(sizeof(ICONDIR));
 	int pos = 0;
@@ -1852,7 +1852,6 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	err = GetLastError();
 	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
 
-	memdelete(f);
 	memdelete(icon_dir);
 }
 

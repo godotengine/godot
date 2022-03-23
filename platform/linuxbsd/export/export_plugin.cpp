@@ -34,8 +34,8 @@
 #include "editor/editor_node.h"
 
 Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
 
 	f->store_line("#!/bin/sh");
 	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
@@ -101,8 +101,8 @@ List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<Edito
 Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
 	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ_WRITE);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (f.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -110,7 +110,6 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	{
 		uint32_t magic = f->get_32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
-			f->close();
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -120,7 +119,6 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	int bits = f->get_8() * 32;
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
-		f->close();
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "32-bit executables cannot have embedded data >= 4 GiB.");
 	}
 
@@ -165,7 +163,6 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 		f->seek(string_data_pos);
 		strings = (uint8_t *)memalloc(string_data_size);
 		if (!strings) {
-			f->close();
 			return ERR_OUT_OF_MEMORY;
 		}
 		f->get_buffer(strings, string_data_size);
@@ -198,7 +195,6 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	}
 
 	memfree(strings);
-	f->close();
 
 	return found ? OK : ERR_FILE_CORRUPT;
 }

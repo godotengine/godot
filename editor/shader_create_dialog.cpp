@@ -313,7 +313,7 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
-	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (f->file_exists(p)) {
 		is_new_shader_created = false;
@@ -371,12 +371,12 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 		return TTR("Path is not local.");
 	}
 
-	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
 		return TTR("Invalid base path.");
 	}
 
-	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (f->dir_exists(p)) {
 		return TTR("A directory with the same name exists.");
 	}

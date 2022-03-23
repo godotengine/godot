@@ -156,8 +156,8 @@ void EditorDirDialog::_make_dir_confirm() {
 
 	String dir = ti->get_metadata(0);
 
-	DirAccessRef d = DirAccess::open(dir);
-	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + dir + "'.");
+	Ref<DirAccess> d = DirAccess::open(dir);
+	ERR_FAIL_COND_MSG(d.is_null(), "Cannot open directory '" + dir + "'.");
 
 	const String stripped_dirname = makedirname->get_text().strip_edges();
 

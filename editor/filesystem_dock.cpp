@@ -225,7 +225,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	bool fav_changed = false;
 	for (int i = favorite_paths.size() - 1; i >= 0; i--) {
 		if (da->dir_exists(favorite_paths[i]) || da->file_exists(favorite_paths[i])) {
@@ -539,7 +539,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		if (target_path.ends_with("/")) {
 			target_path = target_path.substr(0, target_path.length() - 1);
 		}
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(p_path)) {
 			path = target_path;
 		} else if (da->dir_exists(p_path)) {
@@ -1183,7 +1183,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		_get_all_items_in_dir(EditorFileSystem::get_singleton()->get_filesystem_path(old_path), file_changed_paths, folder_changed_paths);
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_verbose("Moving " + old_path + " -> " + new_path);
 	Error err = da->rename(old_path, new_path);
 	if (err == OK) {
@@ -1241,7 +1241,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		return;
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_verbose("Duplicating " + old_path + " -> " + new_path);
 	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
@@ -1260,7 +1260,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			cfg->save(new_path + ".import");
 		} else if (p_item.is_file && (old_path.get_extension() == "tscn" || old_path.get_extension() == "tres")) {
 			// FIXME: Quick hack to fix text resources. This should be fixed properly.
-			FileAccessRef file = FileAccess::open(old_path, FileAccess::READ, &err);
+			Ref<FileAccess> file = FileAccess::open(old_path, FileAccess::READ, &err);
 			if (err == OK) {
 				PackedStringArray lines = file->get_as_utf8_string().split("\n");
 				String line = lines[0];
@@ -1269,7 +1269,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 					line = line.substr(0, line.find(" uid")) + "]";
 					lines.write[0] = line;
 
-					FileAccessRef file2 = FileAccess::open(new_path, FileAccess::WRITE, &err);
+					Ref<FileAccess> file2 = FileAccess::open(new_path, FileAccess::WRITE, &err);
 					if (err == OK) {
 						file2->store_string(String("\n").join(lines));
 					}
@@ -1429,7 +1429,7 @@ void FileSystemDock::_make_dir_confirm() {
 	}
 
 	print_verbose("Making folder " + dir_name + " in " + directory);
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(directory);
 	ERR_FAIL_COND_MSG(err != OK, "Cannot open directory '" + directory + "'.");
 
@@ -1479,7 +1479,7 @@ void FileSystemDock::_make_scene_confirm() {
 
 	scene_name = directory.plus_file(scene_name);
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->file_exists(scene_name)) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
 		return;
@@ -1494,7 +1494,7 @@ void FileSystemDock::_file_removed(String p_file) {
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
 	path = p_file.get_base_dir();
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	while (!da->dir_exists(path)) {
 		path = path.get_base_dir();
 	}
@@ -1507,7 +1507,7 @@ void FileSystemDock::_folder_removed(String p_folder) {
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
 	path = p_folder.get_base_dir();
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	while (!da->dir_exists(path)) {
 		path = path.get_base_dir();
 	}
@@ -1546,7 +1546,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	// Present a more user friendly warning for name conflict.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 #if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
 	// Workaround case insensitivity on Windows.
 	if ((da->file_exists(new_path) || da->dir_exists(new_path)) && new_path.to_lower() != old_path.to_lower()) {
@@ -1599,7 +1599,7 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	String new_path = base_dir.plus_file(new_name);
 
 	// Present a more user friendly warning for name conflict
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
 		return;
@@ -2354,7 +2354,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 						}
 
 						int exist_counter = 1;
-						DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+						Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 						while (da->file_exists(new_path) || da->dir_exists(new_path)) {
 							exist_counter++;
 							new_path = vformat(new_path_base, exist_counter);
@@ -2831,7 +2831,7 @@ void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &f
 		return;
 	}
 
-	DirAccessRef da = DirAccess::open(p_path);
+	Ref<DirAccess> da = DirAccess::open(p_path);
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {

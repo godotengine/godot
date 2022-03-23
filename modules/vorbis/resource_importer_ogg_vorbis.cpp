@@ -78,9 +78,8 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
 
-	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
-
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
 
 	uint64_t len = f->get_length();
 
@@ -89,8 +88,6 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	uint8_t *w = file_data.ptrw();
 
 	f->get_buffer(w, len);
-
-	memdelete(f);
 
 	Ref<AudioStreamOGGVorbis> ogg_vorbis_stream;
 	ogg_vorbis_stream.instantiate();

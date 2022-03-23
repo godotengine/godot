@@ -253,8 +253,8 @@ RendererCompositorRD::RendererCompositorRD() {
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
 		}
-		DirAccessRef da = DirAccess::open(shader_cache_dir);
-		if (!da) {
+		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
+		if (da.is_null()) {
 			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 		} else {
 			Error err = da->change_dir("shader_cache");

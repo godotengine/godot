@@ -2086,14 +2086,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	_generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
 
 	if (mesh_lightmap_caches.size()) {
-		FileAccessRef f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
-		if (f) {
+		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
+		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
 				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
 				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());
 			}
-			f->close();
 		}
 	}
 	err = OK;

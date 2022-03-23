@@ -47,7 +47,7 @@
 
 _FORCE_INLINE_ String OS_OSX::get_framework_executable(const String &p_path) {
 	// Append framework executable name, or return as is if p_path is not a framework.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
 		return p_path.plus_file(p_path.get_file().get_basename());
 	} else {

@@ -147,7 +147,7 @@ private:
 	}
 
 	String _test_path() {
-		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		String valid_path, valid_install_path;
 		if (d->change_dir(project_path->get_text()) == OK) {
 			valid_path = project_path->get_text();
@@ -186,8 +186,7 @@ private:
 		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
 			if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
 				if (valid_path.ends_with(".zip")) {
-					FileAccess *src_f = nullptr;
-					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+					zlib_filefunc_def io = zipio_create_io();
 
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
@@ -383,7 +382,7 @@ private:
 			return;
 		}
 
-		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text()) == OK) {
 			if (!d->dir_exists(project_name_no_edges)) {
 				if (d->make_dir(project_name_no_edges) == OK) {
@@ -500,8 +499,7 @@ private:
 						zip_path = project_path->get_text();
 					}
 
-					FileAccess *src_f = nullptr;
-					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+					zlib_filefunc_def io = zipio_create_io();
 
 					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
 					if (!pkg) {
@@ -549,7 +547,7 @@ private:
 							path = path.substr(0, path.length() - 1);
 							String rel_path = path.substr(zip_root.length());
 
-							DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							da->make_dir(dir.plus_file(rel_path));
 						} else {
 							Vector<uint8_t> data;
@@ -564,11 +562,9 @@ private:
 							}
 							unzCloseCurrentFile(pkg);
 
-							FileAccess *f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);
-
-							if (f) {
+							Ref<FileAccess> f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);
+							if (f.is_valid()) {
 								f->store_buffer(data.ptr(), data.size());
-								memdelete(f);
 							} else {
 								failed_files.push_back(rel_path);
 							}
@@ -615,7 +611,7 @@ private:
 
 	void _remove_created_folder() {
 		if (!created_folder_path.is_empty()) {
-			DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			d->remove(created_folder_path);
 
 			create_dir->set_disabled(false);
@@ -719,7 +715,7 @@ public:
 				project_path->set_text(fav_dir);
 				fdialog->set_current_dir(fav_dir);
 			} else {
-				DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				project_path->set_text(d->get_current_dir());
 				fdialog->set_current_dir(d->get_current_dir());
 			}
@@ -2280,7 +2276,7 @@ void ProjectManager::_run_project() {
 }
 
 void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error error = da->change_dir(path);
 	ERR_FAIL_COND_MSG(error != OK, "Could not scan directory at: " + path);
 	da->list_dir_begin();
@@ -2409,7 +2405,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 		return;
 	}
 	Set<String> folders_set;
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
 		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
@@ -2422,7 +2418,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 
 		bool confirm = true;
 		if (folders.size() == 1) {
-			DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			if (dir->change_dir(folders[0]) == OK) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
@@ -2849,7 +2845,7 @@ ProjectManager::ProjectManager() {
 
 	_load_recent_projects();
 
-	DirAccessRef dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
 
 	String default_project_path = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
 	if (!dir_access->dir_exists(default_project_path)) {
