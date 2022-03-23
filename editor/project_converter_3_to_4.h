@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #ifndef PROJECT_CONVERTER_3_TO_4_H
+#ifndef DISABLE_DEPRECATED
 #define PROJECT_CONVERTER_3_TO_4_H
 
 #include "core/io/file_access.h"
@@ -41,6 +42,19 @@ class RegEx;
 class ProjectConverter3To4 {
 public:
 	class RegExContainer;
+	static const char *enum_renames[][2];
+	static const char *gdscript_function_renames[][2];
+	static const char *csharp_function_renames[][2];
+	static const char *gdscript_properties_renames[][2];
+	static const char *csharp_properties_renames[][2];
+	static const char *gdscript_signals_renames[][2];
+	static const char *csharp_signals_renames[][2];
+	static const char *project_settings_renames[][2];
+	static const char *input_map_renames[][2];
+	static const char *builtin_types_renames[][2];
+	static const char *shaders_renames[][2];
+	static const char *class_renames[][2];
+	static const char *color_renames[][2];
 
 private:
 	uint64_t maximum_file_size;
@@ -96,5 +110,7 @@ public:
 	int validate_conversion();
 	int convert();
 };
+
+#endif // DISABLE_DEPRECATED
 
 #endif // PROJECT_CONVERTER_3_TO_4_H
