@@ -60,11 +60,23 @@ private:
 
 public:
 	// accessors
-	BVHABB_CLASS &get_aabb(uint32_t p_id) { return aabbs[p_id]; }
-	const BVHABB_CLASS &get_aabb(uint32_t p_id) const { return aabbs[p_id]; }
+	BVHABB_CLASS &get_aabb(uint32_t p_id) {
+		BVH_ASSERT(p_id < MAX_ITEMS);
+		return aabbs[p_id];
+	}
+	const BVHABB_CLASS &get_aabb(uint32_t p_id) const {
+		BVH_ASSERT(p_id < MAX_ITEMS);
+		return aabbs[p_id];
+	}
 
-	uint32_t &get_item_ref_id(uint32_t p_id) { return item_ref_ids[p_id]; }
-	const uint32_t &get_item_ref_id(uint32_t p_id) const { return item_ref_ids[p_id]; }
+	uint32_t &get_item_ref_id(uint32_t p_id) {
+		BVH_ASSERT(p_id < MAX_ITEMS);
+		return item_ref_ids[p_id];
+	}
+	const uint32_t &get_item_ref_id(uint32_t p_id) const {
+		BVH_ASSERT(p_id < MAX_ITEMS);
+		return item_ref_ids[p_id];
+	}
 
 	bool is_dirty() const { return dirty; }
 	void set_dirty(bool p) { dirty = p; }
