@@ -334,18 +334,20 @@
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
-		<member name="debug/gdscript/warnings/assert_always_false" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
 		</member>
-		<member name="debug/gdscript/warnings/assert_always_true" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns true.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a constant is used as a function.
+		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a constant is used as a function.
 		</member>
-		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when deprecated keywords are used.
+		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when deprecated keywords are used.
 		</member>
-		<member name="debug/gdscript/warnings/empty_file" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when an empty file is parsed.
+		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
@@ -353,82 +355,88 @@
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when using a function as if it was a property.
+		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when using a function as if it was a property.
 		</member>
-		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
+		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a ternary operator may emit values with incompatible types.
 		</member>
-		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when trying to assign an integer to a variable that expects an enum value.
 		</member>
-		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
+		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
-		<member name="debug/gdscript/warnings/narrowing_conversion" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when using a property as if it was a function.
+		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when using a property as if it was a function.
 		</member>
-		<member name="debug/gdscript/warnings/redundant_await" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a function that is not a coroutine is called with await.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
+		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
+		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
-		<member name="debug/gdscript/warnings/standalone_ternary" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], all warnings will be reported as if they were errors.
 		</member>
-		<member name="debug/gdscript/warnings/unassigned_variable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when using a variable that wasn't previously assigned.
+		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when using a variable that wasn't previously assigned.
 		</member>
-		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
+		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
-		<member name="debug/gdscript/warnings/unreachable_code" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
+		<member name="debug/gdscript/warnings/unreachable_code" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
-		<member name="debug/gdscript/warnings/unreachable_pattern" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unreachable_pattern" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when an unreachable [code]match[/code] pattern is detected.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_call_argument" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when using an expression whose type may not be compatible with the function parameter expected.
+		<member name="debug/gdscript/warnings/unsafe_call_argument" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_cast" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when performing an unsafe cast.
+		<member name="debug/gdscript/warnings/unsafe_cast" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when performing an unsafe cast.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_method_access" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when calling a method whose presence is not guaranteed at compile-time in the class.
+		<member name="debug/gdscript/warnings/unsafe_method_access" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_property_access" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables warnings when accessing a property whose presence is not guaranteed at compile-time in the class.
+		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
+			If [code]enabled[/code], prints a warning or an error when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unused_local_constant" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a local constant is never used.
 		</member>
-		<member name="debug/gdscript/warnings/unused_parameter" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_parameter" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a function parameter is never used.
 		</member>
-		<member name="debug/gdscript/warnings/unused_private_class_variable" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a class variable is never used.
 		</member>
-		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a signal is unused.
+		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a signal is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_variable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when a local variable is unused.
+		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when a local variable is unused.
 		</member>
-		<member name="debug/gdscript/warnings/void_assignment" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when assigning the result of a function that returns [code]void[/code] to a variable.
+		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
+			If [code]enabled[/code], prints a warning or an error when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on https://github.com/godotengine/godot/issues&quot;">
 			Message to be displayed before the backtrace when the engine crashes.
