@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/storage/canvas_texture_storage.h"
+#include "servers/rendering/storage/decal_atlas_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 class RendererCanvasCull;
@@ -47,6 +48,7 @@ public:
 
 	static RendererCanvasTextureStorage *canvas_texture_storage;
 	static RendererTextureStorage *texture_storage;
+	static RendererDecalAtlasStorage *decal_atlas_storage;
 	static RendererStorage *storage;
 	static RendererCanvasRender *canvas_render;
 	static RendererCompositor *rasterizer;

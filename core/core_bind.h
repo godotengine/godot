@@ -436,7 +436,7 @@ public:
 
 	void store_var(const Variant &p_var, bool p_full_objects = false);
 
-	bool file_exists(const String &p_name) const; // Return true if a file exists.
+	static bool file_exists(const String &p_name); // Return true if a file exists.
 
 	uint64_t get_modified_time(const String &p_file) const;
 

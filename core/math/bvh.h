@@ -196,6 +196,7 @@ public:
 	////////////////////////////////////////////////////
 
 	void move(BVHHandle p_handle, const BOUNDS &p_aabb) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		if (tree.item_move(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
@@ -205,10 +206,12 @@ public:
 	}
 
 	void recheck_pairs(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		force_collision_check(p_handle);
 	}
 
 	void erase(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// call unpair and remove all references to the item
 		// before deleting from the tree
@@ -225,6 +228,7 @@ public:
 	// set pairable has never been called.
 	// (deferred collision checks are a workaround for visual server for historical reasons)
 	void force_collision_check(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		if (USE_PAIRS) {
 			// the aabb should already be up to date in the BVH
@@ -243,6 +247,7 @@ public:
 	// but generically this makes items add or remove from the
 	// tree internally, to speed things up by ignoring inactive items
 	bool activate(BVHHandle p_handle, const BOUNDS &p_aabb, bool p_delay_collision_check = false) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// sending the aabb here prevents the need for the BVH to maintain
 		// a redundant copy of the aabb.
@@ -267,6 +272,7 @@ public:
 	}
 
 	bool deactivate(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// returns success
 		if (tree.item_deactivate(p_handle)) {
@@ -285,6 +291,7 @@ public:
 	}
 
 	bool get_active(BVHHandle p_handle) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		return tree.item_get_active(p_handle);
 	}
@@ -307,6 +314,7 @@ public:
 
 	// prefer calling this directly as type safe
 	void set_tree(const BVHHandle &p_handle, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_force_collision_check = true) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVH_LOCKED_FUNCTION
 		// Returns true if the pairing state has changed.
 		bool state_changed = tree.item_set_tree(p_handle, p_tree_id, p_tree_collision_mask);
@@ -465,13 +473,6 @@ private:
 					continue;
 				}
 
-#ifdef BVH_CHECKS
-				// if neither are pairable, they should ignore each other
-				// THIS SHOULD NEVER HAPPEN .. now we only test the pairable tree
-				// if the changed item is not pairable
-				CRASH_COND(params.test_pairable_only && !tree._extra[ref_id].pairable);
-#endif
-
 				// checkmasks is already done in the cull routine.
 				BVHHandle h_collidee;
 				h_collidee.set_id(ref_id);
@@ -485,6 +486,7 @@ private:
 
 public:
 	void item_get_AABB(BVHHandle p_handle, BOUNDS &r_aabb) {
+		DEV_ASSERT(!p_handle.is_invalid());
 		BVHABB_CLASS abb;
 		tree.item_get_ABB(p_handle, abb);
 		abb.to(r_aabb);

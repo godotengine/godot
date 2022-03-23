@@ -153,7 +153,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
 				min_d = 0;
-				res_point = local_from;
+				res_point = begin;
 				res_normal = Vector3();
 				res_shape = shape_idx;
 				res_obj = col_obj;
