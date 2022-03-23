@@ -20,7 +20,8 @@ inputs:
     default: "${{ github.workspace }}/.scons-cache/"
   scons-cache-limit:
     description: The scons cache size limit.
-    default: 4096
+    # actions/cache has 10 GiB limit. Allow 10 GiB minus 256 MiB.
+    default: 9984
 runs:
   using: "composite"
   steps:
