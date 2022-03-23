@@ -1878,7 +1878,6 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 		if (err == OK && !so_files.is_empty()) {
 			// If shared object files, copy them.
-			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(so_files[i].path);
 				String target_path;
