@@ -40,6 +40,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "multi_node_edit.h"
+#include "scene/gui/center_container.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
@@ -2506,7 +2507,7 @@ void EditorInspector::update_tree() {
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
 			while (N) {
-				if (N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
 				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
@@ -2580,7 +2581,7 @@ void EditorInspector::update_tree() {
 
 			continue;
 
-		} else if (!(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			// Ignore properties that are not supposed to be in the inspector.
 			continue;
 		}
@@ -2915,7 +2916,7 @@ void EditorInspector::update_tree() {
 					ep->set_checked(checked);
 					ep->set_keying(keying);
 					ep->set_read_only(property_read_only);
-					ep->set_deletable(deletable_properties);
+					ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
 				}
 
 				current_vbox->add_child(F.property_editor);
@@ -2954,6 +2955,15 @@ void EditorInspector::update_tree() {
 				break;
 			}
 		}
+	}
+
+	if (!hide_metadata) {
+		Button *add_md = memnew(Button);
+		add_md->set_text(TTR("Add Metadata"));
+		add_md->set_focus_mode(Control::FOCUS_NONE);
+		add_md->set_icon(get_theme_icon("Add", "EditorIcons"));
+		add_md->connect("pressed", callable_mp(this, &EditorInspector::_show_add_meta_dialog));
+		main_vbox->add_child(add_md);
 	}
 
 	// Get the lists of to add at the end.
@@ -3052,6 +3062,11 @@ void EditorInspector::set_use_doc_hints(bool p_enable) {
 
 void EditorInspector::set_hide_script(bool p_hide) {
 	hide_script = p_hide;
+	update_tree();
+}
+
+void EditorInspector::set_hide_metadata(bool p_hide) {
+	hide_metadata = p_hide;
 	update_tree();
 }
 
@@ -3321,6 +3336,14 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 void EditorInspector::_property_deleted(const String &p_path) {
 	if (!object) {
 		return;
+	}
+
+	if (p_path.begins_with("metadata/")) {
+		String name = p_path.replace_first("metadata/", "");
+		undo_redo->create_action(vformat(TTR("Remove metadata %s"), name));
+		undo_redo->add_do_method(object, "remove_meta", name);
+		undo_redo->add_undo_method(object, "set_meta", name, object->get_meta(name));
+		undo_redo->commit_action();
 	}
 
 	emit_signal(SNAME("property_deleted"), p_path);
@@ -3648,6 +3671,81 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 
 Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
+}
+
+void EditorInspector::_add_meta_confirm() {
+	String name = add_meta_name->get_text();
+
+	object->editor_set_section_unfold("metadata", true); // Ensure metadata is unfolded when adding a new metadata.
+
+	Variant defval;
+	Callable::CallError ce;
+	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
+	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
+	undo_redo->add_do_method(object, "set_meta", name, defval);
+	undo_redo->add_undo_method(object, "remove_meta", name);
+	undo_redo->commit_action();
+}
+
+void EditorInspector::_check_meta_name(String name) {
+	String error;
+
+	if (name == "") {
+		error = TTR("Metadata can't be empty.");
+	} else if (!name.is_valid_identifier()) {
+		error = TTR("Invalid metadata identifier.");
+	} else if (object->has_meta(name)) {
+		error = TTR("Metadata already exists.");
+	}
+
+	if (error != "") {
+		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		add_meta_error->set_text(error);
+		add_meta_dialog->get_ok_button()->set_disabled(true);
+	} else {
+		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		add_meta_error->set_text(TTR("Metadata name is valid."));
+		add_meta_dialog->get_ok_button()->set_disabled(false);
+	}
+}
+
+void EditorInspector::_show_add_meta_dialog() {
+	if (!add_meta_dialog) {
+		add_meta_dialog = memnew(ConfirmationDialog);
+		add_meta_dialog->set_title(TTR("Add Metadata Property"));
+		VBoxContainer *vbc = memnew(VBoxContainer);
+		add_meta_dialog->add_child(vbc);
+		HBoxContainer *hbc = memnew(HBoxContainer);
+		vbc->add_child(hbc);
+		hbc->add_child(memnew(Label(TTR("Name:"))));
+		add_meta_name = memnew(LineEdit);
+		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
+		hbc->add_child(add_meta_name);
+		hbc->add_child(memnew(Label(TTR("Type:"))));
+		add_meta_type = memnew(OptionButton);
+		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
+				continue; //not editable by inspector.
+			}
+			String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
+
+			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
+		}
+		hbc->add_child(add_meta_type);
+		add_meta_dialog->get_ok_button()->set_text(TTR("Add"));
+		add_child(add_meta_dialog);
+		add_meta_dialog->register_text_enter(add_meta_name);
+		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
+		add_meta_error = memnew(Label);
+		vbc->add_child(add_meta_error);
+
+		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
+	}
+
+	add_meta_dialog->popup_centered();
+	add_meta_name->set_text("");
+	_check_meta_name("");
+	add_meta_name->grab_focus();
 }
 
 void EditorInspector::_bind_methods() {
