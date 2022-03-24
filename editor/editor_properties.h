@@ -269,6 +269,7 @@ private:
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
+	void _refresh_names();
 
 protected:
 	static void _bind_methods();

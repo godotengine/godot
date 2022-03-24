@@ -952,6 +952,8 @@ void EditorPropertyLayers::update_property() {
 }
 
 void EditorPropertyLayers::setup(LayerType p_layer_type) {
+	layer_type = p_layer_type;
+
 	String basename;
 	int layer_group_size = 0;
 	int layer_count = 0;
@@ -1036,10 +1038,15 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 	_grid_changed(grid->value);
 }
 
+void EditorPropertyLayers::_refresh_names() {
+	setup(layer_type);
+}
+
 void EditorPropertyLayers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_grid_changed"), &EditorPropertyLayers::_grid_changed);
 	ClassDB::bind_method(D_METHOD("_button_pressed"), &EditorPropertyLayers::_button_pressed);
 	ClassDB::bind_method(D_METHOD("_menu_pressed"), &EditorPropertyLayers::_menu_pressed);
+	ClassDB::bind_method(D_METHOD("_refresh_names"), &EditorPropertyLayers::_refresh_names);
 }
 
 EditorPropertyLayers::EditorPropertyLayers() {
@@ -1064,6 +1071,8 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 	layers->connect("popup_hide", button, "set_pressed", varray(false));
+
+	ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_refresh_names");
 }
 
 ///////////////////// INT /////////////////////////
