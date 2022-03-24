@@ -426,11 +426,6 @@ private:
 	String name;
 	String os_name;
 
-	String release_file_32;
-	String release_file_64;
-	String debug_file_32;
-	String debug_file_64;
-
 	int chmod_flags = -1;
 
 public:
@@ -445,16 +440,12 @@ public:
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
+	virtual String get_template_file_name(const String &p_target, const String &p_arch) const = 0;
 
 	void set_name(const String &p_name);
 	void set_os_name(const String &p_name);
 
 	void set_logo(const Ref<Texture2D> &p_logo);
-
-	void set_release_64(const String &p_file);
-	void set_release_32(const String &p_file);
-	void set_debug_64(const String &p_file);
-	void set_debug_32(const String &p_file);
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features) override;

@@ -77,6 +77,10 @@ void EditorExportPlatformLinuxBSD::set_extension(const String &p_extension, cons
 	extensions[p_feature_key] = p_extension;
 }
 
+String EditorExportPlatformLinuxBSD::get_template_file_name(const String &p_target, const String &p_arch) const {
+	return "linux_x11_" + p_arch + "_" + p_target;
+}
+
 List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
 	for (const KeyValue<String, String> &E : extensions) {
