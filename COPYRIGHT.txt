@@ -127,7 +127,7 @@ License: Expat
 
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
-Copyright: 2019, Binomial LLC.
+Copyright: 2022, Binomial LLC.
 License: Apache-2.0
 
 Files: ./thirdparty/brotli/
