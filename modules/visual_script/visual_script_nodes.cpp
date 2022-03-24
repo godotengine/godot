@@ -85,7 +85,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 	}
 
 	if (p_name == "stack/size") {
-		stack_size = 256;
+		stack_size = p_value;
 		return true;
 	}
 
