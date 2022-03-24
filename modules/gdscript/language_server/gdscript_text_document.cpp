@@ -171,6 +171,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 			lsp::CompletionItem item;
 			item.label = option.display;
 			item.data = request_data;
+			item.insertText = option.insert_text;
 
 			switch (option.kind) {
 				case ScriptCodeCompletionOption::KIND_ENUM:
@@ -278,12 +279,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		item.documentation = symbol->render();
 	}
 
-	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
-		item.insertText = item.label + "(";
-		if (symbol && symbol->children.empty()) {
-			item.insertText += ")";
-		}
-	} else if (item.kind == lsp::CompletionItemKind::Event) {
+	if (item.kind == lsp::CompletionItemKind::Event) {
 		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
 			const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 			item.insertText = quote_style + item.label + quote_style;
