@@ -46,6 +46,7 @@ class VisualScriptFunction : public VisualScriptNode {
 	};
 
 	Vector<Argument> arguments;
+	Vector<Argument> returns;
 
 	bool stack_less;
 	int stack_size;

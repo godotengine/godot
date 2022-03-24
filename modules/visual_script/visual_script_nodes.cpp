@@ -58,7 +58,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		}
 		ports_changed_notify();
 		notify_property_list_changed();
-		return true;
+		return true;	
 	}
 	if (String(p_name).begins_with("argument_")) {
 		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int() - 1;
@@ -85,7 +85,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 	}
 
 	if (p_name == "stack/size") {
-		stack_size = p_value;
+		stack_size = 256;
 		return true;
 	}
 
@@ -279,8 +279,8 @@ public:
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		int ac = node->get_argument_count();
 
-		for (int i = 0; i < ac; i++) {
 #ifdef DEBUG_ENABLED
+		for (int i = 0; i < ac; i++) {
 			Variant::Type expected = node->get_argument_type(i);
 			if (expected != Variant::NIL) {
 				if (!Variant::can_convert_strict(p_inputs[i]->get_type(), expected)) {
@@ -290,11 +290,9 @@ public:
 					return 0;
 				}
 			}
-#endif
-
-			*p_outputs[i] = *p_inputs[i];
 		}
-
+#endif
+		memcpy(p_outputs, p_inputs, ac * sizeof(Variant));
 		return 0;
 	}
 };
