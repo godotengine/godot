@@ -34,9 +34,12 @@
 #ifdef WAYLAND_ENABLED
 
 // FIXME: Linux only?
+#include <fcntl.h>
 #include <limits.h>
 #include <poll.h>
+#include <stdio.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
@@ -99,6 +102,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct wl_seat *wl_seat = nullptr;
 		uint32_t wl_seat_name = 0;
+
+		struct wl_data_device_manager *wl_data_device_manager = nullptr;
+		uint32_t wl_data_device_manager_name = 0;
 
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
@@ -237,6 +243,9 @@ class DisplayServerWayland : public DisplayServer {
 		PointerState pointer_state;
 		KeyboardState keyboard_state;
 
+		struct wl_data_device *wl_data_device;
+		struct wl_data_offer *selection_data_offer;
+
 		SafeFlag events_thread_done;
 
 		List<Ref<WaylandMessage>> message_queue;
@@ -295,6 +304,17 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
+	static void _wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
+	static void _wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
+	static void _wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device);
+	static void _wl_data_device_on_motion(void *data, struct wl_data_device *wl_data_device, uint32_t time, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_data_device_on_drop(void *data, struct wl_data_device *wl_data_device);
+	static void _wl_data_device_on_selection(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
+
+	static void _wl_data_offer_on_offer(void *data, struct wl_data_offer *wl_data_offer, const char *mime_type);
+	static void _wl_data_offer_on_source_actions(void *data, struct wl_data_offer *wl_data_offer, uint32_t source_actions);
+	static void _wl_data_offer_on_action(void *data, struct wl_data_offer *wl_data_offer, uint32_t dnd_action);
+
 	// xdg-shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 	static void _xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
@@ -346,6 +366,21 @@ class DisplayServerWayland : public DisplayServer {
 		.key = _wl_keyboard_on_key,
 		.modifiers = _wl_keyboard_on_modifiers,
 		.repeat_info = _wl_keyboard_on_repeat_info,
+	};
+
+	static constexpr struct wl_data_device_listener wl_data_device_listener = {
+		.data_offer = _wl_data_device_on_data_offer,
+		.enter = _wl_data_device_on_enter,
+		.leave = _wl_data_device_on_leave,
+		.motion = _wl_data_device_on_motion,
+		.drop = _wl_data_device_on_drop,
+		.selection = _wl_data_device_on_selection,
+	};
+
+	static constexpr struct wl_data_offer_listener wl_data_offer_listener = {
+		.offer = _wl_data_offer_on_offer,
+		.source_actions = _wl_data_offer_on_source_actions,
+		.action = _wl_data_offer_on_action,
 	};
 
 	// xdg-shell event listeners.
