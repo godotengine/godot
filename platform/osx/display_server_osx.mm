@@ -1682,7 +1682,11 @@ Point2i DisplayServerOSX::mouse_get_position() const {
 	for (NSScreen *screen in [NSScreen screens]) {
 		NSRect frame = [screen frame];
 		if (NSMouseInRect(mouse_pos, frame, NO)) {
-			return Vector2i((int)mouse_pos.x, (int)-mouse_pos.y) * scale + _get_screens_origin();
+			Vector2i pos = Vector2i((int)mouse_pos.x, (int)mouse_pos.y);
+			pos *= scale;
+			pos -= _get_screens_origin();
+			pos.y *= -1;
+			return pos;
 		}
 	}
 	return Vector2i();
