@@ -1413,6 +1413,12 @@ void FileSystemDock::_make_dir_confirm() {
 	if (!directory.ends_with("/")) {
 		directory = directory.get_base_dir();
 	}
+
+	if (EditorFileSystem::get_singleton()->get_filesystem_path(directory + dir_name)) {
+		EditorNode::get_singleton()->show_warning(TTR("Could not create folder. File with that name already exists."));
+		return;
+	}
+
 	print_verbose("Making folder " + dir_name + " in " + directory);
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(directory);
