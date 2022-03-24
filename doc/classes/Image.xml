@@ -153,7 +153,7 @@
 				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
-		<method name="detect_used_channels">
+		<method name="detect_used_channels" qualifiers="const">
 			<return type="int" enum="Image.UsedChannels" />
 			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
