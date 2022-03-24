@@ -371,6 +371,17 @@ ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, c
 		Array mesh_array = surface->surface_tool->commit_to_arrays();
 		Array blend_shapes = surface->morphs;
 
+		// Enforce blend shape mask array format
+		for (int i = 0; i < blend_shapes.size(); i++) {
+			Array bsdata = blend_shapes[i];
+
+			for (int j = 0; j < Mesh::ARRAY_MAX; j++) {
+				if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << j))) {
+					bsdata[j] = Variant();
+				}
+			}
+		}
+
 		if (surface->material.is_valid()) {
 			mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, mesh_array, blend_shapes, Dictionary(), surface->material, surface->material->get_name());
 		} else {
