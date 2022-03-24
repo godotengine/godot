@@ -831,6 +831,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	editor_zoom_widget = memnew(EditorZoomWidget);
 	editor_zoom_widget->set_position(Vector2(5, 5));
 	editor_zoom_widget->connect("zoom_changed", callable_mp(this, &GenericTilePolygonEditor::_zoom_changed).unbind(1));
+	editor_zoom_widget->set_shortcut_context(this);
 	root->add_child(editor_zoom_widget);
 
 	button_center_view = memnew(Button);

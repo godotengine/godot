@@ -533,11 +533,11 @@ TileAtlasView::TileAtlasView() {
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(panel);
 
-	// Scrollingsc
 	zoom_widget = memnew(EditorZoomWidget);
 	add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &TileAtlasView::_zoom_widget_changed).unbind(1));
+	zoom_widget->set_shortcut_context(this);
 
 	button_center_view = memnew(Button);
 	button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
