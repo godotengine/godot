@@ -1233,31 +1233,31 @@ void Variant::zero() {
 			this->_data._float = 0;
 			break;
 		case VECTOR2:
-			*reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2();
+			*reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2(0, 0);
 			break;
 		case VECTOR2I:
-			*reinterpret_cast<Vector2i *>(this->_data._mem) = Vector2i();
+			*reinterpret_cast<Vector2i *>(this->_data._mem) = Vector2i(0, 0);
 			break;
 		case RECT2:
-			*reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2();
+			*reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2(0, 0, 0, 0);
 			break;
 		case RECT2I:
-			*reinterpret_cast<Rect2i *>(this->_data._mem) = Rect2i();
+			*reinterpret_cast<Rect2i *>(this->_data._mem) = Rect2i(0, 0, 0, 0);
 			break;
 		case VECTOR3:
-			*reinterpret_cast<Vector3 *>(this->_data._mem) = Vector3();
+			*reinterpret_cast<Vector3 *>(this->_data._mem) = Vector3(0, 0, 0);
 			break;
 		case VECTOR3I:
-			*reinterpret_cast<Vector3i *>(this->_data._mem) = Vector3i();
+			*reinterpret_cast<Vector3i *>(this->_data._mem) = Vector3i(0, 0, 0);
 			break;
 		case PLANE:
-			*reinterpret_cast<Plane *>(this->_data._mem) = Plane();
+			*reinterpret_cast<Plane *>(this->_data._mem) = Plane(0, 0, 0, 0);
 			break;
 		case QUATERNION:
-			*reinterpret_cast<Quaternion *>(this->_data._mem) = Quaternion();
+			*reinterpret_cast<Quaternion *>(this->_data._mem) = Quaternion(0, 0, 0, 1); // Rot3DTrack uses expmap, but ValueTrack uses normal slerp.
 			break;
 		case COLOR:
-			*reinterpret_cast<Color *>(this->_data._mem) = Color();
+			*reinterpret_cast<Color *>(this->_data._mem) = Color(0, 0, 0, 0);
 			break;
 		default:
 			this->clear();
