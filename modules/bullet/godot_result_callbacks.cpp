@@ -299,12 +299,13 @@ btScalar GodotContactPairContactResultCallback::addSingleResult(btManifoldPoint 
 		return 1; // not used by bullet
 	}
 
+	// In each contact pair, the contact on the shape which was passed to collide_shape (where this callback is used) is put first.
 	if (m_self_object == colObj0Wrap->getCollisionObject()) {
-		B_TO_G(cp.m_localPointA, m_results[m_count * 2 + 0]); // Local contact
-		B_TO_G(cp.m_localPointB, m_results[m_count * 2 + 1]);
+		B_TO_G(cp.getPositionWorldOnA(), m_results[m_count * 2 + 0]);
+		B_TO_G(cp.getPositionWorldOnB(), m_results[m_count * 2 + 1]);
 	} else {
-		B_TO_G(cp.m_localPointB, m_results[m_count * 2 + 0]); // Local contact
-		B_TO_G(cp.m_localPointA, m_results[m_count * 2 + 1]);
+		B_TO_G(cp.getPositionWorldOnB(), m_results[m_count * 2 + 0]);
+		B_TO_G(cp.getPositionWorldOnA(), m_results[m_count * 2 + 1]);
 	}
 
 	++m_count;
