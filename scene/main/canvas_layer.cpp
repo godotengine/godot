@@ -36,6 +36,7 @@ void CanvasLayer::set_layer(int p_xform) {
 	layer = p_xform;
 	if (viewport.is_valid()) {
 		VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+		vp->_gui_set_root_order_dirty();
 	}
 }
 
