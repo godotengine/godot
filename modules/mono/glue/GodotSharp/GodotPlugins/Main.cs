@@ -26,7 +26,7 @@ namespace GodotPlugins
         [UnmanagedCallersOnly]
         // ReSharper disable once UnusedMember.Local
         private static unsafe godot_bool InitializeFromEngine(IntPtr godotDllHandle, godot_bool editorHint,
-            PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks)
+            PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks, UnmanagedCallbacks* unmanagedCallbacks)
         {
             try
             {
@@ -49,6 +49,7 @@ namespace GodotPlugins
                 };
 
                 *managedCallbacks = ManagedCallbacks.Create();
+                NativeFuncs._unmanagedCallbacks = *unmanagedCallbacks;
 
                 return godot_bool.True;
             }

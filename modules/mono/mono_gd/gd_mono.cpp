@@ -41,6 +41,7 @@
 #include "../godotsharp_dirs.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
+#include "gd_unmanaged_callbacks.h"
 
 #ifdef TOOLS_ENABLED
 #include <nethost.h>
@@ -298,9 +299,9 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 #endif
 
 #ifdef TOOLS_ENABLED
-using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *);
+using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *, UnmanagedCallbacks *);
 #else
-using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *);
+using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, UnmanagedCallbacks *);
 #endif
 
 static String get_assembly_name() {
@@ -449,6 +450,8 @@ void GDMono::initialize() {
 
 	GDMonoCache::ManagedCallbacks managed_callbacks;
 
+	UnmanagedCallbacks unmanaged_callbacks = UnmanagedCallbacks::create();
+
 	void *godot_dll_handle = nullptr;
 
 #if defined(UNIX_ENABLED) && !defined(OSX_ENABLED) && !defined(IOS_ENABLED)
@@ -460,12 +463,12 @@ void GDMono::initialize() {
 	gdmono::PluginCallbacks plugin_callbacks_res;
 	bool init_ok = godot_plugins_initialize(godot_dll_handle,
 			Engine::get_singleton()->is_editor_hint(),
-			&plugin_callbacks_res, &managed_callbacks);
+			&plugin_callbacks_res, &managed_callbacks, &unmanaged_callbacks);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 
 	plugin_callbacks = plugin_callbacks_res;
 #else
-	bool init_ok = godot_plugins_initialize(godot_dll_handle, &managed_callbacks);
+	bool init_ok = godot_plugins_initialize(godot_dll_handle, &managed_callbacks, &unmanaged_callbacks);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 #endif
 

@@ -104,8 +104,6 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[177];
-[[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[30];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_editor_pinvoke_funcs;
@@ -122,7 +120,6 @@ void CSharpLanguage::init() {
 #endif
 
 	// Hopefully this will be enough for all compilers. Otherwise we could use the printf on fake getenv trick.
-	do_not_strip_godotsharp_pinvoke_funcs = (volatile void **)godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 	do_not_strip_godotsharp_editor_pinvoke_funcs = (volatile void **)godotsharp_editor_pinvoke_funcs;
 #endif

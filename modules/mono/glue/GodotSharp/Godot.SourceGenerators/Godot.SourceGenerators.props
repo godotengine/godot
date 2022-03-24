@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <!-- $(GodotProjectDir) is defined by Godot.NET.Sdk -->
+    <CompilerVisibleProperty Include="GodotProjectDir" />
+    <CompilerVisibleProperty Include="GodotSourceGenerators" />
+    <CompilerVisibleProperty Include="IsGodotToolsProject" />
+  </ItemGroup>
+</Project>
