@@ -1583,6 +1583,22 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	}
 }
 
+// This is only active during instant transforms,
+// to capture and wrap mouse events outside the control.
+void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(!_edit.instant);
+	Ref<InputEventMouseMotion> m = p_event;
+
+	if (m.is_valid()) {
+		if (_edit.mode == TRANSFORM_ROTATE) {
+			_edit.mouse_pos = m->get_position(); // rotate should not wrap
+		} else {
+			_edit.mouse_pos += _get_warped_mouse_motion(p_event);
+		}
+		update_transform(_get_key_modifier(m) == Key::SHIFT);
+	}
+}
+
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	if (previewing) {
 		return; //do NONE
@@ -1906,7 +1922,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 
-	if (m.is_valid()) {
+	// Instant transforms process mouse motion in input() to handle wrapping.
+	if (m.is_valid() && !_edit.instant) {
 		_edit.mouse_pos = m->get_position();
 
 		if (spatial_editor->get_single_selected_node()) {
@@ -1956,7 +1973,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
-		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT) || _edit.instant) {
+		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_shift_pressed()) {
@@ -1993,7 +2010,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				update_transform(m->get_position(), _get_key_modifier(m) == Key::SHIFT);
+				update_transform(_get_key_modifier(m) == Key::SHIFT);
 			}
 		} else if (m->get_button_mask().has_flag(MouseButtonMask::RIGHT) || freelook_active) {
 			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
@@ -2183,7 +2200,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.plane = TRANSFORM_VIEW;
 					spatial_editor->set_local_coords_enabled(false);
 				}
-				update_transform(_edit.mouse_pos, Input::get_singleton()->is_key_pressed(Key::SHIFT));
+				update_transform(Input::get_singleton()->is_key_pressed(Key::SHIFT));
 				set_message(new_message, 2);
 				accept_event();
 				return;
@@ -4515,9 +4532,11 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		_edit.instant = instant;
 		_edit.snap = spatial_editor->is_snap_enabled();
 		update_transform_gizmo_view();
+		set_process_input(instant);
 	}
 }
 
+// Apply the current transform operation.
 void Node3DEditorViewport::commit_transform() {
 	ERR_FAIL_COND(_edit.mode == TRANSFORM_NONE);
 	static const char *_transform_name[4] = {
@@ -4552,9 +4571,10 @@ void Node3DEditorViewport::commit_transform() {
 	set_message("");
 }
 
-void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
-	Vector3 ray_pos = _get_ray_pos(p_mousepos);
-	Vector3 ray = _get_ray(p_mousepos);
+// Update the current transform operation in response to an input.
+void Node3DEditorViewport::update_transform(bool p_shift) {
+	Vector3 ray_pos = _get_ray_pos(_edit.mouse_pos);
+	Vector3 ray = _get_ray(_edit.mouse_pos);
 	double snap = EDITOR_GET("interface/inspector/default_float_step");
 	int snap_step_decimals = Math::range_step_decimals(snap);
 
@@ -4894,12 +4914,14 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 	}
 }
 
+// Perform cleanup after a transform operation is committed or cancelled.
 void Node3DEditorViewport::finish_transform() {
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	_edit.mode = TRANSFORM_NONE;
 	_edit.instant = false;
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
+	set_process_input(false);
 }
 
 // Register a shortcut and also add it as an input action with the same events.
