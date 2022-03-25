@@ -44,7 +44,6 @@ Ref<OpenXRInterface> openxr_interface;
 void preregister_openxr_types() {
 	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
-	OpenXRAPI::setup_global_defs();
 	if (OpenXRAPI::openxr_is_enabled()) {
 		openxr_api = memnew(OpenXRAPI);
 		ERR_FAIL_NULL(openxr_api);
