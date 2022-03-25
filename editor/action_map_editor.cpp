@@ -1103,7 +1103,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			// First Column - Icon
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
-				if (k->get_physical_keycode() == 0) {
+				if (k->get_physical_keycode() == Key::NONE) {
 					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
 				} else {
 					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
