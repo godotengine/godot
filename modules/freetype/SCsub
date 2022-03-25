@@ -59,6 +59,23 @@ if env["builtin_freetype"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
+    thirdparty_brotli_dir = "#thirdparty/brotli/"
+    thirdparty_brotli_sources = [
+        "common/constants.c",
+        "common/context.c",
+        "common/dictionary.c",
+        "common/platform.c",
+        "common/shared_dictionary.c",
+        "common/transform.c",
+        "dec/bit_reader.c",
+        "dec/decode.c",
+        "dec/huffman.c",
+        "dec/state.c",
+    ]
+    thirdparty_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
+    env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+    env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+
     if env["platform"] == "uwp":
         # Include header for UWP to fix build issues
         env_freetype.Append(CCFLAGS=["/FI", '"modules/freetype/uwpdef.h"'])
