@@ -1921,6 +1921,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	for (KeyValue<Ref<GDScript>, Map<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
+		scr->load_source_code(scr->get_path());
 		scr->reload(p_soft_reload);
 
 		//restore state if saved

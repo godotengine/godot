@@ -1370,15 +1370,14 @@ void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
 }
 
 void ScriptTextEditor::reload(bool p_soft) {
-	CodeEdit *te = code_editor->get_text_editor();
 	Ref<Script> scr = script;
 	if (scr.is_null()) {
 		return;
 	}
-	scr->set_source_code(te->get_text());
 	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; // Always soft-reload editor plugins.
 
 	scr->get_language()->reload_tool_script(scr, soft);
+	reload_text();
 }
 
 Array ScriptTextEditor::get_breakpoints() {
