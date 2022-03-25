@@ -1092,6 +1092,13 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 }
 
 void EditorFileDialog::_make_dir_confirm() {
+	if (EditorFileSystem::get_singleton()->get_filesystem_path(makedirname->get_text().strip_edges())) {
+		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
+		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		makedirname->set_text(""); // Reset label.
+		return;
+	}
+
 	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
 		dir_access->change_dir(makedirname->get_text().strip_edges());

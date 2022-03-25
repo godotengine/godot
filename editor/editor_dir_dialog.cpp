@@ -156,10 +156,15 @@ void EditorDirDialog::_make_dir_confirm() {
 
 	String dir = ti->get_metadata(0);
 
+	if (EditorFileSystem::get_singleton()->get_filesystem_path(dir + makedirname->get_text())) {
+		mkdirerr->set_text(TTR("Could not create folder. File with that name already exists."));
+		mkdirerr->popup_centered();
+		return;
+	}
+
 	DirAccessRef d = DirAccess::open(dir);
 	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + dir + "'.");
 	Error err = d->make_dir(makedirname->get_text());
-
 	if (err != OK) {
 		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
 	} else {
