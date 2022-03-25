@@ -453,7 +453,7 @@ layout(location = 9) in flat uint instance_index_interp;
 
 //defines to keep compatibility with vertex
 
-#define model_matrix instances.data[instance_index].transform
+#define model_matrix instances.data[draw_call.instance_index].transform
 #ifdef USE_MULTIVIEW
 #define projection_matrix scene_data.projection_matrix_view[ViewIndex]
 #define inv_projection_matrix scene_data.inv_projection_matrix_view[ViewIndex]
