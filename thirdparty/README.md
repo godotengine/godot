@@ -130,25 +130,25 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.ttf`, `NotoNaskhArabicUI_*.ttf`:
+- `NotoSans*.woff2`, `NotoNaskhArabicUI_*.woff2`:
   * Upstream: https://github.com/googlefonts/noto-fonts
   * Version: v2017-10-24-phase3-second-cleanup
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
-- `JetBrainsMono_Regular.ttf`:
+- `JetBrainsMono_Regular.woff2`:
 	* Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.242
   * License: OFL-1.1
-- `DroidSans*.ttf`:
+- `DroidSans*.woff2`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
-- `OpenSans_SemiBold.ttf`:
+- `OpenSans_SemiBold.woff2`:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-
+- All fonts are converted from the `.ttf` sources using `https://github.com/google/woff2` tool.
 
 
 ## freetype

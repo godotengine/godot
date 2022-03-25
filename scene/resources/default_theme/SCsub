@@ -8,10 +8,10 @@ import default_theme_icons_builders
 
 env.add_source_files(env.scene_sources, "*.cpp")
 
-env.Depends("#scene/resources/default_theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.ttf")
+env.Depends("#scene/resources/default_theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.woff2")
 env.CommandNoCache(
     "#scene/resources/default_theme/default_font.gen.h",
-    "#thirdparty/fonts/OpenSans_SemiBold.ttf",
+    "#thirdparty/fonts/OpenSans_SemiBold.woff2",
     run_in_subprocess(default_theme_builders.make_fonts_header),
 )
 
