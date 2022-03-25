@@ -127,6 +127,11 @@ Copyright: 2007, Starbreeze Studios
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
+
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2013, Erwin Coumans
@@ -158,17 +163,17 @@ Comment: Etc2Comp
 Copyright: 2015, Etc2Comp Authors
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/DroidSans*.ttf
+Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/NotoSans*.ttf
+Files: ./thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/Hack_Regular.ttf
+Files: ./thirdparty/fonts/Hack_Regular.woff2
 Comment: Hack font
 Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
