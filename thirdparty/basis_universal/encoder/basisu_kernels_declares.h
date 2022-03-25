@@ -22,4 +22,6 @@ void CPPSPMD_NAME(find_selectors_linear_rgb_4_N)(int64_t* pDistance, uint8_t* pS
 
 void CPPSPMD_NAME(find_lowest_error_perceptual_rgb_4_N)(int64_t* pDistance, const basisu::color_rgba* pBlock_colors, const basisu::color_rgba* pSrc_pixels, uint32_t n, int64_t early_out_error);
 void CPPSPMD_NAME(find_lowest_error_linear_rgb_4_N)(int64_t* pDistance, const basisu::color_rgba* pBlock_colors, const basisu::color_rgba* pSrc_pixels, uint32_t n, int64_t early_out_error);
+
+void CPPSPMD_NAME(update_covar_matrix_16x16)(uint32_t num_vecs, const void* pWeighted_vecs, const void *pOrigin, const uint32_t* pVec_indices, void *pMatrix16x16);
 #endif
