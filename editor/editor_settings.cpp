@@ -652,6 +652,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
 	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem");
 
+	// HTTP Proxy
+	_initial_set("network/http_proxy/host", "");
+	_initial_set("network/http_proxy/port", 8080);
+	hints["network/http_proxy/port"] = PropertyInfo(Variant::INT, "network/http_proxy/port", PROPERTY_HINT_RANGE, "1,65535,1");
+
 	/* Extra config */
 
 	_initial_set("project_manager/sorting_order", 0);
