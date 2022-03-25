@@ -466,7 +466,7 @@ void OpenXRInterface::free_interaction_profiles() {
 	interaction_profiles.clear();
 }
 
-bool OpenXRInterface::initialise_on_startup() const {
+bool OpenXRInterface::initialize_on_startup() const {
 	if (openxr_api == nullptr) {
 		return false;
 	} else if (!openxr_api->is_initialized()) {
@@ -495,7 +495,7 @@ bool OpenXRInterface::initialize() {
 	// load up our action sets before setting up our session, note that our profiles are suggestions, OpenXR takes ownership of (re)binding
 	_load_action_map();
 
-	if (!openxr_api->initialise_session()) {
+	if (!openxr_api->initialize_session()) {
 		return false;
 	}
 
