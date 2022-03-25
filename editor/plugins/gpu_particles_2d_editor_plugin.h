@@ -38,6 +38,7 @@
 #include "scene/gui/spin_box.h"
 
 class EditorFileDialog;
+class EditorUndoRedoManager;
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
@@ -75,7 +76,7 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 
 	String source_emission_file;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_visibility_rect();

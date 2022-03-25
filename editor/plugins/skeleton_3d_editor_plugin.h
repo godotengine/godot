@@ -40,6 +40,7 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
+class EditorUndoRedoManager;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
@@ -63,7 +64,7 @@ class BoneTransformEditor : public VBoxContainer {
 	Skeleton3D *skeleton = nullptr;
 	// String property;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool toggle_enabled = false;
 	bool updating = false;

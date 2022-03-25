@@ -41,6 +41,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 
+class UndoRedo;
+
 class EditorLog : public HBoxContainer {
 	GDCLASS(EditorLog, HBoxContainer);
 
@@ -182,6 +184,7 @@ protected:
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
 	void set_tool_button(Button *p_tool_button);
+	void register_undo_redo(UndoRedo *p_undo_redo);
 	void deinit();
 
 	void clear();

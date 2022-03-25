@@ -31,6 +31,7 @@
 #include "audio_stream_randomizer_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 
 void AudioStreamRandomizerEditorPlugin::edit(Object *p_object) {
 }
@@ -43,8 +44,8 @@ void AudioStreamRandomizerEditorPlugin::make_visible(bool p_visible) {
 }
 
 void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
-	ERR_FAIL_COND(!undo_redo);
+	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(undo_redo.is_null());
 
 	AudioStreamRandomizer *randomizer = Object::cast_to<AudioStreamRandomizer>(p_edited);
 	if (!randomizer) {

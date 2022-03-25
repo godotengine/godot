@@ -41,6 +41,7 @@
 
 class ProgressBar;
 class EditorFileDialog;
+class EditorUndoRedoManager;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -54,7 +55,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;

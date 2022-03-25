@@ -44,6 +44,8 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
+class EditorUndoRedoManager;
+
 // Inspector controls.
 class ControlPositioningWarning : public MarginContainer {
 	GDCLASS(ControlPositioningWarning, MarginContainer);
@@ -203,7 +205,7 @@ public:
 class ControlEditorToolbar : public HBoxContainer {
 	GDCLASS(ControlEditorToolbar, HBoxContainer);
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	EditorSelection *editor_selection = nullptr;
 
 	ControlEditorPopupButton *anchors_button = nullptr;

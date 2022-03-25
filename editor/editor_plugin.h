@@ -53,6 +53,7 @@ class EditorImportPlugin;
 class EditorExportPlugin;
 class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
+class EditorUndoRedoManager;
 class EditorFileSystem;
 class EditorToolAddons;
 class EditorPaths;
@@ -129,9 +130,7 @@ public:
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	UndoRedo *undo_redo = nullptr;
-
-	UndoRedo *_get_undo_redo() { return undo_redo; }
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
@@ -144,7 +143,7 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	UndoRedo &get_undo_redo() { return *undo_redo; }
+	Ref<EditorUndoRedoManager> get_undo_redo();
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);

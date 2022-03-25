@@ -34,6 +34,7 @@
 #include "animation_track_editor.h"
 #include "core/templates/rb_set.h"
 
+class EditorUndoRedoManager;
 class ViewPanner;
 
 class AnimationBezierTrackEdit : public Control {
@@ -48,7 +49,7 @@ class AnimationBezierTrackEdit : public Control {
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	Node *root = nullptr;
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos = 0;
@@ -180,7 +181,7 @@ public:
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
-	void set_undo_redo(UndoRedo *p_undo_redo);
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);

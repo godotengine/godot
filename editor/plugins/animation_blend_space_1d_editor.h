@@ -40,6 +40,8 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
+class EditorUndoRedoManager;
+
 class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin);
 
@@ -76,7 +78,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	bool updating = false;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	static AnimationNodeBlendSpace1DEditor *singleton;
 
