@@ -310,8 +310,8 @@ void TileSetEditor::_notification(int p_what) {
 			tool_workspacemode[WORKSPACE_CREATE_ATLAS]->set_icon(get_icon("AddAtlasTile", "EditorIcons"));
 
 			tools[TOOL_SELECT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
-			tools[BITMASK_COPY]->set_icon(get_icon("Duplicate", "EditorIcons"));
-			tools[BITMASK_PASTE]->set_icon(get_icon("Override", "EditorIcons"));
+			tools[BITMASK_COPY]->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			tools[BITMASK_PASTE]->set_icon(get_icon("ActionPaste", "EditorIcons"));
 			tools[BITMASK_CLEAR]->set_icon(get_icon("Clear", "EditorIcons"));
 			tools[SHAPE_NEW_POLYGON]->set_icon(get_icon("CollisionPolygon2D", "EditorIcons"));
 			tools[SHAPE_NEW_RECTANGLE]->set_icon(get_icon("CollisionShape2D", "EditorIcons"));
