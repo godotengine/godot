@@ -1009,7 +1009,7 @@ String DisplayServerWayland::clipboard_get() const {
 		uint32_t bytes_read = 0;
 
 		while (true) {
-			uint32_t last_bytes_read = read(fds[0], data.ptr() + bytes_read, chunk_size);
+			int32_t last_bytes_read = read(fds[0], data.ptr() + bytes_read, chunk_size);
 			if (last_bytes_read < 0) {
 				ERR_PRINT(vformat("Clipboard: read error %d.", errno));
 			}
