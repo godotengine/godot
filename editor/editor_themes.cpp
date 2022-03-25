@@ -288,17 +288,40 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	dark_icon_color_dictionary[Color::html("#5fff97")] = success_color;
 	dark_icon_color_dictionary[Color::html("#ffdd65")] = warning_color;
 
+	// Use the accent color for some icons (checkbox, radio, toggle, etc.).
+	Dictionary accent_color_icon_color_dictionary;
+	Set<StringName> accent_color_icons;
+
+	const Color accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
+	accent_color_icon_color_dictionary[Color::html("699ce8")] = accent_color;
+	if (accent_color.get_luminance() > 0.75) {
+		accent_color_icon_color_dictionary[Color::html("ffffff")] = Color(0.2, 0.2, 0.2);
+	}
+
+	accent_color_icons.insert("GuiChecked");
+	accent_color_icons.insert("GuiRadioChecked");
+	accent_color_icons.insert("GuiIndeterminate");
+	accent_color_icons.insert("GuiToggleOn");
+	accent_color_icons.insert("GuiToggleOnMirrored");
+	accent_color_icons.insert("PlayOverlay");
+
 	// Generate icons.
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
-			float saturation = p_icon_saturation;
+			Ref<ImageTexture> icon;
 
-			if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0 || strcmp(editor_icons_names[i], "Godot") == 0 || strcmp(editor_icons_names[i], "Logo") == 0) {
-				saturation = 1.0;
+			if (accent_color_icons.has(editor_icons_names[i])) {
+				icon = editor_generate_icon(i, true, EDSCALE, 1.0, accent_color_icon_color_dictionary);
+			} else {
+				float saturation = p_icon_saturation;
+
+				if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0 || strcmp(editor_icons_names[i], "Godot") == 0 || strcmp(editor_icons_names[i], "Logo") == 0) {
+					saturation = 1.0;
+				}
+
+				const int is_exception = exceptions.has(editor_icons_names[i]);
+				icon = editor_generate_icon(i, !is_exception, EDSCALE, saturation, dark_icon_color_dictionary);
 			}
-
-			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, EDSCALE, saturation, dark_icon_color_dictionary);
 
 			p_theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), icon);
 		}
@@ -514,8 +537,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Register icons + font
 
-	// The resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons.
-	if (p_theme != nullptr && fabs(p_theme->get_constant(SNAME("scale"), SNAME("Editor")) - EDSCALE) < 0.00001 && (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor")) == dark_theme && prev_icon_saturation == icon_saturation) {
+	// The editor scale, icon color (dark_theme bool), icon saturation, and accent color has not changed, so we do not regenerate the icons.
+	if (p_theme != nullptr && fabs(p_theme->get_constant(SNAME("scale"), SNAME("Editor")) - EDSCALE) < 0.00001 && (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor")) == dark_theme && prev_icon_saturation == icon_saturation && p_theme->get_color(SNAME("accent_color"), SNAME("Editor")) == accent_color) {
 		// Register already generated icons.
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), p_theme->get_icon(editor_icons_names[i], SNAME("EditorIcons")));

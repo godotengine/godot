@@ -1476,10 +1476,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 	Ref<Font> doc_font = p_rt->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	Ref<Font> doc_bold_font = p_rt->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	Ref<Font> doc_italic_font = p_rt->get_theme_font(SNAME("doc_italic"), SNAME("EditorFonts"));
 	Ref<Font> doc_code_font = p_rt->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	Ref<Font> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
-	Color headline_color = p_rt->get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
 	Color link_color = p_rt->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
 	Color code_color = p_rt->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
 	Color kbd_color = p_rt->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
@@ -1633,7 +1633,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
 			//use italics font
-			p_rt->push_color(headline_color);
+			p_rt->push_font(doc_italic_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag == "codeblock") {

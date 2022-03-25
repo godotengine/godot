@@ -130,6 +130,11 @@ Comment: Basis Universal
 Copyright: 2019, Binomial LLC.
 License: Apache-2.0
 
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
+
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors

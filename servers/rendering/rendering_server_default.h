@@ -385,6 +385,12 @@ public:
 
 	/* DECAL API */
 
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererDecalAtlasStorage
+#define server_name RSG::decal_atlas_storage
+
 	FUNCRIDSPLIT(decal)
 
 	FUNC2(decal_set_extents, RID, const Vector3 &)
@@ -398,6 +404,13 @@ public:
 	FUNC2(decal_set_normal_fade, RID, float)
 
 	/* BAKED LIGHT API */
+
+//from now on, calls forwarded to this singleton
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	FUNCRIDSPLIT(voxel_gi)
 

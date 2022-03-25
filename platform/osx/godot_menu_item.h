@@ -36,12 +36,21 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+enum GlobalMenuCheckType {
+	CHECKABLE_TYPE_NONE,
+	CHECKABLE_TYPE_CHECK_BOX,
+	CHECKABLE_TYPE_RADIO_BUTTON,
+};
+
 @interface GodotMenuItem : NSObject {
 @public
 	Callable callback;
 	Variant meta;
 	int id;
-	bool checkable;
+	GlobalMenuCheckType checkable_type;
+	int max_states;
+	int state;
+	Ref<Image> img;
 }
 
 @end

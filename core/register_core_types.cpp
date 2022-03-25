@@ -227,7 +227,7 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(PackedDataContainer);
 	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
-	GDREGISTER_CLASS(AStar);
+	GDREGISTER_CLASS(AStar3D);
 	GDREGISTER_CLASS(AStar2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
