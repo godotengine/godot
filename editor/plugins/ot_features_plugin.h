@@ -56,10 +56,10 @@ public:
 
 /*************************************************************************/
 
-class OpenTypeFeaturesAdd : public EditorProperty {
-	GDCLASS(OpenTypeFeaturesAdd, EditorProperty);
+class OpenTypeFeaturesAdd : public Button {
+	GDCLASS(OpenTypeFeaturesAdd, Button);
 
-	Button *button = nullptr;
+	Object *edited_object = nullptr;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_ss = nullptr;
 	PopupMenu *menu_cv = nullptr;
@@ -73,7 +73,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void update_property() override;
+	void setup(Object *p_object);
 
 	OpenTypeFeaturesAdd();
 };
