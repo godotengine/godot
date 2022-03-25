@@ -61,29 +61,37 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 	TTRC("Joystick 4 Down"),
 };
 
-String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_event) {
+String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) const {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEvent");
 
-	// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
-	Ref<InputEventJoypadMotion> jpmotion = p_event;
-	if (jpmotion.is_valid()) {
+	String text = p_event->as_text();
+
+	Ref<InputEventMouse> mouse = p_event;
+	Ref<InputEventJoypadMotion> jp_motion = p_event;
+	Ref<InputEventJoypadButton> jp_button = p_event;
+	if (jp_motion.is_valid()) {
+		// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
 		String desc = TTR("Unknown Joypad Axis");
-		if (jpmotion->get_axis() < JoyAxis::MAX) {
-			desc = RTR(_joy_axis_descriptions[2 * (size_t)jpmotion->get_axis() + (jpmotion->get_axis_value() < 0 ? 0 : 1)]);
+		if (jp_motion->get_axis() < JoyAxis::MAX) {
+			desc = RTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
 		}
 
-		return vformat("Joypad Axis %s %s (%s)", itos((int64_t)jpmotion->get_axis()), jpmotion->get_axis_value() < 0 ? "-" : "+", desc);
-	} else {
-		return p_event->as_text();
+		text = vformat("Joypad Axis %s %s (%s)", itos((int64_t)jp_motion->get_axis()), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
 	}
+	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid())) {
+		String device_string = _get_device_string(p_event->get_device());
+		text += vformat(" - %s", device_string);
+	}
+
+	return text;
 }
 
-void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
+void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
 		event = p_event;
 
 		// Update Label
-		event_as_text->set_text(get_event_text(event));
+		event_as_text->set_text(get_event_text(event, true));
 
 		Ref<InputEventKey> k = p_event;
 		Ref<InputEventMouseButton> mb = p_event;
@@ -122,7 +130,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		additional_options_container->show();
 
 		// Update selected item in input list.
-		if (k.is_valid() || joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
+		if (p_update_input_list_selection && (k.is_valid() || joyb.is_valid() || joym.is_valid() || mb.is_valid())) {
 			TreeItem *category = input_list_tree->get_root()->get_first_child();
 			while (category) {
 				TreeItem *input_item = category->get_first_child();
@@ -234,10 +242,13 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		}
 	}
 
+	// Create an editable reference
+	Ref<InputEvent> received_event = p_event;
+
 	// Check what the type is and if it is allowed.
-	Ref<InputEventKey> k = p_event;
-	Ref<InputEventJoypadButton> joyb = p_event;
-	Ref<InputEventJoypadMotion> joym = p_event;
+	Ref<InputEventKey> k = received_event;
+	Ref<InputEventJoypadButton> joyb = received_event;
+	Ref<InputEventJoypadMotion> joym = received_event;
 
 	int type = 0;
 	if (k.is_valid()) {
@@ -266,7 +277,7 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 	}
 
 	if (k.is_valid()) {
-		k->set_pressed(false); // to avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
+		k->set_pressed(false); // To avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
 			k->set_keycode(Key::NONE);
@@ -275,15 +286,17 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		}
 	}
 
-	Ref<InputEventWithModifiers> mod = p_event;
+	Ref<InputEventWithModifiers> mod = received_event;
 	if (mod.is_valid()) {
 		// Maintain store command option state
 		mod->set_store_command(store_command_checkbox->is_pressed());
-
 		mod->set_window_id(0);
 	}
 
-	_set_event(p_event);
+	// Maintain device selection.
+	received_event->set_device(_get_current_device());
+
+	_set_event(received_event);
 	set_input_as_handled();
 }
 
@@ -331,7 +344,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
 			mb->set_button_index(mouse_buttons[i]);
-			String desc = get_event_text(mb);
+			String desc = get_event_text(mb, false);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
 				continue;
@@ -354,7 +367,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			Ref<InputEventJoypadButton> joyb;
 			joyb.instantiate();
 			joyb->set_button_index((JoyButton)i);
-			String desc = get_event_text(joyb);
+			String desc = get_event_text(joyb, false);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
 				continue;
@@ -380,7 +393,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joym.instantiate();
 			joym->set_axis((JoyAxis)axis);
 			joym->set_axis_value(direction);
-			String desc = get_event_text(joym);
+			String desc = get_event_text(joym, false);
 
 			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
 				continue;
@@ -495,7 +508,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			k->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			k->set_store_command(store_command_checkbox->is_pressed());
 
-			_set_event(k);
+			_set_event(k, false);
 		} break;
 		case InputEventConfigurationDialog::INPUT_MOUSE_BUTTON: {
 			MouseButton idx = (MouseButton)(int)selected->get_meta("__index");
@@ -510,12 +523,19 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			mb->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			mb->set_store_command(store_command_checkbox->is_pressed());
 
-			_set_event(mb);
+			// Maintain selected device
+			mb->set_device(_get_current_device());
+
+			_set_event(mb, false);
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_BUTTON: {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
 			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
-			_set_event(jb);
+
+			// Maintain selected device
+			jb->set_device(_get_current_device());
+
+			_set_event(jb, false);
 		} break;
 		case InputEventConfigurationDialog::INPUT_JOY_MOTION: {
 			JoyAxis axis = (JoyAxis)(int)selected->get_meta("__axis");
@@ -525,24 +545,35 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			jm.instantiate();
 			jm->set_axis(axis);
 			jm->set_axis_value(value);
-			_set_event(jm);
+
+			// Maintain selected device
+			jm->set_device(_get_current_device());
+
+			_set_event(jm, false);
 		} break;
 	}
 }
 
-void InputEventConfigurationDialog::_set_current_device(int i_device) {
-	device_id_option->select(i_device + 1);
+void InputEventConfigurationDialog::_device_selection_changed(int p_option_button_index) {
+	// Subtract 1 as option index 0 corresponds to "All Devices" (value of -1)
+	// and option index 1 corresponds to device 0, etc...
+	event->set_device(p_option_button_index - 1);
+	event_as_text->set_text(get_event_text(event, true));
+}
+
+void InputEventConfigurationDialog::_set_current_device(int p_device) {
+	device_id_option->select(p_device + 1);
 }
 
 int InputEventConfigurationDialog::_get_current_device() const {
 	return device_id_option->get_selected() - 1;
 }
 
-String InputEventConfigurationDialog::_get_device_string(int i_device) const {
-	if (i_device == InputMap::ALL_DEVICES) {
+String InputEventConfigurationDialog::_get_device_string(int p_device) const {
+	if (p_device == InputMap::ALL_DEVICES) {
 		return TTR("All Devices");
 	}
-	return TTR("Device") + " " + itos(i_device);
+	return TTR("Device") + " " + itos(p_device);
 }
 
 void InputEventConfigurationDialog::_notification(int p_what) {
@@ -588,6 +619,9 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 
 		// Switch to "Listen" tab
 		tab_container->set_current_tab(0);
+
+		// Select "All Devices" by default.
+		device_id_option->select(0);
 	}
 
 	popup_centered();
@@ -673,12 +707,13 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	device_id_option = memnew(OptionButton);
 	device_id_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	device_container->add_child(device_id_option);
-
 	for (int i = -1; i < 8; i++) {
 		device_id_option->add_item(_get_device_string(i));
 	}
-	_set_current_device(0);
+	device_id_option->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
+	_set_current_device(InputMap::ALL_DEVICES);
+	device_container->add_child(device_id_option);
+
 	device_container->hide();
 	additional_options_container->add_child(device_container);
 
@@ -1096,7 +1131,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			TreeItem *event_item = action_tree->create_item(action_item);
 
 			// First Column - Text
-			event_item->set_text(0, event_config_dialog->get_event_text(event)); // Need to us the special description for JoypadMotion here, so don't use as_text() directly.
+			event_item->set_text(0, event_config_dialog->get_event_text(event, true));
 			event_item->set_meta("__event", event);
 			event_item->set_meta("__index", evnt_idx);
 
