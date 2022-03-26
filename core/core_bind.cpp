@@ -2296,6 +2296,18 @@ Vector<String> Engine::get_singleton_list() const {
 	return ret;
 }
 
+void Engine::register_script_language(ScriptLanguage *p_language) {
+	ScriptServer::register_language(p_language);
+}
+
+int Engine::get_script_language_count() {
+	return ScriptServer::get_language_count();
+}
+
+ScriptLanguage *Engine::get_script_language(int p_index) const {
+	return ScriptServer::get_language(p_index);
+}
+
 void Engine::set_editor_hint(bool p_enabled) {
 	::Engine::get_singleton()->set_editor_hint(p_enabled);
 }
@@ -2346,6 +2358,10 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_singleton", "name", "instance"), &Engine::register_singleton);
 	ClassDB::bind_method(D_METHOD("unregister_singleton", "name"), &Engine::unregister_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton_list"), &Engine::get_singleton_list);
+
+	ClassDB::bind_method(D_METHOD("register_script_language", "language"), &Engine::register_script_language);
+	ClassDB::bind_method(D_METHOD("get_script_language_count"), &Engine::get_script_language_count);
+	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 

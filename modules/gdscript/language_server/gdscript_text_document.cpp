@@ -166,49 +166,51 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	params.load(p_params);
 	Dictionary request_data = params.to_json();
 
-	List<ScriptCodeCompletionOption> options;
+	List<ScriptLanguage::CodeCompletionOption> options;
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->completion(params, &options);
 
 	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
 
-		for (const ScriptCodeCompletionOption &option : options) {
+		for (const ScriptLanguage::CodeCompletionOption &option : options) {
 			lsp::CompletionItem item;
 			item.label = option.display;
 			item.data = request_data;
 
 			switch (option.kind) {
-				case ScriptCodeCompletionOption::KIND_ENUM:
+				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
 					item.kind = lsp::CompletionItemKind::Enum;
 					break;
-				case ScriptCodeCompletionOption::KIND_CLASS:
+				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
 					item.kind = lsp::CompletionItemKind::Class;
 					break;
-				case ScriptCodeCompletionOption::KIND_MEMBER:
+				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
 					item.kind = lsp::CompletionItemKind::Property;
 					break;
-				case ScriptCodeCompletionOption::KIND_FUNCTION:
+				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
 					item.kind = lsp::CompletionItemKind::Method;
 					break;
-				case ScriptCodeCompletionOption::KIND_SIGNAL:
+				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
 					item.kind = lsp::CompletionItemKind::Event;
 					break;
-				case ScriptCodeCompletionOption::KIND_CONSTANT:
+				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
 					item.kind = lsp::CompletionItemKind::Constant;
 					break;
-				case ScriptCodeCompletionOption::KIND_VARIABLE:
+				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
 					item.kind = lsp::CompletionItemKind::Variable;
 					break;
-				case ScriptCodeCompletionOption::KIND_FILE_PATH:
+				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
 					item.kind = lsp::CompletionItemKind::File;
 					break;
-				case ScriptCodeCompletionOption::KIND_NODE_PATH:
+				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
 					item.kind = lsp::CompletionItemKind::Snippet;
 					break;
-				case ScriptCodeCompletionOption::KIND_PLAIN_TEXT:
+				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 					item.kind = lsp::CompletionItemKind::Text;
 					break;
+				default: {
+				}
 			}
 
 			arr[i] = item.to_json();

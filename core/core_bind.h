@@ -38,6 +38,7 @@
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -663,6 +664,10 @@ public:
 	void register_singleton(const StringName &p_name, Object *p_object);
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
+
+	void register_script_language(ScriptLanguage *p_language);
+	int get_script_language_count();
+	ScriptLanguage *get_script_language(int p_index) const;
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;

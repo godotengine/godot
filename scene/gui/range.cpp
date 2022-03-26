@@ -282,7 +282,7 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
 
-	GDVIRTUAL_BIND(_value_changed);
+	GDVIRTUAL_BIND(_value_changed, "new_value");
 
 	ADD_LINKED_PROPERTY("min_value", "value");
 	ADD_LINKED_PROPERTY("min_value", "max_value");

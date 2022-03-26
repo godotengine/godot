@@ -1485,9 +1485,10 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	if (p_object_core) {
 		mi.flags |= METHOD_FLAG_OBJECT_CORE;
 	}
-	if (p_arg_names.size()) {
+
+	if (!p_object_core) {
 		if (p_arg_names.size() != mi.arguments.size()) {
-			WARN_PRINT("Mismatch argument name count for virtual function: " + String(p_class) + "::" + p_method.name);
+			WARN_PRINT("Mismatch argument name count for virtual method: " + String(p_class) + "::" + p_method.name);
 		} else {
 			for (int i = 0; i < p_arg_names.size(); i++) {
 				mi.arguments[i].name = p_arg_names[i];
@@ -1495,6 +1496,10 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 		}
 	}
 
+	if (classes[p_class].virtual_methods_map.has(p_method.name)) {
+		// overloading not supported
+		ERR_FAIL_MSG("Virtual method already bound '" + String(p_class) + "::" + p_method.name + "'.");
+	}
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
 
