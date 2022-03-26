@@ -347,7 +347,7 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 		if (!globals.wlr_data_control_manager) {
 			zwlr_data_control_manager_v1_destroy(globals.wlr_data_control_manager);
-			globals.wlr_data_control_manager = null;
+			globals.wlr_data_control_manager = nullptr;
 		}
 
 		return;
@@ -902,7 +902,7 @@ void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, str
 		zwlr_data_control_source_v1_destroy(wls->selection_data_control_source);
 		wls->selection_data_control_source = nullptr;
 
-		wls->selection_data.empty();
+		wls->selection_data.clear();
 
 		print_verbose("Clipboard: selection set by another program.");
 		return;
@@ -912,7 +912,7 @@ void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, str
 		zwlr_data_control_source_v1_destroy(wls->primary_data_control_source);
 		wls->primary_data_control_source = nullptr;
 
-		wls->primary_data.empty();
+		wls->primary_data.clear();
 
 		print_verbose("Clipboard: primary selection set by another program.");
 		return;
