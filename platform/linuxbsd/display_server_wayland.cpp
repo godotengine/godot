@@ -876,7 +876,7 @@ void DisplayServerWayland::_wlr_data_control_device_on_primary_selection(void *d
 void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source, const char *mime_type, int32_t fd) {
 	WaylandState *wls = (WaylandState *)data;
 
-	Vector<uint8_t> *data_to_send;
+	Vector<uint8_t> *data_to_send = nullptr;
 
 	if (wlr_data_control_source == wls->selection_data_control_source) {
 		data_to_send = &wls->selection_data;
@@ -886,24 +886,23 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 		print_verbose("Clipboard: requested primary selection.");
 	}
 
-	ssize_t written_bytes = 0;
+	if (data_to_send) {
+		ssize_t written_bytes = 0;
 
-	if (strcmp(mime_type, "text/plain") == 0) {
-		written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
+		if (strcmp(mime_type, "text/plain") == 0) {
+			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
+		}
+
+		if (written_bytes > 0) {
+			print_verbose(vformat("Clipboard: sent %d bytes.", written_bytes));
+		} else if (written_bytes == 0) {
+			print_verbose("Clipboard: no bytes sent.");
+		} else {
+			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+		}
 	}
 
 	close(fd);
-
-	if (written_bytes == 0) {
-		print_verbose("Clipboard: no bytes sent.");
-		return;
-	}
-
-	if (written_bytes > 0) {
-		print_verbose(vformat("Clipboard: sent %d bytes.", written_bytes));
-	} else {
-		ERR_PRINT(vformat("Clipboard: write error %d.", errno));
-	}
 }
 
 void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source) {
