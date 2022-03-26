@@ -886,13 +886,24 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 		print_verbose("Clipboard: requested primary selection.");
 	}
 
+	ssize_t written_bytes = 0;
+
 	if (strcmp(mime_type, "text/plain") == 0) {
-		write(fd, data_to_send->ptr(), data_to_send->size());
+		written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
 	}
 
 	close(fd);
 
-	print_verbose(vformat("Clipboard: sent %d bytes.", data_to_send->size()));
+	if (written_bytes == 0) {
+		print_verbose("Clipboard: no bytes sent.");
+		return;
+	}
+
+	if (written_bytes > 0) {
+		print_verbose(vformat("Clipboard: sent %d bytes.", written_bytes));
+	} else {
+		ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+	}
 }
 
 void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source) {
