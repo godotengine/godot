@@ -2872,10 +2872,11 @@ ProjectManager::ProjectManager() {
 	if (scale_factor > 1.0) {
 		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
 		Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
+		Vector2i screen_position = DisplayServer::get_singleton()->screen_get_position();
 		window_size *= scale_factor;
 		Vector2i window_position;
-		window_position.x = (screen_size.x - window_size.x) / 2;
-		window_position.y = (screen_size.y - window_size.y) / 2;
+		window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
+		window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
 		DisplayServer::get_singleton()->window_set_size(window_size);
 		DisplayServer::get_singleton()->window_set_position(window_position);
 	}
