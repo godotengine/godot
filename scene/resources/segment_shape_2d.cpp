@@ -141,7 +141,7 @@ void RayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slips_on_slope", "active"), &RayShape2D::set_slips_on_slope);
 	ClassDB::bind_method(D_METHOD("get_slips_on_slope"), &RayShape2D::get_slips_on_slope);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slips_on_slope"), "set_slips_on_slope", "get_slips_on_slope");
 }
 
