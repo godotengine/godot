@@ -1612,8 +1612,22 @@ void EditorInspector::update_tree() {
 					current_vbox->add_child(section);
 					sections.push_back(section);
 
-					const String label = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, property_name_style);
-					const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
+					String label;
+					String tooltip;
+
+					// Only process group label if this is not the group or subgroup.
+					if ((i == 0 && path_name == group)) {
+						if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+							label = TTRGET(path_name);
+							tooltip = path_name;
+						} else {
+							label = path_name;
+							tooltip = TTRGET(path_name);
+						}
+					} else {
+						label = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, property_name_style);
+						tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
+					}
 
 					Color c = sscolor;
 					c.a /= level;
