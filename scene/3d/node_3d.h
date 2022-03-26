@@ -50,7 +50,6 @@ public:
 
 class Node3D : public Node {
 	GDCLASS(Node3D, Node);
-	OBJ_CATEGORY("3D");
 
 public:
 	enum RotationEditMode {

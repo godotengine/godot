@@ -48,7 +48,6 @@ private:
 
 class Resource : public RefCounted {
 	GDCLASS(Resource, RefCounted);
-	OBJ_CATEGORY("Resources");
 
 public:
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }

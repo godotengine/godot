@@ -2093,10 +2093,6 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 	return c;
 }
 
-StringName ClassDB::get_category(const StringName &p_node) const {
-	return ::ClassDB::get_category(p_node);
-}
-
 bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::has_enum(p_class, p_name, p_no_inheritance);
 }
@@ -2168,7 +2164,6 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::get_integer_constant_enum, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_category", "class"), &ClassDB::get_category);
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }
 

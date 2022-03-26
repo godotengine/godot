@@ -1551,15 +1551,6 @@ bool ClassDB::is_class_exposed(const StringName &p_class) {
 	return ti->exposed;
 }
 
-StringName ClassDB::get_category(const StringName &p_node) {
-	ERR_FAIL_COND_V(!classes.has(p_node), StringName());
-#ifdef DEBUG_ENABLED
-	return classes[p_node].category;
-#else
-	return StringName();
-#endif
-}
-
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
 	if (resource_base_extensions.has(p_extension)) {
 		return;

@@ -344,16 +344,6 @@ public:                                                                         
 		m_inherits::get_inheritance_list_static(p_inheritance_list);                                                                             \
 		p_inheritance_list->push_back(String(#m_class));                                                                                         \
 	}                                                                                                                                            \
-	static String get_category_static() {                                                                                                        \
-		String category = m_inherits::get_category_static();                                                                                     \
-		if (_get_category != m_inherits::_get_category) {                                                                                        \
-			if (!category.is_empty()) {                                                                                                          \
-				category += "/";                                                                                                                 \
-			}                                                                                                                                    \
-			category += _get_category();                                                                                                         \
-		}                                                                                                                                        \
-		return category;                                                                                                                         \
-	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
 			return true;                                                                                                                         \
@@ -452,12 +442,6 @@ protected:                                                                      
 		}                                                                                                                                        \
 	}                                                                                                                                            \
                                                                                                                                                  \
-private:
-
-#define OBJ_CATEGORY(m_category)                                        \
-protected:                                                              \
-	_FORCE_INLINE_ static String _get_category() { return m_category; } \
-                                                                        \
 private:
 
 #define OBJ_SAVE_TYPE(m_class)                                          \
@@ -590,7 +574,6 @@ protected:
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {};
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
-	static String _get_category() { return ""; }
 	static void _bind_methods();
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
@@ -694,7 +677,6 @@ public:
 
 	static String get_class_static() { return "Object"; }
 	static String get_parent_class_static() { return String(); }
-	static String get_category_static() { return String(); }
 
 	virtual String get_class() const {
 		if (_extension) {
