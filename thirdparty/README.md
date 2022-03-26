@@ -708,6 +708,17 @@ Files extracted from upstream source:
 - `COPYING`
 
 
+# wlr-protocols
+
+- Upstream: https://gitlab.freedesktop.org/wlroots/wlr-protocols
+- Version: git (7437e2b600382f0be33949c4e244b2a3702fcb, 2020)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `unstable/wlr-data-control-unstable-v1.xml`
+
+ 
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay

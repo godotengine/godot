@@ -47,10 +47,13 @@
 #include "wayland-cursor.h"
 
 #include "wayland.gen.h"
-#include "xdg_shell.gen.h"
 
 #include "pointer_constraints.gen.h"
 #include "relative_pointer.gen.h"
+
+#include "wlr_data_control.gen.h"
+
+#include "xdg_shell.gen.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
 #include "linux/input-event-codes.h"
@@ -103,9 +106,6 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_seat *wl_seat = nullptr;
 		uint32_t wl_seat_name = 0;
 
-		struct wl_data_device_manager *wl_data_device_manager = nullptr;
-		uint32_t wl_data_device_manager_name = 0;
-
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
@@ -114,6 +114,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
 		uint32_t wp_pointer_constraints_name = 0;
+
+		struct zwlr_data_control_manager_v1 *wlr_data_control_manager = nullptr;
+		uint32_t wlr_data_control_manager_name = 0;
 	};
 
 	struct WindowData {
@@ -243,8 +246,16 @@ class DisplayServerWayland : public DisplayServer {
 		PointerState pointer_state;
 		KeyboardState keyboard_state;
 
-		struct wl_data_device *wl_data_device;
-		struct wl_data_offer *selection_data_offer;
+		struct zwlr_data_control_device_v1 *wlr_data_control_device = nullptr;
+
+		struct zwlr_data_control_offer_v1 *selection_data_control_offer = nullptr;
+		struct zwlr_data_control_source_v1 *selection_data_control_source = nullptr;
+
+		struct zwlr_data_control_offer_v1 *primary_data_control_offer = nullptr;
+		struct zwlr_data_control_source_v1 *primary_data_control_source = nullptr;
+
+		Vector<uint8_t> selection_data;
+		Vector<uint8_t> primary_data;
 
 		SafeFlag events_thread_done;
 
@@ -259,6 +270,8 @@ class DisplayServerWayland : public DisplayServer {
 	VulkanContextWayland *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
+
+	String read_data_control_offer(zwlr_data_control_offer_v1 *wlr_data_control_offer) const;
 
 	static void _get_key_modifier_state(KeyboardState &ks, Ref<InputEventWithModifiers> state);
 
@@ -304,16 +317,15 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
-	static void _wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
-	static void _wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
-	static void _wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device);
-	static void _wl_data_device_on_motion(void *data, struct wl_data_device *wl_data_device, uint32_t time, wl_fixed_t x, wl_fixed_t y);
-	static void _wl_data_device_on_drop(void *data, struct wl_data_device *wl_data_device);
-	static void _wl_data_device_on_selection(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
+	// wlr-protocols event handlers.
 
-	static void _wl_data_offer_on_offer(void *data, struct wl_data_offer *wl_data_offer, const char *mime_type);
-	static void _wl_data_offer_on_source_actions(void *data, struct wl_data_offer *wl_data_offer, uint32_t source_actions);
-	static void _wl_data_offer_on_action(void *data, struct wl_data_offer *wl_data_offer, uint32_t dnd_action);
+	static void _wlr_data_control_device_on_data_offer(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
+	static void _wlr_data_control_device_on_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
+	static void _wlr_data_control_device_on_finished(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device);
+	static void _wlr_data_control_device_on_primary_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
+
+	static void _wlr_data_control_source_on_send(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source, const char *mime_type, int32_t fd);
+	static void _wlr_data_control_source_on_cancelled(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source);
 
 	// xdg-shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
@@ -368,21 +380,6 @@ class DisplayServerWayland : public DisplayServer {
 		.repeat_info = _wl_keyboard_on_repeat_info,
 	};
 
-	static constexpr struct wl_data_device_listener wl_data_device_listener = {
-		.data_offer = _wl_data_device_on_data_offer,
-		.enter = _wl_data_device_on_enter,
-		.leave = _wl_data_device_on_leave,
-		.motion = _wl_data_device_on_motion,
-		.drop = _wl_data_device_on_drop,
-		.selection = _wl_data_device_on_selection,
-	};
-
-	static constexpr struct wl_data_offer_listener wl_data_offer_listener = {
-		.offer = _wl_data_offer_on_offer,
-		.source_actions = _wl_data_offer_on_source_actions,
-		.action = _wl_data_offer_on_action,
-	};
-
 	// xdg-shell event listeners.
 	static constexpr struct xdg_wm_base_listener xdg_wm_base_listener = {
 		.ping = _xdg_wm_base_on_ping,
@@ -395,6 +392,20 @@ class DisplayServerWayland : public DisplayServer {
 	static constexpr struct xdg_toplevel_listener xdg_toplevel_listener = {
 		.configure = _xdg_toplevel_on_configure,
 		.close = _xdg_toplevel_on_close,
+	};
+
+	// wlr-protocols event listeners.
+
+	static constexpr struct zwlr_data_control_device_v1_listener wlr_data_control_device_listener = {
+		.data_offer = _wlr_data_control_device_on_data_offer,
+		.selection = _wlr_data_control_device_on_selection,
+		.finished = _wlr_data_control_device_on_finished,
+		.primary_selection = _wlr_data_control_device_on_primary_selection,
+	};
+
+	static constexpr struct zwlr_data_control_source_v1_listener wlr_data_control_source_listener = {
+		.send = _wlr_data_control_source_on_send,
+		.cancelled = _wlr_data_control_source_on_cancelled,
 	};
 
 	// wayland-protocols event listeners.
