@@ -1163,7 +1163,7 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 	const int bone_len = skeleton->get_bone_count();
 	for (int i = 0; i < bone_len; i++) {
 		Vector3 joint_pos_3d = gt.xform(skeleton->get_bone_global_pose(i).origin);
-		Vector2 joint_pos_2d = p_camera->unproject_position(joint_pos_3d);
+		Vector2 joint_pos_2d = p_camera->world_to_viewport(joint_pos_3d);
 		real_t dist_3d = ray_from.distance_to(joint_pos_3d);
 		real_t dist_2d = p_point.distance_to(joint_pos_2d);
 		if (dist_2d < grab_threshold && dist_3d < closest_dist) {

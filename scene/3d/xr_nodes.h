@@ -58,8 +58,8 @@ public:
 	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
-	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
-	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const override;
+	virtual Point2 world_to_viewport(const Vector3 &p_pos) const override;
+	virtual Vector3 viewport_to_world(const Point2 &p_point, real_t p_z_depth) const override;
 	virtual Vector<Plane> get_frustum() const override;
 
 	XRCamera3D();

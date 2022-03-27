@@ -595,7 +595,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 
 	for (int i = 0; i < secondary_handles.size(); i++) {
 		Vector3 hpos = t.xform(secondary_handles[i]);
-		Vector2 p = p_camera->unproject_position(hpos);
+		Vector2 p = p_camera->world_to_viewport(hpos);
 
 		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
 			real_t dp = p_camera->get_transform().origin.distance_to(hpos);
@@ -619,7 +619,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 
 	for (int i = 0; i < handles.size(); i++) {
 		Vector3 hpos = t.xform(handles[i]);
-		Vector2 p = p_camera->unproject_position(hpos);
+		Vector2 p = p_camera->world_to_viewport(hpos);
 
 		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
 			real_t dp = p_camera->get_transform().origin.distance_to(hpos);
@@ -659,7 +659,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 			scale = size / aspect;
 		}
 
-		Point2 center = p_camera->unproject_position(t.origin);
+		Point2 center = p_camera->world_to_viewport(t.origin);
 
 		Transform3D orig_camera_transform = p_camera->get_camera_transform();
 
@@ -671,8 +671,8 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
 		Vector3 c1 = t.xform(Vector3(-selectable_icon_size, -selectable_icon_size, 0) * scale);
 
-		Point2 p0 = p_camera->unproject_position(c0);
-		Point2 p1 = p_camera->unproject_position(c1);
+		Point2 p0 = p_camera->world_to_viewport(c0);
+		Point2 p1 = p_camera->world_to_viewport(c1);
 
 		p_camera->set_global_transform(orig_camera_transform);
 
@@ -704,8 +704,8 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 			Vector3 a = t.xform(vptr[i * 2 + 0]);
 			Vector3 b = t.xform(vptr[i * 2 + 1]);
 			Vector2 s[2];
-			s[0] = p_camera->unproject_position(a);
-			s[1] = p_camera->unproject_position(b);
+			s[0] = p_camera->world_to_viewport(a);
+			s[1] = p_camera->world_to_viewport(b);
 
 			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
 

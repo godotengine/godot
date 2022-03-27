@@ -337,7 +337,7 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 	return points;
 }
 
-Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
+Point2 Camera3D::world_to_viewport(const Vector3 &p_pos) const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
@@ -362,7 +362,7 @@ Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 	return res;
 }
 
-Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
+Vector3 Camera3D::viewport_to_world(const Point2 &p_point, real_t p_z_depth) const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	if (p_z_depth == 0 && mode != PROJECTION_ORTHOGONAL) {
@@ -449,12 +449,12 @@ Camera3D::DopplerTracking Camera3D::get_doppler_tracking() const {
 }
 
 void Camera3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("project_ray_normal", "screen_point"), &Camera3D::project_ray_normal);
-	ClassDB::bind_method(D_METHOD("project_local_ray_normal", "screen_point"), &Camera3D::project_local_ray_normal);
-	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera3D::project_ray_origin);
-	ClassDB::bind_method(D_METHOD("unproject_position", "world_point"), &Camera3D::unproject_position);
+	ClassDB::bind_method(D_METHOD("project_ray_normal", "viewport_point"), &Camera3D::project_ray_normal);
+	ClassDB::bind_method(D_METHOD("project_local_ray_normal", "viewport_point"), &Camera3D::project_local_ray_normal);
+	ClassDB::bind_method(D_METHOD("project_ray_origin", "viewport_point"), &Camera3D::project_ray_origin);
+	ClassDB::bind_method(D_METHOD("world_to_viewport", "world_point"), &Camera3D::world_to_viewport);
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera3D::is_position_behind);
-	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera3D::project_position);
+	ClassDB::bind_method(D_METHOD("viewport_to_world", "viewport_point", "z_depth"), &Camera3D::viewport_to_world);
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera3D::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera3D::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera3D::set_frustum);

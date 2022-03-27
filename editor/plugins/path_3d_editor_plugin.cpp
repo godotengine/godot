@@ -329,14 +329,14 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 			if (rc >= 2) {
 				const Vector3 *r = v3a.ptr();
 
-				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
+				if (p_camera->world_to_viewport(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
 				}
 
 				for (int i = 0; i < c->get_point_count() - 1; i++) {
 					//find the offset and point index of the place to break up
 					int j = idx;
-					if (p_camera->unproject_position(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist) {
+					if (p_camera->world_to_viewport(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist) {
 						return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
 					}
 
@@ -348,8 +348,8 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 						to = gt.xform(to);
 						if (cdist > 0) {
 							Vector2 s[2];
-							s[0] = p_camera->unproject_position(from);
-							s[1] = p_camera->unproject_position(to);
+							s[0] = p_camera->world_to_viewport(from);
+							s[1] = p_camera->world_to_viewport(to);
 							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, s);
 							float d = inters.distance_to(mbpos);
 
@@ -414,9 +414,9 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 
 		} else if (mb->is_pressed() && ((mb->get_button_index() == MouseButton::LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MouseButton::RIGHT && curve_edit->is_pressed()))) {
 			for (int i = 0; i < c->get_point_count(); i++) {
-				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
-				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
-				real_t dist_to_p_in = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_in(i))).distance_to(mbpos);
+				real_t dist_to_p = p_camera->world_to_viewport(gt.xform(c->get_point_position(i))).distance_to(mbpos);
+				real_t dist_to_p_out = p_camera->world_to_viewport(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
+				real_t dist_to_p_in = p_camera->world_to_viewport(gt.xform(c->get_point_position(i) + c->get_point_in(i))).distance_to(mbpos);
 
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.

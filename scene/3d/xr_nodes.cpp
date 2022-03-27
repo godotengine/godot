@@ -127,7 +127,7 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	return ray;
 };
 
-Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
+Point2 XRCamera3D::world_to_viewport(const Vector3 &p_pos) const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, Vector2());
@@ -135,7 +135,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
 	if (xr_interface.is_null()) {
 		// we might be in the editor or have VR turned off, just call superclass
-		return Camera3D::unproject_position(p_pos);
+		return Camera3D::world_to_viewport(p_pos);
 	}
 
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
@@ -157,7 +157,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	return res;
 };
 
-Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
+Vector3 XRCamera3D::viewport_to_world(const Point2 &p_point, real_t p_z_depth) const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, Vector3());
@@ -165,7 +165,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) co
 	Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
 	if (xr_interface.is_null()) {
 		// we might be in the editor or have VR turned off, just call superclass
-		return Camera3D::project_position(p_point, p_z_depth);
+		return Camera3D::viewport_to_world(p_point, p_z_depth);
 	}
 
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");

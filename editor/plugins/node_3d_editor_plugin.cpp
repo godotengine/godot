@@ -432,7 +432,7 @@ Vector3 Node3DEditorViewport::_get_camera_position() const {
 }
 
 Point2 Node3DEditorViewport::_point_to_screen(const Vector3 &p_point) {
-	return camera->unproject_position(p_point) * subviewport_container->get_stretch_shrink();
+	return camera->world_to_viewport(p_point) * subviewport_container->get_stretch_shrink();
 }
 
 Vector3 Node3DEditorViewport::_get_ray_pos(const Vector2 &p_pos) const {
@@ -3395,8 +3395,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
 	const Plane p = Plane(camz, camera_xform.origin);
 	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
-	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
-	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
+	const real_t d0 = camera->world_to_viewport(camera_xform.origin + camz * gizmo_d).y;
+	const real_t d1 = camera->world_to_viewport(camera_xform.origin + camz * gizmo_d + camy).y;
 	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
 
 	const real_t gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");

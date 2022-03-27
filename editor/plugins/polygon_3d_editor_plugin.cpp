@@ -159,7 +159,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D 
 						edited_point = 1;
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					} else {
-						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
+						if (wip.size() > 1 && p_camera->world_to_viewport(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
 							//wip closed
 							_wip_close();
 
@@ -199,8 +199,8 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D 
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
 								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
-									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
+									p_camera->world_to_viewport(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
+									p_camera->world_to_viewport(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
 								};
 
 								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, points);
@@ -234,7 +234,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D 
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
-								Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
+								Vector2 cp = p_camera->world_to_viewport(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 								real_t d = cp.distance_to(gpoint);
 								if (d < closest_dist && d < grab_threshold) {
@@ -278,7 +278,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D 
 					Vector2 closest_pos;
 					real_t closest_dist = 1e10;
 					for (int i = 0; i < poly.size(); i++) {
-						Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
+						Vector2 cp = p_camera->world_to_viewport(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 						real_t d = cp.distance_to(gpoint);
 						if (d < closest_dist && d < grab_threshold) {

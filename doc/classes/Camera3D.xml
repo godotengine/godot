@@ -71,29 +71,21 @@
 		</method>
 		<method name="project_local_ray_normal" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="screen_point" type="Vector2" />
+			<argument index="0" name="viewport_point" type="Vector2" />
 			<description>
 				Returns a normal vector from the screen point location directed along the camera. Orthogonal cameras are normalized. Perspective cameras account for perspective, screen width/height, etc.
 			</description>
 		</method>
-		<method name="project_position" qualifiers="const">
-			<return type="Vector3" />
-			<argument index="0" name="screen_point" type="Vector2" />
-			<argument index="1" name="z_depth" type="float" />
-			<description>
-				Returns the 3D point in world space that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given [code]z_depth[/code] distance into the scene away from the camera.
-			</description>
-		</method>
 		<method name="project_ray_normal" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="screen_point" type="Vector2" />
+			<argument index="0" name="viewport_point" type="Vector2" />
 			<description>
 				Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="project_ray_origin" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="screen_point" type="Vector2" />
+			<argument index="0" name="viewport_point" type="Vector2" />
 			<description>
 				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
@@ -134,7 +126,15 @@
 				Sets the camera projection to perspective mode (see [constant PROJECTION_PERSPECTIVE]), by specifying a [code]fov[/code] (field of view) angle in degrees, and the [code]z_near[/code] and [code]z_far[/code] clip planes in world space units.
 			</description>
 		</method>
-		<method name="unproject_position" qualifiers="const">
+		<method name="viewport_to_world" qualifiers="const">
+			<return type="Vector3" />
+			<argument index="0" name="viewport_point" type="Vector2" />
+			<argument index="1" name="z_depth" type="float" />
+			<description>
+				Returns the 3D point in world space that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given [code]z_depth[/code] distance into the scene away from the camera.
+			</description>
+		</method>
+		<method name="world_to_viewport" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="world_point" type="Vector3" />
 			<description>
@@ -144,7 +144,7 @@
 				# This code block is part of a script that inherits from Node3D.
 				# `control` is a reference to a node inheriting from Control.
 				control.visible = not get_viewport().get_camera_3d().is_position_behind(global_transform.origin)
-				control.rect_position = get_viewport().get_camera_3d().unproject_position(global_transform.origin)
+				control.rect_position = get_viewport().get_camera_3d().world_to_viewport(global_transform.origin)
 				[/codeblock]
 			</description>
 		</method>
