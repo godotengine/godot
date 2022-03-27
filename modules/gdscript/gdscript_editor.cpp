@@ -763,7 +763,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptLanguage::CodeCompletionOption slider1("or_greater", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider1.insert_text = slider1.display.quote(p_quote_style);
 			r_result.insert(slider1.display, slider1);
-			ScriptLanguage::CodeCompletionOption slider2("or_lesser", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			ScriptLanguage::CodeCompletionOption slider2("or_less", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider2.insert_text = slider2.display.quote(p_quote_style);
 			r_result.insert(slider2.display, slider2);
 			ScriptLanguage::CodeCompletionOption slider3("no_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);

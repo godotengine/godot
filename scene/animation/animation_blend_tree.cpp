@@ -542,7 +542,7 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {

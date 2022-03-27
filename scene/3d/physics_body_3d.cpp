@@ -1088,7 +1088,7 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
 	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
@@ -2346,7 +2346,7 @@ void PhysicalBone3D::ConeJointData::_get_property_list(List<PropertyInfo> *p_lis
 	JointData::_get_property_list(p_list);
 
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/swing_span"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/twist_span"), PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/twist_span"), PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_less,or_greater"));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/bias"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/softness"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/relaxation"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
@@ -2997,7 +2997,7 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_joint_offset", "get_joint_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_lesser,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_less,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_body_offset", "get_body_offset");
 

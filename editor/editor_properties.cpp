@@ -4182,8 +4182,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 }
 
 struct EditorPropertyRangeHint {
-	bool greater = true;
-	bool lesser = true;
+	bool or_greater = true;
+	bool or_less = true;
 	double min = -99999.0;
 	double max = 99999.0;
 	double step = 1.0;
@@ -4201,8 +4201,8 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
 				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
 
-		hint.greater = false; // If using ranged, assume false by default.
-		hint.lesser = false;
+		hint.or_greater = false; // If using ranged, assume false by default.
+		hint.or_less = false;
 
 		hint.min = slices[0].to_float();
 		hint.max = slices[1].to_float();
@@ -4215,9 +4215,9 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		for (int i = 2; i < slices.size(); i++) {
 			String slice = slices[i].strip_edges();
 			if (slice == "or_greater") {
-				hint.greater = true;
-			} else if (slice == "or_lesser") {
-				hint.lesser = true;
+				hint.or_greater = true;
+			} else if (slice == "or_less") {
+				hint.or_less = true;
 			} else if (slice == "no_slider") {
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
@@ -4314,7 +4314,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser, hint.suffix);
+				editor->setup(hint.min, hint.max, hint.step, hint.or_greater, hint.or_less, hint.suffix);
 
 				return editor;
 			}
@@ -4342,7 +4342,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.radians);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians);
 
 				return editor;
 			}

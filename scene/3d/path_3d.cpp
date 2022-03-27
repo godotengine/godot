@@ -337,7 +337,7 @@ void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
 			max = path->get_curve()->get_baked_length();
 		}
 
-		p_property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
+		p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
 	}
 }
 
@@ -380,8 +380,8 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:m"), "set_progress", "get_progress");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:m"), "set_progress", "get_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
