@@ -274,6 +274,7 @@ private:
 	Ref<Tween> tween;
 	Variant initial_val;
 	Variant delta_val;
+	Variant final_val;
 	Callable callback;
 };
 
