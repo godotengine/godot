@@ -2001,30 +2001,58 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
 
-			if (p_event->is_action_pressed("ui_focus_next", true, true)) {
-				next = from->find_next_valid_focus();
-			}
+			Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+			if (joypadmotion_event.is_valid()) {
+				Input *input = Input::get_singleton();
 
-			if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
-				next = from->find_prev_valid_focus();
-			}
+				if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+					next = from->find_next_valid_focus();
+				}
 
-			if (p_event->is_action_pressed("ui_up", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_TOP);
-			}
+				if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+					next = from->find_prev_valid_focus();
+				}
 
-			if (p_event->is_action_pressed("ui_left", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_LEFT);
-			}
+				if (p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
+					next = from->_get_focus_neighbor(SIDE_TOP);
+				}
 
-			if (p_event->is_action_pressed("ui_right", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_RIGHT);
-			}
+				if (p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
+					next = from->_get_focus_neighbor(SIDE_LEFT);
+				}
 
-			if (p_event->is_action_pressed("ui_down", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_BOTTOM);
-			}
+				if (p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
+					next = from->_get_focus_neighbor(SIDE_RIGHT);
+				}
 
+				if (p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
+					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+				}
+			} else {
+				if (p_event->is_action_pressed("ui_focus_next", true, true)) {
+					next = from->find_next_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
+					next = from->find_prev_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_up", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_TOP);
+				}
+
+				if (p_event->is_action_pressed("ui_left", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_LEFT);
+				}
+
+				if (p_event->is_action_pressed("ui_right", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_RIGHT);
+				}
+
+				if (p_event->is_action_pressed("ui_down", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+				}
+			}
 			if (next) {
 				next->grab_focus();
 				set_input_as_handled();
