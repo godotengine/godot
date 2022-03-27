@@ -337,7 +337,7 @@ MultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() const {
 		return CONNECTION_CONNECTED;
 	}
 
-	if (_tcp->is_connected_to_host() || _resolver_id != IP::RESOLVER_INVALID_ID) {
+	if (_tcp->get_status() == StreamPeerTCP::STATUS_CONNECTING || _resolver_id != IP::RESOLVER_INVALID_ID) {
 		return CONNECTION_CONNECTING;
 	}
 

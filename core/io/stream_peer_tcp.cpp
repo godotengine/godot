@@ -184,7 +184,7 @@ Error StreamPeerTCP::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool
 }
 
 Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block) {
-	if (!is_connected_to_host()) {
+	if (status != STATUS_CONNECTED) {
 		return FAILED;
 	}
 
@@ -237,12 +237,8 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 }
 
 void StreamPeerTCP::set_no_delay(bool p_enabled) {
-	ERR_FAIL_COND(!is_connected_to_host());
+	ERR_FAIL_COND(!_sock.is_valid() || !_sock->is_open());
 	_sock->set_tcp_no_delay_enabled(p_enabled);
-}
-
-bool StreamPeerTCP::is_connected_to_host() const {
-	return _sock.is_valid() && _sock->is_open() && (status == STATUS_CONNECTED || status == STATUS_CONNECTING);
 }
 
 StreamPeerTCP::Status StreamPeerTCP::get_status() const {
@@ -319,7 +315,6 @@ Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 void StreamPeerTCP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bind", "port", "host"), &StreamPeerTCP::bind, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
-	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &StreamPeerTCP::is_connected_to_host);
 	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerTCP::poll);
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTCP::get_status);
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);

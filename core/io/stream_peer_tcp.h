@@ -66,7 +66,6 @@ public:
 
 	Error bind(int p_port, const IPAddress &p_host);
 	Error connect_to_host(const IPAddress &p_host, int p_port);
-	bool is_connected_to_host() const;
 	IPAddress get_connected_host() const;
 	int get_connected_port() const;
 	int get_local_port() const;

@@ -57,12 +57,6 @@
 				Returns the status of the connection, see [enum Status].
 			</description>
 		</method>
-		<method name="is_connected_to_host" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if this peer is currently connected or is connecting to a host, [code]false[/code] otherwise.
-			</description>
-		</method>
 		<method name="poll">
 			<return type="int" enum="Error" />
 			<description>
