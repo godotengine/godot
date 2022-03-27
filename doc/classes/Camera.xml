@@ -75,14 +75,14 @@
 			<return type="Vector3" />
 			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
-				Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+				Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the inverse camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="project_ray_origin" qualifiers="const">
 			<return type="Vector3" />
 			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
-				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the inverse camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="set_cull_mask_bit">
