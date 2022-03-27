@@ -202,7 +202,7 @@ if get_option('builtin_icu')
         'common/wintz.cpp',
     ])
 
-    _icu_data_name = 'icudt70l.dat'
+    _icu_data_name = 'icudt71l.dat'
 
     _builtin_icu_compile_dep_flags = [
         '-DU_STATIC_IMPLEMENTATION',

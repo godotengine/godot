@@ -5,17 +5,32 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
-from platform_methods import subprocess_main
+import os, sys
 
+
+
+def replace_if_different(output_path_str, new_content_path_str):
+    import pathlib
+
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
 
 def make_splash(target, source, env):
     src = source[0]
     dst = target[0]
 
+    tmpfile = dst + '~'
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(tmpfile, "w") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_H\n")
         g.write("#define BOOT_SPLASH_H\n")
@@ -27,6 +42,7 @@ def make_splash(target, source, env):
         g.write("};\n")
         g.write("#endif")
 
+    replace_if_different(dst, tmpfile)
 
 def make_splash_editor(target, source, env):
     src = source[0]
@@ -49,14 +65,12 @@ def make_splash_editor(target, source, env):
         g.write("#endif")
 
 
-def make_app_icon(target, source, env):
-    src = source[0]
-    dst = target[0]
-
+def make_app_icon(src, dst):
+    tmpname = src + '~'
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(tmpname, "w") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef APP_ICON_H\n")
         g.write("#define APP_ICON_H\n")
@@ -66,6 +80,14 @@ def make_app_icon(target, source, env):
         g.write("};\n")
         g.write("#endif")
 
+    replace_if_different(dst, tmpname)
 
 if __name__ == "__main__":
-    subprocess_main(globals())
+    command = sys.argv[1]
+    if command == 'make_app_icon':
+        make_app_icon(sys.argv[2], sys.argv[3])
+    elif command == 'make_splash':
+        make_splash([sys.argv[2]], [sys.argv[3]], None)
+    else:
+        sys.exit('Uknonwn command')
+

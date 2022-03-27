@@ -48,10 +48,13 @@ if get_option('builtin_freetype')
         'src/type1/type1.c',
         'src/type42/type42.c',
         'src/winfonts/winfnt.c',
-        'src/sfnt/sfnt.c'
+        'src/sfnt/sfnt.c',
+        'src/svg/ftsvg.c',
     ])
 
-    _freetype_dep_defines = ['-DFT2_BUILD_LIBRARY', '-DFT_CONFIG_OPTION_USE_PNG']
+    _freetype_dep_defines = ['-DFT2_BUILD_LIBRARY',
+                             '-DFT_CONFIG_OPTION_USE_PNG',
+                             '-DFT_CONFIG_OPTION_SYSTEM_ZLIB']
 
     _freetype_c_defines = []
     if PLATFORM == 'javascript'

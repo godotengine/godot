@@ -1,11 +1,8 @@
-subdir('effects')
+effect_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
 
-# NOTE: do not use files() here
-_rd_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
-
-foreach glsl_file : _rd_shaders
-    _rd_target = custom_target(
-        'rd_target_' + glsl_file,
+foreach glsl_file : effect_shaders
+   shad_target = custom_target(
+        'effect_target_' + glsl_file,
         output: '@PLAINNAME@.gen.h',
         input: files(glsl_file),
         env: SCRIPTS_ENV,
@@ -13,5 +10,5 @@ foreach glsl_file : _rd_shaders
         build_by_default: true
     )
 
-    SOURCES += [_rd_target]
+    SOURCES += [shad_target]
 endforeach
