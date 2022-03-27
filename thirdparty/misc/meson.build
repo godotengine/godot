@@ -7,7 +7,6 @@ _misc_srcs = files(
 'smolv.cpp',
 'fastlz.c',
 'mikktspace.c',
-'open-simplex-noise.c',
 'r128.c',
 'smaz.c',
 )

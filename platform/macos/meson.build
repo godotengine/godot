@@ -36,6 +36,7 @@ if PLATFORM == 'osx'
                       'godot_window_delegate.mm',
                       'key_mapping_osx.mm',
                       'osx_terminal_logger.mm',
+                      'tts_osx.mm',
                       )
     CPP_ARGS += ['-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
     OBJCPP_ARGS += ['-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']

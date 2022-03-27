@@ -65,37 +65,27 @@ if get_option('tools')
 
     SOURCES += configure_file(
         output: 'doc_translations.gen.h',
-        command: [editor_builders, 'make_doc_translations', '@OUTPUT@', 'doc'],
+        command: [editor_builders, 'make_doc_translations', '@OUTPUT@', meson.current_source_dir() / 'doc'],
         )
 
     SOURCES += configure_file(
         output: 'editor_translations.gen.h',
-        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', 'translations'],
+        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', meson.current_source_dir() / 'translations'],
     )
 
     # ...and so will fonts
 
-    _fonts_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'thirdparty/fonts/*.ttf', check: true).stdout().split('\n'))
-    builtin_fonts_gen = custom_target(
-        'fonts',
-        input: _fonts_target_srcs,
-        output: ['builtin_fonts.gen.h'],
-        env: SCRIPTS_ENV,
-        command: [SCRIPT_COMPAT, 'make_fonts_header', SCRIPT_EDITOR_BUILDERS, '-i', '@INPUT@', '-o', '@OUTPUT@'],
-        build_by_default: true
+    builtin_fonts_gen = configure_file(
+        output: 'builtin_fonts.gen.h',
+        command: [editor_builders, 'make_fonts_header', '@OUTPUT@', meson.current_source_dir() / '../thirdparty/fonts'],
     )
     SOURCES += [builtin_fonts_gen]
     MAIN_SOURCES += [builtin_fonts_gen]
 
     # ...aaaaaaaaaaaaaaand editor icons
-    _editor_icons_srcs = files(run_command(GLOB, 'icons/*.svg', check: true).stdout().split('\n'))
-    _editor_icons_target = custom_target(
-        'editor_icons',
-        input: _editor_icons_srcs,
-        output: ['editor_icons.gen.h'],
-        env: SCRIPTS_ENV,
-        command: [SCRIPT_COMPAT, 'make_editor_icons_action', SCRIPT_EDITOR_ICON_BUILDERS, '-i', '@INPUT@', '-o', '@OUTPUT@'],
-        build_by_default: true
+    _editor_icons_target = configure_file(
+        output: 'editor_icons.gen.h',
+        command: [find_program('icons/editor_icons_builders.py'), '@OUTPUT@', meson.current_source_dir() / 'icons'],
     )
     SOURCES += [_editor_icons_target]
 

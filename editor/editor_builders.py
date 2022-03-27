@@ -79,10 +79,12 @@ def make_doc_header(compr_filename, modules):
         g.write("        {nullptr, nullptr}\n};")
     replace_if_different(path_filename, path_tmpname)
 
-def make_fonts_header(target, source, env):
-    dst = target[0]
+def make_fonts_header(dst, sourcedir):
+    source = glob(os.path.join(sourcedir, '*.woff2'))
+    source.sort()
+    tmpfilename = dst + '~'
 
-    g = open(dst, "w", encoding="utf-8")
+    g = open(tmpfilename, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_FONTS_H\n")
@@ -105,6 +107,7 @@ def make_fonts_header(target, source, env):
     g.write("#endif")
 
     g.close()
+    replace_if_different(dst, tmpfilename)
 
 def make_translations_header(dst, source, category):
     tmpname = dst + '~'
@@ -206,5 +209,7 @@ if __name__ == "__main__":
         make_editor_translations_header(sys.argv[2], sys.argv[3])
     elif type == 'make_doc_translations':
         make_doc_translations_header(sys.argv[2], sys.argv[3])
+    elif type == 'make_fonts_header':
+        make_fonts_header(sys.argv[2], sys.argv[3])
     else:
         sys.exit(f'Unknown command {type}.')

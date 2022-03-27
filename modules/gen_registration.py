@@ -29,20 +29,13 @@ def create_register_source(ofilename, modules):
         ofile.write(header)
         for module in modules:
             ofile.write(f'#include "modules/{module}/register_types.h"\n\n')
-        ofile.write('void preregister_module_types() {\n')
+        ofile.write('\nvoid initialize_modules(ModuleInitializationLevel p_level) {\n')
         for module in modules:
-            modupper = module.upper()
-            ofile.write(f'#ifdef MODULE_{modupper}_HAS_PREREGISTER\n')
-            ofile.write(f'        preregister_{module}_types();\n')
-            ofile.write('#endif\n')
-        ofile.write('}\n\n')
-        ofile.write('\nvoid register_module_types() {\n')
-        for module in modules:
-            ofile.write(f'        register_{module}_types();\n')
+            ofile.write(f'        initialize_{module}_module(p_level);\n')
         ofile.write('}\n')
-        ofile.write('\nvoid unregister_module_types() {\n')
+        ofile.write('\nvoid uninitialize_modules(ModuleInitializationLevel p_level) {\n')
         for module in modules:
-            ofile.write(f'        unregister_{module}_types();\n')
+            ofile.write(f'        uninitialize_{module}_module(p_level);\n')
         ofile.write('}\n')
     replace_if_different(ofilename, tmpfilename)
 

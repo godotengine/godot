@@ -6,15 +6,30 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 """
 
-import os
+import os, sys
 from io import StringIO
-from platform_methods import subprocess_main
+from glob import glob
+
+def replace_if_different(output_path_str, new_content_path_str):
+    import pathlib
+
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
 
 
-# See also `scene/theme/icons/default_theme_icons_builders.py`.
-def make_editor_icons_action(target, source, env):
-    dst = target[0]
-    svg_icons = source
+# See also `scene/resources/default_theme/default_theme_icons_builders.py`.
+def make_editor_icons(dst, sourcedir):
+
+    tmpfilename = dst + '~'
+    svg_icons = glob(os.path.join(sourcedir, '*.svg'))
+    svg_icons.sort()
 
     icons_string = StringIO()
 
@@ -34,7 +49,7 @@ def make_editor_icons_action(target, source, env):
             icons_string.write(",")
         icons_string.write("\n")
 
-    s = StringIO()
+    s = open(tmpfilename, "w")
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     s.write("#ifndef _EDITOR_ICONS_H\n")
     s.write("#define _EDITOR_ICONS_H\n")
@@ -86,12 +101,12 @@ def make_editor_icons_action(target, source, env):
 
     s.write("#endif\n")
 
-    with open(dst, "w") as f:
-        f.write(s.getvalue())
-
     s.close()
     icons_string.close()
+    replace_if_different(dst, tmpfilename)
+
 
 
 if __name__ == "__main__":
-    subprocess_main(globals())
+    make_editor_icons(sys.argv[1], sys.argv[2])
+

@@ -1,7 +1,7 @@
 # The theme data will only be triggered when it does not exist.
 
 generated_font = custom_target('default_font',
-    input: '../../../thirdparty/fonts/OpenSans_SemiBold.ttf',
+    input: '../../../thirdparty/fonts/OpenSans_SemiBold.woff2',
     output: 'default_font.gen.h',
     env: SCRIPTS_ENV,
     command: [SCRIPT_COMPAT, 'make_fonts_header', SCRIPT_DEFAULT_THEME_BUILDERS, '-i', '@INPUT@', '-o', '@OUTPUT@'])

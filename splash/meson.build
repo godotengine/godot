@@ -1,21 +1,12 @@
 
-_splash_target = custom_target(
-    'splash',
-    output: ['splash.gen.h'],
-    input: ['../main/splash.png'],
-    env: SCRIPTS_ENV,
-    command: [SCRIPT_COMPAT,
+_splash_target = configure_file(
+    output: 'splash.gen.h',
+    input: '../main/splash.png',
+    command: [find_program('../main/main_builders.py'),
               'make_splash',
-              SCRIPT_MAIN_BUILDERS,
-              '-i',
-              '@INPUT@',
-              '-o',
               '@OUTPUT@',
-              '-t',
-              'main',
-              '--fake-stamp',
-              'splash/splash.gen.h'],
-    build_by_default: true
+              '@INPUT@',
+	      ]
 )
 SOURCES += [_splash_target]
 
@@ -41,22 +32,14 @@ if not get_option('no_editor_splash')
   SOURCES += [_splash_editor_target]
 endif
 
-_app_icon_target = custom_target(
-    'app_icon',
-    output: ['app_icon.gen.h'],
-    input: ['../main/app_icon.png'],
-    env: SCRIPTS_ENV,
-    command: [SCRIPT_COMPAT,
-              'make_app_icon',
+_app_icon_target = configure_file(
+    output: 'app_icon.gen.h',
+    input: '../main/app_icon.png',
+    command: [
               SCRIPT_MAIN_BUILDERS,
-              '-i',
+              'make_app_icon',
               '@INPUT@',
-              '-o',
               '@OUTPUT@',
-              '-t',
-              'main',
-              '--fake-stamp',
-              'splash/app_icon.gen.h'],
-    build_by_default: true
+	      ],
 )
 SOURCES += [_app_icon_target]
