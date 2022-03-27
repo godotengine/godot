@@ -61,11 +61,9 @@ namespace basisu
 			m_ocl_mutex.lock();
 			m_ocl_mutex.unlock();
 		}
-
 		~ocl()
 		{
 		}
-
 		bool is_initialized() const { return m_device_id != nullptr; }
 
 		cl_device_id get_device_id() const { return m_device_id; }
@@ -88,14 +86,13 @@ namespace basisu
 				return false;
 			}
 
-			if ((!num_platforms) || (num_platforms > INT_MAX))
+			if ((!num_platforms)||(num_platforms > INT_MAX))
 			{
 				ocl_error_printf("ocl::init: clGetPlatformIDs() returned an invalid number of num_platforms\n");
 				return false;
 			}
 
 			std::vector<cl_platform_id> platforms(num_platforms);
-
 			ret = clGetPlatformIDs(num_platforms, platforms.data(), NULL);
 			if (ret != CL_SUCCESS)
 			{
@@ -116,11 +113,9 @@ namespace basisu
 			if (ret != CL_SUCCESS)
 			{
 				ocl_error_printf("ocl::init: Unable to get any device ID's\n");
-
 				m_device_id = nullptr;
 				return false;
 			}
-
 			ret = clGetDeviceInfo(m_device_id,
 				CL_DEVICE_SINGLE_FP_CONFIG,
 				sizeof(m_dev_fp_config),
@@ -131,7 +126,6 @@ namespace basisu
 				ocl_error_printf("ocl::init: clGetDeviceInfo() failed\n");
 				return false;
 			}
-
 			char plat_vers[256];
 			size_t rv = 0;
 			ret = clGetPlatformInfo(platforms[0], CL_PLATFORM_VERSION, sizeof(plat_vers), plat_vers, &rv);
@@ -140,9 +134,7 @@ namespace basisu
 
 			// Serialize CL calls with the AMD driver to avoid lockups when multiple command queues per thread are used. This sucks, but what can we do?
 			m_use_mutex = (strstr(plat_vers, "AMD") != nullptr) || force_serialization;
-
 			printf("Serializing OpenCL calls across threads: %u\n", (uint32_t)m_use_mutex);
-
 			m_context = clCreateContext(nullptr, 1, &m_device_id, nullptr, nullptr, &ret);
 			if (ret != CL_SUCCESS)
 			{
@@ -163,7 +155,6 @@ namespace basisu
 			}
 						
 			printf("OpenCL init time: %3.3f secs\n", tm.get_elapsed_secs());
-
 			return true;
 		}
 				
@@ -188,14 +179,12 @@ namespace basisu
 			}
 
 			m_device_id = nullptr;
-
 			return true;
 		}
 
 		cl_command_queue create_command_queue()
 		{
 			cl_serializer serializer(this);
-
 			cl_int ret = 0;
 			cl_command_queue p = clCreateCommandQueue(m_context, m_device_id, 0, &ret);
 			if (ret != CL_SUCCESS)
@@ -203,7 +192,7 @@ namespace basisu
 
 			return p;
 		}
-
+		
 		void destroy_command_queue(cl_command_queue p)
 		{
 			if (p)
@@ -213,7 +202,6 @@ namespace basisu
 				clReleaseCommandQueue(p);
 			}
 		}
-
 		bool init_program(const char* pSrc, size_t src_size)
 		{
 			cl_int ret;
@@ -223,34 +211,28 @@ namespace basisu
 				clReleaseProgram(m_program);
 				m_program = nullptr;
 			}
-
 			m_program = clCreateProgramWithSource(m_context, 1, (const char**)&pSrc, (const size_t*)&src_size, &ret);
 			if (ret != CL_SUCCESS)
 			{
 				ocl_error_printf("ocl::init_program: clCreateProgramWithSource() failed!\n");
 				return false;
 			}
-
 			std::string options;
 			if (m_dev_fp_config & CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT)
 			{
 				options += "-cl-fp32-correctly-rounded-divide-sqrt";
 			}
-
 			options += " -cl-std=CL1.2";
 			//options += " -cl-opt-disable";
 			//options += " -cl-mad-enable";
 			//options += " -cl-fast-relaxed-math";
-
 			ret = clBuildProgram(m_program, 1, &m_device_id,
 				options.size() ? options.c_str() : nullptr,  // options
 				nullptr,  // notify
 				nullptr); // user_data
-
 			if (ret != CL_SUCCESS)
 			{
 				const cl_int build_program_result = ret;
-
 				size_t ret_val_size;
 				ret = clGetProgramBuildInfo(m_program, m_device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
 				if (ret != CL_SUCCESS)
@@ -260,14 +242,10 @@ namespace basisu
 				}
 
 				std::vector<char> build_log(ret_val_size + 1);
-
 				ret = clGetProgramBuildInfo(m_program, m_device_id, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log.data(), NULL);
-
 				ocl_error_printf("\nclBuildProgram() failed with error %i:\n%s", build_program_result, build_log.data());
-
 				return false;
 			}
-
 			return true;
 		}
 
@@ -275,9 +253,7 @@ namespace basisu
 		{
 			if (!m_program)
 				return nullptr;
-
 			cl_serializer serializer(this);
-
 			cl_int ret;
 			cl_kernel kernel = clCreateKernel(m_program, pName, &ret);
 			if (ret != CL_SUCCESS)
@@ -285,7 +261,6 @@ namespace basisu
 				ocl_error_printf("ocl::create_kernel: clCreateKernel() failed!\n");
 				return nullptr;
 			}
-
 			return kernel;
 		}
 
@@ -294,7 +269,6 @@ namespace basisu
 			if (k)
 			{
 				cl_serializer serializer(this);
-
 				cl_int ret = clReleaseKernel(k);
 				if (ret != CL_SUCCESS)
 				{
@@ -304,11 +278,9 @@ namespace basisu
 			}
 			return true;
 		}
-
 		cl_mem alloc_read_buffer(size_t size)
 		{
 			cl_serializer serializer(this);
-
 			cl_int ret;
 			cl_mem obj = clCreateBuffer(m_context, CL_MEM_READ_ONLY, size, NULL, &ret);
 			if (ret != CL_SUCCESS)
@@ -316,14 +288,11 @@ namespace basisu
 				ocl_error_printf("ocl::alloc_read_buffer: clCreateBuffer() failed!\n");
 				return nullptr;
 			}
-
 			return obj;
 		}
-
 		cl_mem alloc_and_init_read_buffer(cl_command_queue command_queue, const void *pInit, size_t size)
 		{
 			cl_serializer serializer(this);
-
 			cl_int ret;
 			cl_mem obj = clCreateBuffer(m_context, CL_MEM_READ_ONLY, size, NULL, &ret);
 			if (ret != CL_SUCCESS)
@@ -346,7 +315,6 @@ namespace basisu
 				return nullptr;
 			}
 #endif
-
 			return obj;
 		}
 
@@ -361,10 +329,8 @@ namespace basisu
 				ocl_error_printf("ocl::alloc_write_buffer: clCreateBuffer() failed!\n");
 				return nullptr;
 			}
-
 			return obj;
-		}
-				
+		}				
 		bool destroy_buffer(cl_mem buf)
 		{
 			if (buf)
@@ -378,10 +344,8 @@ namespace basisu
 					return false;
 				}
 			}
-
 			return true;
 		}
-
 		bool write_to_buffer(cl_command_queue command_queue, cl_mem clmem, const void* d, const size_t m)
 		{
 			cl_serializer serializer(this);
@@ -392,10 +356,8 @@ namespace basisu
 				ocl_error_printf("ocl::write_to_buffer: clEnqueueWriteBuffer() failed!\n");
 				return false;
 			}
-
 			return true;
 		}
-
 		bool read_from_buffer(cl_command_queue command_queue, const cl_mem clmem, void* d, size_t m)
 		{
 			cl_serializer serializer(this);
@@ -409,7 +371,6 @@ namespace basisu
 
 			return true;
 		}
-
 		cl_mem create_read_image_u8(uint32_t width, uint32_t height, const void* pPixels, uint32_t bytes_per_pixel, bool normalized)
 		{
 			cl_image_format fmt = get_image_format(bytes_per_pixel, normalized);
@@ -420,9 +381,7 @@ namespace basisu
 			desc.image_width = width;
 			desc.image_height = height;
 			desc.image_row_pitch = width * bytes_per_pixel;
-
 			cl_serializer serializer(this);
-
 			cl_int ret;
 			cl_mem img = clCreateImage(m_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &fmt, &desc, (void*)pPixels, &ret);
 			if (ret != CL_SUCCESS)
@@ -430,10 +389,8 @@ namespace basisu
 				ocl_error_printf("ocl::create_read_image_u8: clCreateImage() failed!\n");
 				return nullptr;
 			}
-
 			return img;
 		}
-
 		cl_mem create_write_image_u8(uint32_t width, uint32_t height, uint32_t bytes_per_pixel, bool normalized)
 		{
 			cl_image_format fmt = get_image_format(bytes_per_pixel, normalized);
@@ -443,9 +400,7 @@ namespace basisu
 			desc.image_type = CL_MEM_OBJECT_IMAGE2D;
 			desc.image_width = width;
 			desc.image_height = height;
-
 			cl_serializer serializer(this);
-
 			cl_int ret;
 			cl_mem img = clCreateImage(m_context, CL_MEM_WRITE_ONLY, &fmt, &desc, nullptr, &ret);
 			if (ret != CL_SUCCESS)
@@ -453,30 +408,24 @@ namespace basisu
 				ocl_error_printf("ocl::create_write_image_u8: clCreateImage() failed!\n");
 				return nullptr;
 			}
-
 			return img;
 		}
-
 		bool read_from_image(cl_command_queue command_queue, cl_mem img, void* pPixels, uint32_t ofs_x, uint32_t ofs_y, uint32_t width, uint32_t height)
 		{
 			cl_serializer serializer(this);
-
 			size_t origin[3] = { ofs_x, ofs_y, 0 }, region[3] = { width, height, 1 };
-
 			cl_int err = clEnqueueReadImage(command_queue, img, CL_TRUE, origin, region, 0, 0, pPixels, 0, NULL, NULL);
 			if (err != CL_SUCCESS)
 			{
 				ocl_error_printf("ocl::read_from_image: clEnqueueReadImage() failed!\n");
 				return false;
 			}
-
 			return true;
 		}
 
 		bool run_1D(cl_command_queue command_queue, const cl_kernel kernel, size_t num_items)
 		{
 			cl_serializer serializer(this);
-
 			cl_int ret = clEnqueueNDRangeKernel(command_queue, kernel,
 				1,  // work_dim
 				nullptr, // global_work_offset
@@ -486,7 +435,6 @@ namespace basisu
 				nullptr, // event_wait_list
 				nullptr // event
 			);
-
 			if (ret != CL_SUCCESS)
 			{
 				ocl_error_printf("ocl::run_1D: clEnqueueNDRangeKernel() failed!\n");
@@ -495,14 +443,12 @@ namespace basisu
 
 			return true;
 		}
-
 		bool run_2D(cl_command_queue command_queue, const cl_kernel kernel, size_t width, size_t height)
 		{
 			cl_serializer serializer(this);
 
 			size_t num_global_items[2] = { width, height };
 			//size_t num_local_items[2] = { 1, 1 };
-
 			cl_int ret = clEnqueueNDRangeKernel(command_queue, kernel,
 				2,  // work_dim
 				nullptr, // global_work_offset
@@ -512,24 +458,19 @@ namespace basisu
 				nullptr, // event_wait_list
 				nullptr // event
 			);
-
 			if (ret != CL_SUCCESS)
 			{
 				ocl_error_printf("ocl::run_2D: clEnqueueNDRangeKernel() failed!\n");
 				return false;
 			}
-
 			return true;
 		}
-
 		bool run_2D(cl_command_queue command_queue, const cl_kernel kernel, size_t ofs_x, size_t ofs_y, size_t width, size_t height)
 		{
 			cl_serializer serializer(this);
-
 			size_t global_ofs[2] = { ofs_x, ofs_y };
 			size_t num_global_items[2] = { width, height };
 			//size_t num_local_items[2] = { 1, 1 };
-
 			cl_int ret = clEnqueueNDRangeKernel(command_queue, kernel,
 				2,  // work_dim
 				global_ofs, // global_work_offset
@@ -539,29 +480,23 @@ namespace basisu
 				nullptr, // event_wait_list
 				nullptr // event
 			);
-
 			if (ret != CL_SUCCESS)
 			{
 				ocl_error_printf("ocl::run_2D: clEnqueueNDRangeKernel() failed!\n");
 				return false;
 			}
-
 			return true;
 		}
-
 		void flush(cl_command_queue command_queue)
 		{
 			cl_serializer serializer(this);
-
 			clFlush(command_queue);
 			clFinish(command_queue);
 		}
-
 		template<typename T>
 		bool set_kernel_arg(cl_kernel kernel, uint32_t index, const T& obj)
 		{
 			cl_serializer serializer(this);
-
 			cl_int ret = clSetKernelArg(kernel, index, sizeof(T), (void*)&obj);
 			if (ret != CL_SUCCESS)
 			{
@@ -575,7 +510,6 @@ namespace basisu
 		bool set_kernel_args(cl_kernel kernel, const T& obj1)
 		{
 			cl_serializer serializer(this);
-
 			cl_int ret = clSetKernelArg(kernel, 0, sizeof(T), (void*)&obj1);
 			if (ret != CL_SUCCESS)
 			{
@@ -584,9 +518,7 @@ namespace basisu
 			}
 			return true;
 		}
-
 #define BASISU_CHECK_ERR if (ret != CL_SUCCESS)	{ ocl_error_printf("ocl::set_kernel_args: clSetKernelArg() failed!\n"); return false; }
-
 		template<typename T, typename U>
 		bool set_kernel_args(cl_kernel kernel, const T& obj1, const U& obj2)
 		{
@@ -605,7 +537,6 @@ namespace basisu
 			ret = clSetKernelArg(kernel, 2, sizeof(V), (void*)&obj3); BASISU_CHECK_ERR
 			return true;
 		}
-
 		template<typename T, typename U, typename V, typename W>
 		bool set_kernel_args(cl_kernel kernel, const T& obj1, const U& obj2, const V& obj3, const W& obj4)
 		{
@@ -616,7 +547,6 @@ namespace basisu
 			ret = clSetKernelArg(kernel, 3, sizeof(W), (void*)&obj4); BASISU_CHECK_ERR
 			return true;
 		}
-
 		template<typename T, typename U, typename V, typename W, typename X>
 		bool set_kernel_args(cl_kernel kernel, const T& obj1, const U& obj2, const V& obj3, const W& obj4, const X& obj5)
 		{
@@ -628,7 +558,6 @@ namespace basisu
 			ret = clSetKernelArg(kernel, 4, sizeof(X), (void*)&obj5); BASISU_CHECK_ERR
 			return true;
 		}
-
 		template<typename T, typename U, typename V, typename W, typename X, typename Y>
 		bool set_kernel_args(cl_kernel kernel, const T& obj1, const U& obj2, const V& obj3, const W& obj4, const X& obj5, const Y& obj6)
 		{
@@ -641,7 +570,6 @@ namespace basisu
 			ret = clSetKernelArg(kernel, 5, sizeof(Y), (void*)&obj6); BASISU_CHECK_ERR
 			return true;
 		}
-
 		template<typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
 		bool set_kernel_args(cl_kernel kernel, const T& obj1, const U& obj2, const V& obj3, const W& obj4, const X& obj5, const Y& obj6, const Z& obj7)
 		{
@@ -655,7 +583,6 @@ namespace basisu
 			ret = clSetKernelArg(kernel, 6, sizeof(Z), (void*)&obj7); BASISU_CHECK_ERR
 			return true;
 		}
-
 		template<typename T, typename U, typename V, typename W, typename X, typename Y, typename Z, typename A>
 		bool set_kernel_args(cl_kernel kernel, const T& obj1, const U& obj2, const V& obj3, const W& obj4, const X& obj5, const Y& obj6, const Z& obj7, const A& obj8)
 		{
@@ -678,7 +605,7 @@ namespace basisu
 		cl_command_queue m_command_queue = nullptr;
 		cl_program m_program = nullptr;
 		cl_device_fp_config m_dev_fp_config;
-		
+
 		bool m_use_mutex = false;
 		std::mutex m_ocl_mutex;
 
@@ -716,7 +643,6 @@ namespace basisu
 			case 4: fmt.image_channel_order = CL_RGBA; break;
 			default: assert(0); fmt.image_channel_order = CL_LUMINANCE; break;
 			}
-
 			fmt.image_channel_data_type = normalized ? CL_UNORM_INT8 : CL_UNSIGNED_INT8;
 			return fmt;
 		}
@@ -791,9 +717,7 @@ namespace basisu
 	{
 		uint32_t m_ocl_total_pixel_blocks;
 		cl_mem m_ocl_pixel_blocks;
-
 		cl_command_queue m_command_queue;
-
 		cl_kernel m_ocl_encode_etc1s_blocks_kernel;
 		cl_kernel m_ocl_refine_endpoint_clusterization_kernel;
 		cl_kernel m_ocl_encode_etc1s_from_pixel_cluster_kernel;
@@ -812,7 +736,6 @@ namespace basisu
 
 		interval_timer tm;
 		tm.start();
-
 		opencl_context* pContext = static_cast<opencl_context * >(calloc(sizeof(opencl_context), 1));
 		if (!pContext)
 			return nullptr;
@@ -827,7 +750,6 @@ namespace basisu
 			opencl_destroy_context(pContext);
 			return nullptr;
 		}
-
 		pContext->m_ocl_encode_etc1s_blocks_kernel = g_ocl.create_kernel("encode_etc1s_blocks");
 		if (!pContext->m_ocl_encode_etc1s_blocks_kernel)
 		{
@@ -835,7 +757,6 @@ namespace basisu
 			opencl_destroy_context(pContext);
 			return nullptr;
 		}
-
 		pContext->m_ocl_refine_endpoint_clusterization_kernel = g_ocl.create_kernel("refine_endpoint_clusterization");
 		if (!pContext->m_ocl_refine_endpoint_clusterization_kernel)
 		{
@@ -968,10 +889,8 @@ namespace basisu
 exit:
 		g_ocl.destroy_buffer(block_buf);
 		g_ocl.destroy_buffer(vars);
-
 		return status;
 	}
-
 	bool opencl_encode_etc1s_pixel_clusters(
 		opencl_context_ptr pContext,
 		etc_block* pOutput_blocks,
@@ -1002,8 +921,7 @@ exit:
 			{
 				return false;
 			}
-		}
-				
+		}		
 		cl_mem vars = g_ocl.alloc_and_init_read_buffer(pContext->m_command_queue , &ps, sizeof(ps));
 		cl_mem input_clusters = g_ocl.alloc_and_init_read_buffer(pContext->m_command_queue, pClusters, (size_t)(sizeof(cl_pixel_cluster) * total_clusters));
 		cl_mem input_pixels = g_ocl.alloc_and_init_read_buffer(pContext->m_command_queue, pPixels, (size_t)(sizeof(color_rgba) * total_pixels));
@@ -1032,7 +950,6 @@ exit:
 		g_ocl.destroy_buffer(input_pixels);
 		g_ocl.destroy_buffer(input_clusters);
 		g_ocl.destroy_buffer(vars);
-
 		return status;
 	}
 
@@ -1055,37 +972,27 @@ exit:
 	{
 		if (!opencl_is_available())
 			return false;
-
 		interval_timer tm;
 		tm.start();
-
 		assert(pContext->m_ocl_pixel_blocks);
 		if (!pContext->m_ocl_pixel_blocks)
-			return false;
-				
+			return false;		
 		cl_rec_param_struct ps;
 		ps.m_total_blocks = pContext->m_ocl_total_pixel_blocks;
 		ps.m_perceptual = perceptual;
-
 		bool status = false;
-
 		cl_mem pixel_block_info = g_ocl.alloc_and_init_read_buffer(pContext->m_command_queue, pPixel_block_info, sizeof(cl_block_info_struct) * pContext->m_ocl_total_pixel_blocks);
 		cl_mem cluster_info = g_ocl.alloc_and_init_read_buffer(pContext->m_command_queue, pCluster_info, sizeof(cl_endpoint_cluster_struct) * total_clusters);
 		cl_mem sorted_block_indices = g_ocl.alloc_and_init_read_buffer(pContext->m_command_queue, pSorted_block_indices, sizeof(uint32_t) * pContext->m_ocl_total_pixel_blocks);
 		cl_mem output_buf = g_ocl.alloc_write_buffer(sizeof(uint32_t) * pContext->m_ocl_total_pixel_blocks);
-		
 		if (!pixel_block_info || !cluster_info || !sorted_block_indices || !output_buf)
 			goto exit;
-
 		if (!g_ocl.set_kernel_args(pContext->m_ocl_refine_endpoint_clusterization_kernel, ps, pContext->m_ocl_pixel_blocks, pixel_block_info, cluster_info, sorted_block_indices, output_buf))
 			goto exit;
-
 		if (!g_ocl.run_2D(pContext->m_command_queue, pContext->m_ocl_refine_endpoint_clusterization_kernel, pContext->m_ocl_total_pixel_blocks, 1))
 			goto exit;
-
 		if (!g_ocl.read_from_buffer(pContext->m_command_queue, output_buf, pOutput_cluster_indices, pContext->m_ocl_total_pixel_blocks * sizeof(uint32_t)))
 			goto exit;
-
 		debug_printf("opencl_refine_endpoint_clusterization: Elapsed time: %3.3f secs\n", tm.get_elapsed_secs());
 		
 		status = true;
@@ -1237,7 +1144,6 @@ namespace basisu
 		BASISU_NOTE_UNUSED(pContext);
 		BASISU_NOTE_UNUSED(total_blocks);
 		BASISU_NOTE_UNUSED(pPixel_blocks);
-
 		return false;
 	}
 
@@ -1247,7 +1153,6 @@ namespace basisu
 		BASISU_NOTE_UNUSED(pOutput_blocks);
 		BASISU_NOTE_UNUSED(perceptual);
 		BASISU_NOTE_UNUSED(total_perms);
-
 		return false;
 	}
 
@@ -1269,7 +1174,6 @@ namespace basisu
 		BASISU_NOTE_UNUSED(pPixel_weights);
 		BASISU_NOTE_UNUSED(perceptual);
 		BASISU_NOTE_UNUSED(total_perms);
-		
 		return false;
 	}
 
@@ -1289,7 +1193,6 @@ namespace basisu
 		BASISU_NOTE_UNUSED(pSorted_block_indices);
 		BASISU_NOTE_UNUSED(pOutput_cluster_indices);
 		BASISU_NOTE_UNUSED(perceptual);
-
 		return false;
 	}
 
@@ -1323,10 +1226,7 @@ namespace basisu
 		BASISU_NOTE_UNUSED(pInput_etc_color5_and_inten);
 		BASISU_NOTE_UNUSED(pOutput_blocks);
 		BASISU_NOTE_UNUSED(perceptual);
-
 		return false;
 	}
-
 #endif // BASISU_SUPPORT_OPENCL
-
 } // namespace basisu
