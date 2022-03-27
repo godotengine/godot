@@ -1885,6 +1885,7 @@ void EditorNode::_dialog_action(String p_file) {
 		case FILE_CLOSE:
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
+		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT:
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE:
 		case FILE_SAVE_AS_SCENE: {
@@ -2524,17 +2525,23 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_scene_tab_closed(editor_data.get_edited_scene());
 		} break;
 		case FILE_CLOSE_ALL_AND_QUIT:
-		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER: {
+		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
+		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
 				tab_closing = _next_unsaved_scene(false);
 				_scene_tab_changed(tab_closing);
 
-				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
+				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 					Node *scene_root = editor_data.get_edited_scene_root(tab_closing);
 					if (scene_root) {
 						String scene_filename = scene_root->get_scene_file_path();
-						save_confirmation->get_ok_button()->set_text(TTR("Save & Close"));
-						save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+						if (p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
+							save_confirmation->get_ok_button()->set_text(TTR("Save & Reload"));
+							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+						} else {
+							save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
+							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+						}
 						save_confirmation->popup_centered();
 						break;
 					}
@@ -2820,11 +2827,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
 			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
-		case RUN_RELOAD_CURRENT_PROJECT: {
-			restart_editor();
-		} break;
 		case FILE_QUIT:
-		case RUN_PROJECT_MANAGER: {
+		case RUN_PROJECT_MANAGER:
+		case RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
@@ -2832,7 +2837,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					break;
 				} else {
 					if (save_each) {
-						_menu_option_confirm(p_option == FILE_QUIT ? FILE_CLOSE_ALL_AND_QUIT : FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER, false);
+						if (p_option == RELOAD_CURRENT_PROJECT) {
+							_menu_option_confirm(FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT, false);
+						} else if (p_option == FILE_QUIT) {
+							_menu_option_confirm(FILE_CLOSE_ALL_AND_QUIT, false);
+						} else {
+							_menu_option_confirm(FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER, false);
+						}
 					} else {
 						String unsaved_scenes;
 						int i = _next_unsaved_scene(true, 0);
@@ -2840,9 +2851,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 							unsaved_scenes += "\n            " + editor_data.get_edited_scene_root(i)->get_scene_file_path();
 							i = _next_unsaved_scene(true, ++i);
 						}
-
-						save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
-						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
+						if (p_option == RELOAD_CURRENT_PROJECT) {
+							save_confirmation->get_ok_button()->set_text(TTR("Save & Reload"));
+							save_confirmation->set_text(TTR("Save changes to the following scene(s) before reloading?") + unsaved_scenes);
+						} else {
+							save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
+							save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
+						}
 						save_confirmation->popup_centered();
 					}
 				}
@@ -3039,6 +3054,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 	switch (current_option) {
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
+		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT:
 		case FILE_CLOSE:
 		case FILE_CLOSE_OTHERS:
 		case FILE_CLOSE_RIGHT:
@@ -3055,13 +3071,19 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_remove_scene(tab_closing);
 			_update_scene_tabs();
 
-			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
+			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || current_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 				// If restore tabs is enabled, reopen the scene that has just been closed, so it's remembered properly.
 				if (bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 					_menu_option_confirm(FILE_OPEN_PREV, true);
 				}
 				if (_next_unsaved_scene(false) == -1) {
-					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
+					if (current_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
+						current_option = RELOAD_CURRENT_PROJECT;
+					} else if (current_option == FILE_CLOSE_ALL_AND_QUIT) {
+						current_option = FILE_QUIT;
+					} else {
+						current_option = RUN_PROJECT_MANAGER;
+					}
 					_discard_changes();
 				} else {
 					_menu_option_confirm(current_option, false);
@@ -3097,6 +3119,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 
 			Error err = OS::get_singleton()->create_instance(args);
 			ERR_FAIL_COND(err);
+		} break;
+		case RELOAD_CURRENT_PROJECT: {
+			restart_editor();
 		} break;
 	}
 }
@@ -6463,7 +6488,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTR("Reload Current Project")), RUN_RELOAD_CURRENT_PROJECT);
+	p->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTR("Reload Current Project")), RELOAD_CURRENT_PROJECT);
 	ED_SHORTCUT_AND_COMMAND("editor/quit_to_project_list", TTR("Quit to Project List"), KeyModifierMask::CMD + KeyModifierMask::SHIFT + Key::Q);
 	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::Q);
 	p->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), RUN_PROJECT_MANAGER, true);
