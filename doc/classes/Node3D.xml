@@ -44,6 +44,18 @@
 				Returns all the gizmos attached to this [code]Node3D[/code].
 			</description>
 		</method>
+		<method name="get_global_gizmo_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns the global gizmo transform.
+			</description>
+		</method>
+		<method name="get_local_gizmo_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns the local gizmo transform.
+			</description>
+		</method>
 		<method name="get_parent_node_3d" qualifiers="const">
 			<return type="Node3D" />
 			<description>
@@ -94,6 +106,12 @@
 			<return type="bool" />
 			<description>
 				Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale.
+			</description>
+		</method>
+		<method name="is_transform_gizmo_visible" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the transform gizmo is shown.
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
@@ -233,6 +251,13 @@
 			<argument index="2" name="transform" type="Transform3D" />
 			<description>
 				Set subgizmo selection for this node in the editor.
+			</description>
+		</method>
+		<method name="set_transform_gizmo_visible">
+			<return type="void" />
+			<argument index="0" name="visible" type="bool" />
+			<description>
+				Set the transform gizmo to be shown.
 			</description>
 		</method>
 		<method name="show">
