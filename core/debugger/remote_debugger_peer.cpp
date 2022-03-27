@@ -93,7 +93,7 @@ RemoteDebuggerPeerTCP::~RemoteDebuggerPeerTCP() {
 }
 
 void RemoteDebuggerPeerTCP::_write_out() {
-	while (tcp_client->poll(NetSocket::POLL_TYPE_OUT) == OK) {
+	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
 			if (out_queue.size() == 0) {
@@ -119,7 +119,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 }
 
 void RemoteDebuggerPeerTCP::_read_in() {
-	while (tcp_client->poll(NetSocket::POLL_TYPE_IN) == OK) {
+	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_IN) == OK) {
 		uint8_t *buf = in_buf.ptrw();
 		if (in_left <= 0) {
 			if (in_queue.size() > max_queued_messages) {
@@ -167,6 +167,7 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	tcp_client->connect_to_host(ip, port);
 
 	for (int i = 0; i < tries; i++) {
+		tcp_client->poll();
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			print_verbose("Remote Debugger: Connected!");
 			break;
@@ -213,6 +214,7 @@ void RemoteDebuggerPeerTCP::poll() {
 }
 
 void RemoteDebuggerPeerTCP::_poll() {
+	tcp_client->poll();
 	if (connected) {
 		_write_out();
 		_read_in();

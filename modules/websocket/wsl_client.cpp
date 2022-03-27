@@ -273,6 +273,7 @@ void WSLClient::poll() {
 		return; // Not connected.
 	}
 
+	_tcp->poll();
 	switch (_tcp->get_status()) {
 		case StreamPeerTCP::STATUS_NONE:
 			// Clean close
