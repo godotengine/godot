@@ -3949,16 +3949,22 @@ void EditorInspector::_add_meta_confirm() {
 	undo_redo->commit_action();
 }
 
-void EditorInspector::_check_meta_name(String name) {
+void EditorInspector::_check_meta_name(const String &p_name) {
 	String error;
 
-	if (name == "") {
-		error = TTR("Metadata can't be empty.");
-	} else if (!name.is_valid_identifier()) {
-		error = TTR("Invalid metadata identifier.");
-	} else if (object->has_meta(name)) {
-		error = TTR("Metadata already exists.");
-	} else if (name[0] == '_') {
+	if (p_name == "") {
+		error = TTR("Metadata name can't be empty.");
+	} else if (!p_name.is_valid_identifier()) {
+		error = TTR("Metadata name must be a valid identifier.");
+	} else if (object->has_meta(p_name)) {
+		Node *node = Object::cast_to<Node>(object);
+		if (node) {
+			error = vformat(TTR("Metadata with name \"%s\" already exists on \"%s\"."), p_name, node->get_name());
+		} else {
+			// This should normally never be reached, but the error is set just in case.
+			error = vformat(TTR("Metadata with name \"%s\" already exists."), p_name, node->get_name());
+		}
+	} else if (p_name[0] == '_') {
 		error = TTR("Names starting with _ are reserved for editor-only metadata.");
 	}
 
@@ -3976,7 +3982,15 @@ void EditorInspector::_check_meta_name(String name) {
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
 		add_meta_dialog = memnew(ConfirmationDialog);
-		add_meta_dialog->set_title(TTR("Add Metadata Property"));
+
+		Node *node = Object::cast_to<Node>(object);
+		if (node) {
+			add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), node->get_name()));
+		} else {
+			// This should normally never be reached, but the title is set just in case.
+			add_meta_dialog->set_title(vformat(TTR("Add Metadata Property"), node->get_name()));
+		}
+
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_meta_dialog->add_child(vbc);
 		HBoxContainer *hbc = memnew(HBoxContainer);
