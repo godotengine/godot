@@ -63,18 +63,14 @@ if get_option('tools')
 
     # Translations also will run once
 
-    _doc_translations_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'doc/translations/*.po', check: true).stdout().split('\n'))
-    SOURCES += custom_target('doc_translations',
+    SOURCES += configure_file(
         output: 'doc_translations.gen.h',
-        input:  _doc_translations_target_srcs,
-        command: [editor_builders, 'make_doc_translations', '@OUTPUT@', '@INPUT@'],
+        command: [editor_builders, 'make_doc_translations', '@OUTPUT@', 'doc'],
         )
 
-    _editor_translations_target_srcs = files(run_command(GLOB, 'translations/*.po', check: true).stdout().split('\n'))
-    SOURCES += custom_target('editor_translations',
+    SOURCES += configure_file(
         output: 'editor_translations.gen.h',
-        input:  _editor_translations_target_srcs,
-        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', '@INPUT@'],
+        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', 'translations'],
     )
 
     # ...and so will fonts

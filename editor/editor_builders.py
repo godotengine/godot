@@ -184,7 +184,8 @@ def make_translations_header(dst, source, category):
     replace_if_different(dst, tmpname)
     assert(os.path.exists(dst))
 
-def make_editor_translations_header(target, source):
+def make_editor_translations_header(target, sourcedir):
+    source = glob(os.path.join(sourcedir, '*.po'))
     make_translations_header(target, source, "editor")
 
 def make_editor_translations_header(target, source):
@@ -193,17 +194,17 @@ def make_editor_translations_header(target, source):
 def make_property_translations_header(target, source):
     make_translations_header(target, source, "property")
 
-def make_doc_translations_header(target, source):
+def make_doc_translations_header(target, sourcedir):
+    source = glob(os.path.join(sourcedir, '*.po'))
     make_translations_header(target, source, "doc")
-
 
 if __name__ == "__main__":
     type = sys.argv[1]
     if type == 'make_doc_header':
         make_doc_header(sys.argv[2], sys.argv[3:])
     elif type == 'make_editor_translations_header':
-        make_editor_translations_header(sys.argv[2], sys.argv[3:])
+        make_editor_translations_header(sys.argv[2], sys.argv[3])
     elif type == 'make_doc_translations':
-        make_doc_translations_header(sys.argv[2], sys.argv[3:])
+        make_doc_translations_header(sys.argv[2], sys.argv[3])
     else:
         sys.exit(f'Unknown command {type}.')
