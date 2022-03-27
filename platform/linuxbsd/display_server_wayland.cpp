@@ -508,12 +508,30 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	}
 
 	ERR_FAIL_COND_MSG(pd.focused_window_id == INVALID_WINDOW_ID, "Cursor focused to an invalid window.");
+
+	WindowData &wd = wls->windows[pd.focused_window_id];
+
+	Ref<WaylandWindowEventMessage> msg;
+	msg.instantiate();
+	msg->event = WINDOW_EVENT_MOUSE_ENTER;
+
+	wd.message_queue->push_back(msg);
 }
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
 	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->pointer_state.data_buffer;
+
+	if (pd.focused_window_id != INVALID_WINDOW_ID) {
+		WindowData &wd = wls->windows[pd.focused_window_id];
+
+		Ref<WaylandWindowEventMessage> msg;
+		msg.instantiate();
+		msg->event = WINDOW_EVENT_MOUSE_EXIT;
+
+		wd.message_queue->push_back(msg);
+	}
 
 	pd.focused_window_id = INVALID_WINDOW_ID;
 }
