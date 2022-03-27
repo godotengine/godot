@@ -106,15 +106,7 @@ static Vector<String> _get_hierarchy(String p_class_name) {
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
-				if (language_icon.is_valid()) {
-					language_menu->set_item_icon(i, language_icon);
-				}
-			}
-
+		case NOTIFICATION_ENTER_TREE: {
 			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
 			if (!last_language.is_empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
@@ -127,9 +119,15 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
-			if (EditorSettings::get_singleton()->has_meta("script_setup/use_script_templates")) {
-				is_using_templates = bool(EditorSettings::get_singleton()->get_meta("script_setup/use_script_templates"));
-				use_templates->set_pressed(is_using_templates);
+
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
+				if (language_icon.is_valid()) {
+					language_menu->set_item_icon(i, language_icon);
+				}
 			}
 
 			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
@@ -332,13 +330,8 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 			dic_templates_project[parent_name->get_text()] = sinfo.get_hash();
 			EditorSettings::get_singleton()->set_project_metadata("script_setup", "templates_dictionary", dic_templates_project);
 		} else {
-			// Save template into to editor dictionary (not a project template).
-			Dictionary dic_templates;
-			if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {
-				dic_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup/templates_dictionary");
-			}
-			dic_templates[parent_name->get_text()] = sinfo.get_hash();
-			EditorSettings::get_singleton()->set_meta("script_setup/templates_dictionary", dic_templates);
+			// Save template info to editor dictionary (not a project template).
+			templates_dictionary[parent_name->get_text()] = sinfo.get_hash();
 			// Remove template from project dictionary as we last used an editor level template.
 			Dictionary dic_templates_project = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
 			if (dic_templates_project.has(parent_name->get_text())) {
@@ -479,7 +472,6 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
-	EditorSettings::get_singleton()->set_meta("script_setup/use_script_templates", is_using_templates);
 	_update_dialog();
 }
 
@@ -597,10 +589,6 @@ void ScriptCreateDialog::_update_template_menu() {
 	if (is_language_using_templates) {
 		// Get the latest templates used for each type of node from project settings then global settings.
 		Dictionary last_local_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
-		Dictionary last_global_templates;
-		if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {
-			last_global_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup/templates_dictionary");
-		}
 		String inherits_base_type = parent_name->get_text();
 
 		// If it inherits from a script, get its parent class first.
@@ -655,7 +643,7 @@ void ScriptCreateDialog::_update_template_menu() {
 						// Check for last used template for this node in project settings then in global settings.
 						if (last_local_templates.has(parent_name->get_text()) && t.get_hash() == String(last_local_templates[parent_name->get_text()])) {
 							last_used_template = id;
-						} else if (last_used_template == -1 && last_global_templates.has(parent_name->get_text()) && t.get_hash() == String(last_global_templates[parent_name->get_text()])) {
+						} else if (last_used_template == -1 && templates_dictionary.has(parent_name->get_text()) && t.get_hash() == String(templates_dictionary[parent_name->get_text()])) {
 							last_used_template = id;
 						}
 						t.id = id;
