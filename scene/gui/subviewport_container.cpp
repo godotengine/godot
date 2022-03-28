@@ -234,7 +234,7 @@ TypedArray<String> SubViewportContainer::get_configuration_warnings() const {
 		}
 	}
 	if (!has_viewport) {
-		warnings.push_back(TTR("This node doesn't have a SubViewport as child, so it can't display its intended content.\nConsider adding a SubViewport as a child to provide something displayable."));
+		warnings.push_back(RTR("This node doesn't have a SubViewport as child, so it can't display its intended content.\nConsider adding a SubViewport as a child to provide something displayable."));
 	}
 
 	return warnings;

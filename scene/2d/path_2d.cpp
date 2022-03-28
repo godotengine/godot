@@ -263,7 +263,7 @@ TypedArray<String> PathFollow2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {
-			warnings.push_back(TTR("PathFollow2D only works when set as a child of a Path2D node."));
+			warnings.push_back(RTR("PathFollow2D only works when set as a child of a Path2D node."));
 		}
 	}
 

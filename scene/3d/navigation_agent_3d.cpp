@@ -250,7 +250,7 @@ TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationAgent3D can be used only under a spatial node."));
+		warnings.push_back(RTR("The NavigationAgent3D can be used only under a spatial node."));
 	}
 
 	return warnings;

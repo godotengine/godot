@@ -2812,7 +2812,7 @@ TypedArray<String> Viewport::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (size.x == 0 || size.y == 0) {
-		warnings.push_back(TTR("Viewport size must be greater than 0 to render anything."));
+		warnings.push_back(RTR("Viewport size must be greater than 0 to render anything."));
 	}
 	return warnings;
 }

@@ -925,7 +925,7 @@ TypedArray<String> RigidDynamicBody2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
 
 	if (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05) {
-		warnings.push_back(TTR("Size changes to RigidDynamicBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(RTR("Size changes to RigidDynamicBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;

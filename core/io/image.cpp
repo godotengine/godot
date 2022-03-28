@@ -378,25 +378,25 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 String Image::get_3d_image_validation_error_text(Image3DValidateError p_error) {
 	switch (p_error) {
 		case VALIDATE_3D_OK: {
-			return TTR("Ok");
+			return "Ok";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_EMPTY: {
-			return TTR("Empty Image found");
+			return "Empty Image found";
 		} break;
 		case VALIDATE_3D_ERR_MISSING_IMAGES: {
-			return TTR("Missing Images");
+			return "Missing Images";
 		} break;
 		case VALIDATE_3D_ERR_EXTRA_IMAGES: {
-			return TTR("Too many Images");
+			return "Too many Images";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_SIZE_MISMATCH: {
-			return TTR("Image size mismatch");
+			return "Image size mismatch";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_FORMAT_MISMATCH: {
-			return TTR("Image format mismatch");
+			return "Image format mismatch";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_HAS_MIPMAPS: {
-			return TTR("Image has included mipmaps");
+			return "Image has included mipmaps";
 		} break;
 	}
 	return String();

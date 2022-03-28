@@ -382,7 +382,7 @@ String InputEventKey::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods.is_empty() ? TTR("none") : mods;
+	mods = mods.is_empty() ? "none" : mods;
 
 	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
@@ -690,14 +690,14 @@ String InputEventMouseButton::to_string() {
 		case MouseButton::WHEEL_RIGHT:
 		case MouseButton::MB_XBUTTON1:
 		case MouseButton::MB_XBUTTON2:
-			button_string += " (" + RTR(_mouse_button_descriptions[(size_t)idx - 1]) + ")"; // button index starts from 1, array index starts from 0, so subtract 1
+			button_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)idx - 1])); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
 			break;
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods.is_empty() ? TTR("none") : mods;
+	mods = mods.is_empty() ? "none" : mods;
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s, mods=%s", button_index, mods);
@@ -787,19 +787,19 @@ String InputEventMouseMotion::to_string() {
 	String button_mask_string = itos((int64_t)button_mask);
 	switch (button_mask) {
 		case MouseButton::MASK_LEFT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
 			break;
 		case MouseButton::MASK_MIDDLE:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
 			break;
 		case MouseButton::MASK_RIGHT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
 			break;
 		case MouseButton::MASK_XBUTTON1:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
 			break;
 		case MouseButton::MASK_XBUTTON2:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]) + ")";
+			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
 			break;
 		default:
 			break;
@@ -961,9 +961,9 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX] = {
 };
 
 String InputEventJoypadMotion::as_text() const {
-	String desc = axis < JoyAxis::MAX ? RTR(_joy_axis_descriptions[(size_t)axis]) : TTR("Unknown Joypad Axis");
+	String desc = axis < JoyAxis::MAX ? TTRGET(_joy_axis_descriptions[(size_t)axis]) : RTR("Unknown Joypad Axis");
 
-	return vformat(TTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
+	return vformat(RTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
 }
 
 String InputEventJoypadMotion::to_string() {

@@ -238,20 +238,20 @@ TypedArray<String> CollisionPolygon2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		warnings.push_back(TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
+		warnings.push_back(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 
 	int polygon_count = polygon.size();
 	if (polygon_count == 0) {
-		warnings.push_back(TTR("An empty CollisionPolygon2D has no effect on collision."));
+		warnings.push_back(RTR("An empty CollisionPolygon2D has no effect on collision."));
 	} else {
 		bool solids = build_mode == BUILD_SOLIDS;
 		if (solids) {
 			if (polygon_count < 3) {
-				warnings.push_back(TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
+				warnings.push_back(RTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
 			}
 		} else if (polygon_count < 2) {
-			warnings.push_back(TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
+			warnings.push_back(RTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
 		}
 	}
 
