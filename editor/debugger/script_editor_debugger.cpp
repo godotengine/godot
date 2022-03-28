@@ -968,6 +968,9 @@ void ScriptEditorDebugger::stop() {
 	res_path_cache.clear();
 	profiler_signature.clear();
 
+	// Cleanup profiler and enable start again if disabled
+	profiler->set_enabled(true);
+
 	inspector->edit(nullptr);
 	_update_buttons_state();
 }
