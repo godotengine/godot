@@ -31,10 +31,12 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
@@ -445,8 +447,9 @@ class EditorInspector : public ScrollContainer {
 	LineEdit *search_box;
 	bool show_categories = false;
 	bool hide_script = true;
+	bool hide_metadata = true;
 	bool use_doc_hints = false;
-	bool capitalize_paths = true;
+	EditorPropertyNameProcessor::Style property_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 	bool use_filter = false;
 	bool autoclear = false;
 	bool use_folding = false;
@@ -511,6 +514,15 @@ class EditorInspector : public ScrollContainer {
 
 	void _update_inspector_bg();
 
+	ConfirmationDialog *add_meta_dialog = nullptr;
+	LineEdit *add_meta_name = nullptr;
+	OptionButton *add_meta_type = nullptr;
+	Label *add_meta_error = nullptr;
+
+	void _add_meta_confirm();
+	void _show_add_meta_dialog();
+	void _check_meta_name(String name);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -534,13 +546,15 @@ public:
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
 
-	bool is_capitalize_paths_enabled() const;
-	void set_enable_capitalize_paths(bool p_capitalize);
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
+	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);
+
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show);
 	void set_use_doc_hints(bool p_enable);
 	void set_hide_script(bool p_hide);
+	void set_hide_metadata(bool p_hide);
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);

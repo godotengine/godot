@@ -888,7 +888,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				if (script == nullptr) {
 					continue;
 				}
-				const Vector<DocData::ClassDoc> &docs = script->get_documentation();
+				Vector<DocData::ClassDoc> docs = script->get_documentation();
 				for (int j = 0; j < docs.size(); j++) {
 					EditorHelp::get_doc_data()->add_doc(docs[j]);
 				}

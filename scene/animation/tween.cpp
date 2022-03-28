@@ -741,12 +741,12 @@ bool PropertyTweener::step(float &r_delta) {
 	}
 
 	float time = MIN(elapsed_time - delay, duration);
-	target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
-
 	if (time < duration) {
+		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
 		r_delta = 0;
 		return true;
 	} else {
+		target_instance->set_indexed(property, final_val);
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
 		emit_signal(SNAME("finished"));
@@ -895,8 +895,13 @@ bool MethodTweener::step(float &r_delta) {
 		return true;
 	}
 
+	Variant current_val;
 	float time = MIN(elapsed_time - delay, duration);
-	Variant current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	if (time < duration) {
+		current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	} else {
+		current_val = final_val;
+	}
 	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *));
 	argptr[0] = &current_val;
 
@@ -938,6 +943,7 @@ MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, 
 	callback = p_callback;
 	initial_val = p_from;
 	delta_val = tween->calculate_delta_value(p_from, p_to);
+	final_val = p_to;
 	duration = p_duration;
 }
 

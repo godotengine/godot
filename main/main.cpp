@@ -2276,9 +2276,10 @@ bool Main::start() {
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
-		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows)) {
+		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 			sml->get_root()->set_embedding_subwindows(true);
 		}
+
 		ResourceLoader::add_custom_loaders();
 		ResourceSaver::add_custom_savers();
 

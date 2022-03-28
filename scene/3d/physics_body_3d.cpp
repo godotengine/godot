@@ -988,7 +988,7 @@ TypedArray<String> RigidDynamicBody3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05) {
-		warnings.push_back(TTR("Size changes to RigidDynamicBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(RTR("Size changes to RigidDynamicBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
@@ -2006,7 +2006,7 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_block_on_wall"), "set_floor_block_on_wall_enabled", "is_floor_block_on_wall_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_floor_snap_length", "get_floor_snap_length");
-	ADD_GROUP("Moving platform", "moving_platform");
+	ADD_GROUP("Moving Platform", "moving_platform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");

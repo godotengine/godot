@@ -363,15 +363,15 @@ DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 	return mouse_mode;
 }
 
-void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
+void DisplayServerX11::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
-		last_mouse_pos = p_to;
+		last_mouse_pos = p_position;
 	} else {
 		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
 		XWarpPointer(x11_display, None, windows[window_id].x11_window,
-				0, 0, 0, 0, (int)p_to.x, (int)p_to.y);
+				0, 0, 0, 0, (int)p_position.x, (int)p_position.y);
 	}
 }
 

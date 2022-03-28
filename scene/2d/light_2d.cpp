@@ -394,7 +394,7 @@ TypedArray<String> PointLight2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!texture.is_valid()) {
-		warnings.push_back(TTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
+		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
 	}
 
 	return warnings;

@@ -86,6 +86,10 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	return err;
 }
 
+String EditorExportPlatformWindows::get_template_file_name(const String &p_target, const String &p_arch) const {
+	return "windows_" + p_arch + "_" + p_target + ".exe";
+}
+
 List<String> EditorExportPlatformWindows::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
 	list.push_back("exe");

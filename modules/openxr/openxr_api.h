@@ -234,8 +234,8 @@ public:
 
 	bool is_initialized();
 	bool is_running();
-	bool initialise(const String &p_rendering_driver);
-	bool initialise_session();
+	bool initialize(const String &p_rendering_driver);
+	bool initialize_session();
 	void finish();
 
 	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; };

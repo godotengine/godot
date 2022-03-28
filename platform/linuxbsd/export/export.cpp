@@ -44,10 +44,6 @@ void register_linuxbsd_exporter() {
 	platform->set_name("Linux/X11");
 	platform->set_extension("x86_32");
 	platform->set_extension("x86_64", "binary_format/64_bits");
-	platform->set_release_32("linux_x11_32_release");
-	platform->set_debug_32("linux_x11_32_debug");
-	platform->set_release_64("linux_x11_64_release");
-	platform->set_debug_64("linux_x11_64_debug");
 	platform->set_os_name("LinuxBSD");
 	platform->set_chmod_flags(0755);
 

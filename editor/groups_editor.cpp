@@ -416,6 +416,8 @@ void GroupDialog::_bind_methods() {
 
 	ClassDB::bind_method("_rename_group_item", &GroupDialog::_rename_group_item);
 
+	ClassDB::bind_method("_group_selected", &GroupDialog::_group_selected);
+
 	ADD_SIGNAL(MethodInfo("group_edited"));
 }
 

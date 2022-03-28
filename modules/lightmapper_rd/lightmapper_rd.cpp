@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "lightmapper_rd.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "lm_blendseams.glsl.gen.h"
@@ -174,7 +175,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	}
 
 	if (p_step_function) {
-		p_step_function(0.1, TTR("Determining optimal atlas size"), p_bake_userdata, true);
+		p_step_function(0.1, RTR("Determining optimal atlas size"), p_bake_userdata, true);
 	}
 
 	atlas_size = Size2i(max, max);
@@ -243,7 +244,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	emission_images.resize(atlas_slices);
 
 	if (p_step_function) {
-		p_step_function(0.2, TTR("Blitting albedo and emission"), p_bake_userdata, true);
+		p_step_function(0.2, RTR("Blitting albedo and emission"), p_bake_userdata, true);
 	}
 
 	for (int i = 0; i < atlas_slices; i++) {
@@ -295,7 +296,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		if (p_step_function) {
 			float p = float(m_i + 1) / mesh_instances.size() * 0.1;
-			p_step_function(0.3 + p, vformat(TTR("Plotting mesh into acceleration structure %d/%d"), m_i + 1, mesh_instances.size()), p_bake_userdata, false);
+			p_step_function(0.3 + p, vformat(RTR("Plotting mesh into acceleration structure %d/%d"), m_i + 1, mesh_instances.size()), p_bake_userdata, false);
 		}
 
 		HashMap<Edge, EdgeUV2, EdgeHash> edges;
@@ -409,7 +410,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	seams.sort();
 
 	if (p_step_function) {
-		p_step_function(0.4, TTR("Optimizing acceleration structure"), p_bake_userdata, true);
+		p_step_function(0.4, RTR("Optimizing acceleration structure"), p_bake_userdata, true);
 	}
 
 	//fill list of triangles in grid
@@ -668,7 +669,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 
 LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	if (p_step_function) {
-		p_step_function(0.0, TTR("Begin Bake"), p_bake_userdata, true);
+		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
 	}
 	bake_textures.clear();
 	int grid_size = 128;
@@ -819,7 +820,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
 
 	if (p_step_function) {
-		p_step_function(0.47, TTR("Preparing shaders"), p_bake_userdata, true);
+		p_step_function(0.47, RTR("Preparing shaders"), p_bake_userdata, true);
 	}
 
 	//shaders
@@ -1046,7 +1047,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->sync();
 
 	if (p_step_function) {
-		p_step_function(0.49, TTR("Un-occluding geometry"), p_bake_userdata, true);
+		p_step_function(0.49, RTR("Un-occluding geometry"), p_bake_userdata, true);
 	}
 
 	/* UNOCCLUDE */
@@ -1086,7 +1087,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	if (p_step_function) {
-		p_step_function(0.5, TTR("Plot direct lighting"), p_bake_userdata, true);
+		p_step_function(0.5, RTR("Plot direct lighting"), p_bake_userdata, true);
 	}
 
 	/* PRIMARY (direct) LIGHT PASS */
@@ -1166,7 +1167,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	/* SECONDARY (indirect) LIGHT PASS(ES) */
 	if (p_step_function) {
-		p_step_function(0.6, TTR("Integrate indirect lighting"), p_bake_userdata, true);
+		p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
 	}
 
 	if (p_bounces > 0) {
@@ -1298,7 +1299,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 								int total = (atlas_slices * x_regions * y_regions * ray_iterations);
 								int percent = count * 100 / total;
 								float p = float(count) / total * 0.1;
-								p_step_function(0.6 + p, vformat(TTR("Bounce %d/%d: Integrate indirect lighting %d%%"), b + 1, p_bounces, percent), p_bake_userdata, false);
+								p_step_function(0.6 + p, vformat(RTR("Bounce %d/%d: Integrate indirect lighting %d%%"), b + 1, p_bounces, percent), p_bake_userdata, false);
 							}
 						}
 					}
@@ -1323,7 +1324,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		light_probe_buffer = rd->storage_buffer_create(sizeof(float) * 4 * 9 * probe_positions.size());
 
 		if (p_step_function) {
-			p_step_function(0.7, TTR("Baking lightprobes"), p_bake_userdata, true);
+			p_step_function(0.7, RTR("Baking lightprobes"), p_bake_userdata, true);
 		}
 
 		Vector<RD::Uniform> uniforms;
@@ -1398,7 +1399,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			if (p_step_function) {
 				int percent = i * 100 / ray_iterations;
 				float p = float(i) / ray_iterations * 0.1;
-				p_step_function(0.7 + p, vformat(TTR("Integrating light probes %d%%"), percent), p_bake_userdata, false);
+				p_step_function(0.7 + p, vformat(RTR("Integrating light probes %d%%"), percent), p_bake_userdata, false);
 			}
 		}
 
@@ -1434,7 +1435,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	if (p_use_denoiser) {
 		if (p_step_function) {
-			p_step_function(0.8, TTR("Denoising"), p_bake_userdata, true);
+			p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true);
 		}
 
 		Ref<LightmapDenoiser> denoiser = LightmapDenoiser::create();
@@ -1639,7 +1640,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 	if (p_step_function) {
-		p_step_function(0.9, TTR("Retrieving textures"), p_bake_userdata, true);
+		p_step_function(0.9, RTR("Retrieving textures"), p_bake_userdata, true);
 	}
 
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {

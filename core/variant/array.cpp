@@ -484,24 +484,8 @@ void Array::sort() {
 	_p->array.sort_custom<_ArrayVariantSort>();
 }
 
-struct _ArrayVariantSortCustom {
-	Callable func;
-
-	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
-		const Variant *args[2] = { &p_l, &p_r };
-		Callable::CallError err;
-		Variant res;
-		func.call(args, 2, res, err);
-		ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
-				"Error calling sorting method: " + Variant::get_callable_error_text(func, args, 1, err));
-		return res;
-	}
-};
-
-void Array::sort_custom(Callable p_callable) {
-	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
-	avs.compare.func = p_callable;
-	avs.sort(_p->array.ptrw(), _p->array.size());
+void Array::sort_custom(const Callable &p_callable) {
+	_p->array.sort_custom<CallableComparator, true>(p_callable);
 }
 
 void Array::shuffle() {
@@ -524,13 +508,10 @@ int Array::bsearch(const Variant &p_value, bool p_before) {
 	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
-int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
+int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
 
-	SearchArray<Variant, _ArrayVariantSortCustom> avs;
-	avs.compare.func = p_callable;
-
-	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
+	return _p->array.bsearch_custom<CallableComparator>(p_value, p_before, p_callable);
 }
 
 void Array::reverse() {

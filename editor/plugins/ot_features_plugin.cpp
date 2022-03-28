@@ -96,10 +96,19 @@ OpenTypeFeaturesEditor::OpenTypeFeaturesEditor() {
 /*************************************************************************/
 
 void OpenTypeFeaturesAdd::_add_feature(int p_option) {
-	get_edited_object()->set("opentype_features/" + TS->tag_to_name(p_option), 1);
+	edited_object->set("opentype_features/" + TS->tag_to_name(p_option), 1);
 }
 
-void OpenTypeFeaturesAdd::update_property() {
+void OpenTypeFeaturesAdd::_features_menu() {
+	Size2 size = get_size();
+	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->reset_size();
+	menu->popup();
+}
+
+void OpenTypeFeaturesAdd::setup(Object *p_object) {
+	edited_object = p_object;
+
 	menu->clear();
 	menu_ss->clear();
 	menu_cv->clear();
@@ -107,7 +116,7 @@ void OpenTypeFeaturesAdd::update_property() {
 	bool have_ss = false;
 	bool have_cv = false;
 	bool have_cu = false;
-	Dictionary features = Object::cast_to<Control>(get_edited_object())->get_theme_font(SNAME("font"))->get_feature_list();
+	Dictionary features = Object::cast_to<Control>(edited_object)->get_theme_font(SNAME("font"))->get_feature_list();
 	for (const Variant *ftr = features.next(nullptr); ftr != nullptr; ftr = features.next(ftr)) {
 		String ftr_name = TS->tag_to_name(*ftr);
 		if (ftr_name.begins_with("stylistic_set_")) {
@@ -134,20 +143,11 @@ void OpenTypeFeaturesAdd::update_property() {
 	}
 }
 
-void OpenTypeFeaturesAdd::_features_menu() {
-	Size2 size = get_size();
-	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
-	menu->reset_size();
-	menu->popup();
-}
-
 void OpenTypeFeaturesAdd::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			set_label("");
-			button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			button->set_size(get_theme_icon(SNAME("Add"), SNAME("EditorIcons"))->get_size());
+			set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
 	}
 }
@@ -156,6 +156,8 @@ void OpenTypeFeaturesAdd::_bind_methods() {
 }
 
 OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
+	set_text(TTR("Add Feature..."));
+
 	menu = memnew(PopupMenu);
 	add_child(menu);
 
@@ -171,13 +173,7 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 	menu_cu->set_name("CUMenu");
 	menu->add_child(menu_cu);
 
-	button = memnew(Button);
-	button->set_flat(true);
-	button->set_text(RTR("Add feature..."));
-	button->set_tooltip(RTR("Add feature..."));
-	add_child(button);
-
-	button->connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
+	connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
 	menu->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_cv->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_ss->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
@@ -193,7 +189,8 @@ bool EditorInspectorPluginOpenTypeFeatures::can_handle(Object *p_object) {
 bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "opentype_features/_new") {
 		OpenTypeFeaturesAdd *editor = memnew(OpenTypeFeaturesAdd);
-		add_property_editor(p_path, editor);
+		editor->setup(p_object);
+		add_custom_control(editor);
 		return true;
 	} else if (p_path.begins_with("opentype_features")) {
 		OpenTypeFeaturesEditor *editor = memnew(OpenTypeFeaturesEditor);

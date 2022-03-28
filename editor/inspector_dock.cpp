@@ -37,6 +37,13 @@
 
 InspectorDock *InspectorDock::singleton = nullptr;
 
+void InspectorDock::_prepare_menu() {
+	PopupMenu *menu = object_menu->get_popup();
+	for (int i = EditorPropertyNameProcessor::STYLE_RAW; i <= EditorPropertyNameProcessor::STYLE_LOCALIZED; i++) {
+		menu->set_item_checked(menu->get_item_index(PROPERTY_NAME_STYLE_RAW + i), i == property_name_style);
+	}
+}
+
 void InspectorDock::_menu_option(int p_option) {
 	_menu_option_confirm(p_option, false);
 }
@@ -173,6 +180,13 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 				EditorNode::get_singleton()->get_editor_plugins_over()->edit(current);
 			}
 
+		} break;
+
+		case PROPERTY_NAME_STYLE_RAW:
+		case PROPERTY_NAME_STYLE_CAPITALIZED:
+		case PROPERTY_NAME_STYLE_LOCALIZED: {
+			property_name_style = (EditorPropertyNameProcessor::Style)(p_option - PROPERTY_NAME_STYLE_RAW);
+			inspector->set_property_name_style(property_name_style);
 		} break;
 
 		default: {
@@ -499,8 +513,19 @@ void InspectorDock::update(Object *p_object) {
 	p->clear();
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/expand_all", TTR("Expand All")), EXPAND_ALL);
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All")), COLLAPSE_ALL);
-	p->add_separator();
 
+	p->add_separator(TTR("Property Name Style"));
+	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
+	p->add_radio_check_item(TTR("Capitalized"), PROPERTY_NAME_STYLE_CAPITALIZED);
+	p->add_radio_check_item(TTR("Localized"), PROPERTY_NAME_STYLE_LOCALIZED);
+
+	if (!EditorPropertyNameProcessor::is_localization_available()) {
+		const int index = p->get_item_index(PROPERTY_NAME_STYLE_LOCALIZED);
+		p->set_item_disabled(index, true);
+		p->set_item_tooltip(index, TTR("Localization not available for current language."));
+	}
+
+	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Properties")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Properties")), OBJECT_PASTE_PARAMS);
 
@@ -534,11 +559,17 @@ void InspectorDock::go_back() {
 	_edit_back();
 }
 
+EditorPropertyNameProcessor::Style InspectorDock::get_property_name_style() const {
+	return property_name_style;
+}
+
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	singleton = this;
 	set_name("Inspector");
 
 	editor_data = &p_editor_data;
+
+	property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	add_child(general_options_hb);
@@ -632,6 +663,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip(TTR("Manage object properties."));
+	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
 	object_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
 
 	warning = memnew(Button);
@@ -679,7 +711,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+	inspector->set_hide_metadata(false);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
 	inspector->set_undo_redo(&editor_data->get_undo_redo());

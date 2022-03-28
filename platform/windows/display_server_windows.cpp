@@ -150,7 +150,7 @@ DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 	return mouse_mode;
 }
 
-void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
+void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
@@ -158,12 +158,12 @@ void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
 	}
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
-		old_x = p_to.x;
-		old_y = p_to.y;
+		old_x = p_position.x;
+		old_y = p_position.y;
 	} else {
 		POINT p;
-		p.x = p_to.x;
-		p.y = p_to.y;
+		p.x = p_position.x;
+		p.y = p_position.y;
 		ClientToScreen(windows[last_focused_window].hWnd, &p);
 
 		SetCursorPos(p.x, p.y);

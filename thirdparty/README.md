@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (646a9f826131cb0b9e14b5e4740874808315f83a, 2021)
+- Version: git (1531cfaf9ed5232248a0a45736686a849ca3befc, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -130,25 +130,25 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.ttf`, `NotoNaskhArabicUI_*.ttf`:
+- `NotoSans*.woff2`, `NotoNaskhArabicUI_*.woff2`:
   * Upstream: https://github.com/googlefonts/noto-fonts
   * Version: v2017-10-24-phase3-second-cleanup
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
-- `JetBrainsMono_Regular.ttf`:
+- `JetBrainsMono_Regular.woff2`:
 	* Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.242
   * License: OFL-1.1
-- `DroidSans*.ttf`:
+- `DroidSans*.woff2`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
-- `OpenSans_SemiBold.ttf`:
+- `OpenSans_SemiBold.woff2`:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-
+- All fonts are converted from the `.ttf` sources using `https://github.com/google/woff2` tool.
 
 
 ## freetype
@@ -424,10 +424,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
   * Version: 1.0 (2011)
   * License: zlib
-- `open-simplex-noise.{c,h}`
-  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
-  * Version: git (826f1dd1724e6fb3ff45f58e48c0fbae864c3403, 2020) + custom changes
-  * License: Public Domain or Unlicense
+- `FastNoiseLite.h}`
+  * Upstream: https://github.com/Auburn/FastNoiseLite
+  * Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022) + custom changes
+  * License: MIT
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html

@@ -32,7 +32,6 @@
 #define GLTF_MESH_H
 
 #include "core/io/resource.h"
-#include "editor/import/resource_importer_scene.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"

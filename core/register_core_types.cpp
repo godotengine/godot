@@ -71,6 +71,7 @@
 #include "core/multiplayer/multiplayer_api.h"
 #include "core/multiplayer/multiplayer_peer.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
@@ -142,6 +143,10 @@ void register_core_types() {
 	GDREGISTER_CLASS(Object);
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
+
+	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
+	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
@@ -263,6 +268,7 @@ void register_core_types() {
 	_engine_debugger = memnew(core_bind::EngineDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
+	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 }
 
 void register_core_settings() {

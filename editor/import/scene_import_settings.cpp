@@ -844,6 +844,10 @@ void SceneImportSettings::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
 	}
 }
 
@@ -1231,6 +1235,7 @@ SceneImportSettings::SceneImportSettings() {
 
 	inspector = memnew(EditorInspector);
 	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 
 	property_split->add_child(inspector);
 

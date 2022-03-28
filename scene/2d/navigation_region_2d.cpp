@@ -517,7 +517,7 @@ TypedArray<String> NavigationRegion2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navpoly.is_valid()) {
-			warnings.push_back(TTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
+			warnings.push_back(RTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
 		}
 	}
 

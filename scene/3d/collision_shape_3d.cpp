@@ -118,17 +118,17 @@ TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		warnings.push_back(TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
+		warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (!shape.is_valid()) {
-		warnings.push_back(TTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."));
+		warnings.push_back(RTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."));
 	}
 
 	if (shape.is_valid() &&
 			Object::cast_to<RigidDynamicBody3D>(get_parent()) &&
 			Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidDynamicBody3D in another mode than static."));
+		warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidDynamicBody3D in another mode than static."));
 	}
 
 	return warnings;

@@ -106,7 +106,7 @@ public:
 	virtual PackedStringArray get_suggested_tracker_names() const override;
 	virtual TrackingStatus get_tracking_status() const override;
 
-	bool initialise_on_startup() const;
+	bool initialize_on_startup() const;
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;

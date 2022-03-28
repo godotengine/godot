@@ -38,7 +38,7 @@ class CodeEdit : public TextEdit {
 
 public:
 	/* Keep enum in sync with:                                           */
-	/* /core/object/script_language.h - ScriptCodeCompletionOption::Kind */
+	/* /core/object/script_language.h - ScriptLanguage::CodeCompletionKind */
 	enum CodeCompletionKind {
 		KIND_CLASS,
 		KIND_FUNCTION,
@@ -208,15 +208,15 @@ private:
 	Color code_completion_existing_color = Color(0, 0, 0, 0);
 
 	bool code_completion_active = false;
-	Vector<ScriptCodeCompletionOption> code_completion_options;
+	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 
 	Set<char32_t> code_completion_prefixes;
-	List<ScriptCodeCompletionOption> code_completion_option_submitted;
-	List<ScriptCodeCompletionOption> code_completion_option_sources;
+	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
+	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
 
 	void _filter_code_completion_candidates_impl();

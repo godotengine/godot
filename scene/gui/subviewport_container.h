@@ -58,6 +58,8 @@ public:
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
+	TypedArray<String> get_configuration_warnings() const override;
+
 	SubViewportContainer();
 };
 

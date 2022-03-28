@@ -1789,7 +1789,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 bool AnimationPlayer::can_apply_reset() const {
 	return has_animation(SceneStringNames::get_singleton()->RESET) && playback.assigned != SceneStringNames::get_singleton()->RESET;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);

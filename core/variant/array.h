@@ -82,10 +82,10 @@ public:
 	Variant back() const;
 
 	void sort();
-	void sort_custom(Callable p_callable);
+	void sort_custom(const Callable &p_callable);
 	void shuffle();
 	int bsearch(const Variant &p_value, bool p_before = true);
-	int bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before = true);
+	int bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before = true);
 	void reverse();
 
 	int find(const Variant &p_value, int p_from = 0) const;

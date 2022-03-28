@@ -162,8 +162,8 @@ protected:
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force);
-	void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force);
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
+	void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 
 	void _load_theme_settings();
 	void _set_theme_for_script();

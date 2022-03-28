@@ -49,8 +49,6 @@ enum BasisDecompressFormat {
 //workaround for lack of ETC2 RG
 #define USE_RG_AS_RGBA
 
-basist::etc1_global_selector_codebook *sel_codebook = nullptr;
-
 #ifdef TOOLS_ENABLED
 static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
 	Vector<uint8_t> budata;
@@ -77,18 +75,14 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 			memcpy(buimg.get_ptr(), r, vec.size());
 		}
 
-		//image->save_png("pepeche.png");
-
 		basisu::basis_compressor_params params;
+		params.m_uastc = true;
 		params.m_max_endpoint_clusters = 512;
 		params.m_max_selector_clusters = 512;
 		params.m_multithreading = true;
-		//params.m_no_hybrid_sel_cb = true; //fixme, default on this causes crashes //seems fixed?
-		params.m_pSel_codebook = sel_codebook;
 		//params.m_quality_level = 0;
 		//params.m_disable_hierarchical_endpoint_codebooks = true;
 		//params.m_no_selector_rdo = true;
-		params.m_auto_global_sel_pal = false;
 
 		basisu::job_pool jpool(OS::get_singleton()->get_processor_count());
 		params.m_pJob_pool = &jpool;
@@ -225,7 +219,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	ptr += 4;
 	size -= 4;
 
-	basist::basisu_transcoder tr(nullptr);
+	basist::basisu_transcoder tr;
 
 	ERR_FAIL_COND_V(!tr.validate_header(ptr, size), image);
 
@@ -267,7 +261,9 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 
 void register_basis_universal_types() {
 #ifdef TOOLS_ENABLED
-	sel_codebook = new basist::etc1_global_selector_codebook(basist::g_global_selector_cb_size, basist::g_global_selector_cb);
+	using namespace basisu;
+	using namespace basist;
+	basisu_encoder_init();
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
 	Image::basis_universal_unpacker = basis_universal_unpacker;
@@ -275,7 +271,6 @@ void register_basis_universal_types() {
 
 void unregister_basis_universal_types() {
 #ifdef TOOLS_ENABLED
-	delete sel_codebook;
 	Image::basis_universal_packer = nullptr;
 #endif
 	Image::basis_universal_unpacker = nullptr;

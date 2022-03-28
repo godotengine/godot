@@ -635,7 +635,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_border_width_all(0);
 	style_tab_selected->set_border_width(SIDE_TOP, Math::round(2 * EDSCALE));
 	// Make the highlight line prominent, but not too prominent as to not be distracting.
-	style_tab_selected->set_border_color(dark_color_2.lerp(accent_color, 0.75));
+	Color tab_highlight = dark_color_2.lerp(accent_color, 0.75);
+	style_tab_selected->set_border_color(tab_highlight);
 	// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
 	// This also makes the top highlight look better.
 	style_tab_selected->set_corner_radius_all(0);
@@ -1079,17 +1080,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("button_pressed", "TabBar", style_menu);
+	theme->set_stylebox("button_highlight", "TabBar", style_menu);
+	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
+	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_color("font_selected_color", "TabContainer", font_color);
 	theme->set_color("font_unselected_color", "TabContainer", font_disabled_color);
 	theme->set_color("font_selected_color", "TabBar", font_color);
 	theme->set_color("font_unselected_color", "TabBar", font_disabled_color);
+	theme->set_color("drop_mark_color", "TabContainer", tab_highlight);
+	theme->set_color("drop_mark_color", "TabBar", tab_highlight);
 	theme->set_icon("menu", "TabContainer", theme->get_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
 	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
-	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_icon("close", "TabBar", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
-	theme->set_stylebox("button_pressed", "TabBar", style_menu);
-	theme->set_stylebox("button_highlight", "TabBar", style_menu);
 	theme->set_icon("increment", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRight"), SNAME("EditorIcons")));
 	theme->set_icon("decrement", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeft"), SNAME("EditorIcons")));
 	theme->set_icon("increment", "TabBar", theme->get_icon(SNAME("GuiScrollArrowRight"), SNAME("EditorIcons")));
@@ -1098,6 +1101,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
 	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRightHl"), SNAME("EditorIcons")));
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
+	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
+	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_constant("hseparation", "TabBar", 4 * EDSCALE);
 
 	// Content of each tab

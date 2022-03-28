@@ -533,7 +533,7 @@ TypedArray<String> ScrollContainer::get_configuration_warnings() const {
 	}
 
 	if (found != 1) {
-		warnings.push_back(TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually."));
+		warnings.push_back(RTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually."));
 	}
 
 	return warnings;

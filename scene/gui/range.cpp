@@ -34,7 +34,7 @@ TypedArray<String> Range::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (shared->exp_ratio && shared->min <= 0) {
-		warnings.push_back(TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
+		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
 	}
 
 	return warnings;
@@ -282,7 +282,7 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
 
-	GDVIRTUAL_BIND(_value_changed);
+	GDVIRTUAL_BIND(_value_changed, "new_value");
 
 	ADD_LINKED_PROPERTY("min_value", "value");
 	ADD_LINKED_PROPERTY("min_value", "max_value");
