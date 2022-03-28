@@ -62,6 +62,7 @@ public:
 		MENU_PASTE_PROPERTY,
 		MENU_COPY_PROPERTY_PATH,
 		MENU_PIN_VALUE,
+		MENU_OPEN_DOCUMENTATION,
 	};
 
 private:
@@ -71,6 +72,7 @@ private:
 	Object *object = nullptr;
 	StringName property;
 	String property_path;
+	String doc_path;
 
 	int property_usage;
 
@@ -147,6 +149,8 @@ public:
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
+
+	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
 	void update_revert_and_pin_status();
@@ -439,7 +443,7 @@ class EditorInspector : public ScrollContainer {
 
 	VBoxContainer *main_vbox = nullptr;
 
-	//map use to cache the instantiated editors
+	// Map used to cache the instantiated editors.
 	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	HashSet<StringName> pending;
@@ -473,7 +477,12 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	HashMap<StringName, HashMap<StringName, String>> descr_cache;
+	struct PropertyDocInfo {
+		String description;
+		String path;
+	};
+
+	HashMap<StringName, HashMap<StringName, PropertyDocInfo>> doc_info_cache;
 	HashMap<StringName, String> class_descr_cache;
 	HashSet<StringName> restart_request_props;
 
