@@ -34,7 +34,6 @@
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
-#include "editor/editor_inspector.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
