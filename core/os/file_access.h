@@ -186,6 +186,10 @@ struct FileAccessRef {
 	FileAccess *f;
 	operator FileAccess *() { return f; }
 	FileAccessRef(FileAccess *fa) { f = fa; }
+	FileAccessRef(FileAccessRef &&other) {
+		f = other.f;
+		other.f = nullptr;
+	}
 	~FileAccessRef() {
 		if (f) {
 			memdelete(f);

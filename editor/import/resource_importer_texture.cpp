@@ -159,6 +159,11 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_option, cons
 		if (compress_mode != COMPRESS_VIDEO_RAM) {
 			return false;
 		}
+	} else if (p_option == "compress/normal_map") {
+		int compress_mode = int(p_options["compress/mode"]);
+		if (compress_mode == COMPRESS_LOSSLESS) {
+			return false;
+		}
 	} else if (p_option == "compress/bptc_ldr") {
 		int compress_mode = int(p_options["compress/mode"]);
 		if (compress_mode != COMPRESS_VIDEO_RAM) {

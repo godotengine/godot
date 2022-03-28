@@ -219,6 +219,19 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	favorites->set_collapsed(p_uncollapsed_paths.find("Favorites") < 0);
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
+
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	bool fav_changed = false;
+	for (int i = favorite_paths.size() - 1; i >= 0; i--) {
+		if (!da->dir_exists(favorite_paths[i])) {
+			favorite_paths.remove(i);
+			fav_changed = true;
+		}
+	}
+	if (fav_changed) {
+		EditorSettings::get_singleton()->set_favorites(favorite_paths);
+	}
+
 	for (int i = 0; i < favorite_paths.size(); i++) {
 		String fave = favorite_paths[i];
 		if (!fave.begins_with("res://")) {
