@@ -2,8 +2,9 @@
 
 extends _BASE_
 
-const SPEED: float = 300.0
-const JUMP_VELOCITY: float = -400.0
+
+const SPEED = 300.0
+const JUMP_VELOCITY = -400.0
 
 # Get the gravity from the project settings to be synced with RigidDynamicBody nodes.
 var gravity: int = ProjectSettings.get_setting("physics/2d/default_gravity")

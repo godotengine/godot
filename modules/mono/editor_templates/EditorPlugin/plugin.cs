@@ -1,4 +1,5 @@
 // meta-description: Basic plugin template
+
 #if TOOLS
 using _BINDINGS_NAMESPACE_;
 using System;
