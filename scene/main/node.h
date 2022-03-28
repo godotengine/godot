@@ -43,7 +43,6 @@ class PropertyTweener;
 
 class Node : public Object {
 	GDCLASS(Node, Object);
-	OBJ_CATEGORY("Nodes");
 
 public:
 	enum ProcessMode {

@@ -44,7 +44,6 @@ class Panel;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
-	OBJ_CATEGORY("GUI Nodes");
 
 public:
 	enum Anchor {

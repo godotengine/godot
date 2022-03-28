@@ -38,7 +38,6 @@ struct _IP_ResolverPrivate;
 
 class IP : public Object {
 	GDCLASS(IP, Object);
-	OBJ_CATEGORY("Networking");
 
 public:
 	enum ResolverStatus {

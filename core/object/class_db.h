@@ -109,7 +109,6 @@ public:
 		Set<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
 		Map<StringName, MethodInfo> virtual_methods_map;
-		StringName category;
 		Map<StringName, Vector<Error>> method_error_values;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
@@ -330,8 +329,6 @@ public:
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
-
-	static StringName get_category(const StringName &p_node);
 
 	static void set_class_enabled(const StringName &p_class, bool p_enable);
 	static bool is_class_enabled(const StringName &p_class);

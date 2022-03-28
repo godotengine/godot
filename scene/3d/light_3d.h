@@ -35,7 +35,6 @@
 
 class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);
-	OBJ_CATEGORY("3D Light Nodes");
 
 public:
 	enum Param {
