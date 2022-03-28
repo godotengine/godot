@@ -205,7 +205,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			orbiting = false;
 			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-				Input::get_singleton()->warp_mouse_position(orbiting_mouse_start);
+				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 			}
 		}
 	}

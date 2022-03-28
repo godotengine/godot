@@ -1646,7 +1646,7 @@ bool DisplayServerOSX::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSP
 	return false;
 }
 
-void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
+void DisplayServerOSX::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode != MOUSE_MODE_CAPTURED) {
@@ -1656,7 +1656,7 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 		// Local point in window coords.
 		const NSRect contentRect = [wd.window_view frame];
 		const float scale = screen_get_max_scale();
-		NSRect pointInWindowRect = NSMakeRect(p_to.x / scale, contentRect.size.height - (p_to.y / scale - 1), 0, 0);
+		NSRect pointInWindowRect = NSMakeRect(p_position.x / scale, contentRect.size.height - (p_position.y / scale - 1), 0, 0);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 
 		// Point in scren coords.

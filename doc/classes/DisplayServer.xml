@@ -670,13 +670,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="mouse_warp_to_position">
-			<return type="void" />
-			<argument index="0" name="position" type="Vector2i" />
-			<description>
-				Sets the mouse cursor position to the given [code]position[/code].
-			</description>
-		</method>
 		<method name="process_events">
 			<return type="void" />
 			<description>
@@ -850,6 +843,13 @@
 				[code]cursor_start[/code] can optionally define the current text cursor position if [code]cursor_end[/code] is not set.
 				[code]cursor_start[/code] and [code]cursor_end[/code] can optionally define the current text selection.
 				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
+			</description>
+		</method>
+		<method name="warp_mouse">
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2i" />
+			<description>
+				Sets the mouse cursor position to the given [code]position[/code] relative to an origin at the upper left corner of the currently focused game Window Manager window.
 			</description>
 		</method>
 		<method name="window_attach_instance_id">
