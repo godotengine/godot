@@ -144,6 +144,24 @@ TEST_CASE("[Color] Conversion methods") {
 			"The string representation should match the expected value.");
 }
 
+TEST_CASE("[Color] Linear <-> sRGB conversion") {
+	const Color color = Color(0.35, 0.5, 0.6, 0.7);
+	const Color color_linear = color.to_linear();
+	const Color color_srgb = color.to_srgb();
+	CHECK_MESSAGE(
+			color_linear.is_equal_approx(Color(0.100481, 0.214041, 0.318547, 0.7)),
+			"The color converted to linear color space should match the expected value.");
+	CHECK_MESSAGE(
+			color_srgb.is_equal_approx(Color(0.62621, 0.735357, 0.797738, 0.7)),
+			"The color converted to sRGB color space should match the expected value.");
+	CHECK_MESSAGE(
+			color_linear.to_srgb().is_equal_approx(Color(0.35, 0.5, 0.6, 0.7)),
+			"The linear color converted back to sRGB color space should match the expected value.");
+	CHECK_MESSAGE(
+			color_srgb.to_linear().is_equal_approx(Color(0.35, 0.5, 0.6, 0.7)),
+			"The sRGB color converted back to linear color space should match the expected value.");
+}
+
 TEST_CASE("[Color] Named colors") {
 	CHECK_MESSAGE(
 			Color::named("red").is_equal_approx(Color::hex(0xFF0000FF)),
