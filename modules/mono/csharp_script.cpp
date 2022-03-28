@@ -388,7 +388,7 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	List<String> keywords;
 	get_reserved_words(&keywords);
 	if (keywords.find(class_name)) {
-		return TTR("Class name can't be a reserved keyword");
+		return RTR("Class name can't be a reserved keyword");
 	}
 	return "";
 }

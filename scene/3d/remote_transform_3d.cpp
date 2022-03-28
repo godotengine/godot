@@ -182,7 +182,7 @@ TypedArray<String> RemoteTransform3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
-		warnings.push_back(TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));
+		warnings.push_back(RTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));
 	}
 
 	return warnings;

@@ -3106,7 +3106,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 		}
 
 		if (port_list.is_empty()) {
-			port_list = TTR("None");
+			port_list = RTR("None");
 		}
 		property.hint_string = port_list;
 	}
@@ -3649,7 +3649,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 	List<String> keyword_list;
 	ShaderLanguage::get_keyword_list(&keyword_list);
 	if (keyword_list.find(uniform_name)) {
-		return TTR("Shader keywords cannot be used as uniform names.\nChoose another name.");
+		return RTR("Shader keywords cannot be used as uniform names.\nChoose another name.");
 	}
 	if (!is_qualifier_supported(qualifier)) {
 		String qualifier_str;
@@ -3665,11 +3665,11 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 			default:
 				break;
 		}
-		return vformat(TTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
+		return vformat(RTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
 	} else if (qualifier == Qualifier::QUAL_GLOBAL) {
 		RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(uniform_name);
 		if (gvt == RS::GLOBAL_VAR_TYPE_MAX) {
-			return vformat(TTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
+			return vformat(RTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
 		}
 		bool incompatible_type = false;
 		switch (gvt) {
@@ -3727,7 +3727,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 				break;
 		}
 		if (incompatible_type) {
-			return vformat(TTR("Global uniform '%s' has an incompatible type for this kind of node.\nChange it in the Project Settings."), uniform_name);
+			return vformat(RTR("Global uniform '%s' has an incompatible type for this kind of node.\nChange it in the Project Settings."), uniform_name);
 		}
 	}
 

@@ -143,7 +143,7 @@ TypedArray<String> ParallaxLayer::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		warnings.push_back(TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
+		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
 	}
 
 	return warnings;

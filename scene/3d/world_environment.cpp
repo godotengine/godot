@@ -139,7 +139,7 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!environment.is_valid() && !camera_effects.is_valid()) {
-		warnings.push_back(TTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
+		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
 	}
 
 	if (!is_inside_tree()) {
@@ -151,7 +151,7 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	}
 
 	if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() != camera_effects) {
-		warnings.push_back(TTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
+		warnings.push_back(RTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
 	}
 
 	return warnings;
