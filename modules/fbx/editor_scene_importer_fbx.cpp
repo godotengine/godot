@@ -972,7 +972,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 						// extra const required by C++11 colon/Range operator
 						// note: do not use C++17 syntax here for dicts.
 						// this is banned in Godot.
-						for (std::pair<const std::string, const FBXDocParser::AnimationCurve *> &kvp : curves) {
+						for (const std::pair<const std::string, const FBXDocParser::AnimationCurve *> &kvp : curves) {
 							const String curve_element = ImportUtils::FBXNodeToName(kvp.first);
 							const FBXDocParser::AnimationCurve *curve = kvp.second;
 							String curve_name = ImportUtils::FBXNodeToName(curve->Name());
@@ -988,7 +988,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 							const std::map<int64_t, float> &track_time = curve->GetValueTimeTrack();
 
 							if (track_time.size() > 0) {
-								for (std::pair<int64_t, float> keyframe : track_time) {
+								for (const std::pair<const int64_t, float> &keyframe : track_time) {
 									if (curve_element == "d|X") {
 										keyframe_map.keyframes[keyframe.first].x = keyframe.second;
 									} else if (curve_element == "d|Y") {
@@ -1101,7 +1101,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 						double max_duration = 0;
 						double anim_length = animation->get_length();
 
-						for (std::pair<int64_t, Vector3> position_key : translation_keys.keyframes) {
+						for (const std::pair<const int64_t, Vector3> &position_key : translation_keys.keyframes) {
 							pos_values.push_back(position_key.second * state.scale);
 							double animation_track_time = CONVERT_FBX_TIME(position_key.first);
 
@@ -1113,7 +1113,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 							pos_times.push_back(animation_track_time);
 						}
 
-						for (std::pair<int64_t, Vector3> scale_key : scale_keys.keyframes) {
+						for (const std::pair<const int64_t, Vector3> &scale_key : scale_keys.keyframes) {
 							scale_values.push_back(scale_key.second);
 							double animation_track_time = CONVERT_FBX_TIME(scale_key.first);
 
@@ -1148,7 +1148,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 
 						Quat lastQuat = Quat();
 
-						for (std::pair<int64_t, Vector3> rotation_key : rotation_keys.keyframes) {
+						for (const std::pair<const int64_t, Vector3> &rotation_key : rotation_keys.keyframes) {
 							double animation_track_time = CONVERT_FBX_TIME(rotation_key.first);
 
 							//print_verbose("euler rotation key: " + rotation_key.second);
