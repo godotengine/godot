@@ -31,12 +31,13 @@
 #ifndef REMOTE_DEBUGGER_PEER_WEBSOCKET_H
 #define REMOTE_DEBUGGER_PEER_WEBSOCKET_H
 
-#ifdef JAVASCRIPT_ENABLED
-#include "modules/websocket/emws_client.h"
-#else
-#include "modules/websocket/wsl_client.h"
-#endif
 #include "core/debugger/remote_debugger_peer.h"
+
+#ifdef JAVASCRIPT_ENABLED
+#include "emws_client.h"
+#else
+#include "wsl_client.h"
+#endif
 
 class RemoteDebuggerPeerWebSocket : public RemoteDebuggerPeer {
 	Ref<WebSocketClient> ws_client;

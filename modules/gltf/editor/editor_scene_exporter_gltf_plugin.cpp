@@ -28,8 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
+
 #include "editor_scene_exporter_gltf_plugin.h"
+
+#include "../gltf_document.h"
+#include "../gltf_state.h"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
@@ -37,13 +41,10 @@
 #include "core/templates/vector.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
-#include "gltf_document.h"
-#include "gltf_state.h"
+#include "editor/editor_node.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/main/node.h"
-
-#include "editor/editor_node.h"
 
 String SceneExporterGLTFPlugin::get_name() const {
 	return "ConvertGLTF2";

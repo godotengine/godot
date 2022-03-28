@@ -30,11 +30,13 @@
 
 #include "editor_debugger_server_websocket.h"
 
+#ifdef TOOLS_ENABLED
+
+#include "../remote_debugger_peer_websocket.h"
 #include "core/config/project_settings.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "modules/websocket/remote_debugger_peer_websocket.h"
 
 void EditorDebuggerServerWebSocket::_peer_connected(int p_id, String _protocol) {
 	pending_peers.push_back(p_id);
@@ -129,3 +131,5 @@ EditorDebuggerServer *EditorDebuggerServerWebSocket::create(const String &p_prot
 	ERR_FAIL_COND_V(p_protocol != "ws://", nullptr);
 	return memnew(EditorDebuggerServerWebSocket);
 }
+
+#endif // TOOLS_ENABLED

@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
 #include "emws_client.h"
@@ -40,10 +42,11 @@
 #include "wsl_client.h"
 #include "wsl_server.h"
 #endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_server.h"
+#include "editor/editor_debugger_server_websocket.h"
 #include "editor/editor_node.h"
-#include "editor_debugger_server_websocket.h"
 #endif
 
 #ifdef TOOLS_ENABLED

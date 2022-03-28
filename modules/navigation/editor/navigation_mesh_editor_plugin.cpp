@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef TOOLS_ENABLED
 #include "navigation_mesh_editor_plugin.h"
 
+#ifdef TOOLS_ENABLED
+
+#include "../navigation_mesh_generator.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "navigation_mesh_generator.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 
@@ -153,4 +154,4 @@ NavigationMeshEditorPlugin::NavigationMeshEditorPlugin() {
 NavigationMeshEditorPlugin::~NavigationMeshEditorPlugin() {
 }
 
-#endif
+#endif // TOOLS_ENABLED

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_mesh_editor_plugin.h                                      */
+/*  editor_scene_importer_gltf.cpp                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_EDITOR_PLUGIN_H
-#define NAVIGATION_MESH_EDITOR_PLUGIN_H
-
 #ifdef TOOLS_ENABLED
 
-#include "editor/editor_plugin.h"
+#include "editor_scene_importer_gltf.h"
 
-class NavigationRegion3D;
+#include "../gltf_document.h"
+#include "../gltf_state.h"
 
-class NavigationMeshEditor : public Control {
-	friend class NavigationMeshEditorPlugin;
+#include "scene/3d/node_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/animation.h"
 
-	GDCLASS(NavigationMeshEditor, Control);
+uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
+	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
+}
 
-	AcceptDialog *err_dialog;
+void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("gltf");
+	r_extensions->push_back("glb");
+}
 
-	HBoxContainer *bake_hbox;
-	Button *button_bake;
-	Button *button_reset;
-	Label *bake_info;
+Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path,
+		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps,
+		List<String> *r_missing_deps,
+		Error *r_err) {
+	Ref<GLTFDocument> doc;
+	doc.instantiate();
+	Ref<GLTFState> state;
+	state.instantiate();
+	Error err = doc->append_from_file(p_path, state, p_flags, p_bake_fps);
+	if (err != OK) {
+		*r_err = err;
+		return nullptr;
+	}
+	Node *root = doc->generate_scene(state, p_bake_fps);
+	return root;
+}
 
-	NavigationRegion3D *node;
+Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
+		uint32_t p_flags, const Map<StringName, Variant> &p_options,
+		int p_bake_fps) {
+	return Ref<Animation>();
+}
 
-	void _bake_pressed();
-	void _clear_pressed();
-
-protected:
-	void _node_removed(Node *p_node);
-	static void _bind_methods();
-	void _notification(int p_what);
-
-public:
-	void edit(NavigationRegion3D *p_nav_region);
-	NavigationMeshEditor();
-	~NavigationMeshEditor();
-};
-
-class NavigationMeshEditorPlugin : public EditorPlugin {
-	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
-
-	NavigationMeshEditor *navigation_mesh_editor;
-
-public:
-	virtual String get_name() const override { return "NavigationMesh"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
-
-	NavigationMeshEditorPlugin();
-	~NavigationMeshEditorPlugin();
-};
-
-#endif
-
-#endif
+#endif // TOOLS_ENABLED

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_scene_importer_gltf.h                                         */
+/*  navigation_mesh_editor_plugin.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_GLTF_H
-#define EDITOR_SCENE_IMPORTER_GLTF_H
+#ifndef NAVIGATION_MESH_EDITOR_PLUGIN_H
+#define NAVIGATION_MESH_EDITOR_PLUGIN_H
+
 #ifdef TOOLS_ENABLED
-#include "gltf_state.h"
 
-#include "gltf_document_extension.h"
+#include "editor/editor_plugin.h"
 
-#include "editor/import/resource_importer_scene.h"
-#include "scene/main/node.h"
-#include "scene/resources/packed_scene.h"
+class NavigationRegion3D;
 
-class Animation;
+class NavigationMeshEditor : public Control {
+	friend class NavigationMeshEditorPlugin;
 
-class EditorSceneFormatImporterGLTF : public EditorSceneFormatImporter {
-	GDCLASS(EditorSceneFormatImporterGLTF, EditorSceneFormatImporter);
+	GDCLASS(NavigationMeshEditor, Control);
+
+	AcceptDialog *err_dialog;
+
+	HBoxContainer *bake_hbox;
+	Button *button_bake;
+	Button *button_reset;
+	Label *bake_info;
+
+	NavigationRegion3D *node;
+
+	void _bake_pressed();
+	void _clear_pressed();
+
+protected:
+	void _node_removed(Node *p_node);
+	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	virtual uint32_t get_import_flags() const override;
-	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual Ref<Animation> import_animation(const String &p_path,
-			uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) override;
+	void edit(NavigationRegion3D *p_nav_region);
+	NavigationMeshEditor();
+	~NavigationMeshEditor();
 };
+
+class NavigationMeshEditorPlugin : public EditorPlugin {
+	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
+
+	NavigationMeshEditor *navigation_mesh_editor;
+
+public:
+	virtual String get_name() const override { return "NavigationMesh"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+
+	NavigationMeshEditorPlugin();
+	~NavigationMeshEditorPlugin();
+};
+
 #endif // TOOLS_ENABLED
-#endif // EDITOR_SCENE_IMPORTER_GLTF_H
+
+#endif // NAVIGATION_MESH_EDITOR_PLUGIN_H

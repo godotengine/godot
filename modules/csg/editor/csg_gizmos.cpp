@@ -30,6 +30,8 @@
 
 #include "csg_gizmos.h"
 
+#ifdef TOOLS_ENABLED
+
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -425,3 +427,5 @@ EditorPluginCSG::EditorPluginCSG() {
 	Ref<CSGShape3DGizmoPlugin> gizmo_plugin = Ref<CSGShape3DGizmoPlugin>(memnew(CSGShape3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }
+
+#endif // TOOLS_ENABLED
