@@ -1603,29 +1603,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_input(mouse_focus, mb);
 			}
 
-			// In case the mouse was released after for example dragging a scrollbar,
-			// check whether the current control is different from the stored one. If
-			// it is different, rather than wait for it to be updated the next time the
-			// mouse is moved, notify the control so that it can e.g. drop the highlight.
-			// This code is duplicated from the mm.is_valid()-case further below.
-			Control *over = nullptr;
-			if (gui.mouse_focus) {
-				over = gui.mouse_focus;
-			} else {
-				over = gui_find_control(mpos);
-			}
-
-			if (gui.mouse_focus_mask == MouseButton::NONE && over != gui.mouse_over) {
-				_drop_mouse_over();
-				_gui_cancel_tooltip();
-
-				if (over) {
-					_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
-				}
-			}
-
-			gui.mouse_over = over;
-
 			set_input_as_handled();
 		}
 	}
@@ -1685,9 +1662,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		Control *over = nullptr;
-		if (gui.mouse_focus) {
-			over = gui.mouse_focus;
-		} else if (gui.mouse_in_viewport) {
+		if (gui.mouse_in_viewport) {
 			over = gui_find_control(mpos);
 		}
 
@@ -1699,6 +1674,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
+		}
+
+		if (gui.mouse_focus) {
+			over = gui.mouse_focus;
 		}
 
 		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape();
