@@ -2719,7 +2719,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = p_event;
 	}
 
-	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
+	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
 	}
