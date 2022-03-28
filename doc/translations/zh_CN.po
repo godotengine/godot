@@ -62,7 +62,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-03-17 18:46+0000\n"
+"PO-Revision-Date: 2022-03-28 09:56+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
@@ -4174,11 +4174,13 @@ msgstr ""
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that an integer, float or string property is an enumerated value to "
-"pick in a list specified via a hint string such as [code]\"Hello,Something,"
-"Else\"[/code]."
+"pick in a list specified via a hint string.\n"
+"The hint string is a comma separated list of names such as [code]\"Hello,"
+"Something,Else\"[/code]. For integer and float properties, the first name in "
+"the list has value 0, the next 1, and so on. Explicit values can also be "
+"specified by appending [code]:integer[/code] to the name, e.g. [code]\"Zero,"
+"One,Three:3,Four,Six:6\"[/code]."
 msgstr ""
-"提示整数、浮点数或字符串属性为枚举值，可选值列表通过提示字符串指定，例如 "
-"[code]\"Hello,Something,Else\"[/code]。"
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -6436,9 +6438,13 @@ msgid "[AnimationTree] node resource that contains many blend type nodes."
 msgstr "[AnimationTree] 节点资源，其中包含许多混合类型节点。"
 
 #: doc/classes/AnimationNodeBlendTree.xml
+#, fuzzy
 msgid ""
-"This node may contain a sub-tree of any other blend type nodes, such as mix, "
-"blend2, blend3, one shot, etc. This is one of the most commonly used roots."
+"This node may contain a sub-tree of any other blend type nodes, such as "
+"[AnimationNodeTransition], [AnimationNodeBlend2], [AnimationNodeBlend3], "
+"[AnimationNodeOneShot], etc. This is one of the most commonly used roots.\n"
+"An [AnimationNodeOutput] node named [code]output[/code] is created by "
+"default."
 msgstr ""
 "该节点可以包含任何其他混合类型节点的子树，例如 mix、blend2、blend3、one shot "
 "等。这是最常用的根之一。"
@@ -9555,15 +9561,15 @@ msgid ""
 "However, at this point in time only one interface can render to an HMD."
 msgstr ""
 "调用这个来初始化这个接口。第一个被初始化的接口确定为主接口，用于渲染输出。\n"
-"在初始化了接口之后，需要启用视窗的AR/VR模式，将开始渲染。\n"
-"[b]注意：[/b] 对于任何使用Godot主输出的设备，如移动VR，你必须在主视窗上启用"
-"AR/VR模式。\n"
-"如果你为一个处理自己输出的平台这样做，如OpenVR，Godot就会在屏幕上只显示一只眼"
-"睛而不失真。另外，你可以在场景中添加一个单独的视窗节点，在该视窗上启用AR/VR。"
-"它将被用来输出到HMD，让你在主窗口中做你喜欢的事情，比如用一个单独的相机作为旁"
-"观者相机，或者渲染一些完全不同的东西。\n"
+"在初始化了接口之后，需要启用视窗的 AR/VR 模式，将开始渲染。\n"
+"[b]注意：[/b] 对于任何使用Godot主输出的设备，如移动VR，你必须在主视窗上启用 "
+"AR/VR 模式。\n"
+"如果你为一个处理自己输出的平台这样做（如 OpenVR），Godot 就会在屏幕上只显示一"
+"只眼睛而不失真。另外，你可以在场景中添加一个单独的视窗节点，在该视窗上启用 "
+"AR/VR。它将被用来输出到 HMD，让你在主窗口中做你喜欢的事情，比如用一个单独的相"
+"机作为旁观者相机，或者渲染一些完全不同的东西。\n"
 "虽然目前没有使用，但你可以激活其他接口。如果你想跟踪其他平台的控制器，可能希"
-"望这样做。然而，此时，只有一个界面可以渲染到HMD。"
+"望这样做。然而，此时，只有一个界面可以渲染到 HMD。"
 
 #: doc/classes/ARVRInterface.xml
 msgid ""
@@ -9612,9 +9618,9 @@ msgid ""
 "[method get_render_targetsize]). Using a separate viewport node frees up the "
 "main viewport for other purposes."
 msgstr ""
-"这个接口输出到一个外部设备。如果使用主视窗，屏幕上的输出是一个未经修改的左眼"
+"这个接口输出到一个外部设备。如果使用主视区，屏幕上的输出是一个未经修改的左眼"
 "或右眼的缓冲区，如果没有将视窗尺寸更改为 [method get_render_targetsize] 的相"
-"同长宽比，则被拉伸。使用一个单独的视窗节点可以释放出主视窗，用于其他用途。"
+"同长宽比，则被拉伸。使用一个单独的视窗节点可以释放出主视区，用于其他用途。"
 
 #: doc/classes/ARVRInterface.xml
 msgid ""
@@ -11059,7 +11065,7 @@ msgstr "反馈延迟时间，单位为毫秒。"
 
 #: doc/classes/AudioEffectDelay.xml
 msgid "Sound level for [code]tap1[/code]."
-msgstr "[code]tap1[/code] 的声音级别。"
+msgstr "[code]tap1[/code] 的声音电平。"
 
 #: doc/classes/AudioEffectDelay.xml
 msgid ""
@@ -11092,7 +11098,7 @@ msgstr "[b]Tap2[/b] 延迟时间，单位为毫秒。"
 
 #: doc/classes/AudioEffectDelay.xml
 msgid "Sound level for [code]tap2[/code]."
-msgstr "[code]tap2[/code] 的声音级别。"
+msgstr "[code]tap2[/code] 的声音电平。"
 
 #: doc/classes/AudioEffectDelay.xml
 msgid ""
@@ -12807,10 +12813,16 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
-"When enabled, the lightmapper will merge the textures for all meshes into a "
-"single large layered texture. Not supported in GLES2."
+"If [code]true[/code], the lightmapper will merge the textures for all meshes "
+"into one or several large layered textures. If [code]false[/code], every "
+"mesh will get its own lightmap texture, which is less efficient.\n"
+"[b]Note:[/b] Atlas lightmap rendering is only supported in GLES3, [i]not[/i] "
+"GLES2. Non-atlas lightmap rendering is supported by both GLES3 and GLES2. If "
+"[member ProjectSettings.rendering/quality/driver/fallback_to_gles2] is "
+"[code]true[/code], consider baking lightmaps with [member atlas_generate] "
+"set to [code]false[/code] so that the resulting lightmap is visible in both "
+"GLES3 and GLES2."
 msgstr ""
-"启用后，光照贴图会将所有网格的纹理合并为一个大的分层纹理。 GLES2 不支持。"
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -13301,7 +13313,7 @@ msgid ""
 "For more information, read the \"Matrices and transforms\" documentation "
 "article."
 msgstr ""
-"用于三维旋转和缩放的 3×3 矩阵。几乎总是用作变换的正交基。\n"
+"用于 3D 旋转和缩放的 3×3 矩阵。几乎总是用作变换的正交基。\n"
 "包含 3 个向量字段 X、Y 和 Z 作为其列，通常被解释为变换的局部基向量。对于这种"
 "用途，它由一个缩放矩阵和一个旋转矩阵组成，依次为 (M=R.S)。\n"
 "也可以作为三维向量的数组来访问。这些向量通常是相互正交的，但不一定是归一化的"
@@ -13634,8 +13646,8 @@ msgid ""
 "Supports distance fields. For using vector font files like TTF directly, see "
 "[DynamicFont]."
 msgstr ""
-"使用 [code]*.fnt[/code] 包含纹理图库的字体来渲染文本。支持距离字段。关于直接"
-"使用 TTF 等矢量字体文件，请参阅 [DynamicFont]。"
+"使用 [code]*.fnt[/code] 包含纹理图库的字体来渲染文本。支持距离场。关于直接使"
+"用 TTF 等矢量字体文件，请参阅 [DynamicFont]。"
 
 #: doc/classes/BitmapFont.xml
 msgid ""
@@ -13689,7 +13701,7 @@ msgstr "上升（基线以上的像素数）。"
 
 #: doc/classes/BitmapFont.xml
 msgid "If [code]true[/code], distance field hint is enabled."
-msgstr "如果[code]true[/code]，则启用距离字段提示。"
+msgstr "如果[code]true[/code]，则启用距离场提示。"
 
 #: doc/classes/BitmapFont.xml
 msgid "The fallback font."
@@ -14183,9 +14195,9 @@ msgid ""
 "[Viewport] (or higher viewports) can't be displayed."
 msgstr ""
 "相机是一个特殊节点，用于显示从其当前位置可见的内容。相机在最近的 [Viewport] "
-"节点中注册自己（当树上行）。每个视窗只能激活一个相机。如果在树上没有可用的视"
-"窗，相机将在全局视窗中注册。换句话说，相机只是为 [Viewport] 提供3D显示能力，"
-"如果没有，则无法显示在该 [Viewport] 或更高视窗中注册的场景。"
+"节点中注册自己（当树上行）。每个视区只能激活一个相机。如果在树上没有可用的视"
+"区，相机将在全局视区中注册。换句话说，相机只是为 [Viewport] 提供 3D 显示能"
+"力，如果没有，则无法显示在该 [Viewport] 或更高视区中注册的场景。"
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -14340,12 +14352,12 @@ msgid ""
 "unproject_position(global_transform.origin)\n"
 "[/codeblock]"
 msgstr ""
-"返回[Viewport]矩形中的2D坐标，该坐标映射到世界空间中给定的3D点。\n"
-"[b]注意：[/b]当使用它来定位3D视窗上的GUI元素时，如果3D点在相机后面，请使用"
-"[method is_position_behind]来防止它们显示。\n"
+"返回 [Viewport] 矩形中的 2D 坐标，该坐标映射到世界空间中给定的 3D 点。\n"
+"[b]注意：[/b]当使用它来定位 3D 视区上的 GUI 元素时，如果 3D 点在相机后面，请"
+"使用 [method is_position_behind] 来防止它们显示。\n"
 "[codeblock]\n"
-"# 这个代码块是继承自Spatial的脚本的一部分。\n"
-"# `control`是对继承自Control的节点的引用。\n"
+"# 这个代码块是继承自 Spatial 的脚本的一部分。\n"
+"# `control`是对继承自 Control 的节点的引用。\n"
 "control.visible = not get_viewport().get_camera()."
 "is_position_behind(global_transform.origin)\n"
 "control.rect_position = get_viewport().get_camera()."
@@ -14375,12 +14387,12 @@ msgid ""
 "Perspective menu in the top-left corner of the 3D viewport and toggle "
 "[b]Enable Doppler[/b]."
 msgstr ""
-"如果不是[constant DOPPLER_TRACKING_DISABLED]，此相机将模拟[url=https://en."
-"wikipedia.org/wiki/Doppler_effect]多普勒效果[/url]的对象在特定"
-"[code]_process[/code]方法中的变化。多普勒效果只对[member AudioStreamPlayer3D."
-"doppler_tracking]设置为[constant AudioStreamPlayer3D."
-"DOPPLER_TRACKING_DISABLED]以外的值的[AudioStreamPlayer3D]节点进行模拟。\n"
-"[b]注意：[/b]要在编辑器中切换多普勒效果预览，使用三维视窗左上角的透视菜单，并"
+"如果不是 [constant DOPPLER_TRACKING_DISABLED]，此相机将模拟[url=https://en."
+"wikipedia.org/wiki/Doppler_effect]多普勒效果[/url]的对象在特定 "
+"[code]_process[/code] 方法中的变化。多普勒效果只对 [member "
+"AudioStreamPlayer3D.doppler_tracking] 设置为 [constant AudioStreamPlayer3D."
+"DOPPLER_TRACKING_DISABLED] 以外的值的 [AudioStreamPlayer3D] 节点进行模拟。\n"
+"[b]注意：[/b]要在编辑器中切换多普勒效果预览，使用 3D 视区左上角的透视菜单，并"
 "切换为[b]启用多普勒[/b]。"
 
 #: doc/classes/Camera.xml
@@ -14407,7 +14419,7 @@ msgid ""
 msgstr ""
 "相机的视野角度，以度为单位。仅适用于透视模式。由于 [member keep_aspect] 锁定"
 "一个轴，因此 [code]fov[/code] 设置另一个轴的视角。\n"
-"作为参考，默认的垂直视野值 ([code]70.0[/code]) 等效于以下水平 FOV：\n"
+"作为参考，默认的垂直视野值（[code]70.0[/code]）等效于以下水平 FOV：\n"
 "- 在 4:3 视窗中约86.07 度\n"
 "- 在 16:10 视窗中约 96.50 度\n"
 "- 在 16:9 视窗中约102.45 度\n"
@@ -14631,7 +14643,7 @@ msgstr ""
 msgid ""
 "Make this the current 2D camera for the scene (viewport and layer), in case "
 "there are many cameras in the scene."
-msgstr "使之成为场景（视窗和图层）的当前2D相机，以防场景中有很多相机。"
+msgstr "使之成为场景（视窗和图层）的当前 2D 相机，以防场景中有很多相机。"
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15365,11 +15377,11 @@ msgstr "返回此项目的变换矩阵。"
 
 #: doc/classes/CanvasItem.xml
 msgid "Returns the viewport's boundaries as a [Rect2]."
-msgstr "以[Rect2]形式返回视窗的边界。"
+msgstr "以 [Rect2] 形式返回视区的边界。"
 
 #: doc/classes/CanvasItem.xml
 msgid "Returns this item's transform in relation to the viewport."
-msgstr "返回这个项目相对于视窗的变换。"
+msgstr "返回这个项目相对于视区的变换。"
 
 #: doc/classes/CanvasItem.xml
 msgid "Returns the [World2D] where this item is in."
@@ -15432,16 +15444,19 @@ msgstr ""
 "变换。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"If [code]enable[/code] is [code]true[/code], children will be updated with "
-"local transform data."
+"If [code]enable[/code] is [code]true[/code], this node will receive "
+"[constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform "
+"changes."
 msgstr ""
 "如果[code]enable[/code]为[code]true[/code]，则将使用局部变换数据更新子项。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"If [code]enable[/code] is [code]true[/code], children will be updated with "
-"global transform data."
+"If [code]enable[/code] is [code]true[/code], this node will receive "
+"[constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes."
 msgstr ""
 "如果[code]enable[/code]为[code]true[/code]，则将使用全局变换数据更新子项。"
 
@@ -15573,10 +15588,19 @@ msgstr ""
 "用。不会应用任何光照。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"The [CanvasItem]'s transform has changed. This notification is only received "
-"if enabled by [method set_notify_transform] or [method "
-"set_notify_local_transform]."
+"The [CanvasItem]'s global transform has changed. This notification is only "
+"received if enabled by [method set_notify_transform]."
+msgstr ""
+"[CanvasItem]的变换已更改。仅当[method set_notify_transform]或[method "
+"set_notify_local_transform]启用时，才会收到此通知。"
+
+#: doc/classes/CanvasItem.xml
+#, fuzzy
+msgid ""
+"The [CanvasItem]'s local transform has changed. This notification is only "
+"received if enabled by [method set_notify_local_transform]."
 msgstr ""
 "[CanvasItem]的变换已更改。仅当[method set_notify_transform]或[method "
 "set_notify_local_transform]启用时，才会收到此通知。"
@@ -15736,7 +15760,7 @@ msgstr ""
 msgid ""
 "Sets the layer to follow the viewport in order to simulate a pseudo 3D "
 "effect."
-msgstr "将图层设置为跟随视窗，以模拟伪3D效果。"
+msgstr "将图层设置为跟随视区，以模拟伪 3D 效果。"
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
@@ -19562,9 +19586,8 @@ msgstr ""
 "参阅 [method add_stylebox_override]。"
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid "Returns [code]true[/code] if drag operation is successful."
-msgstr "如果正在播放动画，返回[code]true[/code]。"
+msgstr "如果拖拽操作成功，则返回 [code]true[/code]。"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20051,8 +20074,8 @@ msgid ""
 "handled."
 msgstr ""
 "启用当你关闭控件模态时，输入是否传播。\n"
-"如果[code]false[/code]，在视窗输入事件处理时停止事件处理。视窗首先隐藏模态，"
-"之后将输入标记为已处理。"
+"如果为 [code]false[/code]，在视区输入事件处理时将停止事件处理。视区首先隐藏模"
+"态，之后将输入标记为已处理。"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20155,16 +20178,15 @@ msgstr ""
 "内容，无论是纹理还是子节点。"
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid ""
 "By default, the node's pivot is its top-left corner. When you change its "
 "[member rect_rotation] or [member rect_scale], it will rotate or scale "
 "around this pivot. Set this property to [member rect_size] / 2 to pivot "
 "around the Control's center."
 msgstr ""
-"默认情况下，该节点的轴心位于其左上角。当您更改其 [member rect_scale] 时，它将"
-"围绕此轴心进行缩放。将此属性设置为 [member rect_size] / 2，以将轴心在节点的矩"
-"形中居中。"
+"默认情况下，该节点的轴心位于其左上角。当您更改其 [member rect_rotation] 或 "
+"[member rect_scale] 时，它将围绕此轴心进行旋转或缩放。将此属性设置为 [member "
+"rect_size] / 2，以将轴心在该 Control 内居中。"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -22799,7 +22821,7 @@ msgid ""
 "When using [Room]s and [Portal]s, this specifies how the [CullInstance] is "
 "processed in the system."
 msgstr ""
-"当使用 [Room] 和 [Portal] 时，这规定了 [CullInstance] 在系统中的处理方式。"
+"当使用 [Room] 和 [Portal] 时，这指定了 [CullInstance] 在系统中的处理方式。"
 
 #: doc/classes/CullInstance.xml
 msgid ""
@@ -22834,20 +22856,21 @@ msgstr ""
 
 #: doc/classes/CullInstance.xml
 msgid "Use for instances that will move [b]between[/b] [Room]s - e.g. players."
-msgstr "用于在 [Room] [b]之间[/b] 移动的实例 - 例如玩家。"
+msgstr "用于在 [Room] [b]之间[/b]移动的实例——例如玩家。"
 
 #: doc/classes/CullInstance.xml
 msgid ""
 "Use for instances that will be frustum culled only - e.g. first person "
 "weapon, debug."
-msgstr "用于只会被视锥剔除的实例 - 例如第一人称武器，调试。"
+msgstr "用于只会被视锥剔除的实例——例如第一人称武器，调试。"
 
 #: doc/classes/CullInstance.xml
 msgid ""
 "Use for instances that will not be shown at all - e.g. [b]manual room "
 "bounds[/b] (specified by prefix [i]'Bound_'[/i])."
 msgstr ""
-"用于根本不会显示的实例 - 例如[b]手动房间边界[/b]，由前缀[i]'Bound_'[/i]指定。"
+"用于根本不会显示的实例——例如[b]手动房间边界[/b]（由 [i]'Bound_'[/i] 前缀指"
+"定）。"
 
 #: doc/classes/Curve.xml
 msgid "A mathematic curve."
@@ -23006,7 +23029,7 @@ msgstr "可用切线模式的总数。"
 
 #: doc/classes/Curve2D.xml
 msgid "Describes a Bézier curve in 2D space."
-msgstr "描述二维空间的贝兹尔曲线。"
+msgstr "描述 2D 空间的贝塞尔曲线。"
 
 #: doc/classes/Curve2D.xml
 msgid ""
@@ -23015,12 +23038,11 @@ msgid ""
 "It keeps a cache of precalculated points along the curve, to speed up "
 "further calculations."
 msgstr ""
-"该类描述了二维空间中的贝兹尔曲线。它主要用于给[Path2D]一个形状，但也可以手动"
-"采样用于其他目的。\n"
+"该类描述了 2D 空间中的贝塞尔曲线。它主要用于给 [Path2D] 一个形状，但也可以手"
+"动采样用于其他目的。\n"
 "它保留了沿曲线的预计算点的缓存，以加快进一步的计算。"
 
 #: doc/classes/Curve2D.xml
-#, fuzzy
 msgid ""
 "Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s "
 "position, with control points [code]in[/code] and [code]out[/code].\n"
@@ -23031,13 +23053,13 @@ msgid ""
 "get_point_count][/code]), the point will be appended at the end of the point "
 "list."
 msgstr ""
-"在曲线的 [code]position[/code] 上添加一个点，控制点 [code]in[/code] 和 "
-"[code]out[/code]。\n"
+"在曲线的 [code]position[/code] 上添加一个点，相对于该 [Curve2D] 的位置，以及"
+"控制点 [code]in[/code] 和 [code]out[/code]。\n"
 "如果给定了 [code]at_position[/code]，这个点会被插入到点号 [code]at_position[/"
-"code] 之前，并将这个点（以及之后的每一个点）移到被插入点之后。如果"
-"[code]at_position[/code]没有给定，或者是一个非法值([code]at_position <0[/"
-"code]或[code]at_position >= [method get_point_count][/code])，该点将被追加在"
-"点列表的最后。"
+"code] 之前，并将这个点（以及之后的每一个点）移到被插入点之后。如果 "
+"[code]at_position[/code] 没有给定，或者是非法值（[code]at_position <0[/code] "
+"或 [code]at_position >= [method get_point_count][/code]），该点将被追加在点列"
+"表的最后。"
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
@@ -23234,7 +23256,6 @@ msgstr ""
 "它沿曲线保留了一个预先计算好的点缓存，以加快进一步的计算。"
 
 #: doc/classes/Curve3D.xml
-#, fuzzy
 msgid ""
 "Adds a point to a curve at [code]position[/code] relative to the [Curve3D]'s "
 "position, with control points [code]in[/code] and [code]out[/code].\n"
@@ -23245,13 +23266,13 @@ msgid ""
 "get_point_count][/code]), the point will be appended at the end of the point "
 "list."
 msgstr ""
-"在曲线的 [code]position[/code] 上添加一个点，控制点 [code]in[/code] 和 "
-"[code]out[/code]。\n"
+"在曲线的 [code]position[/code] 上添加一个点，相对于该 [Curve2D] 的位置，以及"
+"控制点 [code]in[/code] 和 [code]out[/code]。\n"
 "如果给定了 [code]at_position[/code]，这个点会被插入到点号 [code]at_position[/"
-"code] 之前，并将这个点（以及之后的每一个点）移到被插入点之后。如果"
-"[code]at_position[/code]没有给定，或者是一个非法值([code]at_position <0[/"
-"code]或[code]at_position >= [method get_point_count][/code])，该点将被追加在"
-"点列表的最后。"
+"code] 之前，并将这个点（以及之后的每一个点）移到被插入点之后。如果 "
+"[code]at_position[/code] 没有给定，或者是非法值（[code]at_position <0[/code] "
+"或 [code]at_position >= [method get_point_count][/code]），该点将被追加在点列"
+"表的最后。"
 
 #: doc/classes/Curve3D.xml
 msgid "Returns the cache of points as a [PoolVector3Array]."
@@ -24399,6 +24420,7 @@ msgid "DynamicFont renders vector font files at runtime."
 msgstr "DynamicFont 在运行时渲染矢量字体文件。"
 
 #: doc/classes/DynamicFont.xml
+#, fuzzy
 msgid ""
 "DynamicFont renders vector font files dynamically at runtime instead of "
 "using a prerendered texture atlas like [BitmapFont]. This trades the faster "
@@ -24409,9 +24431,8 @@ msgid ""
 "main font.\n"
 "DynamicFont uses the [url=https://www.freetype.org/]FreeType[/url] library "
 "for rasterization. Supported formats are TrueType ([code].ttf[/code]), "
-"OpenType ([code].otf[/code]) and Web Open Font Format 1 ([code].woff[/"
-"code]). Web Open Font Format 2 ([code].woff2[/code]) is [i]not[/i] "
-"supported.\n"
+"OpenType ([code].otf[/code]), Web Open Font Format 1 ([code].woff[/code]), "
+"and  Web Open Font Format 2 ([code].woff2[/code]).\n"
 "[codeblock]\n"
 "var dynamic_font = DynamicFont.new()\n"
 "dynamic_font.font_data = load(\"res://BarlowCondensed-Bold.ttf\")\n"
@@ -28026,14 +28047,16 @@ msgstr ""
 "函数。"
 
 #: doc/classes/EditorVCSInterface.xml
+#, fuzzy
 msgid ""
 "Helper function to create a commit [Dictionary] item. [code]msg[/code] is "
-"the commit message of the commit. [code]author[/code] is a human-readable "
-"string containing the author's details, e.g. the email and name configured "
-"in the VCS. [code]id[/code] is the identifier of the commit, in whichever "
-"format your VCS may provide an identifier to commits. [code]date[/code] is "
-"directly added to the commit item and displayed in the editor, and hence, it "
-"shall be a well-formatted, human-readable date string."
+"the commit message of the commit. [code]author[/code] is a single human-"
+"readable string containing all the author's details, e.g. the email and name "
+"configured in the VCS. [code]id[/code] is the identifier of the commit, in "
+"whichever format your VCS may provide an identifier to commits. "
+"[code]unix_timestamp[/code] is the UTC Unix timestamp of when the commit was "
+"created. [code]offset_minutes[/code] is the timezone offset in minutes, "
+"recorded from the system timezone where the commit was created."
 msgstr ""
 "创建提交 [Dictionary] 项目的辅助函数。[code]msg[/code] 为该提交的提交消息。"
 "[code]author[/code] 为包含作者详情的人类可读的字符串，例如 VCS 中配置的邮箱和"
@@ -28529,9 +28552,9 @@ msgstr ""
 "用。如果是 “3D Without Effect”，则以下选项不可用：\n"
 "- Ssao（屏幕空间环境光遮蔽）\n"
 "- Ss Reflections（屏幕空间反射）\n"
-"根视窗的预期使用方法可以通过 [member ProjectSettings.rendering/quality/"
-"intended_usage/framebuffer_allocation] 调整，其他视窗通过 [member Viewport."
-"usage] 调整。\n"
+"根 Viewport 的预期使用方法可以通过 [member ProjectSettings.rendering/quality/"
+"intended_usage/framebuffer_allocation] 调整，其他 Viewport 通过 [member "
+"Viewport.usage] 调整。\n"
 "请注意，[member ProjectSettings.rendering/quality/intended_usage/"
 "framebuffer_allocation] 的移动平台覆盖项默认使用“3D Without Effects”。这样可"
 "以提升移动设备上的性能，但同时会影响移动设备上的屏幕显示。"
@@ -29152,7 +29175,6 @@ msgstr ""
 "TONE_MAPPER_LINEAR] 时才有效。"
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid ""
 "Keeps on screen every pixel drawn in the background. Only select this mode "
 "if you really need to keep the old data. On modern GPUs it will generally "
@@ -29162,9 +29184,11 @@ msgid ""
 "reflections). If enabled in a scene where the background is visible, \"ghost "
 "trail\" artifacts will be visible when moving the camera."
 msgstr ""
-"在屏幕上保留背景中绘制的每个像素。这是最快的背景模式，但它只能在完全室内场景"
-"（没有可见的天空或天空反射）中安全使用。如果在背景可见的场景中启用，当移动相"
-"机时，\"鬼影踪迹 \"伪影将可见。"
+"在屏幕上保留背景中绘制的每个像素。请只在你真的需要保留旧数据时选择这个模式。"
+"在现代 GPU 上一般并不会比清除背景更快，反而可能造成显著减速，尤其在移动设备"
+"上。\n"
+"只能在完全室内场景中安全使用（没有可见的天空或天空反射）。如果在背景可见的场"
+"景中启用，当移动相机时，“鬼影踪迹”伪影将可见。"
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -31221,8 +31245,8 @@ msgid ""
 "inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. "
 "somewhere on the line extending from the segment."
 msgstr ""
-"返回由（[code]s1[/code], [code]s2[/code]）定义的三维直线上最接近 "
-"[code]point[/code]的三维点。返回的点可以在线段内（[code]s1[/code], [code]s2[/"
+"返回由（[code]s1[/code], [code]s2[/code]）定义的 3D 直线上最接近 "
+"[code]point[/code]的 3D 点。返回的点可以在线段内（[code]s1[/code], [code]s2[/"
 "code]），也可以在线段外，即在线段延伸的某处。"
 
 #: doc/classes/Geometry.xml
@@ -33391,18 +33415,16 @@ msgstr ""
 "高度图数据，池数组的大小必须是 [member map_width] * [member map_depth]。"
 
 #: doc/classes/HeightMapShape.xml
-#, fuzzy
 msgid ""
 "Number of vertices in the depth of the height map. Changing this will resize "
 "the [member map_data]."
-msgstr "高度图数据的深度。更改此设置将调整 [member map_data] 的大小。"
+msgstr "高度图深度的顶点数。更改此设置将调整 [member map_data] 的大小。"
 
 #: doc/classes/HeightMapShape.xml
-#, fuzzy
 msgid ""
 "Number of vertices in the width of the height map. Changing this will resize "
 "the [member map_data]."
-msgstr "高度图数据的宽度。更改此设置将调整 [member map_data] 的大小。"
+msgstr "高度图宽度的顶点数。更改此设置将调整 [member map_data] 的大小。"
 
 #: doc/classes/HFlowContainer.xml
 msgid "Horizontal flow container."
@@ -36331,13 +36353,14 @@ msgstr ""
 "上，它是地球重力加速度的倍数[code]g[/code]（~9.81 m/s²）。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns a value between 0 and 1 representing the raw intensity of the given "
 "action, ignoring the action's deadzone. In most cases, you should use "
 "[method get_action_strength] instead.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events."
 msgstr ""
 "返回介于 0 和 1 之间的值，代表给定动作的原始强度，忽略动作的死区。在大多数情"
 "况下，你应该使用 [method get_action_strength] 来代替。\n"
@@ -36346,15 +36369,16 @@ msgstr ""
 "的方向。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns a value between 0 and 1 representing the intensity of the given "
 "action. In a joypad, for example, the further away the axis (analog sticks "
 "or L2, R2 triggers) is from the dead zone, the closer the value will be to "
 "1. If the action is mapped to a control that has no axis as the keyboard, "
 "the value returned will be 0 or 1.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events."
 msgstr ""
 "返回介于0和1之间的值，代表给定动作的强度。例如，在一个操纵板上，轴（模拟杆或"
 "L2、R2触发器）离死区越远，数值就越接近1。如果动作被映射到一个没有轴作为键盘的"
@@ -36515,15 +36539,16 @@ msgstr ""
 "想要的值（在 0 到 1 的范围内）。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] when the user starts pressing the action event, "
 "meaning it's [code]true[/code] only on the frame that the user pressed down "
 "the button.\n"
 "This is useful for code that needs to run only once when an action is "
 "pressed, instead of every frame while it's pressed.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events.\n"
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may "
 "return [code]false[/code] even if one of the action's keys is pressed. See "
 "[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
@@ -36541,13 +36566,14 @@ msgstr ""
 "inputs/input_examples.html#keyboard-events]《输入示例》[/url]。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] when the user stops pressing the action event, "
 "meaning it's [code]true[/code] only on the frame that the user released the "
 "button.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events."
 msgstr ""
 "当用户停止按下动作事件时，返回[code]true[/code]，也就是说，只有在用户释放按钮"
 "的那一帧才是[code]true[/code]。\n"
@@ -36556,14 +36582,15 @@ msgstr ""
 "向。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the action event. Note that if "
 "an action has multiple buttons assigned and more than one of them is "
 "pressed, releasing one button will release the action, even if some other "
 "button assigned to this action is still pressed.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events.\n"
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
 "[code]false[/code] even if one of the action's keys is pressed. See "
 "[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
@@ -37020,12 +37047,13 @@ msgid "Returns a [String] representation of the event."
 msgstr "返回事件的 [String] 字符串表示。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns a value between 0.0 and 1.0 depending on the given actions' state. "
 "Useful for getting the value of events of type [InputEventJoypadMotion].\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 "根据给定的动作的状态，返回0.0到1.0之间的值。对于获取[InputEventJoypadMotion]"
 "类型的事件值时，很有用。\n"
@@ -37034,12 +37062,13 @@ msgstr ""
 "向。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this input event matches a pre-defined action "
 "of any type.\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 "如果这个输入事件与任何类型的预定义动作匹配，则返回[code]true[/code]。\n"
 "如果[code]exact_match[/code]是[code]false[/code]，它将忽略[InputEventKey]和"
@@ -37047,14 +37076,15 @@ msgstr ""
 "向。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the given action is being pressed (and is not "
 "an echo event for [InputEventKey] events, unless [code]allow_echo[/code] is "
 "[code]true[/code]). Not relevant for events of type [InputEventMouseMotion] "
 "or [InputEventScreenDrag].\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events.\n"
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
 "[code]false[/code] even if one of the action's keys is pressed. See "
 "[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
@@ -37071,13 +37101,14 @@ msgstr ""
 "input_examples.html#keyboard-events]《输入示例》[/url]。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the given action is released (i.e. not "
 "pressed). Not relevant for events of type [InputEventMouseMotion] or "
 "[InputEventScreenDrag].\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 "如果给定的动作被释放，即未被按下，则返回[code]true[/code]。与"
 "[InputEventMouseMotion]或[InputEventScreenDrag]类型的事件无关。\n"
@@ -37116,14 +37147,15 @@ msgstr ""
 "input_examples.html#keyboard-events]《输入示例》[/url]。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the specified [code]event[/code] matches this "
 "event. Only valid for action events i.e key ([InputEventKey]), button "
 "([InputEventMouseButton] or [InputEventJoypadButton]), axis "
 "[InputEventJoypadMotion] or action ([InputEventAction]) events.\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 "如果指定的 [code]event[/code] 与此事件匹配，则返回 [code]true[/code]。仅对动"
 "作事件有效，即键 ([InputEventKey])、按钮 ([InputEventMouseButton] 或 "
@@ -37776,14 +37808,15 @@ msgid "Removes an action from the [InputMap]."
 msgstr "从[InputMap]中删除一个动作。"
 
 #: doc/classes/InputMap.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the given event is part of an existing action. "
 "This method ignores keyboard modifiers if the given [InputEvent] is not "
 "pressed (for proper release detection). See [method action_has_event] if you "
 "don't want this behavior.\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 "如果给定的事件是现有动作的一部分，返回[code]true[/code]。如果给定的"
 "[InputEvent]没有被按下，这个方法会忽略键盘（为了正确地检测释放）。如果你不想"
@@ -39846,14 +39879,14 @@ msgid ""
 "characters instead. This will be resolved in Godot 4.0."
 msgstr ""
 "标签在屏幕上显示纯文本。可以控制水平和垂直的对齐方式，并且可以将文本包裹在节"
-"点的边界矩形内。它不支持粗体、斜体或其他格式。若使用，请改用 "
+"点的边界矩形内。它不支持粗体、斜体等格式。如果需要使用，请改用 "
 "[RichTextLabel]。\n"
-"[b]注意：[/b] 与大多数其他 [Control] 不同，Label 的 [member Control."
-"mouse_filter] 默认为 [constant Control.MOUSE_FILTER_IGNORE]，即它不响应鼠标输"
-"入事件。这意味着标签不会显示任何已配置的 [member Control.hint_tooltip]，除非"
+"[b]注意：[/b]与大多数其他 [Control] 不同，Label 的 [member Control."
+"mouse_filter] 默认为 [constant Control.MOUSE_FILTER_IGNORE]（即不响应鼠标输入"
+"事件）。这意味着标签不会显示任何已配置的 [member Control.hint_tooltip]，除非"
 "更改其鼠标过滤器。\n"
 "[b]注意：[/b]Windows 上[i]不支持[/i] [code]0xffff[/code] 之后的 Unicode 字"
-"符，例如大多数表情符号，它们将显示为未知字符。这将在 Godot 4.0 中解决。"
+"符，例如大多数表情符号，它们将显示为未知字符。将在 Godot 4.0 中解决。"
 
 #: doc/classes/Label.xml
 msgid "Returns the amount of lines of text the Label has."
@@ -39889,15 +39922,16 @@ msgid ""
 "If you resize the node, it will change its height automatically to show all "
 "the text."
 msgstr ""
-"如果[code]true[/code]，则将文本包裹在节点的边界矩形内。如果你调整节点的大小，"
-"它将自动改变其高度以显示所有的文本。"
+"如果为 [code]true[/code]，文本将在节点的边界矩形内自动换行。如果你调整节点的"
+"大小，它将自动改变其高度以显示所有的文本。"
 
 #: doc/classes/Label.xml
 msgid ""
 "If [code]true[/code], the Label only shows the text that fits inside its "
 "bounding rectangle and will clip text horizontally."
 msgstr ""
-"如果 [code]true[/code]，则标签仅显示适合其边界矩形的文本，并将水平剪切文本。"
+"如果为 [code]true[/code]，Label 将仅显示位于其边界矩形内部的文本，并将水平裁"
+"剪文本。"
 
 #: doc/classes/Label.xml
 msgid ""
@@ -39924,7 +39958,7 @@ msgstr "要在屏幕上显示的文本。"
 
 #: doc/classes/Label.xml
 msgid "If [code]true[/code], all the text displays as UPPERCASE."
-msgstr "如果 [code]true[/code]，则所有文本都显示为大写。"
+msgstr "如果为 [code]true[/code]，所有文本都将显示为大写。"
 
 #: doc/classes/Label.xml
 msgid ""
@@ -40631,45 +40665,45 @@ msgid ""
 "The style to render the [code]texture[/code] on the line. Use [enum "
 "LineTextureMode] constants."
 msgstr ""
-"在线条上渲染[code]texture[/code]的样式。使用[enum LineTextureMode]常量。"
+"在线条上渲染 [code]texture[/code] 的样式。使用 [enum LineTextureMode] 常量。"
 
 #: doc/classes/Line2D.xml
 msgid "The line's width."
-msgstr "线的宽度。"
+msgstr "该线条的宽度。"
 
 #: doc/classes/Line2D.xml
 msgid ""
 "The line's width varies with the curve. The original width is simply "
 "multiply by the value of the Curve."
-msgstr "线条的宽度随曲线的变化而变化。原始宽度只需乘以曲线的值即可。"
+msgstr "该线条的宽度随曲线变化。原始宽度只需乘以曲线的值即可。"
 
 #: doc/classes/Line2D.xml
 msgid ""
 "The line's joints will be pointy. If [code]sharp_limit[/code] is greater "
 "than the rotation of a joint, it becomes a bevel joint instead."
 msgstr ""
-"这条线的接头将是尖的。如果[code]sharp_limit[/code]大于关节的旋转，则它将变为"
-"斜角关节。"
+"该线条的交点将是尖头。如果 [code]sharp_limit[/code] 大于交点的旋转，它将变为"
+"倒角交点。"
 
 #: doc/classes/Line2D.xml
 msgid "The line's joints will be bevelled/chamfered."
-msgstr "线的接头将斜切/倒角。"
+msgstr "该线条的交点将为倒角/切角。"
 
 #: doc/classes/Line2D.xml
 msgid "The line's joints will be rounded."
-msgstr "该线的接头将为圆形。"
+msgstr "该线条的交点将为圆角。"
 
 #: doc/classes/Line2D.xml
 msgid "Don't draw a line cap."
-msgstr "不能在线帽上绘制。"
+msgstr "不绘制线条的端点。"
 
 #: doc/classes/Line2D.xml
 msgid "Draws the line cap as a box."
-msgstr "将线帽绘制为长方体。"
+msgstr "将线条端点绘制为矩形。"
 
 #: doc/classes/Line2D.xml
 msgid "Draws the line cap as a circle."
-msgstr "将线帽绘制为圆。"
+msgstr "将线条端点绘制为圆形。"
 
 #: doc/classes/Line2D.xml
 msgid ""
@@ -40680,17 +40714,17 @@ msgstr "获取纹理的左侧像素并在整个线条上渲染它。"
 msgid ""
 "Tiles the texture over the line. The texture must be imported with "
 "[b]Repeat[/b] enabled for it to work properly."
-msgstr "在线条上平铺纹理。导入纹理时必须启用[b]Repeat[/b]才能正常工作。"
+msgstr "在线条上平铺纹理。导入纹理时必须启用 [b]Repeat[/b] 才能正常工作。"
 
 #: doc/classes/Line2D.xml
 msgid ""
 "Stretches the texture across the line. Import the texture with [b]Repeat[/b] "
 "disabled for best results."
-msgstr "沿直线拉伸纹理。导入禁用[b]重复[/b]的纹理以获得最佳效果。"
+msgstr "沿线条拉伸纹理。导入禁用 [b]Repeat[/b] 的纹理以获得最佳效果。"
 
 #: doc/classes/LineEdit.xml
 msgid "Control that provides single-line string editing."
-msgstr "该控件提供单行字符串编辑。"
+msgstr "提供单行字符串编辑功能的控件。"
 
 #: doc/classes/LineEdit.xml
 msgid ""
@@ -40850,21 +40884,20 @@ msgstr ""
 
 #: doc/classes/LineEdit.xml
 msgid "If [code]true[/code], the context menu will appear when right-clicked."
-msgstr "如果为[code]true[/code]，右键单击将出现上下文菜单。"
+msgstr "如果为 [code]true[/code]，右键单击将出现上下文菜单。"
 
 #: doc/classes/LineEdit.xml doc/classes/RichTextLabel.xml
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the selected text will be deselected when focus is "
 "lost."
-msgstr "如果为[code]true[/code]，则可以再次选择当前选中的项目。"
+msgstr "如果为 [code]true[/code]，则在丢失焦点时会取消选中文本。"
 
 #: doc/classes/LineEdit.xml
 msgid ""
 "If [code]false[/code], existing text cannot be modified and new text cannot "
 "be added."
-msgstr "如果为[code]false[/code]，则不能修改现在的文本，也不能添加新文本。"
+msgstr "如果为 [code]false[/code]，则不能修改现在的文本，也不能添加新文本。"
 
 #: doc/classes/LineEdit.xml
 msgid ""
@@ -40872,8 +40905,8 @@ msgid ""
 "the [member text]. It will [b]not[/b] compress if the [member text] is "
 "shortened."
 msgstr ""
-"如果[code]true[/code]，则[LineEdit]宽度将增加到比[member text]长。如果"
-"[member text]被缩短，它将[b]不[/b]压缩。"
+"如果为 [code]true[/code]，则 [LineEdit] 宽度将增加到比 [member text] 长。如"
+"果 [member text] 被缩短，它将[b]不[/b]压缩。"
 
 #: doc/classes/LineEdit.xml
 msgid ""
@@ -40913,14 +40946,13 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/LineEdit.xml doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "If [code]false[/code], using middle mouse button to paste clipboard will be "
 "disabled.\n"
 "[b]Note:[/b] This method is only implemented on Linux."
 msgstr ""
-"如果本地视频正在播放，返回[code]true[/code]。\n"
-"[b]注意：[/b] 这个方法只在iOS上实现。"
+"如果为 [code]false[/code]，将禁用鼠标中键粘贴剪贴板。\n"
+"[b]注意：[/b]这个方法只在 Linux 上实现。"
 
 #: doc/classes/LineEdit.xml
 msgid ""
@@ -42497,6 +42529,39 @@ msgstr "返回[Mesh]资源表面的[Material]。"
 #: doc/classes/MeshInstance.xml
 msgid "Returns the number of surface materials."
 msgstr "返回表面材质的数量。"
+
+#: doc/classes/MeshInstance.xml
+msgid ""
+"Returns [code]true[/code] if this [MeshInstance] can be merged with the "
+"specified [code]other_mesh_instance[/code], using the [method MeshInstance."
+"merge_meshes] function.\n"
+"In order to be mergeable, properties of the [MeshInstance] must match, and "
+"each surface must match, in terms of material, attributes and vertex format."
+msgstr ""
+
+#: doc/classes/MeshInstance.xml
+msgid ""
+"This function can merge together the data from several source "
+"[MeshInstance]s into a single destination [MeshInstance] (the MeshInstance "
+"the function is called from). This is primarily useful for improving "
+"performance by reducing the number of drawcalls and [Node]s.\n"
+"Merging should only be attempted for simple meshes that do not contain "
+"animation.\n"
+"The final vertices can either be returned in global space, or in local space "
+"relative to the destination [MeshInstance] global transform (the destination "
+"Node must be inside the [SceneTree] for local space to work).\n"
+"The function will make a final check for compatibility between the "
+"[MeshInstance]s by default, this should always be used unless you have "
+"previously checked for compatibility using [method MeshInstance."
+"is_mergeable_with]. If the compatibility check is omitted and the meshes are "
+"merged, you may see rendering errors.\n"
+"[b]Note:[/b] The requirements for similarity between meshes are quite "
+"stringent. They can be checked using the [method MeshInstance."
+"is_mergeable_with] function prior to calling [method MeshInstance."
+"merge_meshes].\n"
+"Also note that any initial data in the destination [MeshInstance] data will "
+"be discarded."
+msgstr ""
 
 #: doc/classes/MeshInstance.xml
 msgid "Sets the [Material] for a surface of the [Mesh] resource."
@@ -45549,6 +45614,7 @@ msgstr ""
 "是“孤儿”）。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "Adds a child node. Nodes can have any number of children, but every child "
 "must have a unique name. Child nodes are automatically deleted when the "
@@ -45567,12 +45633,12 @@ msgid ""
 "[/codeblock]\n"
 "[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you "
 "must set [member owner] in addition to calling [method add_child]. This is "
-"typically relevant for [url=https://godot.readthedocs.io/en/3.2/tutorials/"
-"misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://"
-"godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor "
-"plugins[/url]. If [method add_child] is called without setting [member "
-"owner], the newly added [Node] will not be visible in the scene tree, though "
-"it will be visible in the 2D/3D view."
+"typically relevant for [url=$DOCS_URL/tutorials/misc/"
+"running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/"
+"tutorials/plugins/editor/index.html]editor plugins[/url]. If [method "
+"add_child] is called without setting [member owner], the newly added [Node] "
+"will not be visible in the scene tree, though it will be visible in the "
+"2D/3D view."
 msgstr ""
 "添加子节点。节点可以有任意数量的子节点，但是每个子节点必须有唯一的名字。当父"
 "节点被删除时，子节点会被自动删除，所以整个场景可以通过删除其最上面的节点而被"
@@ -46075,7 +46141,7 @@ msgid ""
 "Prints all stray nodes (nodes outside the [SceneTree]). Used for debugging. "
 "Works only in debug builds."
 msgstr ""
-"打印所有散在节点([SceneTree]之外的节点)。用于调试。只能在调试版本中工作。"
+"打印所有离群节点（[SceneTree] 之外的节点）。用于调试。只能在调试版本中工作。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -46093,8 +46159,8 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "将树打印到标准输出。主要用于调试。这个版本显示相对于当前节点的路径，适合复制/"
-"粘贴到[method get_node]函数中。\n"
-"[b]示例输出:[/b]\n"
+"粘贴到 [method get_node] 函数中。\n"
+"[b]示例输出：[/b]\n"
 "[codeblock]\n"
 "TheGame\n"
 "TheGame/Menu\n"
@@ -46119,8 +46185,8 @@ msgid ""
 "       ┖╴Camera2D\n"
 "[/codeblock]"
 msgstr ""
-"类似于[method print_tree]，它将树打印到标准输出。这个版本显示更多的图形，类似"
-"于在场景检查器中显示的内容。它对于检查较大的树很有用。\n"
+"类似于 [method print_tree]，它将树打印到标准输出。这个版本显示更多的图形，类"
+"似于在场景检查器中显示的内容。它对于检查较大的树很有用。\n"
 "[b]输出示例：[/b]\n"
 "[codeblock]\n"
 " ┖╴TheGame\n"
@@ -46150,7 +46216,7 @@ msgid ""
 "Notifies the current node and all its children recursively by calling "
 "[method Object.notification] on all of them."
 msgstr ""
-"通过对所有节点调用[method Object.notification]，递归地通知当前节点和它的所有"
+"通过对所有节点调用 [method Object.notification]，递归地通知当前节点和它的所有"
 "子节点。"
 
 #: doc/classes/Node.xml
@@ -46166,12 +46232,13 @@ msgid ""
 "[method @GDScript.is_instance_valid] before attempting to call its methods "
 "or access its properties."
 msgstr ""
-"在当前帧结束时排队删除一个节点。当删除时，其所有的子节点也将被删除。这个方法"
-"确保删除节点是安全的，与[method Object.free]相反。使用[method Object."
-"is_queued_for_deletion]来检查一个节点是否会在帧末被删除。\n"
-"[b]重要：[/b] 如果你有变量指向节点，一旦节点被释放，它将[i]不会[/i] 被分配到"
-"[code]null[/code]。相反，它将指向一个[i]先前被释放的实例[/i]，你应该在尝试调"
-"用其方法或访问其属性之前用[method @GDScript.is_instance_valid]来验证它。"
+"在当前帧结束时排队删除一个节点。被删除时，其所有的子节点也将被删除。这个方法"
+"能够确保删除节点是安全的，与 [method Object.free] 相反。可以使用 [method "
+"Object.is_queued_for_deletion] 来检查节点是否会在帧末被删除。\n"
+"[b]重要：[/b]如果你有一个指向节点的变量，该节点被释放后，这个变量[i]不会[/i]"
+"被赋值为 [code]null[/code]。相反，它将指向一个[i]先前被释放的实例[/i]，你应该"
+"在尝试调用其方法或访问其属性之前用 [method @GDScript.is_instance_valid] 来检"
+"验其有效性。"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -46569,16 +46636,40 @@ msgstr ""
 "code]。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "The node owner. A node can have any other node as owner (as long as it is a "
 "valid parent, grandparent, etc. ascending in the tree). When saving a node "
 "(using [PackedScene]), all the nodes it owns will be saved with it. This "
 "allows for the creation of complex [SceneTree]s, with instancing and "
-"subinstancing."
+"subinstancing.\n"
+"[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you "
+"must set [member owner] in addition to calling [method add_child]. This is "
+"typically relevant for [url=$DOCS_URL/tutorials/misc/"
+"running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/"
+"tutorials/plugins/editor/index.html]editor plugins[/url]. If [method "
+"add_child] is called without setting [member owner], the newly added [Node] "
+"will not be visible in the scene tree, though it will be visible in the "
+"2D/3D view."
 msgstr ""
-"节点的所有者。节点可以使用任何其他节点作为其所有者（只要是能够沿着场景树向上"
-"追溯到的有效父节点、祖父节点等）。（使用 [PackedScene]）保存节点时，所有它拥"
-"有的节点也会随之保存。由此即可通过实例化和子实例化来创建复杂的 [SceneTree]。"
+"添加子节点。节点可以有任意数量的子节点，但是每个子节点必须有唯一的名字。当父"
+"节点被删除时，子节点会被自动删除，所以整个场景可以通过删除其最上面的节点而被"
+"删除。\n"
+"如果[code]legible_unique_name[/code]是[code]true[/code]，子节点将有一个基于被"
+"实例化的节点的名称，而不是其类型可读的名称。\n"
+"[b]注意：[/b] 如果子节点已经有父节点，该函数将失败。首先使用[method "
+"remove_child]将节点从其当前的父节点中移除。如:\n"
+"[codeblock]\n"
+"if child_node.get_parent():\n"
+"    child_node.get_parent().remove_child(child_node)\n"
+"add_child(child_node)\n"
+"[/codeblock]\n"
+"[b]注意：[/b] 如果你想让一个子节点被持久化到[PackedScene]中，除了调用[method "
+"add_child]外，还必须设置[member owner]。这通常与[url=https://godot."
+"readthedocs.io/en/3.2/tutorials/misc/running_code_in_the_editor.html]工具脚本"
+"[/url]和[url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/"
+"index.html]编辑器插件[/url]有关。如果调用[method add_child]而不设置[member "
+"owner]，新添加的[Node]在场景树中是不可见的，尽管它在2D/3D视图中可见。"
 
 #: doc/classes/Node.xml
 msgid "Pause mode. How the node will behave if the [SceneTree] is paused."
@@ -47360,8 +47451,14 @@ msgstr ""
 "code]，以及 [code]usage: int[/code]（见 [enum PropertyUsageFlags]）。"
 
 #: doc/classes/Object.xml
-msgid "Called when the object is initialized."
-msgstr "当对象被初始化时被调用。"
+msgid ""
+"Called when the object is initialized in memory. Can be defined to take in "
+"parameters, that are passed in when constructing.\n"
+"[b]Note:[/b] If [method _init] is defined with required parameters, then "
+"explicit construction is the only valid means of creating an Object of the "
+"class. If any other means (such as [method PackedScene.instance]) is used, "
+"then initialization will fail."
+msgstr ""
 
 #: doc/classes/Object.xml
 msgid ""
@@ -48392,12 +48489,11 @@ msgstr ""
 
 #: doc/classes/OptionButton.xml doc/classes/PopupMenu.xml
 msgid "Returns the text of the item at index [code]idx[/code]."
-msgstr "返回索引[code]idx[/code]处项目的文本。"
+msgstr "返回索引 [code]idx[/code] 处项目的文本。"
 
 #: doc/classes/OptionButton.xml
-#, fuzzy
 msgid "Returns the tooltip of the item at index [code]idx[/code]."
-msgstr "返回索引[code]idx[/code]处项目的文本。"
+msgstr "返回索引 [code]idx[/code] 处项目的工具提示。"
 
 #: doc/classes/OptionButton.xml
 msgid ""
@@ -48455,12 +48551,11 @@ msgstr ""
 
 #: doc/classes/OptionButton.xml doc/classes/PopupMenu.xml
 msgid "Sets the text of the item at index [code]idx[/code]."
-msgstr "在索引[code]idx[/code]处设置项的文本。"
+msgstr "设置在索引 [code]idx[/code] 处的项目的文本。"
 
 #: doc/classes/OptionButton.xml
-#, fuzzy
 msgid "Sets the tooltip of the item at index [code]idx[/code]."
-msgstr "在索引[code]idx[/code]处设置项的文本。"
+msgstr "设置在索引 [code]idx[/code] 处的项目的工具提示。"
 
 #: doc/classes/OptionButton.xml
 msgid ""
@@ -49255,6 +49350,17 @@ msgid ""
 "    refresh_rate = 60.0\n"
 "[/codeblock]"
 msgstr ""
+"返回指定屏幕的当前刷新率。如果 [code]screen[/code] 为 [code]-1[/code]（默认"
+"值），则会使用当前屏幕。\n"
+"[b]注意：[/b]如果 Godot 无法获取给定屏幕的刷新率，则会返回 [code]-1.0[/"
+"code]。在 HTML5 上，[method get_screen_refresh_rate] 总是返回 [code]-1.0[/"
+"code]，因为在该平台上无法获取刷新率。\n"
+"要在该方法失败时回退至默认刷新率，请尝试：\n"
+"[codeblock]\n"
+"var refresh_rate = OS.get_screen_refresh_rate()\n"
+"if refresh_rate < 0:\n"
+"    refresh_rate = 60.0\n"
+"[/codeblock]"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -53977,8 +54083,14 @@ msgid ""
 msgstr "设置 generic_6_DOF_joint参数（请参阅[enum G6DOFJointAxisParam]常量）。"
 
 #: doc/classes/PhysicsServer.xml
-msgid "Returns an Info defined by the [enum ProcessInfo] input given."
-msgstr "返回由给定的[enum ProcessInfo]输入定义的信息。"
+#, fuzzy
+msgid ""
+"Returns information about the current state of the 3D physics engine. See "
+"[enum ProcessInfo] for a list of available states. Only implemented for "
+"Godot Physics."
+msgstr ""
+"返回关于2D物理引擎当前状态的信息。有关可用状态列表，请参阅[enum "
+"ProcessInfo]。"
 
 #: doc/classes/PhysicsServer.xml
 msgid "Gets a hinge_joint flag (see [enum HingeJointFlag] constants)."
@@ -57054,12 +57166,12 @@ msgstr ""
 "警告。"
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], enables warnings when the type of the default value "
 "set to an exported variable is different than the specified export type."
 msgstr ""
-"如果[code]true[/code]，则当三元运算符可能发出类型不兼容的值时，将启用警告。"
+"如果为 [code]true[/code]，则启用导出变量的默认值类型与其导出类型不一致时的警"
+"告。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -57600,6 +57712,12 @@ msgid ""
 "[b]Note:[/b] This is set to [code]true[/code] by default for new projects "
 "and is the recommended setting."
 msgstr ""
+"如果已启用，则会在将 [member Viewport.gui_disable_input] 设为 [code]false[/"
+"code] 禁用视区的 GUI 输入时，将当前的鼠标悬停及聚焦丢弃。\n"
+"这样的行为能够帮助保持 GUI 状态的健壮，输入恢复时，无论当时发生了什么都不会产"
+"生意外的结果。\n"
+"如果已禁用，会使用旧有行为，除了禁用 GUI 输入本身不会进行额外操作。\n"
+"[b]注意：[/b]新项目会默认将其设为 [code]true[/code]，这也是推荐的设置。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -57824,7 +57942,7 @@ msgstr ""
 msgid ""
 "If [code]true[/code], sends mouse input events when tapping or swiping on "
 "the touchscreen."
-msgstr "如果[code]true[/code]，则在点击或滑动触摸屏时发送鼠标输入事件。"
+msgstr "如果为 [code]true[/code]，则在点击或滑动触摸屏时发送鼠标输入事件。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -58769,6 +58887,11 @@ msgid ""
 "[code]DEFAULT[/code] or [code]Bullet[/code], [i]not[/i] [code]GodotPhysics[/"
 "code]."
 msgstr ""
+"如果为 [code]true[/code]，会让 Bullet 物理引擎为每一个三角网格形状生成内部边"
+"缘信息，让与三角网格形状（[ConcavePolygonShape]）的碰撞变平滑。\n"
+"[b]注意：[/b]仅在 [member physics/3d/physics_engine] 被设为 [code]DEFAULT[/"
+"code] 或 [code]Bullet[/code] 时有效，为 [code]GodotPhysics[/code] 时[i]无效[/"
+"i]。"
 
 #: doc/classes/ProjectSettings.xml
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
@@ -59354,6 +59477,9 @@ msgid ""
 "You may want to do that since mobile GPUs generally won't support "
 "ubershaders due to their complexity."
 msgstr ""
+"[code]rendering/gles3/shaders/shader_compilation_mode[/code] 的覆盖项，用于为"
+"移动设备禁用异步编译。\n"
+"移动 GPU 通常不会支持超级着色器，因为其复杂度较高。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -59742,10 +59868,10 @@ msgid ""
 "recovered by enabling contrast-adaptive sharpening (see [member rendering/"
 "quality/filters/sharpen_intensity])."
 msgstr ""
-"在根视窗中启用FXAA。FXAA是一种流行的屏幕空间抗锯齿方法，它速度快，但会使图像"
-"看起来很模糊，特别是在低分辨率下。在1440p和4K这样的大分辨率下，可以工作得比较"
-"好。一些损失的锐度可以通过启用对比度适应性锐化来恢复，参阅[member rendering/"
-"quality/filters/sharpen_intensity]。"
+"在根 Viewport 中启用 FXAA。FXAA 是一种流行的屏幕空间抗锯齿方法，它速度快，但"
+"会使图像看起来很模糊，特别是在低分辨率下。在 1440p 和 4K 这样的大分辨率下，可"
+"以工作得比较好。一些损失的锐度可以通过启用对比度适应性锐化来恢复，参阅 "
+"[member rendering/quality/filters/sharpen_intensity]。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -60597,19 +60723,18 @@ msgstr ""
 "一个浮点[i]值[/i]，用于[i]步进[/i]和[i]页面[/i]，例如[ScrollBar]。"
 
 #: doc/classes/Range.xml
-#, fuzzy
 msgid ""
 "Binds two [Range]s together along with any ranges previously grouped with "
 "either of them. When any of range's member variables change, it will share "
 "the new value with all other ranges in its group."
 msgstr ""
-"将两个范围和之前与它们中任何一个分组的任何范围绑定在一起。当任何一个范围的成"
-"员变量改变时，它将与它的组中的所有其他范围共享新的值。"
+"将两个 [Range] 绑定，之前已与两者之中的任何一个组合的 Range 也会被绑定在一"
+"起。其中任何一个 Range 的成员变量改变时，它将与它的组中的所有其他 Range 共享"
+"新值。"
 
 #: doc/classes/Range.xml
-#, fuzzy
 msgid "Stops the [Range] from sharing its member variables with any other."
-msgstr "停止与任何其他成员变量共享其成员变量的范围。"
+msgstr "使该 [Range] 停止与任何其他 Range 共享其成员变量。"
 
 #: doc/classes/Range.xml
 msgid ""
@@ -60696,6 +60821,11 @@ msgid ""
 "value_changed] is also emitted when [code]value[/code] is set directly via "
 "code."
 msgstr ""
+"[member value] 变化时触发。用于 [Slider] 时，拖拽时会连续调用（可能每帧都会调"
+"用）。如果你在与 [signal value_changed] 相连的函数中执行较昂贵的操作，请考虑"
+"使用 [Timer] [i]去除抖动[/i]，降低该函数的调用频率。\n"
+"[b]注意：[/b]与 [signal LineEdit.text_changed] 等信号不同，[signal "
+"value_changed] 还会在 [code]value[/code] 由代码直接修改时触发。"
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
 msgid "Query the closest object intersecting a ray."
@@ -61879,11 +62009,11 @@ msgid ""
 "performs custom logic to properly set the proxy texture and flags in the "
 "local viewport."
 msgstr ""
-"当启用了[member resource_local_to_scene]的资源从[PackedScene]实例化中加载时，"
-"这个方法会被调用。它的行为可以通过覆盖脚本中的[method _setup_local_to_scene]"
-"进行定制。\n"
-"对于大多数资源，该方法不执行任何基本逻辑。[ViewportTexture]执行自定义逻辑以正"
-"确设置本地视窗中的代理纹理和标志。"
+"当启用了 [member resource_local_to_scene] 的资源从 [PackedScene] 实例化中加载"
+"时，这个方法会被调用。它的行为可以通过覆盖脚本中的 [method "
+"_setup_local_to_scene] 进行定制。\n"
+"对于大多数资源，该方法不执行任何基本逻辑。[ViewportTexture] 执行自定义逻辑以"
+"正确设置本地视窗中的代理纹理和标志。"
 
 #: doc/classes/Resource.xml
 msgid ""
@@ -66621,8 +66751,8 @@ msgid ""
 "its rotation and translation by performing Gram-Schmidt orthonormalization "
 "on this node's [Transform]."
 msgstr ""
-"通过对该节点的[Transform]进行Gram-Schmidt正则化，重新设置该节点的变换（如比"
-"例、倾斜和锥度），保留其旋转和平移。"
+"通过对该节点的 [Transform] 进行 Gram-Schmidt 正则化，重新设置该节点的变换（如"
+"比例、倾斜和锥度），保留其旋转和平移。"
 
 #: doc/classes/Spatial.xml
 msgid ""
@@ -69876,7 +70006,6 @@ msgstr ""
 "[code]: / \\ ? * \" | % < >[/code]"
 
 #: doc/classes/String.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this string contains a valid float. This is "
 "inclusive of integers, and also supports exponents:\n"
@@ -69891,11 +70020,11 @@ msgstr ""
 "如果该字符串包含有效的浮点数，则返回 [code]true[/code]。包含整数，也支持指数"
 "幂：\n"
 "[codeblock]\n"
-"print(\"1.7\".is_valid_float()) # 输出“true”\n"
-"print(\"24\".is_valid_float()) # 输出“true”\n"
-"print(\"7e3\".is_valid_float()) # 输出“true”\n"
-"print(\"24\".is_valid_float()) # 输出“true”\n"
-"print(\"Hello\".is_valid_float()) # 输出“false”\n"
+"print(\"1.7\".is_valid_float()) # 输出“True”\n"
+"print(\"24\".is_valid_float()) # 输出“True”\n"
+"print(\"7e3\".is_valid_float()) # 输出“True”\n"
+"print(\"24\".is_valid_float()) # 输出“True”\n"
+"print(\"Hello\".is_valid_float()) # 输出“False”\n"
 "[/codeblock]"
 
 #: doc/classes/String.xml
@@ -69921,7 +70050,6 @@ msgstr ""
 "[code]false[/code]。"
 
 #: doc/classes/String.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this string is a valid identifier. A valid "
 "identifier may contain only letters, digits and underscores ([code]_[/code]) "
@@ -69935,13 +70063,12 @@ msgstr ""
 "该字符串为有效标识符时，返回 [code]true[/code]。有效标识符仅能够包含字母、数"
 "字、下划线（[code]_[/code]），并且不能以数字开头。\n"
 "[codeblock]\n"
-"print(\"good_ident_1\".is_valid_identifier()) # 输出“true”\n"
-"print(\"1st_bad_ident\".is_valid_identifier()) # 输出“false”\n"
-"print(\"bad_ident_#2\".is_valid_identifier()) # 输出“false”\n"
+"print(\"good_ident_1\".is_valid_identifier()) # 输出“True”\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # 输出“False”\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # 输出“False”\n"
 "[/codeblock]"
 
 #: doc/classes/String.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this string contains a valid integer.\n"
 "[codeblock]\n"
@@ -69954,11 +70081,11 @@ msgid ""
 msgstr ""
 "如果该字符串包含有效的整数，则返回 [code]true[/code]\n"
 "[codeblock]\n"
-"print(\"7\".is_valid_int()) # 输出“true”\n"
-"print(\"14.6\".is_valid_int()) # 输出“false”\n"
-"print(\"L\".is_valid_int()) # 输出“false”\n"
-"print(\"+3\".is_valid_int()) # 输出“true”\n"
-"print(\"-12\".is_valid_int()) # 输出“true”\n"
+"print(\"7\".is_valid_int()) # 输出“True”\n"
+"print(\"14.6\".is_valid_int()) # 输出“False”\n"
+"print(\"L\".is_valid_int()) # 输出“False”\n"
+"print(\"+3\".is_valid_int()) # 输出“True”\n"
+"print(\"-12\".is_valid_int()) # 输出“True”\n"
 "[/codeblock]"
 
 #: doc/classes/String.xml
@@ -70193,6 +70320,7 @@ msgid "Returns the right side of the string from a given position."
 msgstr "返回该字符串指定位置右侧的内容。"
 
 #: doc/classes/String.xml
+#, fuzzy
 msgid ""
 "Splits the string by a [code]delimiter[/code] string and returns an array of "
 "the substrings, starting from right.\n"
@@ -70206,8 +70334,8 @@ msgid ""
 "var some_string = \"One,Two,Three,Four\"\n"
 "var some_array = some_string.rsplit(\",\", true, 1)\n"
 "print(some_array.size()) # Prints 2\n"
-"print(some_array[0]) # Prints \"Four\"\n"
-"print(some_array[1]) # Prints \"Three,Two,One\"\n"
+"print(some_array[0]) # Prints \"One,Two,Three\"\n"
+"print(some_array[1]) # Prints \"Four\"\n"
 "[/codeblock]"
 msgstr ""
 "从右侧开始，通过 [code]delimiter[/code] 字符串拆分字符串并返回子字符串数"
@@ -72152,11 +72280,12 @@ msgid "Returns if the given line is wrapped."
 msgstr "返回给定的行是否换行。"
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid ""
 "Returns whether the mouse is over selection. If [code]edges[/code] is "
 "[code]true[/code], the edges are considered part of the selection."
-msgstr "返回节点[code]id[/code]和[code]dst_id[/code]是否在指定的插槽上连接。"
+msgstr ""
+"返回鼠标是否位于选区之上。如果 [code]edges[/code] 为 [code]true[/code]，则边"
+"界会被认为是选区的一部分。"
 
 #: doc/classes/TextEdit.xml
 msgid "Returns [code]true[/code] if the selection is active."
@@ -73239,7 +73368,7 @@ msgstr ""
 "用于在用户界面上绘制图标和精灵。纹理的位置可以通过 [member stretch_mode] 属性"
 "来控制。它可以缩放、平铺，或者在其边界矩形内保持居中。\n"
 "[b]注意：[/b]当使用 TextureRect 来显示 [ViewportTexture] 时，你应该启用 "
-"[member flip_v]。或者，你也可以在视窗上启用 [member Viewport."
+"[member flip_v]。或者，你也可以在 Viewport 上启用 [member Viewport."
 "render_target_v_flip]。否则，图像会出现上下颠倒的情况。"
 
 #: doc/classes/TextureRect.xml
@@ -74885,6 +75014,8 @@ msgid ""
 "For example, -480 returns \"-08:00\", 345 returns \"+05:45\", and 0 returns "
 "\"+00:00\"."
 msgstr ""
+"将给定的时区偏移分钟数转换为时区偏移字符串。例如，-480 返回 \"-08:00\"、345 "
+"返回 \"+05:45\"、0 返回 \"+00:00\"。"
 
 #: doc/classes/Time.xml
 msgid ""
@@ -78783,10 +78914,11 @@ msgid ""
 "[PhysicsBody] class."
 msgstr ""
 "此节点实现了模拟汽车所需的所有物理逻辑。它是基于物理引擎中常见的射线投射的车"
-"辆系统。你需要为车的主体添加一个[CollisionShape]，并为车轮添加[VehicleWheel]"
-"节点。还应该为汽车的三维模型添加一个[MeshInstance]节点，但这个模型不应该包括"
-"车轮的网格。你应该通过使用[member brake]、[member engine_force]和 [member "
-"steering] 属性来控制车辆，而不是直接改变这个节点的位置或方向。\n"
+"辆系统。你需要为车的主体添加一个 [CollisionShape]，并为车轮添加 "
+"[VehicleWheel] 节点。还应该为汽车的 3D 模型添加一个 [MeshInstance] 节点，但这"
+"个模型不应该包括车轮的网格。你应该通过使用 [member brake]、[member "
+"engine_force] 和 [member steering] 属性来控制车辆，而不是直接改变这个节点的位"
+"置或方向。\n"
 "[b]注意：[/b]你的 VehicleBody 的原点将决定你的车辆的重心，所以最好保持低位，"
 "并将 [CollisionShape] 和 [MeshInstance] 往上移。\n"
 "[b]注意：[/b]这个类有已知的问题，并不是为了提供真实的 3D 车辆物理而设计。如果"
@@ -78848,10 +78980,10 @@ msgid ""
 "probably have to write your own physics integration using another "
 "[PhysicsBody] class."
 msgstr ""
-"此节点需要作为[VehicleBody]的子节点使用，并模拟其车轮的行为。其节点也作为碰撞"
-"器来检测车轮是否接触到表面。\n"
-"[b]注意：[/b] 这个类有已知的问题，并不是为了提供真实的三维车辆物理而设计的。"
-"如果你想要先进的车辆物理，须使用另一个[PhysicsBody]类来编写你自己的物理集成。"
+"此节点需要作为 [VehicleBody] 的子节点使用，并模拟其车轮的行为。其节点也作为碰"
+"撞器来检测车轮是否接触到表面。\n"
+"[b]注意：[/b]这个类有已知的问题，并不是为了提供真实的 3D 车辆物理而设计的。如"
+"果你想要先进的车辆物理，须使用另一个 [PhysicsBody] 类来编写你自己的物理集成。"
 
 #: doc/classes/VehicleWheel.xml
 msgid ""
@@ -79378,9 +79510,9 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "返回视窗的纹理。\n"
-"[b]注意：[/b] 由于OpenGL的工作方式，产生的[ViewportTexture]是垂直翻转的。你可"
-"以在[method Texture.get_data]的结果上使用[method Image.flip_y]来将其翻转回"
-"去，例如。\n"
+"[b]注意：[/b]由于 OpenGL 的工作方式，产生的 [ViewportTexture] 是垂直翻转的。"
+"你可以在 [method Texture.get_data] 的结果上使用 [method Image.flip_y] 来将其"
+"翻转回去，例如：\n"
 "[codeblock]\n"
 "var img = get_viewport().get_texture().get_data()\n"
 "img.flip_y()\n"
@@ -79406,9 +79538,8 @@ msgid "Returns [code]true[/code] if there are visible modals on-screen."
 msgstr "如果屏幕上有可见的模型，返回[code]true[/code]。"
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid "Returns [code]true[/code] if the drag operation is successful."
-msgstr "如果选择处于活动状态，则返回 [code]true[/code]。"
+msgstr "如果拖拽操作成功，则返回 [code]true[/code]。"
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -79430,8 +79561,8 @@ msgid ""
 "[Viewport] but makes you responsible for updating the position of this "
 "[Viewport] manually."
 msgstr ""
-"用指定的矩形将这个[Viewport]附加到根[Viewport]视窗上。这就绕过了另一个节点来"
-"显示这个[Viewport]的需要，但让你负责手动更新这个[Viewport]的坐标。"
+"用指定的矩形将这个 [Viewport] 附加到根 [Viewport] 上。这就绕过了另一个节点来"
+"显示这个 [Viewport] 的需要，但让你负责手动更新这个 [Viewport] 的坐标。"
 
 #: doc/classes/Viewport.xml
 msgid "Stops the input from propagating further down the [SceneTree]."
@@ -79617,10 +79748,10 @@ msgid ""
 "Viewport or from [code]SCREEN_TEXTURE[/code] becomes unavailable. For more "
 "information see [method VisualServer.viewport_set_render_direct_to_screen]."
 msgstr ""
-"如果[code]true[/code]，直接将视窗渲染到屏幕上，而不是渲染到根视窗上。只在"
-"GLES2中可用。这是一个低级别的优化，在大多数情况下不应该使用。如果使用，从视窗"
-"或从[code]SCREEN_TEXTURE[/code]读取将变得不可用。更多信息参阅[method "
-"VisualServer.viewport_set_render_direct_to_screen]。"
+"如果为 [code]true[/code]，会直接将 Viewport 渲染到屏幕上，而不是渲染到根视窗"
+"上。只在 GLES2 中可用。这是一个低级别的优化，在大多数情况下不应该使用。如果使"
+"用，从 Viewport 或从 [code]SCREEN_TEXTURE[/code] 读取将变得不可用。更多信息参"
+"阅 [method VisualServer.viewport_set_render_direct_to_screen]。"
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -82312,25 +82443,26 @@ msgid ""
 "viewport, or it needs to be the child of another canvas item that is "
 "eventually attached to the canvas."
 msgstr ""
-"任何可见对象的服务。VisualServer是所有可见对象的API后端。整个场景系统安装在它"
-"上面来显示。\n"
-"VisualServer是完全不透明的，它的内部结构的完全的具体实现不能被访问。\n"
-"VisualServer可以用来完全绕过场景系统。\n"
-"可使用[code]*_create[/code]函数创建资源。\n"
-"所有的对象都被绘制到视窗中。你可以使用附在[SceneTree]上的[Viewport]，或者用"
-"[method viewport_create]自己创建一个。当使用自定义场景或画布时，需要使用"
-"[method viewport_set_scenario]或[method viewport_attach_canvas]将场景或画布附"
-"加到视窗上。\n"
-"在3D中，所有的视觉对象都必须与一个场景相关联。场景是世界的一个视觉表现。如果"
-"从一个正在运行的游戏中访问视觉服务，场景可以通过[method Spatial.get_world]从"
-"场景树中的任何[Spatial]节点访问。另外，可以用[method scenario_create]创建一个"
-"场景。\n"
+"任何可见对象的服务。VisualServer 是所有可见对象的 API 后端。整个场景系统安装"
+"在它上面来显示。\n"
+"VisualServer 是完全不透明的，它的内部结构的完全的具体实现不能被访问。\n"
+"VisualServer 可以用来完全绕过场景系统。\n"
+"可使用 [code]*_create[/code] 函数创建资源。\n"
+"所有的对象都被绘制到视窗中。你可以使用附在 [SceneTree] 上的 [Viewport]，或者"
+"用 [method viewport_create] 自己创建一个。当使用自定义场景或画布时，需要使用 "
+"[method viewport_set_scenario] 或 [method viewport_attach_canvas] 将场景或画"
+"布附加到视窗上。\n"
+"在 3D 中，所有的视觉对象都必须与一个场景相关联。场景是世界的一个视觉表现。如"
+"果从一个正在运行的游戏中访问视觉服务，场景可以通过 [method Spatial."
+"get_world] 从场景树中的任何 [Spatial] 节点访问。另外，可以用 [method "
+"scenario_create] 创建一个场景。\n"
 "相类似地，在2D中，需要一个画布来绘制所有的画布项目。\n"
-"在3D中，所有可见的对象都是由资源和实例组成。资源可以是网格、粒子系统、光或任"
-"何其他3D对象。为了使资源可见，必须使用[method instance_set_base]连接到一个实"
-"例。实例也必须使用[method instance_set_scenario]附加到场景中，以便可见。\n"
-"在2D中，所有可见对象都是某种形式的画布项目。为了可见，一个画布项需要是连接到"
-"视窗的画布的子项，或者它需要是最终连接到画布的另一个画布项的子项。"
+"在 3D 中，所有可见的对象都是由资源和实例组成。资源可以是网格、粒子系统、光或"
+"任何其他 3D 对象。为了使资源可见，必须使用 [method instance_set_base] 连接到"
+"一个实例。实例也必须使用 [method instance_set_scenario] 附加到场景中，以便可"
+"见。\n"
+"在 2D 中，所有可见对象都是某种形式的画布项目。为了可见，一个画布项需要是连接"
+"到视窗的画布的子项，或者它需要是最终连接到画布的另一个画布项的子项。"
 
 #: doc/classes/VisualServer.xml
 msgid "Sets images to be rendered in the window margin."
@@ -82530,7 +82662,7 @@ msgstr "为 [CanvasItem] 定义一个自定义的绘图矩形。"
 msgid ""
 "Enables the use of distance fields for GUI elements that are rendering "
 "distance field based fonts."
-msgstr "为正在渲染基于距离字段的字体的GUI元素，启用距离字段。"
+msgstr "为正在渲染基于距离字段的字体的 GUI 元素，启用距离场。"
 
 #: doc/classes/VisualServer.xml
 msgid "Sets [CanvasItem] to be drawn behind its parent."
@@ -84890,13 +85022,13 @@ msgstr ""
 msgid ""
 "Emitted at the end of the frame, after the VisualServer has finished "
 "updating all the Viewports."
-msgstr "在VisualServer完成更新所有视窗后，在帧的最后发出。"
+msgstr "在 VisualServer 完成更新所有 Viewport 后，在帧的最后发出。"
 
 #: doc/classes/VisualServer.xml
 msgid ""
 "Emitted at the beginning of the frame, before the VisualServer updates all "
 "the Viewports."
-msgstr "在VisualServer更新所有视窗之前，在帧的开始发出。"
+msgstr "在 VisualServer 更新所有 Viewport 之前，在帧的开始发出。"
 
 #: doc/classes/VisualServer.xml
 msgid "Marks an error that shows that the index array is empty."
@@ -84921,7 +85053,7 @@ msgstr "可用于发光后期处理效果的最大发光级别数。"
 
 #: doc/classes/VisualServer.xml
 msgid "Unused enum in Godot 3.x."
-msgstr "在Godot 3.x中未使用的枚举。"
+msgstr "在 Godot 3.x 中未使用的枚举。"
 
 #: doc/classes/VisualServer.xml
 msgid "The minimum renderpriority of all materials."
@@ -84937,15 +85069,15 @@ msgstr "标记立方体贴图的左侧。"
 
 #: doc/classes/VisualServer.xml
 msgid "Marks the right side of a cubemap."
-msgstr "标记立方体贴图cubemap的右侧。"
+msgstr "标记立方体贴图的右侧。"
 
 #: doc/classes/VisualServer.xml
 msgid "Marks the bottom side of a cubemap."
-msgstr "标记立方体图cubemap的底部。"
+msgstr "标记立方体贴图的底部。"
 
 #: doc/classes/VisualServer.xml
 msgid "Marks the top side of a cubemap."
-msgstr "标记cubemap的顶面。"
+msgstr "标记立方体贴图的顶部。"
 
 #: doc/classes/VisualServer.xml
 msgid "Marks the front side of a cubemap."
@@ -85325,19 +85457,19 @@ msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "The Viewport does not render 3D but samples."
-msgstr "视窗并不渲染3D，而是渲染采样。"
+msgstr "Viewport 不渲染 3D 内容，但进行采样。"
 
 #: doc/classes/VisualServer.xml
 msgid "The Viewport does not render 3D and does not sample."
-msgstr "视窗并不渲染3D，也不进行采样。"
+msgstr "Viewport 不渲染 3D 内容，不进行采样。"
 
 #: doc/classes/VisualServer.xml
 msgid "The Viewport renders 3D with effects."
-msgstr "视窗渲染 3D 效果。"
+msgstr "Viewport 渲染 3D 内容，带特效。"
 
 #: doc/classes/VisualServer.xml
 msgid "The Viewport renders 3D but without effects."
-msgstr "视窗渲染的是3D，但没有效果。"
+msgstr "Viewport 渲染 3D 内容，不带特效。"
 
 #: doc/classes/VisualServer.xml
 msgid "Number of objects drawn in a single frame."
