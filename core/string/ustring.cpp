@@ -4779,6 +4779,17 @@ Vector<uint8_t> String::to_utf32_buffer() const {
 }
 
 #ifdef TOOLS_ENABLED
+/**
+ * "Tools TRanslate". Performs string replacement for internationalization
+ * within the editor. A translation context can optionally be specified to
+ * disambiguate between identical source strings in translations. When
+ * placeholders are desired, use `vformat(TTR("Example: %s"), some_string)`.
+ * If a string mentions a quantity (and may therefore need a dynamic plural form),
+ * use `TTRN()` instead of `TTR()`.
+ *
+ * NOTE: Only use `TTR()` in editor-only code (typically within the `editor/` folder).
+ * For translations that can be supplied by exported projects, use `RTR()` instead.
+ */
 String TTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate(p_text, p_context);
@@ -4787,6 +4798,18 @@ String TTR(const String &p_text, const String &p_context) {
 	return p_text;
 }
 
+/**
+ * "Tools TRanslate for N items". Performs string replacement for
+ * internationalization within the editor. A translation context can optionally
+ * be specified to disambiguate between identical source strings in
+ * translations. Use `TTR()` if the string doesn't need dynamic plural form.
+ * When placeholders are desired, use
+ * `vformat(TTRN("%d item", "%d items", some_integer), some_integer)`.
+ * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+ *
+ * NOTE: Only use `TTRN()` in editor-only code (typically within the `editor/` folder).
+ * For translations that can be supplied by exported projects, use `RTRN()` instead.
+ */
 String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
@@ -4799,9 +4822,10 @@ String TTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	return p_text_plural;
 }
 
-/* DTR and DTRN are used for the documentation, handling descriptions extracted
- * from the XML.
- * They also replace `$DOCS_URL` with the actual URL to the documentation's branch,
+/**
+ * "Docs TRanslate". Used for the editor class reference documentation,
+ * handling descriptions extracted from the XML.
+ * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
  * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
  */
 String DTR(const String &p_text, const String &p_context) {
@@ -4815,6 +4839,12 @@ String DTR(const String &p_text, const String &p_context) {
 	return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 
+/**
+ * "Docs TRanslate for N items". Used for the editor class reference documentation
+ * (with support for plurals), handling descriptions extracted from the XML.
+ * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
+ * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
+ */
 String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	const String text = p_text.dedent().strip_edges();
 	const String text_plural = p_text_plural.dedent().strip_edges();
@@ -4831,6 +4861,19 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 }
 #endif
 
+/**
+ * "Run-time TRanslate". Performs string replacement for internationalization
+ * within a running project. The translation string must be supplied by the
+ * project, as Godot does not provide built-in translations for `RTR()` strings
+ * to keep binary size low. A translation context can optionally be specified to
+ * disambiguate between identical source strings in translations. When
+ * placeholders are desired, use `vformat(RTR("Example: %s"), some_string)`.
+ * If a string mentions a quantity (and may therefore need a dynamic plural form),
+ * use `RTRN()` instead of `RTR()`.
+ *
+ * NOTE: Do not use `RTR()` in editor-only code (typically within the `editor/`
+ * folder). For editor translations, use `TTR()` instead.
+ */
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
@@ -4844,6 +4887,20 @@ String RTR(const String &p_text, const String &p_context) {
 	return p_text;
 }
 
+/**
+ * "Run-time TRanslate for N items". Performs string replacement for
+ * internationalization within a running project. The translation string must be
+ * supplied by the project, as Godot does not provide built-in translations for
+ * `RTRN()` strings to keep binary size low. A translation context can
+ * optionally be specified to disambiguate between identical source strings in
+ * translations. Use `RTR()` if the string doesn't need dynamic plural form.
+ * When placeholders are desired, use
+ * `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
+ * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+ *
+ * NOTE: Do not use `RTRN()` in editor-only code (typically within the `editor/`
+ * folder). For editor translations, use `TTRN()` instead.
+ */
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
