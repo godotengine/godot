@@ -35,13 +35,17 @@
 # Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>, 2021.
 # Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
 # Brian <brian@brianthe.dev>, 2021.
+# Helmi Hibatullah <helmihibatullah393@gmail.com>, 2022.
+# ProgrammerIndonesia 44 <elo.jhy@gmail.com>, 2022.
+# Rizky Ramadhan <rizkyterm@gmail.com>, 2022.
+# Primananda Kurnia <primakurnia71@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-23 17:54+0000\n"
-"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
+"PO-Revision-Date: 2022-03-26 05:01+0000\n"
+"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -49,30 +53,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/bind/core_bind.cpp
 msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Papan klip kosong!"
+msgstr "Papan klip"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Skena Saat Ini"
+msgstr "Layar Saat Ini"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Kode Keluar"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Aktifkan"
+msgstr "Aktifkan V-Sync"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -83,38 +84,34 @@ msgid "Delta Smoothing"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Mode Pindah"
+msgstr "Mode Penggunaan Processor Rendah"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
 msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Keep Screen On"
-msgstr "Biarkan Pengawakutu Terbuka"
+msgstr "Biarkan Layar Menyala"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Min Window Size"
-msgstr "Ukuran Garis Tepi:"
+msgstr "Ukuran Jendela Minimum"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Max Window Size"
-msgstr "Ukuran Garis Tepi:"
+msgstr "Ukuran Window Maksimum"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Screen Orientation"
-msgstr "Operator layar."
+msgstr "Orientasi Layar"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
-msgstr "Jendela Baru"
+msgstr "Jendela"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -123,7 +120,7 @@ msgstr "Piksel Pembatas"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Aktifkan Transparansi Per Piksel"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -131,8 +128,9 @@ msgid "Fullscreen"
 msgstr "Mode Layar Penuh"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Maximized"
-msgstr ""
+msgstr "Dimaksimalkan"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -148,9 +146,8 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
-#, fuzzy
 msgid "Position"
-msgstr "Posisi Pengait"
+msgstr "Posisi"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
@@ -161,9 +158,8 @@ msgstr "Posisi Pengait"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Ukuran:"
+msgstr "Ukuran"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
@@ -176,22 +172,19 @@ msgstr "Editor"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Cetak Pesan Kesalahan"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "Mode Interpolasi"
+msgstr "Pengulangan Per Detik"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Target FPS"
-msgstr "Sasaran"
+msgstr "FPS Sasaran"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Node TimeScale"
+msgstr "Skala Waktu"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -208,18 +201,16 @@ msgid "Error String"
 msgstr "Galat Menyimpan"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Galat Menyimpan"
+msgstr "Baris Galat"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Result"
-msgstr "Hasil Pencarian"
+msgstr "Hasil"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Memori"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -229,12 +220,11 @@ msgstr ""
 #: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Batasan"
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Command Queue"
-msgstr "Comand: Putar"
+msgstr "Antrian Perintah"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
@@ -257,15 +247,14 @@ msgstr "Fungsi"
 #: scene/resources/concave_polygon_shape.cpp scene/resources/curve.cpp
 #: scene/resources/polygon_path_finder.cpp scene/resources/texture.cpp
 msgid "Data"
-msgstr ""
+msgstr "Data"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_settings.cpp editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
 msgid "Network"
-msgstr "Network Profiler(Debug jaringan)"
+msgstr "Jaringan"
 
 #: core/io/file_access_network.cpp
 #, fuzzy
@@ -273,9 +262,8 @@ msgid "Remote FS"
 msgstr "Remot "
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Halaman: "
+msgstr "Ukuran Halaman"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -283,21 +271,19 @@ msgstr ""
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Mode Pemblokiran Diaktifkan"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "Menghubungkan"
+msgstr "Koneksi"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
 msgstr ""
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "Objek Digambar:"
+msgstr "ID Objek"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 #, fuzzy
@@ -306,7 +292,7 @@ msgstr "Aktifkan Bayang-bayang"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Tolak Koneksi Jaringan Baru"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 #, fuzzy
@@ -314,9 +300,8 @@ msgid "Network Peer"
 msgstr "Network Profiler(Debug jaringan)"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Nama node akar"
+msgstr "Node Akar"
 
 #: core/io/networked_multiplayer_peer.cpp
 #, fuzzy
@@ -329,16 +314,19 @@ msgid "Transfer Mode"
 msgstr "Jenis Transformasi"
 
 #: core/io/packet_peer.cpp
+#, fuzzy
 msgid "Encode Buffer Max Size"
-msgstr ""
+msgstr "Ukuran Maksimal Buffer Encode"
 
 #: core/io/packet_peer.cpp
+#, fuzzy
 msgid "Input Buffer Max Size"
-msgstr ""
+msgstr "Ukuran Maksimal Buffer Input"
 
 #: core/io/packet_peer.cpp
+#, fuzzy
 msgid "Output Buffer Max Size"
-msgstr ""
+msgstr "Ukuran Maksimal Buffer Output"
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
@@ -359,7 +347,7 @@ msgstr ""
 #: core/io/udp_server.cpp
 #, fuzzy
 msgid "Max Pending Connections"
-msgstr "Sunting Koneksi:"
+msgstr "Maks Koneksi Ditunda"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -387,7 +375,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "operan salah untuk operator %s, %s dan %s."
+msgstr "Operan tidak valid untuk operator %s, %s dan %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -399,7 +387,7 @@ msgstr "index bernama '%s' untuk tipe dasar %s tidak sah"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "argumen untuk membangun '%s' tidak sah"
+msgstr "Argumen tidak valid untuk membangun '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -407,21 +395,22 @@ msgstr "Pada pemanggilan '%s':"
 
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
+#, fuzzy
 msgid "Seed"
-msgstr ""
+msgstr "Benih"
 
 #: core/math/random_number_generator.cpp
 #, fuzzy
 msgid "State"
-msgstr "Status"
+msgstr "Keadaan"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Antrian Pesan"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Ukuran Maksimum (KB)"
 
 #: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -433,9 +422,8 @@ msgstr ""
 #: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Text Editor"
-msgstr "Buka Editor"
+msgstr "Editor Teks"
 
 #: core/os/input.cpp editor/editor_settings.cpp
 #: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
@@ -443,18 +431,16 @@ msgstr "Buka Editor"
 #: modules/gdscript/language_server/gdscript_text_document.cpp
 #: scene/animation/animation_player.cpp scene/gui/control.cpp
 #: scene/main/node.cpp scene/resources/material.cpp
-#, fuzzy
 msgid "Completion"
-msgstr "Salin Seleksi"
+msgstr "Penyelesaian"
 
 #: core/os/input.cpp editor/editor_settings.cpp
 #: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
 #: modules/gdscript/language_server/gdscript_text_document.cpp
 #: scene/animation/animation_player.cpp scene/gui/control.cpp
 #: scene/main/node.cpp scene/resources/material.cpp
-#, fuzzy
 msgid "Use Single Quotes"
-msgstr "Tile Tunggal Baru"
+msgstr "Gunakan Kutip Satu"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -462,18 +448,16 @@ msgid "Device"
 msgstr "Perangkat"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Semua"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Control"
-msgstr "Kontrol Versi"
+msgstr "Kontrol"
 
 #: core/os/input_event.cpp
 msgid "Meta"
@@ -486,9 +470,8 @@ msgstr "Komunitas"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "Prasetel"
+msgstr "Ditekan"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -500,12 +483,14 @@ msgid "Physical Scancode"
 msgstr ""
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Unicode"
-msgstr ""
+msgstr "Unikode"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Echo"
-msgstr ""
+msgstr "Gema"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
 #, fuzzy
@@ -513,44 +498,39 @@ msgid "Button Mask"
 msgstr "Tombol"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Konstan"
+msgstr "Posisi Global"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Factor"
-msgstr "Vektor"
+msgstr "Faktor"
+
+#: core/os/input_event.cpp
+msgid "Button Index"
+msgstr "Tombol Indeks"
 
 #: core/os/input_event.cpp
 #, fuzzy
-msgid "Button Index"
-msgstr "Indeks Tombol Mouse:"
-
-#: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Klik ganda"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr ""
+msgstr "Miring"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Prasetel"
+msgstr "Tekanan"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Snap Relatif"
+msgstr "Relatif"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp
 #: scene/3d/interpolated_camera.cpp scene/animation/animation_player.cpp
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Kecepatan:"
+msgstr "Kelajuan"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -558,14 +538,12 @@ msgid "Axis"
 msgstr "Sumbu"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "(nilai)"
+msgstr "Nilai Sumbu"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Indeks:"
+msgstr "Indeks"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -576,21 +554,19 @@ msgstr "Aksi"
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Kekuatan"
 
 #: core/os/input_event.cpp
 msgid "Delta"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Ubah"
+msgstr "Kanal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Komit Perubahan"
+msgstr "Pesan"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -599,13 +575,12 @@ msgstr "Dongak:"
 
 #: core/os/input_event.cpp scene/2d/physics_body_2d.cpp
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Velocity"
-msgstr "Inisialisasi"
+msgstr "Kecepatan"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
-msgstr ""
+msgstr "Instrumen"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -617,14 +592,12 @@ msgid "Controller Value"
 msgstr ""
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Aksi"
+msgstr "Aplikasi"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Atur Snap"
+msgstr "Konfigurasi"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -657,26 +630,27 @@ msgid "Main Scene"
 msgstr "Skena Utama"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stdout"
-msgstr "Nonaktifkan Autotile"
+msgstr "Nonaktifkan stdout"
+
+#: core/project_settings.cpp
+msgid "Disable stderr"
+msgstr "Nonaktifkan stderr"
 
 #: core/project_settings.cpp
 #, fuzzy
-msgid "Disable stderr"
-msgstr "Item yang Dinonaktifkan"
-
-#: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Gunakan Direktori Data Proyek Tersembunyi"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Gunakan Direktori Pengguna Kustom"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Nama Direktori Pengguna Kustom"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp servers/audio_server.cpp
@@ -702,7 +676,7 @@ msgstr "Argumen Skena Utama:"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "Cari dalam Ekstensi File"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
@@ -715,18 +689,16 @@ msgstr "Kontrol Versi"
 
 #: core/project_settings.cpp
 msgid "Autoload On Startup"
-msgstr ""
+msgstr "Muat Otomatis Saat Memulai"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Plugin Name"
-msgstr "Nama Plugin:"
+msgstr "Nama Plugin"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Tambah Masukan"
+msgstr "Input"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
@@ -763,8 +735,9 @@ msgid "UI Right"
 msgstr "Kanan Atas"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "UI Up"
-msgstr ""
+msgstr "UI Atas"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -796,9 +769,8 @@ msgstr "Pada Akhir"
 #: servers/physics/space_sw.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp
-#, fuzzy
 msgid "Physics"
-msgstr "Frame Fisika %"
+msgstr "Fisika"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
@@ -806,7 +778,7 @@ msgstr "Frame Fisika %"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -834,7 +806,7 @@ msgstr "Perender:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Kualitas"
 
 #: core/project_settings.cpp scene/animation/animation_tree.cpp
 #: scene/gui/file_dialog.cpp scene/main/scene_tree.cpp
@@ -844,8 +816,9 @@ msgid "Filters"
 msgstr "Filter:"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
+#, fuzzy
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Ketajaman Intensitas"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
@@ -858,9 +831,8 @@ msgstr "Awakutu"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "Pengaturan:"
+msgstr "Pengaturan"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -868,14 +840,12 @@ msgid "Profiler"
 msgstr "Profiler(debugger/pemantauan)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "Buat Fungsi"
+msgstr "Fungsi Maksimum"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "Tetapkan ekspresi"
+msgstr "Kompresi"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -887,16 +857,17 @@ msgid "Zstd"
 msgstr ""
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "Pencocokan Jarak Jauh"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Level Kompresi"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "Ukuran Jendela Log"
 
 #: core/project_settings.cpp
 msgid "Zlib"
@@ -911,8 +882,9 @@ msgid "Android"
 msgstr ""
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Modules"
-msgstr ""
+msgstr "Modul"
 
 #: core/register_core_types.cpp
 msgid "TCP"
@@ -925,20 +897,20 @@ msgstr "Hubungan dengan fungsi:"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
-msgstr ""
+msgstr "Aliran Paket Peer"
 
 #: core/register_core_types.cpp
+#, fuzzy
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "Buffer Maks (Kekuatan 2)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Sudut:"
+msgstr "Sertifikat"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -964,9 +936,8 @@ msgid "Source Code"
 msgstr "Sumber"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Messages"
-msgstr "Komit Perubahan"
+msgstr "Pesan"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
@@ -1020,12 +991,12 @@ msgstr ""
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Buffer Size (KB)"
-msgstr ""
+msgstr "Ukuran Penyangga Poligon Kanvas (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "Ukuran Penyangga Indeks Poligon Kanvas (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -1034,19 +1005,17 @@ msgstr ""
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Snapping"
-msgstr "Pengancingan Pintar"
+msgstr "Pengancingan"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Use GPU Pixel Snap"
-msgstr "Gunakan Snap Piksel"
+msgstr "Gunakan Snap Piksel GPU"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -1055,9 +1024,8 @@ msgstr ""
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
-#, fuzzy
 msgid "Lightmapping"
-msgstr "Panggang Lightmaps"
+msgstr "Pemetaan Cahaya"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
@@ -1066,11 +1034,11 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Maximal Elemen yang Dapat Dirender"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Maksimal Cahaya yang dapat di Render"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #, fuzzy
@@ -1079,7 +1047,7 @@ msgstr "Seleksi Tengah"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Maksimal Cahaya Per Objek"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
@@ -1111,7 +1079,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Kualitas Tinggi"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1541,7 +1509,7 @@ msgstr "Metode"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier"
-msgstr ""
+msgstr "Bezier"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -2543,8 +2511,9 @@ msgid "Invalid name."
 msgstr "Nama tidak sah."
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Tidak dapat dimulai dengan angka."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2775,8 +2744,9 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Pada ekspor 32-bit PCK yang ditanamkan tidak boleh lebih dari 4GiB."
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "Convert Text Resources To Binary On Export"
-msgstr ""
+msgstr "Mengkonversi Resource Teks ke Biner pada saat Export"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3203,7 +3173,7 @@ msgstr "Mengimpor ulang Aset"
 
 #: editor/editor_file_system.cpp
 msgid "Reimport Missing Imported Files"
-msgstr ""
+msgstr "Impor Ulang File ter-impor yang Hilang"
 
 #: editor/editor_help.cpp
 msgid "Top"
@@ -3216,7 +3186,7 @@ msgstr "Kelas:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Turunan:"
+msgstr "Mewarisi:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
@@ -3308,7 +3278,7 @@ msgstr "Bantuan"
 
 #: editor/editor_help.cpp
 msgid "Sort Functions Alphabetically"
-msgstr ""
+msgstr "Urutkan Fungsi Secara Abjad"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -3388,24 +3358,20 @@ msgid "Property:"
 msgstr "Properti:"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Label"
-msgstr "Nilai"
+msgstr "Label"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Read Only"
-msgstr "Hanya Fungsi"
+msgstr "Hanya Baca"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Checkable"
-msgstr "Item Check"
+msgstr "Dapat di centang"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Checked"
-msgstr "Item yang Dicentang"
+msgstr "Dicentang"
 
 #: editor/editor_inspector.cpp
 #, fuzzy
@@ -3418,18 +3384,19 @@ msgid "Keying"
 msgstr "Mainkan"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "(nilai)"
+msgstr "Nilai sematan"
 
 #: editor/editor_inspector.cpp
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
+"Menyematkan nilai memaksanya untuk disimpan meskipun nilainya sama dengan "
+"default."
 
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
-msgstr ""
+msgstr "Nilai sematan [Dinonaktifkan karena '%s' hanya editor]"
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -3444,26 +3411,23 @@ msgstr "Terapkan Bersamaan:"
 
 #: editor/editor_inspector.cpp
 msgid "Pinned %s"
-msgstr ""
+msgstr "%s disematkan"
 
 #: editor/editor_inspector.cpp
 msgid "Unpinned %s"
-msgstr ""
+msgstr "Lepas sematan %s"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property"
 msgstr "Salin Properti"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Paste Property"
 msgstr "Tempel Properti"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property Path"
-msgstr "Salin Lokasi Skrip"
+msgstr "Salin Lokasi Properti"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3784,7 +3748,7 @@ msgstr "Simpan perubahan '%s' sebelum menutupnya?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s sudah tidak tersedia! Harap tentukan lokasi penyimpanan baru."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4075,15 +4039,16 @@ msgstr "%d file lagi"
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
+"Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
+"memiliki izin."
 
 #: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Skena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Scene Naming"
-msgstr "Lokasi Skena:"
+msgstr "Penamaan Skena"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
@@ -4102,43 +4067,41 @@ msgid "Always Show Close Button"
 msgstr "Selalu Tampilkan Kisi"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
+#, fuzzy
 msgid "Resize If Many Tabs"
-msgstr ""
+msgstr "Ubah Ukuran Jika Tab Sebanyak"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Minimum Width"
-msgstr ""
+msgstr "Lebar Minimal"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Output"
 msgstr "Luaran"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Always Clear Output On Play"
-msgstr "Bersihkan Luaran"
+msgstr "Selalu Bersihkan Luaran Ketika Bermain"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Open Output On Play"
-msgstr ""
+msgstr "Selalu Buka Luaran Ketika Bermain"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Close Output On Stop"
-msgstr ""
+msgstr "Selalu Tutup Luaran Ketika Berhenti"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Auto Save"
-msgstr "Iris Otomatis"
+msgstr "Simpan Otomatis"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Before Running"
-msgstr "Simpan skena sebelum menjalankan..."
+msgstr "Simpan Sebelum Menjalankan"
 
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
-msgstr ""
+msgstr "Simpan Ketika Kehilangan Fokus"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 #, fuzzy
@@ -4170,13 +4133,12 @@ msgid "Translate Properties"
 msgstr "Tempel Properti"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restore Scenes On Load"
-msgstr "Node TimeSeek"
+msgstr "Kembalikan Skena Saat Memuat"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Show Thumbnail On Hover"
-msgstr ""
+msgstr "Tampilkan Gambar Mini Saat Disorot kursor"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Inspector"
@@ -4188,8 +4150,9 @@ msgid "Capitalize Properties"
 msgstr "Tempel Properti"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Default Float Step"
-msgstr ""
+msgstr "Langkah Desimal Baku"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
 #, fuzzy
@@ -4229,11 +4192,11 @@ msgstr "Ubah Nama"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
-msgstr ""
+msgstr "Jalur Kunci Publik SSH"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Private Key Path"
-msgstr ""
+msgstr "Jalur Kunci Pribadi SSH"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
@@ -4444,6 +4407,12 @@ msgid ""
 "Asynchronous shader compilation must be enabled in the project settings for "
 "this option to make a difference."
 msgstr ""
+"Saat opsi ini diaktifkan, shader akan digunakan dalam bentuk cadangannya "
+"(baik terlihat melalui ubershader atau tersembunyi) selama waktu berjalan.\n"
+"Ini berguna untuk memverifikasi tampilan dan kinerja fallback, yang biasanya "
+"ditampilkan secara singkat.\n"
+"Kompilasi shader asinkron harus diaktifkan di pengaturan proyek agar opsi "
+"ini dapat dibuat."
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -5066,17 +5035,18 @@ msgid "Editor Language"
 msgstr "Tata Letak Editor"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Scale"
-msgstr "Tampilkan Semua"
+msgstr "Skala Tampilan"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Custom Display Scale"
-msgstr ""
+msgstr "Skala Tampilan Kustom"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Main Font Size"
-msgstr ""
+msgstr "Ukuran Font Utama"
 
 #: editor/editor_settings.cpp
 msgid "Code Font Size"
@@ -5105,8 +5075,9 @@ msgid "Code Font"
 msgstr "Tambah Titik Node"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Dim Editor On Dialog Popup"
-msgstr ""
+msgstr "Redupkan Editor Ketika Dialog Popup"
 
 #: editor/editor_settings.cpp main/main.cpp
 msgid "Low Processor Mode Sleep (µsec)"
@@ -5122,8 +5093,9 @@ msgid "Separate Distraction Mode"
 msgstr "Mode Tanpa Gangguan"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Buka Tangkapan Layar secara Otomatis"
 
 #: editor/editor_settings.cpp
 msgid "Max Array Dictionary Items Per Page"
@@ -5141,8 +5113,9 @@ msgid "Preset"
 msgstr "Prasetel"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Icon And Font Color"
-msgstr ""
+msgstr "Warna Fonta dan Ikon"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5155,8 +5128,9 @@ msgid "Accent Color"
 msgstr "Pilih Warna"
 
 #: editor/editor_settings.cpp scene/resources/environment.cpp
+#, fuzzy
 msgid "Contrast"
-msgstr ""
+msgstr "Kontras"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
@@ -5274,8 +5248,9 @@ msgstr "Sunting Tema"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
+#, fuzzy
 msgid "Line Spacing"
-msgstr ""
+msgstr "Jarak Baris"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: modules/gdscript/editor/gdscript_highlighter.cpp
@@ -5339,12 +5314,14 @@ msgid "Navigation"
 msgstr "Navigasi"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
+#, fuzzy
 msgid "Smooth Scrolling"
-msgstr ""
+msgstr "Pengguliran Halus"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
+#, fuzzy
 msgid "V Scroll Speed"
-msgstr ""
+msgstr "Kecepatan Gulir Vertikal"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5360,8 +5337,9 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr ""
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Appearance"
-msgstr ""
+msgstr "Tampilan"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 #, fuzzy
@@ -5388,11 +5366,12 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Code Folding"
-msgstr ""
+msgstr "Lipat Kode"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Word Wrap"
-msgstr ""
+msgstr "Bungkus Kata"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
@@ -5428,11 +5407,11 @@ msgstr "Hapus Spasi di Belakang"
 
 #: editor/editor_settings.cpp
 msgid "Autosave Interval Secs"
-msgstr ""
+msgstr "Detik Interval Simpan Otomatis"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Restore Scripts On Load"
-msgstr ""
+msgstr "Pulihkan Skrip Saat Dimuat"
 
 #: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
@@ -5444,11 +5423,12 @@ msgstr ""
 
 #: editor/editor_settings.cpp scene/gui/line_edit.cpp
 msgid "Cursor"
-msgstr ""
+msgstr "Kursor"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Scroll Past End Of File"
-msgstr ""
+msgstr "Gulir Melewati Akhir File"
 
 #: editor/editor_settings.cpp
 msgid "Block Caret"
@@ -5504,7 +5484,7 @@ msgstr "Tampilkan Bantuan-bantuan"
 
 #: editor/editor_settings.cpp
 msgid "Help Font Size"
-msgstr ""
+msgstr "Ukuran Font Bantuan"
 
 #: editor/editor_settings.cpp
 msgid "Help Source Font Size"
@@ -5512,7 +5492,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Help Title Font Size"
-msgstr ""
+msgstr "Ukuran Font Judul Bantuan"
 
 #: editor/editor_settings.cpp editor/plugins/mesh_library_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -5614,12 +5594,14 @@ msgid "Zoom Style"
 msgstr "Perkecil Pandangan"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Emulate Numpad"
-msgstr ""
+msgstr "Emulasi Numpad"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Emulate 3 Button Mouse"
-msgstr ""
+msgstr "Emulasi 3 Tombol Mouse"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5715,7 +5697,7 @@ msgstr "Pengancingan Pintar"
 
 #: editor/editor_settings.cpp
 msgid "Bone Width"
-msgstr ""
+msgstr "Lebar Tulang"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5734,7 +5716,7 @@ msgstr "Konfigurasi Profil Saat Ini:"
 
 #: editor/editor_settings.cpp
 msgid "Bone IK Color"
-msgstr ""
+msgstr "Warna IK Tulang"
 
 #: editor/editor_settings.cpp
 msgid "Bone Outline Color"
@@ -5813,7 +5795,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Window Placement"
-msgstr ""
+msgstr "Penempatan Jendela"
 
 #: editor/editor_settings.cpp scene/2d/back_buffer_copy.cpp scene/2d/sprite.cpp
 #: scene/2d/visibility_notifier_2d.cpp scene/3d/sprite_3d.cpp
@@ -5829,7 +5811,7 @@ msgstr "Atur Posisi Kurva Luar"
 
 #: editor/editor_settings.cpp
 msgid "Screen"
-msgstr ""
+msgstr "Layar"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5867,8 +5849,9 @@ msgid "Symbol Color"
 msgstr ""
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Keyword Color"
-msgstr ""
+msgstr "Warna Kata kunci"
 
 #: editor/editor_settings.cpp
 msgid "Control Flow Keyword Color"
@@ -5889,7 +5872,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Comment Color"
-msgstr ""
+msgstr "Warna Komentar"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5977,7 +5960,7 @@ msgstr "Penyorot Sintaks"
 
 #: editor/editor_settings.cpp
 msgid "Number Color"
-msgstr ""
+msgstr "Warna Angka"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6342,7 +6325,7 @@ msgstr ""
 #: editor/fileserver/editor_file_server.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Password"
-msgstr ""
+msgstr "Kata Sandi"
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
@@ -6404,6 +6387,11 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"Ekstensi file ini tidak dikenali oleh editor.\n"
+"Jika Anda tetap ingin mengganti namanya, gunakan pengelola file sistem "
+"operasi Anda.\n"
+"Setelah mengganti nama ke ekstensi yang tidak dikenal, file tidak akan "
+"ditampilkan di editor lagi."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -11653,6 +11641,8 @@ msgid ""
 "Pin this StyleBox as a main style. Editing its properties will update the "
 "same properties in all other StyleBoxes of this type."
 msgstr ""
+"Sematkan StyleBox ini sebagai gaya utama. Mengedit propertinya akan "
+"memperbarui properti yang sama di semua StyleBox lain dari jenis ini."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -11675,8 +11665,9 @@ msgid "Show Default"
 msgstr "Muat Default"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show default type items alongside items that have been overridden."
-msgstr ""
+msgstr "Tampilkan item tipe default di samping item yang telah diganti."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -11684,18 +11675,21 @@ msgid "Override All"
 msgstr "Menimpa"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Override all default type items."
-msgstr ""
+msgstr "Ganti semua item tipe default."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
-msgstr ""
+msgstr "Pilih tipe dasar variasi dari daftar tipe yang tersedia."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"Tipe yang terkait dengan kelas bawaan tidak dapat ditandai sebagai variasi "
+"dari tipe lain."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11708,7 +11702,7 @@ msgstr "Kelola Templat Ekspor…"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add, remove, organize and import Theme items."
-msgstr ""
+msgstr "Tambah, hapus, atur, dan impor item Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -11726,10 +11720,13 @@ msgid "Select UI Scene:"
 msgstr "Pilih Mesh Sumber:"
 
 #: editor/plugins/theme_editor_preview.cpp
+#, fuzzy
 msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
 msgstr ""
+"Alihkan pemilih kontrol, memungkinkan untuk memilih jenis kontrol secara "
+"visual untuk diedit."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Toggle Button"
@@ -11818,10 +11815,13 @@ msgstr "Memiliki,Banyak,Opsi"
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid path, the PackedScene resource was probably moved or removed."
 msgstr ""
+"Jalur tidak valid, sumber daya PackedScene mungkin dipindahkan atau dihapus."
 
 #: editor/plugins/theme_editor_preview.cpp
+#, fuzzy
 msgid "Invalid PackedScene resource, must have a Control node at its root."
 msgstr ""
+"Sumber daya PackedScene tidak valid, harus memiliki node Kontrol di akarnya."
 
 #: editor/plugins/theme_editor_preview.cpp
 #, fuzzy
@@ -11830,11 +11830,11 @@ msgstr "Berkas salah, tidak layout suara bus."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Reload the scene to reflect its most actual state."
-msgstr ""
+msgstr "Muat ulang skena untuk mencerminkan keadaannya yang paling aktual."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
-msgstr "Hapus Pilihan"
+msgstr "Hapus Seleksi"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Fix Invalid Tiles"
@@ -12365,8 +12365,9 @@ msgid "Commit:"
 msgstr "Komit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Date:"
-msgstr ""
+msgstr "Tanggal:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12374,8 +12375,9 @@ msgid "Subtitle:"
 msgstr "Subpohon"
 
 #: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Do you want to remove the %s branch?"
-msgstr ""
+msgstr "Apakah Anda ingin menghapus cabang %s?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12401,16 +12403,19 @@ msgid "Remote Login"
 msgstr "Hapus Titik"
 
 #: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Select SSH public key path"
-msgstr ""
+msgstr "Pilih jalur kunci publik SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Select SSH private key path"
-msgstr ""
+msgstr "Pilih jalur kunci pribadi SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "Frasa Sandi SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -12427,75 +12432,65 @@ msgid "Stage all changes"
 msgstr "Menyimpan perubahan-perubahan lokal..."
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstage all changes"
-msgstr "Perubahan Material:"
+msgstr "Buang semua perubahan"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Message"
-msgstr "Komit Perubahan"
+msgstr "Pesan Komit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
 msgstr "Komit Perubahan"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit List"
-msgstr "Komit"
+msgstr "Daftar Komit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
+msgstr "Ukuran daftar komit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Kecocokan:"
+msgstr "Cabang"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Branch"
-msgstr "Buat Projek Baru"
+msgstr "Buat Cabang Baru"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Branch"
-msgstr "Hapus Trek Anim"
+msgstr "Hapus Cabang"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branch Name"
-msgstr ""
+msgstr "Nama Cabang"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remotes"
 msgstr "Remot"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Remote"
-msgstr "Buat Projek Baru"
+msgstr "Buat Remot Baru"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Remote"
-msgstr "Hapus item"
+msgstr "Hapus Remot"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "Remot "
+msgstr "Nama Remot"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Remote URL"
+msgstr "URL Remot"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
-msgid "Remote URL"
-msgstr "Remot "
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Fetch"
-msgstr ""
+msgstr "Mengambil"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Pull"
@@ -13569,7 +13564,7 @@ msgstr "Teks"
 
 #: editor/project_export.cpp
 msgid "Compiled Bytecode (Faster Loading)"
-msgstr ""
+msgstr "Bitakode Terkompilasi (Memuat Lebih Cepat)"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
@@ -13590,6 +13585,8 @@ msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
 msgstr ""
+"Catatan: Kunci enkripsi perlu disimpan dalam biner,\n"
+"Anda perlu membuat templat ekspor dari sumber."
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -14005,7 +14002,7 @@ msgstr "Hapus semua"
 
 #: editor/project_manager.cpp
 msgid "Also delete project contents (no undo!)"
-msgstr ""
+msgstr "Hapus juga konten proyek (tidak dapat dibatalkan!)"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -14037,8 +14034,9 @@ msgstr ""
 "mengandung paling tidak satu karakter `/`."
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid "Physical Key"
-msgstr ""
+msgstr "Kunci Fisik"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -14671,21 +14669,28 @@ msgstr "Hapus node \"%s\"?"
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires having a scene open in the editor."
-msgstr ""
+msgstr "Menyimpan cabang sebagai skena membutuhkan skena terbuka di editor."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires selecting only one node, but you have "
 "selected %d nodes."
 msgstr ""
+"Menyimpan cabang sebagai skena hanya memerlukan satu node, tetapi Anda telah "
+"memilih %d node."
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid ""
 "Can't save the root node branch as an instanced scene.\n"
 "To create an editable copy of the current scene, duplicate it using the "
 "FileSystem dock context menu\n"
 "or create an inherited scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"Tidak dapat menyimpan node akar sebagai skena instance.\n"
+"Untuk membuat salinan skena saat ini yang dapat diedit, duplikat menggunakan "
+"menu konteks dermaga FileSystem\n"
+"atau buat adegan yang diwariskan menggunakan Skena > Skena Diwariskan Baru"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -14700,6 +14705,10 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"Tidak dapat menyimpan cabang yang merupakan anak dari skena yang sudah di "
+"instance.\n"
+"Untuk menyimpan cabang ini ke dalam skenanya sendiri, buka skena aslinya, "
+"klik kanan pada cabang ini, dan pilih \"Simpan Cabang sebagai Skena\"."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -14707,6 +14716,10 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"Tidak dapat menyimpan cabang yang merupakan bagian dari skena yang "
+"diwarisi.\n"
+"Untuk menyimpan cabang ini ke dalam skenanya sendiri, buka skena aslinya, "
+"klik kanan pada cabang ini, dan pilih \"Simpan Cabang sebagai Skena\"."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -14895,6 +14908,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Jika dipilih, dok pohon skena jauh akan menyebabkan proyek tersendat setiap "
+"kali diperbarui.. Beralih kembali ke dok pohon skena Lokal untuk "
+"meningkatkan kinerja."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -15127,6 +15143,8 @@ msgid ""
 "Warning: Having the script name be the same as a built-in type is usually "
 "not desired."
 msgstr ""
+"Peringatan: Memiliki nama skrip yang sama dengan tipe bawaan biasanya tidak "
+"disarankan."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -15198,7 +15216,7 @@ msgstr "Salin Galat"
 
 #: editor/script_editor_debugger.cpp
 msgid "Open C++ Source on GitHub"
-msgstr ""
+msgstr "Buka Sumber C++ di GitHub"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video RAM"
@@ -15227,7 +15245,7 @@ msgstr "Filter tile"
 
 #: editor/script_editor_debugger.cpp
 msgid "Auto Switch To Remote Scene Tree"
-msgstr ""
+msgstr "Beralih Otomatis Ke Pohon Skena Jarak Jauh"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote Scene Tree Refresh Interval"
@@ -15346,7 +15364,7 @@ msgstr "Ubah Sudut Emisi AudioStreamPlayer3D"
 
 #: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
 msgid "Camera"
-msgstr ""
+msgstr "Kamera"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -15369,7 +15387,7 @@ msgstr "Titik"
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
-msgstr ""
+msgstr "Bentuk"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
@@ -15386,7 +15404,7 @@ msgstr "Ubah Partikel AABB"
 #: editor/spatial_editor_gizmos.cpp
 #, fuzzy
 msgid "Reflection Probe"
-msgstr "Pilih Properti"
+msgstr "Penyelidikan Refleksi"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
@@ -15546,7 +15564,7 @@ msgstr ""
 #: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/visual/visual_server_scene.cpp
 msgid "Use BVH"
-msgstr ""
+msgstr "Gunakan BVH"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/visual/visual_server_scene.cpp
@@ -15578,16 +15596,17 @@ msgid "Max Chars Per Second"
 msgstr ""
 
 #: main/main.cpp
+#, fuzzy
 msgid "Max Messages Per Frame"
-msgstr ""
+msgstr "Maksimal Pesan Per Bingkai"
 
 #: main/main.cpp
 msgid "Max Errors Per Second"
-msgstr ""
+msgstr "Maksimal Galat Per Detik"
 
 #: main/main.cpp
 msgid "Max Warnings Per Second"
-msgstr ""
+msgstr "Maksimal Peringatan Per Detik"
 
 #: main/main.cpp
 msgid "Flush stdout On Print"
@@ -15641,7 +15660,7 @@ msgstr "Tampilkan Semua"
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Lebar"
 
 #: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
@@ -15654,8 +15673,9 @@ msgid "Height"
 msgstr "Cahaya"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Always On Top"
-msgstr ""
+msgstr "Selalu Di Depan"
 
 #: main/main.cpp
 #, fuzzy
@@ -15691,7 +15711,7 @@ msgstr ""
 
 #: main/main.cpp
 msgid "Allowed"
-msgstr ""
+msgstr "Diizinkan"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp scene/2d/camera_2d.cpp
 #: scene/2d/light_2d.cpp scene/2d/navigation_polygon.cpp
@@ -15707,8 +15727,9 @@ msgid "Enabled"
 msgstr "Aktifkan"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Intended Usage"
-msgstr ""
+msgstr "Penggunaan yang Dimaksudkan"
 
 #: main/main.cpp
 #, fuzzy
@@ -15777,8 +15798,9 @@ msgid "stdout"
 msgstr ""
 
 #: main/main.cpp
+#, fuzzy
 msgid "Print FPS"
-msgstr ""
+msgstr "Cetak jumlah Bingkai Per Detik"
 
 #: main/main.cpp
 msgid "Verbose stdout"
@@ -15791,7 +15813,7 @@ msgstr "Seleksi Bingkai"
 
 #: main/main.cpp
 msgid "Low Processor Mode"
-msgstr ""
+msgstr "Mode Processor Rendah"
 
 #: main/main.cpp
 msgid "Delta Sync After Draw"
@@ -15817,7 +15839,7 @@ msgstr "Titik"
 
 #: main/main.cpp
 msgid "Touch Delay"
-msgstr ""
+msgstr "Penundaan Sentuh"
 
 #: main/main.cpp servers/visual_server.cpp
 msgid "GLES3"
@@ -15858,7 +15880,7 @@ msgstr ""
 
 #: main/main.cpp
 msgid "Fullsize"
-msgstr ""
+msgstr "Ukuran penuh"
 
 #: main/main.cpp scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -15877,7 +15899,7 @@ msgstr "Atur Ikon Tile"
 
 #: main/main.cpp
 msgid "Windows Native Icon"
-msgstr ""
+msgstr "Ikon Windows"
 
 #: main/main.cpp
 msgid "Buffering"
@@ -15888,12 +15910,14 @@ msgid "Agile Event Flushing"
 msgstr ""
 
 #: main/main.cpp
+#, fuzzy
 msgid "Emulate Touch From Mouse"
-msgstr ""
+msgstr "Emulasi Sentuhan Dari Mouse"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Emulate Mouse From Touch"
-msgstr ""
+msgstr "Emulasi Mouse Dari Sentuhan"
 
 #: main/main.cpp
 #, fuzzy
@@ -15966,8 +15990,9 @@ msgid "Shrink"
 msgstr ""
 
 #: main/main.cpp
+#, fuzzy
 msgid "Auto Accept Quit"
-msgstr ""
+msgstr "Otomatis Terima Keluar"
 
 #: main/main.cpp
 #, fuzzy
@@ -15981,7 +16006,7 @@ msgstr "Kancing ke Tepi Node"
 
 #: main/main.cpp
 msgid "Dynamic Fonts"
-msgstr ""
+msgstr "Fonta Dinamis"
 
 #: main/main.cpp
 msgid "Use Oversampling"
@@ -16018,7 +16043,7 @@ msgstr "Opsi"
 
 #: modules/csg/csg_shape.cpp
 msgid "Calculate Tangents"
-msgstr ""
+msgstr "Hitung Tangen"
 
 #: modules/csg/csg_shape.cpp
 #, fuzzy
@@ -16026,9 +16051,8 @@ msgid "Use Collision"
 msgstr "Area Tabrakan"
 
 #: modules/csg/csg_shape.cpp servers/physics_2d_server.cpp
-#, fuzzy
 msgid "Collision Layer"
-msgstr "Mode Tabrakan"
+msgstr "Lapisan Tabrakan"
 
 #: modules/csg/csg_shape.cpp scene/2d/ray_cast_2d.cpp scene/3d/camera.cpp
 #: scene/3d/ray_cast.cpp scene/3d/spring_arm.cpp
@@ -16082,7 +16106,7 @@ msgstr "Tampilkan Garis-bantu"
 
 #: modules/csg/csg_shape.cpp
 msgid "Cone"
-msgstr ""
+msgstr "Kerucut"
 
 #: modules/csg/csg_shape.cpp
 #, fuzzy
@@ -16107,7 +16131,7 @@ msgstr "Poligon"
 
 #: modules/csg/csg_shape.cpp
 msgid "Spin Degrees"
-msgstr ""
+msgstr "Derajat Putaran"
 
 #: modules/csg/csg_shape.cpp
 msgid "Spin Sides"
@@ -16157,9 +16181,8 @@ msgid "Path Joined"
 msgstr "Perputaran Acak:"
 
 #: modules/enet/networked_multiplayer_enet.cpp
-#, fuzzy
 msgid "Compression Mode"
-msgstr "Mode Tabrakan"
+msgstr "Mode Kompresi"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 #, fuzzy
@@ -16313,11 +16336,11 @@ msgstr ""
 
 #: modules/gdscript/gdscript.cpp
 msgid "Treat Warnings As Errors"
-msgstr ""
+msgstr "Perlakukan Peringatan Sebagai Galat"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Exclude Addons"
-msgstr ""
+msgstr "Kecualikan Addon"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Autocomplete Setters And Getters"
@@ -16371,7 +16394,7 @@ msgstr "Tidak Bisa Menyelesaikan"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Show Native Symbols In Editor"
-msgstr ""
+msgstr "Tampilkan Simbol Asli Di Editor"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Use Thread"
@@ -16496,7 +16519,7 @@ msgstr "Warna"
 #: modules/gltf/gltf_light.cpp scene/3d/reflection_probe.cpp
 #: scene/resources/environment.cpp
 msgid "Intensity"
-msgstr ""
+msgstr "Intensitas"
 
 #: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp
 #, fuzzy
@@ -16563,7 +16586,7 @@ msgstr ""
 
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_state.cpp
 msgid "Unique Names"
-msgstr ""
+msgstr "Nama Unik"
 
 #: modules/gltf/gltf_skeleton.cpp
 #, fuzzy
@@ -16696,7 +16719,7 @@ msgstr ""
 
 #: modules/gltf/gltf_state.cpp
 msgid "Cameras"
-msgstr ""
+msgstr "Kamera kamera"
 
 #: modules/gltf/gltf_state.cpp servers/visual_server.cpp
 #, fuzzy
@@ -17096,7 +17119,7 @@ msgstr ""
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Period"
-msgstr ""
+msgstr "Periode"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 #, fuzzy
@@ -17109,7 +17132,7 @@ msgstr ""
 
 #: modules/regex/regex.cpp
 msgid "Subject"
-msgstr ""
+msgstr "Subjek"
 
 #: modules/regex/regex.cpp
 #, fuzzy
@@ -17557,7 +17580,7 @@ msgstr "animasi"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
-msgstr ""
+msgstr "if (kondisi) adalah:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
@@ -17565,7 +17588,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
-msgstr ""
+msgstr "while (kondisi):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator"
@@ -17871,7 +17894,7 @@ msgstr "Panggil"
 
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/graph_node.cpp
 msgid "Title"
-msgstr ""
+msgstr "Judul"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -17959,11 +17982,11 @@ msgstr "Mode Prioritas"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
-msgstr ""
+msgstr "Verifikasi SSL"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
-msgstr ""
+msgstr "Sertifikat SSL Tepercaya"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Bind IP"
@@ -17971,11 +17994,11 @@ msgstr ""
 
 #: modules/websocket/websocket_server.cpp
 msgid "Private Key"
-msgstr ""
+msgstr "Kunci Pribadi"
 
 #: modules/websocket/websocket_server.cpp platform/javascript/export/export.cpp
 msgid "SSL Certificate"
-msgstr ""
+msgstr "Sertifikat SSL"
 
 #: modules/websocket/websocket_server.cpp
 #, fuzzy
@@ -18022,7 +18045,7 @@ msgstr "Coba Lagi"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
-msgstr ""
+msgstr "Jalur Android SDK"
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -18043,7 +18066,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Shutdown ADB On Exit"
-msgstr ""
+msgstr "Matikan ADB Saat Keluar"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -18227,6 +18250,7 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
+"Versi \"Target SDK\" harus lebih tinggi atau sama dengan versi \"Min SDK\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18280,7 +18304,7 @@ msgstr "Nama berkas tidak valid! APK Android memerlukan ekstensi *.apk ."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
-msgstr ""
+msgstr "Format ekspor tidak didukung!\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18443,7 +18467,7 @@ msgstr "Kesalahan memulai server HTTP:"
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
-msgstr ""
+msgstr "Situs"
 
 #: platform/javascript/export/export.cpp
 msgid "HTTP Host"
@@ -18460,11 +18484,12 @@ msgstr "Gunakan Snap"
 
 #: platform/javascript/export/export.cpp
 msgid "SSL Key"
-msgstr ""
+msgstr "Kunci SSL"
 
 #: platform/osx/export/codesign.cpp
+#, fuzzy
 msgid "Can't get filesystem access."
-msgstr ""
+msgstr "Tidak dapat mengakses sistem file."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to get Info.plist hash."
@@ -18535,30 +18560,37 @@ msgid "Failed to create fat binary."
 msgstr ""
 
 #: platform/osx/export/codesign.cpp
+#, fuzzy
 msgid "Unknown bundle type."
-msgstr ""
+msgstr "Jenis bundel tidak diketahui."
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown object type."
-msgstr ""
+msgstr "Jenis objek tidak diketahui."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Note: The notarization process generally takes less than an hour. When the "
 "process is completed, you'll receive an email."
 msgstr ""
+"Catatan: Proses notaris umumnya memakan waktu kurang dari satu jam. Ketika "
+"proses selesai, Anda akan menerima email."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
 msgstr ""
+"Anda dapat memeriksa kemajuan secara manual dengan membuka Terminal dan "
+"menjalankan perintah berikut:"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
+"Jalankan perintah berikut untuk menstaples tiket notaris ke aplikasi yang "
+"diekspor (opsional):"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -18591,7 +18623,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Making PKG"
-msgstr ""
+msgstr "Membuat PKG"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -18605,7 +18637,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Making DMG"
-msgstr ""
+msgstr "Membuat DMG"
 
 #: platform/osx/export/export.cpp
 msgid "Code signing DMG"
@@ -18613,17 +18645,19 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Making ZIP"
-msgstr ""
+msgstr "Membuat ZIP"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Notarization requires the app to be archived first, select the DMG or ZIP "
 "export format instead."
 msgstr ""
+"Notaris mengharuskan aplikasi diarsipkan terlebih dahulu, pilih format "
+"ekspor DMG atau ZIP."
 
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
-msgstr ""
+msgstr "Mengirim arsip untuk notaris"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -18818,14 +18852,12 @@ msgid ""
 msgstr ""
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid icon path:"
-msgstr "Path tidak valid."
+msgstr "Jalur Ikon tidak valid:"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid file version:"
-msgstr "Ekstensi tidak valid."
+msgstr "Versi file tidak valid:"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -18870,9 +18902,8 @@ msgstr "Bingkai %"
 
 #: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Speed Scale"
-msgstr "Skala"
+msgstr "Skala Kecepatan"
 
 #: scene/2d/animated_sprite.cpp scene/2d/audio_stream_player_2d.cpp
 #: scene/3d/audio_stream_player_3d.cpp scene/3d/sprite_3d.cpp
@@ -20630,13 +20661,12 @@ msgid "Frustum Offset"
 msgstr "Offset Kotak-kotak:"
 
 #: scene/3d/camera.cpp
-#, fuzzy
 msgid "Near"
-msgstr "Terdekat"
+msgstr "Dekat"
 
 #: scene/3d/camera.cpp
 msgid "Far"
-msgstr ""
+msgstr "Jauh"
 
 #: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/3d/spring_arm.cpp
 #: scene/gui/control.cpp scene/resources/shape.cpp
@@ -20802,9 +20832,8 @@ msgid "Normal Bias"
 msgstr ""
 
 #: scene/3d/gi_probe.cpp
-#, fuzzy
 msgid "Compress"
-msgstr "Komponen"
+msgstr "Kompres"
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -20834,9 +20863,8 @@ msgid "Subdiv"
 msgstr ""
 
 #: scene/3d/light.cpp
-#, fuzzy
 msgid "Negative"
-msgstr "GDNative"
+msgstr "Negatif"
 
 #: scene/3d/light.cpp
 #, fuzzy
@@ -21125,7 +21153,7 @@ msgstr " [portal aktif]"
 
 #: scene/3d/portal.cpp scene/resources/occluder_shape_polygon.cpp
 msgid "Two Way"
-msgstr ""
+msgstr "Dua Arah"
 
 #: scene/3d/portal.cpp
 #, fuzzy
@@ -21138,9 +21166,8 @@ msgid "Use Default Margin"
 msgstr "Bawaan"
 
 #: scene/3d/proximity_group.cpp
-#, fuzzy
 msgid "Group Name"
-msgstr "Terkelompok"
+msgstr "Nama Kelompok"
 
 #: scene/3d/proximity_group.cpp
 msgid "Dispatch Mode"
@@ -21231,7 +21258,7 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "Bound"
-msgstr ""
+msgstr "Batasan"
 
 #: scene/3d/room_group.cpp
 #, fuzzy
@@ -21258,11 +21285,11 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
-msgstr ""
+msgstr "Hanya dapat memiliki satu RoomManager pada setiap SceneTree."
 
 #: scene/3d/room_manager.cpp
 msgid "Main"
-msgstr ""
+msgstr "Utama"
 
 #: scene/3d/room_manager.cpp
 msgid "Roomlist"
@@ -21299,7 +21326,7 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "Misnamed nodes detected, check output log for details. Aborting."
-msgstr ""
+msgstr "Nama node salah terdeteksi, cek log output untuk detail. Membatalkan."
 
 #: scene/3d/room_manager.cpp
 msgid "Portal link room not found, check output log for details."
@@ -21322,6 +21349,8 @@ msgid ""
 "Error calculating room bounds.\n"
 "Ensure all rooms contain geometry or manual bounds."
 msgstr ""
+"Gagal dalam menghitung batasan ruang.\n"
+"Pastikan semua ruang memiliki geometri atau batasan manual."
 
 #: scene/3d/soft_body.cpp
 #, fuzzy
@@ -21334,18 +21363,16 @@ msgid "Parent Collision Ignore"
 msgstr "Buat Poligon Collision"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Simulation Precision"
-msgstr "Pohon animasi tidak valid."
+msgstr "Presisi Simulasi"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Total Mass"
-msgstr "Total:"
+msgstr "Massa total"
 
 #: scene/3d/soft_body.cpp
 msgid "Linear Stiffness"
-msgstr ""
+msgstr "Kekakuan linier"
 
 #: scene/3d/soft_body.cpp
 msgid "Areaangular Stiffness"
@@ -21357,15 +21384,15 @@ msgstr ""
 
 #: scene/3d/soft_body.cpp
 msgid "Pressure Coefficient"
-msgstr ""
+msgstr "Koefisien Tekanan"
 
 #: scene/3d/soft_body.cpp
 msgid "Damping Coefficient"
-msgstr ""
+msgstr "Koefisien Redam"
 
 #: scene/3d/soft_body.cpp
 msgid "Drag Coefficient"
-msgstr ""
+msgstr "Koefisien Hambat"
 
 #: scene/3d/soft_body.cpp
 msgid "Pose Matching Coefficient"
@@ -21386,7 +21413,7 @@ msgstr ""
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
-msgstr ""
+msgstr "Matriks"
 
 #: scene/3d/spatial.cpp
 #, fuzzy
@@ -21447,7 +21474,7 @@ msgstr "Online Dokumentasi"
 
 #: scene/3d/vehicle_body.cpp
 msgid "Brake"
-msgstr ""
+msgstr "Rem"
 
 #: scene/3d/vehicle_body.cpp
 msgid "Steering"
@@ -21588,7 +21615,7 @@ msgstr "Skena Utama"
 #: scene/animation/animation_blend_space_1d.cpp
 #: scene/animation/animation_blend_space_2d.cpp
 msgid "Max Space"
-msgstr ""
+msgstr "Ruang Maksimum"
 
 #: scene/animation/animation_blend_space_1d.cpp
 #, fuzzy
@@ -21607,11 +21634,11 @@ msgstr "Jungkitkan Segitiga Otomatis"
 
 #: scene/animation/animation_blend_space_2d.cpp
 msgid "X Label"
-msgstr ""
+msgstr "Label X"
 
 #: scene/animation/animation_blend_space_2d.cpp
 msgid "Y Label"
-msgstr ""
+msgstr "Label Y"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
@@ -24981,7 +25008,7 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Compatibility"
-msgstr ""
+msgstr "Kompatibilitas"
 
 #: servers/visual_server.cpp
 msgid "Disable Half Float"
@@ -25045,7 +25072,7 @@ msgstr "Mode Interpolasi"
 
 #: servers/visual_server.cpp
 msgid "Max Simultaneous Compiles"
-msgstr ""
+msgstr "Maksimal Kompilasi Bersamaan"
 
 #: servers/visual_server.cpp
 msgid "Log Active Async Compiles Count"

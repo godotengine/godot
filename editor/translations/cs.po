@@ -35,8 +35,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-17 13:58+0000\n"
-"Last-Translator: JoeMoos <josephmoose13@gmail.com>\n"
+"PO-Revision-Date: 2022-03-21 22:22+0000\n"
+"Last-Translator: Petr Voparil <voparil.petr96@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -51,18 +51,16 @@ msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Schránka je prázdná!"
+msgstr "Schránka"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Aktuální scéna"
+msgstr "Aktuální obrazovka"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Kód pro ukončení (exit code)"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -156,9 +154,8 @@ msgstr "Pozice doku"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Velikost:"
+msgstr "Velikost"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
