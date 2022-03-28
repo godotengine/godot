@@ -97,24 +97,29 @@ public:
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
-	template <class C>
-	void sort_custom() {
+	void sort() {
+		sort_custom<_DefaultComparator<T>>();
+	}
+
+	template <class Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, class... Args>
+	void sort_custom(Args &&...args) {
 		int len = _cowdata.size();
 		if (len == 0) {
 			return;
 		}
 
 		T *data = ptrw();
-		SortArray<T, C> sorter;
+		SortArray<T, Comparator, Validate> sorter{ args... };
 		sorter.sort(data, len);
 	}
 
-	void sort() {
-		sort_custom<_DefaultComparator<T>>();
+	int bsearch(const T &p_value, bool p_before) {
+		return bsearch_custom<_DefaultComparator<T>>(p_value, p_before);
 	}
 
-	int bsearch(const T &p_value, bool p_before) {
-		SearchArray<T> search;
+	template <class Comparator, class Value, class... Args>
+	int bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
+		SearchArray<T, Comparator> search{ args... };
 		return search.bisect(ptrw(), size(), p_value, p_before);
 	}
 
