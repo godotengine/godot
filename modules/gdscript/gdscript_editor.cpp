@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
-#include "editor_templates/templates.gen.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
@@ -44,6 +43,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
+#include "editor/script_templates/templates.gen.h"
 #endif
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
@@ -64,8 +64,11 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	Ref<GDScript> script;
 	script.instantiate();
 	String processed_template = p_template;
+	bool type_hints = false;
 #ifdef TOOLS_ENABLED
-	if (!EDITOR_GET("text_editor/completion/add_type_hints")) {
+	type_hints = EDITOR_GET("text_editor/completion/add_type_hints");
+#endif
+	if (!type_hints) {
 		processed_template = processed_template.replace(": int", "")
 									 .replace(": String", "")
 									 .replace(": Array[String]", "")
@@ -75,16 +78,6 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 									 .replace(" -> int", "")
 									 .replace(" -> void", "");
 	}
-#else
-	processed_template = processed_template.replace(": int", "")
-								 .replace(": String", "")
-								 .replace(": Array[String]", "")
-								 .replace(": float", "")
-								 .replace(":=", "=")
-								 .replace(" -> String", "")
-								 .replace(" -> int", "")
-								 .replace(" -> void", "");
-#endif
 
 	processed_template = processed_template.replace("_BASE_", p_base_class_name)
 								 .replace("_CLASS_", p_class_name)
@@ -95,11 +88,13 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 
 Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(StringName p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
+#ifdef TOOLS_ENABLED
 	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
 		if (TEMPLATES[i].inherit == p_object) {
 			templates.append(TEMPLATES[i]);
 		}
 	}
+#endif
 	return templates;
 }
 
