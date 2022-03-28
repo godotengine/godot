@@ -76,7 +76,7 @@ ext.getGodotEditorVersion = { ->
     String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
     if (editorVersion == null || editorVersion.isEmpty()) {
         // Try the library version first
-        editorVersion = getGodotLibraryVersion()
+        editorVersion = getGodotLibraryVersionName()
 
         if (editorVersion.isEmpty()) {
             // Fallback value.
@@ -86,9 +86,24 @@ ext.getGodotEditorVersion = { ->
     return editorVersion
 }
 
+ext.getGodotLibraryVersionCode = { ->
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = getGodotLibraryVersion()
+    return versionCode
+}
+
+ext.getGodotLibraryVersionName = { ->
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = getGodotLibraryVersion()
+    return versionName
+}
+
 ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
     // Attempt to read the version from the `version.py` file.
-    String libraryVersion = ""
+    String libraryVersionName = ""
+    int libraryVersionCode = 0
 
     File versionFile = new File("../../../version.py")
     if (versionFile.isFile()) {
@@ -109,15 +124,35 @@ ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
         }
 
         if (requiredKeys.empty) {
-            libraryVersion = map.values().join(".")
+            libraryVersionName = map.values().join(".")
+            try {
+                if (map.containsKey("patch")) {
+                    libraryVersionCode = Integer.parseInt(map["patch"])
+                }
+
+                if (map.containsKey("minor")) {
+                    libraryVersionCode += (Integer.parseInt(map["minor"]) * 100)
+                }
+
+                if (map.containsKey("major")) {
+                    libraryVersionCode += (Integer.parseInt(map["major"]) * 10000)
+                }
+            } catch (NumberFormatException ignore) {
+                libraryVersionCode = 1
+            }
         }
     }
 
-    if (libraryVersion.isEmpty()) {
+    if (libraryVersionName.isEmpty()) {
         // Fallback value in case we're unable to read the file.
-        libraryVersion = "custom_build"
+        libraryVersionName = "custom_build"
     }
-    return libraryVersion
+
+    if (libraryVersionCode == 0) {
+        libraryVersionCode = 1
+    }
+
+    return [libraryVersionName, libraryVersionCode]
 }
 
 ext.getGodotLibraryVersion = { ->
@@ -127,7 +162,10 @@ ext.getGodotLibraryVersion = { ->
 
 ext.getGodotPublishVersion = { ->
     List<String> requiredKeys = ["major", "minor", "patch", "status"]
-    return generateGodotLibraryVersion(requiredKeys)
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = generateGodotLibraryVersion(requiredKeys)
+    return versionName
 }
 
 final String VALUE_SEPARATOR_REGEX = "\\|"

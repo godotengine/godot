@@ -107,6 +107,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jclass clazz) {
 	// lets cleanup
+	if (java_class_wrapper) {
+		memdelete(java_class_wrapper);
+	}
 	if (godot_io_java) {
 		delete godot_io_java;
 	}
@@ -117,6 +120,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 		delete input_handler;
 	}
 	if (os_android) {
+		os_android->main_loop_end();
 		delete os_android;
 	}
 }
@@ -146,7 +150,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 		}
 	}
 
-	Error err = Main::setup("apk", cmdlen, (char **)cmdline, false);
+	Error err = Main::setup(OS_Android::ANDROID_EXEC_PATH, cmdlen, (char **)cmdline, false);
 	if (cmdline) {
 		if (j_cmdline) {
 			for (int i = 0; i < cmdlen; ++i) {
