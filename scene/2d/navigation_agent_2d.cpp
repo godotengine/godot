@@ -199,7 +199,8 @@ real_t NavigationAgent2D::distance_to_target() const {
 	return agent_parent->get_global_position().distance_to(target_location);
 }
 
-bool NavigationAgent2D::is_target_reached() const {
+bool NavigationAgent2D::is_target_reached() {
+	update_navigation();
 	return target_reached;
 }
 
@@ -225,6 +226,16 @@ void NavigationAgent2D::set_velocity(Vector2 p_velocity) {
 	NavigationServer2D::get_singleton()->agent_set_target_velocity(agent, target_velocity);
 	NavigationServer2D::get_singleton()->agent_set_velocity(agent, prev_safe_velocity);
 	velocity_submitted = true;
+}
+
+Vector<Vector2> NavigationAgent2D::get_nav_path() {
+	update_navigation();
+	return navigation_path;
+}
+
+int NavigationAgent2D::get_nav_path_index() {
+	update_navigation();
+	return nav_path_index;
 }
 
 void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {

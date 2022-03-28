@@ -118,16 +118,12 @@ public:
 
 	Vector2 get_next_location();
 
-	Vector<Vector2> get_nav_path() const {
-		return navigation_path;
-	}
+	Vector<Vector2> get_nav_path();
 
-	int get_nav_path_index() const {
-		return nav_path_index;
-	}
+	int get_nav_path_index();
 
 	real_t distance_to_target() const;
-	bool is_target_reached() const;
+	bool is_target_reached();
 	bool is_target_reachable();
 	bool is_navigation_finished();
 	Vector2 get_final_location();
