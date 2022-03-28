@@ -233,14 +233,6 @@ struct ScriptCodeCompletionOption {
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
 	};
-
-	enum Location {
-		LOCATION_LOCAL = 0,
-		LOCATION_PARENT_MASK = (1 << 8),
-		LOCATION_OTHER_USER_CODE = (1 << 9),
-		LOCATION_OTHER = (1 << 10),
-	};
-
 	Kind kind = KIND_PLAIN_TEXT;
 	String display;
 	String insert_text;
@@ -248,60 +240,13 @@ struct ScriptCodeCompletionOption {
 	RES icon;
 	Variant default_value;
 	Vector<Pair<int, int>> matches;
-	int location = LOCATION_OTHER;
 
 	ScriptCodeCompletionOption() {}
 
-	ScriptCodeCompletionOption(const String &p_text, Kind p_kind, int p_location = LOCATION_OTHER) {
+	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
 		display = p_text;
 		insert_text = p_text;
 		kind = p_kind;
-		location = p_location;
-	}
-};
-
-const int KIND_COUNT = 10;
-const ScriptCodeCompletionOption::Kind KIND_SORT_ORDER[KIND_COUNT] = {
-	ScriptCodeCompletionOption::Kind::KIND_VARIABLE,
-	ScriptCodeCompletionOption::Kind::KIND_MEMBER,
-	ScriptCodeCompletionOption::Kind::KIND_FUNCTION,
-	ScriptCodeCompletionOption::Kind::KIND_ENUM,
-	ScriptCodeCompletionOption::Kind::KIND_SIGNAL,
-	ScriptCodeCompletionOption::Kind::KIND_CONSTANT,
-	ScriptCodeCompletionOption::Kind::KIND_CLASS,
-	ScriptCodeCompletionOption::Kind::KIND_NODE_PATH,
-	ScriptCodeCompletionOption::Kind::KIND_FILE_PATH,
-	ScriptCodeCompletionOption::Kind::KIND_PLAIN_TEXT,
-};
-
-struct ScriptCodeCompletionOptionCompare {
-	_FORCE_INLINE_ bool operator()(const ScriptCodeCompletionOption &l, const ScriptCodeCompletionOption &r) const {
-		if (l.location == r.location) {
-			// If locations are same, sort on kind
-			if (l.kind == r.kind) {
-				// If kinds are same, sort alphanumeric
-				return l.display < r.display;
-			}
-
-			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
-			int l_index = -1;
-			int r_index = -1;
-			for (int i = 0; i < KIND_COUNT; i++) {
-				const ScriptCodeCompletionOption::Kind kind = KIND_SORT_ORDER[i];
-				l_index = kind == l.kind ? i : l_index;
-				r_index = kind == r.kind ? i : r_index;
-
-				if (l_index != -1 && r_index != -1) {
-					return l_index < r_index;
-				}
-			}
-
-			// This return should never be hit unless something goes wrong.
-			// l and r should always have a Kind which is in the sort order array.
-			return l.display < r.display;
-		}
-
-		return l.location < r.location;
 	}
 };
 
