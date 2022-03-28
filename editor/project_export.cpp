@@ -56,12 +56,18 @@ void ProjectExportDialog::_notification(int p_what) {
 			connect("confirmed", this, "_export_pck_zip");
 			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
+
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", get_rect());
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
 			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 	}
 }
@@ -1035,6 +1041,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
+	parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 	parameters->connect("property_edited", this, "_update_parameters");
 	EditorExport::get_singleton()->connect("export_presets_updated", this, "_force_update_current_preset_parameters");
 

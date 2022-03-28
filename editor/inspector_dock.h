@@ -37,6 +37,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_path.h"
+#include "editor/editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -63,6 +64,11 @@ class InspectorDock : public VBoxContainer {
 
 		COLLAPSE_ALL,
 		EXPAND_ALL,
+
+		// Matches `EditorPropertyNameProcessor::Style`.
+		PROPERTY_NAME_STYLE_RAW,
+		PROPERTY_NAME_STYLE_CAPITALIZED,
+		PROPERTY_NAME_STYLE_LOCALIZED,
 
 		OBJECT_METHOD_BASE = 500
 	};
@@ -93,6 +99,9 @@ class InspectorDock : public VBoxContainer {
 	Button *warning;
 	AcceptDialog *warning_dialog;
 
+	EditorPropertyNameProcessor::Style property_name_style;
+
+	void _prepare_menu();
 	void _menu_option(int p_option);
 
 	void _new_resource();
@@ -132,6 +141,8 @@ public:
 	void update(Object *p_object);
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
+
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
 
 	InspectorDock(EditorNode *p_editor, EditorData &p_editor_data);
 	~InspectorDock();

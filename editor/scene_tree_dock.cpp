@@ -36,6 +36,7 @@
 #include "core/project_settings.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/multi_node_edit.h"
@@ -2591,11 +2592,11 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 			property_drop_node = node;
 			resource_drop_path = res_path;
 
-			bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
+			const EditorPropertyNameProcessor::Style style = EditorNode::get_singleton()->get_inspector_dock()->get_property_name_style();
 			menu_properties->clear();
 			for (List<String>::Element *E = valid_properties.front(); E; E = E->next()) {
 				String &p = E->get();
-				menu_properties->add_item(capitalize ? p.capitalize() : p);
+				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style));
 				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
 			}
 

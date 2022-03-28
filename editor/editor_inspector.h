@@ -31,6 +31,7 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
@@ -288,7 +289,7 @@ class EditorInspector : public ScrollContainer {
 	bool show_categories;
 	bool hide_script;
 	bool use_doc_hints;
-	bool capitalize_paths;
+	EditorPropertyNameProcessor::Style property_name_style;
 	bool use_filter;
 	bool autoclear;
 	bool use_folding;
@@ -371,8 +372,9 @@ public:
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
 
-	bool is_capitalize_paths_enabled() const;
-	void set_enable_capitalize_paths(bool p_capitalize);
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
+	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);
+
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show);
