@@ -1308,6 +1308,18 @@ void EditorFileDialog::_update_favorites() {
 	favorite->set_pressed(false);
 
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
+
+	bool fav_changed = false;
+	for (int i = favorited.size() - 1; i >= 0; i--) {
+		if (!dir_access->dir_exists(favorited[i])) {
+			favorited.remove_at(i);
+			fav_changed = true;
+		}
+	}
+	if (fav_changed) {
+		EditorSettings::get_singleton()->set_favorites(favorited);
+	}
+
 	for (int i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res) {
