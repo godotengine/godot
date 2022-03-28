@@ -90,13 +90,15 @@
 # MinusKube <minuskube@gmail.com>, 2022.
 # Alexandre <alexandre.blanquero00@gmail.com>, 2022.
 # Erwan Loisant <erwan@loisant.com>, 2022.
+# SmolBabby <loicboiteux4@gmail.com>, 2022.
+# Maxim Lopez <maxim.lopez.02@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-13 22:12+0000\n"
-"Last-Translator: Erwan Loisant <erwan@loisant.com>\n"
+"PO-Revision-Date: 2022-03-28 23:07+0000\n"
+"Last-Translator: Maxim Lopez <maxim.lopez.02@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -111,31 +113,28 @@ msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Le presse-papiers est vide !"
+msgstr "Presse-papiers"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Scène actuelle"
+msgstr "Écran actuel"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Code de sortie"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Activer"
+msgstr "V-Sync activé"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-Sync via le compositeur"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Lissage Delta"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -196,8 +195,9 @@ msgstr "Initialiser"
 
 #: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
+#, fuzzy
 msgid "Resizable"
-msgstr ""
+msgstr "Reajustable"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -274,7 +274,7 @@ msgstr "Résultats de recherche"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Mémoire"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -284,7 +284,7 @@ msgstr ""
 #: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Limites"
 
 #: core/command_queue_mt.cpp
 #, fuzzy
@@ -310,9 +310,8 @@ msgstr "Fonction"
 #: scene/resources/audio_stream_sample.cpp scene/resources/bit_map.cpp
 #: scene/resources/concave_polygon_shape.cpp scene/resources/curve.cpp
 #: scene/resources/polygon_path_finder.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Data"
-msgstr "Avec données"
+msgstr "Données"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_settings.cpp editor/export_template_manager.cpp
@@ -463,7 +462,7 @@ msgstr "Lors de l’appel à '%s' :"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Graine"
 
 #: core/math/random_number_generator.cpp
 #, fuzzy
@@ -476,7 +475,7 @@ msgstr ""
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Taille Maximale (KB)"
 
 #: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -488,9 +487,8 @@ msgstr ""
 #: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Text Editor"
-msgstr "Ouvrir l'éditeur"
+msgstr "Éditeur de texte"
 
 #: core/os/input.cpp editor/editor_settings.cpp
 #: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
@@ -557,7 +555,7 @@ msgstr "Touche physique"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -10523,7 +10521,7 @@ msgstr "Jouer IK"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr "Orthogonale"
+msgstr "Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_camera.cpp
 msgid "Perspective"
@@ -19420,9 +19418,8 @@ msgstr "Paramètres :"
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp scene/3d/area.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Amount"
-msgstr "Quantité :"
+msgstr "Amount"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -23170,9 +23167,8 @@ msgid "Draw 2D Outlines"
 msgstr "Créer le contour"
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "Directions"
+msgstr "Réflexions"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
@@ -23583,9 +23579,8 @@ msgid "Height Curve"
 msgstr "Scinder la courbe"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Tonemap"
-msgstr "Réaffectation"
+msgstr "Tonemap"
 
 #: scene/resources/environment.cpp
 #, fuzzy
