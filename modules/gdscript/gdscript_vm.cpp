@@ -2174,7 +2174,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					retvalue = gdfs;
 
-					Error err = sig.connect(callable_bind(Callable(gdfs.ptr(), "_signal_callback"), retvalue), Object::CONNECT_ONESHOT);
+					Vector<Variant> retvalue_varray = varray(retvalue);
+					const Variant *retvalue_arg = retvalue_varray.ptr();
+					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(&retvalue_arg, 1), Object::CONNECT_ONESHOT);
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
 						OPCODE_BREAK;

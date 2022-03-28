@@ -346,7 +346,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 			break;
 	}
 	panel->set_modulate(Color(1, 1, 1, 0));
-	panel->connect("draw", callable_bind(callable_mp(this, &EditorToaster::_draw_progress), panel));
+	panel->connect("draw", callable_mp(this, &EditorToaster::_draw_progress), make_binds(panel));
 
 	// Horizontal container.
 	HBoxContainer *hbox_container = memnew(HBoxContainer);
@@ -362,8 +362,8 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
 		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		close_button->connect("pressed", callable_bind(callable_mp(this, &EditorToaster::close), panel));
-		close_button->connect("theme_changed", callable_bind(callable_mp(this, &EditorToaster::_close_button_theme_changed), close_button));
+		close_button->connect("pressed", callable_mp(this, &EditorToaster::close), make_binds(panel));
+		close_button->connect("theme_changed", callable_mp(this, &EditorToaster::_close_button_theme_changed), make_binds(close_button));
 		hbox_container->add_child(close_button);
 	}
 

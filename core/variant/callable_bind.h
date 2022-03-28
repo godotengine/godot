@@ -84,10 +84,4 @@ public:
 	virtual ~CallableCustomUnbind();
 };
 
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1);
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2);
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4);
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
-
 #endif // CALLABLE_BIND_H

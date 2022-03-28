@@ -1915,8 +1915,8 @@ void EditorInspectorArray::_setup() {
 		ae.panel->set_tooltip(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
 		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
-		ae.panel->connect("draw", callable_bind(callable_mp(this, &EditorInspectorArray::_panel_draw), i));
-		ae.panel->connect("gui_input", callable_bind(callable_mp(this, &EditorInspectorArray::_panel_gui_input), i));
+		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw), make_binds(i));
+		ae.panel->connect("gui_input", callable_mp(this, &EditorInspectorArray::_panel_gui_input), make_binds(i));
 		ae.panel->add_theme_style_override(SNAME("panel"), i % 2 ? odd_style : even_style);
 		elements_vbox->add_child(ae.panel);
 

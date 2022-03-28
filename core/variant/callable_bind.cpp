@@ -181,28 +181,3 @@ CallableCustomUnbind::CallableCustomUnbind(const Callable &p_callable, int p_arg
 
 CallableCustomUnbind::~CallableCustomUnbind() {
 }
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1) {
-	const Variant *args[1] = { &p_arg1 };
-	return p_callable.bind(args, 1);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2) {
-	const Variant *args[2] = { &p_arg1, &p_arg2 };
-	return p_callable.bind(args, 2);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3) {
-	const Variant *args[3] = { &p_arg1, &p_arg2, &p_arg3 };
-	return p_callable.bind(args, 3);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4) {
-	const Variant *args[4] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4 };
-	return p_callable.bind(args, 4);
-}
-
-Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5) {
-	const Variant *args[5] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4, &p_arg5 };
-	return p_callable.bind(args, 5);
-}
