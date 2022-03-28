@@ -37,7 +37,7 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 4.12-dev\n"
 
-#: core/bind/core_bind.cpp
+#: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
 msgstr "Драйвер планшета"
 
@@ -128,8 +128,8 @@ msgstr "Розташування"
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
 #: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/gui/control.cpp
-#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
+#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -222,8 +222,7 @@ msgid "Data"
 msgstr "Дані"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
+#: editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Network"
 msgstr "Мережа"
@@ -484,9 +483,10 @@ msgstr "Тиск"
 msgid "Relative"
 msgstr "Відносний"
 
-#: core/os/input_event.cpp scene/2d/camera_2d.cpp
-#: scene/3d/interpolated_camera.cpp scene/animation/animation_player.cpp
-#: scene/resources/environment.cpp
+#: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
+#: scene/animation/animation_player.cpp scene/resources/environment.cpp
+#: scene/resources/particles_material.cpp
 msgid "Speed"
 msgstr "Швидкість"
 
@@ -530,8 +530,9 @@ msgstr "Повідомлення"
 msgid "Pitch"
 msgstr "Висота тону"
 
-#: core/os/input_event.cpp scene/2d/physics_body_2d.cpp
-#: scene/3d/physics_body.cpp
+#: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
 msgid "Velocity"
 msgstr "Швидкість"
 
@@ -548,6 +549,8 @@ msgid "Controller Value"
 msgstr "Значення контролера"
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
 msgid "Application"
 msgstr "Програма"
 
@@ -563,13 +566,16 @@ msgstr "Перевизначення параметрів проєкту"
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
 #: editor/editor_plugin_settings.cpp editor/editor_profiler.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
-#: modules/gdnative/nativescript/nativescript.cpp scene/2d/area_2d.cpp
-#: scene/3d/area.cpp scene/main/node.cpp
+#: modules/gdnative/nativescript/nativescript.cpp
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#: platform/osx/export/export.cpp scene/2d/area_2d.cpp scene/3d/area.cpp
+#: scene/main/node.cpp
 msgid "Name"
 msgstr "Назва"
 
 #: core/project_settings.cpp editor/editor_help.cpp
-#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp platform/uwp/export/export.cpp
+#: platform/windows/export/export.cpp
 msgid "Description"
 msgstr "Опис"
 
@@ -605,7 +611,7 @@ msgid "Custom User Dir Name"
 msgstr "Нетипова назва каталогу користувача"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
-#: editor/editor_audio_buses.cpp servers/audio_server.cpp
+#: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
 msgid "Audio"
 msgstr "Аудіо"
 
@@ -756,10 +762,13 @@ msgstr "Фільтри"
 msgid "Sharpen Intensity"
 msgstr "Інтенсивність різкості"
 
-#: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
-#: main/main.cpp modules/gdscript/gdscript.cpp
-#: modules/visual_script/visual_script.cpp scene/3d/room_manager.cpp
+#: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
+#: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/project_export.cpp main/main.cpp modules/gdscript/gdscript.cpp
+#: modules/visual_script/visual_script.cpp
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp scene/3d/room_manager.cpp
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 #: servers/visual_server.cpp
 msgid "Debug"
@@ -981,6 +990,7 @@ msgid "Subsurface Scattering"
 msgstr "Розсіювання підповерхонь"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_node.cpp
 #: modules/gridmap/grid_map.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/node_2d.cpp scene/2d/parallax_layer.cpp scene/2d/polygon_2d.cpp
@@ -1276,6 +1286,7 @@ msgid "Editors"
 msgstr "Редактори"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_scene.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 #: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/sprite.cpp scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
@@ -1511,14 +1522,14 @@ msgstr "Значення кроку анімації."
 msgid "Seconds"
 msgstr "Секунди"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp main/main.cpp
 #: scene/resources/texture.cpp
 msgid "FPS"
 msgstr "Кадри за секунду"
 
 #: editor/animation_track_editor.cpp editor/editor_plugin_settings.cpp
-#: editor/editor_resource_picker.cpp
+#: editor/editor_resource_picker.cpp editor/import/resource_importer_wav.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -2481,7 +2492,9 @@ msgid "Remove Autoload"
 msgstr "Видалити автозавантаження"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
-#: modules/gdscript/gdscript.cpp scene/2d/polygon_2d.cpp scene/3d/area.cpp
+#: modules/gdscript/gdscript.cpp platform/android/export/export_plugin.cpp
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#: scene/2d/polygon_2d.cpp scene/3d/area.cpp scene/3d/physics_joint.cpp
 #: scene/3d/reflection_probe.cpp scene/main/canvas_layer.cpp
 #: scene/resources/material.cpp servers/visual_server.cpp
 msgid "Enable"
@@ -2646,6 +2659,60 @@ msgstr ""
 "варіанта драйверів GLES2.\n"
 "Увімкніть пункт «Імпортувати Pvrtc» у параметрах проєкту або вимкніть пункт "
 "«Увімкнено резервні драйвери»."
+
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom Template"
+msgstr "Нетипова тема"
+
+#: editor/editor_export.cpp editor/project_export.cpp
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp
+msgid "Release"
+msgstr "Випуск"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Binary Format"
+msgstr "Формат кольору"
+
+#: editor/editor_export.cpp
+msgid "64 Bits"
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid "Embed PCK"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Texture Format"
+msgstr "TextureRegion"
+
+#: editor/editor_export.cpp
+msgid "BPTC"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+msgid "S3TC"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "ETC"
+msgstr "TCP"
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+msgid "ETC2"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "No BPTC Fallbacks"
+msgstr "Резерв"
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2835,6 +2902,7 @@ msgid "Make Current"
 msgstr "Зробити поточним"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
+#: editor/import/resource_importer_scene.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
 msgstr "Імпорт"
@@ -2961,8 +3029,11 @@ msgstr "Доступ"
 msgid "Display Mode"
 msgstr "Режим показу"
 
-#: editor/editor_file_dialog.cpp main/main.cpp modules/csg/csg_shape.cpp
-#: modules/visual_script/visual_script_nodes.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+#: editor/import/resource_importer_wav.cpp main/main.cpp
+#: modules/csg/csg_shape.cpp modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp scene/2d/light_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/light.cpp scene/3d/physics_body.cpp
@@ -3096,7 +3167,9 @@ msgstr "Імпортування ресурсів"
 msgid "Reimport Missing Imported Files"
 msgstr "Повторно імпортувати пропущені імпортовані файли"
 
-#: editor/editor_help.cpp
+#: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
+#: scene/resources/style_box.cpp
 msgid "Top"
 msgstr "Верхівка"
 
@@ -3148,6 +3221,7 @@ msgid "Fonts"
 msgstr "Шрифти"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#: platform/iphone/export/export.cpp
 msgid "Icons"
 msgstr "Піктограми"
 
@@ -3313,7 +3387,9 @@ msgid "Pin value [Disabled because '%s' is editor-only]"
 msgstr ""
 "Пришпилити значення [вимкнено, оскільки «%s» призначено лише для редагування]"
 
-#: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: editor/editor_inspector.cpp
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -3653,6 +3729,16 @@ msgid "Quick Open Script..."
 msgstr "Швидке відкриття скрипту..."
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Save & Reload"
+msgstr "Зберегти і перезапустити"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Save changes to '%s' before reloading?"
+msgstr "Зберегти зміни, внесені до '%s' перед закриттям?"
+
+#: editor/editor_node.cpp
 msgid "Save & Close"
 msgstr "Зберегти та закрити"
 
@@ -3768,6 +3854,11 @@ msgstr "Вийти з редактора?"
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
 msgstr "Відкрити менеджер проєктів?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Save changes to the following scene(s) before reloading?"
+msgstr "Зберегти зміни в наступній(их) сцені(ах) перед тим, як вийти?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -4037,8 +4128,9 @@ msgid "Update Vital Only"
 msgstr "Оновлювати лише критичні"
 
 #: editor/editor_node.cpp
-msgid "Translate Properties"
-msgstr "Перекладати властивості"
+#, fuzzy
+msgid "Localize Settings"
+msgstr "Локалізація"
 
 #: editor/editor_node.cpp
 msgid "Restore Scenes On Load"
@@ -4053,8 +4145,9 @@ msgid "Inspector"
 msgstr "Інспектор"
 
 #: editor/editor_node.cpp
-msgid "Capitalize Properties"
-msgstr "Властивості з великої літери"
+#, fuzzy
+msgid "Default Property Name Style"
+msgstr "Типовий шлях до проєкту"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
@@ -4658,7 +4751,9 @@ msgstr "Встановлені плаґіни:"
 msgid "Update"
 msgstr "Оновити"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp platform/android/export/export_plugin.cpp
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Version"
 msgstr "Версія"
 
@@ -5614,7 +5709,7 @@ msgstr "Прямокутник"
 msgid "Rect Custom Position"
 msgstr "Нетипове розташування прямокутника"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr "Екран"
 
@@ -5635,6 +5730,19 @@ msgstr "Віддалений порт"
 #: editor/editor_settings.cpp
 msgid "Editor SSL Certificates"
 msgstr "Сертифікати SSL редактора"
+
+#: editor/editor_settings.cpp
+msgid "HTTP Proxy"
+msgstr "HTTP-проксі"
+
+#: editor/editor_settings.cpp
+msgid "Host"
+msgstr "Вузол"
+
+#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+msgid "Port"
+msgstr "Порт"
 
 #: editor/editor_settings.cpp
 msgid "Project Manager"
@@ -5676,7 +5784,8 @@ msgstr "Колір коментарів"
 msgid "String Color"
 msgstr "Колір рядків"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp platform/javascript/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Background Color"
 msgstr "Колір тла"
 
@@ -5834,22 +5943,6 @@ msgstr "Отримуємо список дзеркал…"
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
 msgstr "Розпочинаємо отримання даних…"
-
-#: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "HTTP Proxy"
-msgstr "HTTP-проксі"
-
-#: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Host"
-msgstr "Вузол"
-
-#: editor/export_template_manager.cpp editor/fileserver/editor_file_server.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
-#: modules/mono/mono_gd/gd_mono.cpp
-msgid "Port"
-msgstr "Порт"
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -6105,6 +6198,7 @@ msgstr "Файловий сервер"
 
 #: editor/fileserver/editor_file_server.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Password"
 msgstr "Пароль"
 
@@ -6487,6 +6581,114 @@ msgstr "Collada"
 msgid "Use Ambient"
 msgstr "Використовувати адаптивний"
 
+#: editor/import/resource_importer_bitmask.cpp
+#, fuzzy
+msgid "Create From"
+msgstr "Створити Теку"
+
+#: editor/import/resource_importer_bitmask.cpp
+#: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Threshold"
+msgstr "Поріг"
+
+#: editor/import/resource_importer_csv_translation.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_scene.cpp
+#: editor/import/resource_importer_texture.cpp
+#: editor/import/resource_importer_wav.cpp scene/3d/gi_probe.cpp
+msgid "Compress"
+msgstr "Стиснути"
+
+#: editor/import/resource_importer_csv_translation.cpp
+msgid "Delimiter"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+msgid "No BPTC If RGB"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/texture.cpp
+msgid "Flags"
+msgstr "Прапорці"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp scene/animation/tween.cpp
+#: scene/resources/texture.cpp
+msgid "Repeat"
+msgstr "Повторення"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
+#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+msgid "Filter"
+msgstr "Фільтр"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Mipmaps"
+msgstr "Множинне відтворення"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Anisotropic"
+msgstr "Анізотропія"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+msgid "sRGB"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "Slices"
+msgstr "Автонарізання"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
+#: scene/resources/style_box.cpp
+msgid "Horizontal"
+msgstr "Горизонтальний"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
+#: scene/resources/style_box.cpp
+msgid "Vertical"
+msgstr "Вертикальний"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Generate Tangents"
+msgstr "Створити точки"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Scale Mesh"
+msgstr "Режим масштабування"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Offset Mesh"
+msgstr "Зміщення"
+
+#: editor/import/resource_importer_obj.cpp
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Octahedral Compression"
+msgstr "Стиснення"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Optimize Mesh Flags"
+msgstr "Прапорці розміру"
+
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
 msgstr "Імпортувати як одну сцену"
@@ -6526,6 +6728,150 @@ msgstr "Імпортувати як кілька сцен"
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
 msgstr "Імпортувати як кілька сцен + матеріали"
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+#: scene/3d/physics_joint.cpp
+msgid "Nodes"
+msgstr "Вузли"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Root Type"
+msgstr "Тип результату"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Root Name"
+msgstr "Назва віддаленого сховища"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Root Scale"
+msgstr "Масштаб HDR"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Custom Script"
+msgstr "Нетиповий вузол"
+
+#: editor/import/resource_importer_scene.cpp scene/resources/texture.cpp
+msgid "Storage"
+msgstr "Сховище даних"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Use Legacy Names"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+msgid "Materials"
+msgstr "Матеріали"
+
+#: editor/import/resource_importer_scene.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Location"
+msgstr "Локалізація"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Keep On Reimport"
+msgstr "Переімпортувати"
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+msgid "Meshes"
+msgstr "Сітка"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Ensure Tangents"
+msgstr "Змінити дотичну до кривої"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Light Baking"
+msgstr "Карта освітлення"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Lightmap Texel Size"
+msgstr "Підказка розміру карти освітлення"
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+msgid "Skins"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Use Named Skins"
+msgstr "Використати прив'язування масштабу"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "External Files"
+msgstr "Зовнішній"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Store In Subdir"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Filter Script"
+msgstr "Фільтрувати скрипти"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Keep Custom Tracks"
+msgstr "Нетипове перетворення"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Optimizer"
+msgstr "Оптимізувати"
+
+#: editor/import/resource_importer_scene.cpp main/main.cpp
+#: modules/mono/mono_gd/gd_mono.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp scene/2d/camera_2d.cpp scene/2d/light_2d.cpp
+#: scene/2d/navigation_polygon.cpp scene/2d/ray_cast_2d.cpp scene/2d/sprite.cpp
+#: scene/2d/y_sort.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/3d/baked_lightmap.cpp scene/3d/interpolated_camera.cpp
+#: scene/3d/light.cpp scene/3d/navigation_mesh_instance.cpp
+#: scene/3d/physics_joint.cpp scene/3d/ray_cast.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/graph_edit.cpp scene/gui/rich_text_label.cpp
+#: scene/resources/curve.cpp scene/resources/environment.cpp
+#: scene/resources/material.cpp
+msgid "Enabled"
+msgstr "Увімкнено"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Max Linear Error"
+msgstr "Макс. лінійна похибка:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Max Angular Error"
+msgstr "Макс. кутова похибка:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Max Angle"
+msgstr "Кут"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Remove Unused Tracks"
+msgstr "Видалити доріжку"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Clips"
+msgstr "Кліпи анімації"
+
+#: editor/import/resource_importer_scene.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/particles_2d.cpp scene/3d/area.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/particles.cpp scene/resources/environment.cpp
+msgid "Amount"
+msgstr "Сума"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -6568,6 +6914,73 @@ msgstr "Повернули об'єкт, що походить від Node, у м
 msgid "Saving..."
 msgstr "Збереження..."
 
+#: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
+msgid "Lossy Quality"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "HDR Mode"
+msgstr "Режим HSV"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "BPTC LDR"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
+#: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
+msgid "Normal Map"
+msgstr "Нормальне картографування"
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Process"
+msgstr "preprocess()"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "Fix Alpha Border"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Premult Alpha"
+msgstr "Редагувати прозорість"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "Hdr As Srgb"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Invert Color"
+msgstr "Вершина"
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Normal Map Invert Y"
+msgstr "Нормальне картографування"
+
+#: editor/import/resource_importer_texture.cpp
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
+msgid "Stream"
+msgstr "Потік"
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Size Limit"
+msgstr "Обмеження розміру вмісту"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "SVG"
+msgstr "HSV"
+
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "Warning, no suitable PC VRAM compression enabled in Project Settings. This "
@@ -6575,6 +6988,72 @@ msgid ""
 msgstr ""
 "Увага! У параметрах проєкту не увімкнено відповідного стискання PC VRAM. Цю "
 "текстуру буде показано правильно на персональних комп'ютерах."
+
+#: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
+msgid "Atlas File"
+msgstr "Розмір атласу"
+
+#: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
+msgid "Import Mode"
+msgstr "Режим експортування:"
+
+#: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
+msgid "Crop To Region"
+msgstr "Встановити область плитки"
+
+#: editor/import/resource_importer_texture_atlas.cpp
+msgid "Trim Alpha Border From Region"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp scene/2d/physics_body_2d.cpp
+msgid "Force"
+msgstr "Сила"
+
+#: editor/import/resource_importer_wav.cpp
+msgid "8 Bit"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp main/main.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+msgid "Mono"
+msgstr "Моно"
+
+#: editor/import/resource_importer_wav.cpp
+#, fuzzy
+msgid "Max Rate"
+msgstr "Змішувати вузол"
+
+#: editor/import/resource_importer_wav.cpp
+#, fuzzy
+msgid "Max Rate Hz"
+msgstr "Частота (Гц)"
+
+#: editor/import/resource_importer_wav.cpp
+msgid "Trim"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp
+#, fuzzy
+msgid "Normalize"
+msgstr "Нормалізовано"
+
+#: editor/import/resource_importer_wav.cpp
+#: scene/resources/audio_stream_sample.cpp
+msgid "Loop Mode"
+msgstr "Режим переміщення"
+
+#: editor/import/resource_importer_wav.cpp
+#: scene/resources/audio_stream_sample.cpp
+msgid "Loop Begin"
+msgstr "Початок циклу"
+
+#: editor/import/resource_importer_wav.cpp
+#: scene/resources/audio_stream_sample.cpp
+msgid "Loop End"
+msgstr "Кінець циклу"
 
 #: editor/import_defaults_editor.cpp
 msgid "Select Importer"
@@ -6651,6 +7130,29 @@ msgstr ""
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
 msgstr "Не вдалося завантажити ресурс."
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Property Name Style"
+msgstr "Назва проєкту:"
+
+#: editor/inspector_dock.cpp scene/gui/color_picker.cpp
+msgid "Raw"
+msgstr "Без обробки"
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Capitalized"
+msgstr "З Великої"
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Localized"
+msgstr "Мова"
+
+#: editor/inspector_dock.cpp
+msgid "Localization not available for current language."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
@@ -7704,18 +8206,26 @@ msgid "License (Z-A)"
 msgstr "Ліцензування (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "First"
 msgstr "Перший"
 
-#: editor/plugins/asset_library_editor_plugin.cpp scene/gui/control.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "Previous"
 msgstr "Назад"
 
-#: editor/plugins/asset_library_editor_plugin.cpp scene/gui/control.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "Next"
 msgstr "Далі"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "Last"
 msgstr "Останній"
 
@@ -7966,19 +8476,19 @@ msgstr ""
 "Якщо позначено, пересування вузлів Control змінюватиме їхню прив'язку, а не "
 "їхні поля."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Top Left"
 msgstr "Згори ліворуч"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Top Right"
 msgstr "Згори праворуч"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Bottom Right"
 msgstr "Внизу праворуч"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Bottom Left"
 msgstr "Внизу ліворуч"
 
@@ -8690,6 +9200,19 @@ msgstr "Запекти пробу GI"
 msgid "Gradient Edited"
 msgstr "Змінено градієнт"
 
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+msgid "Swap GradientTexture2D Fill Points"
+msgstr ""
+
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+msgid "Swap Gradient Fill Points"
+msgstr ""
+
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Grid Snap"
+msgstr "Режим Перемикання"
+
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
 msgstr "Елемент %d"
@@ -8922,8 +9445,9 @@ msgstr ""
 "Оновити з наявної сцени?\n"
 "%s"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp modules/gridmap/grid_map.cpp
-msgid "Mesh Library"
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "MeshLibrary"
 msgstr "Бібліотека сітки"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -9905,8 +10429,8 @@ msgstr "З'єднання з методом:"
 msgid "Source"
 msgstr "Джерело"
 
-#: editor/plugins/script_text_editor.cpp scene/3d/interpolated_camera.cpp
-#: scene/animation/skeleton_ik.cpp
+#: editor/plugins/script_text_editor.cpp platform/uwp/export/export.cpp
+#: scene/3d/interpolated_camera.cpp scene/animation/skeleton_ik.cpp
 msgid "Target"
 msgstr "Призначення"
 
@@ -10883,7 +11407,9 @@ msgstr "Швидкість:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: modules/gltf/gltf_animation.cpp modules/minimp3/audio_stream_mp3.cpp
-#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp scene/2d/path_2d.cpp
+#: modules/minimp3/resource_importer_mp3.cpp
+#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
+#: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp scene/2d/path_2d.cpp
 #: scene/3d/path.cpp scene/resources/animation.cpp scene/resources/material.cpp
 msgid "Loop"
 msgstr "Зациклити"
@@ -11768,8 +12294,9 @@ msgstr "Бітова маска"
 msgid "Priority"
 msgstr "Пріоритетність"
 
-#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp scene/gui/button.cpp
-#: scene/gui/item_list.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#: scene/gui/button.cpp scene/gui/item_list.cpp
 msgid "Icon"
 msgstr "Піктограма"
 
@@ -13146,10 +13673,6 @@ msgstr ""
 "Не вдалося експортувати проєкт для платформи «%s».\n"
 "Причиною може бути помилка у налаштуваннях у наборі налаштувань для "
 "експортування або параметрах експортування."
-
-#: editor/project_export.cpp
-msgid "Release"
-msgstr "Випуск"
 
 #: editor/project_export.cpp
 msgid "Exporting All"
@@ -15037,6 +15560,7 @@ msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Змінити кут випромінювання AudioStreamPlayer3D"
 
 #: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
+#: platform/osx/export/export.cpp
 msgid "Camera"
 msgstr "Фотоапарат"
 
@@ -15297,7 +15821,8 @@ msgstr "Резервний GLES2"
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr "Обхідний шлях для усування блимання прямокутників на Nvidia"
 
-#: main/main.cpp platform/uwp/os_uwp.cpp
+#: main/main.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
 msgid "Display"
 msgstr "Показ"
 
@@ -15352,18 +15877,6 @@ msgstr "Прозорість за пікселями"
 msgid "Allowed"
 msgstr "Дозволено"
 
-#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp scene/2d/camera_2d.cpp
-#: scene/2d/light_2d.cpp scene/2d/navigation_polygon.cpp
-#: scene/2d/ray_cast_2d.cpp scene/2d/sprite.cpp scene/2d/y_sort.cpp
-#: scene/3d/audio_stream_player_3d.cpp scene/3d/baked_lightmap.cpp
-#: scene/3d/interpolated_camera.cpp scene/3d/light.cpp
-#: scene/3d/navigation_mesh_instance.cpp scene/3d/ray_cast.cpp
-#: scene/3d/sprite_3d.cpp scene/gui/graph_edit.cpp
-#: scene/gui/rich_text_label.cpp scene/resources/curve.cpp
-#: scene/resources/environment.cpp
-msgid "Enabled"
-msgstr "Увімкнено"
-
 #: main/main.cpp
 msgid "Intended Usage"
 msgstr "Бажане використання"
@@ -15392,12 +15905,13 @@ msgstr "BVH, безпечна для потоків"
 msgid "Handheld"
 msgstr "Кишеньковий пристрій"
 
-#: main/main.cpp
+#: main/main.cpp platform/javascript/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Orientation"
 msgstr "Орієнтація"
 
 #: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
-#: scene/main/scene_tree.cpp
+#: scene/main/scene_tree.cpp scene/register_scene_types.cpp
 msgid "Common"
 msgstr "Загальні"
 
@@ -15436,7 +15950,8 @@ msgid "Verbose stdout"
 msgstr "Докладно до stdout"
 
 #: main/main.cpp
-msgid "Frame Delay (msec)"
+#, fuzzy
+msgid "Frame Delay Msec"
 msgstr "Затримка кадру (мс)"
 
 #: main/main.cpp
@@ -15552,11 +16067,6 @@ msgstr ""
 #: main/main.cpp
 msgid "Tooltip Position Offset"
 msgstr "Відступ позиції підказки"
-
-#: main/main.cpp modules/mono/editor/csharp_project.cpp
-#: modules/mono/mono_gd/gd_mono.cpp
-msgid "Mono"
-msgstr "Моно"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 msgid "Debugger Agent"
@@ -16077,7 +16587,7 @@ msgstr "Колір"
 msgid "Intensity"
 msgstr "Інтенсивність"
 
-#: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp
+#: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp scene/3d/light.cpp
 msgid "Range"
 msgstr "Діапазон"
 
@@ -16207,10 +16717,6 @@ msgstr "Дані GLB"
 msgid "Use Named Skin Binds"
 msgstr ""
 
-#: modules/gltf/gltf_state.cpp scene/3d/physics_joint.cpp
-msgid "Nodes"
-msgstr "Вузли"
-
 #: modules/gltf/gltf_state.cpp
 msgid "Buffer Views"
 msgstr "Вигляд ззаду"
@@ -16218,14 +16724,6 @@ msgstr "Вигляд ззаду"
 #: modules/gltf/gltf_state.cpp
 msgid "Accessors"
 msgstr "Засоби доступу"
-
-#: modules/gltf/gltf_state.cpp
-msgid "Meshes"
-msgstr "Сітка"
-
-#: modules/gltf/gltf_state.cpp
-msgid "Materials"
-msgstr "Матеріали"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Scene Name"
@@ -16241,13 +16739,9 @@ msgstr "Кореневі вузли"
 msgid "Textures"
 msgstr "Текстури"
 
-#: modules/gltf/gltf_state.cpp
+#: modules/gltf/gltf_state.cpp platform/uwp/export/export.cpp
 msgid "Images"
 msgstr "Зображення"
-
-#: modules/gltf/gltf_state.cpp
-msgid "Skins"
-msgstr ""
 
 #: modules/gltf/gltf_state.cpp
 msgid "Cameras"
@@ -16278,10 +16772,14 @@ msgid "Src Image"
 msgstr "Початкове зображення"
 
 #: modules/gridmap/grid_map.cpp
+msgid "Mesh Library"
+msgstr "Бібліотека сітки"
+
+#: modules/gridmap/grid_map.cpp
 msgid "Physics Material"
 msgstr "Фізичний кадр %"
 
-#: modules/gridmap/grid_map.cpp
+#: modules/gridmap/grid_map.cpp scene/3d/visual_instance.cpp
 msgid "Use In Baked Light"
 msgstr "Використовувати у запеченому світлі"
 
@@ -16308,6 +16806,7 @@ msgstr "Центр за Z"
 
 #: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
 #: scene/2d/tile_map.cpp scene/3d/collision_object.cpp scene/3d/soft_body.cpp
+#: scene/resources/material.cpp
 msgid "Mask"
 msgstr "Маска"
 
@@ -16489,7 +16988,9 @@ msgid "Ultra Quality Ray Count"
 msgstr ""
 
 #: modules/minimp3/audio_stream_mp3.cpp
+#: modules/minimp3/resource_importer_mp3.cpp
 #: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
+#: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp
 msgid "Loop Offset"
 msgstr "Зміщення циклу"
 
@@ -17532,6 +18033,194 @@ msgid "The package must have at least one '.' separator."
 msgstr "У назві пакунка має бути принаймні один роздільник «.»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Use Custom Build"
+msgstr "Нетиповий каталог користувача"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Export Format"
+msgstr "Шлях експорту"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Keystore"
+msgstr "Зневаджувач"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Debug User"
+msgstr "Засіб діагностики"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+msgid "Debug Password"
+msgstr "Пароль"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Release User"
+msgstr "Відпускання (мс)"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Release Password"
+msgstr "Пароль"
+
+#: platform/android/export/export_plugin.cpp
+msgid "One Click Deploy"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Clear Previous Install"
+msgstr "Інспектувати попередній екземпляр"
+
+#: platform/android/export/export_plugin.cpp scene/resources/shader.cpp
+msgid "Code"
+msgstr "Код"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Min SDK"
+msgstr "Мін. розмір"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Target SDK"
+msgstr "Частота кадрів призначення"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Package"
+msgstr "Пакування"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Unique Name"
+msgstr "Назва кістки"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Signed"
+msgstr "Сигнал"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Classify As Game"
+msgstr "Назва класу"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Retain Data On Uninstall"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Exclude From Recents"
+msgstr "Виключити батьківський"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Graphics"
+msgstr "Зсув графіки"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "OpenGL Debug"
+msgstr "OpenGL"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "XR Features"
+msgstr "Можливості"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "XR Mode"
+msgstr "Raw (сирий) режим"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Hand Tracking"
+msgstr "Стеження"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Hand Tracking Frequency"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "Passthrough"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Immersive Mode"
+msgstr "Режим пріоритетності"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Small"
+msgstr "Підтримка"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Normal"
+msgstr "Підтримка"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Large"
+msgstr "Підтримка"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Xlarge"
+msgstr "Підтримка"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "User Data Backup"
+msgstr "Дані користувача"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Allow"
+msgstr "Дозволено"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Command Line"
+msgstr "Команда"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Extra Args"
+msgstr "Додаткові аргументи виклику:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "APK Expansion"
+msgstr "Вираз"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Salt"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Public Key"
+msgstr "Шлях до відкритого ключа SSH"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Permissions"
+msgstr "Маска випромінювання"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Custom Permissions"
+msgstr "Відтворити вибіркову сцену"
+
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "Вибрати пристрій зі списку"
 
@@ -17875,6 +18564,177 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "У назві ідентифікатора не можна використовувати символи «%s»."
 
 #: platform/iphone/export/export.cpp
+msgid "App Store Team ID"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Provisioning Profile UUID Debug"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Code Sign Identity Debug"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Method Debug"
+msgstr "Експортувати із діагностикою"
+
+#: platform/iphone/export/export.cpp
+msgid "Provisioning Profile UUID Release"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Code Sign Identity Release"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Method Release"
+msgstr "Режим експортування:"
+
+#: platform/iphone/export/export.cpp
+msgid "Targeted Device Family"
+msgstr ""
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+msgid "Info"
+msgstr ""
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Identifier"
+msgstr "Некоректний ідентифікатор:"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Signature"
+msgstr "Сигнал"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Short Version"
+msgstr "Основна версія"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Copyright"
+msgstr "Згори праворуч"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Capabilities"
+msgstr "Сумісність"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Access Wi-Fi"
+msgstr "Доступ"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Push Notifications"
+msgstr "Обертання контуру"
+
+#: platform/iphone/export/export.cpp scene/3d/baked_lightmap.cpp
+msgid "User Data"
+msgstr "Дані користувача"
+
+#: platform/iphone/export/export.cpp
+msgid "Accessible From Files App"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Accessible From Itunes Sharing"
+msgstr ""
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Privacy"
+msgstr "Закритий ключ"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Camera Usage Description"
+msgstr "Опис"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Microphone Usage Description"
+msgstr "Описи властивостей"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Photolibrary Usage Description"
+msgstr "Описи властивостей"
+
+#: platform/iphone/export/export.cpp
+msgid "iPhone 120 X 120"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPhone 180 X 180"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPad 76 X 76"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPad 152 X 152"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPad 167 X 167"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store 1024 X 1024"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Spotlight 40 X 40"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Spotlight 80 X 80"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Storyboard"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Use Launch Screen Storyboard"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Image Scale Mode"
+msgstr "Режим масштабування"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Custom Image @2x"
+msgstr "Нетиповий вузол"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Custom Image @3x"
+msgstr "Нетиповий вузол"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Use Custom BG Color"
+msgstr "Нетиповий колір"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Custom BG Color"
+msgstr "Нетиповий колір"
+
+#: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
 "Не вказано ідентифікатор команди App Store — проєкт неможливо налаштувати."
@@ -17910,6 +18770,80 @@ msgstr "Не вдалося записати файл:"
 #: platform/javascript/export/export.cpp
 msgid "Could not read file:"
 msgstr "Не вдалося прочитати файл:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Variant"
+msgstr "Дисперсія відтінків"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Export Type"
+msgstr "Експортування"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "VRAM Texture Compression"
+msgstr "Вираз"
+
+#: platform/javascript/export/export.cpp
+msgid "For Desktop"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "For Mobile"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Html"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Export Icon"
+msgstr "Піктограма розгортання"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Custom Html Shell"
+msgstr "Нетиповий вузол"
+
+#: platform/javascript/export/export.cpp
+msgid "Head Include"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Canvas Resize Policy"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Focus Canvas On Start"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Experimental Virtual Keyboard"
+msgstr "Увімкнено віртуальну клавіатуру"
+
+#: platform/javascript/export/export.cpp
+msgid "Progressive Web App"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Offline Page"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Icon 144 X 144"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Icon 180 X 180"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Icon 512 X 512"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read HTML shell:"
@@ -18014,6 +18948,203 @@ msgstr "Невідомий тип комплекту."
 #: platform/osx/export/codesign.cpp
 msgid "Unknown object type."
 msgstr "Невідомий тип об'єктів."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "App Category"
+msgstr "Категорія:"
+
+#: platform/osx/export/export.cpp
+msgid "High Res"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Location Usage Description"
+msgstr "Опис"
+
+#: platform/osx/export/export.cpp
+msgid "Address Book Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Calendar Usage Description"
+msgstr "Опис"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Photos Library Usage Description"
+msgstr "Описи властивостей"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Desktop Folder Usage Description"
+msgstr "Описи методів"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Documents Folder Usage Description"
+msgstr "Описи методів"
+
+#: platform/osx/export/export.cpp
+msgid "Downloads Folder Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Network Volumes Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Removable Volumes Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Codesign"
+msgstr "DMG із підписуванням коду"
+
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Identity"
+msgstr "Відступ"
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Timestamp"
+msgstr "Таймери"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Hardened Runtime"
+msgstr "Середовище виконання"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Replace Existing Signature"
+msgstr "Замінити у файлах"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Entitlements"
+msgstr "Розміри"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Custom File"
+msgstr "Нетиповий шрифт"
+
+#: platform/osx/export/export.cpp
+msgid "Allow JIT Code Execution"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Allow Unsigned Executable Memory"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Allow Dyld Environment Variables"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Disable Library Validation"
+msgstr "Вимкнути зіткнення"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Audio Input"
+msgstr "Додати вхід"
+
+#: platform/osx/export/export.cpp
+msgid "Address Book"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Calendars"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Photos Library"
+msgstr "Експортувати бібліотеку"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Apple Events"
+msgstr "Додати подію"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Debugging"
+msgstr "Діагностика"
+
+#: platform/osx/export/export.cpp
+msgid "App Sandbox"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Network Server"
+msgstr "Вузол мережі"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Network Client"
+msgstr "Вузол мережі"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Device Usb"
+msgstr "Пристрій"
+
+#: platform/osx/export/export.cpp
+msgid "Device Bluetooth"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Downloads"
+msgstr "Завантажити"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Pictures"
+msgstr "Можливості"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Music"
+msgstr "Файли"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Movies"
+msgstr "Фільтрувати плитки"
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Custom Options"
+msgstr "Параметри шини"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization"
+msgstr "Локалізація"
+
+#: platform/osx/export/export.cpp
+msgid "Apple ID Name"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Apple ID Password"
+msgstr "Пароль"
+
+#: platform/osx/export/export.cpp
+msgid "Apple Team ID"
+msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -18250,6 +19381,136 @@ msgid "Force Builtin Codesign"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Architecture"
+msgstr "Додати запис архітектури"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Display Name"
+msgstr "Масштаб показу"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Short Name"
+msgstr "Назва скрипту:"
+
+#: platform/uwp/export/export.cpp
+msgid "Publisher"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Publisher Display Name"
+msgstr "Некоректна показана назва оприлюднювача пакунка."
+
+#: platform/uwp/export/export.cpp
+msgid "Product Guid"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Publisher Guid"
+msgstr "Вилучити напрямні"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Signing"
+msgstr "Сигнал"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Certificate"
+msgstr "Сертифікати"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Algorithm"
+msgstr "Зневаджувач"
+
+#: platform/uwp/export/export.cpp
+msgid "Major"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Minor"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Build"
+msgstr "Режим вимірювання"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Revision"
+msgstr "Точність"
+
+#: platform/uwp/export/export.cpp
+msgid "Landscape"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Portrait"
+msgstr "Порт"
+
+#: platform/uwp/export/export.cpp
+msgid "Landscape Flipped"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Portrait Flipped"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Store Logo"
+msgstr "Режим зберігання"
+
+#: platform/uwp/export/export.cpp
+msgid "Square 44 X 44 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Square 71 X 71 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Square 150 X 150 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Square 310 X 310 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Wide 310 X 150 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Splash Screen"
+msgstr "Намалювати екран"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Tiles"
+msgstr "Файли"
+
+#: platform/uwp/export/export.cpp
+msgid "Show Name On Square 150 X 150"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Show Name On Wide 310 X 150"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "Некоректна скорочена назва пакунка."
 
@@ -18324,12 +19585,50 @@ msgid "Debug Certificate"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-msgid "Debug Password"
-msgstr "Пароль"
-
-#: platform/uwp/export/export.cpp
 msgid "Debug Algorithm"
 msgstr "Зневаджувач"
+
+#: platform/windows/export/export.cpp
+msgid "Identity Type"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Timestamp Server URL"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Digest Algorithm"
+msgstr "Зневаджувач"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "File Version"
+msgstr "Версія"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Product Version"
+msgstr "Некоректна версія продукту:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Company Name"
+msgstr "Назва кістки"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Product Name"
+msgstr "Назва проєкту:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "File Description"
+msgstr "Опис"
+
+#: platform/windows/export/export.cpp
+msgid "Trademarks"
+msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -18400,12 +19699,14 @@ msgstr "Відтворення"
 msgid "Centered"
 msgstr "За центром"
 
-#: scene/2d/animated_sprite.cpp scene/2d/camera_2d.cpp scene/2d/light_2d.cpp
+#: scene/2d/animated_sprite.cpp scene/2d/camera_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp
 #: scene/2d/parallax_background.cpp scene/2d/parallax_layer.cpp
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
-#: scene/3d/path.cpp scene/3d/physics_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/path.cpp scene/3d/physics_body.cpp
+#: scene/3d/sprite_3d.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
 #: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "Зміщення"
@@ -18469,11 +19770,6 @@ msgstr "Додавання аудіо шини"
 msgid "Override"
 msgstr "Перевизначити"
 
-#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
-msgid "Stream"
-msgstr "Потік"
-
 #: scene/2d/audio_stream_player_2d.cpp scene/audio/audio_stream_player.cpp
 #: scene/gui/video_player.cpp servers/audio/effects/audio_effect_amplify.cpp
 msgid "Volume dB"
@@ -18497,12 +19793,12 @@ msgid "Stream Paused"
 msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/3d/reflection_probe.cpp scene/3d/visual_instance.cpp
-#: scene/resources/material.cpp
+#: scene/3d/light.cpp scene/3d/reflection_probe.cpp
+#: scene/3d/visual_instance.cpp scene/resources/material.cpp
 msgid "Max Distance"
 msgstr "Макс. відстань"
 
-#: scene/2d/audio_stream_player_2d.cpp
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/light.cpp
 msgid "Attenuation"
 msgstr "Анімація"
 
@@ -18548,6 +19844,24 @@ msgstr "Режим переміщення"
 #: scene/2d/camera_2d.cpp
 msgid "Limit"
 msgstr "Обмеження"
+
+#: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Left"
+msgstr "Ліворуч"
+
+#: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Right"
+msgstr "Світло"
+
+#: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
+#: scene/resources/dynamic_font.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "Bottom"
+msgstr "Внизу ліворуч"
 
 #: scene/2d/camera_2d.cpp
 msgid "Smoothed"
@@ -18763,12 +20077,6 @@ msgstr ""
 msgid "Emitting"
 msgstr "Надсилання"
 
-#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp scene/3d/area.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#: scene/resources/environment.cpp
-msgid "Amount"
-msgstr "Сума"
-
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 msgid "Lifetime"
@@ -18828,16 +20136,11 @@ msgstr "Порядок малювання"
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/sprite_3d.cpp scene/gui/nine_patch_rect.cpp
-#: scene/gui/texture_rect.cpp scene/resources/sky.cpp
-#: scene/resources/style_box.cpp scene/resources/visual_shader_nodes.cpp
+#: scene/gui/texture_rect.cpp scene/resources/material.cpp
+#: scene/resources/sky.cpp scene/resources/style_box.cpp
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Texture"
 msgstr "Текстура"
-
-#: scene/2d/cpu_particles_2d.cpp scene/2d/mesh_instance_2d.cpp
-#: scene/2d/multimesh_instance_2d.cpp scene/2d/particles_2d.cpp
-#: scene/2d/sprite.cpp scene/resources/style_box.cpp
-msgid "Normal Map"
-msgstr "Нормальне картографування"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -18858,10 +20161,10 @@ msgid "Normals"
 msgstr "Нормалі"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/texture.cpp
-msgid "Flags"
-msgstr "Прапорці"
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Align Y"
+msgstr "Вирівнювання"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -18880,10 +20183,22 @@ msgid "Initial Velocity"
 msgstr "Ініціалізувати"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Velocity Random"
+msgstr "Швидкість"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Angular Velocity"
 msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Velocity Curve"
+msgstr "Швидкість"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -18897,6 +20212,23 @@ msgstr "Лінійний"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Accel"
+msgstr "Доступ"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Accel Random"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Accel Curve"
+msgstr "Розділити криву"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
 msgid "Radial Accel"
 msgstr ""
 
@@ -18906,16 +20238,54 @@ msgid "Tangential Accel"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/joints_2d.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/vehicle_body.cpp
-#: scene/resources/particles_material.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/physics_joint.cpp
+#: scene/3d/vehicle_body.cpp scene/resources/particles_material.cpp
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Damping"
 msgstr "В’язкість"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Damping Random"
+msgstr "В’язкість"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Damping Curve"
+msgstr "В’язкість"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/light.cpp
+#: scene/resources/particles_material.cpp
 msgid "Angle"
 msgstr "Кут"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Angle Random"
+msgstr "Мін. кут"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Angle Curve"
+msgstr "Закрити криву"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#, fuzzy
+msgid "Scale Amount"
+msgstr "Потужність сонця"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+msgid "Scale Amount Random"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#, fuzzy
+msgid "Scale Amount Curve"
+msgstr "Масштаб від курсору"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -18931,6 +20301,48 @@ msgstr ""
 #: scene/resources/particles_material.cpp
 msgid "Hue Variation"
 msgstr "Дисперсія відтінків"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Variation"
+msgstr "Дисперсія відтінків"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Variation Random"
+msgstr "Дисперсія відтінків"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Variation Curve"
+msgstr "Дисперсія відтінків"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Speed Random"
+msgstr "Масштаб"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Speed Curve"
+msgstr "Розділити криву"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Offset Random"
+msgstr "Зміщення"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Offset Curve"
+msgstr "Закрити криву"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
@@ -18961,6 +20373,7 @@ msgid "Node B"
 msgstr "Вузол B"
 
 #: scene/2d/joints_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/3d/light.cpp scene/3d/physics_joint.cpp
 #: scene/resources/environment.cpp
 msgid "Bias"
 msgstr "Нахил"
@@ -18969,7 +20382,7 @@ msgstr "Нахил"
 msgid "Disable Collision"
 msgstr "Вимкнути зіткнення"
 
-#: scene/2d/joints_2d.cpp
+#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp
 msgid "Softness"
 msgstr "М’якість"
 
@@ -18986,7 +20399,7 @@ msgstr "Ініціалізувати"
 msgid "Rest Length"
 msgstr "Довжина у нерозтягненому стані"
 
-#: scene/2d/joints_2d.cpp scene/3d/vehicle_body.cpp
+#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
 msgid "Stiffness"
 msgstr "Жорсткість"
 
@@ -19005,7 +20418,7 @@ msgid "Texture Scale"
 msgstr "TextureRegion"
 
 #: scene/2d/light_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#: scene/resources/environment.cpp scene/resources/sky.cpp
+#: scene/3d/light.cpp scene/resources/environment.cpp scene/resources/sky.cpp
 msgid "Energy"
 msgstr "Енергія"
 
@@ -19040,11 +20453,6 @@ msgstr "Розмір буфера"
 #: scene/2d/light_2d.cpp
 msgid "Gradient Length"
 msgstr "Довжина градієнта"
-
-#: scene/2d/light_2d.cpp scene/gui/control.cpp
-#: scene/resources/navigation_mesh.cpp
-msgid "Filter"
-msgstr "Фільтр"
 
 #: scene/2d/light_2d.cpp
 msgid "Filter Smooth"
@@ -19447,10 +20855,6 @@ msgid "Applied Forces"
 msgstr "Застосовані сили"
 
 #: scene/2d/physics_body_2d.cpp
-msgid "Force"
-msgstr "Сила"
-
-#: scene/2d/physics_body_2d.cpp
 msgid "Torque"
 msgstr "Момент"
 
@@ -19463,7 +20867,8 @@ msgid "Sync To Physics"
 msgstr "Синхронізація з фізикою"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
-msgid "Moving platform"
+#, fuzzy
+msgid "Moving Platform"
 msgstr "Пересування виведених даних"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
@@ -19472,7 +20877,7 @@ msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/2d/touch_screen_button.cpp
 #: scene/3d/physics_body.cpp scene/gui/texture_button.cpp
-#: scene/resources/line_shape_2d.cpp
+#: scene/resources/line_shape_2d.cpp scene/resources/material.cpp
 msgid "Normal"
 msgstr "Звичайний"
 
@@ -19689,6 +21094,34 @@ msgstr ""
 "VisibilityEnable2D найкраще працюватиме, якщо його використано із "
 "безпосереднім батьківським елементом — редагованим коренем сцени."
 
+#: scene/2d/visibility_notifier_2d.cpp scene/3d/visibility_notifier.cpp
+#, fuzzy
+msgid "Pause Animations"
+msgstr "Вставити анімацію"
+
+#: scene/2d/visibility_notifier_2d.cpp scene/3d/visibility_notifier.cpp
+msgid "Freeze Bodies"
+msgstr ""
+
+#: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
+msgid "Pause Particles"
+msgstr "Частинки"
+
+#: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
+msgid "Pause Animated Sprites"
+msgstr "Вставити анімацію"
+
+#: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
+msgid "Process Parent"
+msgstr "Пріоритетність процесу"
+
+#: scene/2d/visibility_notifier_2d.cpp
+msgid "Physics Process Parent"
+msgstr ""
+
 #: scene/3d/area.cpp
 msgid "Reverb Bus"
 msgstr ""
@@ -19782,6 +21215,7 @@ msgid "Attenuation Filter"
 msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
 #: servers/audio/effects/audio_effect_filter.cpp
 msgid "Cutoff Hz"
 msgstr "Пропускання (у Гц)"
@@ -19819,10 +21253,6 @@ msgstr ""
 #: scene/3d/baked_lightmap.cpp
 msgid "Octree"
 msgstr "Дерево октантів"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "User Data"
-msgstr "Дані користувача"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
@@ -20072,6 +21502,16 @@ msgid "Ring Axis"
 msgstr "Вісь кільця"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Rotate Y"
+msgstr "Обертати"
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Disable Z"
+msgstr "Вимкнути тривимірність"
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
 msgid "Flatness"
 msgstr "Пласкість"
 
@@ -20107,13 +21547,9 @@ msgstr "Динамічні дані"
 msgid "Dynamic Range"
 msgstr "Динамічний діапазон"
 
-#: scene/3d/gi_probe.cpp
+#: scene/3d/gi_probe.cpp scene/3d/light.cpp
 msgid "Normal Bias"
 msgstr ""
-
-#: scene/3d/gi_probe.cpp
-msgid "Compress"
-msgstr "Стиснути"
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -20146,12 +21582,27 @@ msgid "Subdiv"
 msgstr ""
 
 #: scene/3d/light.cpp
+#, fuzzy
+msgid "Indirect Energy"
+msgstr "Зовнішня енергія"
+
+#: scene/3d/light.cpp
 msgid "Negative"
 msgstr "Від'ємний"
 
 #: scene/3d/light.cpp
+#, fuzzy
+msgid "Specular"
+msgstr "Режим віддзеркалення"
+
+#: scene/3d/light.cpp
 msgid "Bake Mode"
 msgstr "Режим запікання"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Contact"
+msgstr "Контрастність"
 
 #: scene/3d/light.cpp
 msgid "Reverse Cull Face"
@@ -20162,8 +21613,28 @@ msgid "Directional Shadow"
 msgstr "Напрямки"
 
 #: scene/3d/light.cpp
+#, fuzzy
+msgid "Split 1"
+msgstr "Розділити"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Split 2"
+msgstr "Розділити"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Split 3"
+msgstr "Розділити"
+
+#: scene/3d/light.cpp
 msgid "Blend Splits"
 msgstr "Поділи змішування"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Bias Split Scale"
+msgstr "Базовий масштаб"
 
 #: scene/3d/light.cpp
 msgid "Depth Range"
@@ -20188,6 +21659,11 @@ msgstr "SpotLight з кутом, який є більшим за 90 градус
 #: scene/3d/light.cpp
 msgid "Spot"
 msgstr "Пляма"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Angle Attenuation"
+msgstr "Анімація"
 
 #: scene/3d/mesh_instance.cpp
 msgid "Software Skinning"
@@ -20327,6 +21803,66 @@ msgid "Axis Lock"
 msgstr "Вісь"
 
 #: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear X"
+msgstr "Лінійний"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Y"
+msgstr "Лінійний"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Z"
+msgstr "Лінійний"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular X"
+msgstr "Кутовий"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Y"
+msgstr "Кутовий"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Angular Z"
+msgstr "Кутовий"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Motion X"
+msgstr "Рух"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Motion Y"
+msgstr "Рух"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Motion Z"
+msgstr "Рух"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Move Lock X"
+msgstr "Пересунути вузол"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Move Lock Y"
+msgstr "Пересунути вузол"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Move Lock Z"
+msgstr "Пересунути вузол"
+
+#: scene/3d/physics_body.cpp
 msgid "Body Offset"
 msgstr "Зміщення вмісту"
 
@@ -20359,6 +21895,15 @@ msgid "Exclude Nodes"
 msgstr "Виключити вузли"
 
 #: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Params"
+msgstr "Параметри"
+
+#: scene/3d/physics_joint.cpp
+msgid "Impulse Clamp"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
 msgid "Angular Limit"
 msgstr ""
 
@@ -20370,6 +21915,54 @@ msgstr "Верхня"
 msgid "Lower"
 msgstr "Опустити"
 
+#: scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
+msgid "Relaxation"
+msgstr "Релаксація"
+
+#: scene/3d/physics_joint.cpp
+msgid "Motor"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Target Velocity"
+msgstr "Орбітальний вид праворуч"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Max Impulse"
+msgstr "Макс. швидкість"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit"
+msgstr "Лінійний"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Upper Distance"
+msgstr "Відстань дискретизації"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Lower Distance"
+msgstr "Відстань"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Restitution"
+msgstr "Опис"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motion"
+msgstr "Лінійна швидкість"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Ortho"
+msgstr "Задній ортогональний"
+
 #: scene/3d/physics_joint.cpp
 msgid "Upper Angle"
 msgstr "ВЕРХНІЙ РЕГІСТР"
@@ -20377,6 +21970,16 @@ msgstr "ВЕРХНІЙ РЕГІСТР"
 #: scene/3d/physics_joint.cpp
 msgid "Lower Angle"
 msgstr "нижній регістр"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Motion"
+msgstr "Кутовий"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Ortho"
+msgstr "Кутовий"
 
 #: scene/3d/physics_joint.cpp
 msgid "Swing Span"
@@ -20387,16 +21990,104 @@ msgid "Twist Span"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit X"
+msgstr "Лінійний"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motor X"
+msgstr "Лінійна швидкість"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Force Limit"
+msgstr "Обмеження малювання"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Spring X"
+msgstr "Інтервал між рядками"
+
+#: scene/3d/physics_joint.cpp
+msgid "Equilibrium Point"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
 msgid "Angular Limit X"
 msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Erp"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Motor X"
+msgstr "Кутовий"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Spring X"
+msgstr "Кутовий"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit Y"
+msgstr "Лінійний"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motor Y"
+msgstr "Лінійна швидкість"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Spring Y"
+msgstr "Інтервал між рядками"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Limit Y"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Motor Y"
+msgstr "Кутовий"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Spring Y"
+msgstr "Кутовий"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit Z"
+msgstr "Лінійний"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motor Z"
+msgstr "Лінійна швидкість"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Spring Z"
+msgstr "Інтервал між рядками"
+
+#: scene/3d/physics_joint.cpp
 msgid "Angular Limit Z"
 msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Motor Z"
+msgstr "Кутовий"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Spring Z"
+msgstr "Кутовий"
 
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
@@ -20514,7 +22205,7 @@ msgstr ""
 msgid "Use Default Simplify"
 msgstr "Типове спрощення"
 
-#: scene/3d/room.cpp
+#: scene/3d/room.cpp scene/3d/room_manager.cpp
 msgid "Room Simplify"
 msgstr "Спрощення кімнати"
 
@@ -20554,6 +22245,12 @@ msgstr "У SceneTree має бути лише один запис RoomManager."
 msgid "Main"
 msgstr "Основний"
 
+#: scene/3d/room_manager.cpp scene/animation/animation_player.cpp
+#: scene/animation/animation_tree.cpp scene/animation/animation_tree_player.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Active"
+msgstr "Активний"
+
 #: scene/3d/room_manager.cpp
 msgid "Roomlist"
 msgstr ""
@@ -20573,6 +22270,54 @@ msgstr "Файл ZIP"
 #: scene/3d/room_manager.cpp servers/visual_server.cpp
 msgid "Gameplay"
 msgstr ""
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Gameplay Monitor"
+msgstr "Монітор"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Use Secondary PVS"
+msgstr "Використати прив'язування масштабу"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Merge Meshes"
+msgstr "Сітка"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Show Margins"
+msgstr "Показати центр"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Debug Sprawl"
+msgstr "Діагностика"
+
+#: scene/3d/room_manager.cpp
+msgid "Overlap Warning Threshold"
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Preview Camera"
+msgstr "Розмір перегляду"
+
+#: scene/3d/room_manager.cpp
+msgid "Portal Depth Limit"
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Default Portal Margin"
+msgstr "Поле порталу"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Roaming Expansion Margin"
+msgstr "Розгорнути все"
 
 #: scene/3d/room_manager.cpp
 msgid ""
@@ -20709,6 +22454,21 @@ msgstr "Розмір у пікселях"
 msgid "Billboard"
 msgstr ""
 
+#: scene/3d/sprite_3d.cpp scene/resources/material.cpp
+#, fuzzy
+msgid "Transparent"
+msgstr "Прозоре тло"
+
+#: scene/3d/sprite_3d.cpp
+#, fuzzy
+msgid "Shaded"
+msgstr "Шейдер"
+
+#: scene/3d/sprite_3d.cpp
+#, fuzzy
+msgid "Double Sided"
+msgstr "Подвійне клацання"
+
 #: scene/3d/sprite_3d.cpp
 msgid "Alpha Cut"
 msgstr ""
@@ -20776,10 +22536,6 @@ msgstr "Призупинення"
 #: scene/3d/vehicle_body.cpp
 msgid "Max Force"
 msgstr "Максимальна сила"
-
-#: scene/3d/vehicle_body.cpp
-msgid "Relaxation"
-msgstr "Релаксація"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
@@ -20909,8 +22665,9 @@ msgid "Fadeout Time"
 msgstr "Час згасання"
 
 #: scene/animation/animation_blend_tree.cpp
-msgid "autorestart_"
-msgstr "автоматичний перезапуск_"
+#, fuzzy
+msgid "Auto Restart"
+msgstr "Автоматичний перезапуск:"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Autorestart"
@@ -20980,12 +22737,6 @@ msgstr "Параметри відтворення"
 #: scene/animation/animation_player.cpp
 msgid "Default Blend Time"
 msgstr "Типовий час змішування"
-
-#: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
-#: scene/animation/animation_tree_player.cpp
-#: servers/audio/effects/audio_effect_delay.cpp
-msgid "Active"
-msgstr "Активний"
 
 #: scene/animation/animation_player.cpp
 msgid "Method Call Mode"
@@ -21097,10 +22848,6 @@ msgstr "Цільовий вузол"
 msgid "Max Iterations"
 msgstr "Макс к-ть ітерацій"
 
-#: scene/animation/tween.cpp scene/resources/texture.cpp
-msgid "Repeat"
-msgstr "Повторення"
-
 #: scene/animation/tween.cpp
 msgid "Playback Process Mode"
 msgstr ""
@@ -21126,18 +22873,6 @@ msgstr "Режим виділення"
 #: scene/gui/aspect_ratio_container.cpp scene/gui/box_container.cpp
 msgid "Alignment"
 msgstr "Вирівнювання"
-
-#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
-#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
-#: scene/resources/style_box.cpp
-msgid "Horizontal"
-msgstr "Горизонтальний"
-
-#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
-#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
-#: scene/resources/style_box.cpp
-msgid "Vertical"
-msgstr "Вертикальний"
 
 #: scene/gui/base_button.cpp
 msgid "Shortcut In Tooltip"
@@ -21227,10 +22962,6 @@ msgid "HSV"
 msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
-msgid "Raw"
-msgstr "Без обробки"
-
-#: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
 msgstr "Перемикання між шістнадцятковими значеннями і кодами."
 
@@ -21291,6 +23022,31 @@ msgid "Focus"
 msgstr "Фокусування"
 
 #: scene/gui/control.cpp
+msgid "Neighbour Left"
+msgstr ""
+
+#: scene/gui/control.cpp
+msgid "Neighbour Top"
+msgstr ""
+
+#: scene/gui/control.cpp
+msgid "Neighbour Right"
+msgstr ""
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Neighbour Bottom"
+msgstr "За центром внизу"
+
+#: scene/gui/control.cpp
+msgid "Next"
+msgstr "Далі"
+
+#: scene/gui/control.cpp
+msgid "Previous"
+msgstr "Назад"
+
+#: scene/gui/control.cpp
 msgid "Mouse"
 msgstr "Миша"
 
@@ -21323,7 +23079,7 @@ msgid "Dialog"
 msgstr "Діалогове вікно"
 
 #: scene/gui/dialogs.cpp
-msgid "Hide On Ok"
+msgid "Hide On OK"
 msgstr ""
 
 #: scene/gui/dialogs.cpp scene/gui/label.cpp
@@ -21408,7 +23164,7 @@ msgid "Timers"
 msgstr "Таймери"
 
 #: scene/gui/item_list.cpp scene/gui/popup_menu.cpp scene/gui/tree.cpp
-msgid "Incremental Search Max Interval (msec)"
+msgid "Incremental Search Max Interval Msec"
 msgstr ""
 
 #: scene/gui/item_list.cpp scene/gui/tree.cpp
@@ -21918,6 +23674,26 @@ msgstr "Центральний зсув"
 msgid "Nine Patch Stretch"
 msgstr "Розтягування за дев'ятьма позиціями"
 
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Left"
+msgstr "Встановити поле"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Top"
+msgstr "Встановити поле"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Right"
+msgstr "Встановити поле"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Bottom"
+msgstr "Співвідношення розтягування"
+
 #: scene/gui/tree.cpp
 msgid "Custom Minimum Height"
 msgstr ""
@@ -21951,7 +23727,8 @@ msgid "Paused"
 msgstr "Призупинено"
 
 #: scene/gui/video_player.cpp
-msgid "Buffering (msec)"
+#, fuzzy
+msgid "Buffering Msec"
 msgstr "Буферизація (мс)"
 
 #: scene/gui/video_player.cpp
@@ -22268,6 +24045,22 @@ msgid "Shadow Atlas"
 msgstr "Новий атлас"
 
 #: scene/main/viewport.cpp
+msgid "Quad 0"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Quad 1"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Quad 2"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Quad 3"
+msgstr ""
+
+#: scene/main/viewport.cpp
 msgid "Canvas Transform"
 msgstr "Перетворення полотна"
 
@@ -22280,6 +24073,11 @@ msgid "Tooltip Delay (sec)"
 msgstr "Затримка підказки (с)"
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "Swap OK Cancel"
+msgstr "Скасувати"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr "Використовувати hiDPI"
 
@@ -22290,18 +24088,6 @@ msgstr "Нетиповий"
 #: scene/register_scene_types.cpp
 msgid "Custom Font"
 msgstr "Нетиповий шрифт"
-
-#: scene/resources/audio_stream_sample.cpp
-msgid "Loop Mode"
-msgstr "Режим переміщення"
-
-#: scene/resources/audio_stream_sample.cpp
-msgid "Loop Begin"
-msgstr "Початок циклу"
-
-#: scene/resources/audio_stream_sample.cpp
-msgid "Loop End"
-msgstr "Кінець циклу"
 
 #: scene/resources/audio_stream_sample.cpp
 #: servers/audio/effects/audio_stream_generator.cpp servers/audio_server.cpp
@@ -22351,6 +24137,16 @@ msgstr "Множинне відтворення"
 #: scene/resources/dynamic_font.cpp
 msgid "Extra Spacing"
 msgstr "Додатковий інтервал"
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Char"
+msgstr "Символи"
+
+#: scene/resources/dynamic_font.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
+msgid "Space"
+msgstr "Простір"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Font"
@@ -22549,6 +24345,46 @@ msgid "Glow"
 msgstr "Сяйво"
 
 #: scene/resources/environment.cpp
+#, fuzzy
+msgid "Levels"
+msgstr "Рівень (дБ)"
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+#, fuzzy
+msgid "1"
+msgstr "K1"
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+#, fuzzy
+msgid "2"
+msgstr "Двовимірна графіка"
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+#, fuzzy
+msgid "3"
+msgstr "Просторова графіка"
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "4"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "5"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "6"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "7"
+msgstr ""
+
+#: scene/resources/environment.cpp
 msgid "Bloom"
 msgstr "Цвітіння"
 
@@ -22629,8 +24465,68 @@ msgid "Next Pass"
 msgstr "Наступна площина"
 
 #: scene/resources/material.cpp
+msgid "Use Shadow To Opacity"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Unshaded"
+msgstr "Перегляд без тіней"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Vertex Lighting"
+msgstr "Безпосереднє освітлення"
+
+#: scene/resources/material.cpp
+msgid "No Depth Test"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Use Point Size"
+msgstr "Розмір крапки"
+
+#: scene/resources/material.cpp
+msgid "World Triplanar"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Fixed Size"
+msgstr "Фіксований розмір піктограм"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Albedo Tex Force sRGB"
+msgstr "Застосовані сили"
+
+#: scene/resources/material.cpp
+msgid "Do Not Receive Shadows"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Disable Ambient Light"
+msgstr "Збільшити відступ"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Ensure Correct Normals"
+msgstr "Перетворити нормалі"
+
+#: scene/resources/material.cpp
 msgid "Vertex Color"
 msgstr "Вершина"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Use As Albedo"
+msgstr "Альбедо"
+
+#: scene/resources/material.cpp
+msgid "Is sRGB"
+msgstr ""
 
 #: scene/resources/material.cpp servers/visual_server.cpp
 msgid "Parameters"
@@ -22661,12 +24557,21 @@ msgid "Billboard Mode"
 msgstr "Режим афіші"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Billboard Keep Scale"
+msgstr "Режим афіші"
+
+#: scene/resources/material.cpp
 msgid "Grow"
 msgstr "Збільшити"
 
 #: scene/resources/material.cpp
 msgid "Grow Amount"
 msgstr "Величина росту"
+
+#: scene/resources/material.cpp
+msgid "Use Alpha Scissor"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Alpha Scissor Threshold"
@@ -22697,8 +24602,18 @@ msgid "Metallic Specular"
 msgstr ""
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Metallic Texture"
+msgstr "Нормальна текстура"
+
+#: scene/resources/material.cpp
 msgid "Metallic Texture Channel"
 msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Roughness Texture"
+msgstr "Вилучити текстуру"
 
 #: scene/resources/material.cpp
 msgid "Roughness Texture Channel"
@@ -22717,6 +24632,16 @@ msgid "Emission Operator"
 msgstr "Кольори випромінювання"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission On UV2"
+msgstr "Маска випромінювання"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission Texture"
+msgstr "Джерело випромінювання: "
+
+#: scene/resources/material.cpp
 msgid "NormalMap"
 msgstr ""
 
@@ -22729,6 +24654,11 @@ msgid "Rim Tint"
 msgstr "Нахил краю"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Rim Texture"
+msgstr "Вилучити текстуру"
+
+#: scene/resources/material.cpp
 msgid "Clearcoat"
 msgstr "Очистити"
 
@@ -22737,12 +24667,26 @@ msgid "Clearcoat Gloss"
 msgstr "Очистити позу"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Clearcoat Texture"
+msgstr "Кольорова текстура"
+
+#: scene/resources/material.cpp
 msgid "Anisotropy"
+msgstr "Анізотропія"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Anisotropy Flowmap"
 msgstr "Анізотропія"
 
 #: scene/resources/material.cpp
 msgid "Ambient Occlusion"
 msgstr "Перешкода"
+
+#: scene/resources/material.cpp
+msgid "On UV2"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Texture Channel"
@@ -22777,6 +24721,11 @@ msgid "Transmission"
 msgstr "Перехід"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Transmission Texture"
+msgstr "Перехід"
+
+#: scene/resources/material.cpp
 msgid "Refraction"
 msgstr "Заломлення"
 
@@ -22791,6 +24740,10 @@ msgstr "УФ-шар"
 #: scene/resources/material.cpp
 msgid "UV1"
 msgstr "UV"
+
+#: scene/resources/material.cpp
+msgid "Triplanar"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Triplanar Sharpness"
@@ -22976,6 +24929,16 @@ msgstr "Кольорова текстура"
 msgid "Point Count"
 msgstr "Кількість точок"
 
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Scale Random"
+msgstr "Співвідношення масштабу:"
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Scale Curve"
+msgstr "Закрити криву"
+
 #: scene/resources/physics_material.cpp
 msgid "Rough"
 msgstr "Грубо"
@@ -23031,10 +24994,6 @@ msgstr ""
 #: scene/resources/segment_shape_2d.cpp
 msgid "A"
 msgstr "A"
-
-#: scene/resources/shader.cpp
-msgid "Code"
-msgstr "Код"
 
 #: scene/resources/shader.cpp
 msgid "Custom Defines"
@@ -23118,14 +25077,6 @@ msgstr ""
 
 #: scene/resources/style_box.cpp
 msgid "Grow End"
-msgstr ""
-
-#: scene/resources/texture.cpp
-msgid "Storage"
-msgstr "Сховище даних"
-
-#: scene/resources/texture.cpp
-msgid "Lossy Quality"
 msgstr ""
 
 #: scene/resources/texture.cpp
@@ -23240,10 +25191,6 @@ msgstr "Некоректна функція порівняння для цьог
 msgid "Fallback Environment"
 msgstr "Перегляд середовища"
 
-#: scene/resources/world.cpp scene/resources/world_2d.cpp
-msgid "Space"
-msgstr "Простір"
-
 #: scene/resources/world.cpp
 msgid "Scenario"
 msgstr "Сценарій"
@@ -23317,9 +25264,35 @@ msgstr ""
 msgid "Wet"
 msgstr "мокрий"
 
-#: servers/audio/effects/audio_effect_compressor.cpp
-msgid "Threshold"
-msgstr "Поріг"
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "Voice"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Delay (ms)"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_phaser.cpp
+msgid "Rate Hz"
+msgstr "Частота (Гц)"
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#, fuzzy
+msgid "Depth (ms)"
+msgstr "Глибина"
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Level dB"
+msgstr "Рівень (дБ)"
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+#: servers/audio/effects/audio_effect_panner.cpp
+msgid "Pan"
+msgstr "Панорамування"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 #: servers/audio/effects/audio_effect_filter.cpp
@@ -23341,19 +25314,6 @@ msgstr ""
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 1"
 msgstr "удар"
-
-#: servers/audio/effects/audio_effect_delay.cpp
-msgid "Delay (ms)"
-msgstr ""
-
-#: servers/audio/effects/audio_effect_delay.cpp
-msgid "Level dB"
-msgstr "Рівень (дБ)"
-
-#: servers/audio/effects/audio_effect_delay.cpp
-#: servers/audio/effects/audio_effect_panner.cpp
-msgid "Pan"
-msgstr "Панорамування"
 
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 2"
@@ -23413,10 +25373,6 @@ msgstr ""
 msgid "Range Max Hz"
 msgstr ""
 
-#: servers/audio/effects/audio_effect_phaser.cpp
-msgid "Rate Hz"
-msgstr "Частота (Гц)"
-
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 msgid "Oversampling"
 msgstr ""
@@ -23431,8 +25387,8 @@ msgid "Predelay"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
-msgid "(msec)"
-msgstr "(мс)"
+msgid "Msec"
+msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Room Size"
