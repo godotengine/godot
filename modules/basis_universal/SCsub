@@ -13,7 +13,6 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/basis_universal/"
 # Sync list with upstream CMakeLists.txt
 encoder_sources = [
-    "basisu_uastc_enc.cpp",
     "basisu_backend.cpp",
     "basisu_basis_file.cpp",
     "basisu_bc7enc.cpp",
