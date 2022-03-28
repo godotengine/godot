@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-03-17 13:58+0000\n"
+"PO-Revision-Date: 2022-03-21 22:23+0000\n"
 "Last-Translator: Napstaguy04 <brokenscreen3@gmail.com>\n"
 "Language-Team: Tagalog <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tl/>\n"
@@ -25,23 +25,20 @@ msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Walang laman ang clipboard!"
+msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Susunod na tab"
+msgstr "Kasalukuyang Screen"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Paganahin"
+msgstr "Nakabukas ang V-Sync"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -62,31 +59,27 @@ msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr ""
+msgstr "Panataliing Nakabukas ang Screen"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Pangunahing Skrip:"
+msgstr "Pinakamaliit na Laki ng Window"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Pangunahing Skrip:"
+msgstr "Pinakamalaking Laki ng Window"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Screen Orientation"
-msgstr "Buksan ang Dokumentasyon"
+msgstr "Pagkakatayo ng Screen"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
-msgstr "Bagong Tabing"
+msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Borderless"
-msgstr ""
+msgstr "Walang Kuwadro"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"

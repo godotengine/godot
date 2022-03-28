@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"PO-Revision-Date: 2022-03-28 05:19+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -30,19 +30,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/bind/core_bind.cpp
 msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "El porta-retalls és buit!"
+msgstr "Porta-retalls"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
 msgstr "Escena Actual"
 
@@ -53,7 +51,7 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Activar"
+msgstr "V-Sync Activat"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -64,61 +62,53 @@ msgid "Delta Smoothing"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Mode de moviment"
+msgstr "Mode de Baix Us del Processador"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
 msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Keep Screen On"
-msgstr "Manté el Depurador Obert"
+msgstr "Manté la Pantalla Activa"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Mida del Contorn:"
+msgstr "Mida Mínima de la Finestra"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Mida del Contorn:"
+msgstr "Mida Màxima de la Finestra"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Screen Orientation"
-msgstr "Operador Screen (trama)."
+msgstr "Orientació de la Pantalla"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
-msgstr "Finestra nova"
+msgstr "Finestra"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
 msgid "Borderless"
-msgstr "Píxels de la Vora"
+msgstr "Sense Vores"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
 msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Fullscreen"
-msgstr "Mode Pantalla Completa"
+msgstr "Pantalla Completa"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Minimized"
-msgstr "Converteix a Majúscules"
+msgstr "Minimitzat"
 
 #: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
@@ -129,9 +119,8 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
-#, fuzzy
 msgid "Position"
-msgstr "Posició de l'Acoblador"
+msgstr "Posició"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
@@ -142,27 +131,24 @@ msgstr "Posició de l'Acoblador"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Mida:"
+msgstr "Mida"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Editor Hint"
-msgstr "Editor"
+msgstr "Suggeriment de l'Editor"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "Mode d'Interpolació"
+msgstr "Iteracions Per Segon"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -170,9 +156,8 @@ msgid "Target FPS"
 msgstr "Objectiu"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Node escalaTemps"
+msgstr "Escala de Temps"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -184,19 +169,16 @@ msgid "Error"
 msgstr "Error"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Error en Desar"
+msgstr "Cadena d'Error"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Error en Desar"
+msgstr "Línia d'Error"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Result"
-msgstr "Resultats de cerca"
+msgstr "Resultat"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
@@ -213,9 +195,8 @@ msgid "Limits"
 msgstr ""
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Command Queue"
-msgstr "Arrossega: gira"
+msgstr "Cua de Comandes"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
@@ -225,9 +206,8 @@ msgstr ""
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Funcions"
+msgstr "Funció"
 
 #: core/image.cpp core/packed_data_container.cpp
 #: modules/minimp3/audio_stream_mp3.cpp
@@ -244,9 +224,8 @@ msgstr ""
 #: editor/editor_settings.cpp editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
 msgid "Network"
-msgstr "Perfilador de Xarxa"
+msgstr "Xarxa"
 
 #: core/io/file_access_network.cpp
 #, fuzzy
@@ -254,9 +233,8 @@ msgid "Remote FS"
 msgstr "Remot "
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Pàgina: "
+msgstr "Mida de la Pàgina"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -267,18 +245,16 @@ msgid "Blocking Mode Enabled"
 msgstr ""
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "Connectar"
+msgstr "Connexió"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
 msgstr ""
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "Objectes Dibuixats:"
+msgstr "ID de l'Objecte"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 #, fuzzy
@@ -295,14 +271,12 @@ msgid "Network Peer"
 msgstr "Perfilador de Xarxa"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Nom del node arrel"
+msgstr "Node Arrel"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Connectar"
+msgstr "Rebutjar Noves Connexions"
 
 #: core/io/networked_multiplayer_peer.cpp
 #, fuzzy
@@ -391,7 +365,6 @@ msgid "Seed"
 msgstr ""
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
 msgstr "Estat"
 
@@ -413,9 +386,8 @@ msgstr ""
 #: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Text Editor"
-msgstr "Obre l'Editor"
+msgstr "Editor de Text"
 
 #: core/os/input.cpp editor/editor_settings.cpp
 #: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
@@ -434,7 +406,7 @@ msgstr "Copiar Selecció"
 #: scene/main/node.cpp scene/resources/material.cpp
 #, fuzzy
 msgid "Use Single Quotes"
-msgstr "Nova peça individual"
+msgstr "Utilitzar Cometes Simples"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -451,9 +423,8 @@ msgid "Shift"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Control"
-msgstr "Control de Versions"
+msgstr "Control"
 
 #: core/os/input_event.cpp
 msgid "Meta"
@@ -466,9 +437,8 @@ msgstr "Comunitat"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "Configuracions prestablertes"
+msgstr "Premut"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -493,14 +463,12 @@ msgid "Button Mask"
 msgstr "Botó"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Constant"
+msgstr "Posició Global"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Factor"
-msgstr "Vector"
+msgstr "Factor"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -521,16 +489,14 @@ msgid "Pressure"
 msgstr "Configuracions prestablertes"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Ajustament Relatiu"
+msgstr "Relatiu"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp
 #: scene/3d/interpolated_camera.cpp scene/animation/animation_player.cpp
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Velocitat (FPS):"
+msgstr "Velocitat"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -543,9 +509,8 @@ msgid "Axis Value"
 msgstr "(valor)"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Índex:"
+msgstr "Índex"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -563,14 +528,12 @@ msgid "Delta"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Modifica"
+msgstr "Canal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Sincronitzar Canvis en Scripts"
+msgstr "Missatge"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -590,21 +553,19 @@ msgstr ""
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Controller Number"
-msgstr "Línia:"
+msgstr "Nombre de controlador"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
 msgstr ""
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Acció"
+msgstr "Aplicació"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Configurar Ajustament"
+msgstr "Configuració"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -698,15 +659,13 @@ msgid "Autoload On Startup"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Plugin Name"
-msgstr "Nom del Connector:"
+msgstr "Nom del Connector"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Afegeix una Entrada"
+msgstr "Entrada"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
@@ -802,9 +761,8 @@ msgstr "Crea una Col·lisió entre malles de triangles germanes"
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "Renderitzador:"
+msgstr "Renderitzat"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -819,9 +777,8 @@ msgstr ""
 #: core/project_settings.cpp scene/animation/animation_tree.cpp
 #: scene/gui/file_dialog.cpp scene/main/scene_tree.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "Filtres:"
+msgstr "Filtres"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
@@ -838,9 +795,8 @@ msgstr "Depurar"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "Configuració:"
+msgstr "Configuració"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -853,14 +809,12 @@ msgid "Max Functions"
 msgstr "Reanomena Funció"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "Canviar Expressió"
+msgstr "Compressió"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Formats"
-msgstr "Format"
+msgstr "Formats"
 
 #: core/project_settings.cpp
 msgid "Zstd"
@@ -916,9 +870,8 @@ msgid "SSL"
 msgstr ""
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Vèrtexs:"
+msgstr "Certificats"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -939,23 +892,20 @@ msgid "Path"
 msgstr "Camí"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "Font"
+msgstr "Codi Font"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Messages"
-msgstr "Sincronitzar Canvis en Scripts"
+msgstr "Missatges"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr "Idioma"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
-msgstr "Provant"
+msgstr "Prova"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
@@ -1073,7 +1023,6 @@ msgstr ""
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
 #: scene/main/canvas_layer.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale"
 msgstr "Escala"
 
@@ -1360,9 +1309,8 @@ msgstr "Treu la Pista"
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Editors"
-msgstr "Editor"
+msgstr "Editors"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -2006,7 +1954,6 @@ msgid "Edit..."
 msgstr "Edita..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
 msgstr "Vés al Mètode"
 
@@ -2228,10 +2175,9 @@ msgstr "Desenvolupador Principal"
 
 #. TRANSLATORS: This refers to a job title.
 #: editor/editor_about.cpp
-#, fuzzy
 msgctxt "Job Title"
 msgid "Project Manager"
-msgstr "Gestor del Projecte"
+msgstr "Gestor de Projectes"
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -25228,9 +25174,8 @@ msgid "Ninepatch Mode"
 msgstr "Mode d'Interpolació"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Obre"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"

@@ -2,7 +2,7 @@
 # Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
-# Ray West <the.raxar@gmail.com>, 2017.
+# Ray West <the.raxar@gmail.com>, 2017, 2022.
 # Julius Stopforth <jjstopforth@gmail.com>, 2018.
 # Isa Tippens <isatippens2@gmail.com>, 2019.
 # Henry Geyser <thegoat187@gmail.com>, 2020.
@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: Henry LeRoux <henry.leroux@ocsbstudent.ca>\n"
+"PO-Revision-Date: 2022-03-25 01:53+0000\n"
+"Last-Translator: Ray West <the.raxar@gmail.com>\n"
 "Language-Team: Afrikaans <https://hosted.weblate.org/projects/godot-engine/"
 "godot/af/>\n"
 "Language: af\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/bind/core_bind.cpp
 msgid "Tablet Driver"
@@ -2920,7 +2920,7 @@ msgstr "Maak Funksie"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "Invoer"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 #: platform/android/export/export.cpp platform/javascript/export/export.cpp

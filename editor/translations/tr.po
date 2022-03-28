@@ -69,13 +69,14 @@
 # Amigos Sus <amigossus66@gmail.com>, 2022.
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
 # Recep GUCLUER <rgucluer@gmail.com>, 2022.
+# Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-13 20:11+0000\n"
-"Last-Translator: Recep GUCLUER <rgucluer@gmail.com>\n"
+"PO-Revision-Date: 2022-03-21 22:23+0000\n"
+"Last-Translator: Emir Tunahan Alim <emrtnhalim@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -83,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/bind/core_bind.cpp
 msgid "Tablet Driver"
@@ -92,7 +93,7 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Clipboard"
-msgstr "Pano boş!"
+msgstr "Pano"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -106,7 +107,7 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Etkin"
+msgstr "V-Sync Etkin"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -114,12 +115,12 @@ msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Delta Yumuşatma"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Biçimi Taşı"
+msgstr "Düşük İşlemci Kullanımı Modu"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -128,22 +129,22 @@ msgstr ""
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 #, fuzzy
 msgid "Keep Screen On"
-msgstr "Hata Ayıklayıcıyı Açık Tut"
+msgstr "Ekranı Açık Tut"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Min Window Size"
-msgstr "Kontur Boyutu:"
+msgstr "En Düşük Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Max Window Size"
-msgstr "Kontur Boyutu:"
+msgstr "Maksimum Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Screen Orientation"
-msgstr "Screen Etkisi operatörü."
+msgstr "Ekran Oryantasyonu"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 #, fuzzy
