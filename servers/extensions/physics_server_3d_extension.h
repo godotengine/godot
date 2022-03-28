@@ -31,11 +31,11 @@
 #ifndef PHYSICS_SERVER_3D_EXTENSION_H
 #define PHYSICS_SERVER_3D_EXTENSION_H
 
+#include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
-#include "servers/extensions/ext_wrappers.gen.inc"
 #include "servers/physics_server_3d.h"
 
 class PhysicsDirectBodyState3DExtension : public PhysicsDirectBodyState3D {

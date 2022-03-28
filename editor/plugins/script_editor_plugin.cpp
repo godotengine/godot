@@ -1348,7 +1348,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				if (script != nullptr) {
-					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					Vector<DocData::ClassDoc> documentations = script->get_documentation();
 					for (int j = 0; j < documentations.size(); j++) {
 						const DocData::ClassDoc &doc = documentations.get(j);
 						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
@@ -1361,7 +1361,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				EditorNode::get_singleton()->save_resource_as(resource);
 
 				if (script != nullptr) {
-					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					Vector<DocData::ClassDoc> documentations = script->get_documentation();
 					for (int j = 0; j < documentations.size(); j++) {
 						const DocData::ClassDoc &doc = documentations.get(j);
 						EditorHelp::get_doc_data()->add_doc(doc);
@@ -2464,7 +2464,7 @@ void ScriptEditor::save_current_script() {
 	}
 
 	if (script != nullptr) {
-		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		Vector<DocData::ClassDoc> documentations = script->get_documentation();
 		for (int j = 0; j < documentations.size(); j++) {
 			const DocData::ClassDoc &doc = documentations.get(j);
 			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
@@ -2486,7 +2486,7 @@ void ScriptEditor::save_current_script() {
 	}
 
 	if (script != nullptr) {
-		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		Vector<DocData::ClassDoc> documentations = script->get_documentation();
 		for (int j = 0; j < documentations.size(); j++) {
 			const DocData::ClassDoc &doc = documentations.get(j);
 			EditorHelp::get_doc_data()->add_doc(doc);
@@ -2537,7 +2537,7 @@ void ScriptEditor::save_all_scripts() {
 			}
 
 			if (script != nullptr) {
-				const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+				Vector<DocData::ClassDoc> documentations = script->get_documentation();
 				for (int j = 0; j < documentations.size(); j++) {
 					const DocData::ClassDoc &doc = documentations.get(j);
 					if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
@@ -2549,7 +2549,7 @@ void ScriptEditor::save_all_scripts() {
 			EditorNode::get_singleton()->save_resource(edited_res); //external script, save it
 
 			if (script != nullptr) {
-				const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+				Vector<DocData::ClassDoc> documentations = script->get_documentation();
 				for (int j = 0; j < documentations.size(); j++) {
 					const DocData::ClassDoc &doc = documentations.get(j);
 					EditorHelp::get_doc_data()->add_doc(doc);
