@@ -292,15 +292,6 @@ void OS_Android::set_keep_screen_on(bool p_enabled) {
 	godot_java->set_keep_screen_on(p_enabled);
 }
 
-void OS_Android::set_low_processor_usage_mode(bool p_enabled) {
-#ifdef TOOLS_ENABLED
-	// Disabled as it causes flickers. We also expect the devices running Godot in editor mode to be high end.
-	OS_Unix::set_low_processor_usage_mode(false);
-#else
-	OS_Unix::set_low_processor_usage_mode(p_enabled);
-#endif
-}
-
 Size2 OS_Android::get_window_size() const {
 	return Vector2(default_videomode.width, default_videomode.height);
 }
@@ -328,10 +319,16 @@ void OS_Android::main_loop_begin() {
 		main_loop->init();
 }
 
-bool OS_Android::main_loop_iterate() {
+bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop)
 		return false;
-	return Main::iteration();
+	bool exit = Main::iteration();
+
+	if (r_should_swap_buffers) {
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || _update_pending;
+	}
+
+	return exit;
 }
 
 void OS_Android::main_loop_end() {

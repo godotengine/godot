@@ -31,9 +31,9 @@
 package org.godotengine.godot.xr.regular;
 
 import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.utils.GLUtils;
 
-import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import javax.microedition.khronos.egl.EGL10;

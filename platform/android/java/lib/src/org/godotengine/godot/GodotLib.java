@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import android.app.Activity;
 import android.hardware.SensorEvent;
 
+import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
@@ -66,13 +67,13 @@ public class GodotLib {
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
 	 * @param width
 	 * @param height
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
 	public static native void resize(int width, int height);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface is created or recreated.
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
 	 */
 	public static native void newcontext();
 
@@ -83,9 +84,9 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
-	 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(GL10)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
 	 */
-	public static native void step();
+	public static native boolean step();
 
 	/**
 	 * Forward touch events from the main thread to the GL thread.

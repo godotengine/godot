@@ -30,11 +30,9 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
-import org.godotengine.godot.utils.GLUtils;
-
-import android.opengl.GLSurfaceView;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -50,19 +48,21 @@ class GodotRenderer implements GLSurfaceView.Renderer {
 		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
 	}
 
-	public void onDrawFrame(GL10 gl) {
+	public boolean onDrawFrame(GL10 gl) {
 		if (activityJustResumed) {
 			GodotLib.onRendererResumed();
 			activityJustResumed = false;
 		}
 
-		GodotLib.step();
+		boolean swapBuffers = GodotLib.step();
 		for (int i = 0; i < Godot.singleton_count; i++) {
 			Godot.singletons[i].onGLDrawFrame(gl);
 		}
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGLDrawFrame(gl);
 		}
+
+		return swapBuffers;
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {

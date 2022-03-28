@@ -29,8 +29,6 @@ android {
         }
     }
 
-    ndkVersion versions.ndkVersion
-
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"

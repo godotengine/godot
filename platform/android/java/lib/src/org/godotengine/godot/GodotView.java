@@ -30,6 +30,7 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.input.GodotGestureHandler;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.utils.GLUtils;
@@ -44,7 +45,6 @@ import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.opengl.GLSurfaceView;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;

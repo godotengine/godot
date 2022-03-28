@@ -30,8 +30,6 @@
 
 package org.godotengine.godot.xr.regular;
 
-import org.godotengine.godot.utils.GLUtils;
-
 import android.util.Log;
 
 import javax.microedition.khronos.egl.EGL10;
