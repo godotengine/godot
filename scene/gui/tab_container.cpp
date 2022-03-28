@@ -173,9 +173,9 @@ void TabContainer::_notification(int p_what) {
 				int x = is_layout_rtl() ? 0 : get_size().width - menu->get_width();
 
 				if (menu_hovered) {
-					menu_hl->draw(get_canvas_item(), Size2(x, (header_height - menu_hl->get_height()) / 2));
+					menu_hl->draw(get_canvas_item(), Point2(x, (header_height - menu_hl->get_height()) / 2));
 				} else {
-					menu->draw(get_canvas_item(), Size2(x, (header_height - menu->get_height()) / 2));
+					menu->draw(get_canvas_item(), Point2(x, (header_height - menu->get_height()) / 2));
 				}
 			}
 		} break;
@@ -201,6 +201,8 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_icon_override(SNAME("increment_highlight"), get_theme_icon(SNAME("increment_highlight")));
 	tab_bar->add_theme_icon_override(SNAME("decrement"), get_theme_icon(SNAME("decrement")));
 	tab_bar->add_theme_icon_override(SNAME("decrement_highlight"), get_theme_icon(SNAME("decrement_highlight")));
+	tab_bar->add_theme_icon_override(SNAME("drop_mark"), get_theme_icon(SNAME("drop_mark")));
+	tab_bar->add_theme_color_override(SNAME("drop_mark_color"), get_theme_color(SNAME("drop_mark_color")));
 	tab_bar->add_theme_color_override(SNAME("font_selected_color"), get_theme_color(SNAME("font_selected_color")));
 	tab_bar->add_theme_color_override(SNAME("font_unselected_color"), get_theme_color(SNAME("font_unselected_color")));
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), get_theme_color(SNAME("font_disabled_color")));
@@ -384,8 +386,6 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 		return;
 	}
 
-	int hover_now = get_tab_idx_at_point(p_point);
-
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return;
@@ -393,11 +393,27 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 	if (String(d["type"]) == "tabc_element") {
 		int tab_from_id = d["tabc_element"];
+		int hover_now = get_tab_idx_at_point(p_point);
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
+
 		if (from_path == to_path) {
-			if (hover_now < 0) {
-				hover_now = get_tab_count() - 1;
+			if (tab_from_id == hover_now) {
+				return;
+			}
+
+			// Drop the new tab to the left or right depending on where the target tab is being hovered.
+			if (hover_now != -1) {
+				Rect2 tab_rect = tab_bar->get_tab_rect(hover_now);
+				if (is_layout_rtl() ^ (p_point.x <= tab_rect.position.x + tab_rect.size.width / 2)) {
+					if (hover_now > tab_from_id) {
+						hover_now -= 1;
+					}
+				} else if (tab_from_id > hover_now) {
+					hover_now += 1;
+				}
+			} else {
+				hover_now = is_layout_rtl() ^ (p_point.x < tab_bar->get_tab_rect(0).position.x) ? 0 : get_tab_count() - 1;
 			}
 
 			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
@@ -407,16 +423,31 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 		} else if (get_tabs_rearrange_group() != -1) {
 			// Drag and drop between TabContainers.
+
 			Node *from_node = get_node(from_path);
 			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+
 			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				// Get the tab properties before they get erased by the child removal.
+				String tab_title = from_tabc->get_tab_title(tab_from_id);
+				bool tab_disabled = from_tabc->is_tab_disabled(tab_from_id);
+
+				// Drop the new tab to the left or right depending on where the target tab is being hovered.
+				if (hover_now != -1) {
+					Rect2 tab_rect = tab_bar->get_tab_rect(hover_now);
+					if (is_layout_rtl() ^ (p_point.x > tab_rect.position.x + tab_rect.size.width / 2)) {
+						hover_now += 1;
+					}
+				} else {
+					hover_now = is_layout_rtl() ^ (p_point.x < tab_bar->get_tab_rect(0).position.x) ? 0 : get_tab_count();
+				}
+
 				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
 				from_tabc->remove_child(moving_tabc);
 				add_child(moving_tabc, true);
 
-				if (hover_now < 0) {
-					hover_now = get_tab_count() - 1;
-				}
+				set_tab_title(get_tab_count() - 1, tab_title);
+				set_tab_disabled(get_tab_count() - 1, tab_disabled);
 
 				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
 				if (!is_tab_disabled(hover_now)) {

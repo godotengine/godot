@@ -131,6 +131,14 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 }
 
 bool EditorExportPlatformUWP::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+#ifndef DEV_ENABLED
+	// We don't provide export templates for the UWP platform currently as it
+	// has not been ported for Godot 4.0. This is skipped in DEV_ENABLED so that
+	// contributors can still test the pipeline if/when we can build it again.
+	r_error = "The UWP platform is currently not supported in Godot 4.0.\n";
+	return false;
+#endif
+
 	String err;
 	bool valid = false;
 

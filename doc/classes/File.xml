@@ -74,7 +74,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="file_exists" qualifiers="const">
+		<method name="file_exists" qualifiers="static">
 			<return type="bool" />
 			<argument index="0" name="path" type="String" />
 			<description>

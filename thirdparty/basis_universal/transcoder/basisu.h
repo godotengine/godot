@@ -21,6 +21,11 @@
 	#pragma warning (disable : 4127) // warning C4127: conditional expression is constant
 	#pragma warning (disable : 4530) // C++ exception handler used, but unwind semantics are not enabled.
 
+	// Slamming this off always for v1.16 because we've gotten rid of most std containers.
+	#ifndef BASISU_NO_ITERATOR_DEBUG_LEVEL
+		#define BASISU_NO_ITERATOR_DEBUG_LEVEL (1)
+	#endif
+
 	#ifndef BASISU_NO_ITERATOR_DEBUG_LEVEL
 		//#define _HAS_ITERATOR_DEBUGGING 0
 
@@ -165,6 +170,10 @@ namespace basisu
 	{ 
 		if (n)
 		{
+			if (vec.size())
+			{
+				assert((pObjs + n) <= vec.begin() || (pObjs >= vec.end()));
+			}
 			const size_t cur_s = vec.size();
 			vec.resize(cur_s + n);
 			memcpy(&vec[cur_s], pObjs, sizeof(R) * n);
@@ -173,6 +182,7 @@ namespace basisu
 
 	template<typename T> inline void append_vector(T &vec, const T &other_vec)
 	{
+		assert(&vec != &other_vec);
 		if (other_vec.size())
 			append_vector(vec, &other_vec[0], other_vec.size());
 	}

@@ -4324,8 +4324,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 		case UNLOCK_SELECTED: {
@@ -4346,8 +4346,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 		case GROUP_SELECTED: {
@@ -4368,8 +4368,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 		case UNGROUP_SELECTED: {
@@ -4390,8 +4390,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 

@@ -13,7 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "basisu_uastc_enc.h"
+
+#if BASISU_USE_ASTC_DECOMPRESS
 #include "basisu_astc_decomp.h"
+#endif
+
 #include "basisu_gpu_texture.h"
 #include "basisu_bc7enc.h"
 
@@ -509,14 +513,14 @@ namespace basisu
 
 		if (pForce_selectors == nullptr)
 		{
-		int s0 = g_astc_unquant[endpoint_range][astc_results.m_endpoints[0]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[2]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[4]].m_unquant;
-		int s1 = g_astc_unquant[endpoint_range][astc_results.m_endpoints[1]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[3]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[5]].m_unquant;
-		if (s1 < s0)
-		{
-			std::swap(astc_results.m_endpoints[0], astc_results.m_endpoints[1]);
-			std::swap(astc_results.m_endpoints[2], astc_results.m_endpoints[3]);
-			std::swap(astc_results.m_endpoints[4], astc_results.m_endpoints[5]);
-			invert = true;
+			int s0 = g_astc_unquant[endpoint_range][astc_results.m_endpoints[0]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[2]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[4]].m_unquant;
+			int s1 = g_astc_unquant[endpoint_range][astc_results.m_endpoints[1]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[3]].m_unquant + g_astc_unquant[endpoint_range][astc_results.m_endpoints[5]].m_unquant;
+			if (s1 < s0)
+			{
+				std::swap(astc_results.m_endpoints[0], astc_results.m_endpoints[1]);
+				std::swap(astc_results.m_endpoints[2], astc_results.m_endpoints[3]);
+				std::swap(astc_results.m_endpoints[4], astc_results.m_endpoints[5]);
+				invert = true;
 			}
 		}
 
@@ -3562,7 +3566,8 @@ namespace basisu
 			basist::color32 temp_block_unpacked[4][4];
 			success = basist::unpack_uastc(temp_block, (basist::color32 *)temp_block_unpacked, false);
 			VALIDATE(success);
-				
+
+#if BASISU_USE_ASTC_DECOMPRESS
 			// Now round trip to packed ASTC and back, then decode to pixels.
 			uint32_t astc_data[4];
 			
@@ -3590,6 +3595,7 @@ namespace basisu
 					VALIDATE(temp_block_unpacked[y][x].c[3] == decoded_uastc_block[y][x].a);
 				}
 			}
+#endif
 		}
 #endif
 

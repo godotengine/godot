@@ -360,6 +360,15 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_logo() const {
 }
 
 bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+#ifndef DEV_ENABLED
+	// We don't provide export templates for the HTML5 platform currently as there
+	// is no suitable renderer to use with them. So we forbid exporting and tell
+	// users why. This is skipped in DEV_ENABLED so that contributors can still test
+	// the pipeline once we start having WebGL or WebGPU support.
+	r_error = "The HTML5 platform is currently not supported in Godot 4.0, as there is no suitable renderer for it.\n";
+	return false;
+#endif
+
 	String err;
 	bool valid = false;
 	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");

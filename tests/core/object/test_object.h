@@ -133,7 +133,7 @@ TEST_CASE("[Object] Core getters") {
 }
 
 TEST_CASE("[Object] Metadata") {
-	const String meta_path = "hello/world complex métadata\n\n\t\tpath";
+	const String meta_path = "complex_metadata_path";
 	Object object;
 
 	object.set_meta(meta_path, Color(0, 1, 0));

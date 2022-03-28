@@ -171,6 +171,11 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_path, const 
 		if (compress_mode < COMPRESS_VRAM_COMPRESSED) {
 			return false;
 		}
+	} else if (p_option == "compress/normal_map") {
+		int compress_mode = int(p_options["compress/mode"]);
+		if (compress_mode == COMPRESS_LOSSLESS) {
+			return false;
+		}
 	} else if (p_option == "mipmaps/limit") {
 		return p_options["mipmaps/generate"];
 

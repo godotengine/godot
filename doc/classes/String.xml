@@ -633,8 +633,8 @@
 				var some_string = "One,Two,Three,Four"
 				var some_array = some_string.rsplit(",", true, 1)
 				print(some_array.size()) # Prints 2
-				print(some_array[0]) # Prints "Four"
-				print(some_array[1]) # Prints "Three,Two,One"
+				print(some_array[0]) # Prints "One,Two,Three"
+				print(some_array[1]) # Prints "Four"
 				[/gdscript]
 				[csharp]
 				// There is no Rsplit.

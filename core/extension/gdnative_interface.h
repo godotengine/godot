@@ -208,7 +208,7 @@ typedef struct {
 typedef const GDNativePropertyInfo *(*GDNativeExtensionClassGetPropertyList)(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
 typedef void (*GDNativeExtensionClassFreePropertyList)(GDExtensionClassInstancePtr p_instance, const GDNativePropertyInfo *p_list);
 typedef void (*GDNativeExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what);
-typedef const char *(*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance);
+typedef void (*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDNativeStringPtr p_out);
 typedef void (*GDNativeExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);

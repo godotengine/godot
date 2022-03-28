@@ -54,7 +54,7 @@
 #define BVH_EXPAND_LEAF_AABBS
 
 // never do these checks in release
-#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+#ifdef DEV_ENABLED
 //#define BVH_VERBOSE
 //#define BVH_VERBOSE_TREE
 //#define BVH_VERBOSE_PAIRING
@@ -217,7 +217,7 @@ private:
 		BVH_ASSERT(!parent.is_leaf());
 
 		int child_num = parent.find_child(p_old_child_id);
-		BVH_ASSERT(child_num != BVHCommon::INVALID);
+		BVH_ASSERT(child_num != -1);
 		parent.children[child_num] = p_new_child_id;
 
 		TNode &new_child = _nodes[p_new_child_id];
@@ -229,7 +229,7 @@ private:
 		BVH_ASSERT(!parent.is_leaf());
 
 		int child_num = parent.find_child(p_child_id);
-		BVH_ASSERT(child_num != BVHCommon::INVALID);
+		BVH_ASSERT(child_num != -1);
 
 		parent.remove_child_internal(child_num);
 

@@ -127,8 +127,13 @@ License: Expat
 
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
-Copyright: 2019, Binomial LLC.
+Copyright: 2022, Binomial LLC.
 License: Apache-2.0
+
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
 
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
@@ -161,17 +166,17 @@ Comment: etcpak
 Copyright: 2013-2021, Bartosz Taudul
 License: BSD-3-clause
 
-Files: ./thirdparty/fonts/DroidSans*.ttf
+Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/JetBrainsMono_Regular.ttf
+Files: ./thirdparty/fonts/JetBrainsMono_Regular.woff2
 Comment: JetBrains Mono font
 Copyright: 2020, JetBrains s.r.o.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/NotoSans*.ttf
+Files: ./thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1

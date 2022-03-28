@@ -99,17 +99,7 @@ bool OpenXRAPI::openxr_is_enabled() {
 }
 
 OpenXRAPI *OpenXRAPI::get_singleton() {
-	if (singleton != nullptr) {
-		// already constructed, return our singleton
-		return singleton;
-	} else if (openxr_is_enabled()) {
-		// construct our singleton and return it
-		singleton = memnew(OpenXRAPI);
-		return singleton;
-	} else {
-		// not enabled, don't instantiate, return nullptr
-		return nullptr;
-	}
+	return singleton;
 }
 
 String OpenXRAPI::get_default_action_map_resource_name() {
@@ -145,7 +135,7 @@ String OpenXRAPI::get_swapchain_format_name(int64_t p_swapchain_format) const {
 }
 
 bool OpenXRAPI::load_layer_properties() {
-	// This queries additional layers that are available and can be initialised when we create our OpenXR instance
+	// This queries additional layers that are available and can be initialized when we create our OpenXR instance
 	if (layer_properties != nullptr) {
 		// already retrieved this
 		return true;
@@ -175,7 +165,7 @@ bool OpenXRAPI::load_layer_properties() {
 }
 
 bool OpenXRAPI::load_supported_extensions() {
-	// This queries supported extensions that are available and can be initialised when we create our OpenXR instance
+	// This queries supported extensions that are available and can be initialized when we create our OpenXR instance
 
 	if (supported_extensions != nullptr) {
 		// already retrieved this
@@ -1010,7 +1000,7 @@ bool OpenXRAPI::is_running() {
 	return running;
 }
 
-bool OpenXRAPI::initialise(const String &p_rendering_driver) {
+bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	ERR_FAIL_COND_V_MSG(instance != XR_NULL_HANDLE, false, "OpenXR instance was already created");
 
 	if (p_rendering_driver == "vulkan") {
@@ -1034,7 +1024,7 @@ bool OpenXRAPI::initialise(const String &p_rendering_driver) {
 		ERR_FAIL_V_MSG(false, "OpenXR: Unsupported rendering device.");
 	}
 
-	// initialise
+	// initialize
 	if (!load_layer_properties()) {
 		destroy_instance();
 		return false;
@@ -1068,7 +1058,7 @@ bool OpenXRAPI::initialise(const String &p_rendering_driver) {
 	return true;
 }
 
-bool OpenXRAPI::initialise_session() {
+bool OpenXRAPI::initialize_session() {
 	if (!create_session()) {
 		destroy_session();
 		return false;
@@ -1599,7 +1589,7 @@ void OpenXRAPI::end_frame() {
 
 OpenXRAPI::OpenXRAPI() {
 	// OpenXRAPI is only constructed if OpenXR is enabled.
-	// It will be constructed when the rendering device first accesses OpenXR (be it the Vulkan or OpenGL rendering system)
+	singleton = this;
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Enabled OpenXR in the editor? Adjust our settings for the editor
@@ -1656,7 +1646,7 @@ OpenXRAPI::OpenXRAPI() {
 	frame_state.predictedDisplayPeriod = 0;
 
 #ifdef ANDROID_ENABLED
-	// our android wrapper will initialise our android loader at this point
+	// our android wrapper will initialize our android loader at this point
 	register_extension_wrapper(memnew(OpenXRAndroidExtension(this)));
 #endif
 }
@@ -1683,6 +1673,8 @@ OpenXRAPI::~OpenXRAPI() {
 		memfree(layer_properties);
 		layer_properties = nullptr;
 	}
+
+	singleton = nullptr;
 }
 
 Transform3D OpenXRAPI::transform_from_pose(const XrPosef &p_pose) {

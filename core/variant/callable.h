@@ -170,4 +170,10 @@ public:
 	Signal() {}
 };
 
+struct CallableComparator {
+	const Callable &func;
+
+	bool operator()(const Variant &p_l, const Variant &p_r) const;
+};
+
 #endif // CALLABLE_H

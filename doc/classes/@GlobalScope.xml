@@ -2405,7 +2405,8 @@
 			Additionally, other keywords can be included: "exp" for exponential range editing, "radians" for editing radian angles in degrees, "degrees" to hint at an angle and "noslider" to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
 			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].

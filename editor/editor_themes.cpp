@@ -288,17 +288,40 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	dark_icon_color_dictionary[Color::html("#5fff97")] = success_color;
 	dark_icon_color_dictionary[Color::html("#ffdd65")] = warning_color;
 
+	// Use the accent color for some icons (checkbox, radio, toggle, etc.).
+	Dictionary accent_color_icon_color_dictionary;
+	Set<StringName> accent_color_icons;
+
+	const Color accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
+	accent_color_icon_color_dictionary[Color::html("699ce8")] = accent_color;
+	if (accent_color.get_luminance() > 0.75) {
+		accent_color_icon_color_dictionary[Color::html("ffffff")] = Color(0.2, 0.2, 0.2);
+	}
+
+	accent_color_icons.insert("GuiChecked");
+	accent_color_icons.insert("GuiRadioChecked");
+	accent_color_icons.insert("GuiIndeterminate");
+	accent_color_icons.insert("GuiToggleOn");
+	accent_color_icons.insert("GuiToggleOnMirrored");
+	accent_color_icons.insert("PlayOverlay");
+
 	// Generate icons.
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
-			float saturation = p_icon_saturation;
+			Ref<ImageTexture> icon;
 
-			if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0 || strcmp(editor_icons_names[i], "Godot") == 0 || strcmp(editor_icons_names[i], "Logo") == 0) {
-				saturation = 1.0;
+			if (accent_color_icons.has(editor_icons_names[i])) {
+				icon = editor_generate_icon(i, true, EDSCALE, 1.0, accent_color_icon_color_dictionary);
+			} else {
+				float saturation = p_icon_saturation;
+
+				if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0 || strcmp(editor_icons_names[i], "Godot") == 0 || strcmp(editor_icons_names[i], "Logo") == 0) {
+					saturation = 1.0;
+				}
+
+				const int is_exception = exceptions.has(editor_icons_names[i]);
+				icon = editor_generate_icon(i, !is_exception, EDSCALE, saturation, dark_icon_color_dictionary);
 			}
-
-			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, EDSCALE, saturation, dark_icon_color_dictionary);
 
 			p_theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), icon);
 		}
@@ -514,8 +537,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Register icons + font
 
-	// The resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons.
-	if (p_theme != nullptr && fabs(p_theme->get_constant(SNAME("scale"), SNAME("Editor")) - EDSCALE) < 0.00001 && (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor")) == dark_theme && prev_icon_saturation == icon_saturation) {
+	// The editor scale, icon color (dark_theme bool), icon saturation, and accent color has not changed, so we do not regenerate the icons.
+	if (p_theme != nullptr && fabs(p_theme->get_constant(SNAME("scale"), SNAME("Editor")) - EDSCALE) < 0.00001 && (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor")) == dark_theme && prev_icon_saturation == icon_saturation && p_theme->get_color(SNAME("accent_color"), SNAME("Editor")) == accent_color) {
 		// Register already generated icons.
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), p_theme->get_icon(editor_icons_names[i], SNAME("EditorIcons")));
@@ -612,7 +635,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_border_width_all(0);
 	style_tab_selected->set_border_width(SIDE_TOP, Math::round(2 * EDSCALE));
 	// Make the highlight line prominent, but not too prominent as to not be distracting.
-	style_tab_selected->set_border_color(dark_color_2.lerp(accent_color, 0.75));
+	Color tab_highlight = dark_color_2.lerp(accent_color, 0.75);
+	style_tab_selected->set_border_color(tab_highlight);
 	// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
 	// This also makes the top highlight look better.
 	style_tab_selected->set_corner_radius_all(0);
@@ -1056,17 +1080,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("button_pressed", "TabBar", style_menu);
+	theme->set_stylebox("button_highlight", "TabBar", style_menu);
+	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
+	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_color("font_selected_color", "TabContainer", font_color);
 	theme->set_color("font_unselected_color", "TabContainer", font_disabled_color);
 	theme->set_color("font_selected_color", "TabBar", font_color);
 	theme->set_color("font_unselected_color", "TabBar", font_disabled_color);
+	theme->set_color("drop_mark_color", "TabContainer", tab_highlight);
+	theme->set_color("drop_mark_color", "TabBar", tab_highlight);
 	theme->set_icon("menu", "TabContainer", theme->get_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
 	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
-	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_icon("close", "TabBar", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
-	theme->set_stylebox("button_pressed", "TabBar", style_menu);
-	theme->set_stylebox("button_highlight", "TabBar", style_menu);
 	theme->set_icon("increment", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRight"), SNAME("EditorIcons")));
 	theme->set_icon("decrement", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeft"), SNAME("EditorIcons")));
 	theme->set_icon("increment", "TabBar", theme->get_icon(SNAME("GuiScrollArrowRight"), SNAME("EditorIcons")));
@@ -1075,6 +1101,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
 	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRightHl"), SNAME("EditorIcons")));
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
+	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
+	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_constant("hseparation", "TabBar", 4 * EDSCALE);
 
 	// Content of each tab

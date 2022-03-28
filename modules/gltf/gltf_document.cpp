@@ -2907,6 +2907,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					}
 					array_copy = blend_surface_tool->commit_to_arrays();
 
+					// Enforce blend shape mask array format
+					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
+						if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << l))) {
+							array_copy[l] = Variant();
+						}
+					}
+
 					morphs.push_back(array_copy);
 				}
 			}

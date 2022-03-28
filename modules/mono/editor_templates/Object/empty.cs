@@ -5,5 +5,4 @@ using System;
 
 public partial class _CLASS_ : _BASE_
 {
-
 }

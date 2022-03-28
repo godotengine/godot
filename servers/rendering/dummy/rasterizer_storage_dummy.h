@@ -214,25 +214,6 @@ public:
 	void base_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
 	void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
 
-	/* DECAL API */
-
-	RID decal_allocate() override { return RID(); }
-	void decal_initialize(RID p_rid) override {}
-	void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
-	void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
-	void decal_set_emission_energy(RID p_decal, float p_energy) override {}
-	void decal_set_albedo_mix(RID p_decal, float p_mix) override {}
-	void decal_set_modulate(RID p_decal, const Color &p_modulate) override {}
-	void decal_set_cull_mask(RID p_decal, uint32_t p_layers) override {}
-	void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) override {}
-	void decal_set_fade(RID p_decal, float p_above, float p_below) override {}
-	void decal_set_normal_fade(RID p_decal, float p_fade) override {}
-
-	AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
-
-	void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-	void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-
 	/* VOXEL GI API */
 
 	RID voxel_gi_allocate() override { return RID(); }

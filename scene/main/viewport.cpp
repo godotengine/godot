@@ -1124,9 +1124,9 @@ Vector2 Viewport::get_mouse_position() const {
 	return gui.last_mouse_pos;
 }
 
-void Viewport::warp_mouse(const Vector2 &p_pos) {
-	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
-	Input::get_singleton()->warp_mouse_position(gpos);
+void Viewport::warp_mouse(const Vector2 &p_position) {
+	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_position);
+	Input::get_singleton()->warp_mouse(gpos);
 }
 
 void Viewport::_gui_sort_roots() {
@@ -2001,30 +2001,58 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
 
-			if (p_event->is_action_pressed("ui_focus_next", true, true)) {
-				next = from->find_next_valid_focus();
-			}
+			Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+			if (joypadmotion_event.is_valid()) {
+				Input *input = Input::get_singleton();
 
-			if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
-				next = from->find_prev_valid_focus();
-			}
+				if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+					next = from->find_next_valid_focus();
+				}
 
-			if (p_event->is_action_pressed("ui_up", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_TOP);
-			}
+				if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+					next = from->find_prev_valid_focus();
+				}
 
-			if (p_event->is_action_pressed("ui_left", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_LEFT);
-			}
+				if (p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
+					next = from->_get_focus_neighbor(SIDE_TOP);
+				}
 
-			if (p_event->is_action_pressed("ui_right", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_RIGHT);
-			}
+				if (p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
+					next = from->_get_focus_neighbor(SIDE_LEFT);
+				}
 
-			if (p_event->is_action_pressed("ui_down", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_BOTTOM);
-			}
+				if (p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
+					next = from->_get_focus_neighbor(SIDE_RIGHT);
+				}
 
+				if (p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
+					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+				}
+			} else {
+				if (p_event->is_action_pressed("ui_focus_next", true, true)) {
+					next = from->find_next_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
+					next = from->find_prev_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_up", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_TOP);
+				}
+
+				if (p_event->is_action_pressed("ui_left", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_LEFT);
+				}
+
+				if (p_event->is_action_pressed("ui_right", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_RIGHT);
+				}
+
+				if (p_event->is_action_pressed("ui_down", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+				}
+			}
 			if (next) {
 				next->grab_focus();
 				set_input_as_handled();
@@ -2691,7 +2719,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = p_event;
 	}
 
-	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
+	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
 	}
@@ -3614,7 +3642,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);

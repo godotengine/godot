@@ -429,3 +429,13 @@ Signal::Signal(ObjectID p_object, const StringName &p_name) {
 	object = p_object;
 	name = p_name;
 }
+
+bool CallableComparator::operator()(const Variant &p_l, const Variant &p_r) const {
+	const Variant *args[2] = { &p_l, &p_r };
+	Callable::CallError err;
+	Variant res;
+	func.call(args, 2, res, err);
+	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 1, err));
+	return res;
+}
