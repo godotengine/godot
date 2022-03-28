@@ -663,6 +663,7 @@ private:
 	void _reload_project_settings();
 	void _resave_scenes(String p_str);
 
+	void _project_settings_changed();
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
