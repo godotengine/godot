@@ -53,6 +53,8 @@ _helper_module("editor.template_builders", "editor/template_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("modules.modules_builders", "modules/modules_builders.py")
 
+import SCons
+
 # Local
 import methods
 import glsl_builders
@@ -704,6 +706,7 @@ if selected_platform in platform_list:
 
     env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+    env["SHOBJSUFFIX"] = suffix + env["SHOBJSUFFIX"]
     # (SH)LIBSUFFIX will be used for our own built libraries
     # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
     # so we need to append the default suffixes to keep the ability

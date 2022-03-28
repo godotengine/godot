@@ -19,6 +19,8 @@ elif env["platform"] == "iphone":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK"])
 elif env["platform"] == "linuxbsd":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
+    if env.get("sharedlibs"):
+        env.AppendUnique(CPPDEFINES=["VOLK_DEFAULT_VISIBILITY"])
 elif env["platform"] == "osx":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK"])
 elif env["platform"] == "windows":

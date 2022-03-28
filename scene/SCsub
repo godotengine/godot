@@ -19,6 +19,8 @@ SConscript("audio/SCsub")
 SConscript("resources/SCsub")
 SConscript("debugger/SCsub")
 
+scene_env = env.Clone()
+
 # Build it all as a library
-lib = env.add_library("scene", env.scene_sources)
+lib = scene_env.add_library("scene", env.scene_sources)
 env.Prepend(LIBS=[lib])
