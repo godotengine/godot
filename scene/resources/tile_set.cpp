@@ -3273,7 +3273,7 @@ void TileSet::_bind_methods() {
 	ADD_GROUP("Navigation", "");
 	ADD_ARRAY("navigation_layers", "navigation_layer_");
 
-	ADD_GROUP("Custom data", "");
+	ADD_GROUP("Custom Data", "");
 	ADD_ARRAY("custom_data_layers", "custom_data_layer_");
 
 	// -- Enum binding --
