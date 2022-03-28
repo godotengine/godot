@@ -2303,7 +2303,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							break;
 #ifdef DEBUG_ENABLED
 						} else {
-							if (par_type.builtin_type == Variant::INT && p_call->arguments[i]->get_datatype().builtin_type == Variant::FLOAT) {
+							if (par_type.builtin_type == Variant::INT && p_call->arguments[i]->get_datatype().builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
 								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
 							}
 #endif

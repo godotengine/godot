@@ -40,17 +40,18 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "multi_node_edit.h"
+#include "scene/gui/center_container.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
-static bool _property_path_matches(const String &p_property_path, const String &p_filter) {
+static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
 		return true;
 	}
 
 	const Vector<String> sections = p_property_path.split("/");
 	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i]))) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
 			return true;
 		}
 	}
@@ -2455,6 +2456,8 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
+	bool in_script_variables = false;
+
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
@@ -2506,7 +2509,7 @@ void EditorInspector::update_tree() {
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
 			while (N) {
-				if (N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
 				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
@@ -2546,6 +2549,9 @@ void EditorInspector::update_tree() {
 				if (category->icon.is_null() && has_theme_icon(base_type, SNAME("EditorIcons"))) {
 					category->icon = get_theme_icon(base_type, SNAME("EditorIcons"));
 				}
+				in_script_variables = true;
+			} else {
+				in_script_variables = false;
 			}
 			if (category->icon.is_null()) {
 				if (!type.is_empty()) { // Can happen for built-in scripts.
@@ -2580,7 +2586,7 @@ void EditorInspector::update_tree() {
 
 			continue;
 
-		} else if (!(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			// Ignore properties that are not supposed to be in the inspector.
 			continue;
 		}
@@ -2672,17 +2678,21 @@ void EditorInspector::update_tree() {
 
 		// Get the property label's string.
 		String name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
-		String property_label_string = name_override;
-		if (capitalize_paths) {
-			// Capitalize paths.
-			int dot = property_label_string.find(".");
+		String feature_tag;
+		{
+			const int dot = name_override.find(".");
 			if (dot != -1) {
+				feature_tag = name_override.right(dot);
 				name_override = name_override.substr(0, dot);
-				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override) + property_label_string.substr(dot);
-			} else {
-				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
 			}
 		}
+
+		// Don't localize properties in Script Variables category.
+		EditorPropertyNameProcessor::Style name_style = property_name_style;
+		if (in_script_variables && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+		}
+		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
 
 		// Remove the property from the path.
 		int idx = path.rfind("/");
@@ -2695,7 +2705,7 @@ void EditorInspector::update_tree() {
 		// Ignore properties that do not fit the filter.
 		if (use_filter && !filter.is_empty()) {
 			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
-			if (!_property_path_matches(property_path, filter)) {
+			if (!_property_path_matches(property_path, filter, property_name_style)) {
 				continue;
 			}
 		}
@@ -2732,15 +2742,27 @@ void EditorInspector::update_tree() {
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
-				String label = component;
-				if (capitalize_paths) {
-					label = EditorPropertyNameProcessor::get_singleton()->process_name(label);
+				String label;
+				String tooltip;
+
+				// Only process group label if this is not the group or subgroup.
+				if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
+					if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+						label = TTRGET(component);
+						tooltip = component;
+					} else {
+						label = component;
+						tooltip = TTRGET(component);
+					}
+				} else {
+					label = EditorPropertyNameProcessor::get_singleton()->process_name(component, property_name_style);
+					tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
 				}
 
 				Color c = sscolor;
 				c.a /= level;
 				section->setup(acc_path, label, object, c, use_folding, section_depth);
-				section->set_tooltip(EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(component));
+				section->set_tooltip(tooltip);
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -2772,7 +2794,7 @@ void EditorInspector::update_tree() {
 				editor_inspector_array = memnew(EditorInspectorArray);
 
 				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
-				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
+				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
 				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request), varray(array_element_prefix));
@@ -2915,7 +2937,7 @@ void EditorInspector::update_tree() {
 					ep->set_checked(checked);
 					ep->set_keying(keying);
 					ep->set_read_only(property_read_only);
-					ep->set_deletable(deletable_properties);
+					ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
 				}
 
 				current_vbox->add_child(F.property_editor);
@@ -2954,6 +2976,15 @@ void EditorInspector::update_tree() {
 				break;
 			}
 		}
+	}
+
+	if (!hide_metadata) {
+		Button *add_md = memnew(Button);
+		add_md->set_text(TTR("Add Metadata"));
+		add_md->set_focus_mode(Control::FOCUS_NONE);
+		add_md->set_icon(get_theme_icon("Add", "EditorIcons"));
+		add_md->connect("pressed", callable_mp(this, &EditorInspector::_show_add_meta_dialog));
+		main_vbox->add_child(add_md);
 	}
 
 	// Get the lists of to add at the end.
@@ -3027,12 +3058,15 @@ void EditorInspector::set_read_only(bool p_read_only) {
 	update_tree();
 }
 
-bool EditorInspector::is_capitalize_paths_enabled() const {
-	return capitalize_paths;
+EditorPropertyNameProcessor::Style EditorInspector::get_property_name_style() const {
+	return property_name_style;
 }
 
-void EditorInspector::set_enable_capitalize_paths(bool p_capitalize) {
-	capitalize_paths = p_capitalize;
+void EditorInspector::set_property_name_style(EditorPropertyNameProcessor::Style p_style) {
+	if (property_name_style == p_style) {
+		return;
+	}
+	property_name_style = p_style;
 	update_tree();
 }
 
@@ -3052,6 +3086,11 @@ void EditorInspector::set_use_doc_hints(bool p_enable) {
 
 void EditorInspector::set_hide_script(bool p_hide) {
 	hide_script = p_hide;
+	update_tree();
+}
+
+void EditorInspector::set_hide_metadata(bool p_hide) {
+	hide_metadata = p_hide;
 	update_tree();
 }
 
@@ -3321,6 +3360,14 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 void EditorInspector::_property_deleted(const String &p_path) {
 	if (!object) {
 		return;
+	}
+
+	if (p_path.begins_with("metadata/")) {
+		String name = p_path.replace_first("metadata/", "");
+		undo_redo->create_action(vformat(TTR("Remove metadata %s"), name));
+		undo_redo->add_do_method(object, "remove_meta", name);
+		undo_redo->add_undo_method(object, "set_meta", name, object->get_meta(name));
+		undo_redo->commit_action();
 	}
 
 	emit_signal(SNAME("property_deleted"), p_path);
@@ -3648,6 +3695,81 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 
 Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
+}
+
+void EditorInspector::_add_meta_confirm() {
+	String name = add_meta_name->get_text();
+
+	object->editor_set_section_unfold("metadata", true); // Ensure metadata is unfolded when adding a new metadata.
+
+	Variant defval;
+	Callable::CallError ce;
+	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
+	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
+	undo_redo->add_do_method(object, "set_meta", name, defval);
+	undo_redo->add_undo_method(object, "remove_meta", name);
+	undo_redo->commit_action();
+}
+
+void EditorInspector::_check_meta_name(String name) {
+	String error;
+
+	if (name == "") {
+		error = TTR("Metadata can't be empty.");
+	} else if (!name.is_valid_identifier()) {
+		error = TTR("Invalid metadata identifier.");
+	} else if (object->has_meta(name)) {
+		error = TTR("Metadata already exists.");
+	}
+
+	if (error != "") {
+		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		add_meta_error->set_text(error);
+		add_meta_dialog->get_ok_button()->set_disabled(true);
+	} else {
+		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		add_meta_error->set_text(TTR("Metadata name is valid."));
+		add_meta_dialog->get_ok_button()->set_disabled(false);
+	}
+}
+
+void EditorInspector::_show_add_meta_dialog() {
+	if (!add_meta_dialog) {
+		add_meta_dialog = memnew(ConfirmationDialog);
+		add_meta_dialog->set_title(TTR("Add Metadata Property"));
+		VBoxContainer *vbc = memnew(VBoxContainer);
+		add_meta_dialog->add_child(vbc);
+		HBoxContainer *hbc = memnew(HBoxContainer);
+		vbc->add_child(hbc);
+		hbc->add_child(memnew(Label(TTR("Name:"))));
+		add_meta_name = memnew(LineEdit);
+		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
+		hbc->add_child(add_meta_name);
+		hbc->add_child(memnew(Label(TTR("Type:"))));
+		add_meta_type = memnew(OptionButton);
+		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
+				continue; //not editable by inspector.
+			}
+			String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
+
+			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
+		}
+		hbc->add_child(add_meta_type);
+		add_meta_dialog->get_ok_button()->set_text(TTR("Add"));
+		add_child(add_meta_dialog);
+		add_meta_dialog->register_text_enter(add_meta_name);
+		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
+		add_meta_error = memnew(Label);
+		vbc->add_child(add_meta_error);
+
+		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
+	}
+
+	add_meta_dialog->popup_centered();
+	add_meta_name->set_text("");
+	_check_meta_name("");
+	add_meta_name->grab_focus();
 }
 
 void EditorInspector::_bind_methods() {

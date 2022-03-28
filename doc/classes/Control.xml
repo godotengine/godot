@@ -943,9 +943,9 @@
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<argument index="0" name="to_position" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
-				Moves the mouse cursor to [code]to_position[/code], relative to [member position] of this [Control].
+				Moves the mouse cursor to [code]position[/code], relative to [member position] of this [Control].
 			</description>
 		</method>
 	</methods>

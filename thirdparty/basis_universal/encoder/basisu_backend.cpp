@@ -49,22 +49,17 @@ namespace basisu
 		m_output.clear();
 	}
 
-	void basisu_backend::init(basisu_frontend* pFront_end, basisu_backend_params& params, const basisu_backend_slice_desc_vec& slice_descs, const basist::etc1_global_selector_codebook* pGlobal_sel_codebook)
+	void basisu_backend::init(basisu_frontend* pFront_end, basisu_backend_params& params, const basisu_backend_slice_desc_vec& slice_descs)
 	{
 		m_pFront_end = pFront_end;
 		m_params = params;
 		m_slices = slice_descs;
-		m_pGlobal_sel_codebook = pGlobal_sel_codebook;
-
-		debug_printf("basisu_backend::Init: Slices: %u, ETC1S: %u, EndpointRDOQualityThresh: %f, SelectorRDOQualityThresh: %f, UseGlobalSelCodebook: %u, GlobalSelCodebookPalBits: %u, GlobalSelCodebookModBits: %u, Use hybrid selector codebooks: %u\n",
+		
+		debug_printf("basisu_backend::Init: Slices: %u, ETC1S: %u, EndpointRDOQualityThresh: %f, SelectorRDOQualityThresh: %f\n",
 			m_slices.size(),
 			params.m_etc1s,
 			params.m_endpoint_rdo_quality_thresh,
-			params.m_selector_rdo_quality_thresh,
-			params.m_use_global_sel_codebook,
-			params.m_global_sel_codebook_pal_bits,
-			params.m_global_sel_codebook_mod_bits,
-			params.m_use_hybrid_sel_codebooks);
+			params.m_selector_rdo_quality_thresh);
 
 		debug_printf("Frontend endpoints: %u selectors: %u\n", m_pFront_end->get_total_endpoint_clusters(), m_pFront_end->get_total_selector_clusters());
 
@@ -106,63 +101,17 @@ namespace basisu
 
 		m_selector_palette.resize(r.get_total_selector_clusters());
 
-		if (m_params.m_use_global_sel_codebook)
+		for (uint32_t i = 0; i < r.get_total_selector_clusters(); i++)
 		{
-			m_global_selector_palette_desc.resize(r.get_total_selector_clusters());
+			etc1_selector_palette_entry& s = m_selector_palette[i];
 
-			for (int i = 0; i < static_cast<int>(r.get_total_selector_clusters()); i++)
+			const etc_block& selector_bits = r.get_selector_cluster_selector_bits(i);
+
+			for (uint32_t y = 0; y < 4; y++)
 			{
-				basist::etc1_selector_palette_entry& selector_pal_entry = m_selector_palette[i];
-
-				etc1_global_selector_cb_entry_desc& pal_entry_desc = m_global_selector_palette_desc[i];
-				pal_entry_desc.m_pal_index = r.get_selector_cluster_global_selector_entry_ids()[i].m_palette_index;
-				pal_entry_desc.m_mod_index = r.get_selector_cluster_global_selector_entry_ids()[i].m_modifier.get_index();
-
-				pal_entry_desc.m_was_used = true;
-				if (m_params.m_use_hybrid_sel_codebooks)
-					pal_entry_desc.m_was_used = r.get_selector_cluster_uses_global_cb_vec()[i];
-
-				if (pal_entry_desc.m_was_used)
+				for (uint32_t x = 0; x < 4; x++)
 				{
-					const etc_block& selector_bits = r.get_selector_cluster_selector_bits(i);
-					(void)selector_bits;
-
-					basist::etc1_selector_palette_entry global_pal_entry(m_pGlobal_sel_codebook->get_entry(r.get_selector_cluster_global_selector_entry_ids()[i]));
-
-					for (uint32_t y = 0; y < 4; y++)
-					{
-						for (uint32_t x = 0; x < 4; x++)
-						{
-							selector_pal_entry(x, y) = global_pal_entry(x, y);
-
-							assert(selector_bits.get_selector(x, y) == global_pal_entry(x, y));
-						}
-					}
-				}
-				else
-				{
-					const etc_block& selector_bits = r.get_selector_cluster_selector_bits(i);
-
-					for (uint32_t y = 0; y < 4; y++)
-						for (uint32_t x = 0; x < 4; x++)
-							selector_pal_entry[y * 4 + x] = static_cast<uint8_t>(selector_bits.get_selector(x, y));
-				}
-			}
-		}
-		else
-		{
-			for (uint32_t i = 0; i < r.get_total_selector_clusters(); i++)
-			{
-				basist::etc1_selector_palette_entry& s = m_selector_palette[i];
-
-				const etc_block& selector_bits = r.get_selector_cluster_selector_bits(i);
-
-				for (uint32_t y = 0; y < 4; y++)
-				{
-					for (uint32_t x = 0; x < 4; x++)
-					{
-						s[y * 4 + x] = static_cast<uint8_t>(selector_bits.get_selector(x, y));
-					}
+					s[y * 4 + x] = static_cast<uint8_t>(selector_bits.get_selector(x, y));
 				}
 			}
 		}
@@ -388,6 +337,8 @@ namespace basisu
 		if (!is_video)
 			return;
 
+		debug_printf("basisu_backend::check_for_valid_cr_blocks\n");
+
 		uint32_t total_crs = 0;
 		uint32_t total_invalid_crs = 0;
 
@@ -454,6 +405,11 @@ namespace basisu
 
 	void basisu_backend::create_encoder_blocks()
 	{
+		debug_printf("basisu_backend::create_encoder_blocks\n");
+
+		interval_timer tm;
+		tm.start();
+
 		basisu_frontend& r = *m_pFront_end;
 		const bool is_video = r.get_params().m_tex_type == basist::cBASISTexTypeVideoFrames;
 
@@ -565,6 +521,7 @@ namespace basisu
 							{
 								if ((is_video) && (endpoint_pred == basist::CR_ENDPOINT_PRED_INDEX))
 									continue;
+
 								int pred_block_x = block_x + g_endpoint_preds[endpoint_pred].m_dx;
 								if ((pred_block_x < 0) || (pred_block_x >= (int)num_blocks_x))
 									continue;
@@ -586,11 +543,23 @@ namespace basisu
 								unpack_etc1(trial_etc_block, trial_colors);
 
 								uint64_t trial_err = 0;
-								for (uint32_t p = 0; p < 16; p++)
+								if (r.get_params().m_perceptual)
 								{
-									trial_err += color_distance(r.get_params().m_perceptual, src_pixels.get_ptr()[p], trial_colors[p], false);
-									if (trial_err > thresh_err)
-										break;
+									for (uint32_t p = 0; p < 16; p++)
+									{
+										trial_err += color_distance(true, src_pixels.get_ptr()[p], trial_colors[p], false);
+										if (trial_err > thresh_err)
+											break;
+									}
+								}
+								else
+								{
+									for (uint32_t p = 0; p < 16; p++)
+									{
+										trial_err += color_distance(false, src_pixels.get_ptr()[p], trial_colors[p], false);
+										if (trial_err > thresh_err)
+											break;
+									}
 								}
 
 								if (trial_err <= thresh_err)
@@ -643,6 +612,8 @@ namespace basisu
 
 		sort_selector_codebook();
 		check_for_valid_cr_blocks();
+		
+		debug_printf("Elapsed time: %3.3f secs\n", tm.get_elapsed_secs());
 	}
 
 	void basisu_backend::compute_slice_crcs()
@@ -670,7 +641,9 @@ namespace basisu
 						etc_block& output_block = *(etc_block*)gi.get_block_ptr(block_x, block_y);
 
 						output_block.set_diff_bit(true);
-						output_block.set_flip_bit(true);
+						// Setting the flip bit to false to be compatible with the Khronos KDFS.
+						//output_block.set_flip_bit(true);
+						output_block.set_flip_bit(false);
 
 						const uint32_t endpoint_index = m.m_endpoint_index;
 
@@ -679,7 +652,7 @@ namespace basisu
 
 						const uint32_t selector_idx = m.m_selector_index;
 
-						const basist::etc1_selector_palette_entry& selectors = m_selector_palette[selector_idx];
+						const etc1_selector_palette_entry& selectors = m_selector_palette[selector_idx];
 						for (uint32_t sy = 0; sy < 4; sy++)
 							for (uint32_t sx = 0; sx < 4; sx++)
 								output_block.set_selector(sx, sy, selectors(sx, sy));
@@ -707,6 +680,9 @@ namespace basisu
 		} // slice_index
 	}
 
+	//uint32_t g_color_delta_hist[255 * 3 + 1];
+	//uint32_t g_color_delta_bad_hist[255 * 3 + 1];
+		
 	// TODO: Split this into multiple methods.
 	bool basisu_backend::encode_image()
 	{
@@ -737,6 +713,12 @@ namespace basisu
 
 		uint_vec block_endpoint_indices, block_selector_indices;
 
+		interval_timer tm;
+		tm.start();
+
+		const int COLOR_DELTA_THRESH = 8;
+		const int SEL_DIFF_THRESHOLD = 11;
+		
 		for (uint32_t slice_index = 0; slice_index < m_slices.size(); slice_index++)
 		{
 			//const int prev_frame_slice_index = is_video ? find_video_frame(slice_index, -1) : -1;
@@ -782,7 +764,7 @@ namespace basisu
 
 				}  // block_x
 			} // block_y
-
+						
 			for (uint32_t block_y = 0; block_y < num_blocks_y; block_y++)
 			{
 				for (uint32_t block_x = 0; block_x < num_blocks_x; block_x++)
@@ -857,68 +839,170 @@ namespace basisu
 							etc_block etc_blk(r.get_output_block(block_index));
 
 							const uint64_t cur_err = etc_blk.evaluate_etc1_error(src_pixels.get_ptr(), r.get_params().m_perceptual);
+							const uint32_t cur_inten5 = etc_blk.get_inten_table(0);
 
+							const etc1_endpoint_palette_entry& cur_endpoints = m_endpoint_palette[m.m_endpoint_index];
+														
 							if (cur_err)
 							{
 								const float endpoint_remap_thresh = maximum(1.0f, m_params.m_endpoint_rdo_quality_thresh);
 								const uint64_t thresh_err = (uint64_t)(cur_err * endpoint_remap_thresh);
 
-								uint64_t best_trial_err = UINT64_MAX;
-								int best_trial_idx = 0;
+								//const int MAX_ENDPOINT_SEARCH_DIST = (m_params.m_compression_level >= 2) ? 64 : 32;
+								const int MAX_ENDPOINT_SEARCH_DIST = (m_params.m_compression_level >= 2) ? 64 : 16;
 
-								etc_block trial_etc_blk(etc_blk);
-
-								const int MAX_ENDPOINT_SEARCH_DIST = 32;
-								const int search_dist = minimum<int>(iabs(endpoint_delta) - 1, MAX_ENDPOINT_SEARCH_DIST);
-								for (int d = -search_dist; d < search_dist; d++)
+								if (!g_cpu_supports_sse41)
 								{
-									int trial_idx = prev_endpoint_index + d;
-									if (trial_idx < 0)
-										trial_idx += (int)r.get_total_endpoint_clusters();
-									else if (trial_idx >= (int)r.get_total_endpoint_clusters())
-										trial_idx -= (int)r.get_total_endpoint_clusters();
+									const uint64_t initial_best_trial_err = UINT64_MAX;
+									uint64_t best_trial_err = initial_best_trial_err;
+									int best_trial_idx = 0;
 
-									if (trial_idx == new_endpoint_index)
-										continue;
-
-									// Skip it if this new endpoint palette entry is actually never used.
-									if (!m_new_endpoint_was_used[trial_idx])
-										continue;
-
-									const etc1_endpoint_palette_entry& p = m_endpoint_palette[m_endpoint_remap_table_new_to_old[trial_idx]];
-									trial_etc_blk.set_block_color5_etc1s(p.m_color5);
-									trial_etc_blk.set_inten_tables_etc1s(p.m_inten5);
-
-									uint64_t trial_err = trial_etc_blk.evaluate_etc1_error(src_pixels.get_ptr(), r.get_params().m_perceptual);
-
-									if (trial_err <= thresh_err)
+									etc_block trial_etc_blk(etc_blk);
+																		
+									const int search_dist = minimum<int>(iabs(endpoint_delta) - 1, MAX_ENDPOINT_SEARCH_DIST);
+									for (int d = -search_dist; d < search_dist; d++)
 									{
-										if (trial_err < best_trial_err)
+										int trial_idx = prev_endpoint_index + d;
+										if (trial_idx < 0)
+											trial_idx += (int)r.get_total_endpoint_clusters();
+										else if (trial_idx >= (int)r.get_total_endpoint_clusters())
+											trial_idx -= (int)r.get_total_endpoint_clusters();
+
+										if (trial_idx == new_endpoint_index)
+											continue;
+
+										// Skip it if this new endpoint palette entry is actually never used.
+										if (!m_new_endpoint_was_used[trial_idx])
+											continue;
+
+										const etc1_endpoint_palette_entry& p = m_endpoint_palette[m_endpoint_remap_table_new_to_old[trial_idx]];
+																				
+										if (m_params.m_compression_level <= 1)
+										{
+											if (p.m_inten5 > cur_inten5)
+												continue;
+
+											int delta_r = iabs(cur_endpoints.m_color5.r - p.m_color5.r);
+											int delta_g = iabs(cur_endpoints.m_color5.g - p.m_color5.g);
+											int delta_b = iabs(cur_endpoints.m_color5.b - p.m_color5.b);
+											int color_delta = delta_r + delta_g + delta_b;
+																						
+											if (color_delta > COLOR_DELTA_THRESH)
+												continue;
+										}
+
+										trial_etc_blk.set_block_color5_etc1s(p.m_color5);
+										trial_etc_blk.set_inten_tables_etc1s(p.m_inten5);
+
+										uint64_t trial_err = trial_etc_blk.evaluate_etc1_error(src_pixels.get_ptr(), r.get_params().m_perceptual);
+
+										if ((trial_err < best_trial_err) && (trial_err <= thresh_err))
 										{
 											best_trial_err = trial_err;
 											best_trial_idx = trial_idx;
 										}
 									}
-								}
 
-								if (best_trial_err != UINT64_MAX)
+									if (best_trial_err != initial_best_trial_err)
+									{
+										m.m_endpoint_index = m_endpoint_remap_table_new_to_old[best_trial_idx];
+
+										new_endpoint_index = best_trial_idx;
+
+										endpoint_delta = new_endpoint_index - prev_endpoint_index;
+
+										total_endpoint_indices_remapped++;
+									}
+								}
+								else
 								{
-									m.m_endpoint_index = m_endpoint_remap_table_new_to_old[best_trial_idx];
+#if BASISU_SUPPORT_SSE
+									uint8_t block_selectors[16];
+									for (uint32_t i = 0; i < 16; i++)
+										block_selectors[i] = (uint8_t)etc_blk.get_selector(i & 3, i >> 2);
 
-									new_endpoint_index = best_trial_idx;
+									const int64_t initial_best_trial_err = INT64_MAX;
+									int64_t best_trial_err = initial_best_trial_err;
+									int best_trial_idx = 0;
+																																				
+									const int search_dist = minimum<int>(iabs(endpoint_delta) - 1, MAX_ENDPOINT_SEARCH_DIST);
+									for (int d = -search_dist; d < search_dist; d++)
+									{
+										int trial_idx = prev_endpoint_index + d;
+										if (trial_idx < 0)
+											trial_idx += (int)r.get_total_endpoint_clusters();
+										else if (trial_idx >= (int)r.get_total_endpoint_clusters())
+											trial_idx -= (int)r.get_total_endpoint_clusters();
 
-									endpoint_delta = new_endpoint_index - prev_endpoint_index;
+										if (trial_idx == new_endpoint_index)
+											continue;
 
-									total_endpoint_indices_remapped++;
-								}
-							}
-						}
+										// Skip it if this new endpoint palette entry is actually never used.
+										if (!m_new_endpoint_was_used[trial_idx])
+											continue;
+
+										const etc1_endpoint_palette_entry& p = m_endpoint_palette[m_endpoint_remap_table_new_to_old[trial_idx]];
+																				
+										if (m_params.m_compression_level <= 1)
+										{
+											if (p.m_inten5 > cur_inten5)
+												continue;
+
+											int delta_r = iabs(cur_endpoints.m_color5.r - p.m_color5.r);
+											int delta_g = iabs(cur_endpoints.m_color5.g - p.m_color5.g);
+											int delta_b = iabs(cur_endpoints.m_color5.b - p.m_color5.b);
+											int color_delta = delta_r + delta_g + delta_b;
+											
+											if (color_delta > COLOR_DELTA_THRESH)
+												continue;
+										}
+
+										color_rgba block_colors[4];
+										etc_block::get_block_colors_etc1s(block_colors, p.m_color5, p.m_inten5);
+
+										int64_t trial_err;
+										if (r.get_params().m_perceptual)
+										{
+											perceptual_distance_rgb_4_N_sse41(&trial_err, block_selectors, block_colors, src_pixels.get_ptr(), 16, best_trial_err);
+										}
+										else
+										{
+											linear_distance_rgb_4_N_sse41(&trial_err, block_selectors, block_colors, src_pixels.get_ptr(), 16, best_trial_err);
+										}
+
+										//if (trial_err > thresh_err)
+										//	g_color_delta_bad_hist[color_delta]++;
+
+										if ((trial_err < best_trial_err) && (trial_err <= (int64_t)thresh_err))
+										{
+											best_trial_err = trial_err;
+											best_trial_idx = trial_idx;
+										}
+									}
+
+									if (best_trial_err != initial_best_trial_err)
+									{
+										m.m_endpoint_index = m_endpoint_remap_table_new_to_old[best_trial_idx];
+
+										new_endpoint_index = best_trial_idx;
+
+										endpoint_delta = new_endpoint_index - prev_endpoint_index;
+
+										total_endpoint_indices_remapped++;
+									}
+#endif // BASISU_SUPPORT_SSE
+								} // if (!g_cpu_supports_sse41)
+															
+							} // if (cur_err)
+
+						} // if ((m_params.m_endpoint_rdo_quality_thresh > 1.0f) && (iabs(endpoint_delta) > 1) && (!block_endpoints_are_referenced(block_x, block_y)))
 
 						if (endpoint_delta < 0)
 							endpoint_delta += (int)r.get_total_endpoint_clusters();
 
 						delta_endpoint_histogram.inc(endpoint_delta);
-					}
+
+					} // if (m.m_endpoint_predictor == basist::NO_ENDPOINT_PRED_INDEX)
 
 					block_endpoint_indices.push_back(m_endpoint_remap_table_new_to_old[new_endpoint_index]);
 
@@ -927,10 +1011,13 @@ namespace basisu
 					if ((!is_video) || (m.m_endpoint_predictor != basist::CR_ENDPOINT_PRED_INDEX))
 					{
 						int new_selector_index = m_selector_remap_table_old_to_new[m.m_selector_index];
+												
+						const float selector_remap_thresh = maximum(1.0f, m_params.m_selector_rdo_quality_thresh); //2.5f;
 
 						int selector_history_buf_index = -1;
 
-						if (m.m_is_cr_target)
+						// At low comp levels this hurts compression a tiny amount, but is significantly faster so it's a good tradeoff.
+						if ((m.m_is_cr_target) || (m_params.m_compression_level <= 1))
 						{
 							for (uint32_t j = 0; j < selector_history_buf.size(); j++)
 							{
@@ -944,89 +1031,99 @@ namespace basisu
 								}
 							}
 						}
-						else
+
+						// If the block is a CR target we can't override its selectors.
+						if ((!m.m_is_cr_target) && (selector_history_buf_index == -1))
 						{
 							const pixel_block& src_pixels = r.get_source_pixel_block(block_index);
 
-							const etc_block& etc_blk = r.get_output_block(block_index);
+							etc_block etc_blk = r.get_output_block(block_index);
 
-							color_rgba etc_blk_unpacked[16];
-							unpack_etc1(etc_blk, etc_blk_unpacked);
+							// This is new code - the initial release just used the endpoints from the frontend, which isn't correct/accurate.
+							const etc1_endpoint_palette_entry& q = m_endpoint_palette[m_endpoint_remap_table_new_to_old[new_endpoint_index]];
+							etc_blk.set_block_color5_etc1s(q.m_color5);
+							etc_blk.set_inten_tables_etc1s(q.m_inten5);
+
+							color_rgba block_colors[4];
+							etc_blk.get_block_colors(block_colors, 0);
+
+							const uint8_t* pCur_selectors = &m_selector_palette[m.m_selector_index][0];
 
 							uint64_t cur_err = 0;
 							if (r.get_params().m_perceptual)
 							{
 								for (uint32_t p = 0; p < 16; p++)
-									cur_err += color_distance(true, src_pixels.get_ptr()[p], etc_blk_unpacked[p], false);
+									cur_err += color_distance(true, src_pixels.get_ptr()[p], block_colors[pCur_selectors[p]], false);
 							}
 							else
 							{
 								for (uint32_t p = 0; p < 16; p++)
-									cur_err += color_distance(false, src_pixels.get_ptr()[p], etc_blk_unpacked[p], false);
+									cur_err += color_distance(false, src_pixels.get_ptr()[p], block_colors[pCur_selectors[p]], false);
 							}
-														
+							
+							const uint64_t limit_err = (uint64_t)ceilf(cur_err * selector_remap_thresh);
+
+							// Even if cur_err==limit_err, we still want to scan the history buffer because there may be equivalent entries that are cheaper to code.
+
 							uint64_t best_trial_err = UINT64_MAX;
 							int best_trial_idx = 0;
 							uint32_t best_trial_history_buf_idx = 0;
 
-							const float selector_remap_thresh = maximum(1.0f, m_params.m_selector_rdo_quality_thresh); //2.5f;
-							const bool use_strict_search = (m_params.m_compression_level == 0) && (selector_remap_thresh == 1.0f);
-
-							const uint64_t limit_err = (uint64_t)ceilf(cur_err * selector_remap_thresh);
-							
 							for (uint32_t j = 0; j < selector_history_buf.size(); j++)
 							{
 								const int trial_idx = selector_history_buf[j];
 
-								if (use_strict_search)
+								const uint8_t* pSelectors = &m_selector_palette[m_selector_remap_table_new_to_old[trial_idx]][0];
+
+								if (m_params.m_compression_level <= 1)
 								{
-									if (trial_idx == new_selector_index)
+									// Predict if evaluating the full color error would cause an early out, by summing the abs err of the selector indices.
+									int sel_diff = 0;
+									for (uint32_t p = 0; p < 16; p += 4)
 									{
-										best_trial_err = 0;
-										best_trial_idx = trial_idx;
-										best_trial_history_buf_idx = j;
-										break;
+										sel_diff += iabs(pCur_selectors[p + 0] - pSelectors[p + 0]);
+										sel_diff += iabs(pCur_selectors[p + 1] - pSelectors[p + 1]);
+										sel_diff += iabs(pCur_selectors[p + 2] - pSelectors[p + 2]);
+										sel_diff += iabs(pCur_selectors[p + 3] - pSelectors[p + 3]);
+										if (sel_diff >= SEL_DIFF_THRESHOLD)
+											break;
+									}
+									if (sel_diff >= SEL_DIFF_THRESHOLD)
+										continue;
+								}
+									
+								const uint64_t thresh_err = minimum(limit_err, best_trial_err);
+								uint64_t trial_err = 0;
+
+								// This tends to early out quickly, so SSE has a hard time competing.
+								if (r.get_params().m_perceptual)
+								{
+									for (uint32_t p = 0; p < 16; p++)
+									{
+										uint32_t sel = pSelectors[p];
+										trial_err += color_distance(true, src_pixels.get_ptr()[p], block_colors[sel], false);
+										if (trial_err > thresh_err)
+											break;
 									}
 								}
 								else
 								{
-									uint64_t trial_err = 0;
-									const uint64_t thresh_err = minimum(limit_err, best_trial_err);
-
-									color_rgba block_colors[4];
-									etc_blk.get_block_colors(block_colors, 0);
-
-									const uint8_t* pSelectors = &m_selector_palette[m_selector_remap_table_new_to_old[trial_idx]](0, 0);
-									
-									if (r.get_params().m_perceptual)
+									for (uint32_t p = 0; p < 16; p++)
 									{
-										for (uint32_t p = 0; p < 16; p++)
-										{
-											uint32_t sel = pSelectors[p];
-											trial_err += color_distance(true, src_pixels.get_ptr()[p], block_colors[sel], false);
-											if (trial_err > thresh_err)
-												break;
-										}
+										uint32_t sel = pSelectors[p];
+										trial_err += color_distance(false, src_pixels.get_ptr()[p], block_colors[sel], false);
+										if (trial_err > thresh_err)
+											break;
 									}
-									else
-									{
-										for (uint32_t p = 0; p < 16; p++)
-										{
-											uint32_t sel = pSelectors[p];
-											trial_err += color_distance(false, src_pixels.get_ptr()[p], block_colors[sel], false);
-											if (trial_err > thresh_err)
-												break;
-										}
-									}
+								}
 
-									if ((trial_err < best_trial_err) && (trial_err <= thresh_err))
-									{
-										assert(trial_err <= limit_err);
-										
-										best_trial_err = trial_err;
-										best_trial_idx = trial_idx;
-										best_trial_history_buf_idx = j;
-									}
+								if ((trial_err < best_trial_err) && (trial_err <= thresh_err))
+								{
+									assert(trial_err <= limit_err);
+
+									best_trial_err = trial_err;
+									best_trial_idx = trial_idx;
+									best_trial_history_buf_idx = j;
 								}
 							}
 
@@ -1043,6 +1140,7 @@ namespace basisu
 
 								selector_history_buf_histogram.inc(best_trial_history_buf_idx);
 							}
+
 						} // if (m_params.m_selector_rdo_quality_thresh > 0.0f)
 
 						m.m_selector_index = m_selector_remap_table_new_to_old[new_selector_index];
@@ -1163,6 +1261,14 @@ namespace basisu
 			}
 
 		} // slice_index
+
+		//for (int i = 0; i <= 255 * 3; i++)
+		//{
+		//	printf("%u, %u, %f\n", g_color_delta_bad_hist[i], g_color_delta_hist[i], g_color_delta_hist[i] ? g_color_delta_bad_hist[i] / (float)g_color_delta_hist[i] : 0);
+		//}
+				
+		double total_prep_time = tm.get_elapsed_secs();
+		debug_printf("basisu_backend::encode_image: Total prep time: %3.2f\n", total_prep_time);
 
 		debug_printf("Endpoint pred RDO total endpoint indices remapped: %u %3.2f%%\n",
 			total_endpoint_indices_remapped, total_endpoint_indices_remapped * 100.0f / get_total_blocks());
@@ -1554,215 +1660,82 @@ namespace basisu
 	bool basisu_backend::encode_selector_palette()
 	{
 		const basisu_frontend& r = *m_pFront_end;
+		
+		histogram delta_selector_pal_histogram(256);
 
-		if ((m_params.m_use_global_sel_codebook) && (!m_params.m_use_hybrid_sel_codebooks))
+		for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
 		{
-			histogram global_mod_indices(1 << m_params.m_global_sel_codebook_mod_bits);
+			if (!q)
+				continue;
 
-			for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
-				global_mod_indices.inc(m_global_selector_palette_desc[q].m_mod_index);
+			const etc1_selector_palette_entry& cur = m_selector_palette[m_selector_remap_table_new_to_old[q]];
+			const etc1_selector_palette_entry predictor(m_selector_palette[m_selector_remap_table_new_to_old[q - 1]]);
 
-			huffman_encoding_table global_pal_model, global_mod_model;
-
-			if (!global_mod_model.init(global_mod_indices, 16))
-			{
-				error_printf("global_mod_model.init() failed!");
-				return false;
-			}
-
-			bitwise_coder coder;
-			coder.init(1024 * 1024);
-
-			coder.put_bits(1, 1); // use global codebook
-
-			coder.put_bits(m_params.m_global_sel_codebook_pal_bits, 4); // pal bits
-			coder.put_bits(m_params.m_global_sel_codebook_mod_bits, 4); // mod bits
-
-			uint32_t mod_model_bits = 0;
-			if (m_params.m_global_sel_codebook_mod_bits)
-				mod_model_bits = coder.emit_huffman_table(global_mod_model);
-
-			uint32_t total_pal_bits = 0;
-			uint32_t total_mod_bits = 0;
-			for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
-			{
-				const uint32_t i = m_selector_remap_table_new_to_old[q];
-
-				if (m_params.m_global_sel_codebook_pal_bits)
-				{
-					coder.put_bits(m_global_selector_palette_desc[i].m_pal_index, m_params.m_global_sel_codebook_pal_bits);
-					total_pal_bits += m_params.m_global_sel_codebook_pal_bits;
-				}
-
-				if (m_params.m_global_sel_codebook_mod_bits)
-					total_mod_bits += coder.put_code(m_global_selector_palette_desc[i].m_mod_index, global_mod_model);
-			}
-
-			coder.flush();
-
-			m_output.m_selector_palette = coder.get_bytes();
-
-			debug_printf("Modifier model bits: %u Avg per entry: %3.3f\n", mod_model_bits, mod_model_bits / float(r.get_total_selector_clusters()));
-			debug_printf("Palette bits: %u Avg per entry: %3.3f, Modifier bits: %u Avg per entry: %3.3f\n", total_pal_bits, total_pal_bits / float(r.get_total_selector_clusters()), total_mod_bits, total_mod_bits / float(r.get_total_selector_clusters()));
+			for (uint32_t j = 0; j < 4; j++)
+				delta_selector_pal_histogram.inc(cur.get_byte(j) ^ predictor.get_byte(j));
 		}
-		else if (m_params.m_use_hybrid_sel_codebooks)
+
+		if (!delta_selector_pal_histogram.get_total())
+			delta_selector_pal_histogram.inc(0);
+
+		huffman_encoding_table delta_selector_pal_model;
+		if (!delta_selector_pal_model.init(delta_selector_pal_histogram, 16))
 		{
-			huff2D used_global_cb_bitflag_huff2D(1, 8);
-
-			histogram global_mod_indices(1 << m_params.m_global_sel_codebook_mod_bits);
-
-			for (uint32_t s = 0; s < r.get_total_selector_clusters(); s++)
-			{
-				const uint32_t q = m_selector_remap_table_new_to_old[s];
-
-				const bool used_global_cb_flag = r.get_selector_cluster_uses_global_cb_vec()[q];
-
-				used_global_cb_bitflag_huff2D.emit(used_global_cb_flag);
-
-				global_mod_indices.inc(m_global_selector_palette_desc[q].m_mod_index);
-			}
-
-			huffman_encoding_table global_mod_indices_model;
-			if (!global_mod_indices_model.init(global_mod_indices, 16))
-			{
-				error_printf("global_mod_indices_model.init() failed!");
-				return false;
-			}
-
-			bitwise_coder coder;
-			coder.init(1024 * 1024);
-
-			coder.put_bits(0, 1); // use global codebook
-			coder.put_bits(1, 1); // uses hybrid codebooks
-
-			coder.put_bits(m_params.m_global_sel_codebook_pal_bits, 4); // pal bits
-			coder.put_bits(m_params.m_global_sel_codebook_mod_bits, 4); // mod bits
-
-			used_global_cb_bitflag_huff2D.start_encoding(16);
-			coder.emit_huffman_table(used_global_cb_bitflag_huff2D.get_encoding_table());
-
-			if (m_params.m_global_sel_codebook_mod_bits)
-				coder.emit_huffman_table(global_mod_indices_model);
-
-			uint32_t total_global_cb_entries = 0;
-			uint32_t total_pal_bits = 0;
-			uint32_t total_mod_bits = 0;
-			uint32_t total_selectors = 0;
-			uint32_t total_selector_bits = 0;
-			uint32_t total_flag_bits = 0;
-
-			for (uint32_t s = 0; s < r.get_total_selector_clusters(); s++)
-			{
-				const uint32_t q = m_selector_remap_table_new_to_old[s];
-
-				total_flag_bits += used_global_cb_bitflag_huff2D.emit_next_sym(coder);
-
-				const bool used_global_cb_flag = r.get_selector_cluster_uses_global_cb_vec()[q];
-
-				if (used_global_cb_flag)
-				{
-					total_global_cb_entries++;
-
-					total_pal_bits += coder.put_bits(r.get_selector_cluster_global_selector_entry_ids()[q].m_palette_index, m_params.m_global_sel_codebook_pal_bits);
-					total_mod_bits += coder.put_code(r.get_selector_cluster_global_selector_entry_ids()[q].m_modifier.get_index(), global_mod_indices_model);
-				}
-				else
-				{
-					total_selectors++;
-					total_selector_bits += 32;
-
-					for (uint32_t j = 0; j < 4; j++)
-						coder.put_bits(m_selector_palette[q].get_byte(j), 8);
-				}
-			}
-
-			coder.flush();
-
-			m_output.m_selector_palette = coder.get_bytes();
-
-			debug_printf("Total global CB entries: %u %3.2f%%\n", total_global_cb_entries, total_global_cb_entries * 100.0f / r.get_total_selector_clusters());
-			debug_printf("Total selector entries: %u %3.2f%%\n", total_selectors, total_selectors * 100.0f / r.get_total_selector_clusters());
-			debug_printf("Total pal bits: %u, mod bits: %u, selector bits: %u, flag bits: %u\n", total_pal_bits, total_mod_bits, total_selector_bits, total_flag_bits);
+			error_printf("delta_selector_pal_model.init() failed!");
+			return false;
 		}
-		else
+
+		bitwise_coder coder;
+		coder.init(1024 * 1024);
+
+		coder.put_bits(0, 1); // use global codebook
+		coder.put_bits(0, 1); // uses hybrid codebooks
+
+		coder.put_bits(0, 1); // raw bytes
+
+		coder.emit_huffman_table(delta_selector_pal_model);
+
+		for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
 		{
-			histogram delta_selector_pal_histogram(256);
-
-			for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
+			if (!q)
 			{
-				if (!q)
-					continue;
-
-				const basist::etc1_selector_palette_entry& cur = m_selector_palette[m_selector_remap_table_new_to_old[q]];
-				const basist::etc1_selector_palette_entry predictor(m_selector_palette[m_selector_remap_table_new_to_old[q - 1]]);
-
 				for (uint32_t j = 0; j < 4; j++)
-					delta_selector_pal_histogram.inc(cur.get_byte(j) ^ predictor.get_byte(j));
+					coder.put_bits(m_selector_palette[m_selector_remap_table_new_to_old[q]].get_byte(j), 8);
+				continue;
 			}
 
-			if (!delta_selector_pal_histogram.get_total())
-				delta_selector_pal_histogram.inc(0);
+			const etc1_selector_palette_entry& cur = m_selector_palette[m_selector_remap_table_new_to_old[q]];
+			const etc1_selector_palette_entry predictor(m_selector_palette[m_selector_remap_table_new_to_old[q - 1]]);
 
-			huffman_encoding_table delta_selector_pal_model;
-			if (!delta_selector_pal_model.init(delta_selector_pal_histogram, 16))
-			{
-				error_printf("delta_selector_pal_model.init() failed!");
-				return false;
-			}
+			for (uint32_t j = 0; j < 4; j++)
+				coder.put_code(cur.get_byte(j) ^ predictor.get_byte(j), delta_selector_pal_model);
+		}
 
-			bitwise_coder coder;
+		coder.flush();
+
+		m_output.m_selector_palette = coder.get_bytes();
+
+		if (m_output.m_selector_palette.size() >= r.get_total_selector_clusters() * 4)
+		{
 			coder.init(1024 * 1024);
 
 			coder.put_bits(0, 1); // use global codebook
 			coder.put_bits(0, 1); // uses hybrid codebooks
 
-			coder.put_bits(0, 1); // raw bytes
-
-			coder.emit_huffman_table(delta_selector_pal_model);
+			coder.put_bits(1, 1); // raw bytes
 
 			for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
 			{
-				if (!q)
-				{
-					for (uint32_t j = 0; j < 4; j++)
-						coder.put_bits(m_selector_palette[m_selector_remap_table_new_to_old[q]].get_byte(j), 8);
-					continue;
-				}
-
-				const basist::etc1_selector_palette_entry& cur = m_selector_palette[m_selector_remap_table_new_to_old[q]];
-				const basist::etc1_selector_palette_entry predictor(m_selector_palette[m_selector_remap_table_new_to_old[q - 1]]);
+				const uint32_t i = m_selector_remap_table_new_to_old[q];
 
 				for (uint32_t j = 0; j < 4; j++)
-					coder.put_code(cur.get_byte(j) ^ predictor.get_byte(j), delta_selector_pal_model);
+					coder.put_bits(m_selector_palette[i].get_byte(j), 8);
 			}
 
 			coder.flush();
 
 			m_output.m_selector_palette = coder.get_bytes();
-
-			if (m_output.m_selector_palette.size() >= r.get_total_selector_clusters() * 4)
-			{
-				coder.init(1024 * 1024);
-
-				coder.put_bits(0, 1); // use global codebook
-				coder.put_bits(0, 1); // uses hybrid codebooks
-
-				coder.put_bits(1, 1); // raw bytes
-
-				for (uint32_t q = 0; q < r.get_total_selector_clusters(); q++)
-				{
-					const uint32_t i = m_selector_remap_table_new_to_old[q];
-
-					for (uint32_t j = 0; j < 4; j++)
-						coder.put_bits(m_selector_palette[i].get_byte(j), 8);
-				}
-
-				coder.flush();
-
-				m_output.m_selector_palette = coder.get_bytes();
-			}
-
-		}  // if (m_params.m_use_global_sel_codebook)        
+		}
 
 		debug_printf("Selector codebook bits: %u bytes: %u, Bits per entry: %3.1f, Avg bits/texel: %3.3f\n",
 			(int)m_output.m_selector_palette.size() * 8, (int)m_output.m_selector_palette.size(),

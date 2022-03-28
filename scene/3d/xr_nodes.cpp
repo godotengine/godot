@@ -95,7 +95,7 @@ TypedArray<String> XRCamera3D::get_configuration_warnings() const {
 		// must be child node of XROrigin3D!
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			warnings.push_back(TTR("XRCamera3D must have an XROrigin3D node as its parent."));
+			warnings.push_back(RTR("XRCamera3D must have an XROrigin3D node as its parent."));
 		};
 	}
 
@@ -423,15 +423,15 @@ TypedArray<String> XRNode3D::get_configuration_warnings() const {
 		// must be child node of XROrigin!
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			warnings.push_back(TTR("XRController3D must have an XROrigin3D node as its parent."));
+			warnings.push_back(RTR("XRController3D must have an XROrigin3D node as its parent."));
 		}
 
 		if (tracker_name == "") {
-			warnings.push_back(TTR("No tracker name is set."));
+			warnings.push_back(RTR("No tracker name is set."));
 		}
 
 		if (pose_name == "") {
-			warnings.push_back(TTR("No pose is set."));
+			warnings.push_back(RTR("No pose is set."));
 		}
 	}
 
@@ -589,13 +589,13 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 
 	if (is_visible() && is_inside_tree()) {
 		if (tracked_camera == nullptr) {
-			warnings.push_back(TTR("XROrigin3D requires an XRCamera3D child node."));
+			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 	}
 
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
-		warnings.push_back(TTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
+		warnings.push_back(RTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
 	}
 
 	return warnings;

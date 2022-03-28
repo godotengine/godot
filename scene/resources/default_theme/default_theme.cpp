@@ -801,6 +801,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("increment_highlight", "TabContainer", icons["scroll_button_right_hl"]);
 	theme->set_icon("decrement", "TabContainer", icons["scroll_button_left"]);
 	theme->set_icon("decrement_highlight", "TabContainer", icons["scroll_button_left_hl"]);
+	theme->set_icon("drop_mark", "TabContainer", icons["tabs_drop_mark"]);
 	theme->set_icon("menu", "TabContainer", icons["tabs_menu"]);
 	theme->set_icon("menu_highlight", "TabContainer", icons["tabs_menu_hl"]);
 
@@ -811,6 +812,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_unselected_color", "TabContainer", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabContainer", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabContainer", Color(1, 1, 1));
+	theme->set_color("drop_mark_color", "TabContainer", Color(1, 1, 1));
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
 	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
@@ -828,6 +830,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);
 	theme->set_icon("decrement", "TabBar", icons["scroll_button_left"]);
 	theme->set_icon("decrement_highlight", "TabBar", icons["scroll_button_left_hl"]);
+	theme->set_icon("drop_mark", "TabBar", icons["tabs_drop_mark"]);
 	theme->set_icon("close", "TabBar", icons["close"]);
 
 	theme->set_font("font", "TabBar", Ref<Font>());
@@ -837,6 +840,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);
 	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
+	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
 
 	theme->set_constant("hseparation", "TabBar", 4 * scale);
 	theme->set_constant("outline_size", "TabBar", 0);

@@ -228,7 +228,7 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
-void DisplayServer::mouse_warp_to_position(const Point2i &p_to) {
+void DisplayServer::warp_mouse(const Point2i &p_position) {
 	WARN_PRINT("Mouse warping is not supported by this display server.");
 }
 
@@ -481,7 +481,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
 
-	ClassDB::bind_method(D_METHOD("mouse_warp_to_position", "position"), &DisplayServer::mouse_warp_to_position);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &DisplayServer::warp_mouse);
 	ClassDB::bind_method(D_METHOD("mouse_get_position"), &DisplayServer::mouse_get_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_button_state"), &DisplayServer::mouse_get_button_state);
 
@@ -729,7 +729,7 @@ Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 }
 
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
-	singleton->mouse_warp_to_position(p_to_pos);
+	singleton->warp_mouse(p_to_pos);
 }
 
 Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {

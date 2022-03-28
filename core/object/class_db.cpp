@@ -1485,9 +1485,10 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	if (p_object_core) {
 		mi.flags |= METHOD_FLAG_OBJECT_CORE;
 	}
-	if (p_arg_names.size()) {
+
+	if (!p_object_core) {
 		if (p_arg_names.size() != mi.arguments.size()) {
-			WARN_PRINT("Mismatch argument name count for virtual function: " + String(p_class) + "::" + p_method.name);
+			WARN_PRINT("Mismatch argument name count for virtual method: " + String(p_class) + "::" + p_method.name);
 		} else {
 			for (int i = 0; i < p_arg_names.size(); i++) {
 				mi.arguments[i].name = p_arg_names[i];
@@ -1495,6 +1496,10 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 		}
 	}
 
+	if (classes[p_class].virtual_methods_map.has(p_method.name)) {
+		// overloading not supported
+		ERR_FAIL_MSG("Virtual method already bound '" + String(p_class) + "::" + p_method.name + "'.");
+	}
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
 
@@ -1549,15 +1554,6 @@ bool ClassDB::is_class_exposed(const StringName &p_class) {
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return ti->exposed;
-}
-
-StringName ClassDB::get_category(const StringName &p_node) {
-	ERR_FAIL_COND_V(!classes.has(p_node), StringName());
-#ifdef DEBUG_ENABLED
-	return classes[p_node].category;
-#else
-	return StringName();
-#endif
 }
 
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {

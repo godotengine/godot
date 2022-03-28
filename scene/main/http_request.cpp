@@ -558,12 +558,12 @@ void HTTPRequest::set_https_proxy(const String &p_host, int p_port) {
 	client->set_https_proxy(p_host, p_port);
 }
 
-void HTTPRequest::set_timeout(int p_timeout) {
+void HTTPRequest::set_timeout(double p_timeout) {
 	ERR_FAIL_COND(p_timeout < 0);
 	timeout = p_timeout;
 }
 
-int HTTPRequest::get_timeout() {
+double HTTPRequest::get_timeout() {
 	return timeout;
 }
 
@@ -615,7 +615,7 @@ void HTTPRequest::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "timeout", PROPERTY_HINT_RANGE, "0,86400"), "set_timeout", "get_timeout");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeout", PROPERTY_HINT_RANGE, "0,3600,0.1,or_greater"), "set_timeout", "get_timeout");
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
 

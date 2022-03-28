@@ -35,6 +35,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/viewport.h"
 
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;
@@ -158,7 +159,13 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (get_viewport()->gui_is_dragging() && can_drop_data(pos, get_viewport()->gui_get_drag_data())) {
+			dragging_valid_tab = true;
+			update();
+		}
+
 		_update_hover();
+
 		return;
 	}
 
@@ -333,6 +340,13 @@ void TabBar::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_DRAG_END: {
+			if (dragging_valid_tab) {
+				dragging_valid_tab = false;
+				update();
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (tabs.is_empty()) {
 				return;
@@ -346,8 +360,6 @@ void TabBar::_notification(int p_what) {
 			Color font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
 			Ref<Texture2D> incr = get_theme_icon(SNAME("increment"));
 			Ref<Texture2D> decr = get_theme_icon(SNAME("decrement"));
-			Ref<Texture2D> incr_hl = get_theme_icon(SNAME("increment_highlight"));
-			Ref<Texture2D> decr_hl = get_theme_icon(SNAME("decrement_highlight"));
 
 			bool rtl = is_layout_rtl();
 			Vector2 size = get_size();
@@ -391,7 +403,10 @@ void TabBar::_notification(int p_what) {
 			}
 
 			if (buttons_visible) {
-				int vofs = (get_size().height - incr->get_size().height) / 2;
+				Ref<Texture2D> incr_hl = get_theme_icon(SNAME("increment_highlight"));
+				Ref<Texture2D> decr_hl = get_theme_icon(SNAME("decrement_highlight"));
+
+				int vofs = (size.height - incr->get_size().height) / 2;
 
 				if (rtl) {
 					if (missing_right) {
@@ -418,6 +433,39 @@ void TabBar::_notification(int p_what) {
 						draw_texture(incr, Point2(limit_minus_buttons + decr->get_size().width, vofs), Color(1, 1, 1, 0.5));
 					}
 				}
+			}
+
+			if (dragging_valid_tab) {
+				int x;
+
+				int tab_hover = get_hovered_tab();
+				if (tab_hover != -1) {
+					Rect2 tab_rect = get_tab_rect(tab_hover);
+
+					x = tab_rect.position.x;
+					if (get_local_mouse_position().x > x + tab_rect.size.width / 2) {
+						x += tab_rect.size.width;
+					}
+				} else {
+					if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
+						x = get_tab_rect(0).position.x;
+						if (rtl) {
+							x += get_tab_rect(0).size.width;
+						}
+					} else {
+						Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+
+						x = tab_rect.position.x;
+						if (!rtl) {
+							x += tab_rect.size.width;
+						}
+					}
+				}
+
+				Ref<Texture2D> drop_mark = get_theme_icon(SNAME("drop_mark"));
+				Color drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
+
+				drop_mark->draw(get_canvas_item(), Point2(x - drop_mark->get_width() / 2, (size.height - drop_mark->get_height()) / 2), drop_mark_color);
 			}
 		} break;
 	}
@@ -906,6 +954,8 @@ void TabBar::_on_mouse_exited() {
 	cb_hover = -1;
 	hover = -1;
 	highlight_arrow = -1;
+	dragging_valid_tab = false;
+
 	update();
 }
 
@@ -1057,13 +1107,29 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 		NodePath to_path = get_path();
 
 		if (from_path == to_path) {
-			if (hover_now < 0) {
-				hover_now = get_tab_count() - 1;
+			if (tab_from_id == hover_now) {
+				return;
+			}
+
+			// Drop the new tab to the left or right depending on where the target tab is being hovered.
+			if (hover_now != -1) {
+				Rect2 tab_rect = get_tab_rect(hover_now);
+				if (is_layout_rtl() ^ (p_point.x <= tab_rect.position.x + tab_rect.size.width / 2)) {
+					if (hover_now > tab_from_id) {
+						hover_now -= 1;
+					}
+				} else if (tab_from_id > hover_now) {
+					hover_now += 1;
+				}
+			} else {
+				hover_now = is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x) ? 0 : get_tab_count() - 1;
 			}
 
 			move_tab(tab_from_id, hover_now);
-			emit_signal(SNAME("active_tab_rearranged"), hover_now);
-			set_current_tab(hover_now);
+			if (!is_tab_disabled(hover_now)) {
+				emit_signal(SNAME("active_tab_rearranged"), hover_now);
+				set_current_tab(hover_now);
+			}
 		} else if (get_tabs_rearrange_group() != -1) {
 			// Drag and drop between Tabs.
 
@@ -1075,11 +1141,17 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 					return;
 				}
 
-				Tab moving_tab = from_tabs->tabs[tab_from_id];
-				if (hover_now < 0) {
-					hover_now = get_tab_count();
+				// Drop the new tab to the left or right depending on where the target tab is being hovered.
+				if (hover_now != -1) {
+					Rect2 tab_rect = get_tab_rect(hover_now);
+					if (is_layout_rtl() ^ (p_point.x > tab_rect.position.x + tab_rect.size.width / 2)) {
+						hover_now += 1;
+					}
+				} else {
+					hover_now = is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x) ? 0 : get_tab_count();
 				}
 
+				Tab moving_tab = from_tabs->tabs[tab_from_id];
 				from_tabs->remove_tab(tab_from_id);
 				tabs.insert(hover_now, moving_tab);
 
@@ -1092,7 +1164,13 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 					}
 				}
 
-				set_current_tab(hover_now);
+				if (!is_tab_disabled(hover_now)) {
+					set_current_tab(hover_now);
+				} else {
+					_update_cache();
+					update();
+				}
+
 				update_minimum_size();
 
 				if (tabs.size() == 1) {

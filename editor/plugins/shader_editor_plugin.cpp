@@ -222,7 +222,7 @@ static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_va
 	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
 }
 
-void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) {
+void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	_check_shader_mode();
 
 	ShaderLanguage sl;

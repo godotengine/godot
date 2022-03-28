@@ -40,7 +40,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "navigation_mesh_editor_plugin.h"
+#include "editor/navigation_mesh_editor_plugin.h"
 #endif
 
 #ifndef _3D_DISABLED

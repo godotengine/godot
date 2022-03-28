@@ -68,6 +68,10 @@ void ProjectExportDialog::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
 	}
 }
 
@@ -1066,6 +1070,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 

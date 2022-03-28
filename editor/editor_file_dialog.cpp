@@ -781,11 +781,18 @@ void EditorFileDialog::update_file_list() {
 			continue;
 		}
 
-		if (show_hidden_files || !dir_access->current_is_hidden()) {
+		if (show_hidden_files) {
 			if (!dir_access->current_is_dir()) {
 				files.push_back(item);
 			} else {
 				dirs.push_back(item);
+			}
+		} else if (!dir_access->current_is_hidden()) {
+			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
+			if (dir_access->current_is_dir() && !EditorFileSystem::_should_skip_directory(full_path)) {
+				dirs.push_back(item);
+			} else {
+				files.push_back(item);
 			}
 		}
 		item = dir_access->get_next();
@@ -1092,6 +1099,13 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 }
 
 void EditorFileDialog::_make_dir_confirm() {
+	if (EditorFileSystem::get_singleton()->get_filesystem_path(makedirname->get_text().strip_edges())) {
+		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
+		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		makedirname->set_text(""); // Reset label.
+		return;
+	}
+
 	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
 		dir_access->change_dir(makedirname->get_text().strip_edges());
@@ -1294,6 +1308,18 @@ void EditorFileDialog::_update_favorites() {
 	favorite->set_pressed(false);
 
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
+
+	bool fav_changed = false;
+	for (int i = favorited.size() - 1; i >= 0; i--) {
+		if (!dir_access->dir_exists(favorited[i])) {
+			favorited.remove_at(i);
+			fav_changed = true;
+		}
+	}
+	if (fav_changed) {
+		EditorSettings::get_singleton()->set_favorites(favorited);
+	}
+
 	for (int i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res) {

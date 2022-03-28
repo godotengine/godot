@@ -163,15 +163,15 @@ TypedArray<String> Decal::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (textures[TEXTURE_ALBEDO].is_null() && textures[TEXTURE_NORMAL].is_null() && textures[TEXTURE_ORM].is_null() && textures[TEXTURE_EMISSION].is_null()) {
-		warnings.push_back(TTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
+		warnings.push_back(RTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
 	}
 
 	if ((textures[TEXTURE_NORMAL].is_valid() || textures[TEXTURE_ORM].is_valid()) && textures[TEXTURE_ALBEDO].is_null()) {
-		warnings.push_back(TTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
+		warnings.push_back(RTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
 	}
 
 	if (cull_mask == 0) {
-		warnings.push_back(TTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
+		warnings.push_back(RTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
 	}
 
 	return warnings;

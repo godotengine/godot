@@ -45,9 +45,13 @@ void preregister_openxr_types() {
 	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
 	OpenXRAPI::setup_global_defs();
-	openxr_api = OpenXRAPI::get_singleton();
-	if (openxr_api) {
-		if (!openxr_api->initialise(Main::get_rendering_driver_name())) {
+	if (OpenXRAPI::openxr_is_enabled()) {
+		openxr_api = memnew(OpenXRAPI);
+		ERR_FAIL_NULL(openxr_api);
+
+		if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+			memdelete(openxr_api);
+			openxr_api = nullptr;
 			return;
 		}
 	}
@@ -67,7 +71,7 @@ void register_openxr_types() {
 		openxr_interface.instantiate();
 		xr_server->add_interface(openxr_interface);
 
-		if (openxr_interface->initialise_on_startup()) {
+		if (openxr_interface->initialize_on_startup()) {
 			openxr_interface->initialize();
 		}
 	}
@@ -75,7 +79,7 @@ void register_openxr_types() {
 
 void unregister_openxr_types() {
 	if (openxr_interface.is_valid()) {
-		// uninitialise just in case
+		// uninitialize just in case
 		if (openxr_interface->is_initialized()) {
 			openxr_interface->uninitialize();
 		}
@@ -96,5 +100,6 @@ void unregister_openxr_types() {
 	if (openxr_api) {
 		openxr_api->finish();
 		memdelete(openxr_api);
+		openxr_api = nullptr;
 	}
 }

@@ -13,16 +13,14 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/basis_universal/"
 # Sync list with upstream CMakeLists.txt
 encoder_sources = [
-    "apg_bmp.c",
-    "basisu_astc_decomp.cpp",
     "basisu_backend.cpp",
     "basisu_basis_file.cpp",
     "basisu_bc7enc.cpp",
+    "basisu_opencl.cpp",
     "basisu_comp.cpp",
     "basisu_enc.cpp",
     "basisu_etc.cpp",
     "basisu_frontend.cpp",
-    "basisu_global_selector_palette_helpers.cpp",
     "basisu_gpu_texture.cpp",
     "basisu_kernels_sse.cpp",
     "basisu_pvrtc1_4.cpp",
@@ -31,7 +29,7 @@ encoder_sources = [
     "basisu_ssim.cpp",
     "basisu_uastc_enc.cpp",
     "jpgd.cpp",
-    "lodepng.cpp",
+    "pvpngreader.cpp",
 ]
 encoder_sources = [thirdparty_dir + "encoder/" + file for file in encoder_sources]
 transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]

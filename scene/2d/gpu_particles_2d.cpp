@@ -291,11 +291,11 @@ TypedArray<String> GPUParticles2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose."));
+		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose."));
 	}
 
 	if (process_material.is_null()) {
-		warnings.push_back(TTR("A material to process the particles is not assigned, so no behavior is imprinted."));
+		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
@@ -304,7 +304,7 @@ TypedArray<String> GPUParticles2D::get_configuration_warnings() const {
 			if (process &&
 					(process->get_param_max(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-				warnings.push_back(TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
+				warnings.push_back(RTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 			}
 		}
 	}

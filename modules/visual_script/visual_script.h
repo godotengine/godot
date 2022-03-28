@@ -338,8 +338,8 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
-		static Vector<DocData::ClassDoc> docs;
+	virtual Vector<DocData::ClassDoc> get_documentation() const override {
+		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
 #endif // TOOLS_ENABLED

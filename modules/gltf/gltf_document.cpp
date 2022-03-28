@@ -58,7 +58,6 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
-#include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -78,6 +77,9 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
+
+// FIXME: Hardcoded to avoid editor dependency.
+#define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2906,6 +2908,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 						blend_surface_tool->generate_tangents();
 					}
 					array_copy = blend_surface_tool->commit_to_arrays();
+
+					// Enforce blend shape mask array format
+					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
+						if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << l))) {
+							array_copy[l] = Variant();
+						}
+					}
 
 					morphs.push_back(array_copy);
 				}
@@ -5741,7 +5750,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 }
 
 template <class T>
-struct EditorSceneFormatImporterGLTFInterpolate {
+struct SceneFormatImporterGLTFInterpolate {
 	T lerp(const T &a, const T &b, float c) const {
 		return a + (b - a) * c;
 	}
@@ -5767,7 +5776,7 @@ struct EditorSceneFormatImporterGLTFInterpolate {
 
 // thank you for existing, partial specialization
 template <>
-struct EditorSceneFormatImporterGLTFInterpolate<Quaternion> {
+struct SceneFormatImporterGLTFInterpolate<Quaternion> {
 	Quaternion lerp(const Quaternion &a, const Quaternion &b, const float c) const {
 		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quaternion(), "The quaternion \"a\" must be normalized.");
 		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quaternion(), "The quaternion \"b\" must be normalized.");
@@ -5806,7 +5815,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 		idx++;
 	}
 
-	EditorSceneFormatImporterGLTFInterpolate<T> interp;
+	SceneFormatImporterGLTFInterpolate<T> interp;
 
 	switch (p_interp) {
 		case GLTFAnimation::INTERP_LINEAR: {
@@ -6899,7 +6908,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	state->use_named_skin_binds =
-			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 
 	_convert_scene_node(state, p_node, -1, -1);
 	if (!state->buffers.size()) {
@@ -6919,7 +6928,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
 	state->use_named_skin_binds =
-			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	FileAccessMemory *file_access = memnew(FileAccessMemory);
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	err = _parse(state, p_base_path.get_base_dir(), file_access, p_bake_fps);
@@ -7022,7 +7031,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	}
 	r_state->filename = p_path.get_file().get_basename();
 	r_state->use_named_skin_binds =
-			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);

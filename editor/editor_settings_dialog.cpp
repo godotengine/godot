@@ -142,6 +142,8 @@ void EditorSettingsDialog::_notification(int p_what) {
 			if (update_shortcuts_tab) {
 				_update_shortcuts();
 			}
+
+			inspector->update_category_list();
 		} break;
 	}
 }
@@ -415,6 +417,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
 
+	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
+	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
+
 	for (const String &E : slist) {
 		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
 		if (!sc->has_meta("original")) {
@@ -431,9 +436,11 @@ void EditorSettingsDialog::_update_shortcuts() {
 		} else {
 			section = shortcuts->create_item(root);
 
-			String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name);
+			const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, name_style);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style);
+
 			section->set_text(0, item_name);
-			section->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(section_name));
+			section->set_tooltip(0, tooltip);
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
 			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));

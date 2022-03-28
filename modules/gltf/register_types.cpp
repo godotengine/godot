@@ -30,9 +30,8 @@
 
 #include "register_types.h"
 
-#include "editor/editor_node.h"
-#include "editor_scene_exporter_gltf_plugin.h"
-#include "editor_scene_importer_gltf.h"
+#ifndef _3D_DISABLED
+
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_buffer_view.h"
@@ -49,18 +48,19 @@
 #include "gltf_state.h"
 #include "gltf_texture.h"
 
-#ifndef _3D_DISABLED
 #ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "editor/editor_scene_exporter_gltf_plugin.h"
+#include "editor/editor_scene_importer_gltf.h"
+
 static void _editor_init() {
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
 	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
 }
 #endif
-#endif
 
 void register_gltf_types() {
-#ifndef _3D_DISABLED
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -84,8 +84,9 @@ void register_gltf_types() {
 	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
 	GDREGISTER_CLASS(GLTFDocumentExtension);
 	GDREGISTER_CLASS(GLTFDocument);
-#endif
 }
 
 void unregister_gltf_types() {
 }
+
+#endif // _3D_DISABLED

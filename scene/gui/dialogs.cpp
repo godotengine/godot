@@ -93,6 +93,9 @@ void AcceptDialog::_notification(int p_what) {
 }
 
 void AcceptDialog::_text_submitted(const String &p_text) {
+	if (get_ok_button() && get_ok_button()->is_disabled()) {
+		return; // Do not allow submission if OK button is disabled.
+	}
 	_ok_pressed();
 }
 

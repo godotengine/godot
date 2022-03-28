@@ -30,12 +30,15 @@
 
 #include "register_types.h"
 
-#include "csg_gizmos.h"
-#include "csg_shape.h"
-
-void register_csg_types() {
 #ifndef _3D_DISABLED
 
+#include "csg_shape.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/csg_gizmos.h"
+#endif
+
+void register_csg_types() {
 	GDREGISTER_ABSTRACT_CLASS(CSGShape3D);
 	GDREGISTER_ABSTRACT_CLASS(CSGPrimitive3D);
 	GDREGISTER_CLASS(CSGMesh3D);
@@ -49,8 +52,9 @@ void register_csg_types() {
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<EditorPluginCSG>();
 #endif
-#endif
 }
 
 void unregister_csg_types() {
 }
+
+#endif // _3D_DISABLED

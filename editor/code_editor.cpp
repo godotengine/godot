@@ -854,7 +854,7 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 }
 
 void CodeTextEditor::_complete_request() {
-	List<ScriptCodeCompletionOption> entries;
+	List<ScriptLanguage::CodeCompletionOption> entries;
 	String ctext = text_editor->get_text_for_code_completion();
 	_code_complete_script(ctext, &entries);
 	bool forced = false;
@@ -865,7 +865,7 @@ void CodeTextEditor::_complete_request() {
 		return;
 	}
 
-	for (const ScriptCodeCompletionOption &e : entries) {
+	for (const ScriptLanguage::CodeCompletionOption &e : entries) {
 		Color font_color = completion_font_color;
 		if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
 			font_color = completion_string_color;
@@ -877,41 +877,41 @@ void CodeTextEditor::_complete_request() {
 	text_editor->update_code_completion_options(forced);
 }
 
-Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
+Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option) {
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
-		case ScriptCodeCompletionOption::KIND_CLASS: {
+		case ScriptLanguage::CODE_COMPLETION_KIND_CLASS: {
 			if (has_theme_icon(p_option.display, SNAME("EditorIcons"))) {
 				tex = get_theme_icon(p_option.display, SNAME("EditorIcons"));
 			} else {
 				tex = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 			}
 		} break;
-		case ScriptCodeCompletionOption::KIND_ENUM:
+		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
 			tex = get_theme_icon(SNAME("Enum"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_FILE_PATH:
+		case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
 			tex = get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_NODE_PATH:
+		case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
 			tex = get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_VARIABLE:
+		case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
 			tex = get_theme_icon(SNAME("Variant"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_CONSTANT:
+		case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
 			tex = get_theme_icon(SNAME("MemberConstant"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_MEMBER:
+		case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
 			tex = get_theme_icon(SNAME("MemberProperty"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_SIGNAL:
+		case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
 			tex = get_theme_icon(SNAME("MemberSignal"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_FUNCTION:
+		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
 			tex = get_theme_icon(SNAME("MemberMethod"), SNAME("EditorIcons"));
 			break;
-		case ScriptCodeCompletionOption::KIND_PLAIN_TEXT:
+		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 			tex = get_theme_icon(SNAME("BoxMesh"), SNAME("EditorIcons"));
 			break;
 		default:

@@ -1760,8 +1760,9 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 }
 
 void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE), ""));
+	String ext_filter = (get_os_name() == "Windows") ? "*.exe" : "";
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
@@ -1794,8 +1795,8 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	// Look for export templates (first official, and if defined custom templates).
 
 	bool use64 = p_preset->get("binary_format/64_bits");
-	bool dvalid = exists_export_template(use64 ? debug_file_64 : debug_file_32, &err);
-	bool rvalid = exists_export_template(use64 ? release_file_64 : release_file_32, &err);
+	bool dvalid = exists_export_template(get_template_file_name("debug", use64 ? "64" : "32"), &err);
+	bool rvalid = exists_export_template(get_template_file_name("release", use64 ? "64" : "32"), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -1830,19 +1831,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	template_path = template_path.strip_edges();
 
 	if (template_path.is_empty()) {
-		if (p_preset->get("binary_format/64_bits")) {
-			if (p_debug) {
-				template_path = find_export_template(debug_file_64);
-			} else {
-				template_path = find_export_template(release_file_64);
-			}
-		} else {
-			if (p_debug) {
-				template_path = find_export_template(debug_file_32);
-			} else {
-				template_path = find_export_template(release_file_32);
-			}
-		}
+		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/64_bits") ? "64" : "32"));
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
@@ -1919,22 +1908,6 @@ void EditorExportPlatformPC::set_os_name(const String &p_name) {
 
 void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 	logo = p_logo;
-}
-
-void EditorExportPlatformPC::set_release_64(const String &p_file) {
-	release_file_64 = p_file;
-}
-
-void EditorExportPlatformPC::set_release_32(const String &p_file) {
-	release_file_32 = p_file;
-}
-
-void EditorExportPlatformPC::set_debug_64(const String &p_file) {
-	debug_file_64 = p_file;
-}
-
-void EditorExportPlatformPC::set_debug_32(const String &p_file) {
-	debug_file_32 = p_file;
 }
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {

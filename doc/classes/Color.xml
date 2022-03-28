@@ -183,6 +183,7 @@
 			<description>
 				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
 				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
+				[b]Note:[/b] [method get_luminance] relies on the colour being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method to_linear] to convert it to the linear color space first.
 			</description>
 		</method>
 		<method name="get_named_color" qualifiers="static">
@@ -404,6 +405,12 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="to_linear" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the color converted to the linear color space. This assumes the original color is in the sRGB color space. See also [method to_srgb] which performs the opposite operation.
+			</description>
+		</method>
 		<method name="to_rgba32" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -434,6 +441,12 @@
 				GD.Print(color.ToRgba64()); // Prints -140736629309441
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_srgb" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the color converted to the [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space. This assumes the original color is in the linear color space. See also [method to_linear] which performs the opposite operation.
 			</description>
 		</method>
 	</methods>

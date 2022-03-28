@@ -273,7 +273,7 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
+		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
 	}
 
 	bool meshes_found = false;
@@ -300,17 +300,17 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	}
 
 	if (!meshes_found) {
-		warnings.push_back(TTR("Nothing is visible because meshes have not been assigned to draw passes."));
+		warnings.push_back(RTR("Nothing is visible because meshes have not been assigned to draw passes."));
 	}
 
 	if (process_material.is_null()) {
-		warnings.push_back(TTR("A material to process the particles is not assigned, so no behavior is imprinted."));
+		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param_max(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			warnings.push_back(TTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
+			warnings.push_back(RTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 		}
 	}
 
@@ -352,15 +352,15 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 		}
 
 		if (dp_count && skin.is_valid()) {
-			warnings.push_back(TTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
+			warnings.push_back(RTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
 		} else if (dp_count == 0 && skin.is_null()) {
-			warnings.push_back(TTR("Trails active, but neither Trail meshes or a Skin were found."));
+			warnings.push_back(RTR("Trails active, but neither Trail meshes or a Skin were found."));
 		} else if (dp_count > 1) {
-			warnings.push_back(TTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
+			warnings.push_back(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
 		if ((dp_count || !skin.is_null()) && (missing_trails || no_materials)) {
-			warnings.push_back(TTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
+			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 	}
 

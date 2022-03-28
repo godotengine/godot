@@ -77,15 +77,15 @@ void Joint2D::_update_joint(bool p_only_free) {
 	bool valid = false;
 
 	if (node_a && !body_a && node_b && !body_b) {
-		warning = TTR("Node A and Node B must be PhysicsBody2Ds");
+		warning = RTR("Node A and Node B must be PhysicsBody2Ds");
 	} else if (node_a && !body_a) {
-		warning = TTR("Node A must be a PhysicsBody2D");
+		warning = RTR("Node A must be a PhysicsBody2D");
 	} else if (node_b && !body_b) {
-		warning = TTR("Node B must be a PhysicsBody2D");
+		warning = RTR("Node B must be a PhysicsBody2D");
 	} else if (!body_a || !body_b) {
-		warning = TTR("Joint is not connected to two PhysicsBody2Ds");
+		warning = RTR("Joint is not connected to two PhysicsBody2Ds");
 	} else if (body_a == body_b) {
-		warning = TTR("Node A and Node B must be different PhysicsBody2Ds");
+		warning = RTR("Node A and Node B must be different PhysicsBody2Ds");
 	} else {
 		warning = String();
 		valid = true;

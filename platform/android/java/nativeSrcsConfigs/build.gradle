@@ -6,6 +6,7 @@ plugins {
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
@@ -27,8 +28,6 @@ android {
             manifest.srcFile 'AndroidManifest.xml'
         }
     }
-
-    ndkVersion versions.ndkVersion
 
     externalNativeBuild {
         cmake {

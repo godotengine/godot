@@ -101,6 +101,7 @@ private:
 	int max_width = 0;
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
+	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 

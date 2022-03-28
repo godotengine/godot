@@ -183,7 +183,7 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode);
 	virtual MouseMode mouse_get_mode() const;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to);
+	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;
 	virtual MouseButton mouse_get_button_state() const;
 

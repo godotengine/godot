@@ -1782,10 +1782,10 @@ void CodeEdit::request_code_completion(bool p_force) {
 	/* Don't re-query if all existing options are quoted types, eg path, signal. */
 	bool ignored = code_completion_active && !code_completion_options.is_empty();
 	if (ignored) {
-		ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_PLAIN_TEXT;
-		const ScriptCodeCompletionOption *previous_option = nullptr;
+		ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT;
+		const ScriptLanguage::CodeCompletionOption *previous_option = nullptr;
 		for (int i = 0; i < code_completion_options.size(); i++) {
-			const ScriptCodeCompletionOption &current_option = code_completion_options[i];
+			const ScriptLanguage::CodeCompletionOption &current_option = code_completion_options[i];
 			if (!previous_option) {
 				previous_option = &current_option;
 				kind = current_option.kind;
@@ -1795,7 +1795,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 				break;
 			}
 		}
-		ignored = ignored && (kind == ScriptCodeCompletionOption::KIND_FILE_PATH || kind == ScriptCodeCompletionOption::KIND_NODE_PATH || kind == ScriptCodeCompletionOption::KIND_SIGNAL);
+		ignored = ignored && (kind == ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH || kind == ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH || kind == ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL);
 	}
 
 	if (ignored) {
@@ -1818,8 +1818,8 @@ void CodeEdit::request_code_completion(bool p_force) {
 }
 
 void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const RES &p_icon, const Variant &p_value) {
-	ScriptCodeCompletionOption completion_option;
-	completion_option.kind = (ScriptCodeCompletionOption::Kind)p_type;
+	ScriptLanguage::CodeCompletionOption completion_option;
+	completion_option.kind = (ScriptLanguage::CodeCompletionKind)p_type;
 	completion_option.display = p_display_text;
 	completion_option.insert_text = p_insert_text;
 	completion_option.font_color = p_text_color;
@@ -2261,7 +2261,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
-	ADD_GROUP("Auto brace completion", "auto_brace_completion_");
+	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
@@ -2702,7 +2702,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		TypedArray<Dictionary> completion_options_sources;
 		completion_options_sources.resize(code_completion_option_sources.size());
 		int i = 0;
-		for (const ScriptCodeCompletionOption &E : code_completion_option_sources) {
+		for (const ScriptLanguage::CodeCompletionOption &E : code_completion_option_sources) {
 			Dictionary option;
 			option["kind"] = E.kind;
 			option["display_text"] = E.display;
@@ -2727,8 +2727,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		/* Convert back into options. */
 		int max_width = 0;
 		for (i = 0; i < completion_options.size(); i++) {
-			ScriptCodeCompletionOption option;
-			option.kind = (ScriptCodeCompletionOption::Kind)(int)completion_options[i].get("kind");
+			ScriptLanguage::CodeCompletionOption option;
+			option.kind = (ScriptLanguage::CodeCompletionKind)(int)completion_options[i].get("kind");
 			option.display = completion_options[i].get("display_text");
 			option.insert_text = completion_options[i].get("insert_text");
 			option.font_color = completion_options[i].get("font_color");
@@ -2821,15 +2821,15 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options.clear();
 	code_completion_base = string_to_complete;
 
-	Vector<ScriptCodeCompletionOption> completion_options_casei;
-	Vector<ScriptCodeCompletionOption> completion_options_substr;
-	Vector<ScriptCodeCompletionOption> completion_options_substr_casei;
-	Vector<ScriptCodeCompletionOption> completion_options_subseq;
-	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_casei;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr_casei;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_subseq;
+	Vector<ScriptLanguage::CodeCompletionOption> completion_options_subseq_casei;
 
 	int max_width = 0;
 	String string_to_complete_lower = string_to_complete.to_lower();
-	for (ScriptCodeCompletionOption &option : code_completion_option_sources) {
+	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
 		if (single_quote && option.display.is_quoted()) {
 			option.display = option.display.unquote().quote("'");
 		}
