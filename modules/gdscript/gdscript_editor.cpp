@@ -68,14 +68,21 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	if (!EDITOR_GET("text_editor/completion/add_type_hints")) {
 		processed_template = processed_template.replace(": int", "")
 									 .replace(": String", "")
+									 .replace(": Array[String]", "")
 									 .replace(": float", "")
 									 .replace(":=", "=")
+									 .replace(" -> String", "")
+									 .replace(" -> int", "")
 									 .replace(" -> void", "");
 	}
 #else
 	processed_template = processed_template.replace(": int", "")
 								 .replace(": String", "")
+								 .replace(": Array[String]", "")
 								 .replace(": float", "")
+								 .replace(":=", "=")
+								 .replace(" -> String", "")
+								 .replace(" -> int", "")
 								 .replace(" -> void", "");
 #endif
 
