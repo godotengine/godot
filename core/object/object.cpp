@@ -865,7 +865,9 @@ String Object::to_string() {
 		}
 	}
 	if (_extension && _extension->to_string) {
-		return _extension->to_string(_extension_instance);
+		String ret;
+		_extension->to_string(_extension_instance, &ret);
+		return ret;
 	}
 	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
 }
