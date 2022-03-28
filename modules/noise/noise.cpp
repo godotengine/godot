@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  noise.cpp                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "noise_texture.h"
-#include "open_simplex_noise.h"
+#include "noise.h"
 
-void register_opensimplex_types() {
-	GDREGISTER_CLASS(OpenSimplexNoise);
-	GDREGISTER_CLASS(NoiseTexture);
+Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, real_t p_blend_skirt) {
+	int skirt_width = p_width * p_blend_skirt;
+	int skirt_height = p_height * p_blend_skirt;
+	int src_width = p_width + skirt_width;
+	int src_height = p_height + skirt_height;
+
+	Ref<Image> src = get_image(src_width, src_height, p_invert);
+	bool grayscale = (src->get_format() == Image::FORMAT_L8);
+	if (grayscale) {
+		return _generate_seamless_image<uint8_t>(src, p_width, p_height, p_invert, p_blend_skirt);
+	} else {
+		return _generate_seamless_image<uint32_t>(src, p_width, p_height, p_invert, p_blend_skirt);
+	}
 }
 
-void unregister_opensimplex_types() {
+// Template specialization for faster grayscale blending.
+template <>
+uint8_t Noise::_alpha_blend<uint8_t>(uint8_t p_bg, uint8_t p_fg, int p_alpha) const {
+	uint16_t alpha = p_alpha + 1;
+	uint16_t inv_alpha = 256 - p_alpha;
+
+	return (uint8_t)((alpha * p_fg + inv_alpha * p_bg) >> 8);
+}
+
+void Noise::_bind_methods() {
+	// Noise functions.
+	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &Noise::get_noise_1d);
+	ClassDB::bind_method(D_METHOD("get_noise_2d", "x", "y"), &Noise::get_noise_2d);
+	ClassDB::bind_method(D_METHOD("get_noise_2dv", "v"), &Noise::get_noise_2dv);
+	ClassDB::bind_method(D_METHOD("get_noise_3d", "x", "y", "z"), &Noise::get_noise_3d);
+	ClassDB::bind_method(D_METHOD("get_noise_3dv", "v"), &Noise::get_noise_3dv);
+
+	// Textures.
+	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "invert"), &Noise::get_image, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_seamless_image", "width", "height", "invert", "skirt"), &Noise::get_seamless_image, DEFVAL(false), DEFVAL(0.1));
 }
