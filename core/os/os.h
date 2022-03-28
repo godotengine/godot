@@ -51,7 +51,6 @@ class OS {
 	bool low_processor_usage_mode;
 	int low_processor_usage_mode_sleep_usec;
 	bool _update_vital_only;
-	bool _update_pending;
 	bool _verbose_stdout;
 	bool _debug_stdout;
 	String _local_clipboard;
@@ -77,6 +76,8 @@ class OS {
 	List<String> restart_commandline;
 
 protected:
+	bool _update_pending;
+
 	void _set_logger(CompositeLogger *p_logger);
 
 public:
