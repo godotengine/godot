@@ -1083,9 +1083,9 @@ DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 	return wls.pointer_state.mode;
 }
 
-void DisplayServerWayland::mouse_warp_to_position(const Point2i &p_to) {
+void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	// TODO
-	print_verbose("wayland stub mouse_warp_to_position");
+	print_verbose("wayland stub warp_mouse");
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
