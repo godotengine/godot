@@ -70,6 +70,8 @@ class OS_Android : public OS_Unix {
 	bool transparency_enabled = false;
 
 public:
+	static const char *ANDROID_EXEC_PATH;
+
 	// functions used by main to initialize/deinitialize the OS
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
@@ -111,6 +113,7 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual void set_keep_screen_on(bool p_enabled);
+	virtual void set_low_processor_usage_mode(bool p_enabled);
 
 	virtual Size2 get_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
@@ -144,6 +147,7 @@ public:
 	virtual ScreenOrientation get_screen_orientation() const;
 
 	virtual Error shell_open(String p_uri);
+	virtual String get_executable_path() const;
 	virtual String get_user_data_dir() const;
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
@@ -173,9 +177,16 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	void vibrate_handheld(int p_duration_ms);
 
+	virtual String get_config_path() const;
+
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
+
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
+
+private:
+	Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id);
 };
 
 #endif

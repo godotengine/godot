@@ -1388,6 +1388,9 @@ Vector2 Viewport::_get_window_offset() const {
 }
 
 Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
+	if (ev.is_null()) {
+		return ev;
+	}
 	Vector2 vp_ofs = _get_window_offset();
 	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 
