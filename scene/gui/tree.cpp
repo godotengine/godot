@@ -3459,7 +3459,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
+	Ref<InputEventGesturePan> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		double prev_v = v_scroll->get_value();
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);

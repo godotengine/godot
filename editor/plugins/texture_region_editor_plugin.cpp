@@ -592,12 +592,12 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
-	if (magnify_gesture.is_valid()) {
-		_zoom_on_position(draw_zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+	Ref<InputEventGesturePinch> pinch_gesture = p_input;
+	if (pinch_gesture.is_valid()) {
+		_zoom_on_position(draw_zoom * pinch_gesture->get_factor(), pinch_gesture->get_position());
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_input;
+	Ref<InputEventGesturePan> pan_gesture = p_input;
 	if (pan_gesture.is_valid()) {
 		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
 		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
