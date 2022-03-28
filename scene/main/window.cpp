@@ -1452,6 +1452,15 @@ void Window::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+Transform2D Window::get_screen_transform() const {
+	Transform2D embedder_transform = Transform2D();
+	if (_get_embedder()) {
+		embedder_transform.translate(get_position());
+		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
+	}
+	return embedder_transform * Viewport::get_screen_transform();
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
