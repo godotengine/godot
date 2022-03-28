@@ -31,8 +31,10 @@
 #ifndef GRID_MAP_EDITOR_PLUGIN_H
 #define GRID_MAP_EDITOR_PLUGIN_H
 
+#ifdef TOOLS_ENABLED
+
+#include "../grid_map.h"
 #include "editor/editor_plugin.h"
-#include "grid_map.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
@@ -249,4 +251,6 @@ public:
 	~GridMapEditorPlugin();
 };
 
-#endif // CUBE_GRID_MAP_EDITOR_PLUGIN_H
+#endif // TOOLS_ENABLED
+
+#endif // GRID_MAP_EDITOR_PLUGIN_H

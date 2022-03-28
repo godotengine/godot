@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_scene_importer_gltf.cpp                                       */
+/*  csg_gizmos.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if TOOLS_ENABLED
-#include "editor_scene_importer_gltf.h"
+#ifndef CSG_GIZMOS_H
+#define CSG_GIZMOS_H
 
-#include "gltf_document.h"
-#include "gltf_state.h"
+#ifdef TOOLS_ENABLED
 
-#include "scene/3d/node_3d.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/animation.h"
+#include "../csg_shape.h"
+#include "editor/editor_plugin.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 
-uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
+class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(CSGShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("gltf");
-	r_extensions->push_back("glb");
-}
+public:
+	virtual bool has_gizmo(Node3D *p_spatial) override;
+	virtual String get_gizmo_name() const override;
+	virtual int get_priority() const override;
+	virtual bool is_selectable_when_hidden() const override;
+	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps,
-		List<String> *r_missing_deps,
-		Error *r_err) {
-	Ref<GLTFDocument> doc;
-	doc.instantiate();
-	Ref<GLTFState> state;
-	state.instantiate();
-	Error err = doc->append_from_file(p_path, state, p_flags, p_bake_fps);
-	if (err != OK) {
-		*r_err = err;
-		return nullptr;
-	}
-	Node *root = doc->generate_scene(state, p_bake_fps);
-	return root;
-}
+	virtual String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+	virtual Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+	virtual void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) override;
 
-Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options,
-		int p_bake_fps) {
-	return Ref<Animation>();
-}
+	CSGShape3DGizmoPlugin();
+};
+
+class EditorPluginCSG : public EditorPlugin {
+	GDCLASS(EditorPluginCSG, EditorPlugin);
+
+public:
+	EditorPluginCSG();
+};
 
 #endif // TOOLS_ENABLED
+
+#endif // CSG_GIZMOS_H

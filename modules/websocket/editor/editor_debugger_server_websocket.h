@@ -31,8 +31,10 @@
 #ifndef EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
 #define EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
 
+#ifdef TOOLS_ENABLED
+
+#include "../websocket_server.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "modules/websocket/websocket_server.h"
 
 class EditorDebuggerServerWebSocket : public EditorDebuggerServer {
 	GDCLASS(EditorDebuggerServerWebSocket, EditorDebuggerServer);
@@ -59,5 +61,7 @@ public:
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();
 };
+
+#endif // TOOLS_ENABLED
 
 #endif // EDITOR_DEBUGGER_SERVER_WEBSOCKET_H

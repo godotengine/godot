@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  csg_gizmos.h                                                         */
+/*  editor_scene_importer_gltf.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSG_GIZMOS_H
-#define CSG_GIZMOS_H
+#ifndef EDITOR_SCENE_IMPORTER_GLTF_H
+#define EDITOR_SCENE_IMPORTER_GLTF_H
 
-#include "csg_shape.h"
-#include "editor/editor_plugin.h"
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#ifdef TOOLS_ENABLED
 
-class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(CSGShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
+#include "../gltf_document_extension.h"
+#include "../gltf_state.h"
 
-public:
-	virtual bool has_gizmo(Node3D *p_spatial) override;
-	virtual String get_gizmo_name() const override;
-	virtual int get_priority() const override;
-	virtual bool is_selectable_when_hidden() const override;
-	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
+#include "editor/import/resource_importer_scene.h"
+#include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
-	virtual String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	virtual Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	virtual void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
-	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) override;
+class Animation;
 
-	CSGShape3DGizmoPlugin();
-};
-
-class EditorPluginCSG : public EditorPlugin {
-	GDCLASS(EditorPluginCSG, EditorPlugin);
+class EditorSceneFormatImporterGLTF : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterGLTF, EditorSceneFormatImporter);
 
 public:
-	EditorPluginCSG();
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path,
+			uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) override;
 };
 
-#endif // CSG_GIZMOS_H
+#endif // TOOLS_ENABLED
+
+#endif // EDITOR_SCENE_IMPORTER_GLTF_H
