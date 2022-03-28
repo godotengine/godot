@@ -294,7 +294,7 @@ LoaderInstance::~LoaderInstance() {
 }
 
 bool LoaderInstance::ExtensionIsEnabled(const std::string& extension) {
-    for (std::string& cur_enabled : _enabled_extensions) {
+    for (const std::string& cur_enabled : _enabled_extensions) {
         if (cur_enabled == extension) {
             return true;
         }

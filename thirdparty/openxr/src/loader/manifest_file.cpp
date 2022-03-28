@@ -92,7 +92,7 @@ static void CheckAllFilesInThePath(const std::string &search_path, bool is_direc
         } else {
             std::vector<std::string> files;
             if (FileSysUtilsFindFilesInPath(search_path, files)) {
-                for (std::string &cur_file : files) {
+                for (const std::string &cur_file : files) {
                     std::string relative_path;
                     FileSysUtilsCombinePaths(search_path, cur_file, relative_path);
                     if (!FileSysUtilsGetAbsolutePath(relative_path, absolute_path)) {
@@ -449,7 +449,7 @@ static void GetExtensionProperties(const std::vector<ExtensionListing> &extensio
 
 // Return any instance extensions found in the manifest files in the proper form for
 // OpenXR (XrExtensionProperties).
-void ManifestFile::GetInstanceExtensionProperties(std::vector<XrExtensionProperties> &props) {
+void ManifestFile::GetInstanceExtensionProperties(std::vector<XrExtensionProperties> &props) const {
     GetExtensionProperties(_instance_extensions, props);
 }
 
@@ -837,7 +837,7 @@ XrResult ApiLayerManifestFile::FindManifestFiles(ManifestFileType type,
     }
 #endif
 
-    for (std::string &cur_file : filenames) {
+    for (const std::string &cur_file : filenames) {
         ApiLayerManifestFile::CreateIfValid(type, cur_file, manifest_files);
     }
 

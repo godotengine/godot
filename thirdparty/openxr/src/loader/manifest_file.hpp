@@ -49,7 +49,7 @@ class ManifestFile {
     ManifestFileType Type() const { return _type; }
     const std::string &Filename() const { return _filename; }
     const std::string &LibraryPath() const { return _library_path; }
-    void GetInstanceExtensionProperties(std::vector<XrExtensionProperties> &props);
+    void GetInstanceExtensionProperties(std::vector<XrExtensionProperties> &props) const;
     const std::string &GetFunctionName(const std::string &func_name) const;
 
    protected:
