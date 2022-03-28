@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PoolVector2Array" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A pooled array of [Vector2].
+		A pooled array of [Vector2]s.
 	</brief_description>
 	<description>
 		An array specifically designed to hold [Vector2]. Optimized for memory usage, does not fragment the memory.
-		[b]Note:[/b] This type is passed by value and not by reference.
+		[b]Note:[/b] This type is passed by value and not by reference. This means that when [i]mutating[/i] a class property of type [PoolVector2Array] or mutating a [PoolVector2Array] within an [Array] or [Dictionary], changes will be lost:
+		[codeblock]
+		var array = [PoolVector2Array()]
+		array[0].push_back(Vector2(12, 34))
+		print(array)  # [[]] (empty PoolVector2Array within an empty Array)
+		[/codeblock]
+		Instead, the entire [PoolVector2Array] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
+		[codeblock]
+		var array = [PoolVector2Array()]
+		var pool_array = array[0]
+		pool_array.push_back(Vector2(12, 34))
+		array[0] = pool_array
+		print(array)  # [[(12, 34)]] (PoolVector2Array with 1 element inside an Array)
+		[/codeblock]
 	</description>
 	<tutorials>
 		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>

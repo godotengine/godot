@@ -5,7 +5,20 @@
 	</brief_description>
 	<description>
 		An array specifically designed to hold [Vector3]. Optimized for memory usage, does not fragment the memory.
-		[b]Note:[/b] This type is passed by value and not by reference.
+		[b]Note:[/b] This type is passed by value and not by reference. This means that when [i]mutating[/i] a class property of type [PoolVector3Array] or mutating a [PoolVector3Array] within an [Array] or [Dictionary], changes will be lost:
+		[codeblock]
+		var array = [PoolVector3Array()]
+		array[0].push_back(Vector3(12, 34, 56))
+		print(array)  # [[]] (empty PoolVector3Array within an empty Array)
+		[/codeblock]
+		Instead, the entire [PoolVector3Array] property must be [i]reassigned[/i] with [code]=[/code] for it to be changed:
+		[codeblock]
+		var array = [PoolVector3Array()]
+		var pool_array = array[0]
+		pool_array.push_back(Vector3(12, 34, 56))
+		array[0] = pool_array
+		print(array)  # [[(12, 34, 56)]] (PoolVector3Array with 1 element inside an Array)
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
