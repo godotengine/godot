@@ -3626,7 +3626,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 #endif
 
-	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
+	if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->is_in_low_processor_usage_mode()) {
+		// Increase priority for projects that are not in low-processor mode (typically games)
+		// to reduce the risk of frame stuttering.
+		// This is not done for the editor to prevent importers or resource bakers
+		// from making the system unresponsive.
 		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		DWORD index = 0;
 		HANDLE handle = AvSetMmThreadCharacteristics("Games", &index);
