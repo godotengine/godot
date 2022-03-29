@@ -345,11 +345,6 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		wl_seat_destroy(globals.wl_seat);
 		globals.wl_seat = nullptr;
 
-		if (!globals.wlr_data_control_manager) {
-			zwlr_data_control_manager_v1_destroy(globals.wlr_data_control_manager);
-			globals.wlr_data_control_manager = nullptr;
-		}
-
 		return;
 	}
 
