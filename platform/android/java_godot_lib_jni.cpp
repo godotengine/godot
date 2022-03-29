@@ -240,9 +240,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
 	if (step.get() == -1)
-		return;
+		return true;
 
 	if (step.get() == 0) {
 		// Since Godot is initialized on the UI thread, _main_thread_id was set to that thread's id,
@@ -250,12 +250,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		Main::setup2(Thread::get_caller_id());
 		input_handler = new AndroidInputHandler();
 		step.increment();
-		return;
+		return true;
 	}
 
 	if (step.get() == 1) {
 		if (!Main::start()) {
-			return; // should exit instead and print the error
+			return true; // should exit instead and print the error
 		}
 
 		godot_java->on_godot_setup_completed(env);
@@ -269,9 +269,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	os_android->process_magnetometer(magnetometer);
 	os_android->process_gyroscope(gyroscope);
 
-	if (os_android->main_loop_iterate()) {
+	bool should_swap_buffers = false;
+	if (os_android->main_loop_iterate(&should_swap_buffers)) {
 		godot_java->force_quit(env);
 	}
+
+	return should_swap_buffers;
 }
 
 void touch_preprocessing(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray positions, jint buttons_mask, jfloat vertical_factor, jfloat horizontal_factor) {

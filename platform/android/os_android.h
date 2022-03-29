@@ -113,7 +113,6 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual void set_keep_screen_on(bool p_enabled);
-	virtual void set_low_processor_usage_mode(bool p_enabled);
 
 	virtual Size2 get_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
@@ -124,7 +123,7 @@ public:
 	virtual bool can_draw() const;
 
 	void main_loop_begin();
-	bool main_loop_iterate();
+	bool main_loop_iterate(bool *r_should_swap_buffers = nullptr);
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
