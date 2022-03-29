@@ -1052,7 +1052,11 @@ void BaseMaterial3D::_update_shader() {
 		} else {
 			code += "	float roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
 		}
-		code += "	ROUGHNESS = roughness_tex * roughness;\n";
+		if (flags[FLAG_INVERT_ROUGHNESS_CHANNEL]) {
+			code += "	ROUGHNESS = 1.0 - roughness_tex * (1.0 - roughness);\n";
+		} else {
+			code += "	ROUGHNESS = roughness_tex * roughness;\n";
+		}
 		code += "	SPECULAR = specular;\n";
 	} else {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -1060,8 +1064,11 @@ void BaseMaterial3D::_update_shader() {
 		} else {
 			code += "	vec4 orm_tex = texture(texture_orm,base_uv);\n";
 		}
-
-		code += "	ROUGHNESS = orm_tex.g;\n";
+		if (flags[FLAG_INVERT_ROUGHNESS_CHANNEL]) {
+			code += "	ROUGHNESS = 1.0 - orm_tex.g;\n";
+		} else {
+			code += "	ROUGHNESS = orm_tex.g;\n";
+		}
 		code += "	METALLIC = orm_tex.b;\n";
 	}
 
@@ -1196,7 +1203,11 @@ void BaseMaterial3D::_update_shader() {
 			code += "	vec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xy;\n";
 		}
 		code += "	CLEARCOAT = clearcoat*clearcoat_tex.x;";
-		code += "	CLEARCOAT_ROUGHNESS = clearcoat_roughness*clearcoat_tex.y;\n";
+		if (flags[FLAG_INVERT_ROUGHNESS_CHANNEL]) {
+			code += "	CLEARCOAT_ROUGHNESS = 1.0 - (1.0 - clearcoat_roughness)*clearcoat_tex.y;\n";
+		} else {
+			code += "	CLEARCOAT_ROUGHNESS = clearcoat_roughness*clearcoat_tex.y;\n";
+		}
 	}
 
 	if (features[FEATURE_ANISOTROPY]) {
@@ -1827,7 +1838,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		}
 
 	} else {
-		if (property.name == "orm_texture") {
+		if (property.name.begins_with("orm_")) {
 			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
@@ -2482,6 +2493,7 @@ void BaseMaterial3D::_bind_methods() {
 
 	ADD_GROUP("ORM", "orm_");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orm_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "orm_invert_roughness"), "set_flag", "get_flag", FLAG_INVERT_ROUGHNESS_CHANNEL);
 
 	ADD_GROUP("Metallic", "metallic_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "metallic", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_metallic", "get_metallic");
@@ -2493,6 +2505,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_roughness", "get_roughness");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "roughness_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ROUGHNESS);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "roughness_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_roughness_texture_channel", "get_roughness_texture_channel");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "roughness_invert_channel"), "set_flag", "get_flag", FLAG_INVERT_ROUGHNESS_CHANNEL);
 
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
@@ -2715,6 +2728,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_INVERT_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(FLAG_SUBSURFACE_MODE_SKIN);
 	BIND_ENUM_CONSTANT(FLAG_PARTICLE_TRAILS_MODE);
+	BIND_ENUM_CONSTANT(FLAG_INVERT_ROUGHNESS_CHANNEL);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);

@@ -257,6 +257,9 @@
 			[b]Note:[/b] The mesh must have both normals and tangents defined in its vertex data. Otherwise, the normal map won't render correctly and will only appear to darken the whole surface. If creating geometry with [SurfaceTool], you can use [method SurfaceTool.generate_normals] and [method SurfaceTool.generate_tangents] to automatically generate normals and tangents respectively.
 			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
+		<member name="orm_invert_roughness" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Whether to use the green channel of the orm_texture as glossiness. Also applies to clearcoat roughness.
+		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
@@ -304,6 +307,9 @@
 		</member>
 		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" default="1.0">
 			Surface reflection. A value of [code]0[/code] represents a perfect mirror while a value of [code]1[/code] completely blurs the reflection. See also [member metallic].
+		</member>
+		<member name="roughness_invert_channel" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Uses texture, multiplied with 1-roughness, as a glossiness map. Also applies to clearcoat roughness.
 		</member>
 		<member name="roughness_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the roughness per-pixel. Multiplied by [member roughness].
@@ -647,7 +653,10 @@
 		</constant>
 		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="20" enum="Flags">
+		<constant name="FLAG_INVERT_ROUGHNESS_CHANNEL" value="20" enum="Flags">
+			See [member roughness_invert_channel].
+		</constant>
+		<constant name="FLAG_MAX" value="21" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
