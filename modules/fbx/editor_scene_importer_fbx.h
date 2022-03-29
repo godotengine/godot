@@ -121,10 +121,9 @@ private:
 
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, AssetImportAnimation::Interpolation p_interp);
-	void _register_project_setting_import(const String generic, const String import_setting_string, const Vector<String> &exts, List<String> *r_extensions, const bool p_enabled) const;
 
 public:
-	EditorSceneImporterFBX() {}
+	EditorSceneImporterFBX();
 	~EditorSceneImporterFBX() {}
 
 	virtual void get_extensions(List<String> *r_extensions) const;
