@@ -35,6 +35,7 @@
 #include "core/ustring.h"
 #include "core/version.h"
 #include "editor/editor_log.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor_log.h"
@@ -1053,7 +1054,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorProfiler::Metric::Category c;
 			String name = p_data[idx++];
 			Array values = p_data[idx++];
-			c.name = name.capitalize();
+			c.name = EditorPropertyNameProcessor::get_singleton()->process_name(name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			c.items.resize(values.size() / 2);
 			c.total_time = 0;
 			c.signature = "categ::" + name;
@@ -2614,8 +2615,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 			String n = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
 			Performance::MonitorType mtype = Performance::get_singleton()->get_monitor_type(Performance::Monitor(i));
-			String base = n.get_slice("/", 0);
-			String name = n.get_slice("/", 1);
+			String base = EditorPropertyNameProcessor::get_singleton()->process_name(n.get_slice("/", 0), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+			String name = EditorPropertyNameProcessor::get_singleton()->process_name(n.get_slice("/", 1), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			if (!bases.has(base)) {
 				TreeItem *b = perf_monitors->create_item(root);
 				b->set_text(0, base.capitalize());
