@@ -58,24 +58,8 @@
 
 void EditorSceneFormatImporterFBX::get_extensions(List<String> *r_extensions) const {
 	// register FBX as the one and only format for FBX importing
-	const String import_setting_string = "filesystem/import/fbx/";
-	const String fbx_str = "fbx";
-	Vector<String> exts;
-	exts.push_back(fbx_str);
-	_register_project_setting_import(fbx_str, import_setting_string, exts, r_extensions, true);
-}
-
-void EditorSceneFormatImporterFBX::_register_project_setting_import(const String generic,
-		const String import_setting_string,
-		const Vector<String> &exts,
-		List<String> *r_extensions,
-		const bool p_enabled) const {
-	const String use_generic = "use_" + generic;
-	_GLOBAL_DEF(import_setting_string + use_generic, p_enabled, true);
-	if (ProjectSettings::get_singleton()->get(import_setting_string + use_generic)) {
-		for (int32_t i = 0; i < exts.size(); i++) {
-			r_extensions->push_back(exts[i]);
-		}
+	if (GLOBAL_GET("filesystem/import/fbx/use_fbx")) {
+		r_extensions->push_back("fbx");
 	}
 }
 
@@ -1472,4 +1456,8 @@ Ref<Animation> EditorSceneFormatImporterFBX::import_animation(const String &p_pa
 		uint32_t p_flags, const Map<StringName, Variant> &p_options,
 		int p_bake_fps) {
 	return Ref<Animation>();
+}
+
+EditorSceneFormatImporterFBX::EditorSceneFormatImporterFBX() {
+	_GLOBAL_DEF("filesystem/import/fbx/use_fbx", true, true);
 }
