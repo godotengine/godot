@@ -362,8 +362,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 			}
 
-			const Variant *args = binds.ptr();
-			callable = callable.bind(&args, binds.size());
+			const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
+			for (int j = 0; j < binds.size(); j++) {
+				argptrs[j] = &binds[j];
+			}
+			callable = callable.bind(argptrs, binds.size());
 		}
 
 		cfrom->connect(snames[c.signal], callable, varray(), CONNECT_PERSIST | c.flags);
