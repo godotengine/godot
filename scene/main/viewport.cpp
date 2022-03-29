@@ -1038,8 +1038,8 @@ Transform2D Viewport::get_final_transform() const {
 
 void Viewport::_update_canvas_items(Node *p_node) {
 	if (p_node != this) {
-		Viewport *vp = Object::cast_to<Viewport>(p_node);
-		if (vp) {
+		Window *w = Object::cast_to<Window>(p_node);
+		if (w && (!w->is_inside_tree() || !w->is_embedded())) {
 			return;
 		}
 
