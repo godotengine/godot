@@ -1664,6 +1664,11 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 		*/
 
+		if (canvas_item->canvas_group != nullptr) {
+			memdelete(canvas_item->canvas_group);
+			canvas_item->canvas_group = nullptr;
+		}
+
 		canvas_item_owner.free(p_rid);
 
 	} else if (canvas_light_owner.owns(p_rid)) {
