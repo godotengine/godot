@@ -55,46 +55,46 @@ class ProjectManager : public Control {
 
 	static ProjectManager *singleton;
 
-	TabContainer *tabs;
+	TabContainer *tabs = nullptr;
 
-	ProjectList *_project_list;
+	ProjectList *_project_list = nullptr;
 
-	LineEdit *search_box;
-	Label *loading_label;
-	OptionButton *filter_option;
+	LineEdit *search_box = nullptr;
+	Label *loading_label = nullptr;
+	OptionButton *filter_option = nullptr;
 
-	Button *run_btn;
-	Button *open_btn;
-	Button *rename_btn;
-	Button *erase_btn;
-	Button *erase_missing_btn;
-	Button *about_btn;
+	Button *run_btn = nullptr;
+	Button *open_btn = nullptr;
+	Button *rename_btn = nullptr;
+	Button *erase_btn = nullptr;
+	Button *erase_missing_btn = nullptr;
+	Button *about_btn = nullptr;
 
-	EditorAssetLibrary *asset_library;
+	EditorAssetLibrary *asset_library = nullptr;
 
-	EditorFileDialog *scan_dir;
-	ConfirmationDialog *language_restart_ask;
+	EditorFileDialog *scan_dir = nullptr;
+	ConfirmationDialog *language_restart_ask = nullptr;
 
-	ConfirmationDialog *erase_ask;
-	Label *erase_ask_label;
-	CheckBox *delete_project_contents;
+	ConfirmationDialog *erase_ask = nullptr;
+	Label *erase_ask_label = nullptr;
+	CheckBox *delete_project_contents = nullptr;
 
-	ConfirmationDialog *erase_missing_ask;
-	ConfirmationDialog *multi_open_ask;
-	ConfirmationDialog *multi_run_ask;
-	ConfirmationDialog *multi_scan_ask;
-	ConfirmationDialog *ask_update_settings;
-	ConfirmationDialog *open_templates;
-	EditorAbout *about;
+	ConfirmationDialog *erase_missing_ask = nullptr;
+	ConfirmationDialog *multi_open_ask = nullptr;
+	ConfirmationDialog *multi_run_ask = nullptr;
+	ConfirmationDialog *multi_scan_ask = nullptr;
+	ConfirmationDialog *ask_update_settings = nullptr;
+	ConfirmationDialog *open_templates = nullptr;
+	EditorAbout *about = nullptr;
 
-	HBoxContainer *settings_hb;
+	HBoxContainer *settings_hb = nullptr;
 
-	AcceptDialog *run_error_diag;
-	AcceptDialog *dialog_error;
-	ProjectDialog *npdialog;
+	AcceptDialog *run_error_diag = nullptr;
+	AcceptDialog *dialog_error = nullptr;
+	ProjectDialog *npdialog = nullptr;
 
-	OptionButton *language_btn;
-	LinkButton *version_btn;
+	OptionButton *language_btn = nullptr;
+	LinkButton *version_btn = nullptr;
 
 	void _open_asset_library();
 	void _scan_projects();
