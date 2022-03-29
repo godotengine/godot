@@ -28,38 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.godot.gl;
 
+import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
-import org.godotengine.godot.utils.GLUtils;
-
-import android.opengl.GLSurfaceView;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Godot's renderer implementation.
+ * Godot's GL renderer implementation.
  */
-class GodotRenderer implements GLSurfaceView.Renderer {
+public class GodotRenderer implements GLSurfaceView.Renderer {
 	private final GodotPluginRegistry pluginRegistry;
 	private boolean activityJustResumed = false;
 
-	GodotRenderer() {
+	public GodotRenderer() {
 		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
 	}
 
-	public void onDrawFrame(GL10 gl) {
+	public boolean onDrawFrame(GL10 gl) {
 		if (activityJustResumed) {
 			GodotLib.onRendererResumed();
 			activityJustResumed = false;
 		}
 
-		GodotLib.step();
+		boolean swapBuffers = GodotLib.step();
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGLDrawFrame(gl);
 		}
+
+		return swapBuffers;
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -76,13 +76,13 @@ class GodotRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	void onActivityResumed() {
+	public void onActivityResumed() {
 		// We defer invoking GodotLib.onRendererResumed() until the first draw frame call.
 		// This ensures we have a valid GL context and surface when we do so.
 		activityJustResumed = true;
 	}
 
-	void onActivityPaused() {
+	public void onActivityPaused() {
 		GodotLib.onRendererPaused();
 	}
 }

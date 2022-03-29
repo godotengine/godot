@@ -30,6 +30,8 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.gl.GodotRenderer;
+
 import android.app.Activity;
 import android.hardware.SensorEvent;
 import android.view.Surface;
@@ -68,7 +70,7 @@ public class GodotLib {
 	 * @param p_surface
 	 * @param p_width
 	 * @param p_height
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
 	public static native void resize(Surface p_surface, int p_width, int p_height);
 
@@ -85,9 +87,9 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
-	 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(GL10)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
 	 */
-	public static native void step();
+	public static native boolean step();
 
 	/**
 	 * Forward touch events from the main thread to the GL thread.

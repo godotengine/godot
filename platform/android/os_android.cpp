@@ -36,6 +36,7 @@
 #include "main/main.h"
 #include "platform/android/display_server_android.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering_server.h"
 
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
@@ -181,12 +182,18 @@ void OS_Android::main_loop_begin() {
 	}
 }
 
-bool OS_Android::main_loop_iterate() {
+bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop) {
 		return false;
 	}
 	DisplayServerAndroid::get_singleton()->process_events();
-	return Main::iteration();
+	bool exit = Main::iteration();
+
+	if (r_should_swap_buffers) {
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || RenderingServer::get_singleton()->has_changed();
+	}
+
+	return exit;
 }
 
 void OS_Android::main_loop_end() {
