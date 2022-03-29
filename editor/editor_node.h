@@ -756,6 +756,7 @@ public:
 	void select_editor_by_name(const String &p_name);
 
 	void open_request(const String &p_path);
+	void edit_foreign_resource(RES p_resource);
 
 	bool is_changing_scene() const;
 

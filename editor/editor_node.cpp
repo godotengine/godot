@@ -3755,6 +3755,11 @@ void EditorNode::open_request(const String &p_path) {
 	load_scene(p_path); // as it will be opened in separate tab
 }
 
+void EditorNode::edit_foreign_resource(RES p_resource) {
+	load_scene(p_resource->get_path().get_slice("::", 0));
+	InspectorDock::get_singleton()->call_deferred("edit_resource", p_resource);
+}
+
 void EditorNode::request_instance_scene(const String &p_path) {
 	SceneTreeDock::get_singleton()->instantiate(p_path);
 }
@@ -5740,6 +5745,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_get_scene_metadata", &EditorNode::_get_scene_metadata);
 	ClassDB::bind_method("set_edited_scene", &EditorNode::set_edited_scene);
 	ClassDB::bind_method("open_request", &EditorNode::open_request);
+	ClassDB::bind_method("edit_foreign_resource", &EditorNode::edit_foreign_resource);
 	ClassDB::bind_method("_close_messages", &EditorNode::_close_messages);
 	ClassDB::bind_method("_show_messages", &EditorNode::_show_messages);
 

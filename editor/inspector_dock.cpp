@@ -451,6 +451,8 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_menu_collapseall", &InspectorDock::_menu_collapseall);
 	ClassDB::bind_method("_menu_expandall", &InspectorDock::_menu_expandall);
 
+	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
+
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
 
