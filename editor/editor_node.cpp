@@ -5852,6 +5852,7 @@ EditorNode::EditorNode() {
 	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 	add_child(epnp);
 
+	PortableCompressedTexture2D::set_keep_all_compressed_buffers(true);
 	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 

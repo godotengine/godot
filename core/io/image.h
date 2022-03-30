@@ -147,6 +147,7 @@ public:
 	static Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels);
 	static Ref<Image> (*basis_universal_unpacker)(const Vector<uint8_t> &p_buffer);
+	static Ref<Image> (*basis_universal_unpacker_ptr)(const uint8_t *p_data, int p_size);
 
 	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const;
 	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color);
@@ -379,7 +380,7 @@ public:
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const override;
 
-	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC);
+	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC) const;
 	void optimize_channels();
 
 	Color get_pixelv(const Point2i &p_point) const;

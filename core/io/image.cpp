@@ -2726,6 +2726,7 @@ Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
 Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
 Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
 Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
+Ref<Image> (*Image::basis_universal_unpacker_ptr)(const uint8_t *, int) = nullptr;
 
 void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("width"));
@@ -3008,7 +3009,7 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 	}
 }
 
-Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {
+Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
 	bool r = false, g = false, b = false, a = false, c = false;
@@ -3612,6 +3613,10 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 
 	if (is_empty() && _jpg_mem_loader_func) {
 		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
+	}
+
+	if (is_empty() && _webp_mem_loader_func) {
+		copy_internals_from(_webp_mem_loader_func(p_mem_png_jpg, p_len));
 	}
 }
 
