@@ -266,9 +266,6 @@ public:
 	void set_scroll(const Vector2 &p_scroll);
 	Vector2 get_scroll() const;
 
-	void set_scroll(const Vector2 &p_scroll);
-	Vector2 get_scroll() const;
-
 	void add_module(const StringName &p_name, Ref<VisualScriptModule> p_mod);
 	void remove_module(const StringName &p_name);
 	Ref<VisualScriptModule> get_module(const StringName &p_name) const;
