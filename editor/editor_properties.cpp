@@ -2806,8 +2806,8 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 		if (!base_node) {
 			//try a base node within history
-			if (EditorNode::get_singleton()->get_editor_history()->get_path_size() > 0) {
-				Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(0));
+			if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
+				Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
 				if (base) {
 					base_node = Object::cast_to<Node>(base);
 				}
