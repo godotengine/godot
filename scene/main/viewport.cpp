@@ -1125,7 +1125,8 @@ Vector2 Viewport::get_mouse_position() const {
 }
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
-	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_position);
+	Transform2D xform = get_screen_transform();
+	Vector2 gpos = xform.xform(p_position).round();
 	Input::get_singleton()->warp_mouse(gpos);
 }
 
@@ -3113,6 +3114,10 @@ Viewport::SDFScale Viewport::get_sdf_scale() const {
 	return sdf_scale;
 }
 
+Transform2D Viewport::get_screen_transform() const {
+	return _get_input_pre_xform().affine_inverse() * get_final_transform();
+}
+
 #ifndef _3D_DISABLED
 AudioListener3D *Viewport::get_audio_listener_3d() const {
 	return audio_listener_3d;
@@ -3969,6 +3974,20 @@ Transform2D SubViewport::_stretch_transform() {
 	}
 
 	return transform;
+}
+
+Transform2D SubViewport::get_screen_transform() const {
+	Transform2D container_transform = Transform2D();
+	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (c) {
+		if (c->is_stretch_enabled()) {
+			container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
+		}
+		container_transform = c->get_viewport()->get_screen_transform() * c->get_global_transform_with_canvas() * container_transform;
+	} else {
+		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
+	}
+	return container_transform * Viewport::get_screen_transform();
 }
 
 void SubViewport::_notification(int p_what) {
