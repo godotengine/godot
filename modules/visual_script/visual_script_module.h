@@ -58,8 +58,8 @@ public:
 	virtual String get_text() const override;
 	virtual String get_category() const override { return "functions"; }
 
-	void set_function(const String &p_name);
-	String get_function_name() const { return name; }
+	void set_module(const String &p_name);
+	String get_module_name() const { return name; }
 	//void set_module_by_name(const StringName &p_name);
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;

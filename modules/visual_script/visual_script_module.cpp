@@ -109,7 +109,7 @@ PropertyInfo VisualScriptModuleNode::get_output_value_port_info(int p_idx) const
 	Ref<VisualScript> vs = get_script();
 	ERR_FAIL_COND_V(!vs.is_valid(), PropertyInfo());
 
-	Ref<VisualScriptModule> module = vs->get_function(name);
+	Ref<VisualScriptModule> module = vs->get_module(name);
 	ERR_FAIL_COND_V(!module.is_valid(), PropertyInfo());
 
 	Ref<VisualScriptNode> exit_node = module->get_node(1);
@@ -126,7 +126,7 @@ String VisualScriptModuleNode::get_text() const {
 	return "";
 }
 
-void VisualScriptModuleNode::set_function(const String &p_name) {
+void VisualScriptModuleNode::set_module(const String &p_name) {
 	name = p_name;
 	ports_changed_notify();
 	notify_property_list_changed();
