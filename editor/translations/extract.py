@@ -100,6 +100,7 @@ message_patterns = {
     re.compile(r'TTRC\("(?P<message>([^"\\]|\\.)*)"\)'): ExtractType.TEXT,
     re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(r'GLOBAL_DEF(_RST)?(_NOVAL)?\("(?P<message>[^".]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(r'GLOBAL_DEF\("(?P<message>layer_names/\w+)/layer_"'): ExtractType.PROPERTY_PATH,
     re.compile(r'EDITOR_DEF(_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(
         r'(ADD_PROPERTYI?|ImportOption|ExportOption)\(PropertyInfo\(Variant::[_A-Z0-9]+, "(?P<message>[^"]+?)"[,)]'
@@ -108,6 +109,7 @@ message_patterns = {
         r"(?!#define )LIMPL_PROPERTY(_RANGE)?\(Variant::[_A-Z0-9]+, (?P<message>[^,]+?),"
     ): ExtractType.PROPERTY_PATH,
     re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)", "(?P<prefix>[^"]*?)"\)'): ExtractType.GROUP,
+    re.compile(r'#define (WSC|WSS|WRTC)_\w+ "(?P<message>[^"]+?)"'): ExtractType.PROPERTY_PATH,
 }
 
 
