@@ -520,7 +520,7 @@
 			<return type="Array" />
 			<argument index="0" name="right" type="Array" />
 			<description>
-				This operator is actually provided by the [Variant] class. For further details, see the available documentation for [Variant] or refer to the Godot source code (core/variant/variant_op).
+				Concatenation operator. Appends the members of the given array to the array.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
