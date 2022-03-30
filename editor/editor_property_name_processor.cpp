@@ -123,6 +123,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["dof"] = "DoF";
 	capitalize_string_remaps["dpi"] = "DPI";
 	capitalize_string_remaps["dtls"] = "DTLS";
+	capitalize_string_remaps["erp"] = "ERP";
 	capitalize_string_remaps["etc"] = "ETC";
 	capitalize_string_remaps["etc2"] = "ETC2";
 	capitalize_string_remaps["fbx"] = "FBX";
@@ -140,10 +141,12 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["gles3"] = "GLES3";
 	capitalize_string_remaps["gpu"] = "GPU";
 	capitalize_string_remaps["gui"] = "GUI";
+	capitalize_string_remaps["guid"] = "GUID";
 	capitalize_string_remaps["hdr"] = "HDR";
 	capitalize_string_remaps["hidpi"] = "hiDPI";
 	capitalize_string_remaps["hipass"] = "High-pass";
 	capitalize_string_remaps["hsv"] = "HSV";
+	capitalize_string_remaps["html"] = "HTML";
 	capitalize_string_remaps["http"] = "HTTP";
 	capitalize_string_remaps["id"] = "ID";
 	capitalize_string_remaps["igd"] = "IGD";
@@ -157,6 +160,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["iphone"] = "iPhone";
 	capitalize_string_remaps["ipv6"] = "IPv6";
 	capitalize_string_remaps["ir"] = "IR";
+	capitalize_string_remaps["itunes"] = "iTunes";
 	capitalize_string_remaps["jit"] = "JIT";
 	capitalize_string_remaps["k1"] = "K1";
 	capitalize_string_remaps["k2"] = "K2";
@@ -205,6 +209,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["url"] = "URL";
 	capitalize_string_remaps["urls"] = "URLs";
 	capitalize_string_remaps["us"] = String::utf8("(µs)"); // Unit.
+	capitalize_string_remaps["usb"] = "USB";
 	capitalize_string_remaps["usec"] = String::utf8("(µsec)"); // Unit.
 	capitalize_string_remaps["uuid"] = "UUID";
 	capitalize_string_remaps["uv"] = "UV";
