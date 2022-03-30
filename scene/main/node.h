@@ -178,8 +178,8 @@ private:
 	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	Array _get_groups() const;
 
-	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
 	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }

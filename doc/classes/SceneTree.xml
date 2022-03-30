@@ -14,7 +14,7 @@
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="flags" type="int" />
 			<argument index="1" name="group" type="StringName" />
 			<argument index="2" name="method" type="StringName" />

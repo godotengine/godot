@@ -39,7 +39,7 @@ jobs:
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
-            godot-cpp-test: true
+            godot-cpp-test: false
             bin: "./bin/godot.linuxbsd.double.tools.64.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
