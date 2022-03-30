@@ -132,8 +132,8 @@
 			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the lighting calculation resulting in an added specular blob. This makes materials appear as if they have a clear layer on them that can be either glossy or rough.
 			[b]Note:[/b] Clearcoat rendering is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].
 		</member>
-		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss" default="0.5">
-			Sets the roughness of the clearcoat pass. A higher value results in a smoother clearcoat while a lower value results in a rougher clearcoat.
+		<member name="clearcoat_roughness" type="float" setter="set_clearcoat_roughness" getter="get_clearcoat_roughness" default="0.5">
+			Sets the roughness of the clearcoat pass. A higher value results in a rougher clearcoat while a lower value results in a smoother clearcoat.
 		</member>
 		<member name="clearcoat_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that defines the strength of the clearcoat effect and the glossiness of the clearcoat. Strength is specified in the red channel while glossiness is specified in the green channel.
@@ -319,6 +319,7 @@
 		</member>
 		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="BaseMaterial3D.SpecularMode" default="0">
 			The method for rendering the specular blob. See [enum SpecularMode].
+			[b]Note:[/b] Only applies to the specular blob. Does not affect specular reflections from the Sky, SSR, or ReflectionProbes.
 		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
@@ -664,16 +665,10 @@
 		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
 			Default specular blob.
 		</constant>
-		<constant name="SPECULAR_BLINN" value="1" enum="SpecularMode">
-			Older specular algorithm, included for compatibility.
-		</constant>
-		<constant name="SPECULAR_PHONG" value="2" enum="SpecularMode">
-			Older specular algorithm, included for compatibility.
-		</constant>
-		<constant name="SPECULAR_TOON" value="3" enum="SpecularMode">
+		<constant name="SPECULAR_TOON" value="1" enum="SpecularMode">
 			Toon blob which changes size based on roughness.
 		</constant>
-		<constant name="SPECULAR_DISABLED" value="4" enum="SpecularMode">
+		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
 			No specular blob.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">

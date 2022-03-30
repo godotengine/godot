@@ -34,8 +34,26 @@
 
 #include <limits.h>
 
+float StyleBox::get_style_margin(Side p_side) const {
+	float ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_style_margin, p_side, ret)) {
+		return ret;
+	}
+	return 0;
+}
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret)) {
+		return ret;
+	}
+
 	return true;
+}
+
+void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	if (GDVIRTUAL_REQUIRED_CALL(_draw, p_canvas_item, p_rect)) {
+		return;
+	}
 }
 
 void StyleBox::set_default_margin(Side p_side, float p_value) {
@@ -74,10 +92,19 @@ Point2 StyleBox::get_offset() const {
 }
 
 Size2 StyleBox::get_center_size() const {
+	Size2 ret;
+	if (GDVIRTUAL_CALL(_get_center_size, ret)) {
+		return ret;
+	}
+
 	return Size2();
 }
 
 Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {
+	Rect2 ret;
+	if (GDVIRTUAL_CALL(_get_draw_rect, p_rect, ret)) {
+		return ret;
+	}
 	return p_rect;
 }
 
@@ -100,6 +127,12 @@ void StyleBox::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", SIDE_BOTTOM);
+
+	GDVIRTUAL_BIND(_get_style_margin, "side")
+	GDVIRTUAL_BIND(_test_mask, "point", "rect")
+	GDVIRTUAL_BIND(_get_center_size)
+	GDVIRTUAL_BIND(_get_draw_rect, "rect")
+	GDVIRTUAL_BIND(_draw, "to_canvas_item", "rect")
 }
 
 StyleBox::StyleBox() {

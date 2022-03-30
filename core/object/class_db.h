@@ -118,6 +118,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool is_virtual = false;
 		Object *(*creation_func)() = nullptr;
 
 		ClassInfo() {}
@@ -143,6 +144,13 @@ public:
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static Set<StringName> default_values_cached;
 
+	// Native structs, used by binder
+	struct NativeStruct {
+		String ccode; // C code to create the native struct, fields separated by ; Arrays accepted (even containing other structs), also function pointers. All types must be Godot types.
+		uint64_t struct_size; // local size of struct, for comparison
+	};
+	static Map<StringName, NativeStruct> native_structs;
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
@@ -156,20 +164,21 @@ public:
 	}
 
 	template <class T>
-	static void register_class() {
+	static void register_class(bool p_virtual = false) {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
+		t->is_virtual = p_virtual;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
 	template <class T>
-	static void register_virtual_class() {
+	static void register_abstract_class() {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -210,6 +219,7 @@ public:
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
+	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
@@ -387,6 +397,11 @@ public:
 	static APIType get_current_api();
 	static void cleanup_defaults();
 	static void cleanup();
+
+	static void register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size);
+	static void get_native_struct_list(List<StringName> *r_names);
+	static String get_native_struct_code(const StringName &p_name);
+	static uint64_t get_native_struct_size(const StringName &p_name); // Used for asserting
 };
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -436,10 +451,16 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
 		::ClassDB::register_class<m_class>();        \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)             \
-	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
-		::ClassDB::register_virtual_class<m_class>(); \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		::ClassDB::register_class<m_class>(true);    \
 	}
+#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {   \
+		::ClassDB::register_abstract_class<m_class>(); \
+	}
+
+#define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
 
 #include "core/disabled_classes.gen.h"
 

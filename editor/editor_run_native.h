@@ -38,7 +38,7 @@ class EditorRunNative : public HBoxContainer {
 	GDCLASS(EditorRunNative, HBoxContainer);
 
 	Map<int, MenuButton *> menus;
-	bool first;
+	bool first = true;
 
 	int resume_idx;
 	int resume_platform;

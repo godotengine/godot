@@ -163,7 +163,7 @@ Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
 	Vector2 v = *this;
 	Vector2 vd = p_to - v;
 	real_t len = vd.length();
-	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+	return len <= p_delta || len < (real_t)CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.

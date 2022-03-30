@@ -67,7 +67,7 @@ public:
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
-	MenuButton();
+	MenuButton(const String &p_text = String());
 	~MenuButton();
 };
 

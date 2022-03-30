@@ -89,7 +89,6 @@ const GodotFetch = {
 				method: method,
 				headers: headers,
 				body: body,
-				credentials: 'include',
 			};
 			obj.request = fetch(url, init);
 			obj.request.then(GodotFetch.onresponse.bind(null, id)).catch(GodotFetch.onerror.bind(null, id));

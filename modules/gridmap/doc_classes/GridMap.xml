@@ -117,15 +117,6 @@
 				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
 			</description>
 		</method>
-		<method name="set_clip">
-			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
-			<argument index="1" name="clipabove" type="bool" default="true" />
-			<argument index="2" name="floor" type="int" default="0" />
-			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="0" />
-			<description>
-			</description>
-		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
 			<argument index="0" name="layer_number" type="int" />

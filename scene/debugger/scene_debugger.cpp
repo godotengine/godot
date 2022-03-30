@@ -34,6 +34,7 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
+#include "core/templates/local_vector.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -236,12 +237,28 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
 
 	} else if (p_msg == "live_node_call") {
-		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
-		live_editor->_node_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], p_args[8], p_args[9]);
+		LocalVector<Variant> args;
+		LocalVector<Variant *> argptrs;
+		args.resize(p_args.size() - 2);
+		argptrs.resize(args.size());
+		for (uint32_t i = 0; i < args.size(); i++) {
+			args[i] = p_args[i + 2];
+			argptrs[i] = &args[i];
+		}
+		live_editor->_node_call_func(p_args[0], p_args[1], (const Variant **)argptrs.ptr(), argptrs.size());
 
 	} else if (p_msg == "live_res_call") {
 		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
-		live_editor->_res_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], p_args[8], p_args[9]);
+
+		LocalVector<Variant> args;
+		LocalVector<Variant *> argptrs;
+		args.resize(p_args.size() - 2);
+		argptrs.resize(args.size());
+		for (uint32_t i = 0; i < args.size(); i++) {
+			args[i] = p_args[i + 2];
+			argptrs[i] = &args[i];
+		}
+		live_editor->_res_call_func(p_args[0], p_args[1], (const Variant **)argptrs.ptr(), argptrs.size());
 
 	} else if (p_msg == "live_create_node") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
@@ -636,7 +653,7 @@ void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const St
 	_node_set_func(p_id, p_prop, r);
 }
 
-void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree) {
 		return;
@@ -668,7 +685,8 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 		}
 		Node *n2 = n->get_node(np);
 
-		n2->call(p_method, VARIANT_ARG_PASS);
+		Callable::CallError ce;
+		n2->callp(p_method, p_args, p_argcount, ce);
 	}
 }
 
@@ -699,7 +717,7 @@ void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const Str
 	_res_set_func(p_id, p_prop, r);
 }
 
-void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+void LiveEditor::_res_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	if (!live_edit_resource_cache.has(p_id)) {
 		return;
 	}
@@ -715,7 +733,8 @@ void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_AR
 		return;
 	}
 
-	r->call(p_method, VARIANT_ARG_PASS);
+	Callable::CallError ce;
+	r->callp(p_method, p_args, p_argcount, ce);
 }
 
 void LiveEditor::_root_func(const NodePath &p_scene_path, const String &p_scene_from) {

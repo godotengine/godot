@@ -902,9 +902,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			int size = _find_outline_size(it, p_outline_size);
-			Color font_color = _find_outline_color(it, p_outline_color);
+			Color font_color = _find_color(it, p_base_color);
+			Color font_outline_color = _find_outline_color(it, p_outline_color);
 			Color font_shadow_color = p_font_shadow_color;
-			if ((size <= 0 || font_color.a == 0) && (font_shadow_color.a == 0)) {
+			if ((size <= 0 || font_outline_color.a == 0) && (font_shadow_color.a == 0)) {
 				gloff.x += glyphs[i].advance;
 				continue;
 			}
@@ -950,11 +951,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
 					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
 				}
-				font_color.a = faded_visibility;
+				font_outline_color.a = faded_visibility;
 				font_shadow_color.a = faded_visibility;
 			}
 
-			bool visible = (font_color.a != 0) || (font_shadow_color.a != 0);
+			bool visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
@@ -1024,18 +1025,20 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 
 			// Draw glyph outlines.
+			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
+			const Color modulated_shadow_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 			for (int j = 0; j < glyphs[i].repeat; j++) {
 				if (visible) {
 					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 					if (!skip && frid != RID()) {
-						if (font_shadow_color.a > 0) {
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
+						if (modulated_shadow_color.a > 0) {
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, modulated_shadow_color);
 						}
-						if (font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
+						if (modulated_shadow_color.a > 0 && p_shadow_outline_size > 0) {
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, modulated_shadow_color);
 						}
-						if (font_color.a != 0.0 && size > 0) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, font_color);
+						if (modulated_outline_color.a != 0.0 && size > 0) {
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, modulated_outline_color);
 						}
 					}
 					processed_glyphs_ol++;
@@ -3250,6 +3253,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_paragraph(HORIZONTAL_ALIGNMENT_FILL);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "left") {
+			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
 		} else if (tag == "right") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT);
 			pos = brk_end + 1;
@@ -3725,13 +3732,35 @@ void RichTextLabel::scroll_to_line(int p_line) {
 		if ((line_count <= p_line) && (line_count + main->lines[i].text_buf->get_line_count() >= p_line)) {
 			float line_offset = 0.f;
 			for (int j = 0; j < p_line - line_count; j++) {
-				line_offset += main->lines[i].text_buf->get_line_size(j).y;
+				line_offset += main->lines[i].text_buf->get_line_size(j).y + get_theme_constant(SNAME("line_separation"));
 			}
 			vscroll->set_value(main->lines[i].offset.y + line_offset);
 			return;
 		}
 		line_count += main->lines[i].text_buf->get_line_count();
 	}
+}
+
+float RichTextLabel::get_line_offset(int p_line) {
+	int line_count = 0;
+	for (int i = 0; i < main->lines.size(); i++) {
+		if ((line_count <= p_line) && (p_line <= line_count + main->lines[i].text_buf->get_line_count())) {
+			float line_offset = 0.f;
+			for (int j = 0; j < p_line - line_count; j++) {
+				line_offset += main->lines[i].text_buf->get_line_size(j).y + get_theme_constant(SNAME("line_separation"));
+			}
+			return main->lines[i].offset.y + line_offset;
+		}
+		line_count += main->lines[i].text_buf->get_line_count();
+	}
+	return 0;
+}
+
+float RichTextLabel::get_paragraph_offset(int p_paragraph) {
+	if (0 <= p_paragraph && p_paragraph < main->lines.size()) {
+		return main->lines[p_paragraph].offset.y;
+	}
+	return 0;
 }
 
 int RichTextLabel::get_line_count() const {
@@ -4350,6 +4379,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
 	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
 
+	ClassDB::bind_method(D_METHOD("get_line_offset", "line"), &RichTextLabel::get_line_offset);
+	ClassDB::bind_method(D_METHOD("get_paragraph_offset", "paragraph"), &RichTextLabel::get_paragraph_offset);
+
 	ClassDB::bind_method(D_METHOD("parse_expressions_for_values", "expressions"), &RichTextLabel::parse_expressions_for_values);
 
 	ClassDB::bind_method(D_METHOD("set_effects", "effects"), &RichTextLabel::set_effects);
@@ -4687,7 +4719,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 	return d;
 }
 
-RichTextLabel::RichTextLabel() {
+RichTextLabel::RichTextLabel(const String &p_text) {
 	main = memnew(ItemFrame);
 	main->index = 0;
 	current = main;
@@ -4708,6 +4740,8 @@ RichTextLabel::RichTextLabel() {
 	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
+
+	set_text(p_text);
 
 	set_clip_contents(true);
 }

@@ -187,7 +187,7 @@ private:
 	void _live_edit_set();
 	void _live_edit_clear();
 
-	void _method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
+	void _method_changed(Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	void _error_activated();

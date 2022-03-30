@@ -196,6 +196,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _list_changed();
 	void _update_animation();
 	void _update_player();
+	void _update_animation_list_icons();
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);

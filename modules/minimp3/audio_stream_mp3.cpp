@@ -83,7 +83,7 @@ void AudioStreamPlaybackMP3::start(float p_from_pos) {
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
-	_begin_resample();
+	begin_resample();
 }
 
 void AudioStreamPlaybackMP3::stop() {

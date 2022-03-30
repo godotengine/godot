@@ -33,6 +33,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
+#include "core/templates/vector.h"
 
 struct AABB;
 struct Plane;

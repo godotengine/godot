@@ -86,8 +86,8 @@ class FindReplaceBar : public HBoxContainer {
 	int result_col;
 	int results_count;
 
-	bool replace_all_mode;
-	bool preserve_cursor;
+	bool replace_all_mode = false;
+	bool preserve_cursor = false;
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
@@ -189,6 +189,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
+	void _update_status_bar_theme();
+
 	void _delete_line(int p_line);
 	void _toggle_scripts_pressed();
 
@@ -204,8 +206,8 @@ protected:
 	void _notification(int);
 	static void _bind_methods();
 
-	bool is_warnings_panel_opened;
-	bool is_errors_panel_opened;
+	bool is_warnings_panel_opened = false;
+	bool is_errors_panel_opened = false;
 
 public:
 	void trim_trailing_whitespace();

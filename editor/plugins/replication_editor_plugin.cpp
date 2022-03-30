@@ -94,10 +94,15 @@ void ReplicationEditor::_bind_methods() {
 }
 
 void ReplicationEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		update_keying();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			update_keying();
+		} break;
 	}
 }
 
@@ -355,13 +360,15 @@ void ReplicationEditorPlugin::_property_keyed(const String &p_keyed, const Varia
 }
 
 void ReplicationEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		//Node3DEditor::get_singleton()->connect("transform_key_request", callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
-		InspectorDock::get_inspector_singleton()->connect("property_keyed", callable_mp(this, &ReplicationEditorPlugin::_property_keyed));
-		repl_editor->connect("keying_changed", callable_mp(this, &ReplicationEditorPlugin::_keying_changed));
-		// TODO make lock usable.
-		//InspectorDock::get_inspector_singleton()->connect("object_inspected", callable_mp(repl_editor, &ReplicationEditor::update_keying));
-		get_tree()->connect("node_removed", callable_mp(this, &ReplicationEditorPlugin::_node_removed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			//Node3DEditor::get_singleton()->connect("transform_key_request", callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
+			InspectorDock::get_inspector_singleton()->connect("property_keyed", callable_mp(this, &ReplicationEditorPlugin::_property_keyed));
+			repl_editor->connect("keying_changed", callable_mp(this, &ReplicationEditorPlugin::_keying_changed));
+			// TODO make lock usable.
+			//InspectorDock::get_inspector_singleton()->connect("object_inspected", callable_mp(repl_editor, &ReplicationEditor::update_keying));
+			get_tree()->connect("node_removed", callable_mp(this, &ReplicationEditorPlugin::_node_removed));
+		} break;
 	}
 }
 

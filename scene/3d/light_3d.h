@@ -70,11 +70,14 @@ public:
 private:
 	Color color;
 	real_t param[PARAM_MAX] = {};
-	Color shadow_color;
 	bool shadow = false;
 	bool negative = false;
 	bool reverse_cull = false;
 	uint32_t cull_mask = 0;
+	bool distance_fade_enabled = false;
+	real_t distance_fade_begin = 40.0;
+	real_t distance_fade_shadow = 50.0;
+	real_t distance_fade_length = 10.0;
 	RS::LightType type = RenderingServer::LIGHT_DIRECTIONAL;
 	bool editor_only = false;
 	void _update_visibility();
@@ -107,14 +110,23 @@ public:
 	void set_negative(bool p_enable);
 	bool is_negative() const;
 
+	void set_enable_distance_fade(bool p_enable);
+	bool is_distance_fade_enabled() const;
+
+	void set_distance_fade_begin(real_t p_distance);
+	real_t get_distance_fade_begin() const;
+
+	void set_distance_fade_shadow(real_t p_distance);
+	real_t get_distance_fade_shadow() const;
+
+	void set_distance_fade_length(real_t p_length);
+	real_t get_distance_fade_length() const;
+
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;
-
-	void set_shadow_color(const Color &p_shadow_color);
-	Color get_shadow_color() const;
 
 	void set_shadow_reverse_cull_face(bool p_enable);
 	bool get_shadow_reverse_cull_face() const;
@@ -126,7 +138,6 @@ public:
 	Ref<Texture2D> get_projector() const;
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	Light3D();
 	~Light3D();

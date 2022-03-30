@@ -1535,7 +1535,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		bool has_rotation = false;
 		bool has_scale = false;
 
-		for (int i = 0; cn->xform_list.size(); i++) {
+		for (int i = 0; i < cn->xform_list.size(); i++) {
 			switch (cn->xform_list[i].op) {
 				case Collada::Node::XForm::OP_ROTATE: {
 					has_rotation = true;

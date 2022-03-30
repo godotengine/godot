@@ -412,7 +412,8 @@ void OptionButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
-OptionButton::OptionButton() {
+OptionButton::OptionButton(const String &p_text) :
+		Button(p_text) {
 	set_toggle_mode(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {

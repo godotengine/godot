@@ -349,7 +349,7 @@ Ref<Shortcut> BaseButton::get_shortcut() const {
 void BaseButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shorcut_context()) {
+	if (!_is_focus_owner_in_shortcut_context()) {
 		return;
 	}
 
@@ -404,7 +404,7 @@ Node *BaseButton::get_shortcut_context() const {
 	return ctx_node;
 }
 
-bool BaseButton::_is_focus_owner_in_shorcut_context() const {
+bool BaseButton::_is_focus_owner_in_shortcut_context() const {
 	if (shortcut_context == ObjectID()) {
 		// No context, therefore global - always "in" context.
 		return true;

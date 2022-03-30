@@ -477,9 +477,9 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 				class_desc->add_text(" ");
 				class_desc->push_color(comment_color);
 				if (p_classdoc.is_script_doc) {
-					class_desc->append_text(TTR("There is currently no description for this " + p_method_type + "."));
+					class_desc->append_text(vformat(TTR("There is currently no description for this %s."), p_method_type));
 				} else {
-					class_desc->append_text(TTR("There is currently no description for this " + p_method_type + ". Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(vformat(TTR("There is currently no description for this %s. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), p_method_type).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
 				class_desc->pop();
 			}
@@ -1770,17 +1770,17 @@ void EditorHelp::_notification(int p_what) {
 			_wait_for_thread();
 			_update_doc();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
 				_class_desc_resized(true);
 			}
 			update_toggle_scripts_button();
 		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -1897,8 +1897,6 @@ EditorHelp::EditorHelp() {
 
 	class_desc->set_selection_enabled(true);
 
-	scroll_locked = false;
-	select_locked = false;
 	class_desc->hide();
 }
 
@@ -2041,6 +2039,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_unhandled_input(is_visible_in_tree());
 		} break;

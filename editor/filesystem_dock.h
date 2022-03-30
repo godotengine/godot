@@ -154,7 +154,7 @@ private:
 	ShaderCreateDialog *make_shader_dialog;
 	CreateDialog *new_resource_dialog;
 
-	bool always_show_folders;
+	bool always_show_folders = false;
 
 	class FileOrFolder {
 	public:
@@ -177,13 +177,20 @@ private:
 
 	String path;
 
-	bool initialized;
+	bool initialized = false;
 
-	bool updating_tree;
+	bool updating_tree = false;
 	int tree_update_id;
 	Tree *tree;
 	ItemList *files;
-	bool import_dock_needs_update;
+	bool import_dock_needs_update = false;
+
+	bool holding_branch = false;
+	Vector<TreeItem *> tree_items_selected_on_drag_begin;
+	PackedInt32Array list_items_selected_on_drag_begin;
+
+	void _tree_mouse_exited();
+	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
@@ -312,6 +319,8 @@ public:
 	String get_current_path() const;
 	void navigate_to_path(const String &p_path);
 	void focus_on_filter();
+
+	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
 

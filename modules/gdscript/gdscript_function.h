@@ -502,6 +502,8 @@ private:
 
 	List<StackDebug> stack_debug;
 
+	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
+
 	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 

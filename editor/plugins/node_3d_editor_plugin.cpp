@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/input/input_map.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
@@ -55,55 +56,59 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 
-#define DISTANCE_DEFAULT 4
+constexpr real_t DISTANCE_DEFAULT = 4;
 
-#define GIZMO_ARROW_SIZE 0.35
-#define GIZMO_RING_HALF_WIDTH 0.1
-#define GIZMO_PLANE_SIZE 0.2
-#define GIZMO_PLANE_DST 0.3
-#define GIZMO_CIRCLE_SIZE 1.1
-#define GIZMO_SCALE_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
-#define GIZMO_ARROW_OFFSET (GIZMO_CIRCLE_SIZE + 0.3)
+constexpr real_t GIZMO_ARROW_SIZE = 0.35;
+constexpr real_t GIZMO_RING_HALF_WIDTH = 0.1;
+constexpr real_t GIZMO_PLANE_SIZE = 0.2;
+constexpr real_t GIZMO_PLANE_DST = 0.3;
+constexpr real_t GIZMO_CIRCLE_SIZE = 1.1;
+constexpr real_t GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
+constexpr real_t GIZMO_ARROW_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
 
-#define ZOOM_FREELOOK_MIN 0.01
-#define ZOOM_FREELOOK_MULTIPLIER 1.08
-#define ZOOM_FREELOOK_INDICATOR_DELAY_S 1.5
+constexpr real_t ZOOM_FREELOOK_MIN = 0.01;
+constexpr real_t ZOOM_FREELOOK_MULTIPLIER = 1.08;
+constexpr real_t ZOOM_FREELOOK_INDICATOR_DELAY_S = 1.5;
 
 #ifdef REAL_T_IS_DOUBLE
-#define ZOOM_FREELOOK_MAX 1'000'000'000'000
+constexpr double ZOOM_FREELOOK_MAX = 1'000'000'000'000;
 #else
-#define ZOOM_FREELOOK_MAX 10'000
+constexpr float ZOOM_FREELOOK_MAX = 10'000;
 #endif
 
-#define MIN_Z 0.01
-#define MAX_Z 1000000.0
+constexpr real_t MIN_Z = 0.01;
+constexpr real_t MAX_Z = 1000000.0;
 
-#define MIN_FOV 0.01
-#define MAX_FOV 179
+constexpr real_t MIN_FOV = 0.01;
+constexpr real_t MAX_FOV = 179;
 
 void ViewportRotationControl::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		axis_menu_options.clear();
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_RIGHT);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_TOP);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_LEFT);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_BOTTOM);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			axis_menu_options.clear();
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_RIGHT);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_TOP);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_LEFT);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_BOTTOM);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
 
-		axis_colors.clear();
-		axis_colors.push_back(get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));
-		axis_colors.push_back(get_theme_color(SNAME("axis_y_color"), SNAME("Editor")));
-		axis_colors.push_back(get_theme_color(SNAME("axis_z_color"), SNAME("Editor")));
-		update();
+			axis_colors.clear();
+			axis_colors.push_back(get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));
+			axis_colors.push_back(get_theme_color(SNAME("axis_y_color"), SNAME("Editor")));
+			axis_colors.push_back(get_theme_color(SNAME("axis_z_color"), SNAME("Editor")));
+			update();
 
-		if (!is_connected("mouse_exited", callable_mp(this, &ViewportRotationControl::_on_mouse_exited))) {
-			connect("mouse_exited", callable_mp(this, &ViewportRotationControl::_on_mouse_exited));
-		}
-	}
+			if (!is_connected("mouse_exited", callable_mp(this, &ViewportRotationControl::_on_mouse_exited))) {
+				connect("mouse_exited", callable_mp(this, &ViewportRotationControl::_on_mouse_exited));
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW && viewport != nullptr) {
-		_draw();
+		case NOTIFICATION_DRAW: {
+			if (viewport != nullptr) {
+				_draw();
+			}
+		} break;
 	}
 }
 
@@ -140,7 +145,7 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 
 		// Draw the axis letter for the positive axes.
 		const String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
-		draw_char(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(-4, 5) * EDSCALE, axis_name, "", get_theme_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts")), Color(0.0, 0.0, 0.0, alpha));
+		draw_char(get_theme_font(SNAME("rotation_control"), SNAME("EditorFonts")), p_axis.screen_point + Vector2i(Math::round(-4.0 * EDSCALE), Math::round(5.0 * EDSCALE)), axis_name, "", get_theme_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts")), Color(0.0, 0.0, 0.0, alpha));
 	} else {
 		// Draw an outline around the negative axes.
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
@@ -2032,14 +2037,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
-			begin_transform(TRANSFORM_TRANSLATE, true);
-		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
-			begin_transform(TRANSFORM_ROTATE, true);
-		}
-		if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
-			begin_transform(TRANSFORM_SCALE, true);
+		if (!is_freelook_active()) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
+				begin_transform(TRANSFORM_TRANSLATE, true);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
+				begin_transform(TRANSFORM_ROTATE, true);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
+				begin_transform(TRANSFORM_SCALE, true);
+			}
 		}
 
 		// Freelook doesn't work in orthogonal mode.
@@ -2279,32 +2286,12 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 
 Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
-	if (bool(EDITOR_DEF("editors/3d/navigation/warped_mouse_panning", false))) {
+	if (bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
 	}
 	return relative;
-}
-
-static bool is_shortcut_pressed(const String &p_path) {
-	Ref<Shortcut> shortcut = ED_GET_SHORTCUT(p_path);
-	if (shortcut.is_null()) {
-		return false;
-	}
-
-	const Array shortcuts = shortcut->get_events();
-	Ref<InputEventKey> k;
-	if (shortcuts.size() > 0) {
-		k = shortcuts.front();
-	}
-
-	if (k.is_null()) {
-		return false;
-	}
-	const Input &input = *Input::get_singleton();
-	Key keycode = k->get_keycode();
-	return input.is_key_pressed(keycode);
 }
 
 void Node3DEditorViewport::_update_freelook(real_t delta) {
@@ -2336,31 +2323,34 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 
 	Vector3 direction;
 
-	if (is_shortcut_pressed("spatial_editor/freelook_left")) {
+	// Use actions from the inputmap, as this is the only way to reliably detect input in this method.
+	// See #54469 for more discussion and explanation.
+	Input *inp = Input::get_singleton();
+	if (inp->is_action_pressed("spatial_editor/freelook_left")) {
 		direction -= right;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_right")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_right")) {
 		direction += right;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_forward")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_forward")) {
 		direction += forward;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_backwards")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_backwards")) {
 		direction -= forward;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_up")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_up")) {
 		direction += up;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_down")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_down")) {
 		direction -= up;
 	}
 
 	real_t speed = freelook_speed;
 
-	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_speed_modifier")) {
 		speed *= 3.0;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_slow_modifier")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_slow_modifier")) {
 		speed *= 0.333333;
 	}
 
@@ -2422,303 +2412,305 @@ void Node3DEditorViewport::_project_settings_changed() {
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
-	}
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		bool visible = is_visible_in_tree();
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			bool visible = is_visible_in_tree();
 
-		set_process(visible);
+			set_process(visible);
 
-		if (visible) {
-			orthogonal = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
-			_update_name();
-			_update_camera(0);
-		} else {
-			set_freelook_active(false);
-		}
-		call_deferred(SNAME("update_transform_gizmo_view"));
-		rotation_control->set_visible(EditorSettings::get_singleton()->get("editors/3d/navigation/show_viewport_rotation_gizmo"));
-	}
-
-	if (p_what == NOTIFICATION_RESIZED) {
-		call_deferred(SNAME("update_transform_gizmo_view"));
-	}
-
-	if (p_what == NOTIFICATION_PROCESS) {
-		real_t delta = get_process_delta_time();
-
-		if (zoom_indicator_delay > 0) {
-			zoom_indicator_delay -= delta;
-			if (zoom_indicator_delay <= 0) {
-				surface->update();
-				zoom_limit_label->hide();
+			if (visible) {
+				orthogonal = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
+				_update_name();
+				_update_camera(0);
+			} else {
+				set_freelook_active(false);
 			}
-		}
+			call_deferred(SNAME("update_transform_gizmo_view"));
+			rotation_control->set_visible(EditorSettings::get_singleton()->get("editors/3d/navigation/show_viewport_rotation_gizmo"));
+		} break;
 
-		_update_freelook(delta);
+		case NOTIFICATION_RESIZED: {
+			call_deferred(SNAME("update_transform_gizmo_view"));
+		} break;
 
-		Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
-		if (previewing_cinema && scene_root != nullptr) {
-			Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
-			if (cam != nullptr && cam != previewing) {
-				//then switch the viewport's camera to the scene's viewport camera
-				if (previewing != nullptr) {
-					previewing->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+		case NOTIFICATION_PROCESS: {
+			real_t delta = get_process_delta_time();
+
+			if (zoom_indicator_delay > 0) {
+				zoom_indicator_delay -= delta;
+				if (zoom_indicator_delay <= 0) {
+					surface->update();
+					zoom_limit_label->hide();
 				}
-				previewing = cam;
-				previewing->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-				RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
-				surface->update();
-			}
-		}
-
-		_update_camera(delta);
-
-		Map<Node *, Object *> &selection = editor_selection->get_selection();
-
-		bool changed = false;
-		bool exist = false;
-
-		for (const KeyValue<Node *, Object *> &E : selection) {
-			Node3D *sp = Object::cast_to<Node3D>(E.key);
-			if (!sp) {
-				continue;
 			}
 
-			Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-			if (!se) {
-				continue;
+			_update_freelook(delta);
+
+			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
+			if (previewing_cinema && scene_root != nullptr) {
+				Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
+				if (cam != nullptr && cam != previewing) {
+					//then switch the viewport's camera to the scene's viewport camera
+					if (previewing != nullptr) {
+						previewing->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+					}
+					previewing = cam;
+					previewing->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+					RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
+					surface->update();
+				}
 			}
 
-			Transform3D t = sp->get_global_gizmo_transform();
-			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sp);
-			AABB new_aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
+			_update_camera(delta);
 
-			exist = true;
-			if (se->last_xform == t && se->aabb == new_aabb && !se->last_xform_dirty) {
-				continue;
+			Map<Node *, Object *> &selection = editor_selection->get_selection();
+
+			bool changed = false;
+			bool exist = false;
+
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E.key);
+				if (!sp) {
+					continue;
+				}
+
+				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+				if (!se) {
+					continue;
+				}
+
+				Transform3D t = sp->get_global_gizmo_transform();
+				VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sp);
+				AABB new_aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
+
+				exist = true;
+				if (se->last_xform == t && se->aabb == new_aabb && !se->last_xform_dirty) {
+					continue;
+				}
+				changed = true;
+				se->last_xform_dirty = false;
+				se->last_xform = t;
+
+				se->aabb = new_aabb;
+
+				Transform3D t_offset = t;
+
+				// apply AABB scaling before item's global transform
+				{
+					const Vector3 offset(0.005, 0.005, 0.005);
+					Basis aabb_s;
+					aabb_s.scale(se->aabb.size + offset);
+					t.translate(se->aabb.position - offset / 2);
+					t.basis = t.basis * aabb_s;
+				}
+				{
+					const Vector3 offset(0.01, 0.01, 0.01);
+					Basis aabb_s;
+					aabb_s.scale(se->aabb.size + offset);
+					t_offset.translate(se->aabb.position - offset / 2);
+					t_offset.basis = t_offset.basis * aabb_s;
+				}
+
+				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
+				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
+				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
 			}
-			changed = true;
-			se->last_xform_dirty = false;
-			se->last_xform = t;
 
-			se->aabb = new_aabb;
-
-			Transform3D t_offset = t;
-
-			// apply AABB scaling before item's global transform
-			{
-				const Vector3 offset(0.005, 0.005, 0.005);
-				Basis aabb_s;
-				aabb_s.scale(se->aabb.size + offset);
-				t.translate(se->aabb.position - offset / 2);
-				t.basis = t.basis * aabb_s;
-			}
-			{
-				const Vector3 offset(0.01, 0.01, 0.01);
-				Basis aabb_s;
-				aabb_s.scale(se->aabb.size + offset);
-				t_offset.translate(se->aabb.position - offset / 2);
-				t_offset.basis = t_offset.basis * aabb_s;
+			if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
+				spatial_editor->update_transform_gizmo();
 			}
 
-			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
-			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
-			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
-			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
-		}
+			if (message_time > 0) {
+				if (message != last_message) {
+					surface->update();
+					last_message = message;
+				}
 
-		if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
-			spatial_editor->update_transform_gizmo();
-		}
-
-		if (message_time > 0) {
-			if (message != last_message) {
-				surface->update();
-				last_message = message;
+				message_time -= get_physics_process_delta_time();
+				if (message_time < 0) {
+					surface->update();
+				}
 			}
 
-			message_time -= get_physics_process_delta_time();
-			if (message_time < 0) {
-				surface->update();
+			bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
+			if (show_info != info_label->is_visible()) {
+				info_label->set_visible(show_info);
 			}
-		}
 
-		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
-		if (show_info != info_label->is_visible()) {
-			info_label->set_visible(show_info);
-		}
+			Camera3D *current_camera;
 
-		Camera3D *current_camera;
-
-		if (previewing) {
-			current_camera = previewing;
-		} else {
-			current_camera = camera;
-		}
-
-		if (show_info) {
-			const String viewport_size = vformat(String::utf8("%d × %d"), viewport->get_size().x, viewport->get_size().y);
-			String text;
-			text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
-			text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
-			text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
-			text += "\n";
-			text += vformat(
-					TTR("Size: %s (%.1fMP)\n"),
-					viewport_size,
-					viewport->get_size().x * viewport->get_size().y * 0.000001);
-
-			text += "\n";
-			text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
-			text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
-			text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
-
-			info_label->set_text(text);
-		}
-
-		// FPS Counter.
-		bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
-
-		if (show_fps != fps_label->is_visible()) {
-			cpu_time_label->set_visible(show_fps);
-			gpu_time_label->set_visible(show_fps);
-			fps_label->set_visible(show_fps);
-			RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
-			for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
-				cpu_time_history[i] = 0;
-				gpu_time_history[i] = 0;
+			if (previewing) {
+				current_camera = previewing;
+			} else {
+				current_camera = camera;
 			}
-			cpu_time_history_index = 0;
-			gpu_time_history_index = 0;
-		}
-		if (show_fps) {
-			cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(viewport->get_viewport_rid());
-			cpu_time_history_index = (cpu_time_history_index + 1) % FRAME_TIME_HISTORY;
-			double cpu_time = 0.0;
-			for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
-				cpu_time += cpu_time_history[i];
+
+			if (show_info) {
+				const String viewport_size = vformat(String::utf8("%d × %d"), viewport->get_size().x, viewport->get_size().y);
+				String text;
+				text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
+				text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
+				text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
+				text += "\n";
+				text += vformat(
+						TTR("Size: %s (%.1fMP)\n"),
+						viewport_size,
+						viewport->get_size().x * viewport->get_size().y * 0.000001);
+
+				text += "\n";
+				text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
+				text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
+				text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
+
+				info_label->set_text(text);
 			}
-			cpu_time /= FRAME_TIME_HISTORY;
-			// Prevent unrealistically low values.
-			cpu_time = MAX(0.01, cpu_time);
 
-			gpu_time_history[gpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_gpu(viewport->get_viewport_rid());
-			gpu_time_history_index = (gpu_time_history_index + 1) % FRAME_TIME_HISTORY;
-			double gpu_time = 0.0;
-			for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
-				gpu_time += gpu_time_history[i];
+			// FPS Counter.
+			bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
+
+			if (show_fps != fps_label->is_visible()) {
+				cpu_time_label->set_visible(show_fps);
+				gpu_time_label->set_visible(show_fps);
+				fps_label->set_visible(show_fps);
+				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
+				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
+					cpu_time_history[i] = 0;
+					gpu_time_history[i] = 0;
+				}
+				cpu_time_history_index = 0;
+				gpu_time_history_index = 0;
 			}
-			gpu_time /= FRAME_TIME_HISTORY;
-			// Prevent division by zero for the FPS counter (and unrealistically low values).
-			// This limits the reported FPS to 100000.
-			gpu_time = MAX(0.01, gpu_time);
+			if (show_fps) {
+				cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(viewport->get_viewport_rid());
+				cpu_time_history_index = (cpu_time_history_index + 1) % FRAME_TIME_HISTORY;
+				double cpu_time = 0.0;
+				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
+					cpu_time += cpu_time_history[i];
+				}
+				cpu_time /= FRAME_TIME_HISTORY;
+				// Prevent unrealistically low values.
+				cpu_time = MAX(0.01, cpu_time);
 
-			// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
-			// Middle point is at 15 ms.
-			cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(2)));
-			cpu_time_label->add_theme_color_override(
-					"font_color",
-					frame_time_gradient->get_color_at_offset(
-							Math::range_lerp(cpu_time, 0, 30, 0, 1)));
+				gpu_time_history[gpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_gpu(viewport->get_viewport_rid());
+				gpu_time_history_index = (gpu_time_history_index + 1) % FRAME_TIME_HISTORY;
+				double gpu_time = 0.0;
+				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
+					gpu_time += gpu_time_history[i];
+				}
+				gpu_time /= FRAME_TIME_HISTORY;
+				// Prevent division by zero for the FPS counter (and unrealistically low values).
+				// This limits the reported FPS to 100000.
+				gpu_time = MAX(0.01, gpu_time);
 
-			gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
-			// Middle point is at 15 ms.
-			gpu_time_label->add_theme_color_override(
-					"font_color",
-					frame_time_gradient->get_color_at_offset(
-							Math::range_lerp(gpu_time, 0, 30, 0, 1)));
+				// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
+				// Middle point is at 15 ms.
+				cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(2)));
+				cpu_time_label->add_theme_color_override(
+						"font_color",
+						frame_time_gradient->get_color_at_offset(
+								Math::range_lerp(cpu_time, 0, 30, 0, 1)));
 
-			const double fps = 1000.0 / gpu_time;
-			fps_label->set_text(vformat(TTR("FPS: %d"), fps));
-			// Middle point is at 60 FPS.
-			fps_label->add_theme_color_override(
-					"font_color",
-					frame_time_gradient->get_color_at_offset(
-							Math::range_lerp(fps, 110, 10, 0, 1)));
-		}
+				gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
+				// Middle point is at 15 ms.
+				gpu_time_label->add_theme_color_override(
+						"font_color",
+						frame_time_gradient->get_color_at_offset(
+								Math::range_lerp(gpu_time, 0, 30, 0, 1)));
 
-		bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
-		cinema_label->set_visible(show_cinema);
-		if (show_cinema) {
-			float cinema_half_width = cinema_label->get_size().width / 2.0f;
-			cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
-		}
+				const double fps = 1000.0 / gpu_time;
+				fps_label->set_text(vformat(TTR("FPS: %d"), fps));
+				// Middle point is at 60 FPS.
+				fps_label->add_theme_color_override(
+						"font_color",
+						frame_time_gradient->get_color_at_offset(
+								Math::range_lerp(fps, 110, 10, 0, 1)));
+			}
 
-		if (lock_rotation) {
-			float locked_half_width = locked_label->get_size().width / 2.0f;
-			locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
-		}
-	}
+			bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
+			cinema_label->set_visible(show_cinema);
+			if (show_cinema) {
+				float cinema_half_width = cinema_label->get_size().width / 2.0f;
+				cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
+			}
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		surface->connect("draw", callable_mp(this, &Node3DEditorViewport::_draw));
-		surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::_sinput));
-		surface->connect("mouse_entered", callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
-		surface->connect("mouse_exited", callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
-		surface->connect("focus_entered", callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
-		surface->connect("focus_exited", callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
+			if (lock_rotation) {
+				float locked_half_width = locked_label->get_size().width / 2.0f;
+				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
+			}
+		} break;
 
-		_init_gizmo_instance(index);
-	}
+		case NOTIFICATION_ENTER_TREE: {
+			surface->connect("draw", callable_mp(this, &Node3DEditorViewport::_draw));
+			surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::_sinput));
+			surface->connect("mouse_entered", callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
+			surface->connect("mouse_exited", callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
+			surface->connect("focus_entered", callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
+			surface->connect("focus_exited", callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_finish_gizmo_instances();
-	}
+			_init_gizmo_instance(index);
+		} break;
 
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		view_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-		preview_camera->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
-		Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+		case NOTIFICATION_EXIT_TREE: {
+			_finish_gizmo_instances();
+		} break;
 
-		view_menu->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		case NOTIFICATION_THEME_CHANGED: {
+			view_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			preview_camera->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
+			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
-		preview_camera->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			view_menu->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			view_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			view_menu->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			view_menu->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			view_menu->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 
-		frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), SNAME("Editor")));
-		frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			preview_camera->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_camera->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_camera->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			preview_camera->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 
-		info_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		cpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		gpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		fps_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		cinema_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		locked_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), SNAME("Editor")));
+			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+
+			info_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			cpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			gpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			fps_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			cinema_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+			locked_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		} break;
 	}
 }
 
-static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2D> icon, const Ref<Font> font, int font_size, const String &text) {
+static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Texture2D> p_icon, const Ref<Font> p_font, int p_font_size, const String &p_text, const Color &p_color) {
 	// Adjust bar size from control height
-	const Vector2 surface_size = surface.get_size();
+	const Vector2 surface_size = p_surface.get_size();
 	const real_t h = surface_size.y / 2.0;
 	const real_t y = (surface_size.y - h) / 2.0;
 
 	const Rect2 r(10 * EDSCALE, y, 6 * EDSCALE, h);
-	const real_t sy = r.size.y * fill;
+	const real_t sy = r.size.y * p_fill;
 
 	// Note: because this bar appears over the viewport, it has to stay readable for any background color
 	// Draw both neutral dark and bright colors to account this
-	surface.draw_rect(r, Color(1, 1, 1, 0.2));
-	surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
-	surface.draw_rect(r.grow(1), Color(0, 0, 0, 0.7), false, Math::round(EDSCALE));
+	p_surface.draw_rect(r, p_color * Color(1, 1, 1, 0.2));
+	p_surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), p_color * Color(1, 1, 1, 0.6));
+	p_surface.draw_rect(r.grow(1), Color(0, 0, 0, 0.7), false, Math::round(EDSCALE));
 
-	const Vector2 icon_size = icon->get_size();
+	const Vector2 icon_size = p_icon->get_size();
 	const Vector2 icon_pos = Vector2(r.position.x - (icon_size.x - r.size.x) / 2, r.position.y + r.size.y + 2 * EDSCALE);
-	surface.draw_texture(icon, icon_pos);
+	p_surface.draw_texture(p_icon, icon_pos, p_color);
 
 	// Draw text below the bar (for speed/zoom information).
-	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, font_size);
+	p_surface.draw_string(p_font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, p_font_size, p_color, Math::round(2 * EDSCALE), Color(0, 0, 0));
 }
 
 void Node3DEditorViewport::_draw() {
@@ -2836,7 +2828,8 @@ void Node3DEditorViewport::_draw() {
 							get_theme_icon(SNAME("ViewportSpeed"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)));
+							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
+							Color(1.0, 0.95, 0.7));
 				}
 
 			} else {
@@ -2858,7 +2851,8 @@ void Node3DEditorViewport::_draw() {
 							get_theme_icon(SNAME("ViewportZoom"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)));
+							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
+							Color(0.7, 0.95, 1.0));
 				}
 			}
 		}
@@ -4421,6 +4415,28 @@ void Node3DEditorViewport::finish_transform() {
 	surface->update();
 }
 
+// Register a shortcut and also add it as an input action with the same events.
+void Node3DEditorViewport::register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode) {
+	Ref<Shortcut> sc = ED_SHORTCUT(p_path, p_name, p_keycode);
+	shortcut_changed_callback(sc, p_path);
+	// Connect to the change event on the shortcut so the input binding can be updated.
+	sc->connect("changed", callable_mp(this, &Node3DEditorViewport::shortcut_changed_callback), varray(sc, p_path));
+}
+
+// Update the action in the InputMap to the provided shortcut events.
+void Node3DEditorViewport::shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path) {
+	InputMap *im = InputMap::get_singleton();
+	if (im->has_action(p_shortcut_path)) {
+		im->action_erase_events(p_shortcut_path);
+	} else {
+		im->add_action(p_shortcut_path);
+	}
+
+	for (int i = 0; i < p_shortcut->get_events().size(); i++) {
+		im->action_add_event(p_shortcut_path, p_shortcut->get_events()[i]);
+	}
+}
+
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
@@ -4580,14 +4596,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 		view_menu->get_popup()->set_item_tooltip(shadeless_idx, unsupported_tooltip);
 	}
 
-	ED_SHORTCUT("spatial_editor/freelook_left", TTR("Freelook Left"), Key::A);
-	ED_SHORTCUT("spatial_editor/freelook_right", TTR("Freelook Right"), Key::D);
-	ED_SHORTCUT("spatial_editor/freelook_forward", TTR("Freelook Forward"), Key::W);
-	ED_SHORTCUT("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), Key::S);
-	ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), Key::E);
-	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q);
-	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
-	ED_SHORTCUT("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
+	register_shortcut_action("spatial_editor/freelook_left", TTR("Freelook Left"), Key::A);
+	register_shortcut_action("spatial_editor/freelook_right", TTR("Freelook Right"), Key::D);
+	register_shortcut_action("spatial_editor/freelook_forward", TTR("Freelook Forward"), Key::W);
+	register_shortcut_action("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), Key::S);
+	register_shortcut_action("spatial_editor/freelook_up", TTR("Freelook Up"), Key::E);
+	register_shortcut_action("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q);
+	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
+	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
+
 	ED_SHORTCUT("spatial_editor/lock_transform_x", TTR("Lock Transformation to X axis"), Key::X);
 	ED_SHORTCUT("spatial_editor/lock_transform_y", TTR("Lock Transformation to Y axis"), Key::Y);
 	ED_SHORTCUT("spatial_editor/lock_transform_z", TTR("Lock Transformation to Z axis"), Key::Z);
@@ -4799,197 +4816,202 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewportContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_MOUSE_ENTER || p_what == NOTIFICATION_MOUSE_EXIT) {
-		mouseover = (p_what == NOTIFICATION_MOUSE_ENTER);
-		update();
-	}
+	switch (p_what) {
+		case NOTIFICATION_MOUSE_ENTER:
+		case NOTIFICATION_MOUSE_EXIT: {
+			mouseover = (p_what == NOTIFICATION_MOUSE_ENTER);
+			update();
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW && mouseover) {
-		Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
-		Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
+		case NOTIFICATION_DRAW: {
+			if (mouseover) {
+				Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
+				Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
 
-		Ref<Texture2D> hdiag_grabber = get_theme_icon(SNAME("GuiViewportHdiagsplitter"), SNAME("EditorIcons"));
-		Ref<Texture2D> vdiag_grabber = get_theme_icon(SNAME("GuiViewportVdiagsplitter"), SNAME("EditorIcons"));
-		Ref<Texture2D> vh_grabber = get_theme_icon(SNAME("GuiViewportVhsplitter"), SNAME("EditorIcons"));
+				Ref<Texture2D> hdiag_grabber = get_theme_icon(SNAME("GuiViewportHdiagsplitter"), SNAME("EditorIcons"));
+				Ref<Texture2D> vdiag_grabber = get_theme_icon(SNAME("GuiViewportVdiagsplitter"), SNAME("EditorIcons"));
+				Ref<Texture2D> vh_grabber = get_theme_icon(SNAME("GuiViewportVhsplitter"), SNAME("EditorIcons"));
 
-		Vector2 size = get_size();
+				Vector2 size = get_size();
 
-		int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
+				int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
 
-		int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
+				int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
 
-		int mid_w = size.width * ratio_h;
-		int mid_h = size.height * ratio_v;
+				int mid_w = size.width * ratio_h;
+				int mid_h = size.height * ratio_v;
 
-		int size_left = mid_w - h_sep / 2;
-		int size_bottom = size.height - mid_h - v_sep / 2;
+				int size_left = mid_w - h_sep / 2;
+				int size_bottom = size.height - mid_h - v_sep / 2;
 
-		switch (view) {
-			case VIEW_USE_1_VIEWPORT: {
-				// Nothing to show.
+				switch (view) {
+					case VIEW_USE_1_VIEWPORT: {
+						// Nothing to show.
 
-			} break;
-			case VIEW_USE_2_VIEWPORTS: {
-				draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-				set_default_cursor_shape(CURSOR_VSPLIT);
+					} break;
+					case VIEW_USE_2_VIEWPORTS: {
+						draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
+						set_default_cursor_shape(CURSOR_VSPLIT);
 
-			} break;
-			case VIEW_USE_2_VIEWPORTS_ALT: {
-				draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
-				set_default_cursor_shape(CURSOR_HSPLIT);
+					} break;
+					case VIEW_USE_2_VIEWPORTS_ALT: {
+						draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
+						set_default_cursor_shape(CURSOR_HSPLIT);
 
-			} break;
-			case VIEW_USE_3_VIEWPORTS: {
-				if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-					draw_texture(hdiag_grabber, Vector2(mid_w - hdiag_grabber->get_width() / 2, mid_h - v_grabber->get_height() / 4));
-					set_default_cursor_shape(CURSOR_DRAG);
-				} else if ((hovering_v && !dragging_h) || dragging_v) {
-					draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-					set_default_cursor_shape(CURSOR_VSPLIT);
-				} else if (hovering_h || dragging_h) {
-					draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, mid_h + v_grabber->get_height() / 2 + (size_bottom - h_grabber->get_height()) / 2));
-					set_default_cursor_shape(CURSOR_HSPLIT);
+					} break;
+					case VIEW_USE_3_VIEWPORTS: {
+						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
+							draw_texture(hdiag_grabber, Vector2(mid_w - hdiag_grabber->get_width() / 2, mid_h - v_grabber->get_height() / 4));
+							set_default_cursor_shape(CURSOR_DRAG);
+						} else if ((hovering_v && !dragging_h) || dragging_v) {
+							draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
+							set_default_cursor_shape(CURSOR_VSPLIT);
+						} else if (hovering_h || dragging_h) {
+							draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, mid_h + v_grabber->get_height() / 2 + (size_bottom - h_grabber->get_height()) / 2));
+							set_default_cursor_shape(CURSOR_HSPLIT);
+						}
+
+					} break;
+					case VIEW_USE_3_VIEWPORTS_ALT: {
+						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
+							draw_texture(vdiag_grabber, Vector2(mid_w - vdiag_grabber->get_width() + v_grabber->get_height() / 4, mid_h - vdiag_grabber->get_height() / 2));
+							set_default_cursor_shape(CURSOR_DRAG);
+						} else if ((hovering_v && !dragging_h) || dragging_v) {
+							draw_texture(v_grabber, Vector2((size_left - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
+							set_default_cursor_shape(CURSOR_VSPLIT);
+						} else if (hovering_h || dragging_h) {
+							draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
+							set_default_cursor_shape(CURSOR_HSPLIT);
+						}
+
+					} break;
+					case VIEW_USE_4_VIEWPORTS: {
+						Vector2 half(mid_w, mid_h);
+						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
+							draw_texture(vh_grabber, half - vh_grabber->get_size() / 2.0);
+							set_default_cursor_shape(CURSOR_DRAG);
+						} else if ((hovering_v && !dragging_h) || dragging_v) {
+							draw_texture(v_grabber, half - v_grabber->get_size() / 2.0);
+							set_default_cursor_shape(CURSOR_VSPLIT);
+						} else if (hovering_h || dragging_h) {
+							draw_texture(h_grabber, half - h_grabber->get_size() / 2.0);
+							set_default_cursor_shape(CURSOR_HSPLIT);
+						}
+
+					} break;
 				}
-
-			} break;
-			case VIEW_USE_3_VIEWPORTS_ALT: {
-				if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-					draw_texture(vdiag_grabber, Vector2(mid_w - vdiag_grabber->get_width() + v_grabber->get_height() / 4, mid_h - vdiag_grabber->get_height() / 2));
-					set_default_cursor_shape(CURSOR_DRAG);
-				} else if ((hovering_v && !dragging_h) || dragging_v) {
-					draw_texture(v_grabber, Vector2((size_left - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-					set_default_cursor_shape(CURSOR_VSPLIT);
-				} else if (hovering_h || dragging_h) {
-					draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
-					set_default_cursor_shape(CURSOR_HSPLIT);
-				}
-
-			} break;
-			case VIEW_USE_4_VIEWPORTS: {
-				Vector2 half(mid_w, mid_h);
-				if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-					draw_texture(vh_grabber, half - vh_grabber->get_size() / 2.0);
-					set_default_cursor_shape(CURSOR_DRAG);
-				} else if ((hovering_v && !dragging_h) || dragging_v) {
-					draw_texture(v_grabber, half - v_grabber->get_size() / 2.0);
-					set_default_cursor_shape(CURSOR_VSPLIT);
-				} else if (hovering_h || dragging_h) {
-					draw_texture(h_grabber, half - h_grabber->get_size() / 2.0);
-					set_default_cursor_shape(CURSOR_HSPLIT);
-				}
-
-			} break;
-		}
-	}
-
-	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Node3DEditorViewport *viewports[4];
-		int vc = 0;
-		for (int i = 0; i < get_child_count(); i++) {
-			viewports[vc] = Object::cast_to<Node3DEditorViewport>(get_child(i));
-			if (viewports[vc]) {
-				vc++;
 			}
-		}
+		} break;
 
-		ERR_FAIL_COND(vc != 4);
-
-		Size2 size = get_size();
-
-		if (size.x < 10 || size.y < 10) {
-			for (int i = 0; i < 4; i++) {
-				viewports[i]->hide();
+		case NOTIFICATION_SORT_CHILDREN: {
+			Node3DEditorViewport *viewports[4];
+			int vc = 0;
+			for (int i = 0; i < get_child_count(); i++) {
+				viewports[vc] = Object::cast_to<Node3DEditorViewport>(get_child(i));
+				if (viewports[vc]) {
+					vc++;
+				}
 			}
-			return;
-		}
-		int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
 
-		int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
+			ERR_FAIL_COND(vc != 4);
 
-		int mid_w = size.width * ratio_h;
-		int mid_h = size.height * ratio_v;
+			Size2 size = get_size();
 
-		int size_left = mid_w - h_sep / 2;
-		int size_right = size.width - mid_w - h_sep / 2;
-
-		int size_top = mid_h - v_sep / 2;
-		int size_bottom = size.height - mid_h - v_sep / 2;
-
-		switch (view) {
-			case VIEW_USE_1_VIEWPORT: {
-				viewports[0]->show();
-				for (int i = 1; i < 4; i++) {
+			if (size.x < 10 || size.y < 10) {
+				for (int i = 0; i < 4; i++) {
 					viewports[i]->hide();
 				}
+				return;
+			}
+			int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
 
-				fit_child_in_rect(viewports[0], Rect2(Vector2(), size));
+			int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
 
-			} break;
-			case VIEW_USE_2_VIEWPORTS: {
-				for (int i = 0; i < 4; i++) {
-					if (i == 1 || i == 3) {
+			int mid_w = size.width * ratio_h;
+			int mid_h = size.height * ratio_v;
+
+			int size_left = mid_w - h_sep / 2;
+			int size_right = size.width - mid_w - h_sep / 2;
+
+			int size_top = mid_h - v_sep / 2;
+			int size_bottom = size.height - mid_h - v_sep / 2;
+
+			switch (view) {
+				case VIEW_USE_1_VIEWPORT: {
+					viewports[0]->show();
+					for (int i = 1; i < 4; i++) {
 						viewports[i]->hide();
-					} else {
+					}
+
+					fit_child_in_rect(viewports[0], Rect2(Vector2(), size));
+
+				} break;
+				case VIEW_USE_2_VIEWPORTS: {
+					for (int i = 0; i < 4; i++) {
+						if (i == 1 || i == 3) {
+							viewports[i]->hide();
+						} else {
+							viewports[i]->show();
+						}
+					}
+
+					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
+					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size.width, size_bottom)));
+
+				} break;
+				case VIEW_USE_2_VIEWPORTS_ALT: {
+					for (int i = 0; i < 4; i++) {
+						if (i == 1 || i == 3) {
+							viewports[i]->hide();
+						} else {
+							viewports[i]->show();
+						}
+					}
+					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size.height)));
+					fit_child_in_rect(viewports[2], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
+
+				} break;
+				case VIEW_USE_3_VIEWPORTS: {
+					for (int i = 0; i < 4; i++) {
+						if (i == 1) {
+							viewports[i]->hide();
+						} else {
+							viewports[i]->show();
+						}
+					}
+
+					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
+					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
+					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
+
+				} break;
+				case VIEW_USE_3_VIEWPORTS_ALT: {
+					for (int i = 0; i < 4; i++) {
+						if (i == 1) {
+							viewports[i]->hide();
+						} else {
+							viewports[i]->show();
+						}
+					}
+
+					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
+					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
+					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
+
+				} break;
+				case VIEW_USE_4_VIEWPORTS: {
+					for (int i = 0; i < 4; i++) {
 						viewports[i]->show();
 					}
-				}
 
-				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
-				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size.width, size_bottom)));
+					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
+					fit_child_in_rect(viewports[1], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size_top)));
+					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
+					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
 
-			} break;
-			case VIEW_USE_2_VIEWPORTS_ALT: {
-				for (int i = 0; i < 4; i++) {
-					if (i == 1 || i == 3) {
-						viewports[i]->hide();
-					} else {
-						viewports[i]->show();
-					}
-				}
-				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size.height)));
-				fit_child_in_rect(viewports[2], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
-
-			} break;
-			case VIEW_USE_3_VIEWPORTS: {
-				for (int i = 0; i < 4; i++) {
-					if (i == 1) {
-						viewports[i]->hide();
-					} else {
-						viewports[i]->show();
-					}
-				}
-
-				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
-				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
-				fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
-
-			} break;
-			case VIEW_USE_3_VIEWPORTS_ALT: {
-				for (int i = 0; i < 4; i++) {
-					if (i == 1) {
-						viewports[i]->hide();
-					} else {
-						viewports[i]->show();
-					}
-				}
-
-				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
-				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
-				fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
-
-			} break;
-			case VIEW_USE_4_VIEWPORTS: {
-				for (int i = 0; i < 4; i++) {
-					viewports[i]->show();
-				}
-
-				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
-				fit_child_in_rect(viewports[1], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size_top)));
-				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
-				fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
-
-			} break;
-		}
+				} break;
+			}
+		} break;
 	}
 }
 
@@ -6902,19 +6924,19 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 }
 
 void Node3DEditor::_update_theme() {
-	tool_button[Node3DEditor::TOOL_MODE_SELECT]->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_MOVE]->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_ROTATE]->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_SCALE]->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_MODE_LIST_SELECT]->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_LOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_UNLOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_GROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
-	tool_button[Node3DEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_SELECT]->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_MOVE]->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_ROTATE]->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_SCALE]->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
+	tool_button[TOOL_LOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")));
+	tool_button[TOOL_UNLOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
+	tool_button[TOOL_GROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
 
-	tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
-	tool_option_button[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
-	tool_option_button[Node3DEditor::TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
 
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_theme_icon(SNAME("Panels1"), SNAME("EditorIcons")));
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_theme_icon(SNAME("Panels2"), SNAME("EditorIcons")));
@@ -6951,6 +6973,7 @@ void Node3DEditor::_notification(int p_what) {
 			sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
 			_register_all_gizmos();
@@ -6958,9 +6981,11 @@ void Node3DEditor::_notification(int p_what) {
 			_init_indicators();
 			update_all_gizmos();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_finish_indicators();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_update_gizmos_menu_theme();
@@ -6968,11 +6993,13 @@ void Node3DEditor::_notification(int p_what) {
 			sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
 			environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update grid color by rebuilding grid.
 			_finish_grid();
 			_init_grid();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible() && tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->is_pressed()) {
 				EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();

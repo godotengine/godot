@@ -143,6 +143,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_zoom_on_position(float p_zoom, const Vector2 &p_position);
 	void _sheet_zoom_in();
 	void _sheet_zoom_out();
 	void _sheet_zoom_reset();

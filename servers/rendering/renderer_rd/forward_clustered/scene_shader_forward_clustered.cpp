@@ -32,6 +32,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
 #include "render_forward_clustered.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 using namespace RendererSceneRenderImplementation;
 
@@ -149,7 +150,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		print_line(gen_code.defines[i]);
 	}
 
-	Map<String, String>::Element * el = gen_code.code.front();
+	Map<String, String>::Element *el = gen_code.code.front();
 	while (el) {
 		print_line("\n**code " + el->key() + ":\n" + el->value());
 
@@ -282,6 +283,12 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 					SHADER_VERSION_LIGHTMAP_COLOR_PASS,
 					SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
 					SHADER_VERSION_LIGHTMAP_COLOR_PASS,
+
+					SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
+					SHADER_VERSION_COLOR_PASS_MULTIVIEW,
+					SHADER_VERSION_COLOR_PASS_MULTIVIEW,
+					SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW,
+					SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW,
 				};
 
 				shader_version = shader_version_table[k];
@@ -297,7 +304,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
 				RD::PipelineMultisampleState multisample_state;
 
-				if (k == PIPELINE_VERSION_TRANSPARENT_PASS || k == PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS) {
+				if (k == PIPELINE_VERSION_TRANSPARENT_PASS || k == PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS || k == PIPELINE_VERSION_TRANSPARENT_PASS_MULTIVIEW || k == PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS_MULTIVIEW) {
 					if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
 						multisample_state.enable_alpha_to_coverage = true;
 					} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
@@ -310,9 +317,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 					if (depth_draw == DEPTH_DRAW_OPAQUE) {
 						depth_stencil.enable_depth_write = false; //alpha does not draw depth
 					}
-				} else if (k == PIPELINE_VERSION_OPAQUE_PASS || k == PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS) {
+				} else if (k == PIPELINE_VERSION_OPAQUE_PASS || k == PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS || k == PIPELINE_VERSION_OPAQUE_PASS_MULTIVIEW || k == PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS_MULTIVIEW) {
 					blend_state = blend_state_opaque;
-				} else if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP) {
+				} else if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW || k == PIPELINE_VERSION_DEPTH_PASS_DP) {
 					//none, leave empty
 				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
 					blend_state = blend_state_depth_normal_roughness;
@@ -501,7 +508,18 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
 		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR
 
+		// multiview versions of our shaders
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+
 		shader.initialize(shader_versions, p_defines);
+
+		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
+		}
 	}
 
 	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_3D, _create_shader_funcs);
@@ -516,7 +534,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["INV_CAMERA_MATRIX"] = "scene_data.inv_camera_matrix";
 		actions.renames["CAMERA_MATRIX"] = "scene_data.camera_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
-		actions.renames["INV_PROJECTION_MATRIX"] = "scene_data.inv_projection_matrix";
+		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
 
@@ -557,7 +575,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
 		actions.renames["CLEARCOAT"] = "clearcoat";
-		actions.renames["CLEARCOAT_GLOSS"] = "clearcoat_gloss";
+		actions.renames["CLEARCOAT_ROUGHNESS"] = "clearcoat_roughness";
 		actions.renames["ANISOTROPY"] = "anisotropy";
 		actions.renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
 		actions.renames["SSS_STRENGTH"] = "sss_strength";
@@ -587,8 +605,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["CUSTOM3"] = "custom3_attrib";
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
-		// not implemented but need these just in case code is in the shaders
-		actions.renames["VIEW_INDEX"] = "0";
+		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
 
@@ -607,7 +624,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";
 		actions.usage_defines["RIM_TINT"] = "@RIM";
 		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_CLEARCOAT_USED\n";
-		actions.usage_defines["CLEARCOAT_GLOSS"] = "@CLEARCOAT";
+		actions.usage_defines["CLEARCOAT_ROUGHNESS"] = "@CLEARCOAT";
 		actions.usage_defines["ANISOTROPY"] = "#define LIGHT_ANISOTROPY_USED\n";
 		actions.usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
 		actions.usage_defines["AO"] = "#define AO_USED\n";
@@ -663,20 +680,12 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
-		bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
-
-		if (!force_blinn) {
-			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
-		} else {
-			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
-		}
+		actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
 
 		actions.custom_samplers["SCREEN_TEXTURE"] = "material_samplers[3]"; // linear filter with mipmaps
 		actions.custom_samplers["DEPTH_TEXTURE"] = "material_samplers[3]";
 		actions.custom_samplers["NORMAL_ROUGHNESS_TEXTURE"] = "material_samplers[1]"; // linear filter
 
-		actions.render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
-		actions.render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
 		actions.render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 		actions.render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 		actions.render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
@@ -759,7 +768,7 @@ void fragment() {
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-		u.ids.push_back(default_vec4_xform_buffer);
+		u.append_id(default_vec4_xform_buffer);
 		u.binding = 0;
 		uniforms.push_back(u);
 

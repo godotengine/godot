@@ -45,7 +45,7 @@ bool RendererCompositor::is_xr_enabled() const {
 }
 
 RendererCompositor::RendererCompositor() {
-	xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 }
 
 RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

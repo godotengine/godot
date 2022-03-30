@@ -32,6 +32,14 @@
 
 #include "scene/scene_string_names.h"
 
+AABB VisualInstance3D::get_aabb() const {
+	AABB ret;
+	if (GDVIRTUAL_CALL(_get_aabb, ret)) {
+		return ret;
+	}
+	return AABB();
+}
+
 AABB VisualInstance3D::get_transformed_aabb() const {
 	return get_global_transform().xform(get_aabb());
 }
@@ -115,6 +123,7 @@ void VisualInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance3D::get_transformed_aabb);
 
+	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 }
 

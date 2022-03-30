@@ -90,7 +90,7 @@ public:
 	void set_underline_mode(UnderlineMode p_underline_mode);
 	UnderlineMode get_underline_mode() const;
 
-	LinkButton();
+	LinkButton(const String &p_text = String());
 };
 
 VARIANT_ENUM_CAST(LinkButton::UnderlineMode);

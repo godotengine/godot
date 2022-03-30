@@ -177,10 +177,6 @@ AABB SpriteBase3D::get_aabb() const {
 	return aabb;
 }
 
-Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;
@@ -1019,14 +1015,14 @@ void AnimatedSprite3D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation);
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			double remaining = get_process_delta_time();
 
 			while (remaining) {
+				double speed = frames->get_animation_speed(animation);
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
 				if (timeout <= 0) {
 					timeout = 1.0 / speed;
 

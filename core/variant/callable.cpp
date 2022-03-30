@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callable(*this, p_arguments, p_argcount);
+	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
 }
 
 void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
@@ -59,7 +59,7 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 			return;
 		}
 #endif
-		r_return_value = obj->call(method, p_arguments, p_argcount, r_call_error);
+		r_return_value = obj->callp(method, p_arguments, p_argcount, r_call_error);
 	}
 }
 
@@ -379,7 +379,7 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 		return ERR_INVALID_DATA;
 	}
 
-	return obj->emit_signal(name, p_arguments, p_argcount);
+	return obj->emit_signalp(name, p_arguments, p_argcount);
 }
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {

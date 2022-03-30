@@ -37,6 +37,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/margin_container.h"
@@ -121,19 +122,26 @@ void EditorSettingsDialog::_notification(int p_what) {
 				set_process_unhandled_input(false);
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
 			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
 			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			_update_icons();
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
-			// Update theme colors.
-			inspector->update_category_list();
-			_update_shortcuts();
+
+			bool update_shortcuts_tab =
+					EditorSettings::get_singleton()->check_changed_settings_in_group("shortcuts") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("builtin_action_overrides");
+			if (update_shortcuts_tab) {
+				_update_shortcuts();
+			}
 		} break;
 	}
 }
@@ -212,6 +220,8 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 
 	undo_redo->create_action(TTR("Edit Built-in Action") + " '" + p_name + "'");
+	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
 	undo_redo->add_do_method(this, "_settings_changed");
@@ -227,6 +237,8 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	undo_redo->create_action(TTR("Edit Shortcut") + " '" + p_path + "'");
 	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
+	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
 	undo_redo->add_do_method(this, "_update_shortcuts");
 	undo_redo->add_undo_method(this, "_update_shortcuts");
 	undo_redo->add_do_method(this, "_settings_changed");
@@ -327,13 +339,15 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			// Try go down tree
 			TreeItem *ti_next = ti->get_first_child();
-			// Try go across tree
+			// Try go to the next node via in-order traversal
 			if (!ti_next) {
-				ti_next = ti->get_next();
-			}
-			// Try go up tree, to next node
-			if (!ti_next) {
-				ti_next = ti->get_parent()->get_next();
+				ti_next = ti;
+				while (ti_next && !ti_next->get_next()) {
+					ti_next = ti_next->get_parent();
+				}
+				if (ti_next) {
+					ti_next = ti_next->get_next();
+				}
 			}
 
 			ti = ti_next;
@@ -365,6 +379,11 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
+
+		// Skip non-builtin actions.
+		if (!InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().has(action_name)) {
+			continue;
+		}
 
 		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
 		List<Ref<InputEventKey>> key_default_events;
@@ -412,8 +431,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 		} else {
 			section = shortcuts->create_item(root);
 
-			String item_name = section_name.capitalize();
+			String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name);
 			section->set_text(0, item_name);
+			section->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(section_name));
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
 			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
@@ -654,7 +674,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
 	add_child(tabs);
 
@@ -744,8 +764,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
 	get_ok_button()->set_text(TTR("Close"));
-
-	updating = false;
 }
 
 EditorSettingsDialog::~EditorSettingsDialog() {

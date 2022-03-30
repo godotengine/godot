@@ -940,7 +940,7 @@ public:
 	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
 
-	TextEdit();
+	TextEdit(const String &p_placeholder = String());
 };
 
 VARIANT_ENUM_CAST(TextEdit::CaretType);

@@ -2,6 +2,7 @@
 #define ROUGHNESS_MAX_LOD 5
 
 #define MAX_VOXEL_GI_INSTANCES 8
+#define MAX_VIEWS 2
 
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
 
@@ -12,10 +13,14 @@
 
 #endif
 
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
+#endif
+
 #include "cluster_data_inc.glsl"
 #include "decal_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -169,9 +174,12 @@ sdfgi;
 layout(set = 1, binding = 0, std140) uniform SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
-
 	mat4 camera_matrix;
 	mat4 inv_camera_matrix;
+
+	// only used for multiview
+	mat4 projection_matrix_view[MAX_VIEWS];
+	mat4 inv_projection_matrix_view[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;

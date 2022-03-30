@@ -852,6 +852,8 @@ private:
 			uint32_t lifetime_split;
 			uint32_t lifetime_reverse;
 			uint32_t copy_mode_2d;
+
+			float inv_emission_transform[16];
 		};
 
 		enum {
@@ -1023,7 +1025,6 @@ private:
 		RS::LightType type;
 		float param[RS::LIGHT_PARAM_MAX];
 		Color color = Color(1, 1, 1, 1);
-		Color shadow_color;
 		RID projector;
 		bool shadow = false;
 		bool negative = false;
@@ -1031,6 +1032,10 @@ private:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
+		bool distance_fade = false;
+		real_t distance_fade_begin = 40.0;
+		real_t distance_fade_shadow = 50.0;
+		real_t distance_fade_length = 10.0;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 		bool directional_blend_splits = false;
@@ -1759,7 +1764,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(multimesh->buffer);
+			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
 			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1774,7 +1779,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(multimesh->buffer);
+			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
 			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1812,7 +1817,7 @@ public:
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
-			u.ids.push_back(skeleton->buffer);
+			u.append_id(skeleton->buffer);
 			uniforms.push_back(u);
 			skeleton->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
@@ -1835,10 +1840,10 @@ public:
 	void light_set_color(RID p_light, const Color &p_color);
 	void light_set_param(RID p_light, RS::LightParam p_param, float p_value);
 	void light_set_shadow(RID p_light, bool p_enabled);
-	void light_set_shadow_color(RID p_light, const Color &p_color);
 	void light_set_projector(RID p_light, RID p_texture);
 	void light_set_negative(RID p_light, bool p_enable);
 	void light_set_cull_mask(RID p_light, uint32_t p_mask);
+	void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length);
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
 	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode);
 	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade);
@@ -1883,18 +1888,31 @@ public:
 		return light->color;
 	}
 
-	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, Color());
-
-		return light->shadow_color;
-	}
-
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
 		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->cull_mask;
+	}
+
+	_FORCE_INLINE_ bool light_is_distance_fade_enabled(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_begin(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_begin;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_shadow(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_shadow;
+	}
+
+	_FORCE_INLINE_ float light_get_distance_fade_length(RID p_light) {
+		const Light *light = light_owner.get_or_null(p_light);
+		return light->distance_fade_length;
 	}
 
 	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
@@ -2249,7 +2267,7 @@ public:
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
-				u.ids.push_back(particles->particle_instance_buffer);
+				u.append_id(particles->particle_instance_buffer);
 				uniforms.push_back(u);
 			}
 

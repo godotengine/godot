@@ -139,6 +139,8 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShader> visual_shader;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
+	Button *varying_button = nullptr;
+	PopupMenu *varying_options = nullptr;
 	Button *preview_shader = nullptr;
 
 	OptionButton *edit_type = nullptr;
@@ -168,6 +170,15 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupMenu *popup_menu = nullptr;
 	PopupMenu *constants_submenu = nullptr;
 	MenuButton *tools = nullptr;
+
+	ConfirmationDialog *add_varying_dialog = nullptr;
+	OptionButton *varying_type = nullptr;
+	LineEdit *varying_name = nullptr;
+	OptionButton *varying_mode = nullptr;
+	Label *varying_error_label = nullptr;
+
+	ConfirmationDialog *remove_varying_dialog = nullptr;
+	Tree *varyings = nullptr;
 
 	PopupPanel *comment_title_change_popup = nullptr;
 	LineEdit *comment_title_change_edit = nullptr;
@@ -232,6 +243,11 @@ class VisualShaderEditor : public VBoxContainer {
 		SET_COMMENT_DESCRIPTION,
 	};
 
+	enum class VaryingMenuOptions {
+		ADD,
+		REMOVE,
+	};
+
 	Tree *members = nullptr;
 	AcceptDialog *alert = nullptr;
 	LineEdit *node_filter = nullptr;
@@ -241,6 +257,12 @@ class VisualShaderEditor : public VBoxContainer {
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type = VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PortType p_output_port_type = VisualShaderNode::PORT_TYPE_MAX);
 
+	void _show_varying_menu();
+	void _varying_menu_id_pressed(int p_idx);
+	void _show_add_varying_dialog();
+	void _show_remove_varying_dialog();
+
+	void _update_nodes();
 	void _update_graph();
 
 	struct AddOption {
@@ -291,6 +313,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _setup_node(VisualShaderNode *p_node, const Vector<Variant> &p_ops);
 	void _add_node(int p_idx, const Vector<Variant> &p_ops, String p_resource_path = "", int p_node_idx = -1);
+	void _add_varying(const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
+	void _remove_varying(const String &p_name);
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
@@ -371,6 +395,7 @@ class VisualShaderEditor : public VBoxContainer {
 		String group_inputs;
 		String group_outputs;
 		String expression;
+		bool disabled = false;
 	};
 
 	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<VisualShader::Connection> &r_connections);
@@ -394,6 +419,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
+	void _varying_select_item(Ref<VisualShaderNodeVarying> p_varying, String p_name);
 
 	void _float_constant_selected(int p_which);
 
@@ -425,6 +451,13 @@ class VisualShaderEditor : public VBoxContainer {
 	void _member_create();
 	void _member_cancel();
 
+	void _varying_create();
+	void _varying_name_changed(const String &p_text);
+	void _varying_deleted();
+	void _varying_selected();
+	void _varying_unselected();
+	void _update_varying_tree();
+
 	Vector2 menu_point;
 	void _node_menu_id_pressed(int p_idx);
 
@@ -436,6 +469,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_created_node(GraphNode *node);
 	void _update_uniforms(bool p_update_refs);
 	void _update_uniform_refs(Set<String> &p_names);
+	void _update_varyings();
 
 	void _visibility_changed();
 
@@ -444,7 +478,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_custom_nodes();
+	void update_nodes();
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 

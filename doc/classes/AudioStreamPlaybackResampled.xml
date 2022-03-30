@@ -6,4 +6,23 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="_get_stream_sampling_rate" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_mix_resampled" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="dst_buffer" type="AudioFrame*" />
+			<argument index="1" name="frame_count" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="begin_resample">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
 </class>

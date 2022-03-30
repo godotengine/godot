@@ -53,10 +53,12 @@ EditorDebuggerTree::EditorDebuggerTree() {
 }
 
 void EditorDebuggerTree::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
-		connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
-		connect("item_rmb_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
+			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
+			connect("item_rmb_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+		} break;
 	}
 }
 

@@ -98,7 +98,7 @@ private:
 	CloseButtonDisplayPolicy cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
 
 	int hover = -1; // Hovered tab.
-	int min_width = 0;
+	int max_width = 0;
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
 	bool scroll_to_selected = true;
@@ -126,7 +126,6 @@ protected:
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
-	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 public:
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
@@ -156,13 +155,15 @@ public:
 	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
+	int get_tab_idx_at_point(const Point2 &p_point) const;
+
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
-	void move_tab(int from, int to);
+	void move_tab(int p_from, int p_to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
@@ -197,7 +198,9 @@ public:
 	bool get_select_with_rmb() const;
 
 	void ensure_tab_visible(int p_idx);
-	void set_min_width(int p_width);
+
+	void set_max_tab_width(int p_width);
+	int get_max_tab_width() const;
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;

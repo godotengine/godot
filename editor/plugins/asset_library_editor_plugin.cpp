@@ -44,8 +44,8 @@
 static inline void setup_http_request(HTTPRequest *request) {
 	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
 
-	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
-	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	const String proxy_host = EDITOR_GET("network/http_proxy/host");
+	const int proxy_port = EDITOR_GET("network/http_proxy/port");
 	request->set_http_proxy(proxy_host, proxy_port);
 	request->set_https_proxy(proxy_host, proxy_port);
 }
@@ -68,11 +68,13 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 }
 
 void EditorAssetLibraryItem::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
-		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
-		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
-		price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
+			category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+			author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+			price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+		} break;
 	}
 }
 
@@ -406,6 +408,7 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
 			dismiss_button->set_normal_texture(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Make the progress bar visible again when retrying the download.
 			progress->set_modulate(Color(1, 1, 1, 1));
@@ -574,8 +577,10 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
 			error_label->raise();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
@@ -584,6 +589,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
@@ -596,6 +602,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			HTTPClient::Status s = request->get_http_client_status();
 			const bool loading = s != HTTPClient::STATUS_DISCONNECTED;
@@ -612,6 +619,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 			}
 
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_repository_options();
 			setup_http_request(request);
@@ -1138,7 +1146,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					String name = cat["name"];
 					int id = cat["id"];
 					categories->add_item(name);
-					categories->set_item_metadata(categories->get_item_count() - 1, id);
+					categories->set_item_metadata(-1, id);
 					category_map[cat["id"]] = name;
 				}
 			}
@@ -1370,7 +1378,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	initial_loading = true;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
-
 	add_child(library_main);
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);

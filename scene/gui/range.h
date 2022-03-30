@@ -62,11 +62,13 @@ class Range : public Control {
 	void _validate_values();
 
 protected:
-	virtual void _value_changed(double) {}
+	virtual void _value_changed(double p_value);
 
 	static void _bind_methods();
 
 	bool _rounded_values = false;
+
+	GDVIRTUAL1(_value_changed, double)
 
 public:
 	void set_value(double p_val);

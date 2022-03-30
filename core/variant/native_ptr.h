@@ -124,6 +124,7 @@ struct PtrToArg<GDNativePtr<T>> {
 	}
 };
 
+GDVIRTUAL_NATIVE_PTR(void)
 GDVIRTUAL_NATIVE_PTR(AudioFrame)
 GDVIRTUAL_NATIVE_PTR(bool)
 GDVIRTUAL_NATIVE_PTR(char)

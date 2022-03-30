@@ -35,7 +35,7 @@
 #include "core/io/resource_importer.h"
 #include "core/object/ref_counted.h"
 
-class StreamTexture2D;
+class CompressedTexture2D;
 
 class LayeredTextureImport : public RefCounted {
 	GDCLASS(LayeredTextureImport, RefCounted);
@@ -87,7 +87,7 @@ protected:
 	static ResourceImporterLayeredTexture *singleton;
 
 public:
-	void _check_compress_stex(Ref<LayeredTextureImport> r_texture_import);
+	void _check_compress_ctex(Ref<LayeredTextureImport> r_texture_import);
 
 	static ResourceImporterLayeredTexture *get_singleton() { return singleton; }
 	virtual String get_importer_name() const override;

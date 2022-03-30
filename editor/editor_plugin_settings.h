@@ -48,7 +48,7 @@ class EditorPluginSettings : public VBoxContainer {
 	Button *create_plugin;
 	Button *update_list;
 	Tree *plugin_list;
-	bool updating;
+	bool updating = false;
 
 	void _plugin_activity_changed();
 	void _create_clicked();

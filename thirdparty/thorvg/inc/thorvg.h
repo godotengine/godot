@@ -145,8 +145,9 @@ enum class TVG_EXPORT CompositeMethod
 {
     None = 0,     ///< No composition is applied.
     ClipPath,     ///< The intersection of the source and the target is determined and only the resulting pixels from the source are rendered.
-    AlphaMask,    ///< The pixels of the source and the target are alpha blended. As a result, only the part of the source, which intersects with the target is visible.
-    InvAlphaMask  ///< The pixels of the source and the complement to the target's pixels are alpha blended. As a result, only the part of the source which is not covered by the target is visible.
+    AlphaMask,    ///< The pixels of the source and the target are alpha blended. As a result, only the part of the source, which alpha intersects with the target is visible.
+    InvAlphaMask, ///< The pixels of the source and the complement to the target's pixels are alpha blended. As a result, only the part of the source which alpha is not covered by the target is visible.
+    LumaMask      ///< @BETA_API The source pixels are converted to the grayscale (luma value) and alpha blended with the target. As a result, only the part of the source, which intersects with the target is visible.
 };
 
 /**

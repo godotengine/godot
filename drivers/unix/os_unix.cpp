@@ -439,12 +439,12 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from within the executable path
+		// This code exists so GDExtension can load .so files from within the executable path.
 		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from a standard unix location
+		// This code exists so GDExtension can load .so files from a standard unix location.
 		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
 	}
 

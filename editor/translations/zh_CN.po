@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-02-12 21:43+0000\n"
+"PO-Revision-Date: 2022-03-08 15:20+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -97,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -683,7 +683,7 @@ msgstr "优化动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "清空动画"
+msgstr "清理动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
@@ -723,19 +723,19 @@ msgstr "移除无效帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "移除未分解的空轨道"
+msgstr "移除无法解析的轨道和空轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
-msgstr "清除所有动画"
+msgstr "清理所有动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "清除动画（无法撤销！）"
+msgstr "清理动画（无法撤销！）"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
-msgstr "清空"
+msgstr "清理"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Ratio:"
@@ -1537,6 +1537,11 @@ msgstr "加载默认总线布局。"
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
 msgstr "创建新的总线布局。"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "打开音频总线布局"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2930,7 +2935,7 @@ msgstr "切换专注模式。"
 msgid "Add a new scene."
 msgstr "添加新场景。"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "场景"
 
@@ -3290,14 +3295,12 @@ msgid "Update Continuously"
 msgstr "持续更新"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "当有更改时更新"
+msgstr "更新所有修改"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Vital Changes"
-msgstr "材质变更："
+msgstr "更新关键修改"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -4050,6 +4053,9 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"编辑器无法识别该文件扩展名。\n"
+"如果你仍要重命名，请使用操作系统的文件管理器。\n"
+"在重命名为未知扩展名后，改文件不会再在编辑器中显示。"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5135,7 +5141,7 @@ msgstr "接下来（自动队列）："
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr "跨动画时间混合"
+msgstr "跨动画混合时间"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
@@ -5636,6 +5642,10 @@ msgstr "Godot 编辑器是在没有光线跟踪支持的情况下构建的，无
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "烘焙光照贴图"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -8094,7 +8104,13 @@ msgid "Cinematic Preview"
 msgstr "效果预览"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "使用 GLES2 渲染器时不可用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8982,6 +8998,11 @@ msgid "Select Another Theme Resource:"
 msgstr "选择其他主题资源："
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme Resource"
+msgstr "重命名资源"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Another Theme"
 msgstr "其他主题"
 
@@ -9029,6 +9050,20 @@ msgstr ""
 "将此样式盒置顶为主样式。编辑其属性会更新该类型下其他所有样式盒的相同属性。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "添加项目类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "设置变量类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "修改基础类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "显示默认"
 
@@ -9045,8 +9080,19 @@ msgid "Override all default type items."
 msgstr "覆盖所有默认类型项目。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "添加项目类型"
+#, fuzzy
+msgid "Base Type"
+msgstr "修改基础类型"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -9737,18 +9783,6 @@ msgstr "提交列表"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
 msgstr "提交列表大小"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr "10"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr "20"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
-msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branches"
@@ -12415,6 +12449,11 @@ msgid "Stack Frames"
 msgstr "栈帧"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "筛选图块"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "性能分析器"
 
@@ -12588,14 +12627,12 @@ msgid "Set Occluder Sphere Position"
 msgstr "设置遮挡球体位置"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Polygon Point Position"
-msgstr "设置入口顶点位置"
+msgstr "设置遮挡多边形顶点位置"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Hole Point Position"
-msgstr "设置曲线的顶点位置"
+msgstr "设置遮挡空洞顶点位置"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -13705,9 +13742,10 @@ msgstr "无效的包名称："
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"“android/modules” 项目设置（变更于Godot 3.2.2）中包含了无效模组 "
-"“GodotPaymentV3”。\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -13952,166 +13990,153 @@ msgstr "启动 HTTP 服务器时出错："
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't get filesystem access."
-msgstr ""
+msgstr "无法访问文件系统。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to get Info.plist hash."
-msgstr ""
+msgstr "获取 Info.plist 哈希失败。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid Info.plist, no exe name."
-msgstr "项目名称无效。"
+msgstr "Info.plist 无效，没有可执行文件名称。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Invalid Info.plist, no bundle id."
-msgstr ""
+msgstr "Info.plist 无效，没有捆绑包 ID。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid Info.plist, can't load."
-msgstr "无效的几何体，无法创建多边形。"
+msgstr "Info.plist 无效，无法加载。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to create \"%s\" subfolder."
-msgstr "无法创建文件夹。"
+msgstr "创建“%s”子文件夹失败。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to extract thin binary."
-msgstr ""
+msgstr "提取瘦二进制文件失败。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid binary format."
-msgstr "无效的基本路径。"
+msgstr "二进制格式无效。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Already signed!"
-msgstr ""
+msgstr "签名已存在！"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to process nested resources."
-msgstr "加载资源失败。"
+msgstr "处理嵌套资源失败。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to create _CodeSignature subfolder."
-msgstr ""
+msgstr "创建 _CodeSignature 子文件夹失败。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Failed to get CodeResources hash."
-msgstr "加载资源失败。"
+msgstr "获取 CodeResources 哈希失败。"
 
 #: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid entitlements file."
-msgstr "扩展名无效。"
+msgstr "授权文件无效。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid executable file."
-msgstr "扩展名无效。"
+msgstr "可执行文件无效。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't resize signature load command."
-msgstr ""
+msgstr "无法改变签名加载命令的大小。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to create fat binary."
-msgstr ""
+msgstr "无法创建胖二进制。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown bundle type."
-msgstr ""
+msgstr "未知捆绑包类型。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown object type."
-msgstr ""
+msgstr "未知对象类型。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Note: The notarization process generally takes less than an hour. When the "
 "process is completed, you'll receive an email."
-msgstr ""
+msgstr "注意：公证过程通常少于一个小时。过程结束后，你会收到一封邮件。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
-msgstr ""
+msgstr "你可以手动检查进度，请打开终端并运行以下命令："
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
-msgstr ""
+msgstr "运行以下命令将公证票证装订到导出的应用中（可选）："
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "No identity found."
-msgstr "没有图标。"
+msgstr "没有找到身份。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Creating app bundle"
-msgstr "正在创建缩略图"
+msgstr "正在创建应用捆绑包"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export:"
-msgstr ""
-"找不到导出模板 APK：\n"
-"%s"
+msgstr "无法找到导出的模板应用："
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Relative symlinks are not supported on this OS, the exported project might "
 "be broken!"
-msgstr ""
+msgstr "该操作系统上不支持相对符号链接，导出的项目可能损坏！"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Requested template binary '%s' not found. It might be missing from your "
 "template archive."
-msgstr ""
+msgstr "未找到请求的二进制模板“%s”。你的模板归档中可能缺失该文件。"
 
 #: platform/osx/export/export.cpp
 msgid "Making PKG"
-msgstr ""
+msgstr "正在制作 PKG"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Ad-hoc signed applications require the 'Disable Library Validation' "
 "entitlement to load dynamic libraries."
-msgstr ""
+msgstr "Ad-hoc 签名的应用需要“Disable Library Validation”授权才能加载动态库。"
 
 #: platform/osx/export/export.cpp
 msgid "Code signing bundle"
-msgstr ""
+msgstr "正在对捆绑包进行代码签名"
 
 #: platform/osx/export/export.cpp
 msgid "Making DMG"
-msgstr ""
+msgstr "正在制作 DMG"
 
 #: platform/osx/export/export.cpp
 msgid "Code signing DMG"
-msgstr ""
+msgstr "正在对 DMG 进行代码签名"
 
 #: platform/osx/export/export.cpp
 msgid "Making ZIP"
-msgstr ""
+msgstr "正在制作 ZIP"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Notarization requires the app to be archived first, select the DMG or ZIP "
 "export format instead."
-msgstr ""
+msgstr "公证要求该应用先进行归档，请选择 DMG 或 ZIP 导出格式。"
 
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
-msgstr ""
+msgstr "正在发送归档进行公证"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -14122,31 +14147,31 @@ msgid ""
 "Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
 "signing is limited to ad-hoc signature only."
 msgstr ""
+"警告：编辑器设置里选中的是内置的“codesign”。代码签名仅限于 ad-hoc 签名。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Warning: Xcode command line tools are not installed, using built-in "
 "\"codesign\". Code signing is limited to ad-hoc signature only."
 msgstr ""
+"警告：未安装 Xcode 命令行工具，将使用内置的“codesign”。代码签名仅限于 ad-hoc "
+"签名。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Notarization with an ad-hoc signature is not supported."
-msgstr ""
+msgstr "公证：不支持使用 Ad-hoc 签名进行公证。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization: Code signing is required for notarization."
-msgstr "公证：需要代码签名。"
+msgstr "公证：公证需要代码签名。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization: Hardened runtime is required for notarization."
-msgstr "公证：需要加强的运行时环境。"
+msgstr "公证：公证需要加固运行时环境。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization: Timestamp runtime is required for notarization."
-msgstr "公证：需要加强的运行时环境。"
+msgstr "公证：公证需要时间戳运行时环境。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
@@ -14161,63 +14186,69 @@ msgid ""
 "Warning: Notarization is disabled. The exported project will be blocked by "
 "Gatekeeper if it's downloaded from an unknown source."
 msgstr ""
+"警告：已禁用公证。如果从未知来源下载该导出后的项目，将被 Gatekeeper 阻止运"
+"行。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Code signing is disabled. The exported project will not run on Macs with "
 "enabled Gatekeeper and Apple Silicon powered Macs."
 msgstr ""
+"已禁用代码签名。导出后的项目将无法在启用 Gatekeeper 的 Mac 和使用 Apple "
+"Silicon 的 Mac 上运行。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Hardened Runtime is not compatible with ad-hoc signature, and will be "
 "disabled!"
-msgstr ""
+msgstr "加固运行时环境与 Ad-hoc 签名不兼容，将被禁用！"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Timestamping is not compatible with ad-hoc signature, and will be disabled!"
-msgstr ""
+msgstr "时间戳运行时环境与 Ad-hoc 签名不兼容，将被禁用！"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Warning: Notarization is not supported from this OS. The exported project "
 "will be blocked by Gatekeeper if it's downloaded from an unknown source."
 msgstr ""
+"警告：不支持从该操作系统进行公证。如果从未知来源下载该导出后的项目，将被 "
+"Gatekeeper 阻止运行。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Microphone access is enabled, but usage description is not "
 "specified."
-msgstr ""
+msgstr "隐私：已启用麦克风访问，但未指定用途描述。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Camera access is enabled, but usage description is not specified."
-msgstr ""
+msgstr "隐私：已启用相机访问，但未指定用途描述。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Location information access is enabled, but usage description is "
 "not specified."
-msgstr ""
+msgstr "隐私：已启用位置信息访问，但未指定用途描述。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Address book access is enabled, but usage description is not "
 "specified."
-msgstr ""
+msgstr "隐私：已启用地址簿访问，但未指定用途描述。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Calendar access is enabled, but usage description is not specified."
-msgstr ""
+msgstr "隐私：已启用日历访问，但未指定用途描述。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Photo library access is enabled, but usage description is not "
 "specified."
-msgstr ""
+msgstr "隐私：已启用照片库访问，但未指定用途描述。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14276,21 +14307,20 @@ msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
 msgstr ""
+"必须在编辑器设置中配置 rcedit 工具（Export > Windows > Rcedit）才能修改图标或"
+"应用信息数据。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid icon path:"
-msgstr "路径无效。"
+msgstr "图标路径无效："
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid file version:"
-msgstr "扩展名无效。"
+msgstr "文件版本无效："
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid product version:"
-msgstr "产品 GUID 无效。"
+msgstr "产品版本无效："
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -14967,14 +14997,13 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "该节点已废弃。请使用 AnimationTree 代替。"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "颜色：#%s\n"
-"鼠标左键：设置颜色\n"
+"鼠标左键：应用颜色\n"
 "鼠标右键：移除预设"
 
 #: scene/gui/color_picker.cpp

@@ -74,6 +74,43 @@ bool Light3D::is_negative() const {
 	return negative;
 }
 
+void Light3D::set_enable_distance_fade(bool p_enable) {
+	distance_fade_enabled = p_enable;
+	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+	notify_property_list_changed();
+}
+
+bool Light3D::is_distance_fade_enabled() const {
+	return distance_fade_enabled;
+}
+
+void Light3D::set_distance_fade_begin(real_t p_distance) {
+	distance_fade_begin = p_distance;
+	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+}
+
+real_t Light3D::get_distance_fade_begin() const {
+	return distance_fade_begin;
+}
+
+void Light3D::set_distance_fade_shadow(real_t p_distance) {
+	distance_fade_shadow = p_distance;
+	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+}
+
+real_t Light3D::get_distance_fade_shadow() const {
+	return distance_fade_shadow;
+}
+
+void Light3D::set_distance_fade_length(real_t p_length) {
+	distance_fade_length = p_length;
+	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+}
+
+real_t Light3D::get_distance_fade_length() const {
+	return distance_fade_length;
+}
+
 void Light3D::set_cull_mask(uint32_t p_cull_mask) {
 	cull_mask = p_cull_mask;
 	RS::get_singleton()->light_set_cull_mask(light, p_cull_mask);
@@ -92,15 +129,6 @@ void Light3D::set_color(const Color &p_color) {
 
 Color Light3D::get_color() const {
 	return color;
-}
-
-void Light3D::set_shadow_color(const Color &p_shadow_color) {
-	shadow_color = p_shadow_color;
-	RS::get_singleton()->light_set_shadow_color(light, p_shadow_color);
-}
-
-Color Light3D::get_shadow_color() const {
-	return shadow_color;
 }
 
 void Light3D::set_shadow_reverse_cull_face(bool p_enable) {
@@ -126,10 +154,6 @@ AABB Light3D::get_aabb() const {
 	}
 
 	return AABB();
-}
-
-Vector<Face3> Light3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 void Light3D::set_bake_mode(BakeMode p_mode) {
@@ -195,7 +219,7 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
-	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur")) {
+	if (!shadow && (property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur" || property.name == "distance_fade_shadow")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -203,6 +227,11 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 		// Angular distance is only used in DirectionalLight3D.
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+
+	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_shadow" || property.name == "distance_fade_length")) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
 	VisualInstance3D::_validate_property(property);
 }
 
@@ -222,14 +251,23 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "cull_mask"), &Light3D::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Light3D::get_cull_mask);
 
+	ClassDB::bind_method(D_METHOD("set_enable_distance_fade", "enable"), &Light3D::set_enable_distance_fade);
+	ClassDB::bind_method(D_METHOD("is_distance_fade_enabled"), &Light3D::is_distance_fade_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_begin", "distance"), &Light3D::set_distance_fade_begin);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_begin"), &Light3D::get_distance_fade_begin);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_shadow", "distance"), &Light3D::set_distance_fade_shadow);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_shadow"), &Light3D::get_distance_fade_shadow);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_length", "distance"), &Light3D::set_distance_fade_length);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_length"), &Light3D::get_distance_fade_length);
+
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &Light3D::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &Light3D::get_color);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_reverse_cull_face", "enable"), &Light3D::set_shadow_reverse_cull_face);
 	ClassDB::bind_method(D_METHOD("get_shadow_reverse_cull_face"), &Light3D::get_shadow_reverse_cull_face);
-
-	ClassDB::bind_method(D_METHOD("set_shadow_color", "shadow_color"), &Light3D::set_shadow_color);
-	ClassDB::bind_method(D_METHOD("get_shadow_color"), &Light3D::get_shadow_color);
 
 	ClassDB::bind_method(D_METHOD("set_bake_mode", "bake_mode"), &Light3D::set_bake_mode);
 	ClassDB::bind_method(D_METHOD("get_bake_mode"), &Light3D::get_bake_mode);
@@ -250,13 +288,17 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow", "has_shadow");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_normal_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_fog_fade", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_param", "get_param", PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_blur", PROPERTY_HINT_RANGE, "0.1,8,0.01"), "set_param", "get_param", PARAM_SHADOW_BLUR);
+	ADD_GROUP("Distance Fade", "distance_fade_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled"), "set_enable_distance_fade", "is_distance_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater"), "set_distance_fade_begin", "get_distance_fade_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_shadow", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater"), "set_distance_fade_shadow", "get_distance_fade_shadow");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater"), "set_distance_fade_length", "get_distance_fade_length");
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");
@@ -388,6 +430,12 @@ void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "light_size" || property.name == "light_projector" || property.name == "light_specular") {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (property.name == "distance_fade_enabled" || property.name == "distance_fade_begin" || property.name == "distance_fade_shadow" || property.name == "distance_fade_length") {
+		// Not relevant for DirectionalLight3D, as the light LOD system only pertains to point lights.
+		// For DirectionalLight3D, `directional_shadow_max_distance` can be used instead.
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 

@@ -188,7 +188,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		}
 
 		sources_list->add_item(item_text, texture);
-		sources_list->set_item_metadata(sources_list->get_item_count() - 1, source_id);
+		sources_list->set_item_metadata(-1, source_id);
 	}
 
 	if (sources_list->get_item_count() > 0) {
@@ -1347,7 +1347,12 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			}
 
 			if (picked_source >= 0) {
-				sources_list->set_current(picked_source);
+				for (int i = 0; i < sources_list->get_item_count(); i++) {
+					if (int(sources_list->get_item_metadata(i)) == picked_source) {
+						sources_list->set_current(i);
+						break;
+					}
+				}
 				sources_list->ensure_current_is_visible();
 				TilesEditorPlugin::get_singleton()->set_sources_lists_current(picked_source);
 			}
@@ -3374,15 +3379,16 @@ TileMapEditorTerrainsPlugin::~TileMapEditorTerrainsPlugin() {
 void TileMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			missing_tile_texture = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 			warning_pattern_texture = get_theme_icon(SNAME("WarningPattern"), SNAME("EditorIcons"));
 			advanced_menu_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			toggle_grid_button->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
 			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
 			toogle_highlight_selected_layer_button->set_icon(get_theme_icon(SNAME("TileMapHighlightSelected"), SNAME("EditorIcons")));
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree() && tileset_changed_needs_update) {
 				_update_bottom_panel();
 				_update_layers_selection();
@@ -3390,11 +3396,13 @@ void TileMapEditor::_notification(int p_what) {
 				CanvasItemEditor::get_singleton()->update_viewport();
 				tileset_changed_needs_update = false;
 			}
-			break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
-			break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 			if (tile_map) {
 				if (is_visible_in_tree()) {
@@ -3403,7 +3411,7 @@ void TileMapEditor::_notification(int p_what) {
 					tile_map->set_selected_layer(-1);
 				}
 			}
-			break;
+		} break;
 	}
 }
 
@@ -4016,7 +4024,7 @@ TileMapEditor::TileMapEditor() {
 	// Layer selector.
 	layers_selection_popup = memnew(PopupMenu);
 	layers_selection_popup->connect("id_pressed", callable_mp(this, &TileMapEditor::_layers_selection_id_pressed));
-	layers_selection_popup->set_close_on_parent_focus(false);
+	layers_selection_popup->set_flag(Window::FLAG_POPUP, false);
 
 	layers_selection_button = memnew(Button);
 	layers_selection_button->set_toggle_mode(true);

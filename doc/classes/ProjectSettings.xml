@@ -226,6 +226,9 @@
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files. The window title will be set to match the project name automatically on startup.
 			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
 		</member>
+		<member name="application/config/name_localized" type="Dictionary" setter="" getter="" default="{}">
+			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS and macOS.
+		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.
@@ -1493,7 +1496,7 @@
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
-			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
+			"DEFAULT" and "GodotPhysics3D" are the same, as there is currently no alternative 3D physics server implemented.
 		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
@@ -1776,10 +1779,10 @@
 		<member name="rendering/reflections/sky_reflections/fast_filter_high_quality" type="bool" setter="" getter="" default="false">
 			Use a higher quality variant of the fast filtering algorithm. Significantly slower than using default quality, but results in smoother reflections. Should only be used when the scene is especially detailed.
 		</member>
-		<member name="rendering/reflections/sky_reflections/ggx_samples" type="int" setter="" getter="" default="1024">
+		<member name="rendering/reflections/sky_reflections/ggx_samples" type="int" setter="" getter="" default="32">
 			Sets the number of samples to take when using importance sampling for [Sky]s and [ReflectionProbe]s. A higher value will result in smoother, higher quality reflections, but increases time to calculate radiance maps. In general, fewer samples are needed for simpler, low dynamic range environments while more samples are needed for HDR environments and environments with a high level of detail.
 		</member>
-		<member name="rendering/reflections/sky_reflections/ggx_samples.mobile" type="int" setter="" getter="" default="128">
+		<member name="rendering/reflections/sky_reflections/ggx_samples.mobile" type="int" setter="" getter="" default="16">
 			Lower-end override for [member rendering/reflections/sky_reflections/ggx_samples] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/reflections/sky_reflections/roughness_layers" type="int" setter="" getter="" default="8">
@@ -1812,12 +1815,6 @@
 		<member name="rendering/shader_compiler/shader_cache/strip_debug.release" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
-		</member>
-		<member name="rendering/shading/overrides/force_blinn_over_ggx.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/shading/overrides/force_blinn_over_ggx] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
@@ -1921,8 +1918,23 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="rendering/xr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
+		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://default_action_map.tres&quot;">
+			Action map configuration to load by default.
+		</member>
+		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] Godot will setup and initialise OpenXR on startup.
+		</member>
+		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
+			Specify whether OpenXR should be configured for an HMD or a hand held device.
+		</member>
+		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
+			Specify the default reference space.
+		</member>
+		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
+			Specify the view configuration with which to configure OpenXR settting up either Mono or Stereo rendering.
+		</member>
+		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], Godot will compile shaders required for XR.
 		</member>
 	</members>
 </class>

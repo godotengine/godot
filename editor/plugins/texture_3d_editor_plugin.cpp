@@ -35,18 +35,17 @@ void Texture3DEditor::_texture_rect_draw() {
 }
 
 void Texture3DEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
-	}
-	if (p_what == NOTIFICATION_RESIZED) {
-		_texture_rect_update_area();
-	}
+	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			_texture_rect_update_area();
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-		Size2 size = get_size();
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			Size2 size = get_size();
 
-		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+		} break;
 	}
 }
 

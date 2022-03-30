@@ -57,14 +57,23 @@ class Texture2D : public Texture {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(int, _get_width)
+	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL2RC(bool, _is_pixel_opaque, int, int)
+	GDVIRTUAL0RC(bool, _has_alpha)
+
+	GDVIRTUAL4C(_draw, RID, Point2, Color, bool)
+	GDVIRTUAL5C(_draw_rect, RID, Rect2, bool, Color, bool)
+	GDVIRTUAL6C(_draw_rect_region, RID, Rect2, Rect2, Color, bool, bool)
+
 public:
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
+	virtual int get_width() const;
+	virtual int get_height() const;
 	virtual Size2 get_size() const;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
 
-	virtual bool has_alpha() const = 0;
+	virtual bool has_alpha() const;
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
@@ -128,8 +137,8 @@ public:
 	~ImageTexture();
 };
 
-class StreamTexture2D : public Texture2D {
-	GDCLASS(StreamTexture2D, Texture2D);
+class CompressedTexture2D : public Texture2D {
+	GDCLASS(CompressedTexture2D, Texture2D);
 
 public:
 	enum DataFormat {
@@ -174,8 +183,8 @@ protected:
 public:
 	static Ref<Image> load_image_from_file(FileAccess *p_file, int p_size_limit);
 
-	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture2D> &);
-	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
+	typedef void (*TextureFormatRequestCallback)(const Ref<CompressedTexture2D> &);
+	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<CompressedTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
 
 	static TextureFormatRequestCallback request_3d_callback;
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
@@ -200,11 +209,11 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	StreamTexture2D();
-	~StreamTexture2D();
+	CompressedTexture2D();
+	~CompressedTexture2D();
 };
 
-class ResourceFormatLoaderStreamTexture2D : public ResourceFormatLoader {
+class ResourceFormatLoaderCompressedTexture2D : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -300,6 +309,13 @@ class TextureLayered : public Texture {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(Image::Format, _get_format)
+	GDVIRTUAL0RC(uint32_t, _get_layered_type)
+	GDVIRTUAL0RC(int, _get_width)
+	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL0RC(int, _get_layers)
+	GDVIRTUAL0RC(bool, _has_mipmaps)
+	GDVIRTUAL1RC(Ref<Image>, _get_layer_data, int)
 public:
 	enum LayeredType {
 		LAYERED_TYPE_2D_ARRAY,
@@ -307,13 +323,15 @@ public:
 		LAYERED_TYPE_CUBEMAP_ARRAY
 	};
 
-	virtual Image::Format get_format() const = 0;
-	virtual LayeredType get_layered_type() const = 0;
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
-	virtual int get_layers() const = 0;
-	virtual bool has_mipmaps() const = 0;
-	virtual Ref<Image> get_layer_data(int p_layer) const = 0;
+	virtual Image::Format get_format() const;
+	virtual LayeredType get_layered_type() const;
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual int get_layers() const;
+	virtual bool has_mipmaps() const;
+	virtual Ref<Image> get_layer_data(int p_layer) const;
+
+	TextureLayered() {}
 };
 
 VARIANT_ENUM_CAST(TextureLayered::LayeredType)
@@ -380,8 +398,8 @@ public:
 			ImageTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
 };
 
-class StreamTextureLayered : public TextureLayered {
-	GDCLASS(StreamTextureLayered, TextureLayered);
+class CompressedTextureLayered : public TextureLayered {
+	GDCLASS(CompressedTextureLayered, TextureLayered);
 
 public:
 	enum DataFormat {
@@ -433,34 +451,34 @@ public:
 
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
 
-	StreamTextureLayered(LayeredType p_layered_type);
-	~StreamTextureLayered();
+	CompressedTextureLayered(LayeredType p_layered_type);
+	~CompressedTextureLayered();
 };
 
-class StreamTexture2DArray : public StreamTextureLayered {
-	GDCLASS(StreamTexture2DArray, StreamTextureLayered)
+class CompressedTexture2DArray : public CompressedTextureLayered {
+	GDCLASS(CompressedTexture2DArray, CompressedTextureLayered)
 public:
-	StreamTexture2DArray() :
-			StreamTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
+	CompressedTexture2DArray() :
+			CompressedTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
 };
 
-class StreamCubemap : public StreamTextureLayered {
-	GDCLASS(StreamCubemap, StreamTextureLayered);
-
-public:
-	StreamCubemap() :
-			StreamTextureLayered(LAYERED_TYPE_CUBEMAP) {}
-};
-
-class StreamCubemapArray : public StreamTextureLayered {
-	GDCLASS(StreamCubemapArray, StreamTextureLayered);
+class CompressedCubemap : public CompressedTextureLayered {
+	GDCLASS(CompressedCubemap, CompressedTextureLayered);
 
 public:
-	StreamCubemapArray() :
-			StreamTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
+	CompressedCubemap() :
+			CompressedTextureLayered(LAYERED_TYPE_CUBEMAP) {}
 };
 
-class ResourceFormatLoaderStreamTextureLayered : public ResourceFormatLoader {
+class CompressedCubemapArray : public CompressedTextureLayered {
+	GDCLASS(CompressedCubemapArray, CompressedTextureLayered);
+
+public:
+	CompressedCubemapArray() :
+			CompressedTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
+};
+
+class ResourceFormatLoaderCompressedTextureLayered : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -474,15 +492,21 @@ class Texture3D : public Texture {
 protected:
 	static void _bind_methods();
 
-	TypedArray<Image> _get_data() const;
+	TypedArray<Image> _get_datai() const;
 
+	GDVIRTUAL0RC(Image::Format, _get_format)
+	GDVIRTUAL0RC(int, _get_width)
+	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL0RC(int, _get_depth)
+	GDVIRTUAL0RC(bool, _has_mipmaps)
+	GDVIRTUAL0RC(TypedArray<Image>, _get_data)
 public:
-	virtual Image::Format get_format() const = 0;
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
-	virtual int get_depth() const = 0;
-	virtual bool has_mipmaps() const = 0;
-	virtual Vector<Ref<Image>> get_data() const = 0;
+	virtual Image::Format get_format() const;
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual int get_depth() const;
+	virtual bool has_mipmaps() const;
+	virtual Vector<Ref<Image>> get_data() const;
 };
 
 class ImageTexture3D : public Texture3D {
@@ -520,8 +544,8 @@ public:
 	~ImageTexture3D();
 };
 
-class StreamTexture3D : public Texture3D {
-	GDCLASS(StreamTexture3D, Texture3D);
+class CompressedTexture3D : public Texture3D {
+	GDCLASS(CompressedTexture3D, Texture3D);
 
 public:
 	enum DataFormat {
@@ -571,11 +595,11 @@ public:
 
 	virtual Vector<Ref<Image>> get_data() const override;
 
-	StreamTexture3D();
-	~StreamTexture3D();
+	CompressedTexture3D();
+	~CompressedTexture3D();
 };
 
-class ResourceFormatLoaderStreamTexture3D : public ResourceFormatLoader {
+class ResourceFormatLoaderCompressedTexture3D : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

@@ -55,13 +55,14 @@
 # naan <xlightfox@hotmail.com>, 2021.
 # Tim Visee <tim+weblate@visee.me>, 2022.
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
+# Rémi Verschelde <remi@godotengine.org>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-30 07:16+0000\n"
-"Last-Translator: Ferhat Geçdoğan <ferhatgectao@gmail.com>\n"
+"PO-Revision-Date: 2022-02-20 11:48+0000\n"
+"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -1535,6 +1536,11 @@ msgstr "Standaard audiobusindeling laden."
 msgid "Create a new Bus Layout."
 msgstr "Maak een nieuwe audiobusindeling."
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "Audiobusindeling openen"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "Ongeldige naam."
@@ -2977,7 +2983,7 @@ msgstr "Afleidingsvrijemodus omschakelen."
 msgid "Add a new scene."
 msgstr "Nieuwe scène toevoegen."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "Scène"
 
@@ -5766,6 +5772,10 @@ msgid "Bake Lightmaps"
 msgstr "Bak Lichtmappen"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "Selecteer lightmap bake-bestand"
 
@@ -8309,7 +8319,13 @@ msgid "Cinematic Preview"
 msgstr "Bioscoop Preview"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "Niet beschikbaar bij gebruik van de GLES2 renderer."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8766,7 +8782,7 @@ msgstr "Animaties:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
-msgstr "Niewe animatie"
+msgstr "Nieuwe animatie"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -9258,6 +9274,11 @@ msgstr "Bron verwijderen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "Bronnaam wijzigen"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "Thema importeren"
 
@@ -9312,6 +9333,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "Element toevoegen"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "Zet variabele type"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "Verander basis type"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "Laad standaard"
 
@@ -9330,8 +9366,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "Element toevoegen"
+msgid "Base Type"
+msgstr "Verander basis type"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -10048,18 +10094,6 @@ msgstr "Commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12827,6 +12861,11 @@ msgid "Stack Frames"
 msgstr "Stack Frames"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "Filter tegels"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "Profiler"
 
@@ -14190,9 +14229,10 @@ msgstr "Ongeldige pakketnaam:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"Ongeldige \"GodotPaymentV3\" module ingesloten in de projectinstelling "
-"\"android/modules\" (veranderd in Godot 3.2.2).\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

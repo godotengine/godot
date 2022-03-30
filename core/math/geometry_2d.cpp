@@ -218,10 +218,10 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 	// Need to scale points (Clipper's requirement for robust computation).
 	for (int i = 0; i != p_polypath_a.size(); ++i) {
-		path_a << IntPoint(p_polypath_a[i].x * SCALE_FACTOR, p_polypath_a[i].y * SCALE_FACTOR);
+		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
 	}
 	for (int i = 0; i != p_polypath_b.size(); ++i) {
-		path_b << IntPoint(p_polypath_b[i].x * SCALE_FACTOR, p_polypath_b[i].y * SCALE_FACTOR);
+		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
 	}
 	Clipper clp;
 	clp.AddPath(path_a, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
@@ -246,8 +246,8 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
 			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
 		}
 		polypaths.push_back(polypath);
 	}
@@ -290,17 +290,17 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 			et = etOpenRound;
 			break;
 	}
-	ClipperOffset co(2.0, 0.25f * SCALE_FACTOR); // Defaults from ClipperOffset.
+	ClipperOffset co(2.0, 0.25f * (real_t)SCALE_FACTOR); // Defaults from ClipperOffset.
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).
 	for (int i = 0; i != p_polypath.size(); ++i) {
-		path << IntPoint(p_polypath[i].x * SCALE_FACTOR, p_polypath[i].y * SCALE_FACTOR);
+		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
 	}
 	co.AddPath(path, jt, et);
 
 	Paths paths;
-	co.Execute(paths, p_delta * SCALE_FACTOR); // Inflate/deflate.
+	co.Execute(paths, p_delta * (real_t)SCALE_FACTOR); // Inflate/deflate.
 
 	// Have to scale points down now.
 	Vector<Vector<Point2>> polypaths;
@@ -312,8 +312,8 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 
 		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
 			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
 		}
 		polypaths.push_back(polypath);
 	}

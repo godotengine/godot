@@ -198,13 +198,4 @@ struct hb_subset_plan_t
   }
 };
 
-typedef struct hb_subset_plan_t hb_subset_plan_t;
-
-HB_INTERNAL hb_subset_plan_t *
-hb_subset_plan_create (hb_face_t           *face,
-		       const hb_subset_input_t   *input);
-
-HB_INTERNAL void
-hb_subset_plan_destroy (hb_subset_plan_t *plan);
-
 #endif /* HB_SUBSET_PLAN_HH */

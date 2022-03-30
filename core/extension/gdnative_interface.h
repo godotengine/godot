@@ -194,6 +194,7 @@ typedef void *GDExtensionClassInstancePtr;
 
 typedef GDNativeBool (*GDNativeExtensionClassSet)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value);
 typedef GDNativeBool (*GDNativeExtensionClassGet)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
+typedef uint64_t (*GDNativeExtensionClassGetRID)(GDExtensionClassInstancePtr p_instance);
 
 typedef struct {
 	uint32_t type;
@@ -228,6 +229,7 @@ typedef struct {
 	GDNativeExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassGetVirtual get_virtual_func;
+	GDNativeExtensionClassGetRID get_rid_func;
 	void *class_userdata;
 } GDNativeExtensionClassCreationInfo;
 
@@ -303,6 +305,8 @@ typedef struct {
 	void (*print_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 	void (*print_warning)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 	void (*print_script_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
+
+	uint64_t (*get_native_struct_size)(const char *p_name);
 
 	/* GODOT VARIANT */
 
@@ -460,8 +464,8 @@ typedef enum {
 	GDNATIVE_INITIALIZATION_CORE,
 	GDNATIVE_INITIALIZATION_SERVERS,
 	GDNATIVE_INITIALIZATION_SCENE,
-	GDNATIVE_INITIALIZATION_EDITOR,
 	GDNATIVE_INITIALIZATION_DRIVER,
+	GDNATIVE_INITIALIZATION_EDITOR,
 	GDNATIVE_MAX_INITIALIZATION_LEVEL,
 } GDNativeInitializationLevel;
 

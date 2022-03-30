@@ -527,10 +527,10 @@ String CSharpLanguage::make_function(const String &, const String &, const Packe
 String CSharpLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/behavior/indent/type", 0);
+		bool use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
 		if (use_space_indentation) {
-			int indent_size = EDITOR_DEF("text_editor/behavior/indent/size", 4);
+			int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
 
 			String space_indent = "";
 			for (int i = 0; i < indent_size; i++) {
@@ -1893,7 +1893,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 	return false;
 }
 
-Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
@@ -2908,7 +2908,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 }
 #endif
 
-Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (unlikely(GDMono::get_singleton() == nullptr)) {
 		// Probably not the best error but eh.
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -2936,7 +2936,7 @@ Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, i
 	}
 
 	// No static method found. Try regular instance calls
-	return Script::call(p_method, p_args, p_argcount, r_error);
+	return Script::callp(p_method, p_args, p_argcount, r_error);
 }
 
 void CSharpScript::_resource_path_changed() {

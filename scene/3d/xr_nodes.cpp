@@ -448,11 +448,6 @@ void XRController3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
-	ClassDB::bind_method(D_METHOD("get_rumble"), &XRController3D::get_rumble);
-	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRController3D::set_rumble);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
-	ADD_PROPERTY_DEFAULT("rumble", 0.0);
-
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("input_value_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
@@ -558,20 +553,6 @@ Vector2 XRController3D::get_axis(const StringName &p_name) const {
 	}
 }
 
-real_t XRController3D::get_rumble() const {
-	if (!tracker.is_valid()) {
-		return 0.0;
-	}
-
-	return tracker->get_rumble();
-}
-
-void XRController3D::set_rumble(real_t p_rumble) {
-	if (tracker.is_valid()) {
-		tracker->set_rumble(p_rumble);
-	}
-}
-
 XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	// get our XRServer
 	if (!tracker.is_valid()) {
@@ -612,7 +593,7 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 		}
 	}
 
-	bool xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
 		warnings.push_back(TTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
 	}

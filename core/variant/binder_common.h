@@ -100,6 +100,10 @@ struct VariantCaster<const T &> {
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
 			*(int64_t *)p_ptr = (int64_t)p_val;                              \
 		}                                                                    \
+	};                                                                       \
+	template <>                                                              \
+	struct ZeroInitializer<m_enum> {                                         \
+		static void initialize(m_enum &value) { value = (m_enum)0; }         \
 	};
 
 // Object enum casts must go here
@@ -182,7 +186,7 @@ struct VariantCasterAndValidate {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(p_args[p_arg_idx])) {
+				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;
@@ -197,7 +201,7 @@ struct VariantCasterAndValidate<T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(p_args[p_arg_idx])) {
+				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;
@@ -212,7 +216,7 @@ struct VariantCasterAndValidate<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(p_args[p_arg_idx])) {
+				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;

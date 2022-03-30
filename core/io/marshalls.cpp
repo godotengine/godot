@@ -1068,6 +1068,21 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}
 		} break;
+#ifdef REAL_T_IS_DOUBLE
+		case Variant::VECTOR2:
+		case Variant::VECTOR3:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
+		case Variant::QUATERNION:
+		case Variant::PLANE:
+		case Variant::BASIS:
+		case Variant::RECT2:
+		case Variant::AABB: {
+			flags |= ENCODE_FLAG_64;
+		} break;
+#endif // REAL_T_IS_DOUBLE
 		default: {
 		} // nothing to do at this stage
 	}

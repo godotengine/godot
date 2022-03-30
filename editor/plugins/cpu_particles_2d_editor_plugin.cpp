@@ -224,10 +224,12 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 }
 
 void CPUParticles2DEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(epoints->get_theme_icon(SNAME("CPUParticles2D"), SNAME("EditorIcons")));
-		file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
+			menu->set_icon(epoints->get_theme_icon(SNAME("CPUParticles2D"), SNAME("EditorIcons")));
+			file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
+		} break;
 	}
 }
 

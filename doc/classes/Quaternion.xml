@@ -188,11 +188,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Quaternion" />
 			<description>
 				Returns [code]true[/code] if the quaternions are not equal.
@@ -253,11 +248,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Divides each component of the [Quaternion] by the given value. This operation is not meaningful on its own, but it can be used as a part of a larger expression.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

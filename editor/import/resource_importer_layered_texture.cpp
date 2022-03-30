@@ -85,16 +85,16 @@ void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_e
 String ResourceImporterLayeredTexture::get_save_extension() const {
 	switch (mode) {
 		case MODE_CUBEMAP: {
-			return "scube";
+			return "ccube";
 		} break;
 		case MODE_2D_ARRAY: {
-			return "stexarray";
+			return "ctexarray";
 		} break;
 		case MODE_CUBEMAP_ARRAY: {
-			return "scubearray";
+			return "ccubearray";
 		} break;
 		case MODE_3D: {
-			return "stex3d";
+			return "ctex3d";
 		} break;
 	}
 
@@ -104,16 +104,16 @@ String ResourceImporterLayeredTexture::get_save_extension() const {
 String ResourceImporterLayeredTexture::get_resource_type() const {
 	switch (mode) {
 		case MODE_CUBEMAP: {
-			return "StreamCubemap";
+			return "CompressedCubemap";
 		} break;
 		case MODE_2D_ARRAY: {
-			return "StreamTexture2DArray";
+			return "CompressedTexture2DArray";
 		} break;
 		case MODE_CUBEMAP_ARRAY: {
-			return "StreamCubemapArray";
+			return "CompressedCubemapArray";
 		} break;
 		case MODE_3D: {
-			return "StreamTexture3D";
+			return "CompressedTexture3D";
 		} break;
 	}
 	ERR_FAIL_V(String());
@@ -263,7 +263,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_8('T');
 	f->store_8('L');
 
-	f->store_32(StreamTextureLayered::FORMAT_VERSION);
+	f->store_32(CompressedTextureLayered::FORMAT_VERSION);
 	f->store_32(p_images.size()); // For 2d layers or 3d depth.
 	f->store_32(mode);
 	f->store_32(0);
@@ -274,11 +274,11 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_32(0);
 
 	for (int i = 0; i < p_images.size(); i++) {
-		ResourceImporterTexture::save_to_stex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
+		ResourceImporterTexture::save_to_ctex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
 
 	for (int i = 0; i < mipmap_images.size(); i++) {
-		ResourceImporterTexture::save_to_stex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
+		ResourceImporterTexture::save_to_ctex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
 
 	f->close();
@@ -393,7 +393,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->bptc_ldr = bptc_ldr;
 	texture_import->mipmaps = mipmaps;
 	texture_import->used_channels = used_channels;
-	_check_compress_stex(texture_import);
+	_check_compress_ctex(texture_import);
 	if (r_metadata) {
 		Dictionary metadata;
 		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
@@ -474,7 +474,7 @@ ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
 }
 
-void ResourceImporterLayeredTexture::_check_compress_stex(Ref<LayeredTextureImport> r_texture_import) {
+void ResourceImporterLayeredTexture::_check_compress_ctex(Ref<LayeredTextureImport> r_texture_import) {
 	String extension = get_save_extension();
 	ERR_FAIL_NULL(r_texture_import->csource);
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
@@ -544,5 +544,5 @@ void ResourceImporterLayeredTexture::_check_compress_stex(Ref<LayeredTextureImpo
 		}
 		return;
 	}
-	EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
+	EditorNode::add_io_error(TTR("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC."));
 }

@@ -47,12 +47,10 @@ vec3 texelCoordToVec(vec2 uv, uint faceID) {
 	return normalize(result);
 }
 
-vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N) {
-	float a = Roughness * Roughness; // DISNEY'S ROUGHNESS [see Burley'12 siggraph]
-
+vec3 ImportanceSampleGGX(vec2 xi, float roughness4) {
 	// Compute distribution direction
-	float Phi = 2.0 * M_PI * Xi.x;
-	float CosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+	float Phi = 2.0 * M_PI * xi.x;
+	float CosTheta = sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
 	float SinTheta = sqrt(1.0 - CosTheta * CosTheta);
 
 	// Convert to spherical direction
@@ -61,12 +59,15 @@ vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N) {
 	H.y = SinTheta * sin(Phi);
 	H.z = CosTheta;
 
-	vec3 UpVector = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-	vec3 TangentX = normalize(cross(UpVector, N));
-	vec3 TangentY = cross(N, TangentX);
+	return H;
+}
 
-	// Tangent to world space
-	return TangentX * H.x + TangentY * H.y + N * H.z;
+float DistributionGGX(float NdotH, float roughness4) {
+	float NdotH2 = NdotH * NdotH;
+	float denom = (NdotH2 * (roughness4 - 1.0) + 1.0);
+	denom = M_PI * denom * denom;
+
+	return roughness4 / denom;
 }
 
 // https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html

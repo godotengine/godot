@@ -70,8 +70,6 @@ struct Light {
 	float cos_spot_angle;
 	float inv_spot_attenuation;
 	float radius;
-
-	vec4 shadow_color;
 };
 
 layout(set = 0, binding = 9, std140) buffer restrict readonly Lights {

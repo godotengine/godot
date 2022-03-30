@@ -29,20 +29,6 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
-## bullet
-
-- Upstream: https://github.com/bulletphysics/bullet3
-- Version: 3.17 (ebe1916b90acae8b13cd8c6b637d8327cdc64e94, 2021)
-- License: zlib
-
-Files extracted from upstream source:
-
-- `src/*` apart from CMakeLists.txt and premake4.lua files
-- `LICENSE.txt`, and `VERSION` as `VERSION.txt`
-
-Includes some patches in the `patches` folder which have been sent upstream.
-
-
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
@@ -206,7 +192,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 3.3.2 (ac46c3248e8b0316235943175c4d4a11c24dd4a9, 2022)
+- Version: 4.0.0 (8d1b000a3edc90c12267b836b4ef3f81c0e53edc, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -454,7 +440,7 @@ Collection of single-file libraries used in Godot components.
   * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.00 (2bb4a0accd4003c1db4c24533981e01b1adfd656, 2019)
+  * Version: 1.01 (af1a5bc352164740c1cc1354942b1c6b72eacb8a, 2021)
   * License: Public Domain or Unlicense or MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
@@ -473,6 +459,7 @@ Files extracted from the upstream source:
 - `msdfgen.h`
 - Files in `core/` folder.
 - `LICENSE.txt` and `CHANGELOG.md`
+
 
 ## oidn
 
@@ -503,6 +490,30 @@ Patch files are provided in `oidn/patches/`.
 - core/transfer_function.cpp
 
 - scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
+
+
+## openxr
+
+- Upstream: https://github.com/KhronosGroup/OpenXR-SDK
+- Version: 1.0.22 (458984d7f59d1ae6dc1b597d94b02e4f7132eaba, 2022)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- include/
+- src/common/
+- src/loader/
+- src/*.{c,h}
+- src/external/jsoncpp/include/
+- src/external/jsoncpp/src/lib_json/
+- LICENSE and COPYING.adoc
+
+Exclude:
+
+- src/external/android-jni-wrappers and src/external/jnipp (not used yet)
+- All CMake stuff: cmake/, CMakeLists.txt and *.cmake
+- All Gradle stuff: *gradle*, AndroidManifest.xml
+- All following files (and their .license files): *.{def,in,json,map,pom,rc}
 
 
 ## pcre2
@@ -602,7 +613,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/Samsung/thorvg
-- Version: 0.7.1 (d53eb2a880002cb770ace1c1ace9c5dfcfc28252, 2022)
+- Version: 0.8.0 (41093c17b3cac440bdcc53f8b69abeb5734696b5, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -665,10 +676,10 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.0-development (2022-02-08), commit `a1895bc76547370564d604faa27e0b73de747df1`
+Version: 3.0.0-development (2022-02-24), commit `dc3f6bb9159df22ceed69c7765ddfb4fbb1b6ed0`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
-Patches in the `patches` directory should be re-applied after updates (order must be followed among the number-prefixed ones).
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## wslay

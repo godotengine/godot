@@ -557,6 +557,19 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance));
 }
 
+bool ClassDB::is_virtual(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
+	}
+#endif
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance) && ti->is_virtual);
+}
+
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
 	OBJTYPE_WLOCK;
 
@@ -1197,7 +1210,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object, arg, 2, ce);
 				} else {
-					p_object->call(psg->setter, arg, 2, ce);
+					p_object->callp(psg->setter, arg, 2, ce);
 				}
 
 			} else {
@@ -1205,7 +1218,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object, arg, 1, ce);
 				} else {
-					p_object->call(psg->setter, arg, 1, ce);
+					p_object->callp(psg->setter, arg, 1, ce);
 				}
 			}
 
@@ -1238,14 +1251,14 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 				Variant index = psg->index;
 				const Variant *arg[1] = { &index };
 				Callable::CallError ce;
-				r_value = p_object->call(psg->getter, arg, 1, ce);
+				r_value = p_object->callp(psg->getter, arg, 1, ce);
 
 			} else {
 				Callable::CallError ce;
 				if (psg->_getptr) {
 					r_value = psg->_getptr->call(p_object, nullptr, 0, ce);
 				} else {
-					r_value = p_object->call(psg->getter, nullptr, 0, ce);
+					r_value = p_object->callp(psg->getter, nullptr, 0, ce);
 				}
 			}
 			return true;
@@ -1593,7 +1606,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
-		} else if (ClassDB::can_instantiate(p_class)) {
+		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) {
 			c = ClassDB::instantiate(p_class);
 			cleanup_c = true;
 		}
@@ -1681,6 +1694,30 @@ void ClassDB::unregister_extension_class(const StringName &p_class) {
 	classes.erase(p_class);
 }
 
+Map<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
+void ClassDB::register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size) {
+	NativeStruct ns;
+	ns.ccode = p_code;
+	ns.struct_size = p_current_size;
+	native_structs[p_name] = ns;
+}
+
+void ClassDB::get_native_struct_list(List<StringName> *r_names) {
+	for (const KeyValue<StringName, NativeStruct> &E : native_structs) {
+		r_names->push_back(E.key);
+	}
+}
+
+String ClassDB::get_native_struct_code(const StringName &p_name) {
+	ERR_FAIL_COND_V(!native_structs.has(p_name), String());
+	return native_structs[p_name].ccode;
+}
+
+uint64_t ClassDB::get_native_struct_size(const StringName &p_name) {
+	ERR_FAIL_COND_V(!native_structs.has(p_name), 0);
+	return native_structs[p_name].struct_size;
+}
+
 RWLock ClassDB::lock;
 
 void ClassDB::cleanup_defaults() {
@@ -1704,6 +1741,7 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
+	native_structs.clear();
 }
 
 //

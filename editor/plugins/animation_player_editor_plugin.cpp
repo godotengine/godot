@@ -94,6 +94,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			last_active = player->is_playing();
 			updating = false;
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			tool_anim->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
@@ -105,9 +106,11 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -153,6 +156,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
 			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
+
+			_update_animation_list_icons();
 		} break;
 	}
 }
@@ -544,6 +549,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			Ref<Animation> anim = player->get_animation(current);
 
 			Ref<Animation> new_anim = _animation_clone(anim);
+			new_anim->set_name(new_name);
 
 			undo_redo->create_action(TTR("Duplicate Animation"));
 			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
@@ -855,22 +861,13 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	for (const StringName &E : animlist) {
-		Ref<Texture2D> icon;
-		if (E == player->get_autoplay()) {
-			if (E == SceneStringNames::get_singleton()->RESET) {
-				icon = autoplay_reset_icon;
-			} else {
-				icon = autoplay_icon;
-			}
-		} else if (E == SceneStringNames::get_singleton()->RESET) {
-			icon = reset_icon;
-		}
-		animation->add_icon_item(icon, E);
+		animation->add_item(E);
 
 		if (player->get_assigned_animation() == E) {
 			active_idx = animation->get_item_count() - 1;
 		}
 	}
+	_update_animation_list_icons();
 
 	updating = false;
 	if (active_idx != -1) {
@@ -897,6 +894,25 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	_update_animation();
+}
+
+void AnimationPlayerEditor::_update_animation_list_icons() {
+	for (int i = 0; i < animation->get_item_count(); i++) {
+		String name = animation->get_item_text(i);
+
+		Ref<Texture2D> icon;
+		if (name == player->get_autoplay()) {
+			if (name == SceneStringNames::get_singleton()->RESET) {
+				icon = autoplay_reset_icon;
+			} else {
+				icon = autoplay_icon;
+			}
+		} else if (name == SceneStringNames::get_singleton()->RESET) {
+			icon = reset_icon;
+		}
+
+		animation->set_item_icon(i, icon);
+	}
 }
 
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
@@ -1654,11 +1670,11 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->set_tooltip(TTR("Onion Skinning Options"));
 	onion_skinning->get_popup()->add_separator(TTR("Directions"));
 	onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
-	onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
+	onion_skinning->get_popup()->set_item_checked(-1, true);
 	onion_skinning->get_popup()->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
 	onion_skinning->get_popup()->add_separator(TTR("Depth"));
 	onion_skinning->get_popup()->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);
-	onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
+	onion_skinning->get_popup()->set_item_checked(-1, true);
 	onion_skinning->get_popup()->add_radio_check_item(TTR("2 steps"), ONION_SKINNING_2_STEPS);
 	onion_skinning->get_popup()->add_radio_check_item(TTR("3 steps"), ONION_SKINNING_3_STEPS);
 	onion_skinning->get_popup()->add_separator();

@@ -130,11 +130,6 @@ Comment: Basis Universal
 Copyright: 2019, Binomial LLC.
 License: Apache-2.0
 
-Files: ./thirdparty/bullet/
-Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2013, Erwin Coumans
-License: Zlib
-
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
@@ -361,10 +356,14 @@ Comment: Multi-channel signed distance field generator
 Copyright: 2016, Viktor Chlumsky
 License: MIT
 
-
 Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
 Copyright: 2009-2019, Intel Corporation
+License: Apache-2.0
+
+Files: ./thirdparty/openxr/
+Comment: OpenXR Loader
+Copyright: 2020-2022, The Khronos Group Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
@@ -395,7 +394,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2021, Samsung Electronics Co., Ltd.
+Copyright: 2020-2022, Samsung Electronics Co., Ltd.
 License: Expat
 
 Files: ./thirdparty/tinyexr/

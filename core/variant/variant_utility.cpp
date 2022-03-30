@@ -219,10 +219,6 @@ struct VariantUtilityFunctions {
 		return Math::step_decimals(step);
 	}
 
-	static inline int range_step_decimals(float step) {
-		return Math::range_step_decimals(step);
-	}
-
 	static inline double snapped(double value, double step) {
 		return Math::snapped(value, step);
 	}
@@ -1204,7 +1200,6 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);

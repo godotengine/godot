@@ -1186,7 +1186,7 @@ void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Vari
 	if (!p_item) {
 		return;
 	}
-	p_item->call(p_method, p_args, p_argcount, r_error);
+	p_item->callp(p_method, p_args, p_argcount, r_error);
 	TreeItem *c = p_item->get_first_child();
 	while (c) {
 		recursive_call_aux(c, p_method, p_args, p_argcount, r_error);
@@ -3286,8 +3286,21 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					} else {
 						Rect2 rect = get_selected()->get_meta("__focus_rect");
 						Point2 mpos = b->get_position();
+						int icon_size_x = 0;
+						Ref<Texture2D> icon = get_selected()->get_icon(selected_col);
+						if (icon.is_valid()) {
+							Rect2i icon_region = get_selected()->get_icon_region(selected_col);
+							if (icon_region == Rect2i()) {
+								icon_size_x = icon->get_width();
+							} else {
+								icon_size_x = icon_region.size.width;
+							}
+						}
+						// Icon is treated as if it is outside of the rect so that double clicking on it will emit the item_double_clicked signal.
 						if (rtl) {
-							mpos.x = get_size().width - mpos.x;
+							mpos.x = get_size().width - (mpos.x + icon_size_x);
+						} else {
+							mpos.x -= icon_size_x;
 						}
 						if (rect.has_point(mpos)) {
 							if (!edit_selected()) {

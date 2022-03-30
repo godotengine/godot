@@ -98,6 +98,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		case GDScriptParser::DataType::NATIVE: {
 			result.kind = GDScriptDataType::NATIVE;
 			result.native_type = p_datatype.native_type;
+			result.builtin_type = p_datatype.builtin_type;
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			result.kind = GDScriptDataType::SCRIPT;
@@ -132,11 +133,13 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 					result.kind = GDScriptDataType::GDSCRIPT;
 					result.script_type = script.ptr();
 					result.native_type = script->get_instance_base_type();
+					result.builtin_type = p_datatype.builtin_type;
 				} else {
 					result.kind = GDScriptDataType::GDSCRIPT;
 					result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
 					result.script_type = result.script_type_ref.ptr();
 					result.native_type = p_datatype.native_type;
+					result.builtin_type = p_datatype.builtin_type;
 				}
 			}
 		} break;
@@ -291,16 +294,21 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			// Try signals and methods (can be made callables).
 			{
-				if (codegen.class_node->members_indices.has(identifier)) {
-					const GDScriptParser::ClassNode::Member &member = codegen.class_node->members[codegen.class_node->members_indices[identifier]];
-					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
-						// Get like it was a property.
-						GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
-						GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
+				// Search upwards through parent classes:
+				const GDScriptParser::ClassNode *base_class = codegen.class_node;
+				while (base_class != nullptr) {
+					if (base_class->has_member(identifier)) {
+						const GDScriptParser::ClassNode::Member &member = base_class->get_member(identifier);
+						if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+							// Get like it was a property.
+							GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
+							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
 
-						gen->write_get_named(temp, identifier, self);
-						return temp;
+							gen->write_get_named(temp, identifier, self);
+							return temp;
+						}
 					}
+					base_class = base_class->base_type.class_type;
 				}
 
 				// Try in native base.

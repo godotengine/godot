@@ -169,7 +169,7 @@ float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {
 
 void AudioStreamGeneratorPlayback::start(float p_from_pos) {
 	if (mixed == 0.0) {
-		_begin_resample();
+		begin_resample();
 	}
 	skips = 0;
 	active = true;

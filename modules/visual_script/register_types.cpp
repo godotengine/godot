@@ -53,7 +53,7 @@ void register_visual_script_types() {
 	//script_language_gd->init();
 	ScriptServer::register_language(visual_script_language);
 
-	GDREGISTER_CLASS(VisualScript);
+	GDREGISTER_ABSTRACT_CLASS(VisualScript);
 	GDREGISTER_VIRTUAL_CLASS(VisualScriptNode);
 	GDREGISTER_CLASS(VisualScriptModule);
 	GDREGISTER_CLASS(VisualScriptModuleNode);
@@ -61,7 +61,7 @@ void register_visual_script_types() {
 	GDREGISTER_CLASS(VisualScriptModuleExitNode);
 	GDREGISTER_CLASS(VisualScriptFunctionState);
 	GDREGISTER_CLASS(VisualScriptFunction);
-	GDREGISTER_VIRTUAL_CLASS(VisualScriptLists);
+	GDREGISTER_ABSTRACT_CLASS(VisualScriptLists);
 	GDREGISTER_CLASS(VisualScriptComposeArray);
 	GDREGISTER_CLASS(VisualScriptOperator);
 	GDREGISTER_CLASS(VisualScriptVariableSet);

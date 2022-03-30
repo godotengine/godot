@@ -55,12 +55,6 @@ class GridMapEditor : public VBoxContainer {
 		INPUT_PASTE,
 	};
 
-	enum ClipMode {
-		CLIP_DISABLED,
-		CLIP_ABOVE,
-		CLIP_BELOW
-	};
-
 	enum DisplayMode {
 		DISPLAY_THUMBNAIL,
 		DISPLAY_LIST
@@ -94,7 +88,6 @@ class GridMapEditor : public VBoxContainer {
 
 	GridMap *node = nullptr;
 	MeshLibrary *last_mesh_library;
-	ClipMode clip_mode = CLIP_DISABLED;
 
 	Transform3D grid_xform;
 	Transform3D edit_grid_xform;
@@ -159,9 +152,6 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_NEXT_LEVEL,
 		MENU_OPTION_PREV_LEVEL,
 		MENU_OPTION_LOCK_VIEW,
-		MENU_OPTION_CLIP_DISABLED,
-		MENU_OPTION_CLIP_ABOVE,
-		MENU_OPTION_CLIP_BELOW,
 		MENU_OPTION_X_AXIS,
 		MENU_OPTION_Y_AXIS,
 		MENU_OPTION_Z_AXIS,
@@ -200,7 +190,6 @@ class GridMapEditor : public VBoxContainer {
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
-	void _update_clip();
 	void _update_theme();
 
 	void _text_changed(const String &p_text);

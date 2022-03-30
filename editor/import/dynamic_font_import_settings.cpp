@@ -484,6 +484,14 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
 		}
+	} else if (p_edited_property == "embolden") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_embolden(import_settings_data->get("embolden"));
+		}
+	} else if (p_edited_property == "transform") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_transform(import_settings_data->get("transform"));
+		}
 	} else if (p_edited_property == "oversampling") {
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
@@ -560,7 +568,7 @@ void DynamicFontImportSettings::_variation_changed(const String &p_edited_proper
 void DynamicFontImportSettings::_variations_validate() {
 	String warn;
 	if (!vars_list_root->get_first_child()) {
-		warn = TTR("Warinig: There are no configurations specified, no glyphs will be pre-rendered.");
+		warn = TTR("Warning: There are no configurations specified, no glyphs will be pre-rendered.");
 	}
 	for (TreeItem *vars_item_a = vars_list_root->get_first_child(); vars_item_a; vars_item_a = vars_item_a->get_next()) {
 		Ref<DynamicFontImportSettingsData> import_variation_data_a = vars_item_a->get_metadata(0);
@@ -575,7 +583,7 @@ void DynamicFontImportSettings::_variations_validate() {
 					match = match && (import_variation_data_b->settings[E->key()] == E->get());
 				}
 				if (match) {
-					warn = TTR("Warinig: Multiple configurations have identical settings. Duplicates will be ignored.");
+					warn = TTR("Warning: Multiple configurations have identical settings. Duplicates will be ignored.");
 					break;
 				}
 			}
@@ -767,7 +775,6 @@ bool DynamicFontImportSettings::_char_update(int32_t p_char) {
 		selected_chars.insert(p_char);
 		return true;
 	}
-	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
 }
 
 void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
@@ -900,13 +907,18 @@ String DynamicFontImportSettings::_pad_zeros(const String &p_hex) const {
 }
 
 void DynamicFontImportSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
-	} else if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		add_lang->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		add_script->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		add_ot->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			add_lang->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_script->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_ot->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -920,6 +932,8 @@ void DynamicFontImportSettings::_re_import() {
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
+	main_settings["embolden"] = import_settings_data->get("embolden");
+	main_settings["transform"] = import_settings_data->get("transform");
 	main_settings["oversampling"] = import_settings_data->get("oversampling");
 	main_settings["compress"] = import_settings_data->get("compress");
 
@@ -1271,6 +1285,8 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		font_preview->get_data(0)->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->get_data(0)->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		font_preview->get_data(0)->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+		font_preview->get_data(0)->set_embolden(import_settings_data->get("embolden"));
+		font_preview->get_data(0)->set_transform(import_settings_data->get("transform"));
 		font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 	}
 	font_preview_label->add_theme_font_override("font", font_preview);
@@ -1330,6 +1346,8 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0.f));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::TRANSFORM2D, "transform"), Transform2D()));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "compress", PROPERTY_HINT_NONE, ""), false));
 

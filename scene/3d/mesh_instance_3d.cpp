@@ -219,18 +219,6 @@ AABB MeshInstance3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
-	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING))) {
-		return Vector<Face3>();
-	}
-
-	if (mesh.is_null()) {
-		return Vector<Face3>();
-	}
-
-	return mesh->get_faces();
-}
-
 Node *MeshInstance3D::create_trimesh_collision_node() {
 	if (mesh.is_null()) {
 		return nullptr;

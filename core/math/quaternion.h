@@ -145,7 +145,7 @@ struct _NO_DISCARD_ Quaternion {
 		Vector3 c = v0.cross(v1);
 		real_t d = v0.dot(v1);
 
-		if (d < -1.0f + CMP_EPSILON) {
+		if (d < -1.0f + (real_t)CMP_EPSILON) {
 			x = 0;
 			y = 1;
 			z = 0;

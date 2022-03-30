@@ -61,6 +61,8 @@ layout(push_constant, std430) uniform Params {
 	uint lifetime_split;
 	bool lifetime_reverse;
 	bool copy_mode_2d;
+
+	mat4 inv_emission_transform;
 }
 params;
 
@@ -197,6 +199,12 @@ void main() {
 		if (params.trail_size > 1) {
 			uint part_ofs = particle % params.trail_size;
 			txform = txform * trail_bind_poses.data[part_ofs];
+		}
+
+		if (params.copy_mode_2d) {
+			// In global mode, bring 2D particles to local coordinates
+			// as they will be drawn with the node position as origin.
+			txform = params.inv_emission_transform * txform;
 		}
 
 		txform = transpose(txform);

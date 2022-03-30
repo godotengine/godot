@@ -42,7 +42,7 @@ int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_
 	int below_count = 0;
 
 	for (int i = 0; i < 3; i++) {
-		if (p_plane.has_point(vertex[i], CMP_EPSILON)) { // point is in plane
+		if (p_plane.has_point(vertex[i], (real_t)CMP_EPSILON)) { // point is in plane
 
 			ERR_FAIL_COND_V(above_count >= 4, 0);
 			above[above_count++] = vertex[i];
@@ -117,7 +117,7 @@ bool Face3::intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vect
 
 bool Face3::is_degenerate() const {
 	Vector3 normal = vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]);
-	return (normal.length_squared() < CMP_EPSILON2);
+	return (normal.length_squared() < (real_t)CMP_EPSILON2);
 }
 
 Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) const {

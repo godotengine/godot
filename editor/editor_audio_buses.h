@@ -85,9 +85,9 @@ class EditorAudioBus : public PanelContainer {
 
 	Tree *effects;
 
-	bool updating_bus;
+	bool updating_bus = false;
 	bool is_master;
-	mutable bool hovering_drop;
+	mutable bool hovering_drop = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _effects_gui_input(Ref<InputEvent> p_event);
@@ -140,7 +140,7 @@ class EditorAudioBusDrop : public Control {
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	mutable bool hovering_drop;
+	mutable bool hovering_drop = false;
 
 protected:
 	static void _bind_methods();

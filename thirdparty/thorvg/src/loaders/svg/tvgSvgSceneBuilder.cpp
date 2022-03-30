@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,12 +68,12 @@ struct Box
 
 
 static bool _appendShape(SvgNode* node, Shape* shape, const Box& vBox, const string& svgPath);
-static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool mask);
+static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool mask, bool* isMaskWhite = nullptr);
 
 
 static inline bool _isGroupType(SvgNodeType type)
 {
-    if (type == SvgNodeType::Doc || type == SvgNodeType::G || type == SvgNodeType::Use || type == SvgNodeType::ClipPath) return true;
+    if (type == SvgNodeType::Doc || type == SvgNodeType::G || type == SvgNodeType::Use || type == SvgNodeType::ClipPath || type == SvgNodeType::Symbol) return true;
     return false;
 }
 
@@ -276,15 +276,21 @@ static void _applyComposition(Paint* paint, const SvgNode* node, const Box& vBox
        Composition can be applied recursively if its children nodes have composition target to this one. */
     if (node->style->mask.applying) {
         TVGLOG("SVG", "Multiple Composition Tried! Check out Circular dependency?");
-    } else  {
+    } else {
         auto compNode = node->style->mask.node;
         if (compNode && compNode->child.count > 0) {
             node->style->mask.applying = true;
 
-            auto comp = _sceneBuildHelper(compNode, vBox, svgPath, true);
+            bool isMaskWhite = true;
+            auto comp = _sceneBuildHelper(compNode, vBox, svgPath, true, &isMaskWhite);
             if (comp) {
                 if (node->transform) comp->transform(*node->transform);
-                paint->composite(move(comp), CompositeMethod::AlphaMask);
+
+                if (compNode->node.mask.type == SvgMaskType::Luminance && !isMaskWhite) {
+                    paint->composite(move(comp), CompositeMethod::LumaMask);
+                } else {
+                    paint->composite(move(comp), CompositeMethod::AlphaMask);
+                }
             }
 
             node->style->mask.applying = false;
@@ -534,57 +540,137 @@ static unique_ptr<Picture> _imageBuildHelper(SvgNode* node, const Box& vBox, con
         string imagePath = href;
         if (strncmp(href, "/", 1)) {
             auto last = svgPath.find_last_of("/");
-            imagePath = svgPath.substr(0, (last == string::npos ? 0 : last + 1 )) + imagePath;
+            imagePath = svgPath.substr(0, (last == string::npos ? 0 : last + 1)) + imagePath;
         }
         if (picture->load(imagePath) != Result::Success) return nullptr;
     }
 
     float w, h;
+    Matrix m = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     if (picture->size(&w, &h) == Result::Success && w  > 0 && h > 0) {
         auto sx = node->node.image.w / w;
         auto sy = node->node.image.h / h;
-        Matrix m = {sx, 0, node->node.image.x, 0, sy, node->node.image.y, 0, 0, 1};
-        picture->transform(m);
+        m = {sx, 0, node->node.image.x, 0, sy, node->node.image.y, 0, 0, 1};
     }
+    if (node->transform) m = mathMultiply(node->transform, &m);
+    picture->transform(m);
 
     _applyComposition(picture.get(), node, vBox, svgPath);
     return picture;
 }
 
 
-static unique_ptr<Scene> _useBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath)
+static unique_ptr<Scene> _useBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool* isMaskWhite)
 {
-    auto scene = _sceneBuildHelper(node, vBox, svgPath, false);
+    unique_ptr<Scene> finalScene;
+    auto scene = _sceneBuildHelper(node, vBox, svgPath, false, isMaskWhite);
+
+    // mUseTransform = mUseTransform * mTranslate
+    Matrix mUseTransform = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    if (node->transform) mUseTransform = *node->transform;
     if (node->node.use.x != 0.0f || node->node.use.y != 0.0f) {
-        scene->translate(node->node.use.x, node->node.use.y);
+        Matrix mTranslate = {1, 0, node->node.use.x, 0, 1, node->node.use.y, 0, 0, 1};
+        mUseTransform = mathMultiply(&mUseTransform, &mTranslate);
     }
-    if (node->node.use.w > 0.0f && node->node.use.h > 0.0f) {
-        //TODO: handle width/height properties
+
+    if (node->node.use.symbol) {
+        auto symbol = node->node.use.symbol->node.symbol;
+
+        auto width = symbol.w;
+        if (node->node.use.isWidthSet) width = node->node.use.w;
+        auto height = symbol.h;
+        if (node->node.use.isHeightSet) height = node->node.use.h;
+
+        Matrix mViewBox = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+        if ((!mathEqual(width, symbol.vw) || !mathEqual(height, symbol.vh)) && symbol.vw > 0 && symbol.vh > 0) {
+            auto sx = width / symbol.vw;
+            auto sy = height / symbol.vh;
+            if (symbol.preserveAspect) {
+                if (sx < sy) sy = sx;
+                else sx = sy;
+            }
+
+            auto tvx = symbol.vx * sx;
+            auto tvy = symbol.vy * sy;
+            auto tvw = symbol.vw * sx;
+            auto tvh = symbol.vh * sy;
+            tvy -= (symbol.h - tvh) * 0.5f;
+            tvx -= (symbol.w - tvw) * 0.5f;
+            mViewBox = {sx, 0, -tvx, 0, sy, -tvy, 0, 0, 1};
+        } else if (!mathZero(symbol.vx) || !mathZero(symbol.vy)) {
+            mViewBox = {1, 0, -symbol.vx, 0, 1, -symbol.vy, 0, 0, 1};
+        }
+
+        // mSceneTransform = mUseTransform * mSymbolTransform * mViewBox
+        Matrix mSceneTransform = mViewBox;
+        if (node->node.use.symbol->transform) {
+            mSceneTransform = mathMultiply(node->node.use.symbol->transform, &mViewBox);
+        }
+        mSceneTransform = mathMultiply(&mUseTransform, &mSceneTransform);
+        scene->transform(mSceneTransform);
+
+        if (node->node.use.symbol->node.symbol.overflowVisible) {
+            finalScene = move(scene);
+        } else {
+            auto viewBoxClip = Shape::gen();
+            viewBoxClip->appendRect(0, 0, width, height, 0, 0);
+
+            // mClipTransform = mUseTransform * mSymbolTransform
+            Matrix mClipTransform = mUseTransform;
+            if (node->node.use.symbol->transform) {
+                mClipTransform = mathMultiply(&mUseTransform, node->node.use.symbol->transform);
+            }
+            viewBoxClip->transform(mClipTransform);
+
+            auto compositeLayer = Scene::gen();
+            compositeLayer->composite(move(viewBoxClip), CompositeMethod::ClipPath);
+            compositeLayer->push(move(scene));
+
+            auto root = Scene::gen();
+            root->push(move(compositeLayer));
+
+            finalScene = move(root);
+        }
+    } else {
+        if (!mathIdentity((const Matrix*)(&mUseTransform))) scene->transform(mUseTransform);
+        finalScene = move(scene);
     }
-    return scene;
+
+    return finalScene;
 }
 
 
-static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool mask)
+static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool mask, bool* isMaskWhite)
 {
     if (_isGroupType(node->type) || mask) {
         auto scene = Scene::gen();
-        if (!mask && node->transform) scene->transform(*node->transform);
+        // For a Symbol node, the viewBox transformation has to be applied first - see _useBuildHelper()
+        if (!mask && node->transform && node->type != SvgNodeType::Symbol) scene->transform(*node->transform);
 
         if (node->display && node->style->opacity != 0) {
             auto child = node->child.data;
             for (uint32_t i = 0; i < node->child.count; ++i, ++child) {
                 if (_isGroupType((*child)->type)) {
                     if ((*child)->type == SvgNodeType::Use)
-                        scene->push(_useBuildHelper(*child, vBox, svgPath));
+                        scene->push(_useBuildHelper(*child, vBox, svgPath, isMaskWhite));
                     else
-                        scene->push(_sceneBuildHelper(*child, vBox, svgPath, false));
+                        scene->push(_sceneBuildHelper(*child, vBox, svgPath, false, isMaskWhite));
                 } else if ((*child)->type == SvgNodeType::Image) {
                     auto image = _imageBuildHelper(*child, vBox, svgPath);
                     if (image) scene->push(move(image));
                 } else if ((*child)->type != SvgNodeType::Mask) {
                     auto shape = _shapeBuildHelper(*child, vBox, svgPath);
-                    if (shape) scene->push(move(shape));
+                    if (shape) {
+                        if (isMaskWhite) {
+                            uint8_t r, g, b;
+                            shape->fillColor(&r, &g, &b, nullptr);
+                            if (shape->fill() || r < 255 || g < 255 || b < 255 || shape->strokeFill() ||
+                                (shape->strokeColor(&r, &g, &b, nullptr) == Result::Success && (r < 255 || g < 255 || b < 255))) {
+                                *isMaskWhite = false;
+                            }
+                        }
+                        scene->push(move(shape));
+                    }
                 }
             }
             _applyComposition(scene.get(), node, vBox, svgPath);
@@ -620,17 +706,13 @@ unique_ptr<Scene> svgSceneBuild(SvgNode* node, float vx, float vy, float vw, flo
             auto tvy = vy * scale;
             auto tvw = vw * scale;
             auto tvh = vh * scale;
-            if (vw > vh) tvy -= (h - tvh) * 0.5f;
-            else  tvx -= (w - tvw) * 0.5f;
+            tvx -= (w - tvw) * 0.5f;
+            tvy -= (h - tvh) * 0.5f;
             docNode->translate(-tvx, -tvy);
         } else {
             //Align
             auto tvx = vx * sx;
             auto tvy = vy * sy;
-            auto tvw = vw * sx;
-            auto tvh = vh * sy;
-            if (tvw > tvh) tvy -= (h - tvh) * 0.5f;
-            else tvx -= (w - tvw) * 0.5f;
             Matrix m = {sx, 0, -tvx, 0, sy, -tvy, 0, 0, 1};
             docNode->transform(m);
         }

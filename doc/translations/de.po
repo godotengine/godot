@@ -41,12 +41,14 @@
 # Rémi Verschelde <remi@godotengine.org>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
 # ‎ <artism90@googlemail.com>, 2022.
+# Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
+# Leon Marz <main@lmarz.org>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-02-16 09:01+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2022-03-02 18:39+0000\n"
+"Last-Translator: Leon Marz <main@lmarz.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -54,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.11.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -82,7 +84,7 @@ msgstr "Signale"
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
-msgstr "Aufzählungstypen"
+msgstr "Aufzählungen"
 
 #: doc/tools/make_rst.py
 msgid "Constants"
@@ -3691,6 +3693,11 @@ msgid ""
 "- Linux: Up to 80 buttons.\n"
 "- Windows and macOS: Up to 128 buttons."
 msgstr ""
+"Die maximale Anzahl an Spielcontroller-Tasten, die unterstützt werden. Das "
+"eigentliche Limit kann bei bestimmten Plattformen geringer sein:\n"
+"- Android: Bis zu 36 Tasten.\n"
+"- Linux: Bis zu 80 Tasten.\n"
+"- Windows und macOS: Bis zu 128 Tasten."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock circle button."
@@ -3751,7 +3758,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Trigger on a VR controller."
-msgstr ""
+msgstr "Trigger-Taste eines VR Controllers."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3848,7 +3855,7 @@ msgstr "Gamecontroller linke Triggerachse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left stick click."
-msgstr ""
+msgstr "Klick auf dem linken Stick des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3862,11 +3869,11 @@ msgstr "Gamecontroller rechte Trigger-Achse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right stick click."
-msgstr ""
+msgstr "Klick auf dem rechten Stick des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left stick horizontal axis."
-msgstr ""
+msgstr "Horizontale Achse auf dem linken Stick des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3875,7 +3882,7 @@ msgstr "Game Controller linker Joystick x-Achse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right stick horizontal axis."
-msgstr ""
+msgstr "Horizontale Achse auf dem rechten Stick des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3884,11 +3891,11 @@ msgstr "Game Controller rechter Joystick x-Achse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 4."
-msgstr ""
+msgstr "Achse 4 eines gewöhnlichen Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 5."
-msgstr ""
+msgstr "Achse 5 eines gewöhnlichen Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3902,11 +3909,11 @@ msgstr "Gamecontroller rechte Trigger-Achse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 8."
-msgstr ""
+msgstr "Achse 8 eines gewöhnlichen Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 9."
-msgstr ""
+msgstr "Achse 9 eines gewöhnlichen Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Represents the maximum number of joystick axes supported."
@@ -3914,11 +3921,11 @@ msgstr "Stellt die maximale Anzahl der unterstützten Joystick-Achsen dar."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left analog trigger."
-msgstr ""
+msgstr "Linker analoger Trigger des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right analog trigger."
-msgstr ""
+msgstr "Rechter analoger Trigger des Gamepads."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -4327,6 +4334,15 @@ msgstr ""
 "Eigenschaft um einen Aufzählungswert handelt, der in einer über eine "
 "Hinweiszeichenkette wie [code]\"Hello,Something,Else\"[/code] angegebenen "
 "Liste auszuwählen ist."
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"Hints that a string property can be an enumerated value to pick in a list "
+"specified via a hint string such as [code]\"Hello,Something,Else\"[/code].\n"
+"Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts "
+"arbitrary values and can be empty. The list of values serves to suggest "
+"possible values."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4822,12 +4838,12 @@ msgstr ""
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
 msgid "Vector math"
-msgstr ""
+msgstr "Vektor-Mathematik"
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
 msgid "Advanced vector math"
-msgstr ""
+msgstr "Fortgeschrittene Vektor-Mathematik"
 
 #: doc/classes/AABB.xml
 msgid "Constructs an [AABB] from a position and size."
@@ -6306,7 +6322,8 @@ msgstr ""
 "an diesem Node anzeigen soll."
 
 #: doc/classes/AnimationNode.xml
-msgid "Returns [code]true[/code] whether a given path is filtered."
+#, fuzzy
+msgid "Returns whether the given path is filtered."
 msgstr "Gibt [code]true[/code] zurück, ob ein gegebener Pfad gefiltert ist."
 
 #: doc/classes/AnimationNode.xml
@@ -6340,8 +6357,9 @@ msgid "Adds or removes a path for the filter."
 msgstr "Fügt einen Pfad für den Filter hinzu oder entfernt ihn."
 
 #: doc/classes/AnimationNode.xml
+#, fuzzy
 msgid ""
-"Sets a custom parameter. These are used as local storage, because resources "
+"Sets a custom parameter. These are used as local memory, because resources "
 "can be reused across the tree or scenes."
 msgstr ""
 "Setzt einen benutzerdefinierten Parameter. Diese werden als lokaler Speicher "
@@ -6353,7 +6371,8 @@ msgid "If [code]true[/code], filtering is enabled."
 msgstr "Wenn [code]true[/code], ist die Filterung aktiviert."
 
 #: doc/classes/AnimationNode.xml
-msgid "Called when the node was removed from the graph."
+#, fuzzy
+msgid "Emitted when the node was removed from the graph."
 msgstr "Wird aufgerufen, wenn das Node aus dem Graphen entfernt wurde."
 
 #: doc/classes/AnimationNode.xml
@@ -7733,7 +7752,7 @@ msgstr ""
 
 #: doc/classes/AnimationTree.xml
 msgid "Using AnimationTree"
-msgstr ""
+msgstr "Verwendung des AnimationTree"
 
 #: doc/classes/AnimationTree.xml
 msgid "Manually advance the animations by the specified time (in seconds)."
@@ -8585,7 +8604,7 @@ msgstr ""
 
 #: doc/classes/Area2D.xml
 msgid "Using Area2D"
-msgstr ""
+msgstr "Verwendung von Area2D"
 
 #: doc/classes/Area2D.xml doc/classes/CollisionShape2D.xml
 #: doc/classes/RectangleShape2D.xml
@@ -11505,23 +11524,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml
-msgid ""
-"Name of the current device for audio input (see [method "
-"capture_get_device_list]). The value [code]\"Default\"[/code] means that the "
-"system-wide default audio input is currently used."
-msgstr ""
-
-#: doc/classes/AudioServer.xml
 msgid "Returns the names of all audio input devices detected on the system."
-msgstr ""
-
-#: doc/classes/AudioServer.xml
-msgid ""
-"Sets which audio input device is used for audio capture. On systems with "
-"multiple audio inputs (such as analog and USB), this can be used to select "
-"the audio input device. Setting the value [code]\"Default\"[/code] will "
-"record audio from the system-wide default audio input. If an invalid device "
-"name is set, the value will be reverted back to [code]\"Default\"[/code]."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -11678,6 +11681,16 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Number of available audio buses."
+msgstr ""
+
+#: doc/classes/AudioServer.xml
+msgid ""
+"Name of the current device for audio input (see [method get_device_list]). "
+"On systems with multiple audio inputs (such as analog, USB and HDMI audio), "
+"this can be used to select the audio input device. The value "
+"[code]\"Default\"[/code] will record audio on the system-wide default audio "
+"input. If an invalid device name is set, the value will be reverted back to "
+"[code]\"Default\"[/code]."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -14136,7 +14149,7 @@ msgstr ""
 
 #: doc/classes/CameraFeed.xml
 msgid "Unspecified position."
-msgstr ""
+msgstr "Nicht spezifizierte Position."
 
 #: doc/classes/CameraFeed.xml
 msgid "Camera is mounted at the front of the device."
@@ -14795,6 +14808,18 @@ msgstr ""
 
 #: doc/classes/CanvasLayer.xml
 msgid "Returns the RID of the canvas used by this layer."
+msgstr ""
+
+#: doc/classes/CanvasLayer.xml
+msgid ""
+"Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
+"setting [member visible] to [code]false[/code]."
+msgstr ""
+
+#: doc/classes/CanvasLayer.xml
+msgid ""
+"Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
+"setting [member visible] to [code]true[/code]."
 msgstr ""
 
 #: doc/classes/CanvasLayer.xml
@@ -17758,8 +17783,9 @@ msgid ""
 "Returns a [Color] from the first matching [Theme] in the tree if that "
 "[Theme] has a color item with the specified [code]name[/code] and "
 "[code]theme_type[/code]. If [code]theme_type[/code] is omitted the class "
-"name of the current control is used as the type. If the type is a class name "
-"its parent classes are also checked, in order of inheritance.\n"
+"name of the current control is used as the type, or [member "
+"theme_type_variation] if it is defined. If the type is a class name its "
+"parent classes are also checked, in order of inheritance.\n"
 "For the current control its local overrides are considered first (see "
 "[method add_color_override]), then its assigned [member theme]. After the "
 "current control, each parent control and its assigned [member theme] are "
@@ -18541,6 +18567,25 @@ msgstr ""
 msgid ""
 "Changing this property replaces the current [Theme] resource this node and "
 "all its [Control] children use."
+msgstr ""
+
+#: doc/classes/Control.xml
+msgid ""
+"The name of a theme type variation used by this [Control] to look up its own "
+"theme items. When empty, the class name of the node is used (e.g. "
+"[code]Button[/code] for the [Button] control), as well as the class names of "
+"all parent classes (in order of inheritance).\n"
+"When set, this property gives the highest priority to the type of the "
+"specified name. This type can in turn extend another type, forming a "
+"dependency chain. See [method Theme.set_type_variation]. If the theme item "
+"cannot be found using this type or its base types, lookup falls back on the "
+"class names.\n"
+"[b]Note:[/b] To look up [Control]'s own items use various [code]get_*[/code] "
+"methods without specifying [code]theme_type[/code].\n"
+"[b]Note:[/b] Theme items are looked for in the tree order, from branch to "
+"root, where each [Control] node is checked for its [member theme] property. "
+"The earliest match against any type/class name is returned. The project-"
+"level Theme and the default Theme are checked last."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -25261,7 +25306,22 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Environment.xml
-msgid "If [code]true[/code], the glow effect is enabled."
+msgid ""
+"If [code]true[/code], the glow effect is enabled.\n"
+"[b]Note:[/b] Only effective if [member ProjectSettings.rendering/quality/"
+"intended_usage/framebuffer_allocation] is [b]3D[/b] ([i]not[/i] [b]3D "
+"Without Effects[/b]). On mobile, [member ProjectSettings.rendering/quality/"
+"intended_usage/framebuffer_allocation] defaults to [b]3D Without Effects[/b] "
+"by default, so its [code].mobile[/code] override needs to be changed to "
+"[b]3D[/b].\n"
+"[b]Note:[/b] When using GLES3 on mobile, HDR rendering is disabled by "
+"default for performance reasons. This means glow will only be visible if "
+"[member glow_hdr_threshold] is decreased below [code]1.0[/code] or if "
+"[member glow_bloom] is increased above [code]0.0[/code]. Also consider "
+"increasing [member glow_intensity] to [code]1.5[/code]. If you want glow to "
+"behave on mobile like it does on desktop (at a performance cost), enable "
+"[member ProjectSettings.rendering/quality/depth/hdr]'s [code].mobile[/code] "
+"override."
 msgstr ""
 
 #: doc/classes/Environment.xml
@@ -25717,7 +25777,7 @@ msgstr ""
 
 #: doc/classes/File.xml
 msgid "File system"
-msgstr ""
+msgstr "Dateisystem"
 
 #: doc/classes/File.xml
 msgid ""
@@ -27370,8 +27430,9 @@ msgid ""
 "Returns a [PoolIntArray] where each triangle consists of three consecutive "
 "point indices into [code]polygon[/code] (i.e. the returned array will have "
 "[code]n * 3[/code] elements, with [code]n[/code] being the number of found "
-"triangles). If the triangulation did not succeed, an empty [PoolIntArray] is "
-"returned."
+"triangles). Output triangles will always be counter clockwise, and the "
+"contour will be flipped if it's clockwise. If the triangulation did not "
+"succeed, an empty [PoolIntArray] is returned."
 msgstr ""
 
 #: doc/classes/Geometry.xml
@@ -27641,7 +27702,12 @@ msgid ""
 "[b]Note:[/b] [method bake] works from the editor and in exported projects. "
 "This makes it suitable for procedurally generated or user-built levels. "
 "Baking a [GIProbe] generally takes from 5 to 20 seconds in most scenes. "
-"Reducing [member subdiv] can speed up baking."
+"Reducing [member subdiv] can speed up baking.\n"
+"[b]Note:[/b] [GeometryInstance]s and [Light]s must be fully ready before "
+"[method bake] is called. If you are procedurally creating those and some "
+"meshes or lights are missing from your baked [GIProbe], use "
+"[code]call_deferred(\"bake\")[/code] instead of calling [method bake] "
+"directly."
 msgstr ""
 
 #: doc/classes/GIProbe.xml
@@ -28689,7 +28755,7 @@ msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "Using gridmaps"
-msgstr ""
+msgstr "Verwendung von Gridmaps"
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "Clear all cells."
@@ -30247,7 +30313,7 @@ msgstr ""
 
 #: doc/classes/Image.xml doc/classes/ImageTexture.xml
 msgid "Importing images"
-msgstr ""
+msgstr "Importieren von Bildern"
 
 #: doc/classes/Image.xml
 msgid ""
@@ -34244,7 +34310,12 @@ msgid "The color of shadows cast by this light."
 msgstr ""
 
 #: doc/classes/Light.xml
-msgid "Attempts to reduce [member shadow_bias] gap."
+msgid ""
+"Attempts to reduce [member shadow_bias] gap by rendering screen-space "
+"contact shadows. This has a performance impact, especially at higher "
+"values.\n"
+"[b]Note:[/b] Contact shadows can look broken, so leaving this property to "
+"[code]0.0[/code] is recommended."
 msgstr ""
 
 #: doc/classes/Light.xml
@@ -34624,8 +34695,12 @@ msgstr ""
 
 #: doc/classes/Line2D.xml
 msgid ""
-"The smoothness of the rounded joints and caps. This is only used if a cap or "
-"joint is set as round."
+"The smoothness of the rounded joints and caps. Higher values result in "
+"smoother corners, but are more demanding to render and update. This is only "
+"used if a cap or joint is set as round.\n"
+"[b]Note:[/b] The default value is tuned for lines with the default [member "
+"width]. For thin lines, this value should be reduced to a number between "
+"[code]2[/code] and [code]4[/code] to improve performance."
 msgstr ""
 
 #: doc/classes/Line2D.xml
@@ -36468,6 +36543,15 @@ msgstr ""
 
 #: doc/classes/MultiMesh.xml
 msgid ""
+"When using [i]physics interpolation[/i], this function allows you to prevent "
+"interpolation on an instance in the current physics tick.\n"
+"This allows you to move instances instantaneously, and should usually be "
+"used when initially placing an instance such as a bullet to prevent "
+"graphical glitches."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
 "Sets all data related to the instances in one go. This is especially useful "
 "when loading the data from disk or preparing the data from GDNative.\n"
 "All data is packed in one large float array. An array may look like this: "
@@ -36477,6 +36561,18 @@ msgid ""
 "[code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float "
 "(4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/"
 "code] is stored as 4 floats."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"An alternative version of [method MultiMesh.set_as_bulk_array] which can be "
+"used with [i]physics interpolation[/i]. This method takes two arrays, and "
+"can set the data for the current and previous tick in one go. The renderer "
+"will automatically interpolate the data at each frame.\n"
+"This is useful for situations where the order of instances may change from "
+"physics tick to tick, such as particle systems.\n"
+"When the order of instances is coherent, the simpler [method MultiMesh."
+"set_as_bulk_array] can still be used with interpolation."
 msgstr ""
 
 #: doc/classes/MultiMesh.xml
@@ -36520,6 +36616,16 @@ msgstr ""
 
 #: doc/classes/MultiMesh.xml
 msgid "Mesh to be drawn."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"Choose whether to use an interpolation method that favors speed or quality.\n"
+"When using low physics tick rates (typically below 20) or high rates of "
+"object rotation, you may get better results from the high quality setting.\n"
+"[b]Note:[/b] Fast quality does not equate to low quality. Except in the "
+"special cases mentioned above, the quality should be comparable to high "
+"quality."
 msgstr ""
 
 #: doc/classes/MultiMesh.xml
@@ -36572,6 +36678,18 @@ msgstr ""
 msgid ""
 "The [Color] passed into [method set_instance_custom_data] will use 4 floats. "
 "Use this for highest precision."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"Always interpolate using Basis lerping, which can produce warping artifacts "
+"in some situations."
+msgstr ""
+
+#: doc/classes/MultiMesh.xml
+msgid ""
+"Attempt to interpolate using Basis slerping (spherical linear interpolation) "
+"where possible, otherwise fall back to lerping."
 msgstr ""
 
 #: doc/classes/MultiMeshInstance.xml
@@ -38493,7 +38611,7 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid "Nodes and Scenes"
-msgstr ""
+msgstr "Nodes und Szenen"
 
 #: doc/classes/Node.xml
 msgid "All Demos"
@@ -38933,6 +39051,25 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
+"Returns [code]true[/code] if the physics interpolated flag is set for this "
+"Node (see [method set_physics_interpolated]).\n"
+"[b]Note:[/b] Interpolation will only be active is both the flag is set "
+"[b]and[/b] physics interpolation is enabled within the [SceneTree]. This can "
+"be tested using [method is_physics_interpolated_and_enabled]."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Returns [code]true[/code] if physics interpolation is enabled (see [method "
+"set_physics_interpolated]) [b]and[/b] enabled in the [SceneTree].\n"
+"This is a convenience version of [method is_physics_interpolated] that also "
+"checks whether physics interpolation is enabled globally.\n"
+"See [member SceneTree.physics_interpolation] and [member ProjectSettings."
+"physics/common/physics_interpolation]."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
 "Returns [code]true[/code] if physics processing is enabled (see [method "
 "set_physics_process])."
 msgstr ""
@@ -39103,6 +39240,21 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
+"When physics interpolation is active, moving a node to a radically different "
+"transform (such as placement within a level) can result in a visible glitch "
+"as the object is rendered moving from the old to new position over the "
+"physics tick.\n"
+"This glitch can be prevented by calling [code]reset_physics_interpolation[/"
+"code], which temporarily turns off interpolation until the physics tick is "
+"complete.\n"
+"[constant NOTIFICATION_RESET_PHYSICS_INTERPOLATION] will be received by the "
+"node and all children recursively.\n"
+"[b]Note:[/b] This function should be called [b]after[/b] moving the node, "
+"rather than before."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
 "Sends a remote procedure call request for the given [code]method[/code] to "
 "peers on the network (and locally), optionally sending all additional "
 "arguments as arguments to the method called by the RPC. The call request "
@@ -39199,6 +39351,14 @@ msgid ""
 "keywords. Inherited from the parent node by default, which ultimately "
 "defaults to peer ID 1 (the server). If [code]recursive[/code], the given "
 "peer is recursively set as the master for all children of this node."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Enables or disables physics interpolation per node, offering a finer grain "
+"of control than turning physics interpolation on and off globally.\n"
+"[b]Note:[/b] This can be especially useful for [Camera]s, where custom "
+"interpolation can sometimes give superior results."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -39449,6 +39609,12 @@ msgid ""
 "Notification received when the node is ready, just before [constant "
 "NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the "
 "node enters tree, instead of only once."
+msgstr ""
+
+#: doc/classes/Node.xml
+msgid ""
+"Notification received when [method reset_physics_interpolation] is called on "
+"the node or parent nodes."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -40443,8 +40609,8 @@ msgstr ""
 
 #: doc/classes/OccluderShapePolygon.xml
 msgid ""
-"Specifies whether the occluder should operate one way only, or from both "
-"sides."
+"Specifies whether the occluder should operate from both sides. If "
+"[code]false[/code], the occluder will operate one way only."
 msgstr ""
 
 #: doc/classes/OccluderShapeSphere.xml
@@ -41238,7 +41404,19 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-msgid "Returns the number of threads available on the host machine."
+msgid ""
+"Returns the number of [i]logical[/i] CPU cores available on the host "
+"machine. On CPUs with HyperThreading enabled, this number will be greater "
+"than the number of [i]physical[/i] CPU cores."
+msgstr ""
+
+#: doc/classes/OS.xml
+msgid ""
+"Returns the name of the CPU model on the host machine (e.g. \"Intel(R) "
+"Core(TM) i7-6700K CPU @ 4.00GHz\").\n"
+"[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and "
+"iOS. On Android, HTML5 and UWP, [method get_processor_name] returns an empty "
+"string."
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -49232,6 +49410,17 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"If [code]true[/code], the renderer will interpolate the transforms of "
+"physics objects between the last two transforms, such that smooth motion is "
+"seen when physics ticks do not coincide with rendered frames.\n"
+"[b]Note:[/b] When moving objects to new positions (rather than the usual "
+"physics motion) you may want to temporarily turn off interpolation to "
+"prevent a visible glitch. You can do this using the [method Node."
+"reset_physics_interpolation] function."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "Controls how much physics ticks are synchronized with real time. For 0 or "
 "less, the ticks are synchronized. Such values are recommended for network "
 "games, where clock synchronization matters. Higher values cause higher "
@@ -49242,8 +49431,10 @@ msgid ""
 "[b]Note:[/b] For best results, when using a custom physics interpolation "
 "solution, the physics jitter fix should be disabled by setting [member "
 "physics/common/physics_jitter_fix] to [code]0[/code].\n"
+"[b]Note:[/b] Jitter fix is automatically disabled at runtime when [member "
+"physics/common/physics_interpolation] is enabled.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
-"the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead."
+"the value at runtime, set [member Engine.physics_jitter_fix] instead."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -49756,14 +49947,19 @@ msgstr ""
 msgid ""
 "If [code]true[/code], allocates the root [Viewport]'s framebuffer with high "
 "dynamic range. High dynamic range allows the use of [Color] values greater "
-"than 1.\n"
+"than 1. This must be set to [code]true[/code] for glow rendering to work if "
+"[member Environment.glow_hdr_threshold] is greater than or equal to "
+"[code]1.0[/code].\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Lower-end override for [member rendering/quality/depth/hdr] on mobile "
-"devices, due to performance concerns or driver support."
+"devices, due to performance concerns or driver support. This must be set to "
+"[code]true[/code] for glow rendering to work if [member Environment."
+"glow_hdr_threshold] is greater than or equal to [code]1.0[/code].\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -49892,8 +50088,8 @@ msgid ""
 "resources it uses (but the less features it supports). If set to \"2D "
 "Without Sampling\" or \"3D Without Effects\", sample buffers will not be "
 "allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/"
-"code] will not be available in shaders and post-processing effects will not "
-"be available in the [Environment]."
+"code] will not be available in shaders and post-processing effects such as "
+"glow will not be available in [Environment]."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -53882,6 +54078,13 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
+"Although physics interpolation would normally be globally turned on and off "
+"using [member ProjectSettings.physics/common/physics_interpolation], this "
+"property allows control over interpolation at runtime."
+msgstr ""
+
+#: doc/classes/SceneTree.xml
+msgid ""
 "If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new "
 "incoming connections."
 msgstr ""
@@ -55145,6 +55348,18 @@ msgstr ""
 
 #: doc/classes/Spatial.xml doc/classes/Vector3.xml
 msgid "All 3D Demos"
+msgstr ""
+
+#: doc/classes/Spatial.xml
+msgid ""
+"When using physics interpolation, there will be circumstances in which you "
+"want to know the interpolated (displayed) transform of a node rather than "
+"the standard transform (which may only be accurate to the most recent "
+"physics tick).\n"
+"This is particularly important for frame-based operations that take place in "
+"[method Node._process], rather than [method Node._physics_process]. Examples "
+"include [Camera]s focusing on a node, or finding where to fire lasers from "
+"on a frame rather than physics tick."
 msgstr ""
 
 #: doc/classes/Spatial.xml
@@ -57005,7 +57220,7 @@ msgid ""
 "colors into account for albedo. Otherwise, the color defined in [member "
 "modulate] will be ignored. For a [SpatialMaterial], [member SpatialMaterial."
 "vertex_color_use_as_albedo] must be [code]true[/code]. For a "
-"[ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/color] must be inserted in the "
+"[ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the "
 "shader's [code]fragment()[/code] function."
 msgstr ""
 
@@ -57019,7 +57234,7 @@ msgid ""
 "colors into account for albedo. Otherwise, the opacity defined in [member "
 "opacity] will be ignored. For a [SpatialMaterial], [member SpatialMaterial."
 "vertex_color_use_as_albedo] must be [code]true[/code]. For a "
-"[ShaderMaterial], [code]ALPHA *= COLOR.a;[/color] must be inserted in the "
+"[ShaderMaterial], [code]ALPHA *= COLOR.a;[/code] must be inserted in the "
 "shader's [code]fragment()[/code] function."
 msgstr ""
 
@@ -57720,7 +57935,12 @@ msgid "Returns [code]true[/code] if the string begins with the given string."
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Returns the bigrams (pairs of consecutive letters) of this string."
+msgid ""
+"Returns an array containing the bigrams (pairs of consecutive letters) of "
+"this string.\n"
+"[codeblock]\n"
+"print(\"Bigrams\".bigrams()) # Prints \"[Bi, ig, gr, ra, am, ms]\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -57984,7 +58204,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Returns [code]true[/code] if this string contains a valid float."
+msgid ""
+"Returns [code]true[/code] if this string contains a valid float. This is "
+"inclusive of integers, and also supports exponents:\n"
+"[codeblock]\n"
+"print(\"1.7\".is_valid_float()) # Prints \"true\"\n"
+"print(\"24\".is_valid_float()) # Prints \"true\"\n"
+"print(\"7e3\".is_valid_float()) # Prints \"true\"\n"
+"print(\"24\".is_valid_float()) # Prints \"true\"\n"
+"print(\"Hello\".is_valid_float()) # Prints \"false\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -58007,11 +58236,24 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if this string is a valid identifier. A valid "
 "identifier may contain only letters, digits and underscores ([code]_[/code]) "
-"and the first character may not be a digit."
+"and the first character may not be a digit.\n"
+"[codeblock]\n"
+"print(\"good_ident_1\".is_valid_identifier()) # Prints \"true\"\n"
+"print(\"1st_bad_ident\".is_valid_identifier()) # Prints \"false\"\n"
+"print(\"bad_ident_#2\".is_valid_identifier()) # Prints \"false\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
-msgid "Returns [code]true[/code] if this string contains a valid integer."
+msgid ""
+"Returns [code]true[/code] if this string contains a valid integer.\n"
+"[codeblock]\n"
+"print(\"7\".is_valid_int()) # Prints \"true\"\n"
+"print(\"14.6\".is_valid_int()) # Prints \"false\"\n"
+"print(\"L\".is_valid_int()) # Prints \"false\"\n"
+"print(\"+3\".is_valid_int()) # Prints \"true\"\n"
+"print(\"-12\".is_valid_int()) # Prints \"true\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -58060,14 +58302,16 @@ msgstr ""
 msgid ""
 "Does a simple case-sensitive expression match, where [code]\"*\"[/code] "
 "matches zero or more arbitrary characters and [code]\"?\"[/code] matches any "
-"single character except a period ([code]\".\"[/code])."
+"single character except a period ([code]\".\"[/code]). An empty string or "
+"empty expression always evaluates to [code]false[/code]."
 msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
 "Does a simple case-insensitive expression match, where [code]\"*\"[/code] "
 "matches zero or more arbitrary characters and [code]\"?\"[/code] matches any "
-"single character except a period ([code]\".\"[/code])."
+"single character except a period ([code]\".\"[/code]). An empty string or "
+"empty expression always evaluates to [code]false[/code]."
 msgstr ""
 
 #: doc/classes/String.xml
@@ -58237,8 +58481,16 @@ msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
-"Returns the similarity index of the text compared to this string. 1 means "
-"totally similar and 0 means totally dissimilar."
+"Returns the similarity index ([url=https://en.wikipedia.org/wiki/"
+"S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this "
+"string compared to another. 1.0 means totally similar and 0.0 means totally "
+"dissimilar.\n"
+"[codeblock]\n"
+"print(\"ABC123\".similarity(\"ABC123\")) # Prints \"1\"\n"
+"print(\"ABC123\".similarity(\"XYZ456\")) # Prints \"0\"\n"
+"print(\"ABC123\".similarity(\"123ABC\")) # Prints \"0.8\"\n"
+"print(\"ABC123\".similarity(\"abc123\")) # Prints \"0.4\"\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -59751,6 +60003,16 @@ msgid "Returns the total width of all gutters and internal padding."
 msgstr "Gibt die Anzahl der Spuren in der Animation zurück."
 
 #: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "Returns the total amount of lines that could be drawn."
+msgstr "Gibt die Anzahl der Tasten in einer bestimmten Spur zurück."
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "Returns the number of visible lines, including wrapped text."
+msgstr "Gibt die Anzahl der Dreiecke im Überblendungsbereich zurück."
+
+#: doc/classes/TextEdit.xml
 msgid ""
 "Returns a [String] text with the word under the caret (text cursor) location."
 msgstr ""
@@ -60816,6 +61078,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+msgid ""
+"Unmarks [code]theme_type[/code] as being a variation of another theme type. "
+"See [method set_type_variation]."
+msgstr ""
+
+#: doc/classes/Theme.xml
 msgid "Sets the theme's values to a copy of the default theme values."
 msgstr ""
 
@@ -60962,6 +61230,20 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+msgid ""
+"Returns the name of the base theme type if [code]theme_type[/code] is a "
+"valid variation type. Returns an empty string otherwise."
+msgstr ""
+
+#: doc/classes/Theme.xml
+#, fuzzy
+msgid ""
+"Returns a list of all type variations for the given [code]base_type[/code]."
+msgstr ""
+"Gibt ein Array aller Zellen mit der angegebenen Kachel [code]index[/code] "
+"zurück."
+
+#: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Color] with [code]name[/code] is in "
@@ -61016,6 +61298,15 @@ msgid ""
 "[code]name[/code] is in [code]node_type[/code].\n"
 "Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
 msgstr ""
+
+#: doc/classes/Theme.xml
+#, fuzzy
+msgid ""
+"Returns [code]true[/code] if [code]theme_type[/code] is marked as a "
+"variation of [code]base_type[/code]."
+msgstr ""
+"Gibt [code]true[/code] zurück, wenn der angegebene Track importiert ist. "
+"Andernfalls wird [code]false[/code] zurückgegeben."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -61110,6 +61401,20 @@ msgid ""
 "Does nothing if the [code]value[/code] type does not match [code]data_type[/"
 "code].\n"
 "Creates [code]node_type[/code] if the theme does not have it."
+msgstr ""
+
+#: doc/classes/Theme.xml
+msgid ""
+"Marks [code]theme_type[/code] as a variation of [code]base_type[/code].\n"
+"This adds [code]theme_type[/code] as a suggested option for [member Control."
+"theme_type_variation] on a [Control] that is of the [code]base_type[/code] "
+"class.\n"
+"Variations can also be nested, i.e. [code]base_type[/code] can be another "
+"variation. If a chain of variations ends with a [code]base_type[/code] "
+"matching the class of the [Control], the whole chain is going to be "
+"suggested as options.\n"
+"[b]Note:[/b] Suggestions only show up if this theme resource is set as the "
+"project default theme. See [member ProjectSettings.gui/theme/custom]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -63303,7 +63608,7 @@ msgid ""
 "Adds a button with [Texture] [code]button[/code] at column [code]column[/"
 "code]. The [code]id[/code] is used to identify the button. If not specified, "
 "the next available index is used, which may be retrieved by calling [method "
-"get_button_count] immediately after this method. Optionally, the button can "
+"get_button_count] immediately before this method. Optionally, the button can "
 "be [code]disabled[/code] and have a [code]tooltip[/code]."
 msgstr ""
 
@@ -63350,10 +63655,11 @@ msgstr ""
 "Index [code]Dreieck[/code]."
 
 #: doc/classes/TreeItem.xml
-msgid ""
-"Returns the number of buttons in column [code]column[/code]. May be used to "
-"get the most recently added button's index, if no index was specified."
+#, fuzzy
+msgid "Returns the number of buttons in column [code]column[/code]."
 msgstr ""
+"Liefert die Position des Punktes bei Index [code]Punkt[/code] im Dreieck von "
+"Index [code]Dreieck[/code]."
 
 #: doc/classes/TreeItem.xml
 #, fuzzy
@@ -67854,7 +68160,7 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
 msgid "Infinity: [code]inf[/code]."
-msgstr ""
+msgstr "Unendlichkeit: [code]inf[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
 msgid "Not a number: [code]nan[/code]."
@@ -68165,7 +68471,7 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptSceneNode.xml
 msgid "Node reference."
-msgstr ""
+msgstr "Node-Referenz."
 
 #: modules/visual_script/doc_classes/VisualScriptSceneNode.xml
 msgid ""
@@ -68326,7 +68632,7 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptWhile.xml
 msgid "Conditional loop."
-msgstr ""
+msgstr "Bedingte Wiederholung."
 
 #: modules/visual_script/doc_classes/VisualScriptWhile.xml
 msgid ""
@@ -74725,7 +75031,7 @@ msgstr ""
 
 #: doc/classes/XMLParser.xml
 msgid "CDATA content."
-msgstr ""
+msgstr "CDATA Inhalt."
 
 #: doc/classes/XMLParser.xml
 msgid "Unknown node."

@@ -31,9 +31,11 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
-#include "core/string/ustring.h"
-#include "core/typedefs.h"
+
+class String;
+struct Vector3;
 
 struct _NO_DISCARD_ Vector3i {
 	enum Axis {
@@ -53,10 +55,12 @@ struct _NO_DISCARD_ Vector3i {
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ int32_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
@@ -105,6 +109,7 @@ struct _NO_DISCARD_ Vector3i {
 	_FORCE_INLINE_ bool operator>=(const Vector3i &p_v) const;
 
 	operator String() const;
+	operator Vector3() const;
 
 	_FORCE_INLINE_ Vector3i() {}
 	_FORCE_INLINE_ Vector3i(const int32_t p_x, const int32_t p_y, const int32_t p_z) {

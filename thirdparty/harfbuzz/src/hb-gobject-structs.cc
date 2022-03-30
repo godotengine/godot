@@ -90,6 +90,7 @@ hb_gobject_##name##_get_type () \
 
 HB_DEFINE_OBJECT_TYPE (buffer)
 HB_DEFINE_OBJECT_TYPE (blob)
+HB_DEFINE_OBJECT_TYPE (draw_funcs)
 HB_DEFINE_OBJECT_TYPE (face)
 HB_DEFINE_OBJECT_TYPE (font)
 HB_DEFINE_OBJECT_TYPE (font_funcs)

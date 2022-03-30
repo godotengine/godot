@@ -89,10 +89,6 @@ void VisibleOnScreenNotifier3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("screen_exited"));
 }
 
-Vector<Face3> VisibleOnScreenNotifier3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {
 	RID notifier = RS::get_singleton()->visibility_notifier_create();
 	RS::get_singleton()->visibility_notifier_set_aabb(notifier, aabb);

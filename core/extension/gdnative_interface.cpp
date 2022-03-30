@@ -60,6 +60,10 @@ static void gdnative_print_script_error(const char *p_description, const char *p
 	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
+uint64_t gdnative_get_native_struct_size(const char *p_name) {
+	return ClassDB::get_native_struct_size(p_name);
+}
+
 // Variant functions
 
 static void gdnative_variant_new_copy(GDNativeVariantPtr r_dest, const GDNativeVariantPtr p_src) {
@@ -80,7 +84,7 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	self->call(*method, args, p_argcount, ret, error);
+	self->callp(*method, args, p_argcount, ret, error);
 	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
@@ -152,7 +156,7 @@ static void gdnative_variant_set_indexed(GDNativeVariantPtr p_self, GDNativeInt 
 
 	bool valid;
 	bool oob;
-	self->set_indexed(p_index, value, valid, oob);
+	self->set_indexed(p_index, *value, valid, oob);
 	*r_valid = valid;
 	*r_oob = oob;
 }
@@ -901,6 +905,8 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.print_error = gdnative_print_error;
 	gdni.print_warning = gdnative_print_warning;
 	gdni.print_script_error = gdnative_print_script_error;
+
+	gdni.get_native_struct_size = gdnative_get_native_struct_size;
 
 	/* GODOT VARIANT */
 

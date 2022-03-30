@@ -94,8 +94,10 @@ Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_res
 }
 
 void CustomPropertyEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
-		hide();
+	switch (p_what) {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
+			hide();
+		} break;
 	}
 }
 
@@ -226,7 +228,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-					tab_container->set_current_tab(file_system_dock->get_index());
+					tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
 				} break;
 				default: {
 					if (p_which >= CONVERT_BASE_ID) {
@@ -905,7 +907,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 							}
 						}
 
-						if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
+						if (!is_custom_resource && (!ClassDB::can_instantiate(t) || ClassDB::is_virtual(t))) {
 							continue;
 						}
 
@@ -1769,9 +1771,6 @@ void CustomPropertyEditor::_bind_methods() {
 }
 
 CustomPropertyEditor::CustomPropertyEditor() {
-	read_only = false;
-	updating = false;
-
 	value_vbox = memnew(VBoxContainer);
 	add_child(value_vbox);
 

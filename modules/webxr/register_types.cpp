@@ -38,7 +38,7 @@ Ref<WebXRInterfaceJS> webxr;
 #endif
 
 void register_webxr_types() {
-	GDREGISTER_VIRTUAL_CLASS(WebXRInterface);
+	GDREGISTER_ABSTRACT_CLASS(WebXRInterface);
 
 #ifdef JAVASCRIPT_ENABLED
 	webxr.instantiate();

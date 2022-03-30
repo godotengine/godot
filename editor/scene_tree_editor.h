@@ -65,8 +65,8 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *warning;
 
 	bool auto_expand_selected = true;
-	bool connect_to_script_mode;
-	bool connecting_signal;
+	bool connect_to_script_mode = false;
+	bool connecting_signal = false;
 
 	int blocked;
 
@@ -92,18 +92,18 @@ class SceneTreeEditor : public Control {
 
 	bool can_rename;
 	bool can_open_instance;
-	bool updating_tree;
-	bool show_enabled_subscene;
+	bool updating_tree = false;
+	bool show_enabled_subscene = false;
 
 	void _renamed();
 	UndoRedo *undo_redo;
 
 	Set<Node *> marked;
-	bool marked_selectable;
-	bool marked_children_selectable;
-	bool display_foreign;
-	bool tree_dirty;
-	bool pending_test_update;
+	bool marked_selectable = false;
+	bool marked_children_selectable = false;
+	bool display_foreign = false;
+	bool tree_dirty = true;
+	bool pending_test_update = false;
 	static void _bind_methods();
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id);

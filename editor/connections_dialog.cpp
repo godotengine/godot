@@ -180,9 +180,6 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX) {
-		return;
-	}
 	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
@@ -277,8 +274,10 @@ void ConnectDialog::_update_ok_enabled() {
 }
 
 void ConnectDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bind_editor->edit(cdbinds);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			bind_editor->edit(cdbinds);
+		} break;
 	}
 }
 
@@ -938,6 +937,7 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			update_tree();
 		} break;

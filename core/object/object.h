@@ -32,6 +32,7 @@
 #define OBJECT_H
 
 #include "core/extension/gdnative_interface.h"
+#include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
@@ -43,14 +44,6 @@
 #include "core/templates/vmap.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
-
-#define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant(), const Variant &p_arg6 = Variant(), const Variant &p_arg7 = Variant(), const Variant &p_arg8 = Variant()
-#define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5, p_arg6, p_arg7, p_arg8
-#define VARIANT_ARG_DECLARE const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8
-#define VARIANT_ARG_MAX 8
-#define VARIANT_ARGPTRS const Variant *argptr[8] = { &p_arg1, &p_arg2, &p_arg3, &p_arg4, &p_arg5, &p_arg6, &p_arg7, &p_arg8 };
-#define VARIANT_ARGPTRS_PASS *argptr[0], *argptr[1], *argptr[2], *argptr[3], *argptr[4], *argptr[5], *argptr[6]], *argptr[7]
-#define VARIANT_ARGS_FROM_ARRAY(m_arr) m_arr[0], m_arr[1], m_arr[2], m_arr[3], m_arr[4], m_arr[5], m_arr[6], m_arr[7]
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
@@ -95,6 +88,7 @@ enum PropertyHint {
 	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
 	PROPERTY_HINT_LOCALE_ID,
+	PROPERTY_HINT_LOCALIZABLE_STRING,
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -262,6 +256,7 @@ struct ObjectNativeExtension {
 	GDNativeExtensionClassToString to_string;
 	GDNativeExtensionClassReference reference;
 	GDNativeExtensionClassReference unreference;
+	GDNativeExtensionClassGetRID get_rid;
 
 	_FORCE_INLINE_ bool is_class(const String &p_class) const {
 		const ObjectNativeExtension *e = this;
@@ -280,8 +275,12 @@ struct ObjectNativeExtension {
 	GDNativeExtensionClassGetVirtual get_virtual;
 };
 
-#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
-#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
+#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
+#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<false>(__VA_ARGS__)
+
+#define GDVIRTUAL_REQUIRED_CALL(m_name, ...) _gdvirtual_##m_name##_call<true>(__VA_ARGS__)
+#define GDVIRTUAL_REQUIRED_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<true>(__VA_ARGS__)
+
 #ifdef DEBUG_METHODS_ENABLED
 #define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
 #else
@@ -734,8 +733,18 @@ public:
 	bool has_method(const StringName &p_method) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant call(const StringName &p_name, VARIANT_ARG_LIST); // C++ helper
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+
+	template <typename... VarArgs>
+	Variant call(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		Callable::CallError cerr;
+		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+	}
 
 	void notification(int p_notification, bool p_reversed = false);
 	virtual String to_string();
@@ -769,8 +778,18 @@ public:
 	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance);
 
 	void add_user_signal(const MethodInfo &p_signal);
-	Error emit_signal(const StringName &p_name, VARIANT_ARG_LIST);
-	Error emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount);
+
+	template <typename... VarArgs>
+	Error emit_signal(const StringName &p_name, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		return emit_signalp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
 	bool has_signal(const StringName &p_name) const;
 	void get_signal_list(List<MethodInfo> *p_signals) const;
 	void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
@@ -782,7 +801,11 @@ public:
 	void disconnect(const StringName &p_signal, const Callable &p_callable);
 	bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 
-	void call_deferred(const StringName &p_method, VARIANT_ARG_LIST);
+	template <typename... VarArgs>
+	void call_deferred(const StringName &p_name, VarArgs... p_args) {
+		MessageQueue::get_singleton()->push_call(this, p_name, p_args...);
+	}
+
 	void set_deferred(const StringName &p_property, const Variant &p_value);
 
 	void set_block_signals(bool p_block);

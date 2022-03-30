@@ -317,8 +317,10 @@ void LinkButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 }
 
-LinkButton::LinkButton() {
+LinkButton::LinkButton(const String &p_text) {
 	text_buf.instantiate();
 	set_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
+
+	set_text(p_text);
 }

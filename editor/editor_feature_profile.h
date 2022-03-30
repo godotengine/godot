@@ -155,7 +155,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _import_profiles(const Vector<String> &p_paths);
 	void _export_profile(const String &p_path);
 
-	bool updating_features;
+	bool updating_features = false;
 
 	void _class_list_item_selected();
 	void _class_list_item_edited();

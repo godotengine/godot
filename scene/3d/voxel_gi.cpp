@@ -450,10 +450,6 @@ AABB VoxelGI::get_aabb() const {
 	return AABB(-extents, extents * 2);
 }
 
-Vector<Face3> VoxelGI::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
 TypedArray<String> VoxelGI::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 

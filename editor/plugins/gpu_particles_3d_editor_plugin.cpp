@@ -166,20 +166,20 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sel);
-	if (!vi) {
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(sel);
+	if (!mi || mi->get_mesh().is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain geometry."), sel->get_name()));
 		return;
 	}
 
-	geometry = vi->get_faces(VisualInstance3D::FACES_SOLID);
+	geometry = mi->get_mesh()->get_faces();
 
 	if (geometry.size() == 0) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
 
-	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
+	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * mi->get_global_transform();
 
 	int gc = geometry.size();
 	Face3 *w = geometry.ptrw();
@@ -231,9 +231,11 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 }
 
 void GPUParticles3DEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
-		get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
+		} break;
 	}
 }
 

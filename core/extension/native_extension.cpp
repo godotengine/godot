@@ -158,6 +158,7 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.create_instance = p_extension_funcs->create_instance_func;
 	extension->native_extension.free_instance = p_extension_funcs->free_instance_func;
 	extension->native_extension.get_virtual = p_extension_funcs->get_virtual_func;
+	extension->native_extension.get_rid = p_extension_funcs->get_rid_func;
 
 	ClassDB::register_extension_class(&extension->native_extension);
 }
@@ -295,9 +296,10 @@ NativeExtension::InitializationLevel NativeExtension::get_minimum_library_initia
 	ERR_FAIL_COND_V(library == nullptr, INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
 }
+
 void NativeExtension::initialize_library(InitializationLevel p_level) {
 	ERR_FAIL_COND(library == nullptr);
-	ERR_FAIL_COND(p_level <= int32_t(level_initialized));
+	ERR_FAIL_COND_MSG(p_level <= int32_t(level_initialized), vformat("Level '%d' must be higher than the current level '%d'", p_level, level_initialized));
 
 	level_initialized = int32_t(p_level);
 
@@ -324,6 +326,7 @@ void NativeExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_CORE);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SERVERS);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SCENE);
+	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_DRIVER);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_EDITOR);
 }
 

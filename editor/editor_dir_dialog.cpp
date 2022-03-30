@@ -79,29 +79,31 @@ void EditorDirDialog::reload(const String &p_path) {
 }
 
 void EditorDirDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
-		reload();
-
-		if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
-			tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
-		}
-
-		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
-			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
-		}
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible()) {
 			reload();
-		}
+
+			if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
+				tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
+			}
+
+			if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+				EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (must_reload && is_visible()) {
+				reload();
+			}
+		} break;
 	}
 }
 
@@ -173,8 +175,6 @@ void EditorDirDialog::_bind_methods() {
 }
 
 EditorDirDialog::EditorDirDialog() {
-	updating = false;
-
 	set_title(TTR("Choose a Directory"));
 	set_hide_on_ok(false);
 
@@ -204,6 +204,4 @@ EditorDirDialog::EditorDirDialog() {
 	add_child(mkdirerr);
 
 	get_ok_button()->set_text(TTR("Choose"));
-
-	must_reload = false;
 }

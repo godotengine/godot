@@ -211,7 +211,7 @@ void Node::_propagate_enter_tree() {
 	if (data.parent) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signal(SNAME("child_entered_tree"), &cptr, 1);
+		data.parent->emit_signalp(SNAME("child_entered_tree"), &cptr, 1);
 	}
 
 	data.blocked++;
@@ -287,7 +287,7 @@ void Node::_propagate_exit_tree() {
 	if (data.parent) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signal(SNAME("child_exited_tree"), &cptr, 1);
+		data.parent->emit_signalp(SNAME("child_exited_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -581,34 +581,6 @@ uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc
 }
 
 /***** RPC FUNCTIONS ********/
-
-void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	rpcp(0, p_method, argptr, argc);
-}
-
-void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	rpcp(p_peer_id, p_method, argptr, argc);
-}
 
 Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
@@ -1344,27 +1316,45 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) const {
+TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bool p_recursive, bool p_owned) const {
+	TypedArray<Node> ret;
+	ERR_FAIL_COND_V(p_mask.is_empty() && p_type.is_empty(), ret);
+
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
 	for (int i = 0; i < ccount; i++) {
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_mask)) {
-			return cptr[i];
+
+		if (!p_mask.is_empty()) {
+			if (!cptr[i]->data.name.operator String().match(p_mask)) {
+				continue;
+			} else if (p_type.is_empty()) {
+				ret.append(cptr[i]);
+			}
 		}
 
-		if (!p_recursive) {
-			continue;
+		if (cptr[i]->is_class(p_type)) {
+			ret.append(cptr[i]);
+		} else if (cptr[i]->get_script_instance()) {
+			Ref<Script> script = cptr[i]->get_script_instance()->get_script();
+			while (script.is_valid()) {
+				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
+					ret.append(cptr[i]);
+					break;
+				}
+
+				script = script->get_base_script();
+			}
 		}
 
-		Node *ret = cptr[i]->find_node(p_mask, true, p_owned);
-		if (ret) {
-			return ret;
+		if (p_recursive) {
+			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
 		}
 	}
-	return nullptr;
+
+	return ret;
 }
 
 Node *Node::get_parent() const {
@@ -2371,42 +2361,6 @@ void Node::_replace_connections_target(Node *p_new_target) {
 	}
 }
 
-Vector<Variant> Node::make_binds(VARIANT_ARG_DECLARE) {
-	Vector<Variant> ret;
-
-	if (p_arg1.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg1);
-	}
-
-	if (p_arg2.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg2);
-	}
-
-	if (p_arg3.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg3);
-	}
-
-	if (p_arg4.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg4);
-	}
-
-	if (p_arg5.get_type() == Variant::NIL) {
-		return ret;
-	} else {
-		ret.push_back(p_arg5);
-	}
-
-	return ret;
-}
-
 bool Node::has_node_and_resource(const NodePath &p_path) const {
 	if (!has_node(p_path)) {
 		return false;
@@ -2706,7 +2660,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_nodes", "mask", "type", "recursive", "owned"), &Node::find_nodes, DEFVAL(""), DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
@@ -2845,6 +2799,9 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_CLOSE_REQUEST);
 	BIND_CONSTANT(NOTIFICATION_WM_GO_BACK_REQUEST);
 	BIND_CONSTANT(NOTIFICATION_WM_SIZE_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_WM_DPI_CHANGE);
+	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
+	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);

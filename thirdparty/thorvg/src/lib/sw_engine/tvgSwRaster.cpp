@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,18 @@ static inline uint32_t _alpha(uint32_t c)
 static inline uint32_t _ialpha(uint32_t c)
 {
     return (~c >> 24);
+}
+
+
+static inline uint32_t _abgrLumaValue(uint32_t c)
+{
+    return ((((c&0xff)*54) + (((c>>8)&0xff)*183) + (((c>>16)&0xff)*19))) >> 8; //0.2125*R + 0.7154*G + 0.0721*B
+}
+
+
+static inline uint32_t _argbLumaValue(uint32_t c)
+{
+    return ((((c&0xff)*19) + (((c>>8)&0xff)*183) + (((c>>16)&0xff)*54))) >> 8; //0.0721*B + 0.7154*G + 0.2125*R
 }
 
 
@@ -139,7 +151,7 @@ static bool _rasterMaskedRect(SwSurface* surface, const SwBBox& region, uint32_t
     auto w = static_cast<uint32_t>(region.max.x - region.min.x);
     auto h = static_cast<uint32_t>(region.max.y - region.min.y);
 
-    auto cbuffer = surface->compositor->image.data + (region.min.y * surface->compositor->image.stride) + region.min.x;   //compositor buffer
+    auto cbuffer = surface->compositor->image.data + (region.min.y * surface->compositor->image.stride) + region.min.x; //compositor buffer
 
     for (uint32_t y = 0; y < h; ++y) {
         auto dst = &buffer[y * surface->stride];
@@ -173,6 +185,8 @@ static bool _rasterRect(SwSurface* surface, const SwBBox& region, uint32_t color
             return _rasterMaskedRect(surface, region, color, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterMaskedRect(surface, region, color, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterMaskedRect(surface, region, color, surface->blender.lumaValue);
         }
     } else {
         if (opacity == 255) {
@@ -246,6 +260,8 @@ static bool _rasterRle(SwSurface* surface, SwRleData* rle, uint32_t color, uint8
             return _rasterMaskedRle(surface, rle, color, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterMaskedRle(surface, rle, color, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterMaskedRle(surface, rle, color, surface->blender.lumaValue);
         }
     } else {
         if (opacity == 255) {
@@ -275,6 +291,8 @@ static bool _transformedRleRGBAImage(SwSurface* surface, const SwImage* image, c
             return _rasterTexmapPolygon(surface, image, transform, nullptr, opacity, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterTexmapPolygon(surface, image, transform, nullptr, opacity, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterTexmapPolygon(surface, image, transform, nullptr, opacity, surface->blender.lumaValue);
         }
     } else {
         return _rasterTexmapPolygon(surface, image, transform, nullptr, opacity, nullptr);
@@ -494,12 +512,16 @@ static bool _scaledRleRGBAImage(SwSurface* surface, const SwImage* image, const 
                 return _rasterScaledMaskedRleRGBAImage(surface, image, &itransform, region, halfScale, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterScaledMaskedRleRGBAImage(surface, image, &itransform, region, halfScale, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterScaledMaskedRleRGBAImage(surface, image, &itransform, region, halfScale, surface->blender.lumaValue);
             }
         } else {
             if (surface->compositor->method == CompositeMethod::AlphaMask) {
                 return _rasterScaledMaskedTranslucentRleRGBAImage(surface, image, &itransform, region, opacity, halfScale, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterScaledMaskedTranslucentRleRGBAImage(surface, image, &itransform, region, opacity, halfScale, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterScaledMaskedTranslucentRleRGBAImage(surface, image, &itransform, region, opacity, halfScale, surface->blender.lumaValue);
             }
         }
     } else {
@@ -616,12 +638,16 @@ static bool _directRleRGBAImage(SwSurface* surface, const SwImage* image, uint32
                 return _rasterDirectMaskedRleRGBAImage(surface, image, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterDirectMaskedRleRGBAImage(surface, image, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterDirectMaskedRleRGBAImage(surface, image, surface->blender.lumaValue);
             }
         } else {
             if (surface->compositor->method == CompositeMethod::AlphaMask) {
                 return _rasterDirectMaskedTranslucentRleRGBAImage(surface, image, opacity, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterDirectMaskedTranslucentRleRGBAImage(surface, image, opacity, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterDirectMaskedTranslucentRleRGBAImage(surface, image, opacity, surface->blender.lumaValue);
             }
         }
     } else {
@@ -643,6 +669,8 @@ static bool _transformedRGBAImage(SwSurface* surface, const SwImage* image, cons
             return _rasterTexmapPolygon(surface, image, transform, &region, opacity, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterTexmapPolygon(surface, image, transform, &region, opacity, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterTexmapPolygon(surface, image, transform, &region, opacity, surface->blender.lumaValue);
         }
     } else {
         return _rasterTexmapPolygon(surface, image, transform, &region, opacity, nullptr);
@@ -832,12 +860,16 @@ static bool _scaledRGBAImage(SwSurface* surface, const SwImage* image, const Mat
                 return _rasterScaledMaskedRGBAImage(surface, image, &itransform, region, halfScale, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterScaledMaskedRGBAImage(surface, image, &itransform, region, halfScale, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterScaledMaskedRGBAImage(surface, image, &itransform, region, halfScale, surface->blender.lumaValue);
             }
         } else {
             if (surface->compositor->method == CompositeMethod::AlphaMask) {
                 return _rasterScaledMaskedTranslucentRGBAImage(surface, image, &itransform, region, opacity, halfScale, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterScaledMaskedTranslucentRGBAImage(surface, image, &itransform, region, opacity, halfScale, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterScaledMaskedTranslucentRGBAImage(surface, image, &itransform, region, opacity, halfScale, surface->blender.lumaValue);
             }
         }
     } else {
@@ -861,7 +893,7 @@ static bool _rasterDirectMaskedRGBAImage(SwSurface* surface, const SwImage* imag
     auto w2 = static_cast<uint32_t>(region.max.x - region.min.x);
 
     auto sbuffer = image->data + (region.min.y + image->oy) * image->stride + (region.min.x + image->ox);
-    auto cbuffer = surface->compositor->image.data + (region.min.y * surface->compositor->image.stride) + region.min.x;   //compositor buffer
+    auto cbuffer = surface->compositor->image.data + (region.min.y * surface->compositor->image.stride) + region.min.x; //compositor buffer
 
     for (uint32_t y = 0; y < h2; ++y) {
         auto dst = buffer;
@@ -888,7 +920,7 @@ static bool _rasterDirectMaskedTranslucentRGBAImage(SwSurface* surface, const Sw
     auto w2 = static_cast<uint32_t>(region.max.x - region.min.x);
 
     auto sbuffer = image->data + (region.min.y + image->oy) * image->stride + (region.min.x + image->ox);
-    auto cbuffer = surface->compositor->image.data + (region.min.y * surface->compositor->image.stride) + region.min.x;   //compositor buffer
+    auto cbuffer = surface->compositor->image.data + (region.min.y * surface->compositor->image.stride) + region.min.x; //compositor buffer
 
     for (uint32_t y = 0; y < h2; ++y) {
         auto dst = buffer;
@@ -952,12 +984,16 @@ static bool _directRGBAImage(SwSurface* surface, const SwImage* image, const SwB
                 return _rasterDirectMaskedRGBAImage(surface, image, region, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterDirectMaskedRGBAImage(surface, image, region, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterDirectMaskedRGBAImage(surface, image, region, surface->blender.lumaValue);
             }
         } else {
             if (surface->compositor->method == CompositeMethod::AlphaMask) {
                 return _rasterDirectMaskedTranslucentRGBAImage(surface, image, region, opacity, _alpha);
             } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
                 return _rasterDirectMaskedTranslucentRGBAImage(surface, image, region, opacity, _ialpha);
+            } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+                return _rasterDirectMaskedTranslucentRGBAImage(surface, image, region, opacity, surface->blender.lumaValue);
             }
         }
     } else {
@@ -1062,6 +1098,8 @@ static bool _rasterLinearGradientRect(SwSurface* surface, const SwBBox& region, 
             return _rasterLinearGradientMaskedRect(surface, region, fill, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterLinearGradientMaskedRect(surface, region, fill, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterLinearGradientMaskedRect(surface, region, fill, surface->blender.lumaValue);
         }
     } else {
         if (fill->translucent) return _rasterTranslucentLinearGradientRect(surface, region, fill);
@@ -1166,6 +1204,8 @@ static bool _rasterLinearGradientRle(SwSurface* surface, const SwRleData* rle, c
             return _rasterLinearGradientMaskedRle(surface, rle, fill, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterLinearGradientMaskedRle(surface, rle, fill, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterLinearGradientMaskedRle(surface, rle, fill, surface->blender.lumaValue);
         }
     } else {
         if (fill->translucent) return _rasterTranslucentLinearGradientRle(surface, rle, fill);
@@ -1253,6 +1293,8 @@ static bool _rasterRadialGradientRect(SwSurface* surface, const SwBBox& region, 
             return _rasterRadialGradientMaskedRect(surface, region, fill, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterRadialGradientMaskedRect(surface, region, fill, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterRadialGradientMaskedRect(surface, region, fill, surface->blender.lumaValue);
         }
     } else {
         if (fill->translucent) return _rasterTranslucentRadialGradientRect(surface, region, fill);
@@ -1356,6 +1398,8 @@ static bool _rasterRadialGradientRle(SwSurface* surface, const SwRleData* rle, c
             return _rasterRadialGradientMaskedRle(surface, rle, fill, _alpha);
         } else if (surface->compositor->method == CompositeMethod::InvAlphaMask) {
             return _rasterRadialGradientMaskedRle(surface, rle, fill, _ialpha);
+        } else if (surface->compositor->method == CompositeMethod::LumaMask) {
+            return _rasterRadialGradientMaskedRle(surface, rle, fill, surface->blender.lumaValue);
         }
     } else {
         if (fill->translucent) _rasterTranslucentRadialGradientRle(surface, rle, fill);
@@ -1385,8 +1429,10 @@ bool rasterCompositor(SwSurface* surface)
 {
     if (surface->cs == SwCanvas::ABGR8888 || surface->cs == SwCanvas::ABGR8888_STRAIGHT) {
         surface->blender.join = _abgrJoin;
+        surface->blender.lumaValue = _abgrLumaValue;
     } else if (surface->cs == SwCanvas::ARGB8888 || surface->cs == SwCanvas::ARGB8888_STRAIGHT) {
         surface->blender.join = _argbJoin;
+        surface->blender.lumaValue = _argbLumaValue;
     } else {
         //What Color Space ???
         return false;

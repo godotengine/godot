@@ -257,10 +257,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		count += 1;
 		const int file_num = files.size();
 		if (p_verbose && (file_num > 0)) {
-			if (count % 100 == 0) {
-				printf("%i/%i (%.2f)\r", count, file_num, float(count) / file_num * 100);
-				fflush(stdout);
-			}
+			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", count, file_num, float(count) / file_num * 100, files[i].src_path, files[i].path));
 		}
 	}
 

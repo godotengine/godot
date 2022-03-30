@@ -703,8 +703,8 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, get_world_3d()->get_scenario());
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
@@ -721,6 +721,7 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 				_octant_exit_world(E.key);
@@ -732,8 +733,8 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, RID());
 			}
-
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
@@ -873,8 +874,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_center_z", "enable"), &GridMap::set_center_z);
 	ClassDB::bind_method(D_METHOD("get_center_z"), &GridMap::get_center_z);
 
-	ClassDB::bind_method(D_METHOD("set_clip", "enabled", "clipabove", "floor", "axis"), &GridMap::set_clip, DEFVAL(true), DEFVAL(0), DEFVAL(Vector3::AXIS_X));
-
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
@@ -906,28 +905,6 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
-}
-
-void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {
-	if (!p_enabled && !clip) {
-		return;
-	}
-	if (clip && p_enabled && clip_floor == p_floor && p_clip_above == clip_above && p_axis == clip_axis) {
-		return;
-	}
-
-	clip = p_enabled;
-	clip_floor = p_floor;
-	clip_axis = p_axis;
-	clip_above = p_clip_above;
-
-	//make it all update
-	for (KeyValue<OctantKey, Octant *> &E : octant_map) {
-		Octant *g = E.value;
-		g->dirty = true;
-	}
-	awaiting_update = true;
-	_update_octants_callback();
 }
 
 void GridMap::set_cell_scale(float p_scale) {

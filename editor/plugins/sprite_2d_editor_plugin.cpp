@@ -122,8 +122,8 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CONVERT_TO_MESH_2D: {
-			debug_uv_dialog->get_ok_button()->set_text(TTR("Create Mesh2D"));
-			debug_uv_dialog->set_title(TTR("Mesh2D Preview"));
+			debug_uv_dialog->get_ok_button()->set_text(TTR("Create MeshInstance2D"));
+			debug_uv_dialog->set_title(TTR("MeshInstance2D Preview"));
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
@@ -338,7 +338,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	mesh_instance->set_mesh(mesh);
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Convert to Mesh2D"));
+	ur->create_action(TTR("Convert to MeshInstance2D"));
 	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, mesh_instance, true, false);
 	ur->add_do_reference(mesh_instance);
 	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", mesh_instance, node, false, false);
@@ -498,6 +498,20 @@ void Sprite2DEditor::_debug_uv_draw() {
 	}
 }
 
+void Sprite2DEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			options->set_icon(get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
+
+			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_theme_icon(SNAME("MeshInstance2D"), SNAME("EditorIcons")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_theme_icon(SNAME("Polygon2D"), SNAME("EditorIcons")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_theme_icon(SNAME("CollisionPolygon2D"), SNAME("EditorIcons")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_theme_icon(SNAME("LightOccluder2D"), SNAME("EditorIcons")));
+		} break;
+	}
+}
+
 void Sprite2DEditor::_bind_methods() {
 	ClassDB::bind_method("_add_as_sibling_or_child", &Sprite2DEditor::_add_as_sibling_or_child);
 }
@@ -508,9 +522,8 @@ Sprite2DEditor::Sprite2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Sprite2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
 
-	options->get_popup()->add_item(TTR("Convert to Mesh2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
+	options->get_popup()->add_item(TTR("Convert to MeshInstance2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);
 	options->get_popup()->add_item(TTR("Create CollisionPolygon2D Sibling"), MENU_OPTION_CREATE_COLLISION_POLY_2D);
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
@@ -522,8 +535,6 @@ Sprite2DEditor::Sprite2DEditor() {
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
-	debug_uv_dialog->get_ok_button()->set_text(TTR("Create Mesh2D"));
-	debug_uv_dialog->set_title(TTR("Mesh 2D Preview"));
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);

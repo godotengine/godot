@@ -121,7 +121,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM_TINT"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT_GLOSS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT_ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY_FLOW"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SSS_STRENGTH"] = ShaderLanguage::TYPE_FLOAT;
@@ -202,7 +202,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "unshaded" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "wireframe" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse", "lambert", "lambert_wrap", "burley", "toon" });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular", "schlick_ggx", "blinn", "phong", "toon", "disabled" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular", "schlick_ggx", "toon", "disabled" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "skip_vertex_transform" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "world_vertex_coords" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "ensure_correct_normals" });

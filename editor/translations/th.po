@@ -1491,6 +1491,11 @@ msgstr "โหลดค่าเริ่มต้นเลย์เอาต์
 msgid "Create a new Bus Layout."
 msgstr "สร้างเลย์เอาต์บัสใหม่"
 
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Audio Bus Layout"
+msgstr "เปิดเลย์เอาต์ของบัสเสียง"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
 msgstr "ชื่อผิดพลาด"
@@ -2911,7 +2916,7 @@ msgstr "โหมดไร้สิ่งรบกวน"
 msgid "Add a new scene."
 msgstr "เพิ่มฉากใหม่"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Scene"
 msgstr "ฉาก"
 
@@ -5666,6 +5671,10 @@ msgid "Bake Lightmaps"
 msgstr "สร้าง Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "LightMap Bake"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
 msgstr "เลือกไฟล์ bake ของ lightmap :"
 
@@ -8180,7 +8189,13 @@ msgid "Cinematic Preview"
 msgstr "ดูตัวอย่างแบบภาพยนตร์"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Not available when using the GLES2 renderer."
+msgid "(Not in GLES2)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Debug draw modes are only available when using the GLES3 renderer, not GLES2."
 msgstr "ไม่สามารถใช้งานได้เมื่อใช้การเรนเดอร์โดย GLES2"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9126,6 +9141,11 @@ msgstr "ลบรีซอร์ส"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Theme Resource"
+msgstr "เปลี่ยนชื่อรีซอร์ส"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Another Theme"
 msgstr "นำเข้าธีม"
 
@@ -9180,6 +9200,21 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Item Type"
+msgstr "เพิ่มไอเทม"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Variation Base Type"
+msgstr "แก้ไขประเภทตัวแปร"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Set Base Type"
+msgstr "เปลี่ยนประเภท"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Show Default"
 msgstr "โหลดค่าเริ่มต้น"
 
@@ -9198,8 +9233,18 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Item Type"
-msgstr "เพิ่มไอเทม"
+msgid "Base Type"
+msgstr "เปลี่ยนประเภท"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Select the variation base type from a list of available types."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"A type associated with a built-in class cannot be marked as a variation of "
+"another type."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9911,18 +9956,6 @@ msgstr "Commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "10"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "20"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "30"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -12620,6 +12653,11 @@ msgid "Stack Frames"
 msgstr "สแตค"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Filter stack variables"
+msgstr "ตัวกรองไทล์"
+
+#: editor/script_editor_debugger.cpp
 msgid "Profiler"
 msgstr "ตัวตรวจวิเคราะห์ประสิทธิภาพ (Profiler)"
 
@@ -13960,9 +13998,10 @@ msgstr "ชื่อแพ็คเกจผิดพลาด:"
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
+"Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+"Note that the singleton was also renamed from \"GodotPayments\" to "
+"\"GodotGooglePlayBilling\"."
 msgstr ""
-"โมดูล \"GodotPaymentV3\" ที่ไม่ถูกต้องได้รวมอยู่ในการตั้งค่าโปรเจกต์ \"android/"
-"modules\" (เปลี่ยนแปลงใน Godot 3.2.2)\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

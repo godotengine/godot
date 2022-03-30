@@ -13,15 +13,15 @@ public partial class _CLASS_ : _BASE_
 
     public override void _PhysicsProcess(float delta)
     {
-        Vector3 motionVelocity = MotionVelocity;
+        Vector3 velocity = Velocity;
 
         // Add the gravity.
         if (!IsOnFloor())
-            motionVelocity.y -= gravity * delta;
+            velocity.y -= gravity * delta;
 
         // Handle Jump.
         if (Input.IsActionJustPressed("ui_accept") && IsOnFloor())
-             motionVelocity.y = JumpVelocity;
+             velocity.y = JumpVelocity;
 
         // Get the input direction and handle the movement/deceleration.
         // As good practice, you should replace UI actions with custom gameplay actions.
@@ -29,16 +29,16 @@ public partial class _CLASS_ : _BASE_
         Vector3 direction = Transform.basis.Xform(new Vector3(inputDir.x, 0, inputDir.y)).Normalized();
         if (direction != Vector3.Zero)
         {
-            motionVelocity.x = direction.x * Speed;
-            motionVelocity.z = direction.z * Speed;
+            velocity.x = direction.x * Speed;
+            velocity.z = direction.z * Speed;
         }
         else
         {
-            motionVelocity.x = Mathf.MoveToward(MotionVelocity.x, 0, Speed);
-            motionVelocity.z = Mathf.MoveToward(MotionVelocity.z, 0, Speed);
+            velocity.x = Mathf.MoveToward(Velocity.x, 0, Speed);
+            velocity.z = Mathf.MoveToward(Velocity.z, 0, Speed);
         }
 
-        MotionVelocity = motionVelocity;
+        Velocity = velocity;
         MoveAndSlide();
     }
 }

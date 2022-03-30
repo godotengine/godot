@@ -199,7 +199,7 @@ MonoBoolean godot_icall_DynamicGodotObject_InvokeMember(Object *p_ptr, MonoStrin
 	}
 
 	Callable::CallError error;
-	Variant result = p_ptr->call(StringName(name), args.ptr(), argc, error);
+	Variant result = p_ptr->callp(StringName(name), args.ptr(), argc, error);
 
 	*r_result = GDMonoMarshal::variant_to_mono_object(result);
 

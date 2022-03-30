@@ -624,8 +624,12 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	if (_extension) {
-		p_list->push_back(PropertyInfo(Variant::NIL, _extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
-		ClassDB::get_property_list(_extension->class_name, p_list, true, this);
+		const ObjectNativeExtension *current_extension = _extension;
+		while (current_extension) {
+			p_list->push_back(PropertyInfo(Variant::NIL, current_extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
+			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
+			current_extension = current_extension->parent;
+		}
 	}
 
 	if (_extension && _extension->get_property_list) {
@@ -679,7 +683,7 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 
 	StringName method = *p_args[0];
 
-	return call(method, &p_args[1], p_argcount - 1, r_error);
+	return callp(method, &p_args[1], p_argcount - 1, r_error);
 }
 
 Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -700,7 +704,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 
 	StringName method = *p_args[0];
 
-	MessageQueue::get_singleton()->push_call(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
+	MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
 
 	return Variant();
 }
@@ -750,31 +754,14 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	}
 
 	Callable::CallError ce;
-	Variant ret = call(p_method, argptrs, p_args.size(), ce);
+	Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(Variant(), "Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
 	}
 	return ret;
 }
 
-Variant Object::call(const StringName &p_name, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	Callable::CallError error;
-
-	Variant ret = call(p_name, argptr, argc, error);
-	return ret;
-}
-
-Variant Object::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
 	if (p_method == CoreStringNames::get_singleton()->_free) {
@@ -808,7 +795,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
+		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
 		//force jumptable
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -1027,12 +1014,12 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::C
 		args = &p_args[1];
 	}
 
-	emit_signal(signal, args, argc);
+	emit_signalp(signal, args, argc);
 
 	return Variant();
 }
 
-Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
+Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (_block_signals) {
 		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
 	}
@@ -1091,7 +1078,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		}
 
 		if (c.flags & CONNECT_DEFERRED) {
-			MessageQueue::get_singleton()->push_callable(c.callable, args, argc, true);
+			MessageQueue::get_singleton()->push_callablep(c.callable, args, argc, true);
 		} else {
 			Callable::CallError ce;
 			_emitting = true;
@@ -1137,21 +1124,6 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 	}
 
 	return err;
-}
-
-Error Object::emit_signal(const StringName &p_name, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	return emit_signal(p_name, argptr, argc);
 }
 
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
@@ -1646,10 +1618,6 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONESHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
-}
-
-void Object::call_deferred(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	MessageQueue::get_singleton()->push_call(this, p_method, VARIANT_ARG_PASS);
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {

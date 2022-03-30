@@ -435,8 +435,16 @@ void ShaderEditor::_menu_option(int p_option) {
 }
 
 void ShaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
-		_check_for_external_edit();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			PopupMenu *popup = help_menu->get_popup();
+			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			_check_for_external_edit();
+		} break;
 	}
 }
 
@@ -520,7 +528,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/behavior/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_GET("text_editor/behavior/files/auto_reload_scripts_on_external_change"));
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
@@ -647,7 +655,7 @@ void ShaderEditor::_update_bookmark_list() {
 		}
 
 		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
-		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
+		bookmarks_menu->set_item_metadata(-1, bookmark_list[i]);
 	}
 }
 
@@ -772,7 +780,7 @@ ShaderEditor::ShaderEditor() {
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	add_child(main_container);

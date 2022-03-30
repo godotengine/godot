@@ -66,7 +66,7 @@ class TextControlEditor : public HBoxContainer {
 	Ref<Font> custom_font;
 
 protected:
-	void _notification(int p_notification);
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	void _find_resources(EditorFileSystemDirectory *p_dir);

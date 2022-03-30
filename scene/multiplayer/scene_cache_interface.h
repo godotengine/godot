@@ -60,7 +60,7 @@ private:
 	int last_send_cache_id = 1;
 
 protected:
-	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
+	Error _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, const List<int> &p_peers);
 	static MultiplayerCacheInterface *_create(MultiplayerAPI *p_multiplayer);
 
 public:

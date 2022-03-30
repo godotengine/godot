@@ -99,6 +99,18 @@ layout(location = 8) out float dp_clip;
 
 layout(location = 9) out flat uint instance_index_interp;
 
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#define ViewIndex gl_ViewIndex
+#else // has_VK_KHR_multiview
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
+#endif // has_VK_KHR_multiview
+#else // USE_MULTIVIEW
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+#endif //USE_MULTIVIEW
+
 invariant gl_Position;
 
 #GLOBALS
@@ -244,7 +256,13 @@ void main() {
 	vec4 position;
 #endif
 
+#ifdef USE_MULTIVIEW
+	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
+	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
+#else
 	mat4 projection_matrix = scene_data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+#endif //USE_MULTIVIEW
 
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
@@ -421,10 +439,26 @@ layout(location = 8) in float dp_clip;
 
 layout(location = 9) in flat uint instance_index_interp;
 
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#define ViewIndex gl_ViewIndex
+#else // has_VK_KHR_multiview
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
+#endif // has_VK_KHR_multiview
+#else // USE_MULTIVIEW
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+#endif //USE_MULTIVIEW
+
 //defines to keep compatibility with vertex
 
 #define world_matrix instances.data[instance_index].transform
+#ifdef USE_MULTIVIEW
+#define projection_matrix scene_data.projection_matrix_view[ViewIndex]
+#else
 #define projection_matrix scene_data.projection_matrix
+#endif
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
 //both required for transmittance to be enabled
@@ -478,8 +512,8 @@ layout(location = 0) out vec4 frag_color;
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
-/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
-#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+// Default to SPECULAR_SCHLICK_GGX.
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_TOON)
 #define SPECULAR_SCHLICK_GGX
 #endif
 
@@ -589,7 +623,7 @@ void main() {
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
-	float clearcoat_gloss = 0.0;
+	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec4 fog = vec4(0.0);
@@ -912,7 +946,17 @@ void main() {
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	if (scene_data.use_reflection_cubemap) {
+#ifdef LIGHT_ANISOTROPY_USED
+		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
+		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
+		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
+		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+		vec3 ref_vec = reflect(-view, bent_normal);
+#else
 		vec3 ref_vec = reflect(-view, normal);
+#endif
+
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
@@ -953,6 +997,36 @@ void main() {
 #endif // USE_LIGHTMAP
 #if defined(CUSTOM_IRRADIANCE_USED)
 	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
+#endif
+
+#ifdef LIGHT_CLEARCOAT_USED
+
+	if (scene_data.use_reflection_cubemap) {
+		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
+		float NoV = max(dot(n, view), 0.0001);
+		vec3 ref_vec = reflect(-view, n);
+		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
+		float Fc = clearcoat * (0.04 + 0.96 * SchlickFresnel(NoV));
+		float attenuation = 1.0 - Fc;
+		ambient_light *= attenuation;
+		specular_light *= attenuation;
+
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
+		float roughness_lod = mix(0.001, 0.1, clearcoat_roughness) * MAX_ROUGHNESS_LOD;
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+
+		float lod, blend;
+		blend = modf(roughness_lod, lod);
+		vec3 clearcoat_light = texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod)).rgb;
+		clearcoat_light = mix(clearcoat_light, texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod + 1)).rgb, blend);
+
+#else
+		vec3 clearcoat_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness_lod).rgb;
+
+#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		specular_light += clearcoat_light * horizon * horizon * Fc * scene_data.ambient_light_color_energy.a;
+	}
 #endif
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -1202,8 +1276,16 @@ void main() {
 				if (!bool(reflections.data[reflection_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
 				}
-
-				reflection_process(reflection_index, vertex, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+#ifdef LIGHT_ANISOTROPY_USED
+				// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
+				vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
+				vec3 anisotropic_tangent = cross(anisotropic_direction, view);
+				vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
+				vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+#else
+				vec3 bent_normal = normal;
+#endif
+				reflection_process(reflection_index, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 			}
 		}
 
@@ -1555,10 +1637,11 @@ void main() {
 					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_gloss,
+					clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					binormal, tangent, anisotropy,
+					binormal,
+					tangent, anisotropy,
 #endif
 					diffuse_light,
 					specular_light);
@@ -1626,7 +1709,7 @@ void main() {
 						rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-						clearcoat, clearcoat_gloss,
+						clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 						tangent, binormal, anisotropy,
@@ -1698,10 +1781,11 @@ void main() {
 						rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-						clearcoat, clearcoat_gloss,
+						clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-						tangent, binormal, anisotropy,
+						tangent,
+						binormal, anisotropy,
 #endif
 						diffuse_light, specular_light);
 			}
@@ -1904,7 +1988,7 @@ void main() {
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
-	//frag_color = vec4(1.0);
+//frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.

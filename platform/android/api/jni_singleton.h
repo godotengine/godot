@@ -52,7 +52,7 @@ class JNISingleton : public Object {
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 #ifdef ANDROID_ENABLED
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 
@@ -70,7 +70,7 @@ public:
 
 		if (call_error) {
 			// The method is not in this map, defaulting to the regular instance calls.
-			return Object::call(p_method, p_args, p_argcount, r_error);
+			return Object::callp(p_method, p_args, p_argcount, r_error);
 		}
 
 		ERR_FAIL_COND_V(!instance, Variant());
@@ -176,7 +176,7 @@ public:
 #else // ANDROID_ENABLED
 
 		// Defaulting to the regular instance calls.
-		return Object::call(p_method, p_args, p_argcount, r_error);
+		return Object::callp(p_method, p_args, p_argcount, r_error);
 #endif
 	}
 

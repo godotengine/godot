@@ -254,7 +254,7 @@ public:
 
 		int radiance_size = 256;
 
-		RS::SkyMode mode = RS::SKY_MODE_REALTIME;
+		RS::SkyMode mode = RS::SKY_MODE_AUTOMATIC;
 
 		ReflectionData reflection;
 		bool dirty = false;

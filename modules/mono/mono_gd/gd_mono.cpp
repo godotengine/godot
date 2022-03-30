@@ -643,9 +643,8 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	// Create destination directory if needed
 	if (!DirAccess::exists(dst_dir)) {
-		DirAccess *da = DirAccess::create_for_path(dst_dir);
+		DirAccessRef da = DirAccess::create_for_path(dst_dir);
 		Error err = da->make_dir_recursive(dst_dir);
-		memdelete(da);
 
 		if (err != OK) {
 			ERR_PRINT("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
