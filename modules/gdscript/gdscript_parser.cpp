@@ -536,13 +536,13 @@ void GDScriptParser::parse_program() {
 	for (bool should_break = false; !should_break;) {
 		// Order here doesn't matter, but there should be only one of each at most.
 		switch (current.type) {
-			case GDScriptTokenizer::Token::CLASS_NAME:
+			case GDScriptTokenizer::Token::CLASSNAME:
 				if (!annotation_stack.is_empty()) {
-					push_error(R"("class_name" should be used before annotations.)");
+					push_error(R"("classname" should be used before annotations.)");
 				}
 				advance();
 				if (head->identifier != nullptr) {
-					push_error(R"("class_name" can only be used once.)");
+					push_error(R"("classname" can only be used once per script.)");
 				} else {
 					parse_class_name();
 				}
@@ -553,7 +553,7 @@ void GDScriptParser::parse_program() {
 				}
 				advance();
 				if (head->extends_used) {
-					push_error(R"("extends" can only be used once.)");
+					push_error(R"("extends" can only be used once per script.)");
 				} else {
 					parse_extends();
 					end_statement("superclass");
@@ -647,7 +647,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 }
 
 void GDScriptParser::parse_class_name() {
-	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the global class name after "class_name".)")) {
+	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the global class name after "classname".)")) {
 		current_class->identifier = parse_identifier();
 	}
 

@@ -1,7 +1,7 @@
 # meta-description: Visual shader's node plugin template
 
 @tool
-class_name VisualShaderNode_CLASS_
+classname VisualShaderNode_CLASS_
 extends _BASE_
 
 

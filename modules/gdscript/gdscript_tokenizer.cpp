@@ -98,7 +98,7 @@ static const char *token_names[] = {
 	"await", // AWAIT,
 	"breakpoint", // BREAKPOINT,
 	"class", // CLASS,
-	"class_name", // CLASS_NAME,
+	"classname", // CLASSNAME,
 	"const", // CONST,
 	"enum", // ENUM,
 	"extends", // EXTENDS,
@@ -178,7 +178,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case AWAIT:
 		case BREAK:
 		case BREAKPOINT:
-		case CLASS_NAME:
+		case CLASSNAME:
 		case CLASS:
 		case CONST:
 		case CONTINUE:
@@ -456,7 +456,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 	KEYWORD("breakpoint", Token::BREAKPOINT) \
 	KEYWORD_GROUP('c')                       \
 	KEYWORD("class", Token::CLASS)           \
-	KEYWORD("class_name", Token::CLASS_NAME) \
+	KEYWORD("classname", Token::CLASSNAME)   \
 	KEYWORD("const", Token::CONST)           \
 	KEYWORD("continue", Token::CONTINUE)     \
 	KEYWORD_GROUP('e')                       \

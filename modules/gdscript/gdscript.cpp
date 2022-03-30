@@ -2018,7 +2018,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"await",
 		"breakpoint",
 		"class",
-		"class_name",
+		"classname",
 		"extends",
 		"is",
 		"func",

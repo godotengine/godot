@@ -109,7 +109,7 @@ public:
 			AWAIT,
 			BREAKPOINT,
 			CLASS,
-			CLASS_NAME,
+			CLASSNAME,
 			CONST,
 			ENUM,
 			EXTENDS,

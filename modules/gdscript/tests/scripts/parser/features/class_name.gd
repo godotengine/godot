@@ -1,4 +1,4 @@
-class_name HelloWorld
+classname HelloWorld
 @icon("res://path/to/optional/icon.svg")
 
 func test():
