@@ -44,6 +44,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -647,7 +648,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			const ServersDebugger::ServerInfo &srv = frame.servers[i];
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
-			c.name = name.capitalize();
+			c.name = EditorPropertyNameProcessor::get_singleton()->process_name(name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			c.items.resize(srv.functions.size());
 			c.total_time = 0;
 			c.signature = "categ::" + name;
@@ -659,7 +660,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				item.self = srv.functions[j].time;
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
-				item.name = item.name.capitalize();
+				item.name = EditorPropertyNameProcessor::get_singleton()->process_name(item.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 				c.total_time += item.total;
 				c.items.write[j] = item;
 			}
