@@ -1101,6 +1101,14 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal(SNAME("about_to_popup"));
 
+	if (!_get_embedder() && get_flag(FLAG_POPUP)) {
+		// Send a focus-out notification when opening a Window Manager Popup.
+		SceneTree *scene_tree = get_tree();
+		if (scene_tree) {
+			scene_tree->notify_group("_viewports", NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+		}
+	}
+
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
