@@ -2075,8 +2075,8 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	_push_item(nullptr);
 
-	// Fixes the EditorHistory from still offering deleted notes
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	// Fixes the EditorSelectionHistory from still offering deleted notes
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	editor_history->cleanup_history();
 	InspectorDock::get_singleton()->call("_prepare_history");
 }

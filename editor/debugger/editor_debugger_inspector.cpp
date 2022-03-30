@@ -206,7 +206,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 void EditorDebuggerInspector::clear_cache() {
 	for (const KeyValue<ObjectID, EditorDebuggerRemoteObject *> &E : remote_objects) {
 		EditorNode *editor = EditorNode::get_singleton();
-		if (editor->get_editor_history()->get_current() == E.value->get_instance_id()) {
+		if (editor->get_editor_selection_history()->get_current() == E.value->get_instance_id()) {
 			editor->push_item(nullptr);
 		}
 		memdelete(E.value);
