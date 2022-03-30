@@ -66,6 +66,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_CREATE_FUNCTION,
 		EDIT_TOGGLE_BREAKPOINT,
 		EDIT_FIND_NODE_TYPE,
+		EXIT_MODULE,
 		REFRESH_GRAPH,
 	};
 
@@ -90,8 +91,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Ref<VisualScript> script;
 
+	HBoxContainer *base_type_select_hbc;
 	Button *base_type_select = nullptr;
-
+	Button *save_module_btn;
 	LineEdit *func_name_box = nullptr;
 	ScrollContainer *func_input_scroll = nullptr;
 	VBoxContainer *func_input_vbox = nullptr;
@@ -167,6 +169,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	static Clipboard *clipboard;
 
+	Button *func_btn;
+	HBoxContainer *top_bar;
+
 	PopupMenu *popup_menu = nullptr;
 	PopupMenu *member_popup = nullptr;
 	MemberType member_type;
@@ -181,6 +186,42 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool saved_pos_dirty = false;
 
 	Vector2 mouse_up_position;
+
+	enum {
+		LOAD_SUBMODULE = 0,
+		SAVE_SUBMODULE = 1
+	} module_action;
+
+	Ref<VisualScriptModule> curr_module;
+	bool inside_module;
+
+	StringName selected_module;
+	bool updating_modules_panel;
+	Tree *modules_panel;
+	LineEdit *modules_panel_search_box;
+
+	AcceptDialog *module_name_edit;
+	LineEdit *module_name_edit_box;
+
+	void _update_module_panel();
+	void _modules_popup_option(int p_option);
+	void _search_module_list(const String &p_text);
+	void _modules_panel_button(Object *p_item, int p_column, int p_button);
+	void _modules_panel_edited();
+	void _modules_panel_selected();
+	void _module_name_edit_box_input(const Ref<InputEvent> &p_event);
+	void _modules_panel_gui_input(const Ref<InputEvent> &p_event);
+
+	LineEdit *module_name_box;
+	EditorFileDialog *module_resource_dialog;
+
+	void _load_module(int p_select, int p_id);
+	void _load_module_from_path();
+	void _new_module();
+	void _save_module();
+	void _edit_module();
+	void _module_name_save(const String &p_text, Ref<VisualScriptModule> p_module);
+	void _module_action(String p_file);
 
 	void _port_action_menu(int p_option);
 

@@ -34,6 +34,7 @@
 #include "../visual_script_flow_control.h"
 #include "../visual_script_func_nodes.h"
 #include "../visual_script_nodes.h"
+#include "../visual_script_module.h"
 #include "core/input/input.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
@@ -560,19 +561,33 @@ void VisualScriptEditor::_update_graph_connections() {
 	graph->clear_connections();
 
 	List<VisualScript::SequenceConnection> sequence_conns;
-	script->get_sequence_connection_list(&sequence_conns);
+	if (inside_module) {
+		curr_module->get_sequence_connection_list(&sequence_conns);
+	} else {
+		script->get_sequence_connection_list(&sequence_conns);
+	}
 
 	for (const VisualScript::SequenceConnection &E : sequence_conns) {
 		graph->connect_node(itos(E.from_node), E.from_output, itos(E.to_node), 0);
 	}
 
 	List<VisualScript::DataConnection> data_conns;
-	script->get_data_connection_list(&data_conns);
+	if (inside_module) {
+		curr_module->get_data_connection_list(&data_conns);
+	} else {
+		script->get_data_connection_list(&data_conns);
+	}
 
 	for (VisualScript::DataConnection &dc : data_conns) {
-		Ref<VisualScriptNode> from_node = script->get_node(dc.from_node);
-		Ref<VisualScriptNode> to_node = script->get_node(dc.to_node);
-
+		Ref<VisualScriptNode> from_node;
+		Ref<VisualScriptNode> to_node;
+		if (inside_module) {
+			from_node = curr_module->get_node(dc.from_node);
+			to_node = curr_module->get_node(dc.to_node);
+		} else {
+			from_node = script->get_node(dc.from_node);
+			to_node = script->get_node(dc.to_node);
+		}
 		if (to_node->has_input_sequence_port()) {
 			dc.to_port++;
 		}
@@ -591,7 +606,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	updating_graph = true;
 
 	//byebye all nodes
-	if (p_only_id >= 0) {
+	if (!inside_module && p_only_id >= 0) {
 		if (graph->has_node(itos(p_only_id))) {
 			Node *gid = graph->get_node(itos(p_only_id));
 			if (gid) {
@@ -648,11 +663,12 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	};
 
 	Ref<Texture2D> seq_port = Control::get_theme_icon(SNAME("VisualShaderPort"), SNAME("EditorIcons"));
-	List<int> node_ids;
-	script->get_node_list(&node_ids);
-
 	List<int> ids;
-	script->get_node_list(&ids);
+	if (inside_module) {
+		curr_module->get_node_list(&ids);
+	} else {
+		script->get_node_list(&ids);
+	}
 
 	for (int &E : ids) {
 		if (p_only_id >= 0 && p_only_id != E) {
@@ -687,7 +703,28 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		Ref<VisualScriptLists> nd_list = node;
 		bool is_vslist = nd_list.is_valid();
-		if (is_vslist) {
+		Ref<VisualScriptModule> nd_mod = node;
+		bool is_mod = nd_mod.is_valid();
+
+		if (is_mod) {
+			OptionButton *opbtn = memnew(OptionButton);
+			List<StringName> opts;
+			script->get_module_list(&opts);
+			opbtn->add_item("None");
+			int k = 1, f = 0;
+			for (auto &K : opts) {
+				opbtn->add_item(K);
+				if (nd_mod->get_module_name() == K)
+					f = k;
+				k++;
+			}
+			opbtn->select(f);
+			opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+			opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_load_module), varray(E), CONNECT_DEFERRED);
+			gnode->add_child(opbtn);
+			has_gnode_text = true;
+		}
+		else if (is_vslist) {
 			HBoxContainer *hbnc = memnew(HBoxContainer);
 			if (nd_list->is_input_port_editable()) {
 				has_gnode_text = true;
@@ -974,8 +1011,260 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	graph->set_minimap_opacity(graph_minimap_opacity);
 
 	// Use default_func instead of default_func for now I think that should be good stop gap solution to ensure not breaking anything.
-	graph->call_deferred(SNAME("set_scroll_ofs"), script->get_scroll() * EDSCALE);
+	if (inside_module) {
+		graph->call_deferred(SNAME("set_scroll_ofs"), curr_module->get_scroll() * EDSCALE);
+	} else {
+		graph->call_deferred(SNAME("set_scroll_ofs"), script->get_scroll() * EDSCALE);
+	}
 	updating_graph = false;
+}
+
+void VisualScriptEditor::_new_module() {
+	String s = script->validate_module_name("New Module");
+	Ref<VisualScriptModule> new_module;
+	new_module.instantiate();
+	new_module->set_module_name(s);
+	if (!new_module->has_node(0)) {
+		Ref<VisualScriptModuleEntryNode> vsentry;
+		vsentry.instantiate();
+		new_module->add_node(0, vsentry);
+		Ref<VisualScriptModuleExitNode> vsexit;
+		vsexit.instantiate();
+		new_module->add_node(1, vsexit);
+	}
+	script->add_module(s, new_module);
+	_update_module_panel();
+}
+
+void VisualScriptEditor::_update_module_panel() {
+	ERR_FAIL_COND(!script.is_valid());
+
+	updating_modules_panel = true;
+
+	modules_panel->clear();
+	TreeItem *root = modules_panel->create_item();
+	root->set_text(0, "Module:");
+	root->set_metadata(0, "");
+	root->add_button(0, Control::get_theme_icon("Load", "EditorIcons"), 0, false, TTR("Load Module from path."));
+	root->add_button(0, Control::get_theme_icon("Add", "EditorIcons"), 1, false, TTR("Add a new Module."));
+
+	List<StringName> mod_names;
+	script->get_module_list(&mod_names);
+	mod_names.sort_custom<StringName::AlphCompare>();
+	for (List<StringName>::Element *E = mod_names.front(); E; E = E->next()) {
+		if (modules_panel_search_box->get_text() != String() && String(E->get()).findn(modules_panel_search_box->get_text()) < 0) {
+			continue; // skip if not a match
+		}
+		TreeItem *ti = members->create_item(root);
+		ti->set_text(0, E->get());
+		ti->set_selectable(0, true);
+		ti->set_metadata(0, E->get());
+		ti->add_button(0, Control::get_theme_icon("Edit", "EditorIcons"), 0);
+		if (selected_module == E->get()) {
+			ti->select(0);
+		}
+	}
+
+	updating_modules_panel = false;
+}
+
+void VisualScriptEditor::_search_module_list(const String &p_text) {
+	_update_module_panel();
+}
+
+void VisualScriptEditor::_modules_panel_button(Object *p_item, int p_column, int p_button) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+	TreeItem *root = modules_panel->get_root();
+	if (ti == root) {
+		if (p_button == 0) {
+			_load_module_from_path();
+		} else if (p_button == 1) {
+			_new_module();
+		}
+	} else if (ti && ti->get_parent() == root) {
+		selected_module = ti->get_text(0);
+		module_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
+		module_name_edit->popup();
+		module_name_edit_box->set_text(selected_module);
+		module_name_edit_box->select_all();
+	}
+}
+
+void VisualScriptEditor::_modules_panel_edited() {
+	if (updating_modules_panel) {
+		return;
+	}
+	_update_module_panel();
+}
+
+void VisualScriptEditor::_modules_panel_selected() {
+	if (updating_modules_panel) {
+		return;
+	}
+
+	TreeItem *ti = modules_panel->get_selected();
+	ERR_FAIL_COND(!ti);
+
+	selected_module = ti->get_metadata(0);
+}
+
+void VisualScriptEditor::_modules_panel_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mbt = p_event;
+	if (mbt.is_valid() && mbt->is_double_click()) {
+		TreeItem *ti = modules_panel->get_selected();
+		if (ti && ti->get_parent() == modules_panel->get_root()) {
+			curr_module = script->get_module(ti->get_text(0));
+			_edit_module();
+		}
+	}
+}
+
+void VisualScriptEditor::_module_name_save(const String &p_text, Ref<VisualScriptModule> p_module) {
+	String s = script->validate_module_name(p_text);
+	module_name_box->set_placeholder(s);
+	module_name_box->set_text("");
+
+	Ref<VisualScriptModule> mod = p_module.is_valid() ? p_module : curr_module;
+
+	script->remove_module(mod->get_module_name());
+	mod->set_module_name(s);
+	script->add_module(mod->get_module_name(), mod);
+	mod->notify_property_list_changed();
+	mod->set_edited(true); // not sure if needed
+	_update_module_panel();
+}
+
+void VisualScriptEditor::_module_name_edit_box_input(const Ref<InputEvent> &p_event) {
+	if (!module_name_edit->is_visible()) {
+		return;
+	}
+
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ENTER) {
+		module_name_edit->hide();
+		ERR_FAIL_COND(!script->has_module(selected_module));
+		_module_name_save(module_name_edit_box->get_text(), script->get_module(selected_module));
+		module_name_edit_box->clear();
+	}
+}
+
+void VisualScriptEditor::_save_module() {
+	module_resource_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("VisualScriptModule", &extensions);
+
+	module_resource_dialog->clear_filters();
+	for (int i = 0; i < extensions.size(); i++) {
+		if (extensions[i] == "tres" || extensions[i] == "res") {
+			// this is annoying
+			continue;
+		}
+		module_resource_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+	}
+
+	module_action = SAVE_SUBMODULE;
+	module_resource_dialog->set_title(TTR("Save Module As..."));
+	module_resource_dialog->popup_file_dialog();
+}
+
+void VisualScriptEditor::_load_module(int p_select, int p_id) {
+	Ref<VisualScriptModuleNode> vsn = script->get_node(p_id);
+	if (p_select == 0 || !vsn.is_valid()) {
+		return;
+	}
+	undo_redo->create_action("Load Module");
+	if (p_select == 0) {
+		undo_redo->add_do_method(vsn.ptr(), "set_module", "");
+		undo_redo->add_undo_method(vsn.ptr(), "set_module", vsn->get_module_name());
+	} else {
+		List<StringName> opts;
+		script->get_module_list(&opts);
+		undo_redo->add_do_method(vsn.ptr(), "set_module", opts[p_select - 1]);
+		undo_redo->add_undo_method(vsn.ptr(), "set_module", vsn->get_module_name());
+	}
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->commit_action();
+	_update_module_panel();
+}
+
+void VisualScriptEditor::_load_module_from_path() {
+	module_resource_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	module_action = LOAD_SUBMODULE;
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("VisualScriptModule", &extensions);
+
+	module_resource_dialog->clear_filters();
+	for (int i = 0; i < extensions.size(); i++) {
+		if (extensions[i] == "tres" || extensions[i] == "res") {
+			// this is annoying
+			continue;
+		}
+		module_resource_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+	}
+	module_resource_dialog->set_title(TTR("Load Module from..."));
+	module_resource_dialog->popup_file_dialog();
+	_update_module_panel();
+}
+
+void VisualScriptEditor::_module_action(String p_file) {
+	switch (module_action) {
+		case LOAD_SUBMODULE: {
+			RES res = ResourceLoader::load(p_file);
+			if (res.is_null()) {
+				ERR_PRINT("Failed to load resource.");
+				return;
+			};
+
+			Ref<VisualScriptModule> vsmod = res;
+			if (vsmod.is_null()) {
+				ERR_PRINT("Resource not valid Module.");
+				return;
+			};
+
+			if (script->has_module(vsmod->get_module_name())) {
+				ERR_PRINT("Module with same name already exists.");
+				return;
+			};
+			if (!vsmod->has_node(0)) {
+				Ref<VisualScriptModuleEntryNode> vsentry;
+				vsentry.instantiate();
+				vsmod->add_node(0, vsentry);
+				Ref<VisualScriptModuleExitNode> vsexit;
+				vsexit.instantiate();
+				vsmod->add_node(1, vsexit);
+			}
+			script->add_module(vsmod->get_module_name(), vsmod);
+		} break;
+		case SAVE_SUBMODULE: {
+			int flg = 0;
+			if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
+				flg |= ResourceSaver::FLAG_COMPRESS;
+			}
+
+			String path = ProjectSettings::get_singleton()->localize_path(p_file);
+			Error err = ResourceSaver::save(path, curr_module, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+
+			if (err != OK) {
+				// TODO: Improve the Error Reporting
+				ERR_PRINT("Error saving resource!");
+				// if (ResourceLoader::is_imported(p_resource->get_path())) {
+				// 	pop_error->show_accept(TTR("Imported resources can't be saved."), TTR("OK"));
+				// } else {
+				// 	pop_error->show_accept(TTR("Error saving resource!"), TTR("OK"));
+				// }
+				// return;
+			}
+
+			((Resource *)curr_module.ptr())->set_path(path);
+			curr_module->notify_property_list_changed();
+		} break;
+		default:
+			ERR_PRINT("Something went wrong with the module dialog");
+	}
+	_update_graph();
+	_update_module_panel();
 }
 
 void VisualScriptEditor::_change_port_type(int p_select, int p_id, int p_port, bool is_input) {
