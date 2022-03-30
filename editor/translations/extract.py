@@ -113,7 +113,7 @@ message_patterns = {
         r'RTRN\("(?P<message>([^"\\]|\\.)*)", "(?P<plural_message>([^"\\]|\\.)*)",[^,)]+?(, "(?P<context>([^"\\]|\\.)*)")?\)'
     ): ExtractType.TEXT,
     re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
-    re.compile(r'GLOBAL_DEF(_RST)?(_NOVAL)?(_BASIC)?\("(?P<message>[^".]+?)",'): ExtractType.PROPERTY_PATH,
+    re.compile(r'GLOBAL_DEF(_RST)?(_NOVAL)?(_BASIC)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(r'GLOBAL_DEF_BASIC\(vformat\("(?P<message>layer_names/\w+)/layer_%d"'): ExtractType.PROPERTY_PATH,
     re.compile(r'EDITOR_DEF(_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(
@@ -236,6 +236,8 @@ def process_file(f, fname):
                                 msg = msg[len(current_group) :]
                             else:
                                 current_group = ""
+                        if "." in msg:  # Strip feature tag.
+                            msg = msg.split(".", 1)[0]
                         for part in msg.split("/"):
                             _add_message(_process_editor_string(part), msg_plural, msgctx, location, translator_comment)
                     elif extract_type == ExtractType.GROUP:
