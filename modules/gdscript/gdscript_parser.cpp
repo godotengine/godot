@@ -2752,7 +2752,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				pop_multiline();
 				return nullptr;
 			}
-			call->function_name = current_function->identifier->name;
+			if (current_function->identifier) {
+				call->function_name = current_function->identifier->name;
+			} else {
+				call->function_name = SNAME("<anonymous>");
+			}
 		} else {
 			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
 			make_completion_context(COMPLETION_SUPER_METHOD, call, true);
