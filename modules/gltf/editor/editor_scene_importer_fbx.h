@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_mesh.cpp                                                        */
+/*  editor_scene_importer_fbx.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gltf_mesh.h"
+#ifndef EDITOR_SCENE_IMPORTER_FBX_H
+#define EDITOR_SCENE_IMPORTER_FBX_H
 
-#include "scene/resources/importer_mesh.h"
+#ifdef TOOLS_ENABLED
 
-void GLTFMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_mesh"), &GLTFMesh::get_mesh);
-	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &GLTFMesh::set_mesh);
-	ClassDB::bind_method(D_METHOD("get_blend_weights"), &GLTFMesh::get_blend_weights);
-	ClassDB::bind_method(D_METHOD("set_blend_weights", "blend_weights"), &GLTFMesh::set_blend_weights);
-	ClassDB::bind_method(D_METHOD("get_instance_materials"), &GLTFMesh::get_instance_materials);
-	ClassDB::bind_method(D_METHOD("set_instance_materials", "instance_materials"), &GLTFMesh::set_instance_materials);
+#include "editor/import/resource_importer_scene.h"
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "blend_weights"), "set_blend_weights", "get_blend_weights"); // Vector<float>
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "instance_materials"), "set_instance_materials", "get_instance_materials");
-}
+class Animation;
+class Node;
 
-Ref<ImporterMesh> GLTFMesh::get_mesh() {
-	return mesh;
-}
+class EditorSceneFormatImporterFBX : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterFBX, EditorSceneFormatImporter);
 
-void GLTFMesh::set_mesh(Ref<ImporterMesh> p_mesh) {
-	mesh = p_mesh;
-}
+public:
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const Map<StringName, Variant> &p_options, int p_bake_fps,
+			List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags,
+			const Map<StringName, Variant> &p_options, int p_bake_fps) override;
+	virtual void get_import_options(const String &p_path,
+			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option,
+			const Map<StringName, Variant> &p_options) override;
+};
 
-Array GLTFMesh::get_instance_materials() {
-	return instance_materials;
-}
+#endif // TOOLS_ENABLED
 
-void GLTFMesh::set_instance_materials(Array p_instance_materials) {
-	instance_materials = p_instance_materials;
-}
-
-Vector<float> GLTFMesh::get_blend_weights() {
-	return blend_weights;
-}
-
-void GLTFMesh::set_blend_weights(Vector<float> p_blend_weights) {
-	blend_weights = p_blend_weights;
-}
+#endif // EDITOR_SCENE_IMPORTER_FBX_H
