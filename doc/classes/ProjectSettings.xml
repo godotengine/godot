@@ -1936,7 +1936,7 @@
 			Specify the default reference space.
 		</member>
 		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
-			Specify the view configuration with which to configure OpenXR settting up either Mono or Stereo rendering.
+			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.
 		</member>
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.

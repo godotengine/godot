@@ -2849,7 +2849,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 				}
 			} else {
-				// For reasons unknown to mankind, wheel comes in screen coordinates.
+				// For reasons unknown to humanity, wheel comes in screen coordinates.
 				POINT coords;
 				coords.x = mb->get_position().x;
 				coords.y = mb->get_position().y;

@@ -647,7 +647,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					}
 				}
 
-				// Check if initalizer is an unset identifier (ie: a variable within scope, but declared below)
+				// Check if initializer is an unset identifier (ie: a variable within scope, but declared below)
 				if (member.variable->initializer && !member.variable->initializer->get_datatype().is_set()) {
 					if (member.variable->initializer->type == GDScriptParser::Node::IDENTIFIER) {
 						GDScriptParser::IdentifierNode *initializer_identifier = static_cast<GDScriptParser::IdentifierNode *>(member.variable->initializer);

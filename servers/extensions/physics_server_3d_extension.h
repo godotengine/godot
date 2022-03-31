@@ -45,7 +45,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// The warning is valid, but unavoidable. If the function is not overriden it will error anyway.
+	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
 	EXBIND0RC(Vector3, get_total_gravity)
 	EXBIND0RC(real_t, get_total_angular_damp)
@@ -208,7 +208,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// The warning is valid, but unavoidable. If the function is not overriden it will error anyway.
+	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
 	EXBIND0R(RID, world_boundary_shape_create)
 	EXBIND0R(RID, separation_ray_shape_create)

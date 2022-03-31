@@ -729,7 +729,7 @@ public:
 		int binding; // Binding index as specified in shader.
 
 	private:
-		// In most cases only one ID is provided per binding, so avoid allocating memory unnecesarily for performance.
+		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
 		RID id; // If only one is provided, this is used.
 		Vector<RID> ids; // If multiple ones are provided, this is used instead.
 

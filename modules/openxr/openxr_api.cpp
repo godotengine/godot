@@ -100,7 +100,7 @@ String OpenXRAPI::get_error_string(XrResult result) {
 }
 
 String OpenXRAPI::get_swapchain_format_name(int64_t p_swapchain_format) const {
-	// This is rendering engine dependend...
+	// This is rendering engine dependent...
 	if (graphics_extension) {
 		return graphics_extension->get_swapchain_format_name(p_swapchain_format);
 	}
@@ -339,7 +339,7 @@ bool OpenXRAPI::get_system_info() {
 }
 
 bool OpenXRAPI::load_supported_view_configuration_types() {
-	// This queries the supported configuration types, likely there will only be one chosing between Mono (phone AR) and Stereo (HMDs)
+	// This queries the supported configuration types, likely there will only be one choosing between Mono (phone AR) and Stereo (HMDs)
 
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 
