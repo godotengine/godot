@@ -1110,14 +1110,11 @@ Viewport::PositionalShadowAtlasQuadrantSubdiv Viewport::get_positional_shadow_at
 }
 
 Transform2D Viewport::_get_input_pre_xform() const {
-	Transform2D pre_xf;
-
-	if (to_screen_rect.size.x != 0 && to_screen_rect.size.y != 0) {
-		pre_xf.columns[2] = -to_screen_rect.position;
-		pre_xf.scale(Vector2(size) / to_screen_rect.size);
+	const Window *this_window = Object::cast_to<Window>(this);
+	if (this_window) {
+		return this_window->window_transform.affine_inverse();
 	}
-
-	return pre_xf;
+	return Transform2D();
 }
 
 Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
