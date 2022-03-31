@@ -1368,10 +1368,6 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (is_inside_tree()) {
 		push_input(p_ev);
 	}
-
-	if (!is_input_handled() && is_inside_tree()) {
-		push_unhandled_input(p_ev);
-	}
 }
 
 void Window::_window_input_text(const String &p_text) {
