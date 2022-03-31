@@ -6034,6 +6034,19 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("version_control/ssh_private_key_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "version_control/ssh_private_key_path", PROPERTY_HINT_GLOBAL_FILE));
 
+	// Migrate from old editor setting.
+	{
+		const StringName legacy = "interface/inspector/capitalize_properties";
+		const StringName replacement = "interface/inspector/default_property_name_style";
+		EditorSettings *settings = EditorSettings::get_singleton();
+		if (settings->has_setting(legacy)) {
+			if (!settings->property_can_revert(replacement) && !settings->get(legacy)) {
+				settings->set(replacement, EditorPropertyNameProcessor::STYLE_RAW);
+			}
+			settings->erase(legacy);
+		}
+	}
+
 	theme_base = memnew(Control);
 	add_child(theme_base);
 	theme_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
