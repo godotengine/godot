@@ -53,7 +53,7 @@
 #define GB	USE(GB)	/* BASE_OTHER */
 #define H	USE(H)	/* HALANT */
 #define HN	USE(HN)	/* HALANT_NUM */
-#define HVM	USE(HVM)	/* HALANT_OR_VOWEL_MODIFIER */
+#define IS	USE(IS)	/* INVISIBLE_STACKER */
 #define J	USE(J)	/* HIEROGLYPH_JOINER */
 #define N	USE(N)	/* BASE_NUM */
 #define O	USE(O)	/* OTHER */
@@ -278,7 +278,7 @@ static const uint8_t use_table[] = {
   /* 1000 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1010 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1020 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,  VPst,  VPst,  VAbv,  VAbv,  VBlw,
-  /* 1030 */  VBlw,  VPre,  VAbv,  VAbv,  VAbv,  VAbv, VMAbv, VMBlw, VMPst,     H,  VAbv,  MPst,  MPre,  MBlw,  MBlw,     B,
+  /* 1030 */  VBlw,  VPre,  VAbv,  VAbv,  VAbv,  VAbv, VMAbv, VMBlw, VMPst,    IS,  VAbv,  MPst,  MPre,  MBlw,  MBlw,     B,
   /* 1040 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     O,    GB,     O,     O,    GB,     O,
   /* 1050 */     B,     B,     B,     B,     B,     B,  VPst,  VPst,  VBlw,  VBlw,     B,     B,     B,     B,  MBlw,  MBlw,
   /* 1060 */  MBlw,     B,  VPst, VMPst, VMPst,     B,     B,  VPst,  VPst, VMPst, VMPst, VMPst, VMPst, VMPst,     B,     B,
@@ -316,7 +316,7 @@ static const uint8_t use_table[] = {
   /* 17A0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 17B0 */     B,     B,     B,     B,   CGJ,   CGJ,  VPst,  VAbv,  VAbv,  VAbv,  VAbv,  VBlw,  VBlw,  VBlw,  VPre,  VPre,
   /* 17C0 */  VPre,  VPre,  VPre,  VPre,  VPre,  VPre, VMAbv, VMPst,  VPst, VMAbv, VMAbv, FMAbv,  FAbv, CMAbv, FMAbv, VMAbv,
-  /* 17D0 */ FMAbv,  VAbv,     H, FMAbv,     O,     O,     O,     O,     O,     O,     O,     O,     B, FMAbv,    WJ,    WJ,
+  /* 17D0 */ FMAbv,  VAbv,    IS, FMAbv,     O,     O,     O,     O,     O,     O,     O,     O,     B, FMAbv,    WJ,    WJ,
   /* 17E0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
   /* 17F0 */     O,     O,     O,     O,     O,     O,     O,     O,     O,     O,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
@@ -396,7 +396,7 @@ static const uint8_t use_table[] = {
 
   /* 1B80 */ VMAbv,  FAbv, VMPst,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 1B90 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 1BA0 */     B,   SUB,   SUB,   SUB,  VAbv,  VBlw,  VPre,  VPst,  VAbv,  VAbv,  VPst,     H,   SUB,   SUB,     B,     B,
+  /* 1BA0 */     B,   SUB,   SUB,   SUB,  VAbv,  VBlw,  VPre,  VPst,  VAbv,  VAbv,  VPst,    IS,   SUB,   SUB,     B,     B,
   /* 1BB0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
 
   /* Batak */
@@ -555,7 +555,7 @@ static const uint8_t use_table[] = {
   /* Meetei Mayek Extensions */
 
   /* AAE0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,  VPre,  VBlw,  VAbv,  VPre,  VPst,
-  /* AAF0 */     O,     O,     O,     O,     O, VMPst,     H,    WJ,
+  /* AAF0 */     O,     O,     O,     O,     O, VMPst,    IS,    WJ,
 
 #define use_offset_0xabc0u 4040
 
@@ -606,7 +606,7 @@ static const uint8_t use_table[] = {
   /* 10A00 */     B,  VBlw,  VBlw,  VBlw,    WJ,  VAbv,  VBlw,    WJ,    WJ,    WJ,    WJ,    WJ,  VPst, VMBlw, VMBlw, VMAbv,
   /* 10A10 */     B,     B,     B,     B,    WJ,     B,     B,     B,    WJ,     B,     B,     B,     B,     B,     B,     B,
   /* 10A20 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 10A30 */     B,     B,     B,     B,     B,     B,    WJ,    WJ, CMAbv, CMBlw, CMBlw,    WJ,    WJ,    WJ,    WJ,     H,
+  /* 10A30 */     B,     B,     B,     B,     B,     B,    WJ,    WJ, CMAbv, CMBlw, CMBlw,    WJ,    WJ,    WJ,    WJ,    IS,
   /* 10A40 */     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
 #define use_offset_0x10ac0u 4304
@@ -699,7 +699,7 @@ static const uint8_t use_table[] = {
   /* 11100 */ VMAbv, VMAbv, VMAbv,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11110 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11120 */     B,     B,     B,     B,     B,     B,     B,  VBlw,  VBlw,  VBlw,  VAbv,  VAbv,  VPre,  VBlw,  VAbv,  VAbv,
-  /* 11130 */  VBlw,  VAbv,  VAbv,     H, CMAbv,    WJ,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
+  /* 11130 */  VBlw,  VAbv,  VAbv,    IS, CMAbv,    WJ,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11140 */     O,     O,     O,     O,     B,  VPst,  VPst,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
   /* Mahajani */
@@ -752,7 +752,7 @@ static const uint8_t use_table[] = {
   /* 11310 */     B,    WJ,    WJ,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11320 */     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,     B,     B,     B,     B,     B,     B,
   /* 11330 */     B,    WJ,     B,     B,    WJ,     B,     B,     B,     B,     B,    WJ, CMBlw, CMBlw,     B,  VPst,  VPst,
-  /* 11340 */  VAbv,  VPst,  VPst,  VPst,  VPst,    WJ,    WJ,  VPre,  VPre,    WJ,    WJ,  VPre,  VPre,   HVM,    WJ,    WJ,
+  /* 11340 */  VAbv,  VPst,  VPst,  VPst,  VPst,    WJ,    WJ,  VPre,  VPre,    WJ,    WJ,  VPre,  VPre,     H,    WJ,    WJ,
   /* 11350 */     O,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,  VPst,    WJ,    WJ,    WJ,    WJ,    WJ,     O,     B,     B,
   /* 11360 */     B,     B,  VPst,  VPst,    WJ,    WJ, VMAbv, VMAbv, VMAbv, VMAbv, VMAbv, VMAbv, VMAbv,    WJ,    WJ,    WJ,
   /* 11370 */ VMAbv, VMAbv, VMAbv, VMAbv, VMAbv,    WJ,    WJ,    WJ,
@@ -842,7 +842,7 @@ static const uint8_t use_table[] = {
   /* 11900 */     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,     B,    WJ,    WJ,     B,     B,     B,     B,
   /* 11910 */     B,     B,     B,     B,    WJ,     B,     B,    WJ,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11920 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
-  /* 11930 */  VPst,  VPst,  VPst,  VPst,  VPst,  VPre,    WJ,  VPre,  VPre,    WJ,    WJ, VMAbv, VMAbv,  VPst,     H,     R,
+  /* 11930 */  VPst,  VPst,  VPst,  VPst,  VPst,  VPre,    WJ,  VPre,  VPre,    WJ,    WJ, VMAbv, VMAbv,  VPst,    IS,     R,
   /* 11940 */  MPst,     R,  MPst, CMBlw,     O,     O,     O,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
   /* 11950 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
@@ -864,7 +864,7 @@ static const uint8_t use_table[] = {
   /* 11A10 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11A20 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11A30 */     B,     B,     B, FMBlw,  VBlw, VMAbv, VMAbv, VMAbv, VMAbv, VMPst,     R,  MBlw,  MBlw,  MBlw,  MBlw,    GB,
-  /* 11A40 */     O,     O,     O,     O,     O,    GB,     O,     H,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* 11A40 */     O,     O,     O,     O,     O,    GB,     O,    IS,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
   /* Soyombo */
 
@@ -872,7 +872,7 @@ static const uint8_t use_table[] = {
   /* 11A60 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11A70 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11A80 */     B,     B,     B,     B,     R,     R,     R,     R,     R,     R,  FBlw,  FBlw,  FBlw,  FBlw,  FBlw,  FBlw,
-  /* 11A90 */  FBlw,  FBlw,  FBlw,  FBlw,  FBlw,  FBlw, VMAbv, VMPst, CMAbv,     H,     O,     O,     O,     B,     O,     O,
+  /* 11A90 */  FBlw,  FBlw,  FBlw,  FBlw,  FBlw,  FBlw, VMAbv, VMPst, CMAbv,    IS,     O,     O,     O,     B,     O,     O,
 
 #define use_offset_0x11c00u 6592
 
@@ -904,7 +904,7 @@ static const uint8_t use_table[] = {
   /* 11D10 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11D20 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11D30 */     B,  VAbv,  VAbv,  VAbv,  VAbv,  VAbv,  VBlw,    WJ,    WJ,    WJ,  VAbv,    WJ,  VAbv,  VAbv,    WJ,  VAbv,
-  /* 11D40 */ VMAbv, VMAbv, CMBlw,  VAbv,  VBlw,     H,     R,  MBlw,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* 11D40 */ VMAbv, VMAbv, CMBlw,  VAbv,  VBlw,    IS,     R,  MBlw,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
   /* 11D50 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
   /* Gunjala Gondi */
@@ -912,7 +912,7 @@ static const uint8_t use_table[] = {
   /* 11D60 */     B,     B,     B,     B,     B,     B,    WJ,     B,     B,    WJ,     B,     B,     B,     B,     B,     B,
   /* 11D70 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,
   /* 11D80 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,  VPst,  VPst,  VPst,  VPst,  VPst,    WJ,
-  /* 11D90 */  VAbv,  VAbv,    WJ,  VPst,  VPst, VMAbv, VMPst,     H,     O,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
+  /* 11D90 */  VAbv,  VAbv,    WJ,  VPst,  VPst, VMAbv, VMPst,    IS,     O,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
   /* 11DA0 */     B,     B,     B,     B,     B,     B,     B,     B,     B,     B,    WJ,    WJ,    WJ,    WJ,    WJ,    WJ,
 
 #define use_offset_0x11ee0u 6952
@@ -1531,7 +1531,7 @@ hb_use_get_category (hb_glyph_info_t info)
 #undef GB
 #undef H
 #undef HN
-#undef HVM
+#undef IS
 #undef J
 #undef N
 #undef O

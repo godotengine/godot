@@ -170,13 +170,12 @@ struct hmtxvmtx
   {
     friend struct hmtxvmtx;
 
-    accelerator_t (hb_face_t *face,
-		   unsigned int default_advance_ = 0)
+    accelerator_t (hb_face_t *face)
     {
       table = hb_sanitize_context_t ().reference_table<hmtxvmtx> (face, T::tableTag);
       var_table = hb_sanitize_context_t ().reference_table<HVARVVAR> (face, T::variationsTag);
 
-      default_advance = default_advance_ ? default_advance_ : hb_face_get_upem (face);
+      default_advance = T::is_horizontal ? hb_face_get_upem (face) / 2 : hb_face_get_upem (face);
 
       /* Populate count variables and sort them out as we go */
 
@@ -219,6 +218,8 @@ struct hmtxvmtx
       table.destroy ();
       var_table.destroy ();
     }
+
+    bool has_data () const { return (bool) num_bearings; }
 
     int get_side_bearing (hb_codepoint_t glyph) const
     {

@@ -204,7 +204,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 4.0.1 (1f79ba9407ecd54e382997940cbcc3fb71bef8be, 2022)
+- Version: 4.2.0 (9d5730b958974bc9db95e46e6bad52e9e9cd6e1c, 2022)
 - License: MIT
 
 Files extracted from upstream source:

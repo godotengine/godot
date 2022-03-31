@@ -820,8 +820,7 @@ struct glyf
       }
 
 #ifndef HB_NO_VAR
-      if (unlikely (!glyf_accelerator.gvar->apply_deltas_to_points (gid, font, points.as_array ())))
-	return false;
+      glyf_accelerator.gvar->apply_deltas_to_points (gid, font, points.as_array ());
 #endif
 
       switch (type) {

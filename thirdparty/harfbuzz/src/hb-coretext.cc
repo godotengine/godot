@@ -897,7 +897,7 @@ resize_and_retry:
     DEBUG_MSG (CORETEXT, nullptr, "Num runs: %d", num_runs);
 
     buffer->len = 0;
-    uint32_t status_and = ~0, status_or = 0;
+    uint32_t status_or = 0;
     CGFloat advances_so_far = 0;
     /* For right-to-left runs, CoreText returns the glyphs positioned such that
      * any trailing whitespace is to the left of (0,0).  Adjust coordinate system
@@ -918,7 +918,6 @@ resize_and_retry:
       CTRunRef run = static_cast<CTRunRef>(CFArrayGetValueAtIndex (glyph_runs, i));
       CTRunStatus run_status = CTRunGetStatus (run);
       status_or  |= run_status;
-      status_and &= run_status;
       DEBUG_MSG (CORETEXT, run, "CTRunStatus: %x", run_status);
       CGFloat run_advance = CTRunGetTypographicBounds (run, range_all, nullptr, nullptr, nullptr);
       if (HB_DIRECTION_IS_VERTICAL (buffer->props.direction))
@@ -1138,21 +1137,6 @@ resize_and_retry:
 #undef ALLOCATE_ARRAY
 
       buffer->len += num_glyphs;
-    }
-
-    /* Mac OS 10.6 doesn't have kCTTypesetterOptionForcedEmbeddingLevel,
-     * or if it does, it doesn't respect it.  So we get runs with wrong
-     * directions.  As such, disable the assert...  It wouldn't crash, but
-     * cursoring will be off...
-     *
-     * https://crbug.com/419769
-     */
-    if (false)
-    {
-      /* Make sure all runs had the expected direction. */
-      HB_UNUSED bool backward = HB_DIRECTION_IS_BACKWARD (buffer->props.direction);
-      assert (bool (status_and & kCTRunStatusRightToLeft) == backward);
-      assert (bool (status_or  & kCTRunStatusRightToLeft) == backward);
     }
 
     buffer->clear_positions ();
