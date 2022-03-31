@@ -26,6 +26,14 @@ jobs:
             tests: true
             bin: "./bin/godot.osx.opt.tools.64"
 
+          - name: Editor with sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
+            cache-name: macos-editor
+            target: debug
+            sconsflags: float=64 use_asan=yes use_ubsan=yes
+            tools: true
+            tests: true
+            bin: "./bin/godot.osx.tools.64.san"
+
           - name: Template (target=release, tools=no)
             cache-name: macos-template
             target: release
