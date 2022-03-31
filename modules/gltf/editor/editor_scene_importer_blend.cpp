@@ -85,7 +85,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_arg += "export_cameras=False,";
 	}
-	if (p_options.has(SNAME("blender/nodes/lights")) && p_options[SNAME("blender/nodes/lights")]) {
+	if (p_options.has(SNAME("blender/nodes/punctual_lights")) && p_options[SNAME("blender/nodes/punctual_lights")]) {
 		parameters_arg += "export_lights=True,";
 	} else {
 		parameters_arg += "export_lights=False,";
