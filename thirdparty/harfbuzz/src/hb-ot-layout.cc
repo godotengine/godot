@@ -54,6 +54,8 @@
 #include "hb-aat-layout-morx-table.hh"
 #include "hb-aat-layout-opbd-table.hh" // Just so we compile it; unused otherwise.
 
+using OT::Layout::GSUB::GSUB;
+
 /**
  * SECTION:hb-ot-layout
  * @title: hb-ot-layout
@@ -389,7 +391,7 @@ hb_ot_layout_get_ligature_carets (hb_font_t      *font,
  */
 
 bool
-OT::GSUB::is_blocklisted (hb_blob_t *blob HB_UNUSED,
+GSUB::is_blocklisted (hb_blob_t *blob HB_UNUSED,
 			  hb_face_t *face) const
 {
 #ifdef HB_NO_OT_LAYOUT_BLOCKLIST
@@ -1006,7 +1008,7 @@ struct hb_collect_features_context_t
   hb_collect_features_context_t (hb_face_t *face,
 				 hb_tag_t   table_tag,
 				 hb_set_t  *feature_indices_,
-                                 const hb_tag_t *features)
+				 const hb_tag_t *features)
 
     : g (get_gsubgpos_table (face, table_tag)),
       feature_indices (feature_indices_),
@@ -1033,7 +1035,7 @@ struct hb_collect_features_context_t
     {
       hb_tag_t tag = g.get_feature_tag (i);
       if (features_set.has (tag))
-        feature_indices_filter.add(i);
+	feature_indices_filter.add(i);
     }
   }
 
@@ -1529,7 +1531,7 @@ hb_ot_layout_lookups_substitute_closure (hb_face_t      *face,
   hb_map_t done_lookups_glyph_count;
   hb_hashmap_t<unsigned, hb_set_t *> done_lookups_glyph_set;
   OT::hb_closure_context_t c (face, glyphs, &done_lookups_glyph_count, &done_lookups_glyph_set);
-  const OT::GSUB& gsub = *face->table.GSUB->table;
+  const GSUB& gsub = *face->table.GSUB->table;
 
   unsigned int iteration_count = 0;
   unsigned int glyphs_length;
@@ -1808,7 +1810,7 @@ struct GSUBProxy
     table (*face->table.GSUB->table),
     accels (face->table.GSUB->accels) {}
 
-  const OT::GSUB &table;
+  const GSUB &table;
   const OT::hb_ot_layout_lookup_accelerator_t *accels;
 };
 
@@ -1929,6 +1931,7 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
       c.set_auto_zwj (lookups[table_index][i].auto_zwj);
       c.set_auto_zwnj (lookups[table_index][i].auto_zwnj);
       c.set_random (lookups[table_index][i].random);
+      c.set_per_syllable (lookups[table_index][i].per_syllable);
 
       apply_string<Proxy> (&c,
 			   proxy.table.get_lookup (lookup_index),
@@ -2086,11 +2089,11 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
 					 hb_position_t               *coord /* OUT */)
 {
   if (hb_ot_layout_get_baseline (font,
-                                 baseline_tag,
-                                 direction,
-                                 script_tag,
-                                 language_tag,
-                                 coord))
+				 baseline_tag,
+				 direction,
+				 script_tag,
+				 language_tag,
+				 coord))
     return;
 
   /* Synthesize missing baselines.
@@ -2107,17 +2110,19 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
       hb_codepoint_t glyph;
       hb_glyph_extents_t extents;
       if (HB_DIRECTION_IS_HORIZONTAL (direction) &&
-          (hb_font_get_nominal_glyph (font, 0x2212u, &glyph) ||
-           hb_font_get_nominal_glyph (font, '-', &glyph)) &&
-          hb_font_get_glyph_extents (font, glyph, &extents))
+	  (hb_font_get_nominal_glyph (font, 0x2212u, &glyph) ||
+	   hb_font_get_nominal_glyph (font, '-', &glyph)) &&
+	  hb_font_get_glyph_extents (font, glyph, &extents))
       {
-        *coord = extents.y_bearing + extents.height / 2;
+	*coord = extents.y_bearing + extents.height / 2;
       }
       else
       {
-        hb_position_t x_height = 0;
-        hb_ot_metrics_get_position (font, HB_OT_METRICS_TAG_X_HEIGHT, &x_height);
-        *coord = x_height / 2;
+	hb_position_t x_height = font->y_scale / 2;
+#ifndef HB_NO_METRICS
+	hb_ot_metrics_get_position_with_fallback (font, HB_OT_METRICS_TAG_X_HEIGHT, &x_height);
+#endif
+	*coord = x_height / 2;
       }
     }
     break;
@@ -2128,32 +2133,32 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
       hb_position_t embox_top, embox_bottom;
 
       hb_ot_layout_get_baseline_with_fallback (font,
-                                               HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT,
-                                               direction,
-                                               script_tag,
-                                               language_tag,
-                                               &embox_top);
+					       HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT,
+					       direction,
+					       script_tag,
+					       language_tag,
+					       &embox_top);
       hb_ot_layout_get_baseline_with_fallback (font,
-                                               HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT,
-                                               direction,
-                                               script_tag,
-                                               language_tag,
-                                               &embox_bottom);
+					       HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT,
+					       direction,
+					       script_tag,
+					       language_tag,
+					       &embox_bottom);
 
       if (baseline_tag == HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_TOP_OR_RIGHT)
-        *coord = embox_top + (embox_bottom - embox_top) / 10;
+	*coord = embox_top + (embox_bottom - embox_top) / 10;
       else
-        *coord = embox_bottom + (embox_top - embox_bottom) / 10;
+	*coord = embox_bottom + (embox_top - embox_bottom) / 10;
     }
     break;
 
   case HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT:
     if (hb_ot_layout_get_baseline (font,
-                                   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT,
-                                   direction,
-                                   script_tag,
-                                   language_tag,
-                                   coord))
+				   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT,
+				   direction,
+				   script_tag,
+				   language_tag,
+				   coord))
       *coord += HB_DIRECTION_IS_HORIZONTAL (direction) ? font->y_scale : font->x_scale;
     else
     {
@@ -2165,11 +2170,11 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
 
   case HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT:
     if (hb_ot_layout_get_baseline (font,
-                                   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT,
-                                   direction,
-                                   script_tag,
-                                   language_tag,
-                                   coord))
+				   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT,
+				   direction,
+				   script_tag,
+				   language_tag,
+				   coord))
       *coord -= HB_DIRECTION_IS_HORIZONTAL (direction) ? font->y_scale : font->x_scale;
     else
     {
@@ -2226,11 +2231,11 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
       }
 
       if (ch &&
-          hb_font_get_nominal_glyph (font, ch, &glyph) &&
-          hb_font_get_glyph_extents (font, glyph, &extents))
-        *coord = extents.y_bearing;
+	  hb_font_get_nominal_glyph (font, ch, &glyph) &&
+	  hb_font_get_glyph_extents (font, glyph, &extents))
+	*coord = extents.y_bearing;
       else
-        *coord = font->y_scale * 6 / 10; // FIXME makes assumptions about origin
+	*coord = font->y_scale * 6 / 10; // FIXME makes assumptions about origin
     }
     else
       *coord = font->x_scale * 6 / 10; // FIXME makes assumptions about origin
@@ -2240,17 +2245,17 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
     {
       hb_position_t top, bottom;
       hb_ot_layout_get_baseline_with_fallback (font,
-                                               HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT,
-                                               direction,
-                                               script_tag,
-                                               language_tag,
-                                               &top);
+					       HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT,
+					       direction,
+					       script_tag,
+					       language_tag,
+					       &top);
       hb_ot_layout_get_baseline_with_fallback (font,
-                                               HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT,
-                                               direction,
-                                               script_tag,
-                                               language_tag,
-                                               &bottom);
+					       HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT,
+					       direction,
+					       script_tag,
+					       language_tag,
+					       &bottom);
       *coord = (top + bottom) / 2;
 
     }
@@ -2260,17 +2265,17 @@ hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
     {
       hb_position_t top, bottom;
       hb_ot_layout_get_baseline_with_fallback (font,
-                                               HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_TOP_OR_RIGHT,
-                                               direction,
-                                               script_tag,
-                                               language_tag,
-                                               &top);
+					       HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_TOP_OR_RIGHT,
+					       direction,
+					       script_tag,
+					       language_tag,
+					       &top);
       hb_ot_layout_get_baseline_with_fallback (font,
-                                               HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_BOTTOM_OR_LEFT,
-                                               direction,
-                                               script_tag,
-                                               language_tag,
-                                               &bottom);
+					       HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_BOTTOM_OR_LEFT,
+					       direction,
+					       script_tag,
+					       language_tag,
+					       &bottom);
       *coord = (top + bottom) / 2;
 
     }

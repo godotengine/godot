@@ -115,25 +115,24 @@ collect_features_use (hb_ot_shape_planner_t *plan)
   map->add_gsub_pause (setup_syllables_use);
 
   /* "Default glyph pre-processing group" */
-  map->enable_feature (HB_TAG('l','o','c','l'));
-  map->enable_feature (HB_TAG('c','c','m','p'));
-  map->enable_feature (HB_TAG('n','u','k','t'));
-  map->enable_feature (HB_TAG('a','k','h','n'), F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('l','o','c','l'), F_PER_SYLLABLE);
+  map->enable_feature (HB_TAG('c','c','m','p'), F_PER_SYLLABLE);
+  map->enable_feature (HB_TAG('n','u','k','t'), F_PER_SYLLABLE);
+  map->enable_feature (HB_TAG('a','k','h','n'), F_MANUAL_ZWJ | F_PER_SYLLABLE);
 
   /* "Reordering group" */
   map->add_gsub_pause (_hb_clear_substitution_flags);
-  map->add_feature (HB_TAG('r','p','h','f'), F_MANUAL_ZWJ);
+  map->add_feature (HB_TAG('r','p','h','f'), F_MANUAL_ZWJ | F_PER_SYLLABLE);
   map->add_gsub_pause (record_rphf_use);
   map->add_gsub_pause (_hb_clear_substitution_flags);
-  map->enable_feature (HB_TAG('p','r','e','f'), F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('p','r','e','f'), F_MANUAL_ZWJ | F_PER_SYLLABLE);
   map->add_gsub_pause (record_pref_use);
 
   /* "Orthographic unit shaping group" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (use_basic_features); i++)
-    map->enable_feature (use_basic_features[i], F_MANUAL_ZWJ);
+    map->enable_feature (use_basic_features[i], F_MANUAL_ZWJ | F_PER_SYLLABLE);
 
   map->add_gsub_pause (reorder_use);
-  map->add_gsub_pause (_hb_clear_syllables);
 
   /* "Topographical features" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (use_topographical_features); i++)
@@ -350,7 +349,7 @@ record_pref_use (const hb_ot_shape_plan_t *plan HB_UNUSED,
 static inline bool
 is_halant_use (const hb_glyph_info_t &info)
 {
-  return (info.use_category() == USE(H) || info.use_category() == USE(HVM)) &&
+  return (info.use_category() == USE(H) || info.use_category() == USE(IS)) &&
 	 !_hb_glyph_info_ligated (&info);
 }
 

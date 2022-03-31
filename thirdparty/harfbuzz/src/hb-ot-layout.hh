@@ -108,13 +108,17 @@ hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
 
 namespace OT {
   struct hb_ot_apply_context_t;
-  struct SubstLookup;
   struct hb_ot_layout_lookup_accelerator_t;
+namespace Layout {
+namespace GSUB {
+  struct SubstLookup;
+}
+}
 }
 
 HB_INTERNAL void
 hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
-				const OT::SubstLookup &lookup,
+				const OT::Layout::GSUB::SubstLookup &lookup,
 				const OT::hb_ot_layout_lookup_accelerator_t &accel);
 
 
@@ -166,17 +170,6 @@ _hb_next_syllable (hb_buffer_t *buffer, unsigned int start)
     ;
 
   return start;
-}
-
-static inline void
-_hb_clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
-		     hb_font_t *font HB_UNUSED,
-		     hb_buffer_t *buffer)
-{
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
-  for (unsigned int i = 0; i < count; i++)
-    info[i].syllable() = 0;
 }
 
 
@@ -485,6 +478,8 @@ static inline uint8_t
 _hb_allocate_lig_id (hb_buffer_t *buffer)
 {
   uint8_t lig_id = buffer->next_serial () & 0x07;
+  if (unlikely (!lig_id))
+    lig_id = _hb_allocate_lig_id (buffer); /* in case of overflow */
   return lig_id;
 }
 

@@ -316,9 +316,9 @@ hb_ot_metrics_get_position_with_fallback (hb_font_t           *font,
     break;
 
   case HB_OT_METRICS_TAG_X_HEIGHT:
-    if (hb_font_get_nominal_glyph (font, 'o', &glyph) &&
+    if (hb_font_get_nominal_glyph (font, 'x', &glyph) &&
         hb_font_get_glyph_extents (font, glyph, &extents))
-      *position = extents.height + 2 * extents.y_bearing;
+      *position = extents.y_bearing;
     else
       *position = font->y_scale / 2;
     break;

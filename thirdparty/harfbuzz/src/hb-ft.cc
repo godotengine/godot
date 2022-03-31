@@ -382,6 +382,7 @@ hb_ft_get_glyph_v_advance (hb_font_t *font,
 
   /* Note: FreeType's vertical metrics grows downward while other FreeType coordinates
    * have a Y growing upward.  Hence the extra negation. */
+
   return (-v + (1<<9)) >> 10;
 }
 #endif

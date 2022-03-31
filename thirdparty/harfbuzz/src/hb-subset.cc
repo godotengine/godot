@@ -55,6 +55,8 @@
 #include "hb-ot-math-table.hh"
 #include "hb-repacker.hh"
 
+using OT::Layout::GSUB::GSUB;
+
 /**
  * SECTION:hb-subset
  * @title: hb-subset
@@ -312,7 +314,7 @@ _subset_table (hb_subset_plan_t *plan, hb_tag_t tag)
 
 #ifndef HB_NO_SUBSET_LAYOUT
   case HB_OT_TAG_GDEF: return _subset<const OT::GDEF> (plan);
-  case HB_OT_TAG_GSUB: return _subset<const OT::GSUB> (plan);
+  case HB_OT_TAG_GSUB: return _subset<const GSUB> (plan);
   case HB_OT_TAG_GPOS: return _subset<const OT::GPOS> (plan);
   case HB_OT_TAG_gvar: return _subset<const OT::gvar> (plan);
   case HB_OT_TAG_HVAR: return _subset<const OT::HVAR> (plan);
