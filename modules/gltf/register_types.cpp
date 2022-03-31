@@ -64,22 +64,19 @@ static void _editor_init() {
 
 	// Blend to glTF importer.
 
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blend/enabled");
+	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
-	String blender_path = EDITOR_DEF_RST("filesystem/import/blend/blender_path", "");
+	EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
-			"filesystem/import/blend/blender_path", PROPERTY_HINT_GLOBAL_FILE));
+			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_DIR));
 	if (blend_enabled) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (blender_path.is_empty()) {
-			WARN_PRINT("Blend file import is enabled, but no Blender path is configured. Blend files will not be imported.");
-		} else if (!da->file_exists(blender_path)) {
-			WARN_PRINT("Blend file import is enabled, but the Blender path doesn't point to a valid Blender executable. Blend files will not be imported.");
-		} else {
-			Ref<EditorSceneFormatImporterBlend> importer;
-			importer.instantiate();
-			ResourceImporterScene::get_singleton()->add_importer(importer);
-		}
+		Ref<EditorSceneFormatImporterBlend> importer;
+		importer.instantiate();
+		ResourceImporterScene::get_singleton()->add_importer(importer);
+
+		Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
+		blend_import_query.instantiate();
+		EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
 	}
 
 	// FBX to glTF importer.
@@ -131,13 +128,14 @@ void register_gltf_types() {
 	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
 	// Project settings defined here so doctool finds them.
-	GLOBAL_DEF_RST("filesystem/import/blend/enabled", true);
+	GLOBAL_DEF_RST("filesystem/import/blender/enabled", true);
 	GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
 	GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 	GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
 
 	ClassDB::set_current_api(prev_api);
 	EditorNode::add_init_callback(_editor_init);
+
 #endif // TOOLS_ENABLED
 }
 
