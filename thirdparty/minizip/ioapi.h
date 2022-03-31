@@ -107,8 +107,7 @@ typedef  64BIT_INT_CUSTOM_TYPE ZPOS64_T;
 typedef uint64_t ZPOS64_T;
 #else
 
-/* Maximum unsigned 32-bit value used as placeholder for zip64 */
-#define MAXU32 0xffffffff
+
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 typedef unsigned __int64 ZPOS64_T;
@@ -118,7 +117,10 @@ typedef unsigned long long int ZPOS64_T;
 #endif
 #endif
 
-
+/* Maximum unsigned 32-bit value used as placeholder for zip64 */
+#ifndef MAXU32
+#define MAXU32 (0xffffffff)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
