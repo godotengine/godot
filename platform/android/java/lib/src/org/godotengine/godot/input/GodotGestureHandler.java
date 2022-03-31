@@ -54,7 +54,6 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 	@Override
 	public boolean onDown(MotionEvent event) {
 		super.onDown(event);
-		//Log.i("GodotGesture", "onDown");
 		return true;
 	}
 
@@ -66,22 +65,18 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 
 	@Override
 	public void onLongPress(MotionEvent event) {
-		//Log.i("GodotGesture", "onLongPress");
 	}
 
 	@Override
 	public boolean onDoubleTap(MotionEvent event) {
-		//Log.i("GodotGesture", "onDoubleTap");
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
-		final int buttonMask = event.getButtonState();
-		GodotLib.doubleTap(buttonMask, x, y);
+		GodotLib.doubleTap(x, y);
 		return true;
 	}
 
 	@Override
 	public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-		//Log.i("GodotGesture", "onFling");
 		return true;
 	}
 }

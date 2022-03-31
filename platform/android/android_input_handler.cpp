@@ -330,16 +330,15 @@ void AndroidInputHandler::_wheel_button_click(MouseButton event_buttons_mask, co
 	Input::get_singleton()->parse_input_event(evdd);
 }
 
-void AndroidInputHandler::process_double_tap(int event_android_button_mask, Point2 p_pos) {
-	MouseButton event_button_mask = _android_button_mask_to_godot_button_mask(event_android_button_mask);
+void AndroidInputHandler::process_double_tap(Point2 p_pos) {
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
 	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
-	ev->set_pressed(event_button_mask != MouseButton::NONE);
-	ev->set_button_index(_button_index_from_mask(event_button_mask));
-	ev->set_button_mask(event_button_mask);
+	ev->set_pressed(true);
+	ev->set_button_index(MouseButton::LEFT);
+	ev->set_button_mask(MouseButton::MASK_LEFT);
 	ev->set_double_click(true);
 	Input::get_singleton()->parse_input_event(ev);
 }
