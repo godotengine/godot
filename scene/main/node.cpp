@@ -2485,11 +2485,11 @@ static void _Node_debug_sn(Object *p_obj) {
 }
 #endif // DEBUG_ENABLED
 
-void Node::_print_stray_nodes() {
-	print_stray_nodes();
+void Node::_print_orphan_nodes() {
+	print_orphan_nodes();
 }
 
-void Node::print_stray_nodes() {
+void Node::print_orphan_nodes() {
 #ifdef DEBUG_ENABLED
 	ObjectDB::debug_objects(_Node_debug_sn);
 #endif
@@ -2701,7 +2701,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
-	ClassDB::bind_method(D_METHOD("print_stray_nodes"), &Node::_print_stray_nodes);
+	ClassDB::bind_method(D_METHOD("print_orphan_nodes"), &Node::_print_orphan_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);

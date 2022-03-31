@@ -483,10 +483,11 @@
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="print_stray_nodes">
+		<method name="print_orphan_nodes">
 			<return type="void" />
 			<description>
-				Prints all stray nodes (nodes outside the [SceneTree]). Used for debugging. Works only in debug builds.
+				Prints all orphan nodes (nodes outside the [SceneTree]). Used for debugging.
+				[b]Note:[/b] [method print_orphan_nodes] only works in debug builds. When called in a project exported in release mode, [method print_orphan_nodes] will not print anything.
 			</description>
 		</method>
 		<method name="print_tree">
