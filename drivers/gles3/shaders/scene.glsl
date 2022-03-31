@@ -1019,7 +1019,7 @@ in highp float dp_clip;
 float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// Schlick's approximation
 	// C. Schlick, "An Inexpensive BRDF Model for Physically-based Rendering", Computer Graphics Forum. 13 (3): 233 (1994)
-	// Eq. (19), although see Heitz (2014) the about the problems with his derivation.
+	// Eq. (19), although see Heitz (2014) the about the problems with their derivation.
 	// It nevertheless approximates GGX well with k = alpha/2.
 	float k = 0.5 * alpha;
 	return 0.5 / (cos_theta_m * (1.0 - k) + k);

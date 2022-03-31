@@ -309,7 +309,7 @@ private:
 	std::atomic<bool>				mCancel{ false };
 
 	// Thread safe caching mechanism for messages and update status.
-	// This is so that caller always gets messages in his own thread
+	// This is so that caller always gets messages in their own thread
 	// Member variables are marked as 'mutable' since the message dispatch function
 	// is called from const query methods.
 	mutable std::mutex						mMessageMutex;

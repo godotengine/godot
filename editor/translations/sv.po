@@ -20,7 +20,7 @@
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
 # Gustav Andersson <gustav.andersson96@outlook.com>, 2020.
 # Shaggy <anton_christoffersson@hotmail.com>, 2020.
-# Marcus Toftedahl <marcus.toftedahl@his.se>, 2020.
+# Marcus Toftedahl <marcus.toftedahl@their.se>, 2020.
 # Alex25820 <Alexander_sjogren@hotmail.se>, 2021.
 # Leon <joel.lundborg@gmail.com>, 2021.
 # Kent Jofur <kent.jofur@gmail.com>, 2021.

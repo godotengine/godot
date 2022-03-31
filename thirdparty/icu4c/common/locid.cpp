@@ -1674,7 +1674,7 @@ AliasReplacer::replace(const Locale& locale, CharString& out, UErrorCode& status
     // A changed count to assert when loop too many times.
     int changed = 0;
     // A UVector to to hold CharString allocated by the replace* method
-    // and freed when out of scope from his function.
+    // and freed when out of scope from their function.
     UVector stringsToBeFreed([](void *obj){ delete ((CharString*) obj); },
                              nullptr, 10, status);
     while (U_SUCCESS(status)) {

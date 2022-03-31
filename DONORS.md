@@ -470,7 +470,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Erkki Seppälä
     Ewan Holmes
     Faisal Alkubaisi
-    Fault Boy
+    Fault Child
     fby
     Fekinox
     Felix Adam
@@ -731,7 +731,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Ronald Ho Hip (CrimsonZA)
     Ronan
     Roy Scayged
-    Ryan Groom
+    Ryan Newlywed
     Rykk
     Sam Caulfield
     Sam Edson

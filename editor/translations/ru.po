@@ -39,7 +39,7 @@
 # Viorel <vrila.noroc@gmail.com>, 2019.
 # Vladislav Smirnov <beluckydaf@gmail.com>, 2019.
 # Nikita <iron-nikita@yandex.ru>, 2019.
-# LeLuCh B0й <alekx@alumni.nottingham.ac.uk>, 2019.
+# LeLuCh B0й <alekx@alums.nottingham.ac.uk>, 2019.
 # Арсений Солодков <arsen332211@gmail.com>, 2019.
 # Nikita <yakrobat@protonmail.com>, 2019, 2020.
 # LAT_Rio <AlSenya@yandex.ru>, 2019.
