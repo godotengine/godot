@@ -553,9 +553,9 @@
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
-		<member name="filesystem/import/blend/enabled" type="bool" setter="" getter="" default="true">
+		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blend/blender_path[/code]. Blender 3.0 or later is required.
+			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
 		</member>
 		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
