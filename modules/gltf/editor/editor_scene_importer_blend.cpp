@@ -44,6 +44,10 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
+#ifdef WINDOWS_ENABLED
+#include <shlwapi.h>
+#endif
+
 uint32_t EditorSceneFormatImporterBlend::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
@@ -439,7 +443,18 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		// MacOS Detection
 #elif defined(WINDOWS_ENABLED)
-		// Windows autodetection
+		{
+			char blender_opener_path[MAX_PATH];
+			DWORD path_len = MAX_PATH;
+			HRESULT res = AssocQueryString(0, ASSOCSTR_EXECUTABLE, ".blend", "open", blender_opener_path, &path_len);
+			if (res == S_OK && _autodetect_path(String(blender_opener_path).get_base_dir())) {
+				// Good.
+			} else if (_autodetect_path("C:\\Program Files\\Blender Foundation")) {
+				// Good.
+			} else {
+				_autodetect_path("C:\\Program Files (x86)\\Blender Foundation");
+			}
+		}
 
 #elif defined(UNIX_ENABLED)
 		if (_autodetect_path("/usr/bin")) {
