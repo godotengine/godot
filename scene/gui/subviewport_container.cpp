@@ -180,24 +180,51 @@ void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform_with_canvas();
-
-	if (stretch) {
-		Transform2D scale_xf;
-		scale_xf.scale(Vector2(shrink, shrink));
-		xform *= scale_xf;
+	if (_is_propagated_in_gui_input(p_event)) {
+		return;
 	}
 
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
+	_send_event_to_viewports(p_event);
+}
 
+void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (!_is_propagated_in_gui_input(p_event)) {
+		return;
+	}
+
+	if (stretch && shrink > 1) {
+		Transform2D xform;
+		xform.scale(Vector2(1, 1) / shrink);
+		_send_event_to_viewports(p_event->xformed_by(xform));
+	} else {
+		_send_event_to_viewports(p_event);
+	}
+}
+
+void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_event) {
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c || c->is_input_disabled()) {
 			continue;
 		}
 
-		c->push_input(ev);
+		c->push_input(p_event);
 	}
+}
+
+bool SubViewportContainer::_is_propagated_in_gui_input(const Ref<InputEvent> &p_event) {
+	// Propagation of events with a position property happen in gui_input
+	// Propagation of other events happen in input
+	if (Object::cast_to<InputEventMouse>(*p_event) || Object::cast_to<InputEventScreenDrag>(*p_event) || Object::cast_to<InputEventScreenTouch>(*p_event) || Object::cast_to<InputEventGesture>(*p_event)) {
+		return true;
+	}
+	return false;
 }
 
 void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
