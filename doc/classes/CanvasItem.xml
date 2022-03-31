@@ -377,7 +377,7 @@
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], the node won't inherit its transform from parent canvas items.
+				If [code]enable[/code] is [code]true[/code], this [CanvasItem] will [i]not[/i] inherit its transform from parent [CanvasItem]s. Its draw order will also be changed to make it draw on top of other [CanvasItem]s that are not set as top-level. The [CanvasItem] will effectively act as if it was placed as a child of a bare [Node]. See also [method is_set_as_toplevel].
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
