@@ -72,7 +72,7 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	style->set_bg_color(p_color);
 	// Adjust level of detail based on the corners' effective sizes.
 	style->set_corner_detail(Math::ceil(1.5 * p_corner_width * EDSCALE));
-	style->set_corner_radius_all(p_corner_width);
+	style->set_corner_radius_all(p_corner_width * EDSCALE);
 	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
 	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
 	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
@@ -890,6 +890,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("item_start_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 	theme->set_constant("item_end_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 
+	// Sub-inspectors
 	for (int i = 0; i < 16; i++) {
 		Color si_base_color = accent_color;
 
@@ -897,51 +898,53 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		si_base_color.set_hsv(Math::fmod(float(si_base_color.get_h() + hue_rotate), float(1.0)), si_base_color.get_s(), si_base_color.get_v());
 		si_base_color = accent_color.lerp(si_base_color, float(EDITOR_GET("docks/property_editor/subresource_hue_tint")));
 
-		Ref<StyleBoxFlat> sub_inspector_bg;
-
-		sub_inspector_bg = make_flat_stylebox(dark_color_1.lerp(si_base_color, 0.08), 2, 0, 2, 2);
-
-		sub_inspector_bg->set_border_width(SIDE_LEFT, 2);
-		sub_inspector_bg->set_border_width(SIDE_RIGHT, 2);
-		sub_inspector_bg->set_border_width(SIDE_BOTTOM, 2);
-		sub_inspector_bg->set_border_width(SIDE_TOP, 2);
-		sub_inspector_bg->set_default_margin(SIDE_LEFT, 3);
-		sub_inspector_bg->set_default_margin(SIDE_RIGHT, 3);
-		sub_inspector_bg->set_default_margin(SIDE_BOTTOM, 10);
-		sub_inspector_bg->set_default_margin(SIDE_TOP, 5);
+		// Sub-inspector background.
+		Ref<StyleBoxFlat> sub_inspector_bg = style_default->duplicate();
+		sub_inspector_bg->set_bg_color(dark_color_1.lerp(si_base_color, 0.08));
+		sub_inspector_bg->set_border_width_all(2 * EDSCALE);
 		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
-		sub_inspector_bg->set_draw_center(true);
+		sub_inspector_bg->set_default_margin(SIDE_LEFT, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(SIDE_BOTTOM, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin(SIDE_TOP, 4 * EDSCALE);
+		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
+		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
 
 		theme->set_stylebox("sub_inspector_bg" + itos(i), "Editor", sub_inspector_bg);
 
-		Ref<StyleBoxFlat> bg_color;
-		bg_color.instantiate();
-		bg_color->set_bg_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
-		bg_color->set_border_width_all(0);
-
-		Ref<StyleBoxFlat> bg_color_selected;
-		bg_color_selected.instantiate();
-		bg_color_selected->set_border_width_all(0);
-		bg_color_selected->set_bg_color(si_base_color * Color(0.8, 0.8, 0.8, 0.8));
+		// EditorProperty background while it has a sub-inspector open.
+		Ref<StyleBoxFlat> bg_color = make_flat_stylebox(si_base_color * Color(0.7, 0.7, 0.7, 0.8), 0, 0, 0, 0, corner_radius);
+		bg_color->set_anti_aliased(false);
+		bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 		theme->set_stylebox("sub_inspector_property_bg" + itos(i), "Editor", bg_color);
-		theme->set_stylebox("sub_inspector_property_bg_selected" + itos(i), "Editor", bg_color_selected);
 	}
 
 	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
-	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
 
 	// EditorSpinSlider.
 	theme->set_color("label_color", "EditorSpinSlider", font_color);
 	theme->set_color("read_only_label_color", "EditorSpinSlider", font_readonly_color);
 
+	Ref<StyleBoxFlat> editor_spin_label_bg = style_default->duplicate();
+	editor_spin_label_bg->set_bg_color(dark_color_3);
+	editor_spin_label_bg->set_border_width_all(0);
+	theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
+
+	// EditorProperty
 	Ref<StyleBoxFlat> style_property_bg = style_default->duplicate();
 	style_property_bg->set_bg_color(highlight_color);
 	style_property_bg->set_border_width_all(0);
 
+	Ref<StyleBoxFlat> style_property_child_bg = style_default->duplicate();
+	style_property_child_bg->set_bg_color(dark_color_2);
+	style_property_child_bg->set_border_width_all(0);
+
 	theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
 	theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 	theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
 	theme->set_constant("v_separation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_color("warning_color", "EditorProperty", warning_color);
 	theme->set_color("property_color", "EditorProperty", property_color);
@@ -954,6 +957,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_property_group_note->set_bg_color(property_group_note_color);
 	theme->set_stylebox("bg_group_note", "EditorProperty", style_property_group_note);
 
+	// EditorInspectorSection
 	Color inspector_section_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.35);
 	theme->set_color("font_color", "EditorInspectorSection", inspector_section_color);
 
@@ -1056,11 +1060,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("prop_subsection", "Editor", prop_subsection_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 
+	// EditorInspectorCategory
 	Ref<StyleBoxFlat> category_bg = style_default->duplicate();
-	// Make Trees easier to distinguish from other controls by using a darker background color.
 	category_bg->set_bg_color(prop_category_color);
 	category_bg->set_border_color(prop_category_color);
-	theme->set_stylebox("prop_category_style", "Editor", category_bg);
+	theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
 
 	// ItemList
 	Ref<StyleBoxFlat> style_itemlist_bg = style_default->duplicate();
