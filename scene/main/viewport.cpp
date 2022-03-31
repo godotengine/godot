@@ -1851,8 +1851,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (viewport_under) {
-				Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
-				viewport_pos = ai.xform(viewport_pos);
+				if (viewport_under != this) {
+					Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
+					viewport_pos = ai.xform(viewport_pos);
+				}
 				// Find control under at position.
 				gui.drag_mouse_over = viewport_under->gui_find_control(viewport_pos);
 				if (gui.drag_mouse_over) {
