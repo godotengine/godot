@@ -36,37 +36,6 @@
 
 class RasterizerStorageDummy : public RendererStorage {
 public:
-	/* SHADER API */
-
-	RID shader_allocate() override { return RID(); }
-	void shader_initialize(RID p_rid) override {}
-	void shader_set_code(RID p_shader, const String &p_code) override {}
-	String shader_get_code(RID p_shader) const override { return ""; }
-	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
-
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override {}
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override { return RID(); }
-	Variant shader_get_param_default(RID p_material, const StringName &p_param) const override { return Variant(); }
-
-	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
-
-	/* COMMON MATERIAL API */
-
-	RID material_allocate() override { return RID(); }
-	void material_initialize(RID p_rid) override {}
-	void material_set_render_priority(RID p_material, int priority) override {}
-	void material_set_shader(RID p_shader_material, RID p_shader) override {}
-
-	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override {}
-	Variant material_get_param(RID p_material, const StringName &p_param) const override { return Variant(); }
-
-	void material_set_next_pass(RID p_material, RID p_next_material) override {}
-
-	bool material_is_animated(RID p_material) override { return false; }
-	bool material_casts_shadows(RID p_material) override { return false; }
-	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
-
 	/* MESH API */
 
 	RID mesh_allocate() override { return RID(); }
@@ -352,6 +321,8 @@ public:
 	void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override {}
 	void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override {}
 
+	bool particles_is_inactive(RID p_particles) const override { return false; }
+
 	/* FOG VOLUMES */
 
 	RID fog_volume_allocate() override { return RID(); }
@@ -371,26 +342,6 @@ public:
 
 	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const override { return AABB(); }
 	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override {}
-
-	/* GLOBAL VARIABLES */
-
-	void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) override {}
-	void global_variable_remove(const StringName &p_name) override {}
-	Vector<StringName> global_variable_get_list() const override { return Vector<StringName>(); }
-
-	void global_variable_set(const StringName &p_name, const Variant &p_value) override {}
-	void global_variable_set_override(const StringName &p_name, const Variant &p_value) override {}
-	Variant global_variable_get(const StringName &p_name) const override { return Variant(); }
-	RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const override { return RS::GLOBAL_VAR_TYPE_MAX; }
-
-	void global_variables_load_settings(bool p_load_textures = true) override {}
-	void global_variables_clear() override {}
-
-	int32_t global_variables_instance_allocate(RID p_instance) override { return 0; }
-	void global_variables_instance_free(RID p_instance) override {}
-	void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) override {}
-
-	bool particles_is_inactive(RID p_particles) const override { return false; }
 
 	/* RENDER TARGET */
 

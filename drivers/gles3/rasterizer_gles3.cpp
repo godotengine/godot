@@ -260,9 +260,9 @@ void RasterizerGLES3::initialize() {
 RasterizerGLES3::RasterizerGLES3() {
 	canvas.storage = &storage;
 	canvas.scene_render = &scene;
-	storage.canvas = &canvas;
+	//storage.canvas = &canvas;
 	//scene.storage = &storage;
-	storage.scene = &scene;
+	//storage.scene = &scene;
 }
 
 void RasterizerGLES3::prepare_for_blitting_render_targets() {

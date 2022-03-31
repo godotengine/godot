@@ -40,6 +40,7 @@
 #include "storage/canvas_texture_storage.h"
 #include "storage/config.h"
 #include "storage/decal_atlas_storage.h"
+#include "storage/material_storage.h"
 #include "storage/render_target_storage.h"
 #include "storage/texture_storage.h"
 
@@ -55,6 +56,7 @@ protected:
 	GLES3::CanvasTextureStorage canvas_texture_storage;
 	GLES3::TextureStorage texture_storage;
 	GLES3::DecalAtlasStorage decal_atlas_storage;
+	GLES3::MaterialStorage material_storage;
 	RasterizerStorageGLES3 storage;
 	RasterizerCanvasGLES3 canvas;
 	RasterizerSceneGLES3 scene;
@@ -63,6 +65,7 @@ protected:
 
 public:
 	RendererCanvasTextureStorage *get_canvas_texture_storage() { return &canvas_texture_storage; }
+	RendererMaterialStorage *get_material_storage() { return &material_storage; }
 	RendererTextureStorage *get_texture_storage() { return &texture_storage; }
 	RendererDecalAtlasStorage *get_decal_atlas_storage() { return &decal_atlas_storage; }
 	RendererStorage *get_storage() { return &storage; }
