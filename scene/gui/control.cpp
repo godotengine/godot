@@ -2939,7 +2939,7 @@ Control::MouseFilter Control::get_mouse_filter() const {
 
 void Control::warp_mouse(const Point2 &p_position) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->warp_mouse(get_global_transform().xform(p_position));
+	get_viewport()->warp_mouse(get_global_transform_with_canvas().xform(p_position));
 }
 
 bool Control::is_text_field() const {
