@@ -36,11 +36,13 @@
 class HeightMapShape3D : public Shape3D {
 	GDCLASS(HeightMapShape3D, Shape3D);
 
-	int map_width = 2;
-	int map_depth = 2;
-	Vector<real_t> map_data;
+	int map_width = 1;
+	int map_depth = 1;
+	Vector<real_t> map_data = { 0.0, 0.0, 0.0, 0.0 };
 	real_t min_height = 0.0;
 	real_t max_height = 0.0;
+
+	void _update_after_size_change(const int p_was_size);
 
 protected:
 	static void _bind_methods();

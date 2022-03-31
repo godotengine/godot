@@ -35,40 +35,40 @@
 Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 
-	if ((map_width != 0) && (map_depth != 0)) {
+	if ((map_width >= 0) && (map_depth >= 0)) {
 		// This will be slow for large maps...
 		// also we'll have to figure out how well bullet centers this shape...
 
-		Vector2 size(map_width - 1, map_depth - 1);
+		Vector2 size(map_width, map_depth);
 		Vector2 start = size * -0.5;
 
 		const real_t *r = map_data.ptr();
 
 		// reserve some memory for our points..
-		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2) + ((map_width - 1) * (map_depth - 1) * 2));
+		points.resize(map_width * (map_depth + 1) * 2 + (map_width + 1) * map_depth * 2 + map_width * map_depth * 2);
 
 		// now set our points
 		int r_offset = 0;
 		int w_offset = 0;
-		for (int d = 0; d < map_depth; d++) {
+		for (int d = 0; d < map_depth + 1; d++) {
 			Vector3 height(start.x, 0.0, start.y);
 
-			for (int w = 0; w < map_width; w++) {
+			for (int w = 0; w < map_width + 1; w++) {
 				height.y = r[r_offset++];
 
-				if (w != map_width - 1) {
+				if (w != map_width) {
 					points.write[w_offset++] = height;
 					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
 				}
 
-				if (d != map_depth - 1) {
+				if (d != map_depth) {
 					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width], height.z + 1.0);
 				}
 
-				if ((w != map_width - 1) && (d != map_depth - 1)) {
+				if ((w != map_width) && (d != map_depth)) {
 					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width], height.z + 1.0);
 				}
 
 				height.x += 1.0;
@@ -87,8 +87,8 @@ real_t HeightMapShape3D::get_enclosing_radius() const {
 
 void HeightMapShape3D::_update_shape() {
 	Dictionary d;
-	d["width"] = map_width;
-	d["depth"] = map_depth;
+	d["width"] = map_width + 1;
+	d["depth"] = map_depth + 1;
 	d["heights"] = map_data;
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
@@ -97,23 +97,13 @@ void HeightMapShape3D::_update_shape() {
 }
 
 void HeightMapShape3D::set_map_width(int p_new) {
-	if (p_new < 1) {
-		// ignore
-	} else if (map_width != p_new) {
-		int was_size = map_width * map_depth;
-		map_width = p_new;
-
-		int new_size = map_width * map_depth;
-		map_data.resize(map_width * map_depth);
-
-		real_t *w = map_data.ptrw();
-		while (was_size < new_size) {
-			w[was_size++] = 0.0;
-		}
-
-		_update_shape();
-		notify_change_to_owners();
+	if (p_new < 0 || map_width == p_new) {
+		return;
 	}
+
+	int was_size = (map_width + 1) * (map_depth + 1);
+	map_width = p_new;
+	_update_after_size_change(was_size);
 }
 
 int HeightMapShape3D::get_map_width() const {
@@ -121,31 +111,59 @@ int HeightMapShape3D::get_map_width() const {
 }
 
 void HeightMapShape3D::set_map_depth(int p_new) {
-	if (p_new < 1) {
-		// ignore
-	} else if (map_depth != p_new) {
-		int was_size = map_width * map_depth;
-		map_depth = p_new;
-
-		int new_size = map_width * map_depth;
-		map_data.resize(new_size);
-
-		real_t *w = map_data.ptrw();
-		while (was_size < new_size) {
-			w[was_size++] = 0.0;
-		}
-
-		_update_shape();
-		notify_change_to_owners();
+	if (p_new < 0 || map_depth == p_new) {
+		return;
 	}
+
+	int was_size = (map_width + 1) * (map_depth + 1);
+	map_depth = p_new;
+	_update_after_size_change(was_size);
 }
 
 int HeightMapShape3D::get_map_depth() const {
 	return map_depth;
 }
 
+void HeightMapShape3D::_update_after_size_change(const int p_was_size) {
+	int new_size = (map_width + 1) * (map_depth + 1);
+	map_data.resize(new_size);
+
+	real_t *w = map_data.ptrw();
+	int was_size = p_was_size;
+	while (was_size < new_size) {
+		w[was_size++] = 0.0;
+	}
+
+	if (p_was_size < new_size) {
+		if (min_height > 0.0) {
+			min_height = 0.0;
+		}
+		if (max_height < 0.0) {
+			max_height = 0.0;
+		}
+	} else {
+		for (int i = 0; i < new_size; i++) {
+			real_t val = w[i];
+			if (i == 0) {
+				min_height = w[0];
+				max_height = w[0];
+			} else {
+				if (min_height > val) {
+					min_height = val;
+				}
+
+				if (max_height < val) {
+					max_height = val;
+				}
+			}
+		}
+	}
+	_update_shape();
+	notify_change_to_owners();
+}
+
 void HeightMapShape3D::set_map_data(Vector<real_t> p_new) {
-	int size = (map_width * map_depth);
+	int size = (map_width + 1) * (map_depth + 1);
 	if (p_new.size() != size) {
 		// fail
 		return;
@@ -187,19 +205,12 @@ void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_data", "data"), &HeightMapShape3D::set_map_data);
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape3D::get_map_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_map_width", "get_map_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "map_data"), "set_map_data", "get_map_data");
 }
 
 HeightMapShape3D::HeightMapShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_HEIGHTMAP)) {
-	map_data.resize(map_width * map_depth);
-	real_t *w = map_data.ptrw();
-	w[0] = 0.0;
-	w[1] = 0.0;
-	w[2] = 0.0;
-	w[3] = 0.0;
-
 	_update_shape();
 }
