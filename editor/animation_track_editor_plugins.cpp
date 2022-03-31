@@ -339,11 +339,11 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
@@ -712,11 +712,11 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
@@ -1287,11 +1287,11 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
