@@ -2698,7 +2698,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if ((int)Input::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message(TTR("Can't undo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
-				String action = editor_data.get_undo_redo().get_current_action_name();
+				ObjectID object_id = get_edited_object_id();
+				editor_data.get_undo_redo().set_editor_context(object_id);
+				String action = editor_data.get_undo_redo().get_current_action_name(object_id);
 
 				if (!editor_data.get_undo_redo().undo()) {
 					log->add_message(TTR("Nothing to undo."), EditorLog::MSG_TYPE_EDITOR);
@@ -2711,10 +2713,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if ((int)Input::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message(TTR("Can't redo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
+				ObjectID object_id = get_edited_object_id();
+				editor_data.get_undo_redo().set_editor_context(object_id);
+
 				if (!editor_data.get_undo_redo().redo()) {
 					log->add_message(TTR("Nothing to redo."), EditorLog::MSG_TYPE_EDITOR);
 				} else {
-					String action = editor_data.get_undo_redo().get_current_action_name();
+					String action = editor_data.get_undo_redo().get_current_action_name(object_id);
 					log->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
@@ -3135,8 +3140,9 @@ void EditorNode::_update_file_menu_opened() {
 	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), previous_scenes.is_empty());
 
 	const UndoRedo &undo_redo = editor_data.get_undo_redo();
-	pop->set_item_disabled(pop->get_item_index(EDIT_UNDO), !undo_redo.has_undo());
+	pop->set_item_disabled(pop->get_item_index(EDIT_UNDO), !undo_redo.has_undo()); // TODO
 	pop->set_item_disabled(pop->get_item_index(EDIT_REDO), !undo_redo.has_redo());
+	WARN_PRINT_ONCE("Context-based undo may give the context menu item a different meaning.");
 }
 
 void EditorNode::_update_file_menu_closed() {
@@ -3945,6 +3951,62 @@ void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 			_menu_option_confirm(RUN_STOP, false);
 		}
 	}
+}
+
+ObjectID EditorNode::get_edited_object_id() {
+	Node *focus_owner = get_viewport()->gui_get_focus_owner();
+	Object *p_editor = nullptr;
+	EditorUndoContext *p_context = nullptr;
+
+	while (focus_owner) {
+		if (undo_context_links.has(focus_owner->get_class())) {
+			p_context = undo_context_links[focus_owner->get_class()];
+			p_editor = focus_owner;
+		}
+		if (undo_contexts.has(focus_owner->get_class())) {
+			p_context = &undo_contexts[focus_owner->get_class()];
+			if (p_context->p_editor != nullptr) {
+				p_editor = p_context->p_editor;
+			}
+		}
+		if (p_context != nullptr && p_context->use_constant_id) {
+			return p_context->constant_object_id;
+		}
+		if (p_editor != nullptr) {
+			if (p_context->p_get_edited_object == "") {
+				return p_editor->get_instance_id();
+			} else if (p_context->returns_ref) {
+				Ref<Resource> r_resource = p_editor->call(p_context->p_get_edited_object);
+				return r_resource.ptr()->get_instance_id();
+			} else {
+				Object *p_object = p_editor->call(p_context->p_get_edited_object);
+				if (!(p_object->is_class("Node") && ClassDB::can_instantiate(p_object->get_class()))) {
+					return p_object->get_instance_id();
+				}
+			}
+		}
+		focus_owner = focus_owner->get_parent();
+	}
+
+	return EditorNode::get_editor_data().get_edited_scene_root()->get_instance_id();
+}
+
+void EditorNode::_register_undo_context(String dock_class, Object *p_editor, String editor_class, String p_get_edited_object, bool returns_ref) {
+	EditorUndoContext context = EditorUndoContext();
+	if (p_editor != nullptr || editor_class != "") {
+		if (editor_class != "") {
+			undo_context_links[editor_class] = &context;
+		}
+		context.p_editor = p_editor; // The singleton editor which can be used to retrieve the context object.
+		context.p_get_edited_object = p_get_edited_object; // The method called from p_editor to get its edited object (the context).
+		context.returns_ref = returns_ref; // Indicates if the method returns a reference instead of a pointer.
+		context.use_constant_id = false;
+	} else {
+		context.constant_object_id = p_editor->get_instance_id(); // Used instead of getting the edited object ID.
+		context.use_constant_id = true;
+	}
+	// 'dock_class' is the class name of the dock/window/panel that will be checked for focus.
+	undo_contexts[dock_class] = context;
 }
 
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
@@ -5139,23 +5201,19 @@ void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_p
 void EditorNode::_scene_tab_changed(int p_tab) {
 	tab_preview_panel->hide();
 
-	bool unsaved = (saved_version != editor_data.get_undo_redo().get_version());
+	//bool unsaved = (saved_version != editor_data.get_undo_redo().get_version());
 
 	if (p_tab == editor_data.get_edited_scene()) {
 		return; // Pointless.
 	}
 
-	uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
+	//uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
 
-	editor_data.get_undo_redo().create_action(TTR("Switch Scene Tab"));
-	editor_data.get_undo_redo().add_do_method(this, "set_current_version", unsaved ? saved_version : 0);
-	editor_data.get_undo_redo().add_do_method(this, "set_current_scene", p_tab);
-	editor_data.get_undo_redo().add_do_method(this, "set_current_version", next_scene_version == 0 ? editor_data.get_undo_redo().get_version() + 1 : next_scene_version);
+	//set_current_version(unsaved ? saved_version : 0);
+	set_current_scene(p_tab);
+	//set_current_version(next_scene_version == 0 ? editor_data.get_undo_redo().get_version() + 1 : next_scene_version);
 
-	editor_data.get_undo_redo().add_undo_method(this, "set_current_version", next_scene_version);
-	editor_data.get_undo_redo().add_undo_method(this, "set_current_scene", editor_data.get_edited_scene());
-	editor_data.get_undo_redo().add_undo_method(this, "set_current_version", saved_version);
-	editor_data.get_undo_redo().commit_action();
+	WARN_PRINT_ONCE("Setting the scene version for undo/saving should probably be revised if contextual-undo is fully implemented.");
 }
 
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
@@ -7235,6 +7293,12 @@ EditorNode::EditorNode() {
 	screenshot_timer->connect("timeout", callable_mp(this, &EditorNode::_request_screenshot));
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
+
+	// Provide details of how to recognise when a 'context' is focused, and how to query for its edited object, if any.
+	_register_undo_context("ProjectSettingsEditor", ProjectSettingsEditor::get_singleton()); // Broken as can't find the right function to use [see PR].
+	_register_undo_context("EditorInspector", nullptr, "EditorInspector", "get_edited_object");
+	_register_undo_context("VisualScriptEditor", nullptr, "VisualScriptEditor", "get_edited_resource", true);
+	_register_undo_context("AnimationPlayerEditor", AnimationPlayerEditor::get_singleton()->get_track_editor(), "", "get_current_animation", true);
 
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.

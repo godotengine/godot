@@ -639,6 +639,19 @@ private:
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
 
+	struct EditorUndoContext {
+		Object *p_editor;
+		String p_get_edited_object;
+		bool returns_ref;
+		ObjectID constant_object_id;
+		bool use_constant_id;
+	};
+
+	Map<String, EditorUndoContext> undo_contexts;
+	Map<String, EditorUndoContext *> undo_context_links;
+
+	void _register_undo_context(String dock_name, Object *p_editor, String editor_class = "", String p_get_edited_object = "", bool returns_ref = false);
+
 	void _clear_undo_history();
 
 	void _update_addon_config();
@@ -694,6 +707,8 @@ public:
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
+
+	ObjectID get_edited_object_id();
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }

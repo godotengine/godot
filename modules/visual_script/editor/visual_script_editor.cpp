@@ -4485,6 +4485,8 @@ void VisualScriptEditor::update_toggle_scripts_button() {
 }
 
 void VisualScriptEditor::_bind_methods() {
+	ClassDB::bind_method("get_edited_resource", &VisualScriptEditor::get_edited_resource);
+
 	ClassDB::bind_method("_move_node", &VisualScriptEditor::_move_node);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
 

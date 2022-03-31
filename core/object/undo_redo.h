@@ -77,13 +77,25 @@ private:
 		uint64_t last_tick;
 	};
 
-	Vector<Action> actions;
-	int current_action = -1;
+	struct Context {
+		Vector<Action> actions;
+		int current_action;
+	};
+
+	static ObjectID get_context_id_default() { return ObjectID(uint64_t()); };
+
+	Map<ObjectID, Context> context_actions;
+	Vector<Action> *p_actions;
+	Action action;
+	int *p_current_action;
+
 	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
+	bool discarding_redo = false;
 	uint64_t version = 1;
+	ObjectID object_context_id;
 
 	void _pop_history_tail();
 	void _process_operation_list(List<Operation>::Element *E);
@@ -105,6 +117,8 @@ protected:
 
 public:
 	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
+	void set_action_context(Object *p_object);
+	void set_editor_context(ObjectID object_id = get_context_id_default());
 
 	void add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
@@ -143,15 +157,15 @@ public:
 
 	bool redo();
 	bool undo();
-	String get_current_action_name() const;
+	String get_current_action_name(ObjectID object_id = get_context_id_default()) const;
 
 	int get_history_count();
 	int get_current_action();
 	String get_action_name(int p_id);
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo() const;
-	bool has_redo() const;
+	bool has_undo(ObjectID object_id = get_context_id_default()) const;
+	bool has_redo(ObjectID object_id = get_context_id_default()) const;
 
 	uint64_t get_version() const;
 
@@ -160,7 +174,7 @@ public:
 	void set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud);
 	void set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud);
 
-	UndoRedo() {}
+	UndoRedo();
 	~UndoRedo();
 };
 

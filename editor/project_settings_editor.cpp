@@ -211,7 +211,9 @@ void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
 		bool handled = false;
 
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			String action = undo_redo->get_current_action_name();
+			ObjectID object_id = EditorNode::get_singleton()->get_edited_object_id();
+			undo_redo->set_editor_context(object_id);
+			String action = undo_redo->get_current_action_name(object_id);
 			if (!action.is_empty()) {
 				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
 			}
@@ -220,8 +222,10 @@ void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+			ObjectID object_id = EditorNode::get_singleton()->get_edited_object_id();
+			undo_redo->set_editor_context(object_id);
 			undo_redo->redo();
-			String action = undo_redo->get_current_action_name();
+			String action = undo_redo->get_current_action_name(object_id);
 			if (!action.is_empty()) {
 				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
 			}

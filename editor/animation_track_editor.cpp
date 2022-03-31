@@ -6026,6 +6026,8 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 }
 
 void AnimationTrackEditor::_bind_methods() {
+	ClassDB::bind_method("get_current_animation", &AnimationTrackEditor::get_current_animation);
+
 	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
 	ClassDB::bind_method("_track_grab_focus", &AnimationTrackEditor::_track_grab_focus);
 	ClassDB::bind_method("_update_tracks", &AnimationTrackEditor::_update_tracks);

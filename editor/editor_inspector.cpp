@@ -3555,6 +3555,12 @@ void EditorInspector::_notification(int p_what) {
 			changing--;
 		} break;
 
+		case NOTIFICATION_DRAW: {
+			if (has_focus()) {
+				draw_style_box(get_theme_stylebox("Focus", "EditorStyles"), Rect2(Vector2(), get_size()));
+			}
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_inspector_bg();
 
@@ -3773,6 +3779,8 @@ void EditorInspector::_show_add_meta_dialog() {
 }
 
 void EditorInspector::_bind_methods() {
+	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
+
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
@@ -3794,6 +3802,7 @@ EditorInspector::EditorInspector() {
 	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+	set_focus_mode(FocusMode::FOCUS_ALL);
 
 	changing = 0;
 	search_box = nullptr;
