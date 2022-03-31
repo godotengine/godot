@@ -212,7 +212,10 @@
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
 		</member>
 		<member name="flags_vertex_lighting" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], lighting is calculated per vertex rather than per pixel. This may increase performance on low-end devices.
+			If [code]true[/code], lighting is calculated per vertex rather than per pixel. This may increase performance on low-end devices, especially for meshes with a lower polygon count. The downside is that shading becomes much less accurate, with visible linear interpolation between vertices that are joined together. This can be compensated by ensuring meshes have a sufficient level of subdivision (but not too much, to avoid reducing performance). Some material features are also not supported when vertex shading is enabled.
+			See also [member ProjectSettings.rendering/quality/shading/force_vertex_shading] which can globally enable vertex shading on all materials.
+			[b]Note:[/b] By default, vertex shading is enforced on mobile platforms by [member ProjectSettings.rendering/quality/shading/force_vertex_shading]'s [code]mobile[/code] override.
+			[b]Note:[/b] [member flags_vertex_lighting] has no effect if [member flags_unshaded] is [code]true[/code].
 		</member>
 		<member name="flags_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], triplanar mapping is calculated in world space rather than object local space. See also [member uv1_triplanar].
