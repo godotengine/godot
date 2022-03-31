@@ -582,6 +582,10 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 		remove_from_group(canvas_group_name);
 	}
 
+	if (custom_viewport && !ObjectDB::get_instance(custom_viewport_id)) {
+		viewport = nullptr;
+	}
+
 	custom_viewport = Object::cast_to<Viewport>(p_viewport);
 
 	if (custom_viewport) {
