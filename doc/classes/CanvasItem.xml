@@ -480,9 +480,6 @@
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
 			If [code]true[/code], the object draws behind its parent.
 		</member>
-		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
-			If [code]true[/code], the object draws on top of its parent.
-		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
 			The texture filtering mode to use on this [CanvasItem].
 		</member>
