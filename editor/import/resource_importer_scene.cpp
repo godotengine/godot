@@ -715,13 +715,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 
 	bool isroot = p_node == p_root;
 
-	String import_id;
-
-	if (p_node->has_meta("import_id")) {
-		import_id = p_node->get_meta("import_id");
-	} else {
-		import_id = "PATH:" + p_root->get_path_to(p_node);
-	}
+	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -763,12 +757,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 				for (int i = 0; i < m->get_surface_count(); i++) {
 					Ref<Material> mat = m->get_surface_material(i);
 					if (mat.is_valid()) {
-						String mat_id;
-						if (mat->has_meta("import_id")) {
-							mat_id = mat->get_meta("import_id");
-						} else {
-							mat_id = mat->get_name();
-						}
+						String mat_id = mat->get_meta("import_id", mat->get_name());
 
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
@@ -1591,13 +1580,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
 
-				String mesh_id;
-
-				if (src_mesh_node->get_mesh()->has_meta("import_id")) {
-					mesh_id = src_mesh_node->get_mesh()->get_meta("import_id");
-				} else {
-					mesh_id = src_mesh_node->get_mesh()->get_name();
-				}
+				String mesh_id = src_mesh_node->get_mesh()->get_meta("import_id", src_mesh_node->get_mesh()->get_name());
 
 				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
 					Dictionary mesh_settings = p_mesh_data[mesh_id];

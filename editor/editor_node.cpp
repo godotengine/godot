@@ -1882,7 +1882,7 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 			// TODO: Would be nice to show the project manager opened with the highlighted field.
 
-			if (pick_main_scene->has_meta("from_native") && (bool)pick_main_scene->get_meta("from_native")) {
+			if ((bool)pick_main_scene->get_meta("from_native", false)) {
 				run_native->resume_run_native();
 			} else {
 				_run(false, ""); // Automatically run the project.

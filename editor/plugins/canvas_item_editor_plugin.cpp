@@ -236,7 +236,7 @@ public:
 };
 
 bool CanvasItemEditor::_is_node_locked(const Node *p_node) {
-	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+	return p_node->get_meta("_edit_lock_", false);
 }
 
 bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning) {
@@ -420,16 +420,14 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	}
 
 	if (((is_snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, (real_t)360.0) == 0.0) {
-		// Guides
-		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+		// Guides.
+		if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
+			Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
 			for (int i = 0; i < vguides.size(); i++) {
 				_snap_if_closer_float(p_target.x, output.x, snap_target[0], vguides[i], SNAP_TARGET_GUIDE);
 			}
-		}
 
-		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-			Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+			Array hguides = scene->get_meta("_edit_horizontal_guides_", Array());
 			for (int i = 0; i < hguides.size(); i++) {
 				_snap_if_closer_float(p_target.y, output.y, snap_target[1], hguides[i], SNAP_TARGET_GUIDE);
 			}
@@ -681,7 +679,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
 	bool editable = p_node == scene || p_node->get_owner() == scene || p_node == scene->get_deepest_editable_node(p_node);
-	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
+	bool lock_children = p_node->get_meta("_edit_group_", false);
 	bool locked = _is_node_locked(p_node);
 
 	if (!lock_children || !editable) {
@@ -1000,14 +998,8 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 		if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
 			Transform2D xform = viewport_scrollable->get_transform() * transform;
 			// Retrieve the guide lists
-			Array vguides;
-			if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-				vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
-			}
-			Array hguides;
-			if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-				hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
-			}
+			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_", Array());
+			Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_", Array());
 
 			// Hover over guides
 			real_t minimum = 1e20;
@@ -1100,14 +1092,8 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
 				// Retrieve the guide lists
-				Array vguides;
-				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
-				}
-				Array hguides;
-				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-					hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
-				}
+				Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_", Array());
+				Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_", Array());
 
 				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
 				if (drag_type == DRAG_V_GUIDE) {
@@ -2712,9 +2698,9 @@ void CanvasItemEditor::_draw_guides() {
 	Color guide_color = EditorSettings::get_singleton()->get("editors/2d/guides_color");
 	Transform2D xform = viewport_scrollable->get_transform() * transform;
 
-	// Guides already there
-	if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-		Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+	// Guides already there.
+	if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
+		Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
 		for (int i = 0; i < vguides.size(); i++) {
 			if (drag_type == DRAG_V_GUIDE && i == dragged_guide_index) {
 				continue;
@@ -2722,10 +2708,8 @@ void CanvasItemEditor::_draw_guides() {
 			real_t x = xform.xform(Point2(vguides[i], 0)).x;
 			viewport->draw_line(Point2(x, 0), Point2(x, viewport->get_size().y), guide_color, Math::round(EDSCALE));
 		}
-	}
 
-	if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-		Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+		Array hguides = scene->get_meta("_edit_horizontal_guides_", Array());
 		for (int i = 0; i < hguides.size(); i++) {
 			if (drag_type == DRAG_H_GUIDE && i == dragged_guide_index) {
 				continue;
@@ -2735,7 +2719,7 @@ void CanvasItemEditor::_draw_guides() {
 		}
 	}
 
-	// Dragged guide
+	// Dragged guide.
 	Color text_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 	Color outline_color = text_color.inverted();
 	const float outline_size = 2;

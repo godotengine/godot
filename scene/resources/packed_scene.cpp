@@ -49,10 +49,7 @@ bool SceneState::can_instantiate() const {
 }
 
 static Array _sanitize_node_pinned_properties(Node *p_node) {
-	if (!p_node->has_meta("_edit_pinned_properties_")) {
-		return Array();
-	}
-	Array pinned = p_node->get_meta("_edit_pinned_properties_");
+	Array pinned = p_node->get_meta("_edit_pinned_properties_", Array());
 	if (pinned.is_empty()) {
 		return Array();
 	}
@@ -525,29 +522,19 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			continue;
 		}
 
-		Variant forced_value;
-
 		if (E.name == META_PROPERTY_MISSING_RESOURCES) {
-			continue; //ignore this property when packing
+			continue; // Ignore this property when packing.
 		}
 
-		// If instance or inheriting, not saving if property requested so, or it's meta
-		if (states_stack.size()) {
+		// If instance or inheriting, not saving if property requested so.
+		if (!states_stack.is_empty()) {
 			if ((E.usage & PROPERTY_USAGE_NO_INSTANCE_STATE)) {
 				continue;
-			}
-			// Meta is normally not saved in instances/inherited (see GH-12838), but we need to save the pinned list
-			if (E.name == "__meta__") {
-				if (pinned_props.size()) {
-					Dictionary meta_override;
-					meta_override["_edit_pinned_properties_"] = pinned_props;
-					forced_value = meta_override;
-				}
 			}
 		}
 
 		StringName name = E.name;
-		Variant value = forced_value.get_type() == Variant::NIL ? p_node->get(name) : forced_value;
+		Variant value = p_node->get(name);
 
 		if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overriden? If so do not save the old value.
@@ -557,7 +544,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			}
 		}
 
-		if (!pinned_props.has(name) && forced_value.get_type() == Variant::NIL) {
+		if (!pinned_props.has(name)) {
 			bool is_valid_default = false;
 			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &is_valid_default, &states_stack, true);
 			if (is_valid_default && !PropertyUtils::is_property_value_different(value, default_value)) {

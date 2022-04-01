@@ -109,11 +109,7 @@ void VisualScriptPropertySelector::_confirmed() {
 }
 
 void VisualScriptPropertySelector::_item_selected() {
-	if (results_tree->get_selected()->has_meta("description")) {
-		help_bit->set_text(results_tree->get_selected()->get_meta("description"));
-	} else {
-		help_bit->set_text("No description available");
-	}
+	help_bit->set_text(results_tree->get_selected()->get_meta("description", "No description available"));
 }
 
 void VisualScriptPropertySelector::_hide_requested() {

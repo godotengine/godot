@@ -1950,11 +1950,11 @@ void ScriptEditor::_update_script_colors() {
 		script_list->set_item_custom_bg_color(i, Color(0, 0, 0, 0));
 
 		if (script_temperature_enabled) {
-			if (!n->has_meta("__editor_pass")) {
+			int pass = n->get_meta("__editor_pass", -1);
+			if (pass < 0) {
 				continue;
 			}
 
-			int pass = n->get_meta("__editor_pass");
 			int h = edit_pass - pass;
 			if (h > hist_size) {
 				continue;
