@@ -209,7 +209,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), get_theme_color(SNAME("font_outline_color")));
 	tab_bar->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("font")));
 	tab_bar->add_theme_constant_override(SNAME("font_size"), get_theme_constant(SNAME("font_size")));
-	tab_bar->add_theme_constant_override(SNAME("icon_separation"), get_theme_constant(SNAME("icon_separation")));
+	tab_bar->add_theme_constant_override(SNAME("hseparation"), get_theme_constant(SNAME("icon_separation")));
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), get_theme_constant(SNAME("outline_size")));
 
 	_update_margins();
@@ -497,6 +497,9 @@ void TabContainer::add_child_notify(Node *p_child) {
 	tab_bar->add_tab(p_child->get_name());
 
 	_update_margins();
+	if (get_tab_count() == 1) {
+		update();
+	}
 
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
 
@@ -545,6 +548,9 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	tab_bar->remove_tab(get_tab_idx_from_control(c));
 
 	_update_margins();
+	if (get_tab_count() == 0) {
+		update();
+	}
 
 	if (p_child->has_meta("_tab_name")) {
 		p_child->remove_meta("_tab_name");

@@ -949,7 +949,7 @@ void TextureStorage::texture_set_path(RID p_texture, const String &p_path) {
 }
 
 String TextureStorage::texture_get_path(RID p_texture) const {
-	RendererRD::Texture *tex = texture_owner.get_or_null(p_texture);
+	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!tex, String());
 
 	return tex->path;

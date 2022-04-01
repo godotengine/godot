@@ -42,6 +42,8 @@
 #include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -127,61 +129,6 @@ public:
 		}
 	}
 
-	enum ShaderType {
-		SHADER_TYPE_2D,
-		SHADER_TYPE_3D,
-		SHADER_TYPE_PARTICLES,
-		SHADER_TYPE_SKY,
-		SHADER_TYPE_FOG,
-		SHADER_TYPE_MAX
-	};
-
-	struct ShaderData {
-		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
-
-		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
-		virtual bool is_param_texture(const StringName &p_param) const = 0;
-		virtual bool is_animated() const = 0;
-		virtual bool casts_shadows() const = 0;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
-
-		virtual ~ShaderData() {}
-	};
-
-	typedef ShaderData *(*ShaderDataRequestFunction)();
-
-	struct MaterialData {
-		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
-
-		virtual void set_render_priority(int p_priority) = 0;
-		virtual void set_next_pass(RID p_pass) = 0;
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
-		virtual ~MaterialData();
-
-		//to be used internally by update_parameters, in the most common configuration of material parameters
-		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
-		void free_parameters_uniform_set(RID p_uniform_set);
-
-	private:
-		friend class RendererStorageRD;
-		RID self;
-		List<RID>::Element *global_buffer_E = nullptr;
-		List<RID>::Element *global_texture_E = nullptr;
-		uint64_t global_textures_pass = 0;
-		Map<StringName, uint64_t> used_global_textures;
-
-		//internally by update_parameters_uniform_set
-		Vector<uint8_t> ubo_data;
-		RID uniform_buffer;
-		Vector<RID> texture_cache;
-	};
-	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
-	static void _material_uniform_set_erased(void *p_material);
-
 	enum DefaultRDBuffer {
 		DEFAULT_RD_BUFFER_VERTEX,
 		DEFAULT_RD_BUFFER_NORMAL,
@@ -204,50 +151,6 @@ private:
 	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 	RID custom_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 	RID default_rd_storage_buffer;
-
-	/* SHADER */
-
-	struct Material;
-
-	struct Shader {
-		ShaderData *data;
-		String code;
-		ShaderType type;
-		Map<StringName, Map<int, RID>> default_texture_parameter;
-		Set<Material *> owners;
-	};
-
-	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
-	mutable RID_Owner<Shader, true> shader_owner;
-
-	/* Material */
-
-	struct Material {
-		RID self;
-		MaterialData *data = nullptr;
-		Shader *shader = nullptr;
-		//shortcut to shader data and type
-		ShaderType shader_type = SHADER_TYPE_MAX;
-		uint32_t shader_id = 0;
-		bool uniform_dirty = false;
-		bool texture_dirty = false;
-		Map<StringName, Variant> params;
-		int32_t priority = 0;
-		RID next_pass;
-		SelfList<Material> update_element;
-
-		Dependency dependency;
-
-		Material() :
-				update_element(this) {}
-	};
-
-	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
-	mutable RID_Owner<Material, true> material_owner;
-
-	SelfList<Material>::List material_update_list;
-	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
-	void _update_queued_materials();
 
 	/* Mesh */
 
@@ -714,7 +617,7 @@ private:
 
 	Particles *particle_update_list = nullptr;
 
-	struct ParticlesShaderData : public ShaderData {
+	struct ParticlesShaderData : public RendererRD::ShaderData {
 		bool valid;
 		RID version;
 		bool uses_collision = false;
@@ -740,7 +643,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -751,12 +654,12 @@ private:
 		virtual ~ParticlesShaderData();
 	};
 
-	ShaderData *_create_particles_shader_func();
-	static RendererStorageRD::ShaderData *_create_particles_shader_funcs() {
+	RendererRD::ShaderData *_create_particles_shader_func();
+	static RendererRD::ShaderData *_create_particles_shader_funcs() {
 		return base_singleton->_create_particles_shader_func();
 	}
 
-	struct ParticlesMaterialData : public MaterialData {
+	struct ParticlesMaterialData : public RendererRD::MaterialData {
 		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
 
@@ -766,8 +669,8 @@ private:
 		virtual ~ParticlesMaterialData();
 	};
 
-	MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_particles_material_funcs(ShaderData *p_shader) {
+	RendererRD::MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
+	static RendererRD::MaterialData *_create_particles_material_funcs(RendererRD::ShaderData *p_shader) {
 		return base_singleton->_create_particles_material_func(static_cast<ParticlesShaderData *>(p_shader));
 	}
 
@@ -1054,72 +957,6 @@ private:
 		RID pipelines[SHADER_MAX];
 	} rt_sdf;
 
-	/* GLOBAL SHADER VARIABLES */
-
-	struct GlobalVariables {
-		enum {
-			BUFFER_DIRTY_REGION_SIZE = 1024
-		};
-		struct Variable {
-			Set<RID> texture_materials; // materials using this
-
-			RS::GlobalVariableType type;
-			Variant value;
-			Variant override;
-			int32_t buffer_index; //for vectors
-			int32_t buffer_elements; //for vectors
-		};
-
-		HashMap<StringName, Variable> variables;
-
-		struct Value {
-			float x;
-			float y;
-			float z;
-			float w;
-		};
-
-		struct ValueInt {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-			int32_t w;
-		};
-
-		struct ValueUInt {
-			uint32_t x;
-			uint32_t y;
-			uint32_t z;
-			uint32_t w;
-		};
-
-		struct ValueUsage {
-			uint32_t elements = 0;
-		};
-
-		List<RID> materials_using_buffer;
-		List<RID> materials_using_texture;
-
-		RID buffer;
-		Value *buffer_values;
-		ValueUsage *buffer_usage;
-		bool *buffer_dirty_regions;
-		uint32_t buffer_dirty_region_count = 0;
-
-		uint32_t buffer_size;
-
-		bool must_update_texture_materials = false;
-		bool must_update_buffer_materials = false;
-
-		HashMap<RID, int32_t> instance_buffer_pos;
-
-	} global_variables;
-
-	int32_t _global_variable_allocate(uint32_t p_elements);
-	void _global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value);
-	void _global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
-
-	void _update_global_variables();
 	/* EFFECTS */
 
 	EffectsRD *effects = nullptr;
@@ -1137,58 +974,6 @@ public:
 	void sampler_rd_configure_custom(float mipmap_bias);
 
 	void sampler_rd_set_default(float p_mipmap_bias);
-
-	/* SHADER API */
-
-	RID shader_allocate();
-	void shader_initialize(RID p_shader);
-
-	void shader_set_code(RID p_shader, const String &p_code);
-	String shader_get_code(RID p_shader) const;
-	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
-
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index);
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const;
-	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
-	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
-
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const;
-
-	/* COMMON MATERIAL API */
-
-	RID material_allocate();
-	void material_initialize(RID p_material);
-
-	void material_set_shader(RID p_material, RID p_shader);
-
-	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value);
-	Variant material_get_param(RID p_material, const StringName &p_param) const;
-
-	void material_set_next_pass(RID p_material, RID p_next_material);
-	void material_set_render_priority(RID p_material, int priority);
-
-	bool material_is_animated(RID p_material);
-	bool material_casts_shadows(RID p_material);
-
-	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
-
-	void material_update_dependency(RID p_material, DependencyTracker *p_instance);
-
-	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
-
-	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
-		Material *material = material_owner.get_or_null(p_material);
-		return material->shader_id;
-	}
-
-	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
-		Material *material = material_owner.get_or_null(p_material);
-		if (!material || material->shader_type != p_shader_type) {
-			return nullptr;
-		} else {
-			return material->data;
-		}
-	}
 
 	/* MESH API */
 
@@ -1971,27 +1756,6 @@ public:
 	virtual RID particles_collision_instance_create(RID p_collision);
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform);
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
-
-	/* GLOBAL VARIABLES API */
-
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value);
-	virtual void global_variable_remove(const StringName &p_name);
-	virtual Vector<StringName> global_variable_get_list() const;
-
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value);
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value);
-	virtual Variant global_variable_get(const StringName &p_name) const;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const;
-	RS::GlobalVariableType global_variable_get_type_internal(const StringName &p_name) const;
-
-	virtual void global_variables_load_settings(bool p_load_textures = true);
-	virtual void global_variables_clear();
-
-	virtual int32_t global_variables_instance_allocate(RID p_instance);
-	virtual void global_variables_instance_free(RID p_instance);
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value);
-
-	RID global_variables_get_storage_buffer() const;
 
 	/* RENDER TARGET API */
 

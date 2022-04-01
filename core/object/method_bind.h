@@ -214,7 +214,7 @@ public:
 
 private:
 	PropertyInfo _gen_return_type_info() const {
-		return reinterpret_cast<const Derived *>(this)->_gen_return_type_info_impl();
+		return Derived::_gen_return_type_info_impl();
 	}
 };
 
@@ -237,7 +237,7 @@ public:
 	}
 
 private:
-	PropertyInfo _gen_return_type_info_impl() const {
+	static PropertyInfo _gen_return_type_info_impl() {
 		return {};
 	}
 };
@@ -267,7 +267,7 @@ public:
 	}
 
 private:
-	PropertyInfo _gen_return_type_info_impl() const {
+	static PropertyInfo _gen_return_type_info_impl() {
 		return GetTypeInfo<R>::get_class_info();
 	}
 };

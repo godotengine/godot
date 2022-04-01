@@ -34,6 +34,8 @@
 #include "core/os/os.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -2359,6 +2361,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 }
 
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
@@ -2571,6 +2574,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 }
 
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RD::get_singleton()->draw_command_begin_label("Post Process Subpass");
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
@@ -2647,6 +2651,7 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 }
 
 void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	EffectsRD *effects = storage->get_effects();
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -3920,13 +3925,13 @@ void RendererSceneRenderRD::FogShaderData::get_param_list(List<PropertyInfo> *p_
 	}
 }
 
-void RendererSceneRenderRD::FogShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
+void RendererSceneRenderRD::FogShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
-		RendererStorage::InstanceShaderParam p;
+		RendererMaterialStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E->get());
 		p.info.name = E->key(); //supply name
 		p.index = E->get().instance_index;
@@ -3994,23 +3999,23 @@ RendererSceneRenderRD::FogMaterialData::~FogMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_func() {
+RendererRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_func() {
 	FogShaderData *shader_data = memnew(FogShaderData);
 	return shader_data;
 }
 
-RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs() {
+RendererRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs() {
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->_create_fog_shader_func();
 };
 
-RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
+RendererRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
 	FogMaterialData *material_data = memnew(FogMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
 
-RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+RendererRD::MaterialData *RendererSceneRenderRD::_create_fog_material_funcs(RendererRD::ShaderData *p_shader) {
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->_create_fog_material_func(static_cast<FogShaderData *>(p_shader));
 };
 
@@ -4068,6 +4073,9 @@ Vector3i RendererSceneRenderRD::_point_get_position_in_froxel_volume(const Vecto
 }
 
 void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	ERR_FAIL_COND(!is_clustered_enabled()); // can't use volumetric fog without clustered
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -4268,7 +4276,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			FogMaterialData *material = nullptr;
 
 			if (fog_material.is_valid()) {
-				material = (FogMaterialData *)storage->material_get_data(fog_material, RendererStorageRD::SHADER_TYPE_FOG);
+				material = (FogMaterialData *)material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG);
 				if (!material || !material->shader_data->valid) {
 					material = nullptr;
 				}
@@ -4276,7 +4284,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			if (!material) {
 				fog_material = volumetric_fog.default_material;
-				material = (FogMaterialData *)storage->material_get_data(fog_material, RendererStorageRD::SHADER_TYPE_FOG);
+				material = (FogMaterialData *)material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG);
 			}
 
 			ERR_FAIL_COND(!material);
@@ -5605,12 +5613,13 @@ uint32_t RendererSceneRenderRD::get_max_elements() const {
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
-	texture_storage = RendererRD::TextureStorage::get_singleton();
 	storage = p_storage;
 	singleton = this;
 }
 
 void RendererSceneRenderRD::init() {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	max_cluster_elements = get_max_elements();
 
 	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
@@ -5667,8 +5676,8 @@ void RendererSceneRenderRD::init() {
 			volumetric_fog_modes.push_back("");
 			volumetric_fog.shader.initialize(volumetric_fog_modes);
 
-			storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_FOG, _create_fog_shader_funcs);
-			storage->material_set_data_request_function(RendererStorageRD::SHADER_TYPE_FOG, _create_fog_material_funcs);
+			material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_FOG, _create_fog_shader_funcs);
+			material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_FOG, _create_fog_material_funcs);
 			volumetric_fog.volume_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(VolumetricFogShader::VolumeUBO));
 		}
 
@@ -5707,9 +5716,9 @@ void RendererSceneRenderRD::init() {
 
 		{
 			// default material and shader for fog shader
-			volumetric_fog.default_shader = storage->shader_allocate();
-			storage->shader_initialize(volumetric_fog.default_shader);
-			storage->shader_set_code(volumetric_fog.default_shader, R"(
+			volumetric_fog.default_shader = material_storage->shader_allocate();
+			material_storage->shader_initialize(volumetric_fog.default_shader);
+			material_storage->shader_set_code(volumetric_fog.default_shader, R"(
 // Default fog shader.
 
 shader_type fog;
@@ -5719,11 +5728,11 @@ void fog() {
 	ALBEDO = vec3(1.0);
 }
 )");
-			volumetric_fog.default_material = storage->material_allocate();
-			storage->material_initialize(volumetric_fog.default_material);
-			storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
+			volumetric_fog.default_material = material_storage->material_allocate();
+			material_storage->material_initialize(volumetric_fog.default_material);
+			material_storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
 
-			FogMaterialData *md = (FogMaterialData *)storage->material_get_data(volumetric_fog.default_material, RendererStorageRD::SHADER_TYPE_FOG);
+			FogMaterialData *md = (FogMaterialData *)material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG);
 			volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, 0);
 
 			Vector<RD::Uniform> uniforms;
@@ -5753,7 +5762,7 @@ void fog() {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.append_id(storage->global_variables_get_storage_buffer());
+				u.append_id(RendererRD::MaterialStorage::get_singleton()->global_variables_get_storage_buffer());
 				uniforms.push_back(u);
 			}
 
@@ -5822,6 +5831,8 @@ void fog() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
 		RD::get_singleton()->free(E.value.cubemap);
 	}
@@ -5838,20 +5849,10 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 		volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
 		RD::get_singleton()->free(volumetric_fog.volume_ubo);
 		RD::get_singleton()->free(volumetric_fog.params_ubo);
-		storage->free(volumetric_fog.default_shader);
-		storage->free(volumetric_fog.default_material);
+		material_storage->shader_free(volumetric_fog.default_shader);
+		material_storage->material_free(volumetric_fog.default_material);
 	}
 
-	RendererSceneSkyRD::SkyMaterialData *md = (RendererSceneSkyRD::SkyMaterialData *)storage->material_get_data(sky.sky_shader.default_material, RendererStorageRD::SHADER_TYPE_SKY);
-	sky.sky_shader.shader.version_free(md->shader_data->version);
-	RD::get_singleton()->free(sky.sky_scene_state.directional_light_buffer);
-	RD::get_singleton()->free(sky.sky_scene_state.uniform_buffer);
-	memdelete_arr(sky.sky_scene_state.directional_lights);
-	memdelete_arr(sky.sky_scene_state.last_frame_directional_lights);
-	storage->free(sky.sky_shader.default_shader);
-	storage->free(sky.sky_shader.default_material);
-	storage->free(sky.sky_scene_state.fog_shader);
-	storage->free(sky.sky_scene_state.fog_material);
 	memdelete_arr(directional_penumbra_shadow_kernel);
 	memdelete_arr(directional_soft_shadow_kernel);
 	memdelete_arr(penumbra_shadow_kernel);
