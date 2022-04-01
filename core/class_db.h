@@ -41,13 +41,13 @@
 
 #define DEFVAL(m_defval) (m_defval)
 
-//#define SIMPLE_METHODDEF
-
 #ifdef DEBUG_METHODS_ENABLED
 
 struct MethodDefinition {
 	StringName name;
+#ifdef DEBUG_METHODS_ENABLED
 	Vector<StringName> args;
+#endif
 	MethodDefinition() {}
 	MethodDefinition(const char *p_name) :
 			name(p_name) {}
@@ -72,8 +72,6 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 
 #else
 
-//#define NO_VARIADIC_MACROS
-
 #ifdef NO_VARIADIC_MACROS
 
 static _FORCE_INLINE_ const char *D_METHOD(const char *m_name, ...) {
@@ -89,7 +87,6 @@ static _FORCE_INLINE_ const char *D_METHOD(const char *m_name, ...) {
 #endif
 
 #endif
-
 class ClassDB {
 public:
 	enum APIType {
