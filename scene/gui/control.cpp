@@ -1508,7 +1508,8 @@ void Control::_set_layout_mode(LayoutMode p_mode) {
 		set_meta("_edit_layout_mode", (int)p_mode);
 
 		if (p_mode == LayoutMode::LAYOUT_MODE_POSITION) {
-			set_meta("_edit_use_custom_anchors", false);
+			remove_meta("_edit_layout_mode");
+			remove_meta("_edit_use_custom_anchors");
 			set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
 			set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
 		}
