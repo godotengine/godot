@@ -39,13 +39,13 @@
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
+	if (close_on_escape && key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
 		_cancel_pressed();
 	}
 }
 
 void AcceptDialog::_parent_focused() {
-	if (!is_exclusive()) {
+	if (close_on_escape && !is_exclusive()) {
 		_cancel_pressed();
 	}
 }
@@ -143,6 +143,14 @@ void AcceptDialog::set_hide_on_ok(bool p_hide) {
 
 bool AcceptDialog::get_hide_on_ok() const {
 	return hide_on_ok;
+}
+
+void AcceptDialog::set_close_on_escape(bool p_hide) {
+	close_on_escape = p_hide;
+}
+
+bool AcceptDialog::get_close_on_escape() const {
+	return close_on_escape;
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
@@ -288,6 +296,8 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
+	ClassDB::bind_method(D_METHOD("set_close_on_escape", "enabled"), &AcceptDialog::set_close_on_escape);
+	ClassDB::bind_method(D_METHOD("get_close_on_escape"), &AcceptDialog::get_close_on_escape);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_cancel_button", "name"), &AcceptDialog::add_cancel_button);
 	ClassDB::bind_method(D_METHOD("remove_button", "button"), &AcceptDialog::remove_button);
@@ -304,6 +314,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 }
 

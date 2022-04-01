@@ -33,10 +33,12 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/editor_file_system.h"
 #include "editor/import/resource_importer_scene.h"
 
 class Animation;
 class Node;
+class ConfirmationDialog;
 
 class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 	GDCLASS(EditorSceneFormatImporterBlend, EditorSceneFormatImporter);
@@ -72,6 +74,39 @@ public:
 			List<ResourceImporter::ImportOption> *r_options) override;
 	virtual Variant get_option_visibility(const String &p_path, const String &p_option,
 			const Map<StringName, Variant> &p_options) override;
+};
+
+class LineEdit;
+class Button;
+class EditorFileDialog;
+class Label;
+
+class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImportFormatSupportQuery {
+	GDCLASS(EditorFileSystemImportFormatSupportQueryBlend, EditorFileSystemImportFormatSupportQuery);
+
+	ConfirmationDialog *configure_blender_dialog;
+	LineEdit *blender_path;
+	Button *blender_path_browse;
+	EditorFileDialog *browse_dialog;
+	Label *path_status;
+	bool confirmed = false;
+
+	String auto_detected_path;
+	void _validate_path(String p_path);
+
+	bool _autodetect_path(String p_path);
+
+	void _path_confirmed();
+
+	void _select_install(String p_path);
+	void _browse_install();
+
+public:
+	virtual bool is_active() const override;
+	virtual Vector<String> get_file_extensions() const override;
+	virtual bool query() override;
+
+	EditorFileSystemImportFormatSupportQueryBlend();
 };
 
 #endif // TOOLS_ENABLED

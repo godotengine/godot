@@ -30,15 +30,24 @@
 
 #include "editor_scene_importer_blend.h"
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 
 #include "../gltf_document.h"
 #include "../gltf_state.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "main/main.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
+
+#ifdef WINDOWS_ENABLED
+// Code by Pedro Estebanez (https://github.com/godotengine/godot/pull/59766)
+#include <shlwapi.h>
+#endif
 
 uint32_t EditorSceneFormatImporterBlend::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
@@ -180,7 +189,13 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 	// Run script with configured Blender binary.
 
-	String blender_path = EDITOR_GET("filesystem/import/blend/blender_path");
+	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
+
+#ifdef WINDOWS_ENABLED
+	blender_path = blender_path.plus_file("blender.exe");
+#else
+	blender_path = blender_path.plus_file("blender");
+#endif
 
 	List<String> args;
 	args.push_back("--background");
@@ -262,6 +277,296 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 
 #undef ADD_OPTION_BOOL
 #undef ADD_OPTION_ENUM
+}
+
+///////////////////////////
+
+static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
+	String path = p_path;
+#ifdef WINDOWS_ENABLED
+	path = path.plus_file("blender.exe");
+#else
+	path = path.plus_file("blender");
+#endif
+
+#if defined(OSX_ENABLED)
+	if (!FileAccess::exists(path)) {
+		path = path.plus_file("Blender");
+	}
+#endif
+
+	if (!FileAccess::exists(path)) {
+		if (r_err) {
+			*r_err = TTR("Path does not contain a Blender installation.");
+		}
+		return false;
+	}
+	List<String> args;
+	args.push_back("--version");
+	String pipe;
+	Error err = OS::get_singleton()->execute(path, args, &pipe);
+	if (err != OK) {
+		if (r_err) {
+			*r_err = TTR("Can't excecute Blender binary.");
+		}
+		return false;
+	}
+
+	if (pipe.find("Blender ") != 0) {
+		if (r_err) {
+			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s"), path);
+		}
+		return false;
+	}
+	pipe = pipe.replace_first("Blender ", "");
+	int pp = pipe.find(".");
+	if (pp == -1) {
+		if (r_err) {
+			*r_err = TTR("Path supplied lacks a Blender binary.");
+		}
+		return false;
+	}
+	String v = pipe.substr(0, pp);
+	int version = v.to_int();
+	if (version < 3) {
+		if (r_err) {
+			*r_err = TTR("This Blender installation is too old for this importer (not 3.0+).");
+		}
+		return false;
+	}
+	if (version > 3) {
+		if (r_err) {
+			*r_err = TTR("This Blender installation is too new for this importer (not 3.x).");
+		}
+		return false;
+	}
+
+	return true;
+}
+
+bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
+	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+
+	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
+
+	if (blend_enabled && !_test_blender_path(blender_path)) {
+		// Intending to import Blender, but blend not configured.
+		return true;
+	}
+
+	return false;
+}
+Vector<String> EditorFileSystemImportFormatSupportQueryBlend::get_file_extensions() const {
+	Vector<String> ret;
+	ret.push_back("blend");
+	return ret;
+}
+
+void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path) {
+	String error;
+	bool success = false;
+	if (p_path == "") {
+		error = TTR("Path is empty.");
+	} else {
+		if (_test_blender_path(p_path, &error)) {
+			success = true;
+			if (auto_detected_path == p_path) {
+				error = TTR("Path to Blender installation is valid (Autodetected).");
+			} else {
+				error = TTR("Path to Blender installation is valid.");
+			}
+		}
+	}
+
+	path_status->set_text(error);
+
+	if (success) {
+		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		configure_blender_dialog->get_ok_button()->set_disabled(false);
+	} else {
+		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		configure_blender_dialog->get_ok_button()->set_disabled(true);
+	}
+}
+
+bool EditorFileSystemImportFormatSupportQueryBlend::_autodetect_path(String p_path) {
+	if (_test_blender_path(p_path)) {
+		auto_detected_path = p_path;
+		return true;
+	}
+	return false;
+}
+
+void EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed() {
+	confirmed = true;
+}
+
+void EditorFileSystemImportFormatSupportQueryBlend::_select_install(String p_path) {
+	blender_path->set_text(p_path);
+	_validate_path(p_path);
+}
+void EditorFileSystemImportFormatSupportQueryBlend::_browse_install() {
+	if (blender_path->get_text() != String()) {
+		browse_dialog->set_current_dir(blender_path->get_text());
+	}
+
+	browse_dialog->popup_centered_ratio();
+}
+
+bool EditorFileSystemImportFormatSupportQueryBlend::query() {
+	if (!configure_blender_dialog) {
+		configure_blender_dialog = memnew(ConfirmationDialog);
+		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));
+		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally .
+		configure_blender_dialog->set_close_on_escape(false);
+
+		VBoxContainer *vb = memnew(VBoxContainer);
+		vb->add_child(memnew(Label(TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender installation:"))));
+
+		HBoxContainer *hb = memnew(HBoxContainer);
+
+		blender_path = memnew(LineEdit);
+		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hb->add_child(blender_path);
+		blender_path_browse = memnew(Button);
+		hb->add_child(blender_path_browse);
+		blender_path_browse->set_text(TTR("Browse"));
+		blender_path_browse->connect("pressed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_browse_install));
+		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hb->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
+
+		vb->add_child(hb);
+
+		path_status = memnew(Label);
+		vb->add_child(path_status);
+
+		configure_blender_dialog->add_child(vb);
+
+		blender_path->connect("text_changed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
+
+		EditorNode::get_singleton()->get_gui_base()->add_child(configure_blender_dialog);
+
+		configure_blender_dialog->get_ok_button()->set_text(TTR("Confirm Path"));
+		configure_blender_dialog->get_cancel_button()->set_text(TTR("Disable '.blend' Import"));
+		configure_blender_dialog->get_cancel_button()->set_tooltip(TTR("Disables Blender '.blend' files import for this project. Can be re-enabled in Project Settings."));
+		configure_blender_dialog->connect("confirmed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed));
+
+		browse_dialog = memnew(EditorFileDialog);
+		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
+
+		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
+	}
+
+	String path = EDITOR_GET("filesystem/import/blender/blender3_path");
+
+	if (path == "") {
+		// Autodetect
+		auto_detected_path = "";
+
+#if defined(OSX_ENABLED)
+
+		{
+			Vector<String> mdfind_paths;
+			{
+				List<String> mdfind_args;
+				mdfind_args.push_back("kMDItemCFBundleIdentifier=org.blenderfoundation.blender");
+
+				String output;
+				Error err = OS::get_singleton()->execute("mdfind", mdfind_args, &output);
+				if (err == OK) {
+					mdfind_paths = output.split("\n");
+				}
+			}
+
+			bool found = false;
+			for (const String &path : mdfind_paths) {
+				found = _autodetect_path(path.plus_file("Contents/MacOS"));
+				if (found) {
+					break;
+				}
+			}
+			if (!found) {
+				found = _autodetect_path("/opt/homebrew/bin");
+			}
+			if (!found) {
+				found = _autodetect_path("/opt/local/bin");
+			}
+			if (!found) {
+				found = _autodetect_path("/usr/local/bin");
+			}
+			if (!found) {
+				found = _autodetect_path("/usr/local/opt");
+			}
+			if (!found) {
+				found = _autodetect_path("/Applications/Blender.app/Contents/MacOS");
+			}
+		}
+#elif defined(WINDOWS_ENABLED)
+		{
+			char blender_opener_path[MAX_PATH];
+			DWORD path_len = MAX_PATH;
+			HRESULT res = AssocQueryString(0, ASSOCSTR_EXECUTABLE, ".blend", "open", blender_opener_path, &path_len);
+			if (res == S_OK && _autodetect_path(String(blender_opener_path).get_base_dir())) {
+				// Good.
+			} else if (_autodetect_path("C:\\Program Files\\Blender Foundation")) {
+				// Good.
+			} else {
+				_autodetect_path("C:\\Program Files (x86)\\Blender Foundation");
+			}
+		}
+
+#elif defined(UNIX_ENABLED)
+		if (_autodetect_path("/usr/bin")) {
+			// Good.
+		} else if (_autodetect_path("/usr/local/bin")) {
+			// Good
+		} else {
+			_autodetect_path("/opt/blender/bin");
+		}
+#endif
+		if (auto_detected_path != "") {
+			path = auto_detected_path;
+		}
+	}
+
+	blender_path->set_text(path);
+
+	_validate_path(path);
+
+	configure_blender_dialog->popup_centered();
+	confirmed = false;
+
+	while (true) {
+		OS::get_singleton()->delay_usec(1);
+		DisplayServer::get_singleton()->process_events();
+		Main::iteration();
+		if (!configure_blender_dialog->is_visible() || confirmed) {
+			break;
+		}
+	}
+
+	if (confirmed) {
+		// Can only confirm a valid path.
+		EditorSettings::get_singleton()->set("filesystem/import/blender/blender3_path", blender_path->get_text());
+		EditorSettings::get_singleton()->save();
+	} else {
+		// Disable Blender import
+		ProjectSettings::get_singleton()->set("filesystem/import/blender/enabled", false);
+		ProjectSettings::get_singleton()->save();
+
+		if (EditorNode::immediate_confirmation_dialog(TTR("Disabling '.blend' file import requires restarting the editor."), TTR("Save & Restart"), TTR("Restart"))) {
+			EditorNode::get_singleton()->save_all_scenes();
+		}
+		EditorNode::get_singleton()->restart_editor();
+		return true;
+	}
+
+	return false;
+}
+
+EditorFileSystemImportFormatSupportQueryBlend::EditorFileSystemImportFormatSupportQueryBlend() {
 }
 
 #endif // TOOLS_ENABLED
