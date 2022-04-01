@@ -107,7 +107,7 @@
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
-			<return type="void" />
+			<return type="Variant" />
 			<argument index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
@@ -301,7 +301,7 @@
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<argument index="0" name="signal" type="StringName" />
 			<description>
 				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
@@ -366,8 +366,10 @@
 		<method name="get_meta" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata entry for the given [code]name[/code].
+				Throws error if the entry does not exist, unless [code]default[/code] is not [code]null[/code] (in which case the default value will be returned).
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">

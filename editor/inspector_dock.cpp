@@ -250,7 +250,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 }
 
 void InspectorDock::_save_resource(bool save_as) {
-	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
@@ -265,7 +265,7 @@ void InspectorDock::_save_resource(bool save_as) {
 }
 
 void InspectorDock::_unref_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
@@ -276,7 +276,7 @@ void InspectorDock::_unref_resource() {
 }
 
 void InspectorDock::_copy_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
@@ -300,7 +300,7 @@ void InspectorDock::_prepare_resource_extra_popup() {
 }
 
 void InspectorDock::_prepare_history() {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	int history_to = MAX(0, editor_history->get_history_len() - 25);
 
@@ -352,7 +352,7 @@ void InspectorDock::_prepare_history() {
 
 void InspectorDock::_select_history(int p_idx) {
 	//push it to the top, it is not correct, but it's more useful
-	ObjectID id = EditorNode::get_singleton()->get_editor_history()->get_history_obj(p_idx);
+	ObjectID id = EditorNode::get_singleton()->get_editor_selection_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
 	if (!obj) {
 		return;
@@ -380,13 +380,13 @@ void InspectorDock::_resource_selected(const RES &p_res, const String &p_propert
 }
 
 void InspectorDock::_edit_forward() {
-	if (EditorNode::get_singleton()->get_editor_history()->next()) {
+	if (EditorNode::get_singleton()->get_editor_selection_history()->next()) {
 		EditorNode::get_singleton()->edit_current();
 	}
 }
 
 void InspectorDock::_edit_back() {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1) {
 		EditorNode::get_singleton()->edit_current();
 	}
@@ -451,6 +451,8 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_menu_collapseall", &InspectorDock::_menu_collapseall);
 	ClassDB::bind_method("_menu_expandall", &InspectorDock::_menu_expandall);
 
+	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
+
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
 
@@ -474,7 +476,7 @@ void InspectorDock::clear() {
 }
 
 void InspectorDock::update(Object *p_object) {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	backward_button->set_disabled(editor_history->is_at_beginning());
 	forward_button->set_disabled(editor_history->is_at_end());
 
@@ -633,7 +635,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
 	add_child(subresource_hb);
-	editor_path = memnew(EditorPath(EditorNode::get_singleton()->get_editor_history()));
+	editor_path = memnew(EditorPath(EditorNode::get_singleton()->get_editor_selection_history()));
 	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	subresource_hb->add_child(editor_path);
 

@@ -63,13 +63,6 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
-Files: ./modules/fbx/fbx_parser/
-Comment: Open Asset Import Library (FBX parser)
-Copyright: 2006-2020, assimp team
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
-License: BSD-3-clause
-
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*

@@ -143,21 +143,20 @@ public:
 	virtual ~MethodBind();
 };
 
-template <class T>
-class MethodBindVarArg : public MethodBind {
-public:
-	typedef Variant (T::*NativeCall)(const Variant **, int, Callable::CallError &);
-
+// MethodBindVarArg base CRTP
+template <class Derived, class T, class R, bool should_returns>
+class MethodBindVarArgBase : public MethodBind {
 protected:
-	NativeCall call_method = nullptr;
-	MethodInfo arguments;
+	R(T::*method)
+	(const Variant **, int, Callable::CallError &);
+	MethodInfo method_info;
 
 public:
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
 		if (p_arg < 0) {
-			return arguments.return_val;
-		} else if (p_arg < arguments.arguments.size()) {
-			return arguments.arguments[p_arg];
+			return _gen_return_type_info();
+		} else if (p_arg < method_info.arguments.size()) {
+			return method_info.arguments[p_arg];
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
@@ -173,24 +172,31 @@ public:
 	}
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		T *instance = static_cast<T *>(p_object);
-		return (instance->*call_method)(p_args, p_arg_count, r_error);
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+		ERR_FAIL(); // Can't call.
 	}
 
-	void set_method_info(const MethodInfo &p_info, bool p_return_nil_is_variant) {
-		set_argument_count(p_info.arguments.size());
-		Variant::Type *at = memnew_arr(Variant::Type, p_info.arguments.size() + 1);
-		at[0] = p_info.return_val.type;
-		if (p_info.arguments.size()) {
+	virtual bool is_const() const { return false; }
+
+	virtual bool is_vararg() const { return true; }
+
+	MethodBindVarArgBase(
+			R (T::*p_method)(const Variant **, int, Callable::CallError &),
+			const MethodInfo &p_method_info,
+			bool p_return_nil_is_variant) :
+			method(p_method), method_info(p_method_info) {
+		set_argument_count(method_info.arguments.size());
+		Variant::Type *at = memnew_arr(Variant::Type, method_info.arguments.size() + 1);
+		at[0] = _gen_return_type_info().type;
+		if (method_info.arguments.size()) {
 #ifdef DEBUG_METHODS_ENABLED
 			Vector<StringName> names;
-			names.resize(p_info.arguments.size());
+			names.resize(method_info.arguments.size());
 #endif
-			for (int i = 0; i < p_info.arguments.size(); i++) {
-				at[i + 1] = p_info.arguments[i].type;
+			for (int i = 0; i < method_info.arguments.size(); i++) {
+				at[i + 1] = method_info.arguments[i].type;
 #ifdef DEBUG_METHODS_ENABLED
-				names.write[i] = p_info.arguments[i].name;
+				names.write[i] = method_info.arguments[i].name;
 #endif
 			}
 
@@ -199,31 +205,76 @@ public:
 #endif
 		}
 		argument_types = at;
-		arguments = p_info;
 		if (p_return_nil_is_variant) {
-			arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			method_info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		}
+
+		_set_returns(should_returns);
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
-		ERR_FAIL(); // Can't call.
+private:
+	PropertyInfo _gen_return_type_info() const {
+		return Derived::_gen_return_type_info_impl();
+	}
+};
+
+// variadic, no return
+template <class T>
+class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false> {
+	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
+
+public:
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		(static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>::method)(p_args, p_arg_count, r_error);
+		return {};
 	}
 
-	void set_method(NativeCall p_method) { call_method = p_method; }
-	virtual bool is_const() const { return false; }
+	MethodBindVarArgT(
+			void (T::*p_method)(const Variant **, int, Callable::CallError &),
+			const MethodInfo &p_method_info,
+			bool p_return_nil_is_variant) :
+			MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>(p_method, p_method_info, p_return_nil_is_variant) {
+	}
 
-	virtual bool is_vararg() const { return true; }
-
-	MethodBindVarArg() {
-		_set_returns(true);
+private:
+	static PropertyInfo _gen_return_type_info_impl() {
+		return {};
 	}
 };
 
 template <class T>
-MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
-	MethodBindVarArg<T> *a = memnew((MethodBindVarArg<T>));
-	a->set_method(p_method);
-	a->set_method_info(p_info, p_return_nil_is_variant);
+MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
+	MethodBind *a = memnew((MethodBindVarArgT<T>)(p_method, p_info, p_return_nil_is_variant));
+	a->set_instance_class(T::get_class_static());
+	return a;
+}
+
+// variadic, return
+template <class T, class R>
+class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true> {
+	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
+
+public:
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
+	}
+
+	MethodBindVarArgTR(
+			R (T::*p_method)(const Variant **, int, Callable::CallError &),
+			const MethodInfo &p_info,
+			bool p_return_nil_is_variant) :
+			MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>(p_method, p_info, p_return_nil_is_variant) {
+	}
+
+private:
+	static PropertyInfo _gen_return_type_info_impl() {
+		return GetTypeInfo<R>::get_class_info();
+	}
+};
+
+template <class T, class R>
+MethodBind *create_vararg_method_bind(R (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
+	MethodBind *a = memnew((MethodBindVarArgTR<T, R>)(p_method, p_info, p_return_nil_is_variant));
 	a->set_instance_class(T::get_class_static());
 	return a;
 }

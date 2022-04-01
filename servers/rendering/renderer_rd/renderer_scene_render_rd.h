@@ -41,7 +41,6 @@
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog_process.glsl.gen.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -93,7 +92,6 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
-	RendererRD::TextureStorage *texture_storage;
 	RendererStorageRD *storage;
 	double time;
 	double time_step = 0;
@@ -909,7 +907,7 @@ private:
 	void _volumetric_fog_erase(RenderBuffers *rb);
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
-	struct FogShaderData : public RendererStorageRD::ShaderData {
+	struct FogShaderData : public RendererRD::ShaderData {
 		bool valid;
 		RID version;
 
@@ -929,7 +927,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -939,7 +937,7 @@ private:
 		virtual ~FogShaderData();
 	};
 
-	struct FogMaterialData : public RendererStorageRD::MaterialData {
+	struct FogMaterialData : public RendererRD::MaterialData {
 		FogShaderData *shader_data;
 		RID uniform_set;
 		bool uniform_set_updated;
@@ -950,11 +948,11 @@ private:
 		virtual ~FogMaterialData();
 	};
 
-	RendererStorageRD::ShaderData *_create_fog_shader_func();
-	static RendererStorageRD::ShaderData *_create_fog_shader_funcs();
+	RendererRD::ShaderData *_create_fog_shader_func();
+	static RendererRD::ShaderData *_create_fog_shader_funcs();
 
-	RendererStorageRD::MaterialData *_create_fog_material_func(FogShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_fog_material_funcs(RendererStorageRD::ShaderData *p_shader);
+	RendererRD::MaterialData *_create_fog_material_func(FogShaderData *p_shader);
+	static RendererRD::MaterialData *_create_fog_material_funcs(RendererRD::ShaderData *p_shader);
 
 	RID shadow_sampler;
 

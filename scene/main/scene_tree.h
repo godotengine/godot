@@ -175,8 +175,8 @@ private:
 	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
-	Variant _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
 	// Optimization.

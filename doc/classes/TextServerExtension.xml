@@ -373,7 +373,7 @@
 			<return type="Transform2D" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Retruns 2D transform applied to the font outlines.
+				Returns 2D transform applied to the font outlines.
 			</description>
 		</method>
 		<method name="font_get_underline_position" qualifiers="virtual const">

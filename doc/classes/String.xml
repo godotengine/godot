@@ -341,7 +341,6 @@
 				print("1.7".is_valid_float()) # Prints "true"
 				print("24".is_valid_float()) # Prints "true"
 				print("7e3".is_valid_float()) # Prints "true"
-				print("24".is_valid_float()) # Prints "true"
 				print("Hello".is_valid_float()) # Prints "false"
 				[/codeblock]
 			</description>
@@ -678,7 +677,7 @@
 			<return type="float" />
 			<argument index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this string compared to another. 1.0 means totally similar and 0.0 means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of 1.0 means totally similar, while 0.0 means totally dissimilar.
 				[codeblock]
 				print("ABC123".similarity("ABC123")) # Prints "1"
 				print("ABC123".similarity("XYZ456")) # Prints "0"

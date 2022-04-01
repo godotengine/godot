@@ -79,21 +79,19 @@ collect_features_myanmar (hb_ot_shape_planner_t *plan)
   /* Do this before any lookups have been applied. */
   map->add_gsub_pause (setup_syllables_myanmar);
 
-  map->enable_feature (HB_TAG('l','o','c','l'));
+  map->enable_feature (HB_TAG('l','o','c','l'), F_PER_SYLLABLE);
   /* The Indic specs do not require ccmp, but we apply it here since if
    * there is a use of it, it's typically at the beginning. */
-  map->enable_feature (HB_TAG('c','c','m','p'));
+  map->enable_feature (HB_TAG('c','c','m','p'), F_PER_SYLLABLE);
 
 
   map->add_gsub_pause (reorder_myanmar);
 
   for (unsigned int i = 0; i < ARRAY_LENGTH (myanmar_basic_features); i++)
   {
-    map->enable_feature (myanmar_basic_features[i], F_MANUAL_ZWJ);
+    map->enable_feature (myanmar_basic_features[i], F_MANUAL_ZWJ | F_PER_SYLLABLE);
     map->add_gsub_pause (nullptr);
   }
-
-  map->add_gsub_pause (_hb_clear_syllables);
 
   for (unsigned int i = 0; i < ARRAY_LENGTH (myanmar_other_features); i++)
     map->enable_feature (myanmar_other_features[i], F_MANUAL_ZWJ);

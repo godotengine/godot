@@ -52,32 +52,6 @@
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 
-void OpenXRAPI::setup_global_defs() {
-	// As OpenXRAPI is not constructed if OpenXR is not enabled, we register our project and editor settings here
-
-	// Project settings
-	GLOBAL_DEF_BASIC("xr/openxr/enabled", false);
-	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://default_action_map.tres");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
-
-	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head mounted,Handheld"));
-
-	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
-
-	GLOBAL_DEF_BASIC("xr/openxr/reference_space", "1");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/reference_space", PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"));
-
-#ifdef TOOLS_ENABLED
-	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
-
-	// editor settings (it seems we're too early in the process when setting up rendering, to access editor settings...)
-	// EDITOR_DEF_RST("xr/openxr/in_editor", false);
-	// GLOBAL_DEF("xr/openxr/in_editor", false);
-#endif
-}
-
 bool OpenXRAPI::openxr_is_enabled() {
 	// @TODO we need an overrule switch so we can force enable openxr, i.e run "godot --openxr_enabled"
 
@@ -126,7 +100,7 @@ String OpenXRAPI::get_error_string(XrResult result) {
 }
 
 String OpenXRAPI::get_swapchain_format_name(int64_t p_swapchain_format) const {
-	// This is rendering engine dependend...
+	// This is rendering engine dependent...
 	if (graphics_extension) {
 		return graphics_extension->get_swapchain_format_name(p_swapchain_format);
 	}
@@ -365,7 +339,7 @@ bool OpenXRAPI::get_system_info() {
 }
 
 bool OpenXRAPI::load_supported_view_configuration_types() {
-	// This queries the supported configuration types, likely there will only be one chosing between Mono (phone AR) and Stereo (HMDs)
+	// This queries the supported configuration types, likely there will only be one choosing between Mono (phone AR) and Stereo (HMDs)
 
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 

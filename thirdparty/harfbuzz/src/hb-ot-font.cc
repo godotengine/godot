@@ -131,11 +131,25 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
   const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
   const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
 
-  for (unsigned int i = 0; i < count; i++)
+  if (vmtx.has_data ())
+    for (unsigned int i = 0; i < count; i++)
+    {
+      *first_advance = font->em_scale_y (-(int) vmtx.get_advance (*first_glyph, font));
+      first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+      first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    }
+  else
   {
-    *first_advance = font->em_scale_y (-(int) vmtx.get_advance (*first_glyph, font));
-    first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
-    first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    hb_font_extents_t font_extents;
+    font->get_h_extents_with_fallback (&font_extents);
+    hb_position_t advance = -(font_extents.ascender - font_extents.descender);
+
+    for (unsigned int i = 0; i < count; i++)
+    {
+      *first_advance = advance;
+      first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+      first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    }
   }
 }
 #endif
@@ -163,9 +177,19 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
   hb_glyph_extents_t extents = {0};
   if (ot_face->glyf->get_extents (font, glyph, &extents))
   {
-    const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
-    hb_position_t tsb = vmtx.get_side_bearing (font, glyph);
-    *y = extents.y_bearing + font->em_scale_y (tsb);
+    if (ot_face->vmtx->has_data ())
+    {
+      const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
+      hb_position_t tsb = vmtx.get_side_bearing (font, glyph);
+      *y = extents.y_bearing + font->em_scale_y (tsb);
+      return true;
+    }
+
+    hb_font_extents_t font_extents;
+    font->get_h_extents_with_fallback (&font_extents);
+    hb_position_t advance = font_extents.ascender - font_extents.descender;
+    int diff = advance - -extents.height;
+    *y = extents.y_bearing + (diff >> 1);
     return true;
   }
 

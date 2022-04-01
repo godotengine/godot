@@ -1101,6 +1101,14 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal(SNAME("about_to_popup"));
 
+	if (!_get_embedder() && get_flag(FLAG_POPUP)) {
+		// Send a focus-out notification when opening a Window Manager Popup.
+		SceneTree *scene_tree = get_tree();
+		if (scene_tree) {
+			scene_tree->notify_group("_viewports", NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+		}
+	}
+
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
@@ -1450,6 +1458,15 @@ void Window::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = hint_string;
 	}
+}
+
+Transform2D Window::get_screen_transform() const {
+	Transform2D embedder_transform = Transform2D();
+	if (_get_embedder()) {
+		embedder_transform.translate(get_position());
+		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
+	}
+	return embedder_transform * Viewport::get_screen_transform();
 }
 
 void Window::_bind_methods() {

@@ -36,7 +36,7 @@ void UniformSetCacheRD::_invalidate(Cache *p_cache) {
 	if (p_cache->prev) {
 		p_cache->prev->next = p_cache->next;
 	} else {
-		// At begining of table
+		// At beginning of table
 		uint32_t table_idx = p_cache->hash % HASH_TABLE_SIZE;
 		hash_table[table_idx] = p_cache->next;
 	}

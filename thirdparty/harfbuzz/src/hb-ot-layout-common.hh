@@ -37,7 +37,7 @@
 
 
 #ifndef HB_MAX_NESTING_LEVEL
-#define HB_MAX_NESTING_LEVEL	6
+#define HB_MAX_NESTING_LEVEL	64
 #endif
 #ifndef HB_MAX_CONTEXT_LENGTH
 #define HB_MAX_CONTEXT_LENGTH	64
@@ -58,6 +58,10 @@
 
 #ifndef HB_MAX_LANGSYS
 #define HB_MAX_LANGSYS	2000
+#endif
+
+#ifndef HB_MAX_LANGSYS_FEATURE_COUNT
+#define HB_MAX_LANGSYS_FEATURE_COUNT 50000
 #endif
 
 #ifndef HB_MAX_FEATURES
@@ -105,34 +109,15 @@ struct hb_prune_langsys_context_t
       script_langsys_map (script_langsys_map_),
       duplicate_feature_map (duplicate_feature_map_),
       new_feature_indexes (new_collected_feature_indexes_),
-      script_count (0),langsys_count (0) {}
+      script_count (0),langsys_feature_count (0) {}
 
-  bool visitedScript (const void *s)
+  bool visitScript ()
+  { return script_count++ < HB_MAX_SCRIPTS; }
+
+  bool visitLangsys (unsigned feature_count)
   {
-    if (script_count++ > HB_MAX_SCRIPTS)
-      return true;
-
-    return visited (s, visited_script);
-  }
-
-  bool visitedLangsys (const void *l)
-  {
-    if (langsys_count++ > HB_MAX_LANGSYS)
-      return true;
-
-    return visited (l, visited_langsys);
-  }
-
-  private:
-  template <typename T>
-  bool visited (const T *p, hb_set_t &visited_set)
-  {
-    hb_codepoint_t delta = (hb_codepoint_t) ((uintptr_t) p - (uintptr_t) table);
-    if (visited_set.in_error () || visited_set.has (delta))
-      return true;
-
-    visited_set.add (delta);
-    return false;
+    langsys_feature_count += feature_count;
+    return langsys_feature_count < HB_MAX_LANGSYS_FEATURE_COUNT;
   }
 
   public:
@@ -142,10 +127,8 @@ struct hb_prune_langsys_context_t
   hb_set_t           *new_feature_indexes;
 
   private:
-  hb_set_t visited_script;
-  hb_set_t visited_langsys;
   unsigned script_count;
-  unsigned langsys_count;
+  unsigned langsys_feature_count;
 };
 
 struct hb_subset_layout_context_t :
@@ -643,11 +626,14 @@ struct LangSys
     | hb_map (feature_index_map)
     ;
 
-    if (iter.len () != o_iter.len ())
-      return false;
+    for (; iter && o_iter; iter++, o_iter++)
+    {
+      unsigned a = *iter;
+      unsigned b = *o_iter;
+      if (a != b) return false;
+    }
 
-    for (const auto _ : + hb_zip (iter, o_iter))
-      if (_.first != _.second) return false;
+    if (iter || o_iter) return false;
 
     return true;
   }
@@ -732,7 +718,7 @@ struct Script
                       unsigned script_index) const
   {
     if (!has_default_lang_sys () && !get_lang_sys_count ()) return;
-    if (c->visitedScript (this)) return;
+    if (!c->visitScript ()) return;
 
     if (!c->script_langsys_map->has (script_index))
     {
@@ -749,15 +735,14 @@ struct Script
     {
       //only collect features from non-redundant langsys
       const LangSys& d = get_default_lang_sys ();
-      if (!c->visitedLangsys (&d)) {
+      if (c->visitLangsys (d.get_feature_count ())) {
         d.collect_features (c);
       }
 
       for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
       {
-
         const LangSys& l = this+_.first.offset;
-        if (c->visitedLangsys (&l)) continue;
+        if (!c->visitLangsys (l.get_feature_count ())) continue;
         if (l.compare (d, c->duplicate_feature_map)) continue;
 
         l.collect_features (c);
@@ -769,7 +754,7 @@ struct Script
       for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
       {
         const LangSys& l = this+_.first.offset;
-        if (c->visitedLangsys (&l)) continue;
+        if (!c->visitLangsys (l.get_feature_count ())) continue;
         l.collect_features (c);
         c->script_langsys_map->get (script_index)->add (_.second);
       }

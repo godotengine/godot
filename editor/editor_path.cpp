@@ -194,7 +194,7 @@ void EditorPath::_notification(int p_what) {
 void EditorPath::_bind_methods() {
 }
 
-EditorPath::EditorPath(EditorHistory *p_history) {
+EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	history = p_history;
 
 	MarginContainer *main_mc = memnew(MarginContainer);

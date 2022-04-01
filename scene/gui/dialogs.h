@@ -50,6 +50,7 @@ class AcceptDialog : public Window {
 	Label *label;
 	Button *ok;
 	bool hide_on_ok = true;
+	bool close_on_escape = true;
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
@@ -86,6 +87,9 @@ public:
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
+
+	void set_close_on_escape(bool p_enable);
+	bool get_close_on_escape() const;
 
 	void set_text(String p_text);
 	String get_text() const;

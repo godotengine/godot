@@ -40,6 +40,8 @@
 #include "hb-ot-stat-table.hh"
 #include "hb-ot-math-table.hh"
 
+using OT::Layout::GSUB::GSUB;
+
 
 typedef hb_hashmap_t<unsigned, hb_set_t *> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
@@ -358,7 +360,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 #ifndef HB_NO_SUBSET_LAYOUT
   if (close_over_gsub)
     // closure all glyphs/lookups/features needed for GSUB substitutions.
-    _closure_glyphs_lookups_features<OT::GSUB> (
+    _closure_glyphs_lookups_features<GSUB> (
         plan->source,
         plan->_glyphset_gsub,
         plan->layout_features,

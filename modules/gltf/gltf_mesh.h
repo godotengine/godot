@@ -55,4 +55,5 @@ public:
 	Array get_instance_materials();
 	void set_instance_materials(Array p_instance_materials);
 };
+
 #endif // GLTF_MESH_H

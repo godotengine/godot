@@ -90,6 +90,9 @@
 		<member name="max_speed" type="float" setter="set_max_speed" getter="get_max_speed" default="200.0">
 			The maximum speed that an agent can move.
 		</member>
+		<member name="navigable_layers" type="int" setter="set_navigable_layers" getter="get_navigable_layers" default="1">
+			A bitfield determining what layers of navigation regions this agent will use to calculate path. Changing it runtime will clear current navigation path and generate new one, according to new layers.
+		</member>
 		<member name="neighbor_dist" type="float" setter="set_neighbor_dist" getter="get_neighbor_dist" default="500.0">
 			The distance to search for other agents.
 		</member>
