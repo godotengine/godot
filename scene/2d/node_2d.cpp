@@ -30,6 +30,8 @@
 
 #include "node_2d.h"
 
+#include "scene/main/viewport.h"
+
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 	Dictionary state;
@@ -387,6 +389,16 @@ void Node2D::set_y_sort_enabled(bool p_enabled) {
 
 bool Node2D::is_y_sort_enabled() const {
 	return y_sort_enabled;
+}
+
+void Node2D::_notification(int p_notification) {
+	switch (p_notification) {
+		case NOTIFICATION_MOVED_IN_PARENT: {
+			if (get_viewport()) {
+				get_viewport()->gui_set_root_order_dirty();
+			}
+		} break;
+	}
 }
 
 void Node2D::_bind_methods() {
