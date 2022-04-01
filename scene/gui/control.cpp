@@ -367,7 +367,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	Ref<Theme> theme = Theme::get_default();
 
-	p_list->push_back(PropertyInfo(Variant::NIL, "Theme Overrides", PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	{
 		List<StringName> names;
