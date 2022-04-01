@@ -2229,7 +2229,7 @@ Atom OS_X11::_process_selection_request_target(Atom p_target, Window p_requestor
 		// is the owner during a selection request.
 		CharString clip;
 		static const char *target_type = "PRIMARY";
-		if (p_selection != None && String(XGetAtomName(x11_display, p_selection)) == target_type) {
+		if (p_selection != None && get_atom_name(x11_display, p_selection) == target_type) {
 			clip = OS::get_clipboard_primary().utf8();
 		} else {
 			clip = OS::get_clipboard().utf8();
