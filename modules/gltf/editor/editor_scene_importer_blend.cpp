@@ -276,6 +276,13 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 #else
 	path = path.plus_file("blender");
 #endif
+
+#if defined(OSX_ENABLED)
+	if (!FileAccess::exists(path)) {
+		path = p_path.plus_file("Blender");
+	}
+#endif
+
 	if (!FileAccess::exists(path)) {
 		if (r_err) {
 			*r_err = TTR("Path does not contain a Blender installation.");
@@ -447,8 +454,43 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		auto_detected_path = "";
 
 #if defined(OSX_ENABLED)
-
 		// MacOS Detection
+		{
+			Vector<String> mdfind_paths;
+			{
+				List<String> mdfind_args;
+				mdfind_args.push_back("kMDItemCFBundleIdentifier=org.blenderfoundation.blender");
+
+				String output;
+				Error err = OS::get_singleton()->execute("mdfind", mdfind_args, &output);
+				if (err == OK) {
+					mdfind_paths = output.split("\n");
+				}
+			}
+
+			bool found = false;
+			for (const String &path : mdfind_paths) {
+				found = _autodetect_path(path.plus_file("Contents/MacOS"));
+				if (found) {
+					break;
+				}
+			}
+			if (!found) {
+				found = _autodetect_path("/opt/homebrew/bin");
+			}
+			if (!found) {
+				found = _autodetect_path("/opt/local/bin");
+			}
+			if (!found) {
+				found = _autodetect_path("/usr/local/bin");
+			}
+			if (!found) {
+				found = _autodetect_path("/usr/local/opt");
+			}
+			if (!found) {
+				found = _autodetect_path("/Applications/Blender.app/Contents/MacOS");
+			}
+		}
 #elif defined(WINDOWS_ENABLED)
 		// Code by Pedro Estebanez (https://github.com/godotengine/godot/pull/59766)
 		{
