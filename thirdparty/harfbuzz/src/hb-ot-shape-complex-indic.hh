@@ -368,6 +368,7 @@ set_indic_properties (hb_glyph_info_t &info)
   else if (unlikely (u == 0x0980u)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/issues/538 */
   else if (unlikely (u == 0x09FCu)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/pull/1613 */
   else if (unlikely (u == 0x0C80u)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/pull/623 */
+  else if (unlikely (u == 0x0D04u)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/pull/3511 */
   else if (unlikely (hb_in_range<hb_codepoint_t> (u, 0x2010u, 0x2011u)))
 				    cat = OT_PLACEHOLDER;
   else if (unlikely (u == 0x25CCu)) cat = OT_DOTTEDCIRCLE;

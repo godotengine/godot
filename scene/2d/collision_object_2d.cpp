@@ -81,7 +81,7 @@ void CollisionObject2D::_notification(int p_what) {
 				return;
 			}
 
-			Transform2D global_transform = get_global_transform();
+			Transform2D global_transform = get_global_transform_with_canvas();
 
 			if (area) {
 				PhysicsServer2D::get_singleton()->area_set_transform(rid, global_transform);

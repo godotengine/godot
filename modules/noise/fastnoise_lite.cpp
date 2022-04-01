@@ -484,7 +484,7 @@ void FastNoiseLite::_bind_methods() {
 
 	// Domain warp.
 
-	ADD_GROUP("Domain warp", "domain_warp_");
+	ADD_GROUP("Domain Warp", "domain_warp_");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_enabled", "domain_warp_enabled"), &FastNoiseLite::set_domain_warp_enabled);
 	ClassDB::bind_method(D_METHOD("is_domain_warp_enabled"), &FastNoiseLite::is_domain_warp_enabled);

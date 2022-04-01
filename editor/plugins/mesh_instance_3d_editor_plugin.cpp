@@ -75,7 +75,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				StaticBody3D *body = memnew(StaticBody3D);
-				body->add_child(cshape);
+				body->add_child(cshape, true);
 
 				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
@@ -110,7 +110,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				StaticBody3D *body = memnew(StaticBody3D);
-				body->add_child(cshape);
+				body->add_child(cshape, true);
 
 				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
 

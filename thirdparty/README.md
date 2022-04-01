@@ -204,7 +204,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 4.0.1 (1f79ba9407ecd54e382997940cbcc3fb71bef8be, 2022)
+- Version: 4.2.0 (9d5730b958974bc9db95e46e6bad52e9e9cd6e1c, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -383,17 +383,17 @@ that file when upgrading.
 
 ## minizip
 
-- Upstream: http://www.zlib.net
-- Version: 1.2.11 (zlib contrib, 2017)
+- Upstream: https://www.zlib.net
+- Version: 1.2.12 (zlib contrib, 2022)
 - License: zlib
 
 Files extracted from the upstream source:
 
-- contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
+- contrib/minizip/{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}
 
 Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments and a patch is provided in the minizip/ folder.
+comments and a patch is provided in the `patches` folder.
 
 
 ## misc
@@ -688,7 +688,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.0-development (2022-02-24), commit `dc3f6bb9159df22ceed69c7765ddfb4fbb1b6ed0`
+Version: 3.0.1-development (2022-03-28), commit `5b598e0a359381d7e2a94149210a1b7642024ae5`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
@@ -725,8 +725,8 @@ Files extracted from upstream source:
 
 ## zlib
 
-- Upstream: http://www.zlib.net
-- Version: 1.2.11 (2017)
+- Upstream: https://www.zlib.net
+- Version: 1.2.12 (2022)
 - License: zlib
 
 Files extracted from upstream source:

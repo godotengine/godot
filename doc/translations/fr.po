@@ -55,13 +55,14 @@
 # Pierre-Alexandre Arènes <palex95870@gmail.com>, 2022.
 # KikooDX <kikoodx@paranoici.org>, 2022.
 # Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2022.
+# Maxim Lopez <maxim.lopez.02@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-17 13:59+0000\n"
-"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
+"PO-Revision-Date: 2022-03-28 23:20+0000\n"
+"Last-Translator: Maxim Lopez <maxim.lopez.02@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -132,16 +133,18 @@ msgid "Default"
 msgstr "Défaut"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Setter"
-msgstr ""
+msgstr "Régleur"
 
 #: doc/tools/make_rst.py
 msgid "value"
 msgstr "valeur"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Getter"
-msgstr ""
+msgstr "Récupérateur"
 
 #: doc/tools/make_rst.py
 msgid ""
@@ -3859,37 +3862,30 @@ msgid "Gamepad SDL miscellaneous button."
 msgstr "Bouton divers de la manette SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad SDL paddle 1 button."
-msgstr "Bouton gauche du pavé directionnel du contrôleur de jeu SDL."
+msgstr "Le bouton 1 du pavé directionnel de la manette SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad SDL paddle 2 button."
-msgstr "Bouton gauche du pavé directionnel du contrôleur de jeu SDL."
+msgstr "Le bouton 2 du pavé directionnel de la manette SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad SDL paddle 3 button."
-msgstr "Bouton gauche du pavé directionnel du contrôleur de jeu SDL."
+msgstr "Le bouton 3 du pavé directionnel de la manette SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad SDL paddle 4 button."
-msgstr "Bouton gauche du pavé directionnel du contrôleur de jeu SDL."
+msgstr "Le bouton 4 du pavé directionnel de la manette SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad SDL touchpad button."
 msgstr "Bouton haut du pavé directionnel du contrôleur de jeu SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad left Shoulder button."
 msgstr "Gâchette gauche de manette de jeu SDL."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad left trigger."
 msgstr "Axe de la gâchette gauche de la manette."
 
@@ -3898,7 +3894,6 @@ msgid "Gamepad left stick click."
 msgstr "Clic du stick gauche de la manette."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad right Shoulder button."
 msgstr "Gâchette droite de manette de jeu SDL."
 
@@ -3915,7 +3910,6 @@ msgid "Gamepad left stick horizontal axis."
 msgstr "Axe horizontal du stick gauche de la manette."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad left stick vertical axis."
 msgstr "Axe X de la manette gauche du contrôleur de jeu."
 
@@ -3924,7 +3918,6 @@ msgid "Gamepad right stick horizontal axis."
 msgstr "Axe horizontal du stick droite de la manette."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad right stick vertical axis."
 msgstr "Axe X de la manette droite du contrôleur de jeu."
 
@@ -3937,12 +3930,10 @@ msgid "Generic gamepad axis 5."
 msgstr "Axe 5 de la manette générique."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad left trigger analog axis."
 msgstr "Axe du déclencheur gauche du contrôleur de jeu."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad right trigger analog axis."
 msgstr "Axe du déclencheur gauche du contrôleur de jeu."
 
@@ -4380,13 +4371,13 @@ msgstr ""
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that an integer, float or string property is an enumerated value to "
-"pick in a list specified via a hint string such as [code]\"Hello,Something,"
-"Else\"[/code]."
+"pick in a list specified via a hint string.\n"
+"The hint string is a comma separated list of names such as [code]\"Hello,"
+"Something,Else\"[/code]. For integer and float properties, the first name in "
+"the list has value 0, the next 1, and so on. Explicit values can also be "
+"specified by appending [code]:integer[/code] to the name, e.g. [code]\"Zero,"
+"One,Three:3,Four,Six:6\"[/code]."
 msgstr ""
-"Indique qu'une propriété nombre entier, décimal ou chaîne de caractères est "
-"une valeur énumérée qui doit être choisie depuis une liste spécifiée par une "
-"chaine de caractères d'indication telle que [code]\"Bonjour,Truc,"
-"AutreTruc\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4713,46 +4704,39 @@ msgstr "La variable est de type [Object]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [Dictionary]."
-msgstr "Variable est de type [Dictionary]."
+msgstr "La variable est de type [Dictionary]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [Array]."
-msgstr "Variable est de type [Array]."
+msgstr "La variable est de type [Array]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolByteArray]."
-msgstr "Variable est de type [PackedByteArray]."
+msgstr "La variable est de type [PoolByteArray]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolIntArray]."
-msgstr "Variable est de type [Array]."
+msgstr "La variable est de type [PoolIntArray]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolRealArray]."
-msgstr "Variable est de type [Array]."
+msgstr "Le variable est de type [PoolRealArray]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolStringArray]."
-msgstr "Variable est de type [PackedStringArray]."
+msgstr "La variable est de type [PoolStringArray]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolVector2Array]."
-msgstr "Variable est de type [PackedVector2Array]."
+msgstr "La variable est de type [PoolVector2Array]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolVector3Array]."
-msgstr "Variable est de type [PackedVector3Array]."
+msgstr "La variable est de type [PoolVector3Array]."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolColorArray]."
-msgstr "Variable est de type [PackedColorArray]."
+msgstr "La variable est de type [PoolColorArray]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Represents the size of the [enum Variant.Type] enum."
@@ -4760,51 +4744,51 @@ msgstr "Représente la taille de l'énumération [enum Variant.Type]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Equality operator ([code]==[/code])."
-msgstr "Opérateur d’égalité ([code]==[/code])."
+msgstr "L'opérateur d’égalité ([code]==[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Inequality operator ([code]!=[/code])."
-msgstr "Opérateur d’inégalité ([code]!=[/code])."
+msgstr "L'opérateur d’inégalité ([code]!=[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Less than operator ([code]<[/code])."
-msgstr "Opérateur inférieur à ([code]<[/code])."
+msgstr "L'opérateur inférieur à ([code]<[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Less than or equal operator ([code]<=[/code])."
-msgstr "Opérateur inférieur ou égal ([code]<=[/code])."
+msgstr "L'opérateur inférieur ou égal ([code]<=[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Greater than operator ([code]>[/code])."
-msgstr "Opérateur supérieur à ([code]>[/code])."
+msgstr "L'opérateur supérieur à ([code]>[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Greater than or equal operator ([code]>=[/code])."
-msgstr "Opérateur supérieur ou égal ([code]>=[/code])."
+msgstr "L'opérateur supérieur ou égal ([code]>=[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Addition operator ([code]+[/code])."
-msgstr "Opérateur d’addition ([code]+[/code])."
+msgstr "L'opérateur d’addition ([code]+[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Subtraction operator ([code]-[/code])."
-msgstr "Opérateur de soustraction ([code]-[/code])."
+msgstr "L'opérateur de soustraction ([code]-[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Multiplication operator ([code]*[/code])."
-msgstr "Opérateur de multiplication ([code]*[/code])."
+msgstr "L'opérateur de multiplication ([code]*[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Division operator ([code]/[/code])."
-msgstr "Opérateur de division ([code]/[/code])."
+msgstr "L'opérateur de division ([code]/[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unary negation operator ([code]-[/code])."
-msgstr "Opérateur de négation unaire ([code]-[/code])."
+msgstr "L'opérateur de négation unaire ([code]-[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unary plus operator ([code]+[/code])."
-msgstr "Opérateur d'addition unaire ([code]+[/code])."
+msgstr "L'opérateur d'addition unaire ([code]+[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Remainder/modulo operator ([code]%[/code])."
@@ -4840,11 +4824,11 @@ msgstr "Opérateur binaire NON ([code]~[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Logical AND operator ([code]and[/code] or [code]&&[/code])."
-msgstr "Opérateur logique ET ([code]and[/code] or [code]&&[/code])."
+msgstr "L'opérateur logique ET ([code]and[/code] or [code]&&[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Logical OR operator ([code]or[/code] or [code]||[/code])."
-msgstr "Opérateur logique OU ([code]or[/code] or [code]||[/code])."
+msgstr "L'opérateur logique OU ([code]or[/code] or [code]||[/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Logical XOR operator (not implemented in GDScript)."
@@ -4852,7 +4836,7 @@ msgstr "Opérateur logique OU exclusif (XOR) (non implémenté dans le GDScript)
 
 #: doc/classes/@GlobalScope.xml
 msgid "Logical NOT operator ([code]not[/code] or [code]![/code])."
-msgstr "Opérateur logique NON ([code]not[/code] or [code]![/code])."
+msgstr "L'opérateur logique NON ([code]not[/code] or [code]![/code])."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Logical IN operator ([code]in[/code])."
@@ -5515,9 +5499,8 @@ msgid "Returns the given frame's delay value."
 msgstr "Retourne la valeur du délai de la trame donnée."
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid "Returns the given frame's [Texture]."
-msgstr "Retourne la [Texture2D] de l'image donnée."
+msgstr "Retourne la trame spécifiée pour cette [Texture]."
 
 #: doc/classes/AnimatedTexture.xml
 msgid ""
@@ -6867,8 +6850,11 @@ msgstr ""
 
 #: doc/classes/AnimationNodeBlendTree.xml
 msgid ""
-"This node may contain a sub-tree of any other blend type nodes, such as mix, "
-"blend2, blend3, one shot, etc. This is one of the most commonly used roots."
+"This node may contain a sub-tree of any other blend type nodes, such as "
+"[AnimationNodeTransition], [AnimationNodeBlend2], [AnimationNodeBlend3], "
+"[AnimationNodeOneShot], etc. This is one of the most commonly used roots.\n"
+"An [AnimationNodeOutput] node named [code]output[/code] is created by "
+"default."
 msgstr ""
 
 #: doc/classes/AnimationNodeBlendTree.xml
@@ -7034,7 +7020,6 @@ msgid "Returns the animation node with the given name."
 msgstr ""
 
 #: doc/classes/AnimationNodeStateMachine.xml
-#, fuzzy
 msgid "Returns the given animation node's name."
 msgstr "Retourne le nom du nœud d'animation donné."
 
@@ -7274,7 +7259,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
-#, fuzzy
 msgid "Container and player of [Animation] resources."
 msgstr "Conteneur et lecteur de ressources [Animation]."
 
@@ -7838,9 +7822,8 @@ msgid "Gets the node type, will return from [enum NodeType] enum."
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Renames a node in the graph."
-msgstr "Retourne une nouvelle instance du scénario."
+msgstr "Renomme un nœud du graphe."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -8562,51 +8545,32 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolColorArray]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedColorArray] "
-"donné."
+msgstr "Construit an tableau à partir d'un [PoolColorArray]."
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolVector3Array]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector3Array] "
-"donné."
+msgstr "Construit an tableau à partir d'un [PoolVector3Array]."
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolVector2Array]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector2Array] "
-"donné."
+msgstr "Construit an tableau à partir d'un [PoolVector2Array]."
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolStringArray]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedStringArray] "
-"donné."
+msgstr "Construit an tableau à partir d'un [PoolStringArray]."
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolRealArray]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Array] donné."
+msgstr "Construit an tableau à partir d'un [PoolRealArray]."
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolIntArray]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt32Array] "
-"donné."
+msgstr "Construit an tableau à partir d'un [PoolIntArray]."
 
 #: doc/classes/Array.xml
-#, fuzzy
 msgid "Constructs an array from a [PoolByteArray]."
-msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedByteArray] "
-"donné."
+msgstr "Construit an tableau à partir d'un [PoolByteArray]."
 
 #: doc/classes/Array.xml doc/classes/PoolByteArray.xml
 #: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
@@ -9117,9 +9081,8 @@ msgid "[PoolVector2Array] for UV coordinates."
 msgstr "[PackedVector2Array] pour les coordonnées UV."
 
 #: doc/classes/ArrayMesh.xml
-#, fuzzy
 msgid "[PoolVector2Array] for second UV coordinates."
-msgstr "[PackedVector2Array] pour les secondes coordonnées UV."
+msgstr "[PoolVector2Array] pour les secondes coordonnées UV."
 
 #: doc/classes/ArrayMesh.xml
 msgid ""
@@ -11570,7 +11533,7 @@ msgstr ""
 
 #: doc/classes/AudioStreamGenerator.xml
 msgid "Audio stream that generates sounds procedurally."
-msgstr ""
+msgstr "Un flux audio qui génère des sons de manière procédurale."
 
 #: doc/classes/AudioStreamGenerator.xml
 msgid ""
@@ -11611,7 +11574,7 @@ msgstr ""
 
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 msgid "Plays back audio generated using [AudioStreamGenerator]."
-msgstr ""
+msgstr "Joue les sons générés avec [AudioStreamGenerator]."
 
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 msgid ""
@@ -11804,7 +11767,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
-#, fuzzy
 msgid "Returns the position in the [AudioStream]."
 msgstr "Retourne la position dans le [AudioStream]."
 
@@ -11963,9 +11925,8 @@ msgstr ""
 "de portée définie par [member max_distance]."
 
 #: doc/classes/AudioStreamPlayer3D.xml
-#, fuzzy
 msgid "The [AudioStream] resource to be played."
-msgstr "Ressource [VideoStream] pour les vidéos WebM."
+msgstr "La ressource [AudioStream] à jouer."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid ""
@@ -12230,11 +12191,16 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
-"When enabled, the lightmapper will merge the textures for all meshes into a "
-"single large layered texture. Not supported in GLES2."
+"If [code]true[/code], the lightmapper will merge the textures for all meshes "
+"into one or several large layered textures. If [code]false[/code], every "
+"mesh will get its own lightmap texture, which is less efficient.\n"
+"[b]Note:[/b] Atlas lightmap rendering is only supported in GLES3, [i]not[/i] "
+"GLES2. Non-atlas lightmap rendering is supported by both GLES3 and GLES2. If "
+"[member ProjectSettings.rendering/quality/driver/fallback_to_gles2] is "
+"[code]true[/code], consider baking lightmaps with [member atlas_generate] "
+"set to [code]false[/code] so that the resulting lightmap is visible in both "
+"GLES3 and GLES2."
 msgstr ""
-"Si actif, le lightmapper fusionnera les textures de tous les maillages dans "
-"une seule texture assez large avec claque. Ça n'est pas supporter avec GLES2."
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -12285,7 +12251,7 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid "Bake quality of the capture data."
-msgstr ""
+msgstr "La qualité du bake pour les données de capture."
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -12382,25 +12348,23 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid "The lowest bake quality mode. Fastest to calculate."
-msgstr ""
+msgstr "La qualité de bake la plus basse. La plus rapide à calculer."
 
 #: doc/classes/BakedLightmap.xml
-#, fuzzy
 msgid "The default bake quality mode."
-msgstr "L'arrière-plan par défaut pour [GraphNode]."
+msgstr "Le mode de qualité du bake par défaut."
 
 #: doc/classes/BakedLightmap.xml
 msgid "A higher bake quality mode. Takes longer to calculate."
-msgstr ""
+msgstr "Une qualité de bake plus haute. Prend plus de temps de calcul."
 
 #: doc/classes/BakedLightmap.xml
 msgid "The highest bake quality mode. Takes the longest to calculate."
-msgstr ""
+msgstr "La qualité de bake la plus haute. La plus longue à calculer."
 
 #: doc/classes/BakedLightmap.xml
-#, fuzzy
 msgid "Baking was successful."
-msgstr "La connexion a réussi."
+msgstr "Le baking a réussi."
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -12425,6 +12389,8 @@ msgstr "Taille du plan généré."
 #: doc/classes/BakedLightmap.xml
 msgid "Some mesh contains UV2 values outside the [code][0,1][/code] range."
 msgstr ""
+"Certains maillages contiennent des valeurs de UV2 hors de l'intervalle [code]"
+"[0,1][/code]."
 
 #: doc/classes/BakedLightmap.xml
 #, fuzzy
@@ -12445,7 +12411,7 @@ msgstr ""
 
 #: doc/classes/BakedLightmap.xml
 msgid "No environment is used during baking."
-msgstr ""
+msgstr "Aucun environnement n'est utilisé durant le baking."
 
 #: doc/classes/BakedLightmap.xml
 msgid "The baked environment is automatically picked from the current scene."
@@ -14467,14 +14433,15 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"If [code]enable[/code] is [code]true[/code], children will be updated with "
-"local transform data."
+"If [code]enable[/code] is [code]true[/code], this node will receive "
+"[constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform "
+"changes."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"If [code]enable[/code] is [code]true[/code], children will be updated with "
-"global transform data."
+"If [code]enable[/code] is [code]true[/code], this node will receive "
+"[constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -14588,9 +14555,14 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"The [CanvasItem]'s transform has changed. This notification is only received "
-"if enabled by [method set_notify_transform] or [method "
-"set_notify_local_transform]."
+"The [CanvasItem]'s global transform has changed. This notification is only "
+"received if enabled by [method set_notify_transform]."
+msgstr ""
+
+#: doc/classes/CanvasItem.xml
+msgid ""
+"The [CanvasItem]'s local transform has changed. This notification is only "
+"received if enabled by [method set_notify_local_transform]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -18671,9 +18643,8 @@ msgid "Sent when the mouse pointer exits the node."
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid "Sent when the node grabs focus."
-msgstr "Envoyé lorsque le nœud capte le focus."
+msgstr "Envoyé lorsque le nœud reçoit le focus."
 
 #: doc/classes/Control.xml
 msgid "Sent when the node loses focus."
@@ -19229,7 +19200,6 @@ msgid "The rate at which particles lose velocity."
 msgstr "Le vitesse à la laquelle les particules perdent leur vitesse."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
-#, fuzzy
 msgid "Damping will vary along this [Curve]."
 msgstr "L'amortissement varie le long de cette [Curve]."
 
@@ -21469,7 +21439,7 @@ msgstr ""
 
 #: doc/classes/Dictionary.xml
 msgid "Returns the list of keys in the [Dictionary]."
-msgstr ""
+msgstr "Retourne la liste des clés dans le [Dictionary]."
 
 #: doc/classes/Dictionary.xml
 #, fuzzy
@@ -21478,7 +21448,7 @@ msgstr "Renvoie le nombre de textures dans l’atlas BitmapFont."
 
 #: doc/classes/Dictionary.xml
 msgid "Returns the list of values in the [Dictionary]."
-msgstr ""
+msgstr "Retourne la liste des valeurs dans le [Dictionary]."
 
 #: doc/classes/DirectionalLight.xml
 msgid "Directional light from a distance, as from the Sun."
@@ -21512,7 +21482,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
-#, fuzzy
 msgid "The maximum distance for shadow splits."
 msgstr "Distance maximale pour les fractionnements d’ombre."
 
@@ -21879,9 +21848,8 @@ msgid ""
 "main font.\n"
 "DynamicFont uses the [url=https://www.freetype.org/]FreeType[/url] library "
 "for rasterization. Supported formats are TrueType ([code].ttf[/code]), "
-"OpenType ([code].otf[/code]) and Web Open Font Format 1 ([code].woff[/"
-"code]). Web Open Font Format 2 ([code].woff2[/code]) is [i]not[/i] "
-"supported.\n"
+"OpenType ([code].otf[/code]), Web Open Font Format 1 ([code].woff[/code]), "
+"and  Web Open Font Format 2 ([code].woff2[/code]).\n"
 "[codeblock]\n"
 "var dynamic_font = DynamicFont.new()\n"
 "dynamic_font.font_data = load(\"res://BarlowCondensed-Bold.ttf\")\n"
@@ -21913,7 +21881,6 @@ msgid "Returns the fallback font at index [code]idx[/code]."
 msgstr ""
 
 #: doc/classes/DynamicFont.xml
-#, fuzzy
 msgid "Returns the number of fallback fonts."
 msgstr "Retourne le nombre de polices de rechange."
 
@@ -23462,11 +23429,11 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml
 msgid "Minimizes the bottom panel."
-msgstr "Agrandit le panneau du bas."
+msgstr "Réduit le panneau du bas."
 
 #: doc/classes/EditorPlugin.xml
 msgid "Makes a specific item in the bottom panel visible."
-msgstr ""
+msgstr "Rend l'élément spécifié visible dans le panneau du bas."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -23490,18 +23457,24 @@ msgid ""
 "Removes the control from the bottom panel. You have to manually [method Node."
 "queue_free] the control."
 msgstr ""
+"Retire un contrôle du panneau du bas. Vous devez appeler manuellement "
+"[method Node.queue_free] pour supprimer ce contrôle."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
 "Removes the control from the specified container. You have to manually "
 "[method Node.queue_free] the control."
 msgstr ""
+"Retire un contrôle du conteneur spécifié. Vous devez appeler manuellement "
+"[method Node.queue_free] pour supprimer ce contrôle."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
 "Removes the control from the dock. You have to manually [method Node."
 "queue_free] the control."
 msgstr ""
+"Retire un contrôle de la barre d'outils. Vous devez appeler manuellement "
+"[method Node.queue_free] pour supprimer ce contrôle."
 
 #: doc/classes/EditorPlugin.xml
 msgid "Removes a custom type added by [method add_custom_type]."
@@ -23730,6 +23703,8 @@ msgstr ""
 msgid ""
 "If you want a sub-resource to be edited, emit this signal with the resource."
 msgstr ""
+"Si vous voulez que la sous-ressource soit modifié, émettez ce signal avec "
+"cette ressource."
 
 #: doc/classes/EditorProperty.xml
 msgid "Emitted when selected. Used internally."
@@ -23785,14 +23760,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorResourcePicker.xml
-#, fuzzy
 msgid "If [code]true[/code], the value can be selected and edited."
-msgstr "Si [code]true[/code], le GraphNode est sélectionné."
+msgstr "Si [code]true[/code], la valeur peut être sélectionnée et modifiée."
 
 #: doc/classes/EditorResourcePicker.xml
-#, fuzzy
 msgid "The edited resource value."
-msgstr "La ressource de texture du nœud."
+msgstr "La valeur modifiée de la ressource."
 
 #: doc/classes/EditorResourcePicker.xml
 msgid ""
@@ -24259,6 +24232,8 @@ msgid ""
 "Sets the list of recently visited folders in the file dialog for this "
 "project."
 msgstr ""
+"Définit une liste des dossiers récemment visités dans le dialogue de "
+"fichiers de ce projet."
 
 #: doc/classes/EditorSettings.xml
 msgid ""
@@ -24407,7 +24382,7 @@ msgstr ""
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid "Used by the editor to define Spatial gizmo types."
-msgstr ""
+msgstr "Utilisé par l'éditeur pour définir les types de manipulateur Spatial."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
@@ -24721,12 +24696,13 @@ msgstr ""
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
 "Helper function to create a commit [Dictionary] item. [code]msg[/code] is "
-"the commit message of the commit. [code]author[/code] is a human-readable "
-"string containing the author's details, e.g. the email and name configured "
-"in the VCS. [code]id[/code] is the identifier of the commit, in whichever "
-"format your VCS may provide an identifier to commits. [code]date[/code] is "
-"directly added to the commit item and displayed in the editor, and hence, it "
-"shall be a well-formatted, human-readable date string."
+"the commit message of the commit. [code]author[/code] is a single human-"
+"readable string containing all the author's details, e.g. the email and name "
+"configured in the VCS. [code]id[/code] is the identifier of the commit, in "
+"whichever format your VCS may provide an identifier to commits. "
+"[code]unix_timestamp[/code] is the UTC Unix timestamp of when the commit was "
+"created. [code]offset_minutes[/code] is the timezone offset in minutes, "
+"recorded from the system timezone where the commit was created."
 msgstr ""
 
 #: doc/classes/EditorVCSInterface.xml
@@ -24766,9 +24742,8 @@ msgid "Pops up an error message in the edior."
 msgstr "Utilisé pour rassembler des propriétés ensemble dans l'éditeur."
 
 #: doc/classes/EditorVCSInterface.xml
-#, fuzzy
 msgid "A new file has been added."
-msgstr "Émis lorsqu'une nouvelle interface a été ajoutée."
+msgstr "Un nouveau fichier a été ajouté."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid "An earlier added file has been modified."
@@ -25244,9 +25219,8 @@ msgid "The [Sky] resource's rotation expressed as Euler angles in degrees."
 msgstr "La rotation de la texture en degrés."
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "The amount of far blur for the depth-of-field effect."
-msgstr "La quantité de voix dans l’effet."
+msgstr "La quantité de flou lointain pour l'effet de profondeur."
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -25272,9 +25246,8 @@ msgstr ""
 "La longueur de la transition entre la zone sans flou et le flou lointain."
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "The amount of near blur for the depth-of-field effect."
-msgstr "La quantité de voix dans l’effet."
+msgstr "La quantité de flou proche pour l'effet de profondeur."
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -30821,7 +30794,7 @@ msgstr ""
 
 #: doc/classes/Image.xml
 msgid "Unlocks the data and prevents changes."
-msgstr ""
+msgstr "Déverrouille les données et évite les modifications."
 
 #: doc/classes/Image.xml
 #, fuzzy
@@ -31213,7 +31186,7 @@ msgstr ""
 
 #: doc/classes/ImageTexture.xml
 msgid "A [Texture] based on an [Image]."
-msgstr ""
+msgstr "Une [Texture] basée sur une [Image]."
 
 #: doc/classes/ImageTexture.xml
 msgid ""
@@ -31304,7 +31277,7 @@ msgstr "Renvoie le texte associé à l’index spécifié."
 
 #: doc/classes/ImageTexture.xml
 msgid "The storage quality for [constant STORAGE_COMPRESS_LOSSY]."
-msgstr ""
+msgstr "La qualité du stockage pour [constant STORAGE_COMPRESS_LOSSY]."
 
 #: doc/classes/ImageTexture.xml
 msgid "The storage type (raw, lossy, or compressed)."
@@ -31459,9 +31432,9 @@ msgid ""
 "Returns a value between 0 and 1 representing the raw intensity of the given "
 "action, ignoring the action's deadzone. In most cases, you should use "
 "[method get_action_strength] instead.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -31471,9 +31444,9 @@ msgid ""
 "or L2, R2 triggers) is from the dead zone, the closer the value will be to "
 "1. If the action is mapped to a control that has no axis as the keyboard, "
 "the value returned will be 0 or 1.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -31609,9 +31582,9 @@ msgid ""
 "the button.\n"
 "This is useful for code that needs to run only once when an action is "
 "pressed, instead of every frame while it's pressed.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events.\n"
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may "
 "return [code]false[/code] even if one of the action's keys is pressed. See "
 "[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
@@ -31623,9 +31596,9 @@ msgid ""
 "Returns [code]true[/code] when the user stops pressing the action event, "
 "meaning it's [code]true[/code] only on the frame that the user released the "
 "button.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -31634,9 +31607,9 @@ msgid ""
 "an action has multiple buttons assigned and more than one of them is "
 "pressed, releasing one button will release the action, even if some other "
 "button assigned to this action is still pressed.\n"
-"If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
-"for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events.\n"
+"If [code]exact[/code] is [code]false[/code], it ignores additional input "
+"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
+"direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
 "[code]false[/code] even if one of the action's keys is pressed. See "
 "[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
@@ -32031,18 +32004,18 @@ msgstr "Retourne une représentation [String] de l'évènement."
 msgid ""
 "Returns a value between 0.0 and 1.0 depending on the given actions' state. "
 "Useful for getting the value of events of type [InputEventJoypadMotion].\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/InputEvent.xml
 msgid ""
 "Returns [code]true[/code] if this input event matches a pre-defined action "
 "of any type.\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/InputEvent.xml
@@ -32051,9 +32024,9 @@ msgid ""
 "an echo event for [InputEventKey] events, unless [code]allow_echo[/code] is "
 "[code]true[/code]). Not relevant for events of type [InputEventMouseMotion] "
 "or [InputEventScreenDrag].\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events.\n"
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events.\n"
 "[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
 "[code]false[/code] even if one of the action's keys is pressed. See "
 "[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
@@ -32065,9 +32038,9 @@ msgid ""
 "Returns [code]true[/code] if the given action is released (i.e. not "
 "pressed). Not relevant for events of type [InputEventMouseMotion] or "
 "[InputEventScreenDrag].\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/InputEvent.xml
@@ -32098,9 +32071,9 @@ msgid ""
 "event. Only valid for action events i.e key ([InputEventKey]), button "
 "([InputEventMouseButton] or [InputEventJoypadButton]), axis "
 "[InputEventJoypadMotion] or action ([InputEventAction]) events.\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/InputEvent.xml
@@ -32647,9 +32620,9 @@ msgid ""
 "This method ignores keyboard modifiers if the given [InputEvent] is not "
 "pressed (for proper release detection). See [method action_has_event] if you "
 "don't want this behavior.\n"
-"If [code]exact_match[/code] is [code]false[/code], it ignores the input "
-"modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"If [code]exact_match[/code] is [code]false[/code], it ignores additional "
+"input modifiers for [InputEventKey] and [InputEventMouseButton] events, and "
+"the direction for [InputEventJoypadMotion] events."
 msgstr ""
 
 #: doc/classes/InputMap.xml
@@ -34057,7 +34030,7 @@ msgstr ""
 
 #: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
 msgid "Do nothing when leaving a platform."
-msgstr ""
+msgstr "Ne fait rien quand quitte la plateforme."
 
 #: doc/classes/KinematicBody2D.xml
 msgid "Kinematic body 2D node."
@@ -34233,7 +34206,7 @@ msgstr "La forme du corps en collision."
 
 #: doc/classes/KinematicCollision.xml
 msgid "The colliding shape's index. See [CollisionObject]."
-msgstr ""
+msgstr "L'index de la forme entrant en collision. Voir [CollisionObject]."
 
 #: doc/classes/KinematicCollision.xml doc/classes/KinematicCollision2D.xml
 msgid "The colliding object's velocity."
@@ -34631,13 +34604,12 @@ msgid "Constant for accessing [member light_indirect_energy]."
 msgstr "Constante pour accéder à [member light_indirect_energy]."
 
 #: doc/classes/Light.xml
-#, fuzzy
 msgid "Constant for accessing [member light_size]."
-msgstr "Constante d'accès [member light_size]."
+msgstr "Constante pour accéder à [member light_size]."
 
 #: doc/classes/Light.xml
 msgid "Constant for accessing [member light_specular]."
-msgstr ""
+msgstr "Constante pour accéder à [member light_specular]."
 
 #: doc/classes/Light.xml
 #, fuzzy
@@ -34711,7 +34683,7 @@ msgstr ""
 
 #: doc/classes/Light.xml
 msgid "Constant for accessing [member shadow_bias]."
-msgstr ""
+msgstr "Constante pour accéder à [member shadow_bias]."
 
 #: doc/classes/Light.xml
 msgid ""
@@ -34839,7 +34811,7 @@ msgstr ""
 
 #: doc/classes/Light2D.xml
 msgid "[Texture] used for the Light2D's appearance."
-msgstr ""
+msgstr "La [Texture] utilisée pour l'apparence de la Light2D."
 
 #: doc/classes/Light2D.xml
 msgid "The [code]texture[/code]'s scale factor."
@@ -36115,9 +36087,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Mesh.xml
-#, fuzzy
 msgid "Calculate a [ConcavePolygonShape] from the mesh."
-msgstr "Calculer une [ConcavePolygonShape3D] à partir du maillage."
+msgstr "Calcule une [ConcavePolygonShape3D] à partir du maillage."
 
 #: doc/classes/Mesh.xml
 msgid "Generate a [TriangleMesh] from the mesh."
@@ -36638,6 +36609,39 @@ msgstr "Retourne le matériel affecté à la [ImmediateGeometry3D]."
 #: doc/classes/MeshInstance.xml
 msgid "Returns the number of surface materials."
 msgstr "Retourne le nombre de surfaces du matériau."
+
+#: doc/classes/MeshInstance.xml
+msgid ""
+"Returns [code]true[/code] if this [MeshInstance] can be merged with the "
+"specified [code]other_mesh_instance[/code], using the [method MeshInstance."
+"merge_meshes] function.\n"
+"In order to be mergeable, properties of the [MeshInstance] must match, and "
+"each surface must match, in terms of material, attributes and vertex format."
+msgstr ""
+
+#: doc/classes/MeshInstance.xml
+msgid ""
+"This function can merge together the data from several source "
+"[MeshInstance]s into a single destination [MeshInstance] (the MeshInstance "
+"the function is called from). This is primarily useful for improving "
+"performance by reducing the number of drawcalls and [Node]s.\n"
+"Merging should only be attempted for simple meshes that do not contain "
+"animation.\n"
+"The final vertices can either be returned in global space, or in local space "
+"relative to the destination [MeshInstance] global transform (the destination "
+"Node must be inside the [SceneTree] for local space to work).\n"
+"The function will make a final check for compatibility between the "
+"[MeshInstance]s by default, this should always be used unless you have "
+"previously checked for compatibility using [method MeshInstance."
+"is_mergeable_with]. If the compatibility check is omitted and the meshes are "
+"merged, you may see rendering errors.\n"
+"[b]Note:[/b] The requirements for similarity between meshes are quite "
+"stringent. They can be checked using the [method MeshInstance."
+"is_mergeable_with] function prior to calling [method MeshInstance."
+"merge_meshes].\n"
+"Also note that any initial data in the destination [MeshInstance] data will "
+"be discarded."
+msgstr ""
 
 #: doc/classes/MeshInstance.xml
 msgid "Sets the [Material] for a surface of the [Mesh] resource."
@@ -37553,9 +37557,8 @@ msgid "Callback called at the end of the RVO process."
 msgstr ""
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-#, fuzzy
 msgid "Puts the agent in the map."
-msgstr "Renvoie la tangente du paramètre."
+msgstr "Place l'agent sur la carte."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
@@ -37582,9 +37585,8 @@ msgid "Sets the position of the agent in world space."
 msgstr "Définit la position du nœud spécifié."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
-#, fuzzy
 msgid "Sets the radius of the agent."
-msgstr "Le rayon extérieur du tore."
+msgstr "Définit le rayon de l'agent."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid "Sets the new target velocity."
@@ -38115,6 +38117,8 @@ msgid ""
 "Parses mesh instances as geometry. This includes [MeshInstance], [CSGShape], "
 "and [GridMap] nodes."
 msgstr ""
+"Interprète les instances de maillage comme des géométries. Cela inclus les "
+"nœuds [MeshInstance], [CSGShape], et [GridMap]."
 
 #: doc/classes/NavigationMesh.xml
 msgid ""
@@ -38127,6 +38131,8 @@ msgid ""
 "Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant "
 "PARSED_GEOMETRY_STATIC_COLLIDERS]."
 msgstr ""
+"À la fois [constant PARSED_GEOMETRY_MESH_INSTANCES] et [constant "
+"PARSED_GEOMETRY_STATIC_COLLIDERS]."
 
 #: doc/classes/NavigationMesh.xml
 #, fuzzy
@@ -38201,9 +38207,8 @@ msgid "Notifies when the navigation mesh bake operation is completed."
 msgstr "Avertit quand une animation commence à jouer."
 
 #: doc/classes/NavigationMeshInstance.xml
-#, fuzzy
 msgid "Notifies when the [NavigationMesh] has changed."
-msgstr "Avertit quand une animation commence à jouer."
+msgstr "Avertit quand le [NavigationMesh] a changé."
 
 #: doc/classes/NavigationObstacle.xml
 msgid "3D obstacle used in navigation for collision avoidance."
@@ -39208,12 +39213,12 @@ msgid ""
 "[/codeblock]\n"
 "[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you "
 "must set [member owner] in addition to calling [method add_child]. This is "
-"typically relevant for [url=https://godot.readthedocs.io/en/3.2/tutorials/"
-"misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://"
-"godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor "
-"plugins[/url]. If [method add_child] is called without setting [member "
-"owner], the newly added [Node] will not be visible in the scene tree, though "
-"it will be visible in the 2D/3D view."
+"typically relevant for [url=$DOCS_URL/tutorials/misc/"
+"running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/"
+"tutorials/plugins/editor/index.html]editor plugins[/url]. If [method "
+"add_child] is called without setting [member owner], the newly added [Node] "
+"will not be visible in the scene tree, though it will be visible in the "
+"2D/3D view."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -39922,7 +39927,15 @@ msgid ""
 "valid parent, grandparent, etc. ascending in the tree). When saving a node "
 "(using [PackedScene]), all the nodes it owns will be saved with it. This "
 "allows for the creation of complex [SceneTree]s, with instancing and "
-"subinstancing."
+"subinstancing.\n"
+"[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you "
+"must set [member owner] in addition to calling [method add_child]. This is "
+"typically relevant for [url=$DOCS_URL/tutorials/misc/"
+"running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/"
+"tutorials/plugins/editor/index.html]editor plugins[/url]. If [method "
+"add_child] is called without setting [member owner], the newly added [Node] "
+"will not be visible in the scene tree, though it will be visible in the "
+"2D/3D view."
 msgstr ""
 
 #: doc/classes/Node.xml
@@ -40449,9 +40462,8 @@ msgid "Width of the generated texture."
 msgstr "Largeur de la texture générée."
 
 #: doc/classes/Object.xml
-#, fuzzy
 msgid "Base class for all non-built-in types."
-msgstr "Classe de base pour toutes les ressources."
+msgstr "La classe de base pour tous les types non intégrés."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -40520,7 +40532,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Object.xml
-msgid "Called when the object is initialized."
+msgid ""
+"Called when the object is initialized in memory. Can be defined to take in "
+"parameters, that are passed in when constructing.\n"
+"[b]Note:[/b] If [method _init] is defined with required parameters, then "
+"explicit construction is the only valid means of creating an Object of the "
+"class. If any other means (such as [method PackedScene.instance]) is used, "
+"then initialization will fail."
 msgstr ""
 
 #: doc/classes/Object.xml
@@ -40828,6 +40846,8 @@ msgstr ""
 msgid ""
 "Removes a given entry from the object's metadata. See also [method set_meta]."
 msgstr ""
+"Supprime l'entrée donnée des méta-données de l'objet. Voir aussi [method "
+"set_meta]."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -40910,29 +40930,37 @@ msgstr ""
 
 #: doc/classes/Object.xml
 msgid "Emitted whenever the object's script is changed."
-msgstr ""
+msgstr "Émis quand le script de l'objet est changé."
 
 #: doc/classes/Object.xml
 msgid "Called right when the object is initialized. Not available in script."
 msgstr ""
+"Appelé juste après que l'objet a été initialisé. N'est pas disponible depuis "
+"les scripts."
 
 #: doc/classes/Object.xml
 msgid "Called before the object is about to be deleted."
-msgstr ""
+msgstr "Appelé juste avant qu'un objet soit supprimé."
 
 #: doc/classes/Object.xml
 msgid ""
 "Connects a signal in deferred mode. This way, signal emissions are stored in "
 "a queue, then set on idle time."
 msgstr ""
+"Connecte un signal en mode déferré. Ainsi, les émissions du signal sont "
+"placées dans une file, et distribuées durant un moment de repos."
 
 #: doc/classes/Object.xml
 msgid "Persisting connections are saved when the object is serialized to file."
 msgstr ""
+"Les connexions persistances sont enregistrées quand l'objet est sauvegardé "
+"dans un fichier."
 
 #: doc/classes/Object.xml
 msgid "One-shot connections disconnect themselves after emission."
 msgstr ""
+"Les connections uniques (one-shot) se déconnecté automatique après "
+"l'émission."
 
 #: doc/classes/Object.xml
 msgid ""
@@ -40971,7 +40999,7 @@ msgstr ""
 
 #: doc/classes/OccluderPolygon2D.xml
 msgid "Defines a 2D polygon for LightOccluder2D."
-msgstr ""
+msgstr "Définit un polygone 2D pour LightOccluder2D."
 
 #: doc/classes/OccluderPolygon2D.xml
 msgid ""
@@ -41287,7 +41315,7 @@ msgstr ""
 
 #: doc/classes/OptionButton.xml
 msgid "Clears all the items in the [OptionButton]."
-msgstr ""
+msgstr "Retire tous les éléments du [OptionButton]."
 
 #: doc/classes/OptionButton.xml
 msgid "Returns the amount of items in the OptionButton, including separators."
@@ -41295,11 +41323,11 @@ msgstr "Retourne le nombre d'élément dans ce OptionButton, séparateurs inclus
 
 #: doc/classes/OptionButton.xml doc/classes/PopupMenu.xml
 msgid "Returns the icon of the item at index [code]idx[/code]."
-msgstr ""
+msgstr "Retourne l'icône de l'élément à l'index [code]idx[/code]."
 
 #: doc/classes/OptionButton.xml
 msgid "Returns the ID of the item at index [code]idx[/code]."
-msgstr ""
+msgstr "Retourne l'identifiant de l'élément à l'index [code]idx[/code]."
 
 #: doc/classes/OptionButton.xml
 msgid "Returns the index of the item with the given [code]id[/code]."
@@ -41406,7 +41434,7 @@ msgstr "La [Color] par défaut du texte pour le [OptionButton]."
 
 #: doc/classes/OptionButton.xml
 msgid "Text [Color] used when the [OptionButton] is disabled."
-msgstr ""
+msgstr "La [Color] du texte utilisée quand le [OptionButton] est désactivé."
 
 #: doc/classes/OptionButton.xml
 msgid ""
@@ -41427,10 +41455,11 @@ msgstr "La [Color] du texte utilisée quand le [OptionButton] est pressé."
 msgid ""
 "The horizontal space between the arrow icon and the right edge of the button."
 msgstr ""
+"L'espace horizontal entre l'icône de la flèche et le bord droit du bouton."
 
 #: doc/classes/OptionButton.xml
 msgid "The horizontal space between [OptionButton]'s icon and text."
-msgstr ""
+msgstr "L'espace horizontal entre l'icône et le texte du [OptionButton]."
 
 #: doc/classes/OptionButton.xml
 msgid "[Font] of the [OptionButton]'s text."
@@ -41438,11 +41467,11 @@ msgstr "La [Font] du texte du [OptionButton]."
 
 #: doc/classes/OptionButton.xml
 msgid "The arrow icon to be drawn on the right end of the button."
-msgstr ""
+msgstr "L'icône de la flèche qui est affichée au bord droit du bouton."
 
 #: doc/classes/OptionButton.xml
 msgid "[StyleBox] used when the [OptionButton] is disabled."
-msgstr ""
+msgstr "La [StyleBox] utilisée quand le [OptionButton] est désactivé."
 
 #: doc/classes/OptionButton.xml
 msgid ""
@@ -41453,7 +41482,7 @@ msgstr ""
 
 #: doc/classes/OptionButton.xml
 msgid "[StyleBox] used when the [OptionButton] is being hovered."
-msgstr ""
+msgstr "La [StyleBox] utilisée quand le [OptionButton] est survolé."
 
 #: doc/classes/OptionButton.xml
 msgid "Default [StyleBox] for the [OptionButton]."
@@ -41461,7 +41490,7 @@ msgstr "Le [StyleBox] par défaut pour le [OptionButton]."
 
 #: doc/classes/OptionButton.xml
 msgid "[StyleBox] used when the [OptionButton] is being pressed."
-msgstr ""
+msgstr "La [StyleBox] utilisée quand le [OptionButton] est appuyé."
 
 #: doc/classes/OS.xml
 msgid "Operating System functions."
@@ -41491,6 +41520,8 @@ msgid ""
 "Returns [code]true[/code] if the current host platform is using multiple "
 "threads."
 msgstr ""
+"Retourne [code]true[/code] le la plateforme hôte actuelle utilise plusieurs "
+"fils d'exécutions."
 
 #: doc/classes/OS.xml
 #, fuzzy
@@ -41738,6 +41769,8 @@ msgstr ""
 #: doc/classes/OS.xml
 msgid "Returns the total amount of dynamic memory used (only works in debug)."
 msgstr ""
+"Retourne la quantité totale de mémoire dynamique utilisée (ne fonctionne "
+"qu'en débogage)."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -41749,7 +41782,7 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Returns the path to the current engine executable."
-msgstr ""
+msgstr "Retourne le chemin de l'actuel exécutable du moteur de jeu."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42019,12 +42052,16 @@ msgid ""
 "Returns the total number of available tablet drivers.\n"
 "[b]Note:[/b] This method is implemented on Windows."
 msgstr ""
+"Retourne le nombre total de pilotes de tablette disponible.\n"
+"[b]Note :[/b] Cette méthode est implémentée sous Windows."
 
 #: doc/classes/OS.xml
 msgid ""
 "Returns the tablet driver name for the given index.\n"
 "[b]Note:[/b] This method is implemented on Windows."
 msgstr ""
+"Retourne le nom du pilote de tablette à la position spécifiée.\n"
+"[b]Note :[/b] Cette méthode est implémentée sous Windows."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42033,18 +42070,27 @@ msgid ""
 "[b]Note:[/b] Thread IDs are not deterministic and may be reused across "
 "application restarts."
 msgstr ""
+"Retourne l'identifiant du fil d'exécution actuel. Cela peut être utile dans "
+"les journaux pour faciliter le débogage des applications à plusieurs fils "
+"d'exécution.\n"
+"[b]Note :[/b] Ces identifiants ne sont pas déterministes et peuvent être "
+"réutilisés durant plusieurs lancement de l'application."
 
 #: doc/classes/OS.xml
 msgid ""
 "Deprecated, use [method Time.get_ticks_msec] instead.\n"
 "Returns the amount of time passed in milliseconds since the engine started."
 msgstr ""
+"Obsolète, utilisez plutôt [method Time.get_ticks_msec].\n"
+"Retourne la temps écoulé en millisecondes depuis le lancement du moteur."
 
 #: doc/classes/OS.xml
 msgid ""
 "Deprecated, use [method Time.get_ticks_usec] instead.\n"
 "Returns the amount of time passed in microseconds since the engine started."
 msgstr ""
+"Obsolète, utilisez plutôt [method Time.get_ticks_usec].\n"
+"Retourne la temps écoulé en microsecondes depuis le lancement du moteur."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42240,6 +42286,8 @@ msgid ""
 "Returns [code]true[/code] if the engine was executed with [code]-v[/code] "
 "(verbose stdout)."
 msgstr ""
+"Retourne [code]true[/code] si le moteur a été lancé avec [code]-v[/code] "
+"(sortie verbeuse)."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42329,6 +42377,8 @@ msgid ""
 "Pauses native video playback.\n"
 "[b]Note:[/b] This method is only implemented on iOS."
 msgstr ""
+"Met en pause la lecture de la vidéo native.\n"
+"[b]Note :[/b] Cette méthode est seulement implémentée dans iOS."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42363,15 +42413,16 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Shows the list of loaded textures sorted by size in memory."
-msgstr ""
+msgstr "Liste des textures chargés en mémoire, triées par taille."
 
 #: doc/classes/OS.xml
 msgid "Shows the number of resources loaded by the game of the given types."
 msgstr ""
+"Affiche le nombre de ressources des types spécifiés chargées par le jeu."
 
 #: doc/classes/OS.xml
 msgid "Shows all resources currently used by the game."
-msgstr ""
+msgstr "Affiche toutes les ressources actuellement utilisées par le jeu."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42441,17 +42492,21 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Sets the name of the current thread."
-msgstr ""
+msgstr "Définit le nom du fil d'exécution actuel."
 
 #: doc/classes/OS.xml
 msgid "Enables backup saves if [code]enabled[/code] is [code]true[/code]."
 msgstr ""
+"Active les sauvegardes si [code]enabled[/code] est à [code]true[/code]."
 
 #: doc/classes/OS.xml
 msgid ""
 "Sets whether the window should always be on top.\n"
 "[b]Note:[/b] This method is implemented on Linux, macOS and Windows."
 msgstr ""
+"Définit quand la fenêtre doit toujours être au dessus des autres.\n"
+"[b]Note :[/b] Cette méthode n'est implémentée que sous Linux, macOS et "
+"Windows."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42516,6 +42571,8 @@ msgstr ""
 #: doc/classes/OS.xml
 msgid "The clipboard from the host OS. Might be unavailable on some platforms."
 msgstr ""
+"Le presse-papiers du système hôte. Peut ne pas être disponible sur certaines "
+"plateformes."
 
 #: doc/classes/OS.xml
 msgid "The current screen index (starting from 0)."
@@ -42607,19 +42664,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "If [code]true[/code], the window is fullscreen."
-msgstr "Si [code]true[/code], l'interpolation fait une boucle."
+msgstr "Si [code]true[/code], la fenêtre est en plein-écran."
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "If [code]true[/code], the window is maximized."
-msgstr "Si [code]true[/code], le filtrage est activé."
+msgstr "Si [code]true[/code], la fenêtre est maximisée."
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "If [code]true[/code], the window is minimized."
-msgstr "Si [code]true[/code], le filtrage est activé."
+msgstr "Si [code]true[/code], la fenêtre est réduite."
 
 #: doc/classes/OS.xml
 msgid ""
@@ -42930,12 +42984,14 @@ msgstr ""
 
 #: doc/classes/PackedScene.xml
 msgid "Returns [code]true[/code] if the scene file has nodes."
-msgstr ""
+msgstr "Retourne [code]true[/code] si le fichier de scène à des nœuds."
 
 #: doc/classes/PackedScene.xml
 msgid ""
 "Returns the [code]SceneState[/code] representing the scene file contents."
 msgstr ""
+"Retourne le [code]SceneState[/code] représentant le contenu du fichier de la "
+"scène."
 
 #: doc/classes/PackedScene.xml
 msgid ""
@@ -43441,7 +43497,7 @@ msgstr ""
 
 #: doc/classes/Particles.xml
 msgid "Controlling thousands of fish with Particles"
-msgstr ""
+msgstr "Contrôler des milliers de poissons avec Particles"
 
 #: doc/classes/Particles.xml
 msgid ""
@@ -43731,6 +43787,8 @@ msgid ""
 "The inner radius of the ring when using the emitter [constant "
 "EMISSION_SHAPE_RING]."
 msgstr ""
+"Le rayon intérieur de l'anneau pour l'émetteur [constant "
+"EMISSION_SHAPE_RING]."
 
 #: doc/classes/ParticlesMaterial.xml
 msgid ""
@@ -44014,9 +44072,8 @@ msgid "Allows the PathFollow to rotate in the Y axis only."
 msgstr "Interdit au PathFollow3D de tourner."
 
 #: doc/classes/PathFollow.xml
-#, fuzzy
 msgid "Allows the PathFollow to rotate in both the X, and Y axes."
-msgstr "Interdit au PathFollow3D de tourner."
+msgstr "Autorise le PathFollow à pivoter selon les axes X et Y."
 
 #: doc/classes/PathFollow.xml
 #, fuzzy
@@ -45424,6 +45481,8 @@ msgid ""
 "This class contains the shape and other parameters for 2D intersection/"
 "collision queries."
 msgstr ""
+"Cette classe contient des formes et autres paramètres pour les requêtes "
+"d'intersections/collisions en 2D."
 
 #: doc/classes/Physics2DShapeQueryParameters.xml
 msgid ""
@@ -45889,7 +45948,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PhysicsServer.xml
-msgid "Returns an Info defined by the [enum ProcessInfo] input given."
+msgid ""
+"Returns information about the current state of the 3D physics engine. See "
+"[enum ProcessInfo] for a list of available states. Only implemented for "
+"Godot Physics."
 msgstr ""
 
 #: doc/classes/PhysicsServer.xml
@@ -45934,9 +45996,8 @@ msgid "Gets the priority value of the Joint."
 msgstr "Renvoie la valeur opposée du paramètre."
 
 #: doc/classes/PhysicsServer.xml
-#, fuzzy
 msgid "Returns the type of the Joint."
-msgstr "Retourne la hauteur du contenu."
+msgstr "Retourne le type de Joint."
 
 #: doc/classes/PhysicsServer.xml
 #, fuzzy
@@ -46050,13 +46111,12 @@ msgstr ""
 "Plus elle est élevée, plus elle est forte."
 
 #: doc/classes/PhysicsServer.xml
-#, fuzzy
 msgid ""
 "If above 0, this value is the maximum value for an impulse that this Joint "
 "puts on its ends."
 msgstr ""
 "Si au-dessus de 0, cette valeur est la valeur maximale pour une impulsion "
-"que ce Joint3D met sur ses extrémités."
+"que ce Joint met sur ses extrémités."
 
 #: doc/classes/PhysicsServer.xml
 msgid "The maximum rotation across the Hinge."
@@ -46232,7 +46292,7 @@ msgstr ""
 
 #: doc/classes/PhysicsServer.xml
 msgid "If set, rotational motion is possible."
-msgstr ""
+msgstr "Si définit, la rotation est possible."
 
 #: doc/classes/PhysicsServer.xml
 #, fuzzy
@@ -46290,6 +46350,8 @@ msgid ""
 "This class contains the shape and other parameters for 3D intersection/"
 "collision queries."
 msgstr ""
+"Cette classe contient des formes et autres paramètres pour les requêtes "
+"d'intersections/collisions en 3D."
 
 #: doc/classes/PhysicsShapeQueryParameters.xml
 msgid "Sets the [Shape] that will be used for collision/intersection queries."
@@ -46799,7 +46861,7 @@ msgstr ""
 
 #: doc/classes/PoolByteArray.xml
 msgid "Changes the byte at the given index."
-msgstr ""
+msgstr "Change l'octet à la position donnée."
 
 #: doc/classes/PoolByteArray.xml
 msgid ""
@@ -46844,12 +46906,11 @@ msgstr ""
 
 #: doc/classes/PoolColorArray.xml
 msgid "Changes the [Color] at the given index."
-msgstr ""
+msgstr "Change la [Color] à la position donnée."
 
 #: doc/classes/PoolIntArray.xml
-#, fuzzy
 msgid "A pooled [Array] of integers ([int])."
-msgstr "Un [Array] compacté d'octets."
+msgstr "Un [Array] compacté d'entier ([int])."
 
 #: doc/classes/PoolIntArray.xml
 msgid ""
@@ -46885,9 +46946,8 @@ msgid "Changes the int at the given index."
 msgstr "Modifie le [int] à l’index donné."
 
 #: doc/classes/PoolRealArray.xml
-#, fuzzy
 msgid "A pooled [Array] of reals ([float])."
-msgstr "Un [Array] compacté d'octets."
+msgstr "Un [Array] compacté de flottants ([float])."
 
 #: doc/classes/PoolRealArray.xml
 msgid ""
@@ -46916,7 +46976,7 @@ msgstr "Ajoute un [PackedVector3Array] à la fin de ce tableau."
 
 #: doc/classes/PoolRealArray.xml
 msgid "Changes the float at the given index."
-msgstr ""
+msgstr "Change la flottant à la position donnée."
 
 #: doc/classes/PoolStringArray.xml
 msgid "A pooled [Array] of [String]."
@@ -46953,7 +47013,7 @@ msgstr "Ajoute une chaine de caractère à la fin du tableau."
 
 #: doc/classes/PoolStringArray.xml
 msgid "Changes the [String] at the given index."
-msgstr ""
+msgstr "Change la [String] à la position donnée."
 
 #: doc/classes/PoolVector2Array.xml
 msgid "A pooled [Array] of [Vector2]."
@@ -46988,7 +47048,7 @@ msgstr "Insère un [Vector2] à la fin."
 
 #: doc/classes/PoolVector2Array.xml
 msgid "Changes the [Vector2] at the given index."
-msgstr "Modifie le [Vector2] à l’index donné."
+msgstr "Change la [Vector2] à la position donnée."
 
 #: doc/classes/PoolVector3Array.xml
 msgid "A pooled [Array] of [Vector3]."
@@ -47018,7 +47078,7 @@ msgstr "Insère un [Vector3] à la fin."
 
 #: doc/classes/PoolVector3Array.xml
 msgid "Changes the [Vector3] at the given index."
-msgstr "Modifie le [Vector3] à l'indice donné."
+msgstr "Change la [Vector3] à la position donnée."
 
 #: doc/classes/Popup.xml
 msgid "Base container control for popups and dialogs."
@@ -47119,13 +47179,15 @@ msgstr "[StyleBox] par défaut pour le [Button]."
 
 #: doc/classes/PopupMenu.xml
 msgid "PopupMenu displays a list of options."
-msgstr ""
+msgstr "Un PopupMenu affiche une liste d'options."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
 "[PopupMenu] is a [Control] that displays a list of options. They are popular "
 "in toolbars or context menus."
 msgstr ""
+"Un [PopupMenu] est un [Control] qui affiche une liste d'options. Souvent "
+"utilisé dans les barres d'outils ou les menus contextuels."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
@@ -47278,13 +47340,15 @@ msgstr ""
 
 #: doc/classes/PopupMenu.xml
 msgid "Removes all items from the [PopupMenu]."
-msgstr ""
+msgstr "Retire tous les éléments du [PopupMenu]."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
 "Returns the index of the currently focused item. Returns [code]-1[/code] if "
 "no item is focused."
 msgstr ""
+"Retourne la position de l’élément qui a actuellement le focus. Ou retourne "
+"[code]-1[/code] si aucun n'a le focus."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
@@ -47302,6 +47366,8 @@ msgid ""
 "Returns the id of the item at index [code]idx[/code]. [code]id[/code] can be "
 "manually assigned, while index can not."
 msgstr ""
+"Retourne l'identifiant de l'élément à la position [code]idx[/code]. Un "
+"[code]id[/code] peut être changé manuellement, contrairement à la position."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
@@ -47335,13 +47401,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the popup will be hidden when the window loses "
 "focus or not."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères commence par la "
-"chaîne de caractères donnée."
+"Retourne [code]true[/code] si la fenêtre contextuelle est masquée quand la "
+"fenêtre perd le focus."
 
 #: doc/classes/PopupMenu.xml
 msgid ""
@@ -47562,7 +47627,7 @@ msgstr "[Color] utilisée pour le texte des éléments de menu désactivés."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Color] used for the hovered text."
-msgstr ""
+msgstr "La [Color] utilisée pour le texte survolé."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Color] used for labeled separators' text. See [method add_separator]."
@@ -47580,7 +47645,7 @@ msgstr "L’espace vertical entre chaque élément de menu."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Font] used for the menu items."
-msgstr ""
+msgstr "La [Font] utilisée pour les éléments du menu."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Texture] icon for the checked checkbox items."
@@ -47596,7 +47661,7 @@ msgstr "La [Texture] de l'icône pour les boutons radios décochés."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Texture] icon for the submenu arrow."
-msgstr ""
+msgstr "La [Texture] pour l'icône de la flèche du sous-menu."
 
 #: doc/classes/PopupMenu.xml
 msgid "[Texture] icon for the unchecked checkbox items."
@@ -47903,6 +47968,8 @@ msgid ""
 "Size of [Texture] that the ProceduralSky will generate. The size is set "
 "using [enum TextureSize]."
 msgstr ""
+"La taille de la [Texture] que le ProceduralSky va générer. Cette taille doit "
+"correspondre à un des [enum TextureSize]."
 
 #: doc/classes/ProceduralSky.xml
 msgid "Sky texture will be 256x128."
@@ -48450,7 +48517,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid ""
 "Enables [url=https://github.com/facebook/zstd/releases/tag/v1.3.2]long-"
 "distance matching[/url] in Zstandard."
@@ -49550,6 +49616,8 @@ msgid ""
 "If non-empty, this locale will be used when running the project from the "
 "editor."
 msgstr ""
+"Si n'est pas vide, ce langage sera utilisé lors du lancement du projet "
+"depuis l'éditeur."
 
 #: doc/classes/ProjectSettings.xml
 #, fuzzy
@@ -51190,7 +51258,7 @@ msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid "A class for generating pseudo-random numbers."
-msgstr ""
+msgstr "Une classe pour générer des nombres pseudo-aléatoires."
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid ""
@@ -51243,16 +51311,20 @@ msgid ""
 "Generates a pseudo-random 32-bit unsigned integer between [code]0[/code] and "
 "[code]4294967295[/code] (inclusive)."
 msgstr ""
+"Génère un entier non signé de 32 bits pseudo-aléatoire compris entre "
+"[code]0[/code] et [code]4294967295[/code] (inclus)."
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid ""
 "Generates a pseudo-random 32-bit signed integer between [code]from[/code] "
 "and [code]to[/code] (inclusive)."
 msgstr ""
+"Génère un entier signé de 32 bits pseudo-aléatoire compris entre [code]from[/"
+"code] et [code]to[/code] (inclus)."
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid "Setups a time-based seed to generator."
-msgstr ""
+msgstr "Utilise un graine basée sur l'heure pour le générateur."
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid ""
@@ -51320,11 +51392,15 @@ msgstr ""
 msgid ""
 "If [code]true[/code], [member value] may be greater than [member max_value]."
 msgstr ""
+"Si [code]true[/code], [member value] peut être supérieure à [member "
+"max_value]."
 
 #: doc/classes/Range.xml
 msgid ""
 "If [code]true[/code], [member value] may be less than [member min_value]."
 msgstr ""
+"Si [code]true[/code], [member value] peut être inférieure à [member "
+"min_value]."
 
 #: doc/classes/Range.xml
 msgid ""
@@ -51337,12 +51413,16 @@ msgid ""
 "Maximum value. Range is clamped if [code]value[/code] is greater than "
 "[code]max_value[/code]."
 msgstr ""
+"La valeur maximale. L'intervalle est limitée si [code]value[/code] est "
+"supérieure à [code]max_value[/code]."
 
 #: doc/classes/Range.xml
 msgid ""
 "Minimum value. Range is clamped if [code]value[/code] is less than "
 "[code]min_value[/code]."
 msgstr ""
+"La valeur minimale. L'intervalle est limitée si [code]value[/code] est "
+"inférieure à [code]min_value[/code]."
 
 #: doc/classes/Range.xml
 msgid ""
@@ -51360,6 +51440,8 @@ msgid ""
 "If [code]true[/code], [code]value[/code] will always be rounded to the "
 "nearest integer."
 msgstr ""
+"Si [code]true[/code], [code]value[/code] sera toujours arrondie au nombre "
+"entier le plus proche."
 
 #: doc/classes/Range.xml
 msgid ""
@@ -51473,18 +51555,24 @@ msgid ""
 "Returns whether any object is intersecting with the ray's vector "
 "(considering the vector length)."
 msgstr ""
+"Retourne quand un objet intersecte avec le vecteur du rayon (en prenant en "
+"compte la longueur du vecteur)."
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
 msgid ""
 "Removes a collision exception so the ray does report collisions with the "
 "specified node."
 msgstr ""
+"Retirer une exception de collision pour que le rayon prenne en compte les "
+"collision avec ce nœud."
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
 msgid ""
 "Removes a collision exception so the ray does report collisions with the "
 "specified [RID]."
 msgstr ""
+"Retirer une exception de collision pour que le rayon prenne en compte les "
+"collision avec ce [RID]."
 
 #: doc/classes/RayCast.xml
 msgid ""
@@ -51582,6 +51670,8 @@ msgid ""
 "If [code]true[/code], the parent node will be excluded from collision "
 "detection."
 msgstr ""
+"Si [code]true[/code], le nœud parent sera exclu lors de la détection des "
+"collisions."
 
 #: doc/classes/RayShape.xml
 msgid "Ray shape for 3D collisions."
@@ -51602,6 +51692,8 @@ msgstr "La longueur du rayon."
 #: doc/classes/RayShape.xml doc/classes/RayShape2D.xml
 msgid "If [code]true[/code], allow the shape to return the correct normal."
 msgstr ""
+"Utilisez [code]true[/code] pour autoriser la forme à retourner la normale "
+"correcte."
 
 #: doc/classes/RayShape2D.xml
 msgid "Ray shape for 2D collisions."
@@ -51676,6 +51768,8 @@ msgid ""
 "Returns the center of the [Rect2], which is equal to [member position] + "
 "([member size] / 2)."
 msgstr ""
+"Retourne le centre du [Rect2], qui est égal à [member position] + ([member "
+"size] / 2)."
 
 #: doc/classes/Rect2.xml
 msgid ""
@@ -51694,6 +51788,8 @@ msgid ""
 "Returns a copy of the [Rect2] grown a given amount of units towards the "
 "[enum Margin] direction."
 msgstr ""
+"Retourne une copie du [Rect2] agrandie de la quantité donnée dans la "
+"direction [enum Margin]."
 
 #: doc/classes/Rect2.xml
 msgid ""
@@ -51731,6 +51827,8 @@ msgstr ""
 #: doc/classes/Rect2.xml
 msgid "Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code]."
 msgstr ""
+"Retourne un [Rect2] plus grand qui contient ce [Rect2] ainsi que [code]b[/"
+"code]."
 
 #: doc/classes/RectangleShape2D.xml
 msgid "Rectangle shape for 2D collisions."
@@ -51893,6 +51991,8 @@ msgid ""
 "Defines the reflection intensity. Intensity modulates the strength of the "
 "reflection."
 msgstr ""
+"Définit l'intensité de la réflexion. L'intensité modifie l'importance de "
+"l'effet de réflexion."
 
 #: doc/classes/ReflectionProbe.xml
 msgid ""
@@ -52070,6 +52170,7 @@ msgstr ""
 #: modules/regex/doc_classes/RegEx.xml
 msgid "Returns whether this object has a valid search pattern assigned."
 msgstr ""
+"Retourne si cet objet à un motif de recherche valide qui lui est assigné."
 
 #: modules/regex/doc_classes/RegEx.xml
 msgid ""
@@ -58254,9 +58355,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/StreamPeerBuffer.xml
-#, fuzzy
 msgid "Returns the current cursor position."
-msgstr "Retourne la position de défilement actuelle."
+msgstr "Retourne la position actuelle du curseur."
 
 #: doc/classes/StreamPeerBuffer.xml
 #, fuzzy
@@ -59120,8 +59220,8 @@ msgid ""
 "var some_string = \"One,Two,Three,Four\"\n"
 "var some_array = some_string.rsplit(\",\", true, 1)\n"
 "print(some_array.size()) # Prints 2\n"
-"print(some_array[0]) # Prints \"Four\"\n"
-"print(some_array[1]) # Prints \"Three,Two,One\"\n"
+"print(some_array[0]) # Prints \"One,Two,Three\"\n"
+"print(some_array[1]) # Prints \"Four\"\n"
 "[/codeblock]"
 msgstr ""
 
@@ -60545,7 +60645,7 @@ msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid "Adds a [code]keyword[/code] and its [Color]."
-msgstr ""
+msgstr "Ajoute un mot clé [code]keyword[/code] avec sa [Color]."
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -62188,9 +62288,8 @@ msgid "Theme's [StyleBox] item type."
 msgstr "Le type [StyleBox] du thème."
 
 #: doc/classes/Theme.xml
-#, fuzzy
 msgid "Maximum value for the DataType enum."
-msgstr "Valeur maximale pour le mode énumeration."
+msgstr "La valeur maximale pour l’énumération DateType."
 
 #: doc/classes/Thread.xml
 msgid "A unit of execution in a process."
@@ -62977,7 +63076,7 @@ msgstr ""
 
 #: doc/classes/Time.xml
 msgid "Time singleton for working with time."
-msgstr ""
+msgstr "Une instance unique pour travailler avec les heures."
 
 #: doc/classes/Time.xml
 msgid ""
@@ -63047,6 +63146,9 @@ msgid ""
 "[code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/"
 "code], [code]minute[/code], and [code]second[/code]."
 msgstr ""
+"Retourne la date actuelle sous forme de dictionnaire avec les clés : "
+"[code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/"
+"code], [code]hour[/code], [code]minute[/code] et [code]second[/code]."
 
 #: doc/classes/Time.xml
 msgid ""
@@ -63723,9 +63825,8 @@ msgstr ""
 "Cette méthode ne tient pas compte de la translation (le vecteur d'origine)."
 
 #: doc/classes/Transform2D.xml
-#, fuzzy
 msgid "Returns the transform's origin (translation)."
-msgstr "Retourne l’origine du transform (traduction)."
+msgstr "Retourne l’origine de la transformation (position)."
 
 #: doc/classes/Transform2D.xml
 #, fuzzy
@@ -63803,7 +63904,7 @@ msgstr ""
 
 #: doc/classes/Translation.xml
 msgid "Virtual method to override [method get_message]."
-msgstr ""
+msgstr "La méthode virtuelle [method get_message] à surcharger."
 
 #: doc/classes/Translation.xml
 msgid "Adds a message if nonexistent, followed by its translation."
@@ -64275,7 +64376,7 @@ msgstr ""
 
 #: doc/classes/Tree.xml
 msgid "Default text [Color] of the title button."
-msgstr ""
+msgstr "La [Color] par défaut du titre du bouton."
 
 #: doc/classes/Tree.xml
 msgid "The horizontal space between each button in a cell."
@@ -64517,14 +64618,16 @@ msgstr ""
 #: doc/classes/TreeItem.xml
 msgid "Returns the custom background color of column [code]column[/code]."
 msgstr ""
+"Retourne la couleur personnalisée de l'arrière-plan de la colonne "
+"[code]column[/code]."
 
 #: doc/classes/TreeItem.xml
 msgid "Returns the custom color of column [code]column[/code]."
-msgstr ""
+msgstr "Retourne la couleur personnalisée de la colonne [code]column[/code]."
 
 #: doc/classes/TreeItem.xml
 msgid "Returns [code]true[/code] if [code]expand_right[/code] is set."
-msgstr ""
+msgstr "Retourne [code]true[/code] si [code]expand_right[/code] est défini."
 
 #: doc/classes/TreeItem.xml
 #, fuzzy
@@ -64537,12 +64640,11 @@ msgstr "Retourne la largeur maximale de l'icône de la colonne."
 
 #: doc/classes/TreeItem.xml
 msgid "Returns the [Color] modulating the column's icon."
-msgstr ""
+msgstr "Retourne la [Color] modulant l'icône de la colonne."
 
 #: doc/classes/TreeItem.xml
-#, fuzzy
 msgid "Returns the icon [Texture] region as [Rect2]."
-msgstr "Retourne la zone du [Rect2]."
+msgstr "Retourne la zone de la [Texture] de l'icône sous forme de [Rect2]."
 
 #: doc/classes/TreeItem.xml
 msgid ""
@@ -64961,9 +65063,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Tween.xml
-#, fuzzy
 msgid "Continues animating all stopped tweens."
-msgstr "Continuer à animer tous les tweens arrêtés."
+msgstr "Continuer d'animer tous les tweens arrêtés."
 
 #: doc/classes/Tween.xml
 msgid "Sets the interpolation to the given [code]time[/code] in seconds."
@@ -65030,23 +65131,20 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Tween.xml
-#, fuzzy
 msgid "If [code]true[/code], the tween loops."
-msgstr "Si [code]true[/code], l'interpolation fait une boucle."
+msgstr "Si [code]true[/code], le tween se répète."
 
 #: doc/classes/Tween.xml
 msgid "Emitted when all processes in a tween end."
 msgstr ""
 
 #: doc/classes/Tween.xml
-#, fuzzy
 msgid "Emitted when a tween ends."
-msgstr "Émis à la fin d'une interpolation."
+msgstr "Émis à la fin d'un tween."
 
 #: doc/classes/Tween.xml
-#, fuzzy
 msgid "Emitted when a tween starts."
-msgstr "Émis quand une interpolation démarre."
+msgstr "Émis quand un tween démarre."
 
 #: doc/classes/Tween.xml
 msgid "Emitted at each step of the animation."
@@ -65890,7 +65988,7 @@ msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid "3Blue1Brown Essence of Linear Algebra"
-msgstr ""
+msgstr "3Blue1Brown Essence of Linear Algebra"
 
 #: doc/classes/Vector2.xml
 #, fuzzy
@@ -66205,9 +66303,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector3.xml
-#, fuzzy
 msgid "Returns a Vector3 with the given components."
-msgstr "Retourne un caractère avec la valeur ascii donnée."
+msgstr "Retourne un Vector3 avec les coordonnées spécifiées."
 
 #: doc/classes/Vector3.xml
 #, fuzzy
@@ -66598,9 +66695,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VideoPlayer.xml
-#, fuzzy
 msgid "Returns the current frame as a [Texture]."
-msgstr "Retourne la [Texture2D] de l'image donnée."
+msgstr "Retourne la trame actuelle de la [Texture]."
 
 #: doc/classes/VideoPlayer.xml
 msgid ""
@@ -66668,7 +66764,6 @@ msgid "Audio volume in dB."
 msgstr "Volume audio en dB."
 
 #: doc/classes/VideoPlayer.xml
-#, fuzzy
 msgid "Emitted when playback is finished."
 msgstr "Émis lorsque la lecture est terminée."
 
@@ -66826,9 +66921,8 @@ msgid "Returns the total transform of the viewport."
 msgstr "Retourne la transformation totale de la fenêtre d'affichage."
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid "Returns the topmost modal in the stack."
-msgstr "Retourne le mode de mise à jour d'une piste de valeur."
+msgstr "Retourne la vue exclusive la plus en avant dans la pile."
 
 #: doc/classes/Viewport.xml
 #, fuzzy
@@ -66864,9 +66958,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid "Returns the viewport's RID from the [VisualServer]."
-msgstr "Retourne le RID de la caméra depuis le [RenderingServer]."
+msgstr "Retourne le RID de la caméra depuis le [VisualServer]."
 
 #: doc/classes/Viewport.xml
 msgid "Returns the visible rectangle in global screen coordinates."
@@ -67428,9 +67521,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisibilityEnabler.xml
-#, fuzzy
 msgid "If [code]true[/code], [RigidBody] nodes will be paused."
-msgstr "Si [code]true[/code], les nœuds [RigidBody3D] seront mis en pause."
+msgstr "Si [code]true[/code], les nœuds [RigidBody] seront mis en pause."
 
 #: doc/classes/VisibilityEnabler.xml doc/classes/VisibilityEnabler2D.xml
 msgid "If [code]true[/code], [AnimationPlayer] nodes will be paused."
@@ -67468,14 +67560,12 @@ msgid "If [code]true[/code], [RigidBody2D] nodes will be paused."
 msgstr "Si [code]true[/code], les nœuds [RigidBody2D] seront mis en pause."
 
 #: doc/classes/VisibilityEnabler2D.xml
-#, fuzzy
 msgid "If [code]true[/code], [AnimatedSprite] nodes will be paused."
-msgstr "Si [code]true[/code], les nœuds [GPUParticles2D] seront mis en pause."
+msgstr "Si [code]true[/code], les nœuds [AnimatedSprite] seront mis en pause."
 
 #: doc/classes/VisibilityEnabler2D.xml
-#, fuzzy
 msgid "If [code]true[/code], [Particles2D] nodes will be paused."
-msgstr "Si [code]true[/code], les nœuds [GPUParticles2D] seront mis en pause."
+msgstr "Si [code]true[/code], les nœuds [Particles2D] seront mis en pause."
 
 #: doc/classes/VisibilityEnabler2D.xml
 msgid ""
@@ -67508,9 +67598,8 @@ msgid "This enabler will stop the parent's _physics_process function."
 msgstr "Cet activateur arrêtera la fonction _physics_process du parent."
 
 #: doc/classes/VisibilityEnabler2D.xml
-#, fuzzy
 msgid "This enabler will stop [AnimatedSprite] nodes animations."
-msgstr "Cet activateur arrêtera les animations de nœuds [AnimatedSprite2D]."
+msgstr "Cet activateur arrêtera les animations de nœuds [AnimatedSprite]."
 
 #: doc/classes/VisibilityNotifier.xml doc/classes/VisibilityNotifier2D.xml
 msgid "Detects approximately when the node is visible on screen."
@@ -67562,14 +67651,12 @@ msgid "Emitted when the VisibilityNotifier exits a [Camera]'s view."
 msgstr "Émis lorsque le VisibilityNotifier3D quitte la vue d'un [Camera3D]."
 
 #: doc/classes/VisibilityNotifier.xml
-#, fuzzy
 msgid "Emitted when the VisibilityNotifier enters the screen."
-msgstr "Émis lorsque le VisibilityNotifier2D entre dans l'écran."
+msgstr "Émis lorsque le VisibilityNotifier entre dans l'écran."
 
 #: doc/classes/VisibilityNotifier.xml
-#, fuzzy
 msgid "Emitted when the VisibilityNotifier exits the screen."
-msgstr "Émis lorsque le VisibilityNotifier2D quitte l’écran."
+msgstr "Émis lorsque le VisibilityNotifier quitte l’écran."
 
 #: doc/classes/VisibilityNotifier2D.xml
 msgid ""
@@ -68358,9 +68445,8 @@ msgid ""
 msgstr "Renvoie le nom du port d'entrée spécifié."
 
 #: modules/visual_script/doc_classes/VisualScriptCustomNode.xml
-#, fuzzy
 msgid "Return the specified input port's hint string."
-msgstr "Renvoie le nom du port d'entrée spécifié."
+msgstr "Renvoie le texte d'indice du port d'entrée spécifié."
 
 #: modules/visual_script/doc_classes/VisualScriptCustomNode.xml
 msgid "Return the specified input port's name."
@@ -68390,9 +68476,8 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptCustomNode.xml
-#, fuzzy
 msgid "Return the specified output port's hint string."
-msgstr "Renvoie le nom du port d'entrée spécifié."
+msgstr "Renvoie le texte d'indice du port de sortie spécifié."
 
 #: modules/visual_script/doc_classes/VisualScriptCustomNode.xml
 msgid "Return the specified output port's name."
@@ -68544,9 +68629,8 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptFunction.xml
-#, fuzzy
 msgid "A Visual Script node representing a function."
-msgstr "Un nœud Visual Script utilisé pour annoter le script."
+msgstr "Un nœud Visual Script représentant une fonction."
 
 #: modules/visual_script/doc_classes/VisualScriptFunction.xml
 msgid ""
@@ -68653,11 +68737,11 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptFunctionCall.xml
 msgid "The method will be called locally."
-msgstr ""
+msgstr "Cette méthode sera appelée localement."
 
 #: modules/visual_script/doc_classes/VisualScriptFunctionCall.xml
 msgid "The method will be called remotely."
-msgstr ""
+msgstr "Cette méthode sera appelée à distance."
 
 #: modules/visual_script/doc_classes/VisualScriptFunctionCall.xml
 msgid "The method will be called remotely using an unreliable protocol."
@@ -68691,9 +68775,8 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptFunctionState.xml
-#, fuzzy
 msgid "Returns whether the function state is valid."
-msgstr "Indique si le quaternion est normalisé ou non."
+msgstr "Retourne si l'état de la fonction est valide."
 
 #: modules/visual_script/doc_classes/VisualScriptFunctionState.xml
 msgid "Resumes the function to run from the point it was yielded."
@@ -68822,24 +68905,20 @@ msgid "Removes an output port from the Visual Script node."
 msgstr "Supprime un nœud de la sélection."
 
 #: modules/visual_script/doc_classes/VisualScriptLists.xml
-#, fuzzy
 msgid "Sets the name of an input port."
-msgstr "Obtient le nom d'un entrée par son index."
+msgstr "Définit le nom d'un port d'entrée."
 
 #: modules/visual_script/doc_classes/VisualScriptLists.xml
-#, fuzzy
 msgid "Sets the type of an input port."
-msgstr "Obtient le type d’une piste."
+msgstr "Définit le type d'un port d'entrée."
 
 #: modules/visual_script/doc_classes/VisualScriptLists.xml
-#, fuzzy
 msgid "Sets the name of an output port."
-msgstr "Obtient le nom d'un entrée par son index."
+msgstr "Définit le nom d'un port de sortie."
 
 #: modules/visual_script/doc_classes/VisualScriptLists.xml
-#, fuzzy
 msgid "Sets the type of an output port."
-msgstr "Obtient le type d’une piste."
+msgstr "Définit le type d'un port de sortie."
 
 #: modules/visual_script/doc_classes/VisualScriptLocalVar.xml
 msgid "Gets a local variable's value."
@@ -69162,7 +69241,7 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptPropertySet.xml
 msgid "The property will be assigned regularly."
-msgstr ""
+msgstr "La propriété sera assignée régulièrement."
 
 #: modules/visual_script/doc_classes/VisualScriptPropertySet.xml
 msgid ""
@@ -69374,9 +69453,8 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptTypeCast.xml
-#, fuzzy
 msgid "The target type to be converted to."
-msgstr "Le type à déconstruire."
+msgstr "Le type cible dans lequel convertir la valeur."
 
 #: modules/visual_script/doc_classes/VisualScriptVariableGet.xml
 msgid "Gets a variable's value."
@@ -69479,9 +69557,8 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptYieldSignal.xml
-#, fuzzy
 msgid "The signal name to be waited for."
-msgstr "Le signal à émettre."
+msgstr "Le nom du signal à attendre."
 
 #: modules/visual_script/doc_classes/VisualScriptYieldSignal.xml
 msgid "A signal from this [Object] will be used."
@@ -69581,16 +69658,20 @@ msgid ""
 "projection. Objects remain the same size on the screen no matter how far "
 "away they are."
 msgstr ""
+"Utilise une projection orthogonale pour la caméra. Les objets affichés "
+"apparaissent avec la même taille peu importe leur éloignement de la caméra."
 
 #: doc/classes/VisualServer.xml
 msgid ""
 "Sets camera to use perspective projection. Objects on the screen becomes "
 "smaller when they are far away."
 msgstr ""
+"Utilise la perspective comme projection pour la caméra. Ainsi, les objets "
+"affichés apparaissent plus petits quand ils sont plus éloignés."
 
 #: doc/classes/VisualServer.xml
 msgid "Sets [Transform] of camera."
-msgstr "Défini [Transform] de la caméra."
+msgstr "Définit la [Transform] de la caméra."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -69744,6 +69825,8 @@ msgstr "Définit l’index du [CanvasItem]."
 msgid ""
 "The light mask. See [LightOccluder2D] for more information on light masks."
 msgstr ""
+"Le masque de lumière. Voir [LightOccluder2D] pour plus d'informations sur "
+"les masques de lumière."
 
 #: doc/classes/VisualServer.xml
 msgid "Sets a new material to the [CanvasItem]."
@@ -69906,9 +69989,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Sets the length of the shadow's gradient."
-msgstr "Retourne la longueur du quaternion."
+msgstr "Définit la longueur du dégradé de l'ombre."
 
 #: doc/classes/VisualServer.xml
 msgid "Smoothens the shadow. The lower, the smoother."
@@ -69918,12 +70000,16 @@ msgstr ""
 msgid ""
 "Sets texture to be used by light. Equivalent to [member Light2D.texture]."
 msgstr ""
+"Définit une texture à utiliser pour la lumière. Équivalent à [member Light2D."
+"texture]."
 
 #: doc/classes/VisualServer.xml
 msgid ""
 "Sets the offset of the light's texture. Equivalent to [member Light2D."
 "offset]."
 msgstr ""
+"Définit le décalage de la texture de lumière. Équivalent à [member Light2D."
+"offset]."
 
 #: doc/classes/VisualServer.xml
 msgid "Sets the canvas light's [Transform2D]."
@@ -69936,7 +70022,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid ""
 "Creates a new light occluder polygon and adds it to the VisualServer. It can "
 "be accessed with the RID that is returned. This RID will be used in all "
@@ -69944,13 +70029,12 @@ msgid ""
 "Once finished with your RID, you will want to free the RID using the "
 "VisualServer's [method free_rid] static method."
 msgstr ""
-"Crée une lumière spot et l’ajoute au RenderingServer. Il peut être consulté "
-"avec le RID qui est retourné. Ce RID peut être utilisé dans la plupart des "
-"fonctions [code]light_*[/code] RenderingServer.\n"
-"Une fois terminé avec votre RID, vous voudrez libérer le RID à l’aide de la "
-"méthode statique [method free_rid] du RenderingServer.\n"
-"Pour placer dans une scène, attachez cette lumière spot à une instance en "
-"utilisant la [method instance_set_base] utilisant le RID retourné."
+"Crée un nouveau polygone de bloqueur de lumière et l’ajoute au VisualServer. "
+"Il peut être consulté avec le RID qui est retourné. Ce RID peut être utilisé "
+"dans la plupart des fonctions [code]canvas_occluder_polygon_*[/code] "
+"VisualServer.\n"
+"Une fois terminé avec ce RID, vous voudrez libérer le RID à l’aide de la "
+"méthode statique [method free_rid] du VisualServer."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -70130,6 +70214,9 @@ msgid ""
 "Forces a frame to be drawn when the function is called. Drawing a frame "
 "updates all [Viewport]s that are set to update. Use with extreme caution."
 msgstr ""
+"Force l'affichage une trame à l'appel de cette fonction. Afficher une trame "
+"met à jour tous les [Viewport] qui sont actifs. À utiliser avec beaucoup de "
+"vigilance."
 
 #: doc/classes/VisualServer.xml
 msgid "Synchronizes threads."
@@ -70236,9 +70323,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the Transform set by [method gi_probe_set_to_cell_xform]."
-msgstr "Restaurer l’état enregistré par [method get_state]."
+msgstr "Retourne la Transform définie par [method gi_probe_set_to_cell_xform]."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -70390,9 +70476,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the material assigned to the [ImmediateGeometry]."
-msgstr "Retourne le matériel affecté à la [ImmediateGeometry3D]."
+msgstr "Retourne le matériel affecté à la [ImmediateGeometry]."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -70916,7 +71001,7 @@ msgstr "Retourne l’aabb personnalisé d’un maillage."
 
 #: doc/classes/VisualServer.xml
 msgid "Returns a mesh's number of surfaces."
-msgstr ""
+msgstr "Retourne le nombre de surface du maillage."
 
 #: doc/classes/VisualServer.xml
 msgid "Removes a mesh's surface."
@@ -70969,7 +71054,7 @@ msgstr "Retourne le nom de la méthode d'une piste de méthode."
 
 #: doc/classes/VisualServer.xml
 msgid "Function is unused in Godot 3.x."
-msgstr ""
+msgstr "Cette fonction n'est pas utilisée dans Godot 3.x."
 
 #: doc/classes/VisualServer.xml
 #, fuzzy
@@ -71538,7 +71623,7 @@ msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "Allocates the GPU buffers for this skeleton."
-msgstr ""
+msgstr "Alloue la mémoire tampon dans le GPU pour ce squelette."
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the [Transform] set for a specific bone of this skeleton."
@@ -71661,14 +71746,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the depth of the texture."
-msgstr "Retourne la hauteur du contenu."
+msgstr "Retourne la profondeur de la texture."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the flags of a texture."
-msgstr "Retourne la texture de la tuile."
+msgstr "Retourne les drapeaux de la texture."
 
 #: doc/classes/VisualServer.xml
 #, fuzzy
@@ -71781,9 +71864,8 @@ msgstr ""
 "utilisant la [method instance_set_base] utilisant le RID retourné."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Detaches the viewport from the screen."
-msgstr "Supprime tous les points de la courbe."
+msgstr "Retire la fenêtre d'affichage de l'écran."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -71802,6 +71884,8 @@ msgstr ""
 #: doc/classes/VisualServer.xml
 msgid "If [code]true[/code], sets the viewport active, else sets it inactive."
 msgstr ""
+"Si [code]true[/code], définit cette fenêtre d'affichage comme active, sinon "
+"comme inactive."
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -72961,7 +73045,6 @@ msgid "A fragment shader, operating on fragments (pixels)."
 msgstr "Un shader de fragment, s'appliquant sur chacun des pixels (fragments)."
 
 #: doc/classes/VisualShader.xml
-#, fuzzy
 msgid "A shader for light calculations."
 msgstr "Un shader pour les calculs de lumière."
 
@@ -73083,9 +73166,8 @@ msgstr ""
 #: doc/classes/VisualShaderNodeScalarUniform.xml
 #: doc/classes/VisualShaderNodeTransformUniform.xml
 #: doc/classes/VisualShaderNodeVec3Uniform.xml
-#, fuzzy
 msgid "Enables usage of the [member default_value]."
-msgstr "Activer l'usage de [member default_value]."
+msgstr "Active l'usage de [member default_value]."
 
 #: doc/classes/VisualShaderNodeColorConstant.xml
 msgid "A [Color] constant to be used within the visual shader graph."
@@ -73695,27 +73777,33 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid "Removes all previously specified input ports."
-msgstr ""
+msgstr "Retire tous les ports d'entrées précédemment spécifiés."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid "Removes all previously specified output ports."
-msgstr ""
+msgstr "Retire tous les ports de sortie précédemment spécifiés."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid ""
 "Returns a free input port ID which can be used in [method add_input_port]."
 msgstr ""
+"Retourne un identifiant d'un port d'entrée libre qui peut être utilisé pour "
+"[method add_input_port]."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid ""
 "Returns a free output port ID which can be used in [method add_output_port]."
 msgstr ""
+"Retourne un identifiant d'un port de sortie libre qui peut être utilisé pour "
+"[method add_input_port]."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid ""
 "Returns the number of input ports in use. Alternative for [method "
 "get_free_input_port_id]."
 msgstr ""
+"Retourne le nombre de ports d'entrée utilisés. C'est une alternative à "
+"[method get_free_input_port_id]."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid ""
@@ -73728,6 +73816,8 @@ msgid ""
 "Returns the number of output ports in use. Alternative for [method "
 "get_free_output_port_id]."
 msgstr ""
+"Retourne le nombre de ports de sortie utilisés. C'est une alternative à "
+"[method get_free_output_port_id]."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid ""
@@ -73737,11 +73827,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid "Returns [code]true[/code] if the specified input port exists."
-msgstr ""
+msgstr "Retourne [code]true[/code] si le port d'entrée spécifié existe."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid "Returns [code]true[/code] if the specified output port exists."
-msgstr ""
+msgstr "Retourne [code]true[/code] si le port de sortie spécifié existe."
 
 #: doc/classes/VisualShaderNodeGroupBase.xml
 msgid ""
@@ -74256,7 +74346,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeUniformRef.xml
 msgid "A reference to an existing [VisualShaderNodeUniform]."
-msgstr ""
+msgstr "Une référence à un [VisualShaderNodeUniform] existant."
 
 #: doc/classes/VisualShaderNodeUniformRef.xml
 msgid ""
@@ -74723,7 +74813,7 @@ msgstr ""
 
 #: doc/classes/VSlider.xml
 msgid "The background of the area below the grabber."
-msgstr ""
+msgstr "L'arrière plan de l'aire sous le glisseur."
 
 #: doc/classes/VSlider.xml
 msgid ""
@@ -74764,6 +74854,8 @@ msgstr ""
 #: doc/classes/WeakRef.xml
 msgid "Returns the [Object] this weakref is referring to."
 msgstr ""
+"Retourne le [Object] que cette référence faible ([code]weakref[/code]) "
+"contient."
 
 #: modules/webrtc/doc_classes/WebRTCDataChannel.xml
 msgid "Closes this data channel, notifying the other peer."

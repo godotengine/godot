@@ -1488,6 +1488,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 
+	// XR project settings.
+	GLOBAL_DEF_BASIC("xr/openxr/enabled", false);
+	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://default_action_map.tres");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
+
+	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head mounted,Handheld"));
+
+	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
+
+	GLOBAL_DEF_BASIC("xr/openxr/reference_space", "1");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/reference_space", PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"));
+
+#ifdef TOOLS_ENABLED
+	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
+
+	// editor settings (it seems we're too early in the process when setting up rendering, to access editor settings...)
+	// EDITOR_DEF_RST("xr/openxr/in_editor", false);
+	// GLOBAL_DEF("xr/openxr/in_editor", false);
+#endif
+
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew(MessageQueue);

@@ -384,7 +384,7 @@ void OpenXRInterface::handle_tracker(Tracker *p_tracker) {
 	// profiles are suggested bindings for controller types we know about. OpenXR runtimes can stray away from these
 	// and rebind them or even offer bindings to controllers that are not known to us.
 
-	// We don't really have a consistant way to detect whether a controller is active however as long as it is
+	// We don't really have a consistent way to detect whether a controller is active however as long as it is
 	// unbound it seems to be unavailable, so far unknown controller seem to mimic one of the profiles we've
 	// supplied.
 	if (p_tracker->interaction_profile.is_null()) {

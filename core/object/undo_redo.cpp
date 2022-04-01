@@ -444,25 +444,25 @@ UndoRedo::~UndoRedo() {
 	clear_history();
 }
 
-Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
-		return Variant();
+		return;
 	}
 
 	if (p_args[0]->get_type() != Variant::OBJECT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::OBJECT;
-		return Variant();
+		return;
 	}
 
 	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -471,28 +471,27 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callabl
 	StringName method = *p_args[1];
 
 	add_do_methodp(object, method, p_args + 2, p_argcount - 2);
-	return Variant();
 }
 
-Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
-		return Variant();
+		return;
 	}
 
 	if (p_args[0]->get_type() != Variant::OBJECT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::OBJECT;
-		return Variant();
+		return;
 	}
 
 	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -501,7 +500,6 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Calla
 	StringName method = *p_args[1];
 
 	add_undo_methodp(object, method, p_args + 2, p_argcount - 2);
-	return Variant();
 }
 
 void UndoRedo::_bind_methods() {

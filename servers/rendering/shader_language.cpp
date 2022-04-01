@@ -5134,9 +5134,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 					} else if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
-						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_ARRAY;
+						}
 						call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						}
 						if (!call_expression) {
 							return nullptr;
 						}
@@ -5287,9 +5291,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				if (!expr->is_indexed() && expr->get_array_size() > 0) {
 					completion_class = TAG_ARRAY;
-					p_block->block_tag = SubClassTag::TAG_ARRAY;
+					if (p_block != nullptr) {
+						p_block->block_tag = SubClassTag::TAG_ARRAY;
+					}
 					Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-					p_block->block_tag = SubClassTag::TAG_GLOBAL;
+					if (p_block != nullptr) {
+						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+					}
 					if (!call_expression) {
 						return nullptr;
 					}
@@ -5587,9 +5595,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						mn->assign_expression = assign_expression;
 					} else if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
-						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_ARRAY;
+						}
 						Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						}
 						if (!call_expression) {
 							return nullptr;
 						}

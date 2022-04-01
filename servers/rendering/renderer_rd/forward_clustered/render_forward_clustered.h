@@ -103,10 +103,10 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID depth_fb;
 		RID depth_normal_roughness_fb;
 		RID depth_normal_roughness_voxelgi_fb;
-		RID color_fb;
-		RID color_specular_fb;
+		RID color_only_fb;
 		RID specular_only_fb;
 		int width, height;
+		Map<uint32_t, RID> color_framebuffers;
 		uint32_t view_count;
 
 		RID render_sdfgi_uniform_set;
@@ -114,6 +114,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		void ensure_voxelgi();
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
+		RID get_color_pass_fb(uint32_t p_color_pass_flags);
 
 		~RenderBufferDataForwardClustered();
 	};
@@ -135,8 +136,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	enum PassMode {
 		PASS_MODE_COLOR,
-		PASS_MODE_COLOR_SPECULAR,
-		PASS_MODE_COLOR_TRANSPARENT,
 		PASS_MODE_SHADOW,
 		PASS_MODE_SHADOW_DP,
 		PASS_MODE_DEPTH,
@@ -144,6 +143,12 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI,
 		PASS_MODE_DEPTH_MATERIAL,
 		PASS_MODE_SDF,
+	};
+
+	enum ColorPassFlags {
+		COLOR_PASS_FLAG_TRANSPARENT = 1 << 0,
+		COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1,
+		COLOR_PASS_FLAG_MULTIVIEW = 1 << 2
 	};
 
 	struct GeometryInstanceSurfaceDataCache;
@@ -155,6 +160,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		int element_count = 0;
 		bool reverse_cull = false;
 		PassMode pass_mode = PASS_MODE_COLOR;
+		uint32_t color_pass_flags = 0;
 		bool no_gi = false;
 		uint32_t view_count = 1;
 		RID render_pass_uniform_set;
@@ -168,12 +174,13 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t barrier = RD::BARRIER_MASK_ALL;
 		bool use_directional_soft_shadow = false;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, uint32_t p_color_pass_flags, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;
 			pass_mode = p_pass_mode;
+			color_pass_flags = p_color_pass_flags;
 			no_gi = p_no_gi;
 			view_count = p_view_count;
 			render_pass_uniform_set = p_render_pass_uniform_set;
@@ -374,7 +381,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t lod_index : 8;
 	};
 
-	template <PassMode p_pass_mode>
+	template <PassMode p_pass_mode, uint32_t p_color_pass_flags = 0>
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
 
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);

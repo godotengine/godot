@@ -24,6 +24,7 @@
 			<argument index="1" name="state" type="GLTFState" />
 			<argument index="2" name="flags" type="int" default="0" />
 			<argument index="3" name="bake_fps" type="int" default="30" />
+			<argument index="4" name="base_path" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>

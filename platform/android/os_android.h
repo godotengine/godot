@@ -96,7 +96,7 @@ public:
 	virtual MainLoop *get_main_loop() const override;
 
 	void main_loop_begin();
-	bool main_loop_iterate();
+	bool main_loop_iterate(bool *r_should_swap_buffers = nullptr);
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();

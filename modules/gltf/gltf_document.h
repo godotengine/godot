@@ -381,7 +381,7 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30, String p_base_path = String());
 	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
 	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
 

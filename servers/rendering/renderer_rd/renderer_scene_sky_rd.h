@@ -105,7 +105,7 @@ private:
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
-	struct SkyShaderData : public RendererStorageRD::ShaderData {
+	struct SkyShaderData : public RendererRD::ShaderData {
 		bool valid;
 		RID version;
 
@@ -129,7 +129,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -227,7 +227,7 @@ public:
 		RID default_shader_rd;
 	} sky_shader;
 
-	struct SkyMaterialData : public RendererStorageRD::MaterialData {
+	struct SkyMaterialData : public RendererRD::MaterialData {
 		SkyShaderData *shader_data;
 		RID uniform_set;
 		bool uniform_set_updated;
@@ -281,11 +281,11 @@ public:
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
 
-	RendererStorageRD::ShaderData *_create_sky_shader_func();
-	static RendererStorageRD::ShaderData *_create_sky_shader_funcs();
+	RendererRD::ShaderData *_create_sky_shader_func();
+	static RendererRD::ShaderData *_create_sky_shader_funcs();
 
-	RendererStorageRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_sky_material_funcs(RendererStorageRD::ShaderData *p_shader);
+	RendererRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
+	static RendererRD::MaterialData *_create_sky_material_funcs(RendererRD::ShaderData *p_shader);
 
 	RendererSceneSkyRD();
 	void init(RendererStorageRD *p_storage);

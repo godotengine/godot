@@ -35,8 +35,7 @@
 #include "../gltf_document.h"
 #include "../gltf_state.h"
 
-#include "scene/3d/node_3d.h"
-#include "scene/animation/animation_player.h"
+#include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
 uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
@@ -48,26 +47,25 @@ void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) c
 	r_extensions->push_back("glb");
 }
 
-Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps,
-		List<String> *r_missing_deps,
-		Error *r_err) {
+Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
+		const Map<StringName, Variant> &p_options, int p_bake_fps,
+		List<String> *r_missing_deps, Error *r_err) {
 	Ref<GLTFDocument> doc;
 	doc.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
 	Error err = doc->append_from_file(p_path, state, p_flags, p_bake_fps);
 	if (err != OK) {
-		*r_err = err;
+		if (r_err) {
+			*r_err = err;
+		}
 		return nullptr;
 	}
-	Node *root = doc->generate_scene(state, p_bake_fps);
-	return root;
+	return doc->generate_scene(state, p_bake_fps);
 }
 
 Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options,
-		int p_bake_fps) {
+		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
 	return Ref<Animation>();
 }
 

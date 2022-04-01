@@ -824,7 +824,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 // Loading a template, don't parse.
 #ifdef TOOLS_ENABLED
-	if (basedir.begins_with(EditorSettings::get_singleton()->get_project_script_templates_dir())) {
+	if (EditorSettings::get_singleton() && basedir.begins_with(EditorSettings::get_singleton()->get_project_script_templates_dir())) {
 		return OK;
 	}
 #endif

@@ -69,13 +69,14 @@
 # Amigos Sus <amigossus66@gmail.com>, 2022.
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
 # Recep GUCLUER <rgucluer@gmail.com>, 2022.
+# Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-13 20:11+0000\n"
-"Last-Translator: Recep GUCLUER <rgucluer@gmail.com>\n"
+"PO-Revision-Date: 2022-03-21 22:23+0000\n"
+"Last-Translator: Emir Tunahan Alim <emrtnhalim@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -83,16 +84,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
-#: core/bind/core_bind.cpp
+#: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Clipboard"
-msgstr "Pano boş!"
+msgstr "Pano"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -106,7 +107,7 @@ msgstr ""
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Etkin"
+msgstr "V-Sync Etkin"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -114,12 +115,12 @@ msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Delta Yumuşatma"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Biçimi Taşı"
+msgstr "Düşük İşlemci Kullanımı Modu"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -128,22 +129,22 @@ msgstr ""
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 #, fuzzy
 msgid "Keep Screen On"
-msgstr "Hata Ayıklayıcıyı Açık Tut"
+msgstr "Ekranı Açık Tut"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Min Window Size"
-msgstr "Kontur Boyutu:"
+msgstr "En Düşük Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Max Window Size"
-msgstr "Kontur Boyutu:"
+msgstr "Maksimum Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
 msgid "Screen Orientation"
-msgstr "Screen Etkisi operatörü."
+msgstr "Ekran Oryantasyonu"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 #, fuzzy
@@ -189,8 +190,8 @@ msgstr "Dock Pozisyonu"
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
 #: modules/mono/csharp_script.cpp modules/visual_script/visual_script_nodes.cpp
-#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/gui/control.cpp
-#: scene/gui/graph_edit.cpp scene/main/viewport.cpp
+#: scene/2d/tile_map.cpp scene/3d/camera.cpp scene/3d/light.cpp
+#: scene/gui/control.cpp scene/gui/graph_edit.cpp scene/main/viewport.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
@@ -294,8 +295,7 @@ msgid "Data"
 msgstr "Veri ile"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
+#: editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #, fuzzy
 msgid "Network"
@@ -579,9 +579,10 @@ msgstr "Ön ayar"
 msgid "Relative"
 msgstr "Göreceli Yapış"
 
-#: core/os/input_event.cpp scene/2d/camera_2d.cpp
-#: scene/3d/interpolated_camera.cpp scene/animation/animation_player.cpp
-#: scene/resources/environment.cpp
+#: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
+#: scene/animation/animation_player.cpp scene/resources/environment.cpp
+#: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Speed"
 msgstr "Hız:"
@@ -631,8 +632,9 @@ msgstr "İşleme Mesajı"
 msgid "Pitch"
 msgstr "Perde:"
 
-#: core/os/input_event.cpp scene/2d/physics_body_2d.cpp
-#: scene/3d/physics_body.cpp
+#: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Velocity"
 msgstr "Yörünge Görünümü Sağ"
@@ -651,6 +653,8 @@ msgid "Controller Value"
 msgstr ""
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Application"
 msgstr "Eylem"
@@ -669,13 +673,16 @@ msgstr "Proje Ayarları..."
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
 #: editor/editor_plugin_settings.cpp editor/editor_profiler.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
-#: modules/gdnative/nativescript/nativescript.cpp scene/2d/area_2d.cpp
-#: scene/3d/area.cpp scene/main/node.cpp
+#: modules/gdnative/nativescript/nativescript.cpp
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#: platform/osx/export/export.cpp scene/2d/area_2d.cpp scene/3d/area.cpp
+#: scene/main/node.cpp
 msgid "Name"
 msgstr "İsim"
 
 #: core/project_settings.cpp editor/editor_help.cpp
-#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp platform/uwp/export/export.cpp
+#: platform/windows/export/export.cpp
 msgid "Description"
 msgstr "Açıklama"
 
@@ -713,7 +720,7 @@ msgid "Custom User Dir Name"
 msgstr ""
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
-#: editor/editor_audio_buses.cpp servers/audio_server.cpp
+#: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
 msgid "Audio"
 msgstr "Ses"
 
@@ -881,10 +888,13 @@ msgstr "Süzgeçler:"
 msgid "Sharpen Intensity"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
-#: main/main.cpp modules/gdscript/gdscript.cpp
-#: modules/visual_script/visual_script.cpp scene/3d/room_manager.cpp
+#: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
+#: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/project_export.cpp main/main.cpp modules/gdscript/gdscript.cpp
+#: modules/visual_script/visual_script.cpp
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp scene/3d/room_manager.cpp
 #: scene/main/scene_tree.cpp scene/resources/shape_2d.cpp
 #: servers/visual_server.cpp
 msgid "Debug"
@@ -1120,6 +1130,7 @@ msgid "Subsurface Scattering"
 msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#: editor/import/resource_importer_texture.cpp
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_node.cpp
 #: modules/gridmap/grid_map.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/node_2d.cpp scene/2d/parallax_layer.cpp scene/2d/polygon_2d.cpp
@@ -1417,6 +1428,7 @@ msgid "Editors"
 msgstr "Düzenleyici"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
+#: editor/import/resource_importer_scene.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 #: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/sprite.cpp scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
@@ -1650,14 +1662,14 @@ msgstr "Animasyon adım değeri."
 msgid "Seconds"
 msgstr "Saniye"
 
-#: editor/animation_track_editor.cpp
+#: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp main/main.cpp
 #: scene/resources/texture.cpp
 msgid "FPS"
 msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_plugin_settings.cpp
-#: editor/editor_resource_picker.cpp
+#: editor/editor_resource_picker.cpp editor/import/resource_importer_wav.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -2621,7 +2633,9 @@ msgid "Remove Autoload"
 msgstr "KendindenYüklenme'yi Kaldır"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
-#: modules/gdscript/gdscript.cpp scene/2d/polygon_2d.cpp scene/3d/area.cpp
+#: modules/gdscript/gdscript.cpp platform/android/export/export_plugin.cpp
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#: scene/2d/polygon_2d.cpp scene/3d/area.cpp scene/3d/physics_joint.cpp
 #: scene/3d/reflection_probe.cpp scene/main/canvas_layer.cpp
 #: scene/resources/material.cpp servers/visual_server.cpp
 msgid "Enable"
@@ -2786,6 +2800,59 @@ msgstr ""
 "ihtiyaç duyuyor.\n"
 "Proje Ayarlarında 'Import Etc' seçeneğini etkinleştirin veya 'Driver "
 "Fallback Enabled' seçeneğini devre dışı bırakın."
+
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom Template"
+msgstr "Editör Teması"
+
+#: editor/editor_export.cpp editor/project_export.cpp
+#: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp
+msgid "Release"
+msgstr "Yayınlamak"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Binary Format"
+msgstr "Renk operatörü."
+
+#: editor/editor_export.cpp
+msgid "64 Bits"
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid "Embed PCK"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Texture Format"
+msgstr "DokuBölgesi"
+
+#: editor/editor_export.cpp
+msgid "BPTC"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+msgid "S3TC"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+msgid "ETC"
+msgstr ""
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+msgid "ETC2"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "No BPTC Fallbacks"
+msgstr "Shader Yedeklerini Zorla"
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2970,6 +3037,7 @@ msgid "Make Current"
 msgstr "Geçerli Yap"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
+#: editor/import/resource_importer_scene.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
 msgstr "İçe Aktar"
@@ -3099,8 +3167,11 @@ msgstr "Başarılı!"
 msgid "Display Mode"
 msgstr "Oynatma Modu:"
 
-#: editor/editor_file_dialog.cpp main/main.cpp modules/csg/csg_shape.cpp
-#: modules/visual_script/visual_script_nodes.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+#: editor/import/resource_importer_wav.cpp main/main.cpp
+#: modules/csg/csg_shape.cpp modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp scene/2d/light_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/tile_map.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/light.cpp scene/3d/physics_body.cpp
@@ -3239,7 +3310,9 @@ msgstr "Varlıklar Yeniden-İçe Aktarılıyor"
 msgid "Reimport Missing Imported Files"
 msgstr ""
 
-#: editor/editor_help.cpp
+#: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
+#: scene/resources/style_box.cpp
 msgid "Top"
 msgstr "Üst"
 
@@ -3292,6 +3365,7 @@ msgid "Fonts"
 msgstr "Yazı Tipleri"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#: platform/iphone/export/export.cpp
 msgid "Icons"
 msgstr "Simgeler"
 
@@ -3462,7 +3536,9 @@ msgid "Pin value [Disabled because '%s' is editor-only]"
 msgstr ""
 "Değer sabitle [Devre dışı bırakıldı çünkü '%s' sadece editör için aktiftir]"
 
-#: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: editor/editor_inspector.cpp
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -3802,6 +3878,16 @@ msgid "Quick Open Script..."
 msgstr "Betiği Hızlı Aç..."
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Save & Reload"
+msgstr "Kaydet ve Baştan Başlat"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Save changes to '%s' before reloading?"
+msgstr "Kapatmadan önce değişklikler buraya '%s' kaydedilsin mi?"
+
+#: editor/editor_node.cpp
 msgid "Save & Close"
 msgstr "Kaydet & Kapat"
 
@@ -3916,6 +4002,11 @@ msgstr "Düzenleyiciden çık?"
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
 msgstr "Proje Yöneticisi Açılsın Mı?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Save changes to the following scene(s) before reloading?"
+msgstr "Çıkmadan önce değişiklikler aşağıdaki sahne(ler)e kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -4193,8 +4284,8 @@ msgstr "Materyal Değişiklikleri:"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Translate Properties"
-msgstr "Özellikleri Yapıştır"
+msgid "Localize Settings"
+msgstr "Yerelleştirme"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4211,8 +4302,8 @@ msgstr "Denetçi"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Capitalize Properties"
-msgstr "Özellikleri Yapıştır"
+msgid "Default Property Name Style"
+msgstr "Proje Yolu:"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
@@ -4821,7 +4912,9 @@ msgstr "Yüklü Eklentiler:"
 msgid "Update"
 msgstr "Güncelle"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp platform/android/export/export_plugin.cpp
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Version"
 msgstr "Sürüm"
 
@@ -5864,7 +5957,7 @@ msgstr "Tam Kare"
 msgid "Rect Custom Position"
 msgstr "Eğri Çıkış Konumunu Ayarla"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
 msgstr ""
 
@@ -5889,6 +5982,19 @@ msgstr "Noktayı kaldır"
 #, fuzzy
 msgid "Editor SSL Certificates"
 msgstr "Düzenleyici Ayarları"
+
+#: editor/editor_settings.cpp
+msgid "HTTP Proxy"
+msgstr ""
+
+#: editor/editor_settings.cpp
+msgid "Host"
+msgstr ""
+
+#: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
+#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+msgid "Port"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Project Manager"
@@ -5933,7 +6039,8 @@ msgstr ""
 msgid "String Color"
 msgstr "Dosya Depolama:"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp platform/javascript/export/export.cpp
+#: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Background Color"
 msgstr "Geçersiz arkaplan rengi."
@@ -6110,22 +6217,6 @@ msgstr "Alternatif kaynak listesi alınıyor..."
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
 msgstr "İndirme başlatılıyor..."
-
-#: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "HTTP Proxy"
-msgstr ""
-
-#: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Host"
-msgstr ""
-
-#: editor/export_template_manager.cpp editor/fileserver/editor_file_server.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp main/main.cpp
-#: modules/mono/mono_gd/gd_mono.cpp
-msgid "Port"
-msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -6381,6 +6472,7 @@ msgstr ""
 
 #: editor/fileserver/editor_file_server.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Password"
 msgstr "Şifre"
 
@@ -6758,6 +6850,117 @@ msgstr ""
 msgid "Use Ambient"
 msgstr ""
 
+#: editor/import/resource_importer_bitmask.cpp
+#, fuzzy
+msgid "Create From"
+msgstr "Klasör Oluştur"
+
+#: editor/import/resource_importer_bitmask.cpp
+#: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Threshold"
+msgstr ""
+
+#: editor/import/resource_importer_csv_translation.cpp
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_scene.cpp
+#: editor/import/resource_importer_texture.cpp
+#: editor/import/resource_importer_wav.cpp scene/3d/gi_probe.cpp
+#, fuzzy
+msgid "Compress"
+msgstr "Bileşenler"
+
+#: editor/import/resource_importer_csv_translation.cpp
+msgid "Delimiter"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+msgid "No BPTC If RGB"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/texture.cpp
+msgid "Flags"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp scene/animation/tween.cpp
+#: scene/resources/texture.cpp
+msgid "Repeat"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
+#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Filter"
+msgstr "Süzgeçler:"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Mipmaps"
+msgstr "sinyaller"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+msgid "Anisotropic"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: editor/import/resource_importer_texture.cpp
+msgid "sRGB"
+msgstr ""
+
+#: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
+msgid "Slices"
+msgstr "Otomatik Dilimle"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Horizontal"
+msgstr "Yatay:"
+
+#: editor/import/resource_importer_layered_texture.cpp
+#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
+#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Vertical"
+msgstr "Dikey:"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Generate Tangents"
+msgstr "Noktalar Oluştur"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Scale Mesh"
+msgstr "Esnetme Şekli"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Offset Mesh"
+msgstr "Kaydırma:"
+
+#: editor/import/resource_importer_obj.cpp
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Octahedral Compression"
+msgstr "İfade"
+
+#: editor/import/resource_importer_obj.cpp
+#, fuzzy
+msgid "Optimize Mesh Flags"
+msgstr "Boyut: "
+
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
 msgstr "Tek Bir Sahne Şeklinde İçe Aktar"
@@ -6797,6 +7000,156 @@ msgstr "Çoklu Sahne Olarak İçe Aktar"
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
 msgstr "Çoklu Sahneler+Materyaller olarak İçe Aktar"
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Nodes"
+msgstr "Düğüm"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Root Type"
+msgstr "Dön"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Root Name"
+msgstr "Uzak Depo Adı"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Root Scale"
+msgstr "Ölçekle"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Custom Script"
+msgstr "ÖzelSınıf"
+
+#: editor/import/resource_importer_scene.cpp scene/resources/texture.cpp
+#, fuzzy
+msgid "Storage"
+msgstr "Dosya Depolama:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Use Legacy Names"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Materials"
+msgstr "Materyal Değişiklikleri:"
+
+#: editor/import/resource_importer_scene.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Location"
+msgstr "Yerelleştirme"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Keep On Reimport"
+msgstr "Yeniden İçe Aktar"
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+#, fuzzy
+msgid "Meshes"
+msgstr "Örgü"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Ensure Tangents"
+msgstr "Eğri Tanjantını Değiştir"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Light Baking"
+msgstr "Işık-Haritalarını Pişir"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Lightmap Texel Size"
+msgstr "Işık-Haritalarını Pişir"
+
+#: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+msgid "Skins"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Use Named Skins"
+msgstr "Esnetme Hizalaması Kullan"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "External Files"
+msgstr "Bir Dosya Aç"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Store In Subdir"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Filter Script"
+msgstr "Betikleri Süz"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Keep Custom Tracks"
+msgstr "Dönüşüm"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Optimizer"
+msgstr "İyileştir"
+
+#: editor/import/resource_importer_scene.cpp main/main.cpp
+#: modules/mono/mono_gd/gd_mono.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp scene/2d/camera_2d.cpp scene/2d/light_2d.cpp
+#: scene/2d/navigation_polygon.cpp scene/2d/ray_cast_2d.cpp scene/2d/sprite.cpp
+#: scene/2d/y_sort.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/3d/baked_lightmap.cpp scene/3d/interpolated_camera.cpp
+#: scene/3d/light.cpp scene/3d/navigation_mesh_instance.cpp
+#: scene/3d/physics_joint.cpp scene/3d/ray_cast.cpp scene/3d/sprite_3d.cpp
+#: scene/gui/graph_edit.cpp scene/gui/rich_text_label.cpp
+#: scene/resources/curve.cpp scene/resources/environment.cpp
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Enabled"
+msgstr "Etkin"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Max Linear Error"
+msgstr "Maks. Doğrusal Hata:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Max Angular Error"
+msgstr "Maks. Açısal Hata:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Max Angle"
+msgstr "Değer"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Remove Unused Tracks"
+msgstr "Animasyon İzini Kaldır"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Clips"
+msgstr "Animasyon Klipleri"
+
+#: editor/import/resource_importer_scene.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/particles_2d.cpp scene/3d/area.cpp scene/3d/cpu_particles.cpp
+#: scene/3d/particles.cpp scene/resources/environment.cpp
+#, fuzzy
+msgid "Amount"
+msgstr "Değer:"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -6841,11 +7194,148 @@ msgstr "`Post_import ()` yönteminde Node türevi bir nesne döndürdünüz mü?
 msgid "Saving..."
 msgstr "Kaydediliyor..."
 
+#: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
+msgid "Lossy Quality"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "HDR Mode"
+msgstr "Kip Seç"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "BPTC LDR"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
+#: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
+#: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
+msgid "Normal Map"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Process"
+msgstr "Rötuş"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "Fix Alpha Border"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Premult Alpha"
+msgstr "Çokluyu Düzenleyin"
+
+#: editor/import/resource_importer_texture.cpp
+msgid "Hdr As Srgb"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Invert Color"
+msgstr "Köşe"
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Normal Map Invert Y"
+msgstr "Rastgele Ölçek:"
+
+#: editor/import/resource_importer_texture.cpp
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
+#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
+msgid "Stream"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "Size Limit"
+msgstr "Boyut: "
+
+#: editor/import/resource_importer_texture.cpp
+msgid "Detect 3D"
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+#, fuzzy
+msgid "SVG"
+msgstr "HSV"
+
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "Warning, no suitable PC VRAM compression enabled in Project Settings. This "
 "texture will not display correctly on PC."
 msgstr ""
+
+#: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
+msgid "Atlas File"
+msgstr "Kontur Boyutu:"
+
+#: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
+msgid "Import Mode"
+msgstr "Dışa Aktarma Biçimi:"
+
+#: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
+msgid "Crop To Region"
+msgstr "Döşeme Bölgesi Ata"
+
+#: editor/import/resource_importer_texture_atlas.cpp
+msgid "Trim Alpha Border From Region"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp scene/2d/physics_body_2d.cpp
+#, fuzzy
+msgid "Force"
+msgstr "Zorla Gönder"
+
+#: editor/import/resource_importer_wav.cpp
+msgid "8 Bit"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp main/main.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+msgid "Mono"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp
+#, fuzzy
+msgid "Max Rate"
+msgstr "Düğümü Çırp"
+
+#: editor/import/resource_importer_wav.cpp
+#, fuzzy
+msgid "Max Rate Hz"
+msgstr "Düğümü Çırp"
+
+#: editor/import/resource_importer_wav.cpp
+msgid "Trim"
+msgstr ""
+
+#: editor/import/resource_importer_wav.cpp
+#, fuzzy
+msgid "Normalize"
+msgstr "Biçem"
+
+#: editor/import/resource_importer_wav.cpp
+#: scene/resources/audio_stream_sample.cpp
+#, fuzzy
+msgid "Loop Mode"
+msgstr "Biçimi Taşı"
+
+#: editor/import/resource_importer_wav.cpp
+#: scene/resources/audio_stream_sample.cpp
+#, fuzzy
+msgid "Loop Begin"
+msgstr "Biçimi Taşı"
+
+#: editor/import/resource_importer_wav.cpp
+#: scene/resources/audio_stream_sample.cpp
+#, fuzzy
+msgid "Loop End"
+msgstr "Biçimi Taşı"
 
 #: editor/import_defaults_editor.cpp
 msgid "Select Importer"
@@ -6923,6 +7413,29 @@ msgstr ""
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
 msgstr "Kaynak yükleme başarısız oldu."
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Property Name Style"
+msgstr "Proje Adı:"
+
+#: editor/inspector_dock.cpp scene/gui/color_picker.cpp
+msgid "Raw"
+msgstr "Ham"
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Capitalized"
+msgstr "Büyük harfe çevirme"
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Localized"
+msgstr "Yerel"
+
+#: editor/inspector_dock.cpp
+msgid "Localization not available for current language."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
@@ -7970,18 +8483,26 @@ msgid "License (Z-A)"
 msgstr "Lisans (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "First"
 msgstr "İlk"
 
-#: editor/plugins/asset_library_editor_plugin.cpp scene/gui/control.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "Previous"
 msgstr "Önceki"
 
-#: editor/plugins/asset_library_editor_plugin.cpp scene/gui/control.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "Next"
 msgstr "Sonraki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgctxt "Pagination"
 msgid "Last"
 msgstr "Son"
 
@@ -8230,19 +8751,19 @@ msgstr ""
 "Etkin olduğunda, Denetim düğümünü taşımak kenar boşluklarını değil çapa "
 "noktasını değiştirir."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Top Left"
 msgstr "Sol Üst"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Top Right"
 msgstr "Sağ Üst"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Bottom Right"
 msgstr "Alt Sağ"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp scene/resources/style_box.cpp
 msgid "Bottom Left"
 msgstr "Alt Sol"
 
@@ -8955,6 +9476,19 @@ msgstr "GI Prob Pişir"
 msgid "Gradient Edited"
 msgstr "Renk Geçişi Düzenlendi"
 
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+msgid "Swap GradientTexture2D Fill Points"
+msgstr ""
+
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+msgid "Swap Gradient Fill Points"
+msgstr ""
+
+#: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Grid Snap"
+msgstr "Aç / Kapat Biçimi"
+
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
 msgstr "Öğe%d"
@@ -9187,8 +9721,9 @@ msgstr ""
 "Mevcut sahneden güncellensin mi?:\n"
 "%s"
 
-#: editor/plugins/mesh_library_editor_plugin.cpp modules/gridmap/grid_map.cpp
-msgid "Mesh Library"
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "MeshLibrary"
 msgstr "Model Kütüphanesi"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -10178,8 +10713,8 @@ msgstr "Metotlara bağlantılar:"
 msgid "Source"
 msgstr "Kaynak"
 
-#: editor/plugins/script_text_editor.cpp scene/3d/interpolated_camera.cpp
-#: scene/animation/skeleton_ik.cpp
+#: editor/plugins/script_text_editor.cpp platform/uwp/export/export.cpp
+#: scene/3d/interpolated_camera.cpp scene/animation/skeleton_ik.cpp
 msgid "Target"
 msgstr "Hedef"
 
@@ -11153,7 +11688,9 @@ msgstr "Hız:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: modules/gltf/gltf_animation.cpp modules/minimp3/audio_stream_mp3.cpp
-#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp scene/2d/path_2d.cpp
+#: modules/minimp3/resource_importer_mp3.cpp
+#: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
+#: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp scene/2d/path_2d.cpp
 #: scene/3d/path.cpp scene/resources/animation.cpp scene/resources/material.cpp
 msgid "Loop"
 msgstr "Döngü"
@@ -12044,8 +12581,9 @@ msgstr "Bitmaskesi"
 msgid "Priority"
 msgstr "Öncelik"
 
-#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp scene/gui/button.cpp
-#: scene/gui/item_list.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#: scene/gui/button.cpp scene/gui/item_list.cpp
 msgid "Icon"
 msgstr "Simge"
 
@@ -13412,10 +13950,6 @@ msgstr ""
 "'%s' platformu için proje dışa aktarılamadı.\n"
 "Bu, dışa aktarma ön ayarlarındaki ya da dışa aktarma ayarlarınızdaki bir "
 "yapılandırma sorunundan kaynaklanıyor olabilir."
-
-#: editor/project_export.cpp
-msgid "Release"
-msgstr "Yayınlamak"
 
 #: editor/project_export.cpp
 msgid "Exporting All"
@@ -15291,6 +15825,7 @@ msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "AudioStreamPlayer3D Emisyon Açısı Değişimi"
 
 #: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
+#: platform/osx/export/export.cpp
 msgid "Camera"
 msgstr ""
 
@@ -15574,7 +16109,8 @@ msgstr ""
 msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
 
-#: main/main.cpp platform/uwp/os_uwp.cpp
+#: main/main.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/os_uwp.cpp
 #, fuzzy
 msgid "Display"
 msgstr "Hepsini Görüntüle"
@@ -15635,19 +16171,6 @@ msgstr ""
 msgid "Allowed"
 msgstr ""
 
-#: main/main.cpp modules/mono/mono_gd/gd_mono.cpp scene/2d/camera_2d.cpp
-#: scene/2d/light_2d.cpp scene/2d/navigation_polygon.cpp
-#: scene/2d/ray_cast_2d.cpp scene/2d/sprite.cpp scene/2d/y_sort.cpp
-#: scene/3d/audio_stream_player_3d.cpp scene/3d/baked_lightmap.cpp
-#: scene/3d/interpolated_camera.cpp scene/3d/light.cpp
-#: scene/3d/navigation_mesh_instance.cpp scene/3d/ray_cast.cpp
-#: scene/3d/sprite_3d.cpp scene/gui/graph_edit.cpp
-#: scene/gui/rich_text_label.cpp scene/resources/curve.cpp
-#: scene/resources/environment.cpp
-#, fuzzy
-msgid "Enabled"
-msgstr "Etkin"
-
 #: main/main.cpp
 msgid "Intended Usage"
 msgstr ""
@@ -15679,13 +16202,14 @@ msgstr ""
 msgid "Handheld"
 msgstr ""
 
-#: main/main.cpp
+#: main/main.cpp platform/javascript/export/export.cpp
+#: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Orientation"
 msgstr "Çevrimiçi Dokümanlar"
 
 #: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
-#: scene/main/scene_tree.cpp
+#: scene/main/scene_tree.cpp scene/register_scene_types.cpp
 #, fuzzy
 msgid "Common"
 msgstr "Topluluk"
@@ -15728,7 +16252,7 @@ msgstr ""
 
 #: main/main.cpp
 #, fuzzy
-msgid "Frame Delay (msec)"
+msgid "Frame Delay Msec"
 msgstr "Çerçeve Seçimi"
 
 #: main/main.cpp
@@ -15856,11 +16380,6 @@ msgstr ""
 #, fuzzy
 msgid "Tooltip Position Offset"
 msgstr "Dönme Kayması:"
-
-#: main/main.cpp modules/mono/editor/csharp_project.cpp
-#: modules/mono/mono_gd/gd_mono.cpp
-msgid "Mono"
-msgstr ""
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 #, fuzzy
@@ -16440,7 +16959,7 @@ msgstr "Renkler"
 msgid "Intensity"
 msgstr ""
 
-#: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp
+#: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp scene/3d/light.cpp
 #, fuzzy
 msgid "Range"
 msgstr "Değiştir"
@@ -16587,11 +17106,6 @@ msgstr "Veri ile"
 msgid "Use Named Skin Binds"
 msgstr ""
 
-#: modules/gltf/gltf_state.cpp scene/3d/physics_joint.cpp
-#, fuzzy
-msgid "Nodes"
-msgstr "Düğüm"
-
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
 msgid "Buffer Views"
@@ -16600,16 +17114,6 @@ msgstr "Arkadan Görünüm"
 #: modules/gltf/gltf_state.cpp
 msgid "Accessors"
 msgstr ""
-
-#: modules/gltf/gltf_state.cpp
-#, fuzzy
-msgid "Meshes"
-msgstr "Örgü"
-
-#: modules/gltf/gltf_state.cpp
-#, fuzzy
-msgid "Materials"
-msgstr "Materyal Değişiklikleri:"
 
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
@@ -16628,12 +17132,8 @@ msgstr "Kök düğüm adı"
 msgid "Textures"
 msgstr "Özellikler"
 
-#: modules/gltf/gltf_state.cpp
+#: modules/gltf/gltf_state.cpp platform/uwp/export/export.cpp
 msgid "Images"
-msgstr ""
-
-#: modules/gltf/gltf_state.cpp
-msgid "Skins"
 msgstr ""
 
 #: modules/gltf/gltf_state.cpp
@@ -16671,11 +17171,15 @@ msgid "Src Image"
 msgstr "Kemikleri Göster"
 
 #: modules/gridmap/grid_map.cpp
+msgid "Mesh Library"
+msgstr "Model Kütüphanesi"
+
+#: modules/gridmap/grid_map.cpp
 #, fuzzy
 msgid "Physics Material"
 msgstr "Fizik Kare %"
 
-#: modules/gridmap/grid_map.cpp
+#: modules/gridmap/grid_map.cpp scene/3d/visual_instance.cpp
 #, fuzzy
 msgid "Use In Baked Light"
 msgstr "Işık-Haritalarını Pişir"
@@ -16707,6 +17211,7 @@ msgstr "Merkez"
 
 #: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
 #: scene/2d/tile_map.cpp scene/3d/collision_object.cpp scene/3d/soft_body.cpp
+#: scene/resources/material.cpp
 msgid "Mask"
 msgstr ""
 
@@ -16888,7 +17393,9 @@ msgid "Ultra Quality Ray Count"
 msgstr ""
 
 #: modules/minimp3/audio_stream_mp3.cpp
+#: modules/minimp3/resource_importer_mp3.cpp
 #: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
+#: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp
 #, fuzzy
 msgid "Loop Offset"
 msgstr "Kaydırma:"
@@ -17979,6 +18486,193 @@ msgid "The package must have at least one '.' separator."
 msgstr "Paket en azından bir tane '.' ayıracına sahip olmalıdır."
 
 #: platform/android/export/export_plugin.cpp
+msgid "Use Custom Build"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Export Format"
+msgstr "Dışa aktarım Yolu"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Keystore"
+msgstr "Hata Ayıklayıcı"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Debug User"
+msgstr "Hata Ayıklayıcı"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Debug Password"
+msgstr "Şifre"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Release User"
+msgstr "Yayınlamak"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Release Password"
+msgstr "Şifre"
+
+#: platform/android/export/export_plugin.cpp
+msgid "One Click Deploy"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Clear Previous Install"
+msgstr "Önceki Örneği İncele"
+
+#: platform/android/export/export_plugin.cpp scene/resources/shader.cpp
+msgid "Code"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Min SDK"
+msgstr "Kontur Boyutu:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Target SDK"
+msgstr "Hedef"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Package"
+msgstr "Çıkınla"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Unique Name"
+msgstr "Düğüm adı:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Signed"
+msgstr "Sinyal"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Classify As Game"
+msgstr "Sınıf İsmi:"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Retain Data On Uninstall"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Exclude From Recents"
+msgstr "Düğümleri Sil"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Graphics"
+msgstr "Izgarayı Kaydır:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "OpenGL Debug"
+msgstr "Aç"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "XR Features"
+msgstr "Özellikler"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "XR Mode"
+msgstr "Kaydırma Biçimi"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Hand Tracking"
+msgstr "Çıkınla"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Hand Tracking Frequency"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "Passthrough"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Immersive Mode"
+msgstr "Öncelik Kipi"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Small"
+msgstr "Destek"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Normal"
+msgstr "Destek"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Large"
+msgstr "Destek"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Support Xlarge"
+msgstr "Destek"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "User Data Backup"
+msgstr "Kullanıcı Arayüzü"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Allow"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Command Line"
+msgstr "Topluluk"
+
+#: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Extra Args"
+msgstr "Ekstra Çağrı Argümanları:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "APK Expansion"
+msgstr "İfade"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Salt"
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Public Key"
+msgstr "SSH Genel Anahtar Yolu"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Permissions"
+msgstr "Emisyon Maskesi"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Custom Permissions"
+msgstr "Özel Sahneyi Oynat"
+
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "Listeden aygıt seç"
 
@@ -18306,6 +19000,178 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "Tanımlayıcı'da '%s' karakterine izin verilmiyor."
 
 #: platform/iphone/export/export.cpp
+msgid "App Store Team ID"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Provisioning Profile UUID Debug"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Code Sign Identity Debug"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Method Debug"
+msgstr "Hata Ayıklama İle Dışa Aktar"
+
+#: platform/iphone/export/export.cpp
+msgid "Provisioning Profile UUID Release"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Code Sign Identity Release"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Method Release"
+msgstr "Dışa Aktarma Biçimi:"
+
+#: platform/iphone/export/export.cpp
+msgid "Targeted Device Family"
+msgstr ""
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+msgid "Info"
+msgstr ""
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Identifier"
+msgstr "Geçersiz Tanımlayıcı:"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Signature"
+msgstr "Sinyal"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Short Version"
+msgstr "Sürüm"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Copyright"
+msgstr "Sağ Üst"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Capabilities"
+msgstr "Özellikleri Yapıştır"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Access Wi-Fi"
+msgstr "Başarılı!"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Push Notifications"
+msgstr "Rastgele Döndürme:"
+
+#: platform/iphone/export/export.cpp scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "User Data"
+msgstr "Kullanıcı Arayüzü"
+
+#: platform/iphone/export/export.cpp
+msgid "Accessible From Files App"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Accessible From Itunes Sharing"
+msgstr ""
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Privacy"
+msgstr "SSH Özel Anahtar Yolu"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Camera Usage Description"
+msgstr "Açıklama"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Microphone Usage Description"
+msgstr "Özellik Açıklamaları"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Photolibrary Usage Description"
+msgstr "Özellik Açıklamaları"
+
+#: platform/iphone/export/export.cpp
+msgid "iPhone 120 X 120"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPhone 180 X 180"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPad 76 X 76"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPad 152 X 152"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "iPad 167 X 167"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store 1024 X 1024"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Spotlight 40 X 40"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Spotlight 80 X 80"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Storyboard"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Use Launch Screen Storyboard"
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Image Scale Mode"
+msgstr "Esnetme Şekli"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Custom Image @2x"
+msgstr "ÖzelSınıf"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Custom Image @3x"
+msgstr "ÖzelSınıf"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Use Custom BG Color"
+msgstr "ÖzelSınıf"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Custom BG Color"
+msgstr "ÖzelSınıf"
+
+#: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr "App Store Ekip Kimliği belirtilmedi - proje yapılandırılamıyor."
 
@@ -18340,6 +19206,80 @@ msgstr "Dosya yazılamadı:"
 #: platform/javascript/export/export.cpp
 msgid "Could not read file:"
 msgstr "Dosya okunamadı:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Variant"
+msgstr "Ayrım:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Export Type"
+msgstr "Dışa Aktar"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "VRAM Texture Compression"
+msgstr "İfade"
+
+#: platform/javascript/export/export.cpp
+msgid "For Desktop"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "For Mobile"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Html"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Export Icon"
+msgstr "Hepsini Genişlet"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Custom Html Shell"
+msgstr "ÖzelSınıf"
+
+#: platform/javascript/export/export.cpp
+msgid "Head Include"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Canvas Resize Policy"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Focus Canvas On Start"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Experimental Virtual Keyboard"
+msgstr "Sinyalleri filtrele"
+
+#: platform/javascript/export/export.cpp
+msgid "Progressive Web App"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Offline Page"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Icon 144 X 144"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Icon 180 X 180"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Icon 512 X 512"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read HTML shell:"
@@ -18452,6 +19392,202 @@ msgstr ""
 
 #: platform/osx/export/codesign.cpp
 msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "App Category"
+msgstr "Kategori:"
+
+#: platform/osx/export/export.cpp
+msgid "High Res"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Location Usage Description"
+msgstr "Açıklama"
+
+#: platform/osx/export/export.cpp
+msgid "Address Book Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Calendar Usage Description"
+msgstr "Açıklama"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Photos Library Usage Description"
+msgstr "Özellik Açıklamaları"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Desktop Folder Usage Description"
+msgstr "Yöntem Açıklamaları"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Documents Folder Usage Description"
+msgstr "Yöntem Açıklamaları"
+
+#: platform/osx/export/export.cpp
+msgid "Downloads Folder Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Network Volumes Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Removable Volumes Usage Description"
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Codesign"
+msgstr "Düğüm"
+
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Identity"
+msgstr "Sola Girintile"
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Timestamp"
+msgstr "Zaman"
+
+#: platform/osx/export/export.cpp
+msgid "Hardened Runtime"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Replace Existing Signature"
+msgstr "Dosyaiçlerinde Değiştir"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Entitlements"
+msgstr "Gizmolar"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Custom File"
+msgstr "ÖzelSınıf"
+
+#: platform/osx/export/export.cpp
+msgid "Allow JIT Code Execution"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Allow Unsigned Executable Memory"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Allow Dyld Environment Variables"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Disable Library Validation"
+msgstr "Pasif Düğme"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Audio Input"
+msgstr "Giriş Ekle"
+
+#: platform/osx/export/export.cpp
+msgid "Address Book"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Calendars"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Photos Library"
+msgstr "Betikevini Dışa Aktar"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Apple Events"
+msgstr "Olay Ekle"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Debugging"
+msgstr "Hata Ayıklama"
+
+#: platform/osx/export/export.cpp
+msgid "App Sandbox"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Network Server"
+msgstr "Ağ Profilcisi"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Network Client"
+msgstr "Ağ Profilcisi"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Device Usb"
+msgstr "Aygıt"
+
+#: platform/osx/export/export.cpp
+msgid "Device Bluetooth"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Downloads"
+msgstr "İndir"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Pictures"
+msgstr "Özellikler"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Music"
+msgstr "Dosya"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Files Movies"
+msgstr "Döşemelerde Bul"
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
+#, fuzzy
+msgid "Custom Options"
+msgstr "Bus ayarları"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization"
+msgstr "Yerelleştirme"
+
+#: platform/osx/export/export.cpp
+msgid "Apple ID Name"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Apple ID Password"
+msgstr "Şifre"
+
+#: platform/osx/export/export.cpp
+msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -18652,6 +19788,136 @@ msgid "Force Builtin Codesign"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Architecture"
+msgstr "Bir yapı girdisi ekle"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Display Name"
+msgstr "Hepsini Görüntüle"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Short Name"
+msgstr "Betik Adı:"
+
+#: platform/uwp/export/export.cpp
+msgid "Publisher"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Publisher Display Name"
+msgstr "Geçersiz paket yayıncı görünen adı."
+
+#: platform/uwp/export/export.cpp
+msgid "Product Guid"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Publisher Guid"
+msgstr "Kılavuzları Temizle"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Signing"
+msgstr "Sinyal"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Certificate"
+msgstr "Köşenoktalar:"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Algorithm"
+msgstr "Hata Ayıklayıcı"
+
+#: platform/uwp/export/export.cpp
+msgid "Major"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Minor"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Build"
+msgstr "Cetvel Şekli"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Revision"
+msgstr "İfade"
+
+#: platform/uwp/export/export.cpp
+msgid "Landscape"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Portrait"
+msgstr "Portalları Çevir"
+
+#: platform/uwp/export/export.cpp
+msgid "Landscape Flipped"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Portrait Flipped"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Store Logo"
+msgstr "Esnetme Şekli"
+
+#: platform/uwp/export/export.cpp
+msgid "Square 44 X 44 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Square 71 X 71 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Square 150 X 150 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Square 310 X 310 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Wide 310 X 150 Logo"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Splash Screen"
+msgstr "Çizim Çağrıları:"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Tiles"
+msgstr "Dosya"
+
+#: platform/uwp/export/export.cpp
+msgid "Show Name On Square 150 X 150"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Show Name On Wide 310 X 150"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "Geçersiz paket kısa ismi."
 
@@ -18718,13 +19984,50 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
-msgid "Debug Password"
-msgstr "Şifre"
-
-#: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Debug Algorithm"
 msgstr "Hata Ayıklayıcı"
+
+#: platform/windows/export/export.cpp
+msgid "Identity Type"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid "Timestamp Server URL"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Digest Algorithm"
+msgstr "Hata Ayıklayıcı"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "File Version"
+msgstr "Sürüm"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Product Version"
+msgstr "Geçersiz ürün GUID'i."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Company Name"
+msgstr "Düğüm adı:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Product Name"
+msgstr "Proje Adı:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "File Description"
+msgstr "Açıklama"
+
+#: platform/windows/export/export.cpp
+msgid "Trademarks"
+msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -18801,12 +20104,14 @@ msgstr "Oynat"
 msgid "Centered"
 msgstr "Merkez"
 
-#: scene/2d/animated_sprite.cpp scene/2d/camera_2d.cpp scene/2d/light_2d.cpp
+#: scene/2d/animated_sprite.cpp scene/2d/camera_2d.cpp
+#: scene/2d/cpu_particles_2d.cpp scene/2d/light_2d.cpp
 #: scene/2d/parallax_background.cpp scene/2d/parallax_layer.cpp
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
-#: scene/3d/path.cpp scene/3d/physics_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/path.cpp scene/3d/physics_body.cpp
+#: scene/3d/sprite_3d.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
 #: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
@@ -18881,11 +20186,6 @@ msgstr "Audio Bus Ekle"
 msgid "Override"
 msgstr "Üzerine Yaz"
 
-#: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
-msgid "Stream"
-msgstr ""
-
 #: scene/2d/audio_stream_player_2d.cpp scene/audio/audio_stream_player.cpp
 #: scene/gui/video_player.cpp servers/audio/effects/audio_effect_amplify.cpp
 #, fuzzy
@@ -18912,13 +20212,13 @@ msgid "Stream Paused"
 msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
-#: scene/3d/reflection_probe.cpp scene/3d/visual_instance.cpp
-#: scene/resources/material.cpp
+#: scene/3d/light.cpp scene/3d/reflection_probe.cpp
+#: scene/3d/visual_instance.cpp scene/resources/material.cpp
 #, fuzzy
 msgid "Max Distance"
 msgstr "Uzaklık Seç:"
 
-#: scene/2d/audio_stream_player_2d.cpp
+#: scene/2d/audio_stream_player_2d.cpp scene/3d/light.cpp
 #, fuzzy
 msgid "Attenuation"
 msgstr "Animasyon"
@@ -18973,6 +20273,24 @@ msgstr "Biçimi Taşı"
 #: scene/2d/camera_2d.cpp
 msgid "Limit"
 msgstr ""
+
+#: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Left"
+msgstr "Sol Üst"
+
+#: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
+#: scene/resources/style_box.cpp
+#, fuzzy
+msgid "Right"
+msgstr "Işık"
+
+#: scene/2d/camera_2d.cpp scene/gui/control.cpp scene/gui/nine_patch_rect.cpp
+#: scene/resources/dynamic_font.cpp scene/resources/style_box.cpp
+#, fuzzy
+msgid "Bottom"
+msgstr "Alt Sol"
 
 #: scene/2d/camera_2d.cpp
 #, fuzzy
@@ -19216,13 +20534,6 @@ msgstr ""
 msgid "Emitting"
 msgstr "Ayarlar:"
 
-#: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp scene/3d/area.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#: scene/resources/environment.cpp
-#, fuzzy
-msgid "Amount"
-msgstr "Değer:"
-
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 msgid "Lifetime"
@@ -19287,17 +20598,12 @@ msgstr ""
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/sprite_3d.cpp scene/gui/nine_patch_rect.cpp
-#: scene/gui/texture_rect.cpp scene/resources/sky.cpp
-#: scene/resources/style_box.cpp scene/resources/visual_shader_nodes.cpp
+#: scene/gui/texture_rect.cpp scene/resources/material.cpp
+#: scene/resources/sky.cpp scene/resources/style_box.cpp
+#: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Texture"
 msgstr "Yazı"
-
-#: scene/2d/cpu_particles_2d.cpp scene/2d/mesh_instance_2d.cpp
-#: scene/2d/multimesh_instance_2d.cpp scene/2d/particles_2d.cpp
-#: scene/2d/sprite.cpp scene/resources/style_box.cpp
-msgid "Normal Map"
-msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -19322,10 +20628,10 @@ msgid "Normals"
 msgstr "Biçem"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/texture.cpp
-msgid "Flags"
-msgstr ""
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Align Y"
+msgstr "Ata"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -19346,10 +20652,22 @@ msgid "Initial Velocity"
 msgstr "Etkinleştir"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Velocity Random"
+msgstr "Yörünge Görünümü Sağ"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Angular Velocity"
 msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Velocity Curve"
+msgstr "Yörünge Görünümü Sağ"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -19365,6 +20683,23 @@ msgstr "Doğrusal"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Accel"
+msgstr "Başarılı!"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Accel Random"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Accel Curve"
+msgstr "Eğriyi Böl"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
 msgid "Radial Accel"
 msgstr ""
 
@@ -19374,16 +20709,52 @@ msgid "Tangential Accel"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/joints_2d.cpp
-#: scene/3d/cpu_particles.cpp scene/3d/vehicle_body.cpp
-#: scene/resources/particles_material.cpp
+#: scene/3d/cpu_particles.cpp scene/3d/physics_joint.cpp
+#: scene/3d/vehicle_body.cpp scene/resources/particles_material.cpp
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Damping"
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
+msgid "Damping Random"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Damping Curve"
+msgstr "Eğriyi Böl"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/light.cpp
+#: scene/resources/particles_material.cpp
 msgid "Angle"
 msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+msgid "Angle Random"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Angle Curve"
+msgstr "Eğriyi Kapat"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#, fuzzy
+msgid "Scale Amount"
+msgstr "Değer:"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+msgid "Scale Amount Random"
+msgstr ""
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#, fuzzy
+msgid "Scale Amount Curve"
+msgstr "İmleçten Ölçekle"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -19401,6 +20772,48 @@ msgstr ""
 #, fuzzy
 msgid "Hue Variation"
 msgstr "Ayrım:"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Variation"
+msgstr "Ayrım:"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Variation Random"
+msgstr "Ayrım:"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Variation Curve"
+msgstr "Ayrım:"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Speed Random"
+msgstr "Ölçekle"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Speed Curve"
+msgstr "Eğriyi Böl"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Offset Random"
+msgstr "Kaydırma:"
+
+#: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Offset Curve"
+msgstr "Eğriyi Kapat"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
@@ -19433,6 +20846,7 @@ msgid "Node B"
 msgstr "Düğüm"
 
 #: scene/2d/joints_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+#: scene/3d/light.cpp scene/3d/physics_joint.cpp
 #: scene/resources/environment.cpp
 msgid "Bias"
 msgstr ""
@@ -19442,7 +20856,7 @@ msgstr ""
 msgid "Disable Collision"
 msgstr "Pasif Düğme"
 
-#: scene/2d/joints_2d.cpp
+#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp
 msgid "Softness"
 msgstr ""
 
@@ -19460,7 +20874,7 @@ msgstr "Etkinleştir"
 msgid "Rest Length"
 msgstr ""
 
-#: scene/2d/joints_2d.cpp scene/3d/vehicle_body.cpp
+#: scene/2d/joints_2d.cpp scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
 msgid "Stiffness"
 msgstr ""
 
@@ -19481,7 +20895,7 @@ msgid "Texture Scale"
 msgstr "DokuBölgesi"
 
 #: scene/2d/light_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-#: scene/resources/environment.cpp scene/resources/sky.cpp
+#: scene/3d/light.cpp scene/resources/environment.cpp scene/resources/sky.cpp
 msgid "Energy"
 msgstr ""
 
@@ -19521,12 +20935,6 @@ msgstr "Arkadan Görünüm"
 #, fuzzy
 msgid "Gradient Length"
 msgstr "Renk Geçişi Düzenlendi"
-
-#: scene/2d/light_2d.cpp scene/gui/control.cpp
-#: scene/resources/navigation_mesh.cpp
-#, fuzzy
-msgid "Filter"
-msgstr "Süzgeçler:"
 
 #: scene/2d/light_2d.cpp
 #, fuzzy
@@ -19967,11 +21375,6 @@ msgid "Applied Forces"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp
-#, fuzzy
-msgid "Force"
-msgstr "Zorla Gönder"
-
-#: scene/2d/physics_body_2d.cpp
 msgid "Torque"
 msgstr ""
 
@@ -19987,7 +21390,7 @@ msgstr " (Fiziksel)"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
-msgid "Moving platform"
+msgid "Moving Platform"
 msgstr "Çıktı taşınıyor"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
@@ -19996,7 +21399,7 @@ msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/2d/touch_screen_button.cpp
 #: scene/3d/physics_body.cpp scene/gui/texture_button.cpp
-#: scene/resources/line_shape_2d.cpp
+#: scene/resources/line_shape_2d.cpp scene/resources/material.cpp
 #, fuzzy
 msgid "Normal"
 msgstr "Biçem"
@@ -20245,6 +21648,34 @@ msgstr ""
 "VisibilityEnabler2D, düzenlenmiş sahne köküyle doğrudan üst öğe olarak "
 "kullanıldığında en iyi sonucu verir."
 
+#: scene/2d/visibility_notifier_2d.cpp scene/3d/visibility_notifier.cpp
+#, fuzzy
+msgid "Pause Animations"
+msgstr "Animasyonu Yapıştır"
+
+#: scene/2d/visibility_notifier_2d.cpp scene/3d/visibility_notifier.cpp
+msgid "Freeze Bodies"
+msgstr ""
+
+#: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
+msgid "Pause Particles"
+msgstr "Parçacıklar"
+
+#: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
+msgid "Pause Animated Sprites"
+msgstr "Animasyonu Yapıştır"
+
+#: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
+msgid "Process Parent"
+msgstr "Önceliklemeyi Etkinleştir"
+
+#: scene/2d/visibility_notifier_2d.cpp
+msgid "Physics Process Parent"
+msgstr ""
+
 #: scene/3d/area.cpp
 msgid "Reverb Bus"
 msgstr ""
@@ -20344,6 +21775,7 @@ msgid "Attenuation Filter"
 msgstr ""
 
 #: scene/3d/audio_stream_player_3d.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
 #: servers/audio/effects/audio_effect_filter.cpp
 msgid "Cutoff Hz"
 msgstr ""
@@ -20386,11 +21818,6 @@ msgstr ""
 #, fuzzy
 msgid "Octree"
 msgstr "Altağaç"
-
-#: scene/3d/baked_lightmap.cpp
-#, fuzzy
-msgid "User Data"
-msgstr "Kullanıcı Arayüzü"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
@@ -20666,6 +22093,16 @@ msgid "Ring Axis"
 msgstr "Uyarılar"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Rotate Y"
+msgstr "Döndür"
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Disable Z"
+msgstr "Pasif Öge"
+
+#: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
 msgid "Flatness"
 msgstr ""
 
@@ -20706,14 +22143,9 @@ msgstr "Dinamik Kütüphane"
 msgid "Dynamic Range"
 msgstr "Dinamik Kütüphane"
 
-#: scene/3d/gi_probe.cpp
+#: scene/3d/gi_probe.cpp scene/3d/light.cpp
 msgid "Normal Bias"
 msgstr ""
-
-#: scene/3d/gi_probe.cpp
-#, fuzzy
-msgid "Compress"
-msgstr "Bileşenler"
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -20748,13 +22180,28 @@ msgstr ""
 
 #: scene/3d/light.cpp
 #, fuzzy
+msgid "Indirect Energy"
+msgstr "Emisyon Renkleri"
+
+#: scene/3d/light.cpp
+#, fuzzy
 msgid "Negative"
 msgstr "GDYerel"
 
 #: scene/3d/light.cpp
 #, fuzzy
+msgid "Specular"
+msgstr "Cetvel Şekli"
+
+#: scene/3d/light.cpp
+#, fuzzy
 msgid "Bake Mode"
 msgstr "Bitmask Kipi"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Contact"
+msgstr "Renk Seç"
 
 #: scene/3d/light.cpp
 #, fuzzy
@@ -20768,8 +22215,28 @@ msgstr "Yönler"
 
 #: scene/3d/light.cpp
 #, fuzzy
+msgid "Split 1"
+msgstr "Ayır"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Split 2"
+msgstr "Ayır"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Split 3"
+msgstr "Ayır"
+
+#: scene/3d/light.cpp
+#, fuzzy
 msgid "Blend Splits"
 msgstr "Süreleri Karıştır:"
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Bias Split Scale"
+msgstr "Esnetme Hizalaması Kullan"
 
 #: scene/3d/light.cpp
 #, fuzzy
@@ -20797,6 +22264,11 @@ msgstr "90 dereceden geniş açılı SpotIşık gölge oluşturamaz."
 #: scene/3d/light.cpp
 msgid "Spot"
 msgstr ""
+
+#: scene/3d/light.cpp
+#, fuzzy
+msgid "Angle Attenuation"
+msgstr "Animasyon"
 
 #: scene/3d/mesh_instance.cpp
 msgid "Software Skinning"
@@ -20939,6 +22411,63 @@ msgstr "Eksen"
 
 #: scene/3d/physics_body.cpp
 #, fuzzy
+msgid "Linear X"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Y"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Linear Z"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_body.cpp
+msgid "Angular X"
+msgstr ""
+
+#: scene/3d/physics_body.cpp
+msgid "Angular Y"
+msgstr ""
+
+#: scene/3d/physics_body.cpp
+msgid "Angular Z"
+msgstr ""
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Motion X"
+msgstr "Eylem"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Motion Y"
+msgstr "Eylem"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Motion Z"
+msgstr "Eylem"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Move Lock X"
+msgstr "Düğümü Taşı"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Move Lock Y"
+msgstr "Düğümü Taşı"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
+msgid "Move Lock Z"
+msgstr "Düğümü Taşı"
+
+#: scene/3d/physics_body.cpp
+#, fuzzy
 msgid "Body Offset"
 msgstr "Kaydırma:"
 
@@ -20972,6 +22501,15 @@ msgid "Exclude Nodes"
 msgstr "Düğümleri Sil"
 
 #: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Params"
+msgstr "Parametre Değiştirildi:"
+
+#: scene/3d/physics_joint.cpp
+msgid "Impulse Clamp"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
 msgid "Angular Limit"
 msgstr ""
 
@@ -20985,6 +22523,55 @@ msgstr "Büyük harf"
 msgid "Lower"
 msgstr "Küçük harf"
 
+#: scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
+#, fuzzy
+msgid "Relaxation"
+msgstr "Ayrım:"
+
+#: scene/3d/physics_joint.cpp
+msgid "Motor"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Target Velocity"
+msgstr "Yörünge Görünümü Sağ"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Max Impulse"
+msgstr "Hız:"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Upper Distance"
+msgstr "Uzaklık Seç:"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Lower Distance"
+msgstr "Uzaklık Seç:"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Restitution"
+msgstr "Açıklama"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motion"
+msgstr "Etkinleştir"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Ortho"
+msgstr "Arka Dikaçılı"
+
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Upper Angle"
@@ -20997,6 +22584,16 @@ msgstr "Küçük harf"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
+msgid "Angular Motion"
+msgstr "Animasyon"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Angular Ortho"
+msgstr "Maks. Açısal Hata:"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
 msgid "Swing Span"
 msgstr "Sahne Kaydediliyor"
 
@@ -21005,15 +22602,97 @@ msgid "Twist Span"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit X"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motor X"
+msgstr "Etkinleştir"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Force Limit"
+msgstr "Çizim Çağrıları:"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Spring X"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_joint.cpp
+msgid "Equilibrium Point"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
 msgid "Angular Limit X"
 msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Erp"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Motor X"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Spring X"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit Y"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motor Y"
+msgstr "Etkinleştir"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Spring Y"
+msgstr "Doğrusal"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Limit Y"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
+msgid "Angular Motor Y"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Spring Y"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Limit Z"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Motor Z"
+msgstr "Etkinleştir"
+
+#: scene/3d/physics_joint.cpp
+#, fuzzy
+msgid "Linear Spring Z"
+msgstr "Doğrusal"
+
+#: scene/3d/physics_joint.cpp
 msgid "Angular Limit Z"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Motor Z"
+msgstr ""
+
+#: scene/3d/physics_joint.cpp
+msgid "Angular Spring Z"
 msgstr ""
 
 #: scene/3d/portal.cpp
@@ -21137,7 +22816,7 @@ msgstr ""
 msgid "Use Default Simplify"
 msgstr ""
 
-#: scene/3d/room.cpp
+#: scene/3d/room.cpp scene/3d/room_manager.cpp
 msgid "Room Simplify"
 msgstr ""
 
@@ -21178,6 +22857,13 @@ msgstr "SceneTree'de yalnızca bir RoomManager olmalıdır."
 msgid "Main"
 msgstr ""
 
+#: scene/3d/room_manager.cpp scene/animation/animation_player.cpp
+#: scene/animation/animation_tree.cpp scene/animation/animation_tree_player.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+#, fuzzy
+msgid "Active"
+msgstr "Eylem"
+
 #: scene/3d/room_manager.cpp
 msgid "Roomlist"
 msgstr ""
@@ -21200,6 +22886,54 @@ msgstr "ZIP Dosyası"
 #: scene/3d/room_manager.cpp servers/visual_server.cpp
 msgid "Gameplay"
 msgstr ""
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Gameplay Monitor"
+msgstr "Görüntülük"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Use Secondary PVS"
+msgstr "Esnetme Hizalaması Kullan"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Merge Meshes"
+msgstr "Örgü"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Show Margins"
+msgstr "Başlatımı Göster"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Debug Sprawl"
+msgstr "Hata Ayıklama"
+
+#: scene/3d/room_manager.cpp
+msgid "Overlap Warning Threshold"
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Preview Camera"
+msgstr "Önizleme"
+
+#: scene/3d/room_manager.cpp
+msgid "Portal Depth Limit"
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Default Portal Margin"
+msgstr "Kenar Boşluk Belirle"
+
+#: scene/3d/room_manager.cpp
+#, fuzzy
+msgid "Roaming Expansion Margin"
+msgstr "Hepsini Genişlet"
 
 #: scene/3d/room_manager.cpp
 msgid ""
@@ -21343,6 +23077,20 @@ msgstr "Nokta Yapışması"
 msgid "Billboard"
 msgstr ""
 
+#: scene/3d/sprite_3d.cpp scene/resources/material.cpp
+#, fuzzy
+msgid "Transparent"
+msgstr "Tersine Çevir"
+
+#: scene/3d/sprite_3d.cpp
+#, fuzzy
+msgid "Shaded"
+msgstr "Gölgelendirici"
+
+#: scene/3d/sprite_3d.cpp
+msgid "Double Sided"
+msgstr ""
+
 #: scene/3d/sprite_3d.cpp
 msgid "Alpha Cut"
 msgstr ""
@@ -21417,11 +23165,6 @@ msgstr "İfade"
 #, fuzzy
 msgid "Max Force"
 msgstr "Hata"
-
-#: scene/3d/vehicle_body.cpp
-#, fuzzy
-msgid "Relaxation"
-msgstr "Ayrım:"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
@@ -21566,7 +23309,7 @@ msgstr "X-Sönülme Süresi (sn):"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
-msgid "autorestart_"
+msgid "Auto Restart"
 msgstr "Kendiliğinden Yeniden Başlat:"
 
 #: scene/animation/animation_blend_tree.cpp
@@ -21651,13 +23394,6 @@ msgstr "Sınıf Seçenekleri:"
 #, fuzzy
 msgid "Default Blend Time"
 msgstr "Varsayılan tema"
-
-#: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
-#: scene/animation/animation_tree_player.cpp
-#: servers/audio/effects/audio_effect_delay.cpp
-#, fuzzy
-msgid "Active"
-msgstr "Eylem"
 
 #: scene/animation/animation_player.cpp
 msgid "Method Call Mode"
@@ -21784,10 +23520,6 @@ msgstr "Düğümün Ebeveynliğini Değiştir"
 msgid "Max Iterations"
 msgstr "İşlev Yap"
 
-#: scene/animation/tween.cpp scene/resources/texture.cpp
-msgid "Repeat"
-msgstr ""
-
 #: scene/animation/tween.cpp
 msgid "Playback Process Mode"
 msgstr ""
@@ -21817,20 +23549,6 @@ msgstr "Kip Seç"
 #: scene/gui/aspect_ratio_container.cpp scene/gui/box_container.cpp
 msgid "Alignment"
 msgstr ""
-
-#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
-#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
-#: scene/resources/style_box.cpp
-#, fuzzy
-msgid "Horizontal"
-msgstr "Yatay:"
-
-#: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
-#: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
-#: scene/resources/style_box.cpp
-#, fuzzy
-msgid "Vertical"
-msgstr "Dikey:"
 
 #: scene/gui/base_button.cpp
 #, fuzzy
@@ -21934,10 +23652,6 @@ msgid "HSV"
 msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
-msgid "Raw"
-msgstr "Ham"
-
-#: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
 msgstr "Hex ve kod değerleri arasında geçiş yap."
 
@@ -22005,6 +23719,31 @@ msgid "Focus"
 msgstr "Yola Odaklan"
 
 #: scene/gui/control.cpp
+msgid "Neighbour Left"
+msgstr ""
+
+#: scene/gui/control.cpp
+msgid "Neighbour Top"
+msgstr ""
+
+#: scene/gui/control.cpp
+msgid "Neighbour Right"
+msgstr ""
+
+#: scene/gui/control.cpp
+#, fuzzy
+msgid "Neighbour Bottom"
+msgstr "Merkez Alt"
+
+#: scene/gui/control.cpp
+msgid "Next"
+msgstr "Sonraki"
+
+#: scene/gui/control.cpp
+msgid "Previous"
+msgstr "Önceki"
+
+#: scene/gui/control.cpp
 msgid "Mouse"
 msgstr ""
 
@@ -22042,7 +23781,7 @@ msgid "Dialog"
 msgstr "XForm İletişim Kutusu"
 
 #: scene/gui/dialogs.cpp
-msgid "Hide On Ok"
+msgid "Hide On OK"
 msgstr ""
 
 #: scene/gui/dialogs.cpp scene/gui/label.cpp
@@ -22141,7 +23880,7 @@ msgid "Timers"
 msgstr "Zaman"
 
 #: scene/gui/item_list.cpp scene/gui/popup_menu.cpp scene/gui/tree.cpp
-msgid "Incremental Search Max Interval (msec)"
+msgid "Incremental Search Max Interval Msec"
 msgstr ""
 
 #: scene/gui/item_list.cpp scene/gui/tree.cpp
@@ -22728,6 +24467,26 @@ msgstr "Sol Merkez"
 msgid "Nine Patch Stretch"
 msgstr "Ara Değerleme Kipi"
 
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Left"
+msgstr "Kenar Boşluk Belirle"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Top"
+msgstr "Kenar Boşluk Belirle"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Right"
+msgstr "Kenar Boşluk Belirle"
+
+#: scene/gui/texture_progress.cpp
+#, fuzzy
+msgid "Stretch Margin Bottom"
+msgstr "Kip Seç"
+
 #: scene/gui/tree.cpp
 msgid "Custom Minimum Height"
 msgstr ""
@@ -22765,8 +24524,9 @@ msgid "Paused"
 msgstr ""
 
 #: scene/gui/video_player.cpp
-msgid "Buffering (msec)"
-msgstr ""
+#, fuzzy
+msgid "Buffering Msec"
+msgstr "Arkadan Görünüm"
 
 #: scene/gui/video_player.cpp
 #, fuzzy
@@ -23127,6 +24887,22 @@ msgid "Shadow Atlas"
 msgstr "Yeni Atlas"
 
 #: scene/main/viewport.cpp
+msgid "Quad 0"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Quad 1"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Quad 2"
+msgstr ""
+
+#: scene/main/viewport.cpp
+msgid "Quad 3"
+msgstr ""
+
+#: scene/main/viewport.cpp
 #, fuzzy
 msgid "Canvas Transform"
 msgstr "Dönüşümü Temizle"
@@ -23141,6 +24917,11 @@ msgid "Tooltip Delay (sec)"
 msgstr ""
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "Swap OK Cancel"
+msgstr "Vazgeç"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr ""
 
@@ -23153,21 +24934,6 @@ msgstr "ÖzelSınıf"
 #, fuzzy
 msgid "Custom Font"
 msgstr "ÖzelSınıf"
-
-#: scene/resources/audio_stream_sample.cpp
-#, fuzzy
-msgid "Loop Mode"
-msgstr "Biçimi Taşı"
-
-#: scene/resources/audio_stream_sample.cpp
-#, fuzzy
-msgid "Loop Begin"
-msgstr "Biçimi Taşı"
-
-#: scene/resources/audio_stream_sample.cpp
-#, fuzzy
-msgid "Loop End"
-msgstr "Biçimi Taşı"
 
 #: scene/resources/audio_stream_sample.cpp
 #: servers/audio/effects/audio_stream_generator.cpp servers/audio_server.cpp
@@ -23226,6 +24992,17 @@ msgstr "sinyaller"
 #, fuzzy
 msgid "Extra Spacing"
 msgstr "İlave Seçenekler:"
+
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Char"
+msgstr "Geçerli karakterler:"
+
+#: scene/resources/dynamic_font.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Space"
+msgstr "Ana Sahne"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -23456,6 +25233,43 @@ msgid "Glow"
 msgstr ""
 
 #: scene/resources/environment.cpp
+#, fuzzy
+msgid "Levels"
+msgstr "Geliştiriciler"
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "1"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "2"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "3"
+msgstr ""
+
+#: scene/resources/environment.cpp
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "4"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "5"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "6"
+msgstr ""
+
+#: scene/resources/environment.cpp
+msgid "7"
+msgstr ""
+
+#: scene/resources/environment.cpp
 msgid "Bloom"
 msgstr ""
 
@@ -23548,9 +25362,67 @@ msgid "Next Pass"
 msgstr "Sonraki sekme"
 
 #: scene/resources/material.cpp
+msgid "Use Shadow To Opacity"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Unshaded"
+msgstr "Gölgesiz Görüntüle"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Vertex Lighting"
+msgstr "Doğrudan aydınlatma"
+
+#: scene/resources/material.cpp
+msgid "No Depth Test"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Use Point Size"
+msgstr "Önden Görünüm"
+
+#: scene/resources/material.cpp
+msgid "World Triplanar"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Fixed Size"
+msgstr "Önden Görünüm"
+
+#: scene/resources/material.cpp
+msgid "Albedo Tex Force sRGB"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Do Not Receive Shadows"
+msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Disable Ambient Light"
+msgstr "Sağa Girintile"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Ensure Correct Normals"
+msgstr "Dönüşüm Durduruldu."
+
+#: scene/resources/material.cpp
 #, fuzzy
 msgid "Vertex Color"
 msgstr "Köşe"
+
+#: scene/resources/material.cpp
+msgid "Use As Albedo"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Is sRGB"
+msgstr ""
 
 #: scene/resources/material.cpp servers/visual_server.cpp
 #, fuzzy
@@ -23588,6 +25460,11 @@ msgid "Billboard Mode"
 msgstr "Cetvel Şekli"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Billboard Keep Scale"
+msgstr "Cetvel Şekli"
+
+#: scene/resources/material.cpp
 msgid "Grow"
 msgstr ""
 
@@ -23595,6 +25472,10 @@ msgstr ""
 #, fuzzy
 msgid "Grow Amount"
 msgstr "Değer:"
+
+#: scene/resources/material.cpp
+msgid "Use Alpha Scissor"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Alpha Scissor Threshold"
@@ -23628,8 +25509,18 @@ msgid "Metallic Specular"
 msgstr ""
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Metallic Texture"
+msgstr "Emisyon Kaynağı: "
+
+#: scene/resources/material.cpp
 msgid "Metallic Texture Channel"
 msgstr ""
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Roughness Texture"
+msgstr "Dokuyu Kaldır"
 
 #: scene/resources/material.cpp
 msgid "Roughness Texture Channel"
@@ -23651,6 +25542,16 @@ msgid "Emission Operator"
 msgstr "Emisyon Renkleri"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission On UV2"
+msgstr "Emisyon Maskesi"
+
+#: scene/resources/material.cpp
+#, fuzzy
+msgid "Emission Texture"
+msgstr "Emisyon Kaynağı: "
+
+#: scene/resources/material.cpp
 msgid "NormalMap"
 msgstr ""
 
@@ -23665,6 +25566,11 @@ msgstr "Rastgele Eğilme:"
 
 #: scene/resources/material.cpp
 #, fuzzy
+msgid "Rim Texture"
+msgstr "Dokuyu Kaldır"
+
+#: scene/resources/material.cpp
+#, fuzzy
 msgid "Clearcoat"
 msgstr "Temizle"
 
@@ -23674,13 +25580,26 @@ msgid "Clearcoat Gloss"
 msgstr "Duruşu Temizle"
 
 #: scene/resources/material.cpp
+#, fuzzy
+msgid "Clearcoat Texture"
+msgstr "Editör Teması"
+
+#: scene/resources/material.cpp
 msgid "Anisotropy"
+msgstr ""
+
+#: scene/resources/material.cpp
+msgid "Anisotropy Flowmap"
 msgstr ""
 
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Ambient Occlusion"
 msgstr "Engel"
+
+#: scene/resources/material.cpp
+msgid "On UV2"
+msgstr ""
 
 #: scene/resources/material.cpp
 #, fuzzy
@@ -23721,6 +25640,11 @@ msgstr "Geçiş: "
 
 #: scene/resources/material.cpp
 #, fuzzy
+msgid "Transmission Texture"
+msgstr "Geçiş: "
+
+#: scene/resources/material.cpp
+#, fuzzy
 msgid "Refraction"
 msgstr "Ayrım:"
 
@@ -23737,6 +25661,10 @@ msgstr "Katman"
 #, fuzzy
 msgid "UV1"
 msgstr "UV"
+
+#: scene/resources/material.cpp
+msgid "Triplanar"
+msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Triplanar Sharpness"
@@ -23950,6 +25878,16 @@ msgstr "Editör Teması"
 msgid "Point Count"
 msgstr "Giriş Portu Ekle"
 
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Scale Random"
+msgstr "Ölçek Oranı:"
+
+#: scene/resources/particles_material.cpp
+#, fuzzy
+msgid "Scale Curve"
+msgstr "Eğriyi Kapat"
+
 #: scene/resources/physics_material.cpp
 msgid "Rough"
 msgstr ""
@@ -24009,10 +25947,6 @@ msgstr ""
 
 #: scene/resources/segment_shape_2d.cpp
 msgid "A"
-msgstr ""
-
-#: scene/resources/shader.cpp
-msgid "Code"
 msgstr ""
 
 #: scene/resources/shader.cpp
@@ -24108,15 +26042,6 @@ msgstr ""
 
 #: scene/resources/style_box.cpp
 msgid "Grow End"
-msgstr ""
-
-#: scene/resources/texture.cpp
-#, fuzzy
-msgid "Storage"
-msgstr "Dosya Depolama:"
-
-#: scene/resources/texture.cpp
-msgid "Lossy Quality"
 msgstr ""
 
 #: scene/resources/texture.cpp
@@ -24251,11 +26176,6 @@ msgstr "Bu tür için geçersiz karşılaştırma işlevi."
 msgid "Fallback Environment"
 msgstr "Ortamı Göster"
 
-#: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
-msgid "Space"
-msgstr "Ana Sahne"
-
 #: scene/resources/world.cpp
 #, fuzzy
 msgid "Scenario"
@@ -24336,9 +26256,36 @@ msgstr ""
 msgid "Wet"
 msgstr ""
 
-#: servers/audio/effects/audio_effect_compressor.cpp
-msgid "Threshold"
+#: servers/audio/effects/audio_effect_chorus.cpp
+msgid "Voice"
 msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Delay (ms)"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_phaser.cpp
+msgid "Rate Hz"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#, fuzzy
+msgid "Depth (ms)"
+msgstr "Derinlik"
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+msgid "Level dB"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_chorus.cpp
+#: servers/audio/effects/audio_effect_delay.cpp
+#: servers/audio/effects/audio_effect_panner.cpp
+#, fuzzy
+msgid "Pan"
+msgstr "Sekme:"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 #: servers/audio/effects/audio_effect_filter.cpp
@@ -24361,20 +26308,6 @@ msgstr ""
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 1"
 msgstr ""
-
-#: servers/audio/effects/audio_effect_delay.cpp
-msgid "Delay (ms)"
-msgstr ""
-
-#: servers/audio/effects/audio_effect_delay.cpp
-msgid "Level dB"
-msgstr ""
-
-#: servers/audio/effects/audio_effect_delay.cpp
-#: servers/audio/effects/audio_effect_panner.cpp
-#, fuzzy
-msgid "Pan"
-msgstr "Sekme:"
 
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 2"
@@ -24438,10 +26371,6 @@ msgstr ""
 msgid "Range Max Hz"
 msgstr ""
 
-#: servers/audio/effects/audio_effect_phaser.cpp
-msgid "Rate Hz"
-msgstr ""
-
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 msgid "Oversampling"
 msgstr ""
@@ -24457,7 +26386,7 @@ msgid "Predelay"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
-msgid "(msec)"
+msgid "Msec"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
