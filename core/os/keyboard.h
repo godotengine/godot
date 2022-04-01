@@ -310,67 +310,67 @@ enum class KeyModifierMask {
 
 // To avoid having unnecessary operators, only define the ones that are needed.
 
-inline Key operator-(uint32_t a, Key b) {
+constexpr Key operator-(uint32_t a, Key b) {
 	return (Key)(a - (uint32_t)b);
 }
 
-inline Key &operator-=(Key &a, int b) {
+constexpr Key &operator-=(Key &a, int b) {
 	return (Key &)((int &)a -= b);
 }
 
-inline Key operator+(Key a, int b) {
+constexpr Key operator+(Key a, int b) {
 	return (Key)((int)a + (int)b);
 }
 
-inline Key operator+(Key a, Key b) {
+constexpr Key operator+(Key a, Key b) {
 	return (Key)((int)a + (int)b);
 }
 
-inline Key operator-(Key a, Key b) {
+constexpr Key operator-(Key a, Key b) {
 	return (Key)((int)a - (int)b);
 }
 
-inline Key operator&(Key a, Key b) {
+constexpr Key operator&(Key a, Key b) {
 	return (Key)((int)a & (int)b);
 }
 
-inline Key operator|(Key a, Key b) {
+constexpr Key operator|(Key a, Key b) {
 	return (Key)((int)a | (int)b);
 }
 
-inline Key &operator|=(Key &a, Key b) {
+constexpr Key &operator|=(Key &a, Key b) {
 	return (Key &)((int &)a |= (int)b);
 }
 
-inline Key &operator|=(Key &a, KeyModifierMask b) {
+constexpr Key &operator|=(Key &a, KeyModifierMask b) {
 	return (Key &)((int &)a |= (int)b);
 }
 
-inline Key &operator&=(Key &a, KeyModifierMask b) {
+constexpr Key &operator&=(Key &a, KeyModifierMask b) {
 	return (Key &)((int &)a &= (int)b);
 }
 
-inline Key operator|(Key a, KeyModifierMask b) {
+constexpr Key operator|(Key a, KeyModifierMask b) {
 	return (Key)((int)a | (int)b);
 }
 
-inline Key operator&(Key a, KeyModifierMask b) {
+constexpr Key operator&(Key a, KeyModifierMask b) {
 	return (Key)((int)a & (int)b);
 }
 
-inline Key operator+(KeyModifierMask a, Key b) {
+constexpr Key operator+(KeyModifierMask a, Key b) {
 	return (Key)((int)a + (int)b);
 }
 
-inline Key operator|(KeyModifierMask a, Key b) {
+constexpr Key operator|(KeyModifierMask a, Key b) {
 	return (Key)((int)a | (int)b);
 }
 
-inline KeyModifierMask operator+(KeyModifierMask a, KeyModifierMask b) {
+constexpr KeyModifierMask operator+(KeyModifierMask a, KeyModifierMask b) {
 	return (KeyModifierMask)((int)a + (int)b);
 }
 
-inline KeyModifierMask operator|(KeyModifierMask a, KeyModifierMask b) {
+constexpr KeyModifierMask operator|(KeyModifierMask a, KeyModifierMask b) {
 	return (KeyModifierMask)((int)a | (int)b);
 }
 
