@@ -929,6 +929,7 @@ void AudioServer::init_channels_and_buffers() {
 		for (int j = 0; j < channel_count; j++) {
 			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
 		}
+		_update_bus_effects(i);
 	}
 }
 
