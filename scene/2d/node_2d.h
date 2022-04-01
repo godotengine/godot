@@ -53,6 +53,7 @@ class Node2D : public CanvasItem {
 	void _update_xform_values();
 
 protected:
+	void _notification(int p_notification);
 	static void _bind_methods();
 
 public:
