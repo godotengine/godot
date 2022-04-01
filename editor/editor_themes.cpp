@@ -1283,6 +1283,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_separation", "VFlowContainer", default_margin_size * EDSCALE);
 	theme->set_constant("v_separation", "VFlowContainer", default_margin_size * EDSCALE);
 
+	// Custom theme type for MarginContainer with 4px margins.
+	theme->set_type_variation("MarginContainer4px", "MarginContainer");
+	theme->set_constant("margin_left", "MarginContainer4px", 4 * EDSCALE);
+	theme->set_constant("margin_top", "MarginContainer4px", 4 * EDSCALE);
+	theme->set_constant("margin_right", "MarginContainer4px", 4 * EDSCALE);
+	theme->set_constant("margin_bottom", "MarginContainer4px", 4 * EDSCALE);
+
 	// Window
 
 	// Prevent corner artifacts between window title and body.
@@ -1626,7 +1633,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("preview_picker_label", "ThemeEditor", theme_preview_picker_label_sb);
 
 	// Dictionary editor add item.
-	theme->set_stylebox("DictionaryAddItem", "EditorStyles", make_flat_stylebox(prop_subsection_color, 4, 4, 4, 4, corner_radius));
+	// Expand to the left and right by 4px to compensate for the dictionary editor margins.
+	Ref<StyleBoxFlat> style_dictionary_add_item = make_flat_stylebox(prop_subsection_color, 0, 4, 0, 4, corner_radius);
+	style_dictionary_add_item->set_expand_margin_size(SIDE_LEFT, 4 * EDSCALE);
+	style_dictionary_add_item->set_expand_margin_size(SIDE_RIGHT, 4 * EDSCALE);
+	theme->set_stylebox("DictionaryAddItem", "EditorStyles", style_dictionary_add_item);
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
