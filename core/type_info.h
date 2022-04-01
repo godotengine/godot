@@ -31,8 +31,6 @@
 #ifndef GET_TYPE_INFO_H
 #define GET_TYPE_INFO_H
 
-#ifdef DEBUG_METHODS_ENABLED
-
 template <bool C, typename T = void>
 struct EnableIf {
 	typedef T type;
@@ -283,7 +281,5 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 
 #define MAKE_ENUM_TYPE_INFO(m_enum)
 #define CLASS_INFO(m_type)
-
-#endif // DEBUG_METHODS_ENABLED
 
 #endif // GET_TYPE_INFO_H

@@ -209,18 +209,16 @@ class MethodBind {
 	bool _returns;
 
 protected:
-#ifdef DEBUG_METHODS_ENABLED
 	Variant::Type *argument_types;
+#ifdef DEBUG_METHODS_ENABLED
 	Vector<StringName> arg_names;
 #endif
 	void _set_const(bool p_const);
 	void _set_returns(bool p_returns);
-#ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
 
-#endif
 	void set_argument_count(int p_count) { argument_count = p_count; }
 
 public:
@@ -247,8 +245,6 @@ public:
 		}
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
-
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
 		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
 		return argument_types[p_argument + 1];
@@ -257,6 +253,7 @@ public:
 	PropertyInfo get_argument_info(int p_argument) const;
 	PropertyInfo get_return_info() const;
 
+#ifdef DEBUG_METHODS_ENABLED
 	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, can't be inferred otherwise
 	Vector<StringName> get_argument_names() const;
 
@@ -295,14 +292,9 @@ public:
 
 protected:
 	NativeCall call_method;
-#ifdef DEBUG_METHODS_ENABLED
-
 	MethodInfo arguments;
 
-#endif
 public:
-#ifdef DEBUG_METHODS_ENABLED
-
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
 		if (p_arg < 0) {
 			return arguments.return_val;
@@ -317,17 +309,12 @@ public:
 		return _gen_argument_type_info(p_arg).type;
 	}
 
+#ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int) const {
 		return GodotTypeInfo::METADATA_NONE;
 	}
-
-#else
-
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
-		return Variant::NIL;
-	}
-
 #endif
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
 		T *instance = static_cast<T *>(p_object);
 		return (instance->*call_method)(p_args, p_arg_count, r_error);
@@ -335,25 +322,29 @@ public:
 
 	void set_method_info(const MethodInfo &p_info, bool p_return_nil_is_variant) {
 		set_argument_count(p_info.arguments.size());
-#ifdef DEBUG_METHODS_ENABLED
 		Variant::Type *at = memnew_arr(Variant::Type, p_info.arguments.size() + 1);
 		at[0] = p_info.return_val.type;
 		if (p_info.arguments.size()) {
+#ifdef DEBUG_METHODS_ENABLED
 			Vector<StringName> names;
 			names.resize(p_info.arguments.size());
+#endif
 			for (int i = 0; i < p_info.arguments.size(); i++) {
 				at[i + 1] = p_info.arguments[i].type;
+#ifdef DEBUG_METHODS_ENABLED
 				names.write[i] = p_info.arguments[i].name;
+#endif
 			}
 
+#ifdef DEBUG_METHODS_ENABLED
 			set_argument_names(names);
+#endif
 		}
 		argument_types = at;
 		arguments = p_info;
 		if (p_return_nil_is_variant) {
 			arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		}
-#endif
 	}
 
 #ifdef PTRCALL_ENABLED
