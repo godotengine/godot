@@ -30,7 +30,7 @@ jobs:
             build-mono: true
             artifact: true
 
-          - name: Editor with doubles and sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
+          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
             cache-name: linux-editor-double-sanitizers
             target: debug
             tools: true
@@ -41,6 +41,17 @@ jobs:
             # until both the upstream PR and the matching godot-cpp changes are merged.
             godot-cpp-test: true
             bin: "./bin/godot.linuxbsd.double.tools.64.san"
+            build-mono: false
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+
+          - name: Editor with clang sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes)
+            cache-name: linux-editor-llvm-sanitizers
+            target: debug
+            tools: true
+            tests: true
+            sconsflags: use_asan=yes use_ubsan=yes use_llvm=yes
+            bin: "./bin/godot.linuxbsd.tools.64.llvm.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
@@ -75,7 +86,8 @@ jobs:
           # The actual dependencies
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
-              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
+              llvm
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
