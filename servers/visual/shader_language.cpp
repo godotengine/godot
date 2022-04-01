@@ -3626,9 +3626,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 					} else if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
-						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_ARRAY;
+						}
 						call_expression = _parse_and_reduce_expression(p_block, p_builtin_types);
-						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						}
 						if (!call_expression) {
 							return nullptr;
 						}
