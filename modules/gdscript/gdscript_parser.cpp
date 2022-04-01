@@ -6983,8 +6983,6 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 		return false;
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
-
 	// Only native remains
 	if (!ClassDB::class_exists(native)) {
 		native = "_" + native.operator String();
@@ -7058,9 +7056,6 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 		r_arg_types.push_back(_type_from_property(method->get_argument_info(i)));
 	}
 	return true;
-#else
-	return false;
-#endif
 }
 
 GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const OperatorNode *p_call) {
@@ -7561,16 +7556,12 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
 				if (getter_name != StringName()) {
 					// Use the getter return type
-#ifdef DEBUG_METHODS_ENABLED
 					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
 					if (getter_method) {
 						r_member_type = _type_from_property(getter_method->get_return_info());
 					} else {
 						r_member_type = DataType();
 					}
-#else
-					r_member_type = DataType();
-#endif
 				} else {
 					r_member_type = _type_from_property(E->get());
 				}
@@ -7601,16 +7592,12 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
 				if (getter_name != StringName()) {
 					// Use the getter return type
-#ifdef DEBUG_METHODS_ENABLED
 					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
 					if (getter_method) {
 						r_member_type = _type_from_property(getter_method->get_return_info());
 					} else {
 						r_member_type = DataType();
 					}
-#else
-					r_member_type = DataType();
-#endif
 				} else {
 					r_member_type = _type_from_property(E->get());
 				}
