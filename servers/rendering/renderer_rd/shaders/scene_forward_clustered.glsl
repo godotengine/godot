@@ -499,14 +499,14 @@ layout(location = 1) out uvec2 voxel_gi_buffer;
 #endif //MODE_RENDER_NORMAL
 #else // RENDER DEPTH
 
-#ifdef MODE_MULTIPLE_RENDER_TARGETS
+#ifdef MODE_SEPARATE_SPECULAR
 
 layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
 #else
 
 layout(location = 0) out vec4 frag_color;
-#endif // MODE_MULTIPLE_RENDER_TARGETS
+#endif // MODE_SEPARATE_SPECULAR
 
 #endif // RENDER DEPTH
 
@@ -1966,7 +1966,7 @@ void main() {
 	//restore fog
 	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
 
-#ifdef MODE_MULTIPLE_RENDER_TARGETS
+#ifdef MODE_SEPARATE_SPECULAR
 
 #ifdef MODE_UNSHADED
 	diffuse_buffer = vec4(albedo.rgb, 0.0);
@@ -1984,7 +1984,7 @@ void main() {
 	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 
-#else //MODE_MULTIPLE_RENDER_TARGETS
+#else //MODE_SEPARATE_SPECULAR
 
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
@@ -1996,7 +1996,7 @@ void main() {
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 
-#endif //MODE_MULTIPLE_RENDER_TARGETS
+#endif //MODE_SEPARATE_SPECULAR
 
 #endif //MODE_RENDER_DEPTH
 }
