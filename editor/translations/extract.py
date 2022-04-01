@@ -3,6 +3,7 @@
 import enum
 import fnmatch
 import os
+import os.path
 import re
 import shutil
 import subprocess
@@ -111,6 +112,9 @@ message_patterns = {
     re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)", "(?P<prefix>[^"]*?)"\)'): ExtractType.GROUP,
     re.compile(r'#define (WSC|WSS|WRTC)_\w+ "(?P<message>[^"]+?)"'): ExtractType.PROPERTY_PATH,
 }
+theme_property_patterns = {
+    re.compile(r'set_(constant|font|stylebox|color|icon)\("(?P<message>[^"]+)", '): ExtractType.PROPERTY_PATH,
+}
 
 
 # See String::camelcase_to_underscore().
@@ -183,6 +187,10 @@ def process_file(f, fname):
     translator_comment = ""
     current_group = ""
 
+    patterns = message_patterns
+    if os.path.basename(fname) == "default_theme.cpp":
+        patterns = {**message_patterns, **theme_property_patterns}
+
     while l:
 
         # Detect translator comments.
@@ -200,7 +208,7 @@ def process_file(f, fname):
                 translator_comment = translator_comment[:-1]  # Remove extra \n at the end.
 
         if not reading_translator_comment:
-            for pattern, extract_type in message_patterns.items():
+            for pattern, extract_type in patterns.items():
                 for m in pattern.finditer(l):
                     location = os.path.relpath(fname).replace("\\", "/")
                     if line_nb:
