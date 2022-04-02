@@ -252,11 +252,11 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererMeshStorage
+#define server_name RSG::mesh_storage
 
 	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
-		RID mesh = RSG::storage->mesh_allocate();
+		RID mesh = RSG::mesh_storage->mesh_allocate();
 
 		// TODO once we have RSG::mesh_storage, add can_create_resources_async and call here instead of texture_storage!!
 
@@ -264,16 +264,16 @@ public:
 			if (Thread::get_caller_id() == server_thread) {
 				command_queue.flush_if_pending();
 			}
-			RSG::storage->mesh_initialize(mesh);
-			RSG::storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
+			RSG::mesh_storage->mesh_initialize(mesh);
+			RSG::mesh_storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
-				RSG::storage->mesh_add_surface(mesh, p_surfaces[i]);
+				RSG::mesh_storage->mesh_add_surface(mesh, p_surfaces[i]);
 			}
 		} else {
-			command_queue.push(RSG::storage, &RendererStorage::mesh_initialize, mesh);
-			command_queue.push(RSG::storage, &RendererStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
+			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_initialize, mesh);
+			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
-				command_queue.push(RSG::storage, &RendererStorage::mesh_add_surface, mesh, p_surfaces[i]);
+				command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_add_surface, mesh, p_surfaces[i]);
 			}
 		}
 
@@ -348,6 +348,11 @@ public:
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
 
 	/* Light API */
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
