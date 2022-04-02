@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_scene_importer_fbx.h                                          */
+/*  fbx_importer_manager.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,42 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_FBX_H
-#define EDITOR_SCENE_IMPORTER_FBX_H
+#ifndef FBX_IMPORTER_MANAGER_H
+#define FBX_IMPORTER_MANAGER_H
 
-#ifdef TOOLS_ENABLED
+#include "editor/editor_file_dialog.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 
-#include "editor/editor_file_system.h"
-#include "editor/fbx_importer_manager.h"
-#include "editor/import/resource_importer_scene.h"
+class FBXImporterManager : public ConfirmationDialog {
+	GDCLASS(FBXImporterManager, ConfirmationDialog)
 
-class Animation;
-class Node;
+	Label *message = nullptr;
+	LineEdit *fbx_path = nullptr;
+	Button *fbx_path_browse = nullptr;
+	EditorFileDialog *browse_dialog = nullptr;
+	Label *path_status = nullptr;
 
-class EditorSceneFormatImporterFBX : public EditorSceneFormatImporter {
-	GDCLASS(EditorSceneFormatImporterFBX, EditorSceneFormatImporter);
+	void _validate_path(const String &p_path);
+	void _select_file(const String &p_path);
+	void _path_confirmed();
+	void _browse_install();
+	void _link_clicked();
 
-public:
-	virtual uint32_t get_import_flags() const override;
-	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			const HashMap<StringName, Variant> &p_options,
-			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual void get_import_options(const String &p_path,
-			List<ResourceImporter::ImportOption> *r_options) override;
-	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
-			const HashMap<StringName, Variant> &p_options) override;
-};
+	static FBXImporterManager *singleton;
 
-class EditorFileSystemImportFormatSupportQueryFBX : public EditorFileSystemImportFormatSupportQuery {
-	GDCLASS(EditorFileSystemImportFormatSupportQueryFBX, EditorFileSystemImportFormatSupportQuery);
+protected:
+	void _notification(int p_what);
 
 public:
-	virtual bool is_active() const override;
-	virtual Vector<String> get_file_extensions() const override;
-	virtual bool query() override;
+	static FBXImporterManager *get_singleton() { return singleton; }
+
+	void show_dialog(bool p_exclusive = false);
+
+	FBXImporterManager();
 };
 
-#endif // TOOLS_ENABLED
-
-#endif // EDITOR_SCENE_IMPORTER_FBX_H
+#endif // FBX_IMPORTER_MANAGER_H

@@ -77,6 +77,7 @@ class EditorSettingsDialog;
 class EditorToaster;
 class EditorUndoRedoManager;
 class ExportTemplateManager;
+class FBXImporterManager;
 class FileDialog;
 class FileSystemDock;
 class HistoryDock;
@@ -209,6 +210,7 @@ private:
 		SETTINGS_EDITOR_DATA_FOLDER,
 		SETTINGS_EDITOR_CONFIG_FOLDER,
 		SETTINGS_MANAGE_EXPORT_TEMPLATES,
+		SETTINGS_MANAGE_FBX_IMPORTER,
 		SETTINGS_MANAGE_FEATURE_PROFILES,
 		SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -284,6 +286,8 @@ private:
 
 	ProjectExportDialog *project_export = nullptr;
 	ProjectSettingsEditor *project_settings_editor = nullptr;
+
+	FBXImporterManager *fbx_importer_manager = nullptr;
 
 	Vector<EditorPlugin *> editor_plugins;
 	bool _initializing_plugins = false;

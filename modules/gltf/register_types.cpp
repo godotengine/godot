@@ -80,16 +80,13 @@ static void _editor_init() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
 			"filesystem/import/fbx/fbx2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
 	if (fbx_enabled) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (fbx2gltf_path.is_empty()) {
-			WARN_PRINT("FBX file import is enabled in the project settings, but no FBX2glTF path is configured in the editor settings. FBX files will not be imported.");
-		} else if (!da->file_exists(fbx2gltf_path)) {
-			WARN_PRINT("FBX file import is enabled, but the FBX2glTF path doesn't point to an accessible file. FBX files will not be imported.");
-		} else {
-			Ref<EditorSceneFormatImporterFBX> importer;
-			importer.instantiate();
-			ResourceImporterScene::add_importer(importer);
-		}
+		Ref<EditorSceneFormatImporterFBX> importer;
+		importer.instantiate();
+		ResourceImporterScene::get_scene_singleton()->add_importer(importer);
+
+		Ref<EditorFileSystemImportFormatSupportQueryFBX> fbx_import_query;
+		fbx_import_query.instantiate();
+		EditorFileSystem::get_singleton()->add_import_format_support_query(fbx_import_query);
 	}
 }
 #endif // TOOLS_ENABLED
