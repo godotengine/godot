@@ -70,7 +70,7 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
 #endif
-		set_argument_count($argc$);
+		_generate_argument_types($argc$);
 
 		$ifret _set_returns(true); $
 	};
