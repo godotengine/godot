@@ -938,6 +938,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	}
 
 	update_palette();
+	_update_cursor_instance();
 
 	set_process(true);
 
