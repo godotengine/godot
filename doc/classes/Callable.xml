@@ -75,6 +75,10 @@
 			<return type="void" />
 			<description>
 				Calls the method represented by this [Callable] in deferred mode, i.e. during the idle frame. Arguments can be passed and should match the method's signature.
+				[codeblock]
+				func _ready():
+				    grab_focus.call_deferred()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_method" qualifiers="const">
