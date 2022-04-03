@@ -381,6 +381,10 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 
 	debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
+	if (lines.empty()) {
+		return debug_mesh;
+	}
+
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
 	arr[Mesh::ARRAY_VERTEX] = varr;
