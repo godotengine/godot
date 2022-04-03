@@ -1031,7 +1031,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		u.binding = 9;
-		u.append_id(RendererRD::MaterialStorage::get_singleton()->global_variables_get_storage_buffer());
+		u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
 		uniforms.push_back(u);
 	}
 
@@ -2469,7 +2469,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
 		actions.base_varying_index = 4;
 
-		actions.global_buffer_array_variable = "global_variables.data";
+		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 
 		shader.compiler.initialize(actions);
 	}

@@ -370,7 +370,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 	}
 }
 
-static String _get_global_variable_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
+static String _get_global_shader_uniform_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
 	switch (p_type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			return "(" + p_buffer + "[" + p_index + "].x != 0.0)";
@@ -903,11 +903,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 							code = actions.base_uniform_string + _mkid(vnode->name); //texture, use as is
 							//global variable, this means the code points to an index to the global table
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(vnode->name);
@@ -1003,11 +1003,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 							code = actions.base_uniform_string + _mkid(anode->name); //texture, use as is
 							//global variable, this means the code points to an index to the global table
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
-							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(anode->name);
@@ -1309,8 +1309,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 }
 
 ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
-	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_type);
-	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
+	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_type);
+	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
 Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
@@ -1318,7 +1318,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
-	info.global_variable_type_func = _get_variable_type;
+	info.global_shader_uniform_type_func = _get_variable_type;
 
 	Error err = parser.compile(p_code, info);
 

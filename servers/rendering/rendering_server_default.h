@@ -900,7 +900,7 @@ public:
 
 	FUNC1(canvas_set_shadow_texture_size, int)
 
-	/* GLOBAL VARIABLES */
+	/* GLOBAL SHADER UNIFORMS */
 
 #undef server_name
 #undef ServerName
@@ -908,16 +908,16 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
-	FUNC3(global_variable_add, const StringName &, GlobalVariableType, const Variant &)
-	FUNC1(global_variable_remove, const StringName &)
-	FUNC0RC(Vector<StringName>, global_variable_get_list)
-	FUNC2(global_variable_set, const StringName &, const Variant &)
-	FUNC2(global_variable_set_override, const StringName &, const Variant &)
-	FUNC1RC(GlobalVariableType, global_variable_get_type, const StringName &)
-	FUNC1RC(Variant, global_variable_get, const StringName &)
+	FUNC3(global_shader_uniform_add, const StringName &, GlobalShaderUniformType, const Variant &)
+	FUNC1(global_shader_uniform_remove, const StringName &)
+	FUNC0RC(Vector<StringName>, global_shader_uniform_get_list)
+	FUNC2(global_shader_uniform_set, const StringName &, const Variant &)
+	FUNC2(global_shader_uniform_set_override, const StringName &, const Variant &)
+	FUNC1RC(GlobalShaderUniformType, global_shader_uniform_get_type, const StringName &)
+	FUNC1RC(Variant, global_shader_uniform_get, const StringName &)
 
-	FUNC1(global_variables_load_settings, bool)
-	FUNC0(global_variables_clear)
+	FUNC1(global_shader_uniforms_load_settings, bool)
+	FUNC0(global_shader_uniforms_clear)
 
 #undef server_name
 #undef ServerName

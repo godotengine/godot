@@ -25,10 +25,10 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 /* Set 1: FRAME AND PARTICLE DATA */
 

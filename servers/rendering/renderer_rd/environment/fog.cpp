@@ -276,7 +276,7 @@ ALBEDO = vec3(1.0);
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
-			u.append_id(RendererRD::MaterialStorage::get_singleton()->global_variables_get_storage_buffer());
+			u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
 			uniforms.push_back(u);
 		}
 

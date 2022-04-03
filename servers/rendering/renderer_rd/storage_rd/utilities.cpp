@@ -272,7 +272,7 @@ String Utilities::get_captured_timestamp_name(uint32_t p_index) const {
 /* MISC */
 
 void Utilities::update_dirty_resources() {
-	MaterialStorage::get_singleton()->_update_global_variables(); //must do before materials, so it can queue them for update
+	MaterialStorage::get_singleton()->_update_global_shader_uniforms(); //must do before materials, so it can queue them for update
 	MaterialStorage::get_singleton()->_update_queued_materials();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
 	MeshStorage::get_singleton()->_update_dirty_skeletons();

@@ -309,9 +309,9 @@ void ShaderTextEditor::_check_shader_mode() {
 	}
 }
 
-static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
-	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_variable);
-	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
+static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
+	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_variable);
+	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
 static String complete_from_path;
@@ -358,7 +358,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	ShaderLanguage sl;
 	String calltip;
 	ShaderLanguage::ShaderCompileInfo info;
-	info.global_variable_type_func = _get_global_variable_type;
+	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
 	if (shader.is_null()) {
 		info.is_include = true;
@@ -448,7 +448,7 @@ void ShaderTextEditor::_validate_script() {
 		sl.set_warning_flags(flags);
 
 		ShaderLanguage::ShaderCompileInfo info;
-		info.global_variable_type_func = _get_global_variable_type;
+		info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
 		if (shader.is_null()) {
 			info.is_include = true;

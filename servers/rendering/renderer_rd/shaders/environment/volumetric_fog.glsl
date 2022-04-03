@@ -28,10 +28,10 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 layout(push_constant, std430) uniform Params {
 	vec3 position;
