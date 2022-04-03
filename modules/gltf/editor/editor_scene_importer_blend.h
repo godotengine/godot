@@ -84,11 +84,11 @@ class Label;
 class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImportFormatSupportQuery {
 	GDCLASS(EditorFileSystemImportFormatSupportQueryBlend, EditorFileSystemImportFormatSupportQuery);
 
-	ConfirmationDialog *configure_blender_dialog;
-	LineEdit *blender_path;
-	Button *blender_path_browse;
-	EditorFileDialog *browse_dialog;
-	Label *path_status;
+	ConfirmationDialog *configure_blender_dialog = nullptr;
+	LineEdit *blender_path = nullptr;
+	Button *blender_path_browse = nullptr;
+	EditorFileDialog *browse_dialog = nullptr;
+	Label *path_status = nullptr;
 	bool confirmed = false;
 
 	String auto_detected_path;
