@@ -392,7 +392,7 @@ void SceneShaderForwardClustered::ShaderData::set_default_texture_param(const St
 	}
 }
 
-void SceneShaderForwardClustered::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void SceneShaderForwardClustered::ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {

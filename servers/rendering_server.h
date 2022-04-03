@@ -170,7 +170,7 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
@@ -1244,10 +1244,10 @@ public:
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
-	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
-	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
-	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
-	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+	virtual void instance_geometry_set_shader_uniform(RID p_instance, const StringName &, const Variant &p_value) = 0;
+	virtual Variant instance_geometry_get_shader_uniform(RID p_instance, const StringName &) const = 0;
+	virtual Variant instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &) const = 0;
+	virtual void instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 
 	/* Bake 3D objects */
 
@@ -1571,11 +1571,11 @@ private:
 	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
 	TypedArray<Image> _texture_3d_get(RID p_texture) const;
-	TypedArray<Dictionary> _shader_get_param_list(RID p_shader) const;
+	TypedArray<Dictionary> _shader_get_shader_uniform_list(RID p_shader) const;
 	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
-	Array _instance_geometry_get_shader_parameter_list(RID p_instance) const;
+	Array _instance_geometry_get_shader_uniform_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };

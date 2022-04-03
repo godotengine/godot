@@ -921,8 +921,8 @@ void fragment() {
 )");
 	handle_material->set_shader(handle_shader);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
-	handle_material->set_shader_param("point_size", handle->get_width());
-	handle_material->set_shader_param("texture_albedo", handle);
+	handle_material->set_shader_uniform("point_size", handle->get_width());
+	handle_material->set_shader_uniform("texture_albedo", handle);
 
 	handles_mesh_instance = memnew(MeshInstance3D);
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);

@@ -68,9 +68,9 @@ void TextureLayeredEditor::_texture_changed() {
 }
 
 void TextureLayeredEditor::_update_material() {
-	materials[0]->set_shader_param("layer", layer->get_value());
-	materials[2]->set_shader_param("layer", layer->get_value());
-	materials[texture->get_layered_type()]->set_shader_param("tex", texture->get_rid());
+	materials[0]->set_shader_uniform("layer", layer->get_value());
+	materials[2]->set_shader_uniform("layer", layer->get_value());
+	materials[texture->get_layered_type()]->set_shader_uniform("tex", texture->get_rid());
 
 	Vector3 v(1, 1, 1);
 	v.normalize();
@@ -79,10 +79,10 @@ void TextureLayeredEditor::_update_material() {
 	b.rotate(Vector3(1, 0, 0), x_rot);
 	b.rotate(Vector3(0, 1, 0), y_rot);
 
-	materials[1]->set_shader_param("normal", v);
-	materials[1]->set_shader_param("rot", b);
-	materials[2]->set_shader_param("normal", v);
-	materials[2]->set_shader_param("rot", b);
+	materials[1]->set_shader_uniform("normal", v);
+	materials[1]->set_shader_uniform("rot", b);
+	materials[2]->set_shader_uniform("normal", v);
+	materials[2]->set_shader_uniform("rot", b);
 
 	String format = Image::get_format_name(texture->get_format());
 

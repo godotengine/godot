@@ -1391,21 +1391,21 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="instance_geometry_get_shader_parameter" qualifiers="const">
+		<method name="instance_geometry_get_shader_uniform" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="instance" type="RID" />
 			<argument index="1" name="parameter" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="instance_geometry_get_shader_parameter_default_value" qualifiers="const">
+		<method name="instance_geometry_get_shader_uniform_default_value" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="instance" type="RID" />
 			<argument index="1" name="parameter" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="instance_geometry_get_shader_parameter_list" qualifiers="const">
+		<method name="instance_geometry_get_shader_uniform_list" qualifiers="const">
 			<return type="Array" />
 			<argument index="0" name="instance" type="RID" />
 			<description>
@@ -1460,7 +1460,7 @@
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_override].
 			</description>
 		</method>
-		<method name="instance_geometry_set_shader_parameter">
+		<method name="instance_geometry_set_shader_uniform">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
 			<argument index="1" name="parameter" type="StringName" />
@@ -2741,7 +2741,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="shader_get_param_list" qualifiers="const">
+		<method name="shader_get_shader_uniform_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<argument index="0" name="shader" type="RID" />
 			<description>

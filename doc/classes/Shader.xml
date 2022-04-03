@@ -26,7 +26,7 @@
 				Returns the shader mode for the shader, either [constant MODE_CANVAS_ITEM], [constant MODE_SPATIAL] or [constant MODE_PARTICLES].
 			</description>
 		</method>
-		<method name="has_param" qualifiers="const">
+		<method name="has_uniform" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="name" type="StringName" />
 			<description>

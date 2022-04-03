@@ -178,8 +178,8 @@ public:
 	void set_lightmap_scale(LightmapScale p_scale);
 	LightmapScale get_lightmap_scale() const;
 
-	void set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value);
-	Variant get_shader_instance_uniform(const StringName &p_uniform) const;
+	void set_instance_shader_uniform(const StringName &p_uniform, const Variant &p_value);
+	Variant get_instance_shader_uniform(const StringName &p_uniform) const;
 
 	void set_custom_aabb(AABB aabb);
 

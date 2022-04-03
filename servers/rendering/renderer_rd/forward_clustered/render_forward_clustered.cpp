@@ -1076,7 +1076,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		instance_data.flags = inst->flags_cache;
 		instance_data.gi_offset = inst->gi_offset_cache;
 		instance_data.layer_mask = inst->layer_mask;
-		instance_data.instance_uniforms_ofs = uint32_t(inst->shader_parameters_offset);
+		instance_data.instance_uniforms_ofs = uint32_t(inst->shader_uniforms_offset);
 		instance_data.lightmap_uv_scale[0] = inst->lightmap_uv_scale.position.x;
 		instance_data.lightmap_uv_scale[1] = inst->lightmap_uv_scale.position.y;
 		instance_data.lightmap_uv_scale[2] = inst->lightmap_uv_scale.size.x;

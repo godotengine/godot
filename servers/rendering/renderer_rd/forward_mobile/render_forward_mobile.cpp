@@ -1903,7 +1903,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		push_constant.flags = inst->flags_cache;
 		push_constant.gi_offset = inst->gi_offset_cache;
 		push_constant.layer_mask = inst->layer_mask;
-		push_constant.instance_uniforms_ofs = uint32_t(inst->shader_parameters_offset);
+		push_constant.instance_uniforms_ofs = uint32_t(inst->shader_uniforms_offset);
 
 		if (p_params->pass_mode == PASS_MODE_DEPTH_MATERIAL) {
 			// abuse lightmap_uv_scale[0] here, should not be needed here

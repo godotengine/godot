@@ -66,7 +66,7 @@ public:
 	virtual void shader_set_path_hint(RID p_shader, const String &p_code) override {}
 
 	virtual String shader_get_code(RID p_shader) const override { return ""; }
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
+	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override {}
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override { return RID(); }
@@ -89,7 +89,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
-	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
+	virtual void material_get_instance_shader_uniforms(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
 };
 
