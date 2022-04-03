@@ -252,6 +252,7 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -262,6 +263,7 @@ void GridMap::set_cell_shape(GridMap::CellShape p_shape) {
 	cell_shape = p_shape;
 	notify_property_list_changed();
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 GridMap::CellShape GridMap::get_cell_shape() const {
@@ -271,6 +273,7 @@ GridMap::CellShape GridMap::get_cell_shape() const {
 void GridMap::set_cell_layout(GridMap::CellLayout p_layout) {
 	cell_layout = p_layout;
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 GridMap::CellLayout GridMap::get_cell_layout() const {
@@ -280,6 +283,7 @@ GridMap::CellLayout GridMap::get_cell_layout() const {
 void GridMap::set_cell_offset_axis(GridMap::CellOffsetAxis p_offset_axis) {
 	cell_offset_axis = p_offset_axis;
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 GridMap::CellOffsetAxis GridMap::get_cell_offset_axis() const {
@@ -291,6 +295,7 @@ void GridMap::set_cell_size(const Vector3 &p_size) {
 	cell_size = p_size;
 	_recreate_octant_data();
 	emit_signal(SNAME("cell_size_changed"), cell_size);
+	emit_signal(SNAME("changed"));
 }
 
 Vector3 GridMap::get_cell_size() const {
@@ -301,6 +306,7 @@ void GridMap::set_octant_size(int p_size) {
 	ERR_FAIL_COND(p_size == 0);
 	octant_size = p_size;
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 int GridMap::get_octant_size() const {
@@ -310,6 +316,7 @@ int GridMap::get_octant_size() const {
 void GridMap::set_center_x(bool p_enable) {
 	center_x = p_enable;
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 bool GridMap::get_center_x() const {
@@ -319,6 +326,7 @@ bool GridMap::get_center_x() const {
 void GridMap::set_center_y(bool p_enable) {
 	center_y = p_enable;
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 bool GridMap::get_center_y() const {
@@ -328,6 +336,7 @@ bool GridMap::get_center_y() const {
 void GridMap::set_center_z(bool p_enable) {
 	center_z = p_enable;
 	_recreate_octant_data();
+	emit_signal(SNAME("changed"));
 }
 
 bool GridMap::get_center_z() const {
@@ -1176,6 +1185,7 @@ void GridMap::_bind_methods() {
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
+	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 }
 

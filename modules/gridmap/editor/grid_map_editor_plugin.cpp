@@ -892,7 +892,7 @@ void GridMapEditor::update_palette() {
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (!p_gridmap && node) {
-		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+		node->disconnect("changed", callable_mp(this, &GridMapEditor::_draw_grids));
 	}
 
 	node = p_gridmap;
@@ -921,10 +921,10 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	set_process(true);
 
-	_draw_grids(node->get_cell_size());
+	_draw_grids();
 	update_grid();
 
-	node->connect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+	node->connect("changed", callable_mp(this, &GridMapEditor::_draw_grids));
 }
 
 void GridMapEditor::update_grid() {
@@ -1035,7 +1035,7 @@ void GridMapEditor::_draw_plane_grid(RID mesh_id, int plane, Vector3 axis_n1, Ve
 	RenderingServer::get_singleton()->mesh_surface_set_material(mesh_id, 0, indicator_mat->get_rid());
 }
 
-void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
+void GridMapEditor::_draw_grids() {
 	Vector3 edited_floor = node->has_meta("_editor_floor_") ? node->get_meta("_editor_floor_") : Variant();
 
 	for (int i = 0; i < 3; i++) {

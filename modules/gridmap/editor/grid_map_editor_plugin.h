@@ -186,7 +186,7 @@ class GridMapEditor : public VBoxContainer {
 	void update_grid(); // Change which and where the grid is displayed
 	void _draw_floor_grid(RID grid, int floor);
 	void _draw_plane_grid(RID grid, int plane, Vector3 axis_n1, Vector3 axis_n2);
-	void _draw_grids(const Vector3 &cell_size);
+	void _draw_grids();
 	void _configure();
 	void _menu_option(int);
 	void update_palette();
