@@ -124,6 +124,127 @@ String DisplayServerWayland::read_data_control_offer(zwlr_data_control_offer_v1 
 	return "";
 }
 
+// Sets a given seat state as its own wayland state's current seat and makes
+// sure that any old seat gets reset.
+void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
+	WaylandState *wls = p_ss.wls;
+	ERR_FAIL_NULL(wls);
+
+	if (wls->current_seat) {
+		// There was an older seat there, clean up its state
+		if (wls->current_seat == &p_ss) {
+			return;
+		}
+
+		// Unlock the pointer if it's locked.
+		if (wls->current_seat->wp_locked_pointer) {
+			zwp_locked_pointer_v1_destroy(wls->current_seat->wp_locked_pointer);
+		}
+
+		// Unconfine the pointer if it's confined.
+		if (wls->current_seat->wp_confined_pointer) {
+			zwp_confined_pointer_v1_destroy(wls->current_seat->wp_confined_pointer);
+		}
+
+		_seat_state_override_cursor_shape(*wls->current_seat, CURSOR_ARROW);
+	}
+
+	wls->current_seat = &p_ss;
+
+	_wayland_state_update_cursor(*wls);
+}
+
+void DisplayServerWayland::_seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape) {
+	if (!p_ss.wl_pointer) {
+		return;
+	}
+
+	ERR_FAIL_NULL(p_ss.wls);
+
+	struct wl_cursor_image *cursor_image = p_ss.wls->cursor_images[p_shape];
+
+	// Update the cursor's hotspot.
+	wl_pointer_set_cursor(p_ss.wl_pointer, 0, p_ss.cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+
+	// Attach the new cursor's buffer and damage it.
+	wl_surface_attach(p_ss.cursor_surface, p_ss.wls->cursor_bufs[p_shape], 0, 0);
+	wl_surface_damage_buffer(p_ss.cursor_surface, 0, 0, INT_MAX, INT_MAX);
+
+	// Commit everything.
+	wl_surface_commit(p_ss.cursor_surface);
+}
+
+void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
+	if (!p_wls.current_seat || !p_wls.current_seat->wl_pointer) {
+		return;
+	}
+
+	SeatState &ss = *p_wls.current_seat;
+
+	ERR_FAIL_NULL(ss.cursor_surface);
+
+	struct wl_pointer *wp = ss.wl_pointer;
+	struct zwp_pointer_constraints_v1 *pc = p_wls.globals.wp_pointer_constraints;
+
+	// We want to change the location of these pointers so we get their reference.
+	struct zwp_locked_pointer_v1 *&lp = ss.wp_locked_pointer;
+	struct zwp_confined_pointer_v1 *&cp = ss.wp_confined_pointer;
+
+	// All modes but `MOUSE_MODE_VISIBLE` and `MOUSE_MODE_CONFINED` are hidden.
+	if (p_wls.mouse_mode != MOUSE_MODE_VISIBLE && p_wls.mouse_mode != MOUSE_MODE_CONFINED) {
+		// Reset the cursor's hotspot.
+		wl_pointer_set_cursor(ss.wl_pointer, 0, ss.cursor_surface, 0, 0);
+
+		// Unmap the cursor.
+		wl_surface_attach(ss.cursor_surface, nullptr, 0, 0);
+
+		wl_surface_commit(ss.cursor_surface);
+	} else {
+		// Update the cursor shape.
+		_seat_state_override_cursor_shape(ss, p_wls.cursor_shape);
+	}
+
+	// Constrain/Free pointer movement depending on its mode.
+	switch (p_wls.mouse_mode) {
+		// Unconstrained pointer.
+		case MOUSE_MODE_VISIBLE:
+		case MOUSE_MODE_HIDDEN: {
+			if (lp) {
+				zwp_locked_pointer_v1_destroy(lp);
+				lp = nullptr;
+			}
+
+			if (cp) {
+				zwp_confined_pointer_v1_destroy(cp);
+				cp = nullptr;
+			}
+		} break;
+
+		// Locked pointer.
+		case MOUSE_MODE_CAPTURED: {
+			if (!lp) {
+				WindowData &wd = p_wls.windows[MAIN_WINDOW_ID];
+				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+
+				// Center the cursor on unlock.
+				wl_fixed_t unlock_x = wl_fixed_from_int(wd.rect.size.width / 2);
+				wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
+
+				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
+			}
+		} break;
+
+		// Confined pointer.
+		case MOUSE_MODE_CONFINED:
+		case MOUSE_MODE_CONFINED_HIDDEN: {
+			if (!cp) {
+				WindowData &wd = p_wls.windows[MAIN_WINDOW_ID];
+				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+			}
+		}
+	}
+}
+
 // Taken from DisplayServerX11.
 void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
@@ -158,16 +279,17 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 }
 
 // Adapted from DisplayServerX11.
-void DisplayServerWayland::_get_key_modifier_state(KeyboardState &ks, Ref<InputEventWithModifiers> state) {
-	state->set_shift_pressed(ks.shift_pressed);
-	state->set_ctrl_pressed(ks.ctrl_pressed);
-	state->set_alt_pressed(ks.alt_pressed);
-	state->set_meta_pressed(ks.meta_pressed);
+void DisplayServerWayland::_get_key_modifier_state(SeatState &p_seat, Ref<InputEventWithModifiers> p_event) {
+	p_event->set_shift_pressed(p_seat.shift_pressed);
+	p_event->set_ctrl_pressed(p_seat.ctrl_pressed);
+	p_event->set_alt_pressed(p_seat.alt_pressed);
+	p_event->set_meta_pressed(p_seat.meta_pressed);
 }
 
-bool DisplayServerWayland::_keyboard_state_configure_key_event(KeyboardState &ks, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
+// Sets up an `InputEventKey` and returns whether it has any meaningful value.
+bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
 	// TODO: Handle keys that release multiple symbols?
-	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ks.xkb_state, p_keycode));
+	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(p_ss.xkb_state, p_keycode));
 	Key physical_keycode = KeyMappingXKB::get_scancode(p_keycode);
 
 	if (physical_keycode == Key::NONE) {
@@ -182,16 +304,16 @@ bool DisplayServerWayland::_keyboard_state_configure_key_event(KeyboardState &ks
 		keycode -= 'a' - 'A';
 	}
 
-	if (ks.focused_window_id != INVALID_WINDOW_ID) {
-		p_event->set_window_id(ks.focused_window_id);
+	if (p_ss.focused_window_id != INVALID_WINDOW_ID) {
+		p_event->set_window_id(p_ss.focused_window_id);
 	}
 
 	// Set all pressed modifiers.
-	_get_key_modifier_state(ks, p_event);
+	_get_key_modifier_state(p_ss, p_event);
 
 	p_event->set_keycode(keycode);
 	p_event->set_physical_keycode(physical_keycode);
-	p_event->set_unicode(xkb_state_key_get_utf32(ks.xkb_state, p_keycode));
+	p_event->set_unicode(xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode));
 	p_event->set_pressed(p_pressed);
 
 	// Taken from DisplayServerX11.
@@ -289,13 +411,20 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		wls->screens.push_back(sd);
 
 		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
-
 		return;
 	}
 
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		globals.wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 7);
-		globals.wl_seat_name = name;
+		// The seat listener requires a pointer for its state data. For this reason,
+		// to get one that points to a variable that can live outside of this scope,
+		// we push a default `SeatState` in `wls->seats` and get the address of this
+		// new element.
+		SeatState *ss = &wls->seats.push_back({})->get();
+		ss->wls = wls;
+		ss->wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 7);
+		ss->wl_seat_name = name;
+
+		wl_seat_add_listener(ss->wl_seat, &wl_seat_listener, ss);
 		return;
 	}
 
@@ -341,13 +470,6 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		return;
 	}
 
-	if (name == globals.wl_seat_name) {
-		wl_seat_destroy(globals.wl_seat);
-		globals.wl_seat = nullptr;
-
-		return;
-	}
-
 	if (name == globals.xdg_wm_base_name) {
 		xdg_wm_base_destroy(globals.xdg_wm_base);
 		globals.xdg_wm_base = nullptr;
@@ -373,6 +495,7 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 	// FIXME: This is a very bruteforce approach.
 	for (int i = 0; i < (int)wls->screens.size(); i++) {
+		// Iterate through all of the screens to find if any got removed.
 		ScreenData *sd = wls->screens[i];
 
 		if (sd->wl_output_name == name) {
@@ -381,6 +504,20 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 			wls->screens.remove_at(i);
 			return;
 		}
+	}
+
+	List<SeatState>::Element *it = wls->seats.front();
+	while (it) {
+		// Iterate through all of the seats to find if any got removed.
+		SeatState &ss = it->get();
+
+		if (ss.wl_seat_name == name) {
+			wl_seat_destroy(ss.wl_seat);
+			wls->seats.erase(it);
+			return;
+		}
+
+		it = it->next();
 	}
 }
 
@@ -422,74 +559,95 @@ void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_
 }
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
 
 	// TODO: Handle touch.
 
-	PointerState &ps = wls->pointer_state;
-
+	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-		ps.wl_pointer = wl_seat_get_pointer(wl_seat);
-		ERR_FAIL_NULL(ps.wl_pointer);
+		ss->cursor_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
 
-		ps.cursor_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
-		ERR_FAIL_NULL(ps.cursor_surface);
+		ss->wl_pointer = wl_seat_get_pointer(wl_seat);
+		wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
 
-		ps.wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(wls->globals.wp_relative_pointer_manager, ps.wl_pointer);
-		ERR_FAIL_NULL(ps.wp_relative_pointer);
-
-		wl_pointer_add_listener(ps.wl_pointer, &wl_pointer_listener, wls);
-		zwp_relative_pointer_v1_add_listener(ps.wp_relative_pointer, &wp_relative_pointer_listener, wls);
+		ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(wls->globals.wp_relative_pointer_manager, ss->wl_pointer);
+		zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
 	} else {
-		if (ps.wl_pointer) {
-			wl_pointer_destroy(ps.wl_pointer);
-			ps.wl_pointer = nullptr;
+		// DEBUG
+		if (ss->cursor_surface) {
+			wl_surface_destroy(ss->cursor_surface);
+			ss->cursor_surface = nullptr;
 		}
 
-		if (ps.cursor_surface) {
-			wl_surface_destroy(ps.cursor_surface);
-			ps.cursor_surface = nullptr;
+		if (ss->wl_pointer) {
+			wl_pointer_destroy(ss->wl_pointer);
+			ss->wl_pointer = nullptr;
 		}
 
-		if (ps.wp_relative_pointer) {
-			zwp_relative_pointer_v1_destroy(ps.wp_relative_pointer);
-			ps.wp_relative_pointer = nullptr;
+		if (ss->wp_relative_pointer) {
+			zwp_relative_pointer_v1_destroy(ss->wp_relative_pointer);
+			ss->wp_relative_pointer = nullptr;
+		}
+
+		if (ss->wp_confined_pointer) {
+			zwp_confined_pointer_v1_destroy(ss->wp_confined_pointer);
+			ss->wp_confined_pointer = nullptr;
+		}
+
+		if (ss->wp_locked_pointer) {
+			zwp_locked_pointer_v1_destroy(ss->wp_locked_pointer);
+			ss->wp_locked_pointer = nullptr;
 		}
 	}
 
-	KeyboardState &ks = wls->keyboard_state;
-
+	// Keyboard handling.
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
-		ks.wl_keyboard = wl_seat_get_keyboard(wl_seat);
-		ERR_FAIL_NULL(ks.wl_keyboard);
+		ss->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+		ERR_FAIL_NULL(ss->xkb_context);
 
-		ks.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-		ERR_FAIL_NULL(ks.xkb_context);
+		ss->wl_keyboard = wl_seat_get_keyboard(wl_seat);
+		wl_keyboard_add_listener(ss->wl_keyboard, &wl_keyboard_listener, ss);
+	} else {
+		if (ss->xkb_context) {
+			free(ss->xkb_context);
+			ss->xkb_context = nullptr;
+		}
 
-		wl_keyboard_add_listener(ks.wl_keyboard, &wl_keyboard_listener, wls);
-	} else if (ks.wl_keyboard) {
-		wl_keyboard_destroy(ks.wl_keyboard);
-		ks.wl_keyboard = nullptr;
+		if (ss->wl_keyboard) {
+			wl_keyboard_destroy(ss->wl_keyboard);
+			ss->wl_keyboard = nullptr;
+		}
 	}
 }
 
 void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	wls->wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, wl_seat);
-	zwlr_data_control_device_v1_add_listener(wls->wlr_data_control_device, &wlr_data_control_device_listener, wls);
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	ss->wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, ss->wl_seat);
+	zwlr_data_control_device_v1_add_listener(ss->wlr_data_control_device, &wlr_data_control_device_listener, ss);
 }
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerState &ps = wls->pointer_state;
-	PointerData &pd = ps.data_buffer;
-	struct wl_cursor_image *cursor_image = ps.cursor_images[ps.cursor_shape];
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
 
-	wl_pointer_set_cursor(ps.wl_pointer, serial, ps.cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+	PointerData &pd = ss->pointer_data_buffer;
+	struct wl_cursor_image *cursor_image = wls->cursor_images[wls->cursor_shape];
 
-	wl_surface_commit(wls->pointer_state.cursor_surface);
+	wl_pointer_set_cursor(ss->wl_pointer, serial, ss->cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+
+	wl_surface_commit(ss->cursor_surface);
 
 	pd.focused_window_id = INVALID_WINDOW_ID;
 
@@ -514,9 +672,13 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 }
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerData &pd = wls->pointer_state.data_buffer;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
 
 	if (pd.focused_window_id != INVALID_WINDOW_ID) {
 		WindowData &wd = wls->windows[pd.focused_window_id];
@@ -532,9 +694,13 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 }
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerData &pd = wls->pointer_state.data_buffer;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
 
 	pd.position.x = wl_fixed_to_int(surface_x);
 	pd.position.y = wl_fixed_to_int(surface_y);
@@ -543,9 +709,13 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 }
 
 void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerData &pd = wls->pointer_state.data_buffer;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
 
 	MouseButton button_pressed = MouseButton::NONE;
 
@@ -578,9 +748,13 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerData &pd = wls->pointer_state.data_buffer;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
 
 	MouseButton button_pressed = MouseButton::NONE;
 
@@ -604,13 +778,16 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 }
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerState &ps = wls->pointer_state;
-	KeyboardState &ks = wls->keyboard_state;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
 
-	PointerData &old_pd = ps.data;
-	PointerData &pd = ps.data_buffer;
+	_seat_state_set_current(*ss);
+
+	PointerData &old_pd = ss->pointer_data;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	if (pd.focused_window_id != INVALID_WINDOW_ID) {
 		if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
@@ -618,7 +795,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			mm.instantiate();
 
 			// Set all pressed modifiers.
-			_get_key_modifier_state(ks, mm);
+			_get_key_modifier_state(*ss, mm);
 
 			mm->set_window_id(pd.focused_window_id);
 			mm->set_button_mask(pd.pressed_button_mask);
@@ -662,7 +839,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					mb.instantiate();
 
 					// Set all pressed modifiers.
-					_get_key_modifier_state(ks, mb);
+					_get_key_modifier_state(*ss, mb);
 
 					mb->set_window_id(pd.focused_window_id);
 					mb->set_position(pd.position);
@@ -741,70 +918,82 @@ void DisplayServerWayland::_wl_pointer_on_axis_discrete(void *data, struct wl_po
 void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
 	ERR_FAIL_COND_MSG(format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, "Unsupported keymap format announced from the Wayland compositor.");
 
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	KeyboardState &ks = wls->keyboard_state;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
 
-	if (ks.keymap_buffer) {
+	if (ss->keymap_buffer) {
 		// We have already a mapped buffer, so we unmap it. There's no need to reset
 		// its pointer or size, as we're gonna set them below.
-		munmap((void *)ks.keymap_buffer, ks.keymap_buffer_size);
+		munmap((void *)ss->keymap_buffer, ss->keymap_buffer_size);
+		ss->keymap_buffer = nullptr;
 	}
 
-	// TODO: Unmap on destruction.
-	ks.keymap_buffer = (const char *)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-	ks.keymap_buffer_size = size;
+	ss->keymap_buffer = (const char *)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	ss->keymap_buffer_size = size;
 
-	xkb_keymap_unref(ks.xkb_keymap);
-	ks.xkb_keymap = xkb_keymap_new_from_string(ks.xkb_context, ks.keymap_buffer,
+	xkb_keymap_unref(ss->xkb_keymap);
+	ss->xkb_keymap = xkb_keymap_new_from_string(ss->xkb_context, ss->keymap_buffer,
 			XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
-	xkb_state_unref(ks.xkb_state);
-	ks.xkb_state = xkb_state_new(ks.xkb_keymap);
+	xkb_state_unref(ss->xkb_state);
+	ss->xkb_state = xkb_state_new(ss->xkb_keymap);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	KeyboardState &ks = wls->keyboard_state;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	_seat_state_set_current(*ss);
 
 	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
 		WindowData &wd = E.value;
 
 		if (wd.wl_surface == surface) {
-			ks.focused_window_id = E.key;
+			ss->focused_window_id = E.key;
 			break;
 		}
 	}
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
-	msg->id = ks.focused_window_id;
+	msg->id = ss->focused_window_id;
 	msg->event = WINDOW_EVENT_FOCUS_IN;
 	wls->message_queue.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	KeyboardState &ks = wls->keyboard_state;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 
-	msg->id = ks.focused_window_id;
+	msg->id = ss->focused_window_id;
 	msg->event = WINDOW_EVENT_FOCUS_OUT;
 
 	wls->message_queue.push_back(msg);
 
-	ks.focused_window_id = INVALID_WINDOW_ID;
-	ks.repeating_keycode = XKB_KEYCODE_INVALID;
+	ss->focused_window_id = INVALID_WINDOW_ID;
+	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 }
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	KeyboardState &ks = wls->keyboard_state;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	_seat_state_set_current(*ss);
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
 	xkb_keycode_t xkb_keycode = key + 8;
@@ -812,18 +1001,18 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
 
 	if (pressed) {
-		if (xkb_keymap_key_repeats(ks.xkb_keymap, xkb_keycode)) {
-			ks.last_repeat_start_msec = OS::get_singleton()->get_ticks_msec();
-			ks.repeating_keycode = xkb_keycode;
+		if (xkb_keymap_key_repeats(ss->xkb_keymap, xkb_keycode)) {
+			ss->last_repeat_start_msec = OS::get_singleton()->get_ticks_msec();
+			ss->repeating_keycode = xkb_keycode;
 		}
-	} else if (ks.repeating_keycode == xkb_keycode) {
-		ks.repeating_keycode = XKB_KEYCODE_INVALID;
+	} else if (ss->repeating_keycode == xkb_keycode) {
+		ss->repeating_keycode = XKB_KEYCODE_INVALID;
 	}
 
 	Ref<InputEventKey> k;
 	k.instantiate();
 
-	if (!_keyboard_state_configure_key_event(ks, k, xkb_keycode, pressed)) {
+	if (!_seat_state_configure_key_event(*ss, k, xkb_keycode, pressed)) {
 		return;
 	}
 
@@ -834,25 +1023,28 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	KeyboardState &ks = wls->keyboard_state;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
 
-	xkb_state_update_mask(ks.xkb_state, mods_depressed, mods_latched, mods_locked, ks.current_layout_index, ks.current_layout_index, group);
+	_seat_state_set_current(*ss);
 
-	ks.shift_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
-	ks.ctrl_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
-	ks.alt_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_DEPRESSED);
-	ks.meta_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_DEPRESSED);
+	xkb_state_update_mask(ss->xkb_state, mods_depressed, mods_latched, mods_locked, ss->current_layout_index, ss->current_layout_index, group);
+
+	ss->shift_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
+	ss->ctrl_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
+	ss->alt_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_DEPRESSED);
+	ss->meta_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_DEPRESSED);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	KeyboardState &ks = wls->keyboard_state;
-
-	ks.repeat_key_delay_msec = 1000 / rate;
-	ks.repeat_start_delay_msec = delay;
+	ss->repeat_key_delay_msec = 1000 / rate;
+	ss->repeat_start_delay_msec = delay;
 }
 
 void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
@@ -869,34 +1061,40 @@ void DisplayServerWayland::_wlr_data_control_device_on_data_offer(void *data, st
 }
 
 void DisplayServerWayland::_wlr_data_control_device_on_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	wls->selection_data_control_offer = id;
+	ss->selection_data_control_offer = id;
 }
 
 void DisplayServerWayland::_wlr_data_control_device_on_finished(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	wls->wlr_data_control_device = nullptr;
+	ss->wlr_data_control_device = nullptr;
 }
 
 void DisplayServerWayland::_wlr_data_control_device_on_primary_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	wls->primary_data_control_offer = id;
+	ss->primary_data_control_offer = id;
 }
 
 void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source, const char *mime_type, int32_t fd) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
 	Vector<uint8_t> *data_to_send = nullptr;
 
-	if (wlr_data_control_source == wls->selection_data_control_source) {
-		data_to_send = &wls->selection_data;
+	if (wlr_data_control_source == ss->selection_data_control_source) {
+		data_to_send = &ss->selection_data;
 		print_verbose("Clipboard: requested selection.");
-	} else if (wlr_data_control_source == wls->primary_data_control_source) {
-		data_to_send = &wls->primary_data;
+	} else if (wlr_data_control_source == ss->primary_data_control_source) {
+		data_to_send = &ss->primary_data;
 		print_verbose("Clipboard: requested primary selection.");
+	} else {
+		return;
 	}
 
 	if (data_to_send) {
@@ -919,23 +1117,24 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 }
 
 void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source) {
-	WaylandState *wls = (WaylandState *)data;
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	if (wlr_data_control_source == wls->selection_data_control_source) {
-		zwlr_data_control_source_v1_destroy(wls->selection_data_control_source);
-		wls->selection_data_control_source = nullptr;
+	if (wlr_data_control_source == ss->selection_data_control_source) {
+		zwlr_data_control_source_v1_destroy(ss->selection_data_control_source);
+		ss->selection_data_control_source = nullptr;
 
-		wls->selection_data.clear();
+		ss->selection_data.clear();
 
 		print_verbose("Clipboard: selection set by another program.");
 		return;
 	}
 
-	if (wlr_data_control_source == wls->primary_data_control_source) {
-		zwlr_data_control_source_v1_destroy(wls->primary_data_control_source);
-		wls->primary_data_control_source = nullptr;
+	if (wlr_data_control_source == ss->primary_data_control_source) {
+		zwlr_data_control_source_v1_destroy(ss->primary_data_control_source);
+		ss->primary_data_control_source = nullptr;
 
-		wls->primary_data.clear();
+		ss->primary_data.clear();
 
 		print_verbose("Clipboard: primary selection set by another program.");
 		return;
@@ -946,6 +1145,7 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 	xdg_surface_ack_configure(xdg_surface, serial);
 
 	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
 
 	// `wd`'s rect has alread been changed by `_xdg_toplevel_on_configure`.
 	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
@@ -959,6 +1159,7 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
 	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
 
 	if (width != 0 && height != 0) {
 		wd->rect.size.width = width;
@@ -968,6 +1169,7 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 
 void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
 	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
@@ -976,10 +1178,14 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 	wd->message_queue->push_back(msg);
 }
 
-void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
-	WaylandState *wls = (WaylandState *)data;
+void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
 
-	PointerData &pd = wls->pointer_state.data_buffer;
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	PointerData &pd = ss->pointer_data_buffer;
 
 	pd.relative_motion.x = wl_fixed_to_double(dx);
 	pd.relative_motion.y = wl_fixed_to_double(dy);
@@ -1005,77 +1211,19 @@ String DisplayServerWayland::get_name() const {
 }
 
 void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
-	if (p_mode == wls.pointer_state.mode) {
+	if (p_mode == wls.mouse_mode) {
 		return;
 	}
 
 	MutexLock mutex_lock(wls.mutex);
 
-	struct wl_pointer *wp = wls.pointer_state.wl_pointer;
-	struct zwp_pointer_constraints_v1 *pc = wls.globals.wp_pointer_constraints;
+	wls.mouse_mode = p_mode;
 
-	struct zwp_locked_pointer_v1 *&lp = wls.pointer_state.wp_locked_pointer;
-	struct zwp_confined_pointer_v1 *&cp = wls.pointer_state.wp_confined_pointer;
-
-	// All modes but `MOUSE_MODE_VISIBLE` and `MOUSE_MODE_CONFINED` are hidden.
-	if (p_mode != MOUSE_MODE_VISIBLE && p_mode != MOUSE_MODE_CONFINED) {
-		// Reset the cursor's hotspot.
-		wl_pointer_set_cursor(wls.pointer_state.wl_pointer, 0, wls.pointer_state.cursor_surface, 0, 0);
-
-		// Unmap the cursor.
-		wl_surface_attach(wls.pointer_state.cursor_surface, nullptr, 0, 0);
-
-		wl_surface_commit(wls.pointer_state.cursor_surface);
-	} else {
-		// Unhide the cursor by resetting its shape.
-		cursor_set_shape(wls.pointer_state.cursor_shape);
-	}
-
-	// Constrain/Free pointer movement depending on its mode.
-	switch (p_mode) {
-		// Unconstrained pointer.
-		case MOUSE_MODE_VISIBLE:
-		case MOUSE_MODE_HIDDEN: {
-			if (lp) {
-				zwp_locked_pointer_v1_destroy(lp);
-				lp = nullptr;
-			}
-
-			if (cp) {
-				zwp_confined_pointer_v1_destroy(cp);
-				cp = nullptr;
-			}
-		} break;
-
-		// Locked pointer.
-		case MOUSE_MODE_CAPTURED: {
-			if (!lp) {
-				WindowData &wd = wls.windows[MAIN_WINDOW_ID];
-				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-
-				// Center the cursor on unlock.
-				wl_fixed_t unlock_x = wl_fixed_from_int(wd.rect.size.width / 2);
-				wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
-
-				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
-			}
-		} break;
-
-		// Confined pointer.
-		case MOUSE_MODE_CONFINED:
-		case MOUSE_MODE_CONFINED_HIDDEN: {
-			if (!cp) {
-				WindowData &wd = wls.windows[MAIN_WINDOW_ID];
-				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-			}
-		}
-	}
-
-	wls.pointer_state.mode = p_mode;
+	_wayland_state_update_cursor(wls);
 }
 
 DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
-	return wls.pointer_state.mode;
+	return wls.mouse_mode;
 }
 
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
@@ -1085,58 +1233,88 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 
 Point2i DisplayServerWayland::mouse_get_position() const {
 	MutexLock mutex_lock(wls.mutex);
-	return wls.pointer_state.data.position;
+
+	if (!wls.current_seat) {
+		return Point2i(0, 0);
+	}
+
+	return wls.current_seat->pointer_data.position;
 }
 
 MouseButton DisplayServerWayland::mouse_get_button_state() const {
 	MutexLock mutex_lock(wls.mutex);
-	return wls.pointer_state.data.pressed_button_mask;
+
+	if (!wls.current_seat) {
+		return MouseButton::NONE;
+	}
+
+	return wls.current_seat->pointer_data.pressed_button_mask;
 }
 
 void DisplayServerWayland::clipboard_set(const String &p_text) {
 	MutexLock mutex_lock(wls.mutex);
 
-	if (!wls.selection_data_control_source) {
-		wls.selection_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
-		zwlr_data_control_source_v1_add_listener(wls.selection_data_control_source, &wlr_data_control_source_listener, &wls);
-		zwlr_data_control_source_v1_offer(wls.selection_data_control_source, "text/plain");
+	if (!wls.current_seat) {
+		return;
+	}
 
-		zwlr_data_control_device_v1_set_selection(wls.wlr_data_control_device, wls.selection_data_control_source);
+	SeatState &ss = *wls.current_seat;
+
+	if (!wls.current_seat->selection_data_control_source) {
+		ss.selection_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
+		zwlr_data_control_source_v1_add_listener(ss.selection_data_control_source, &wlr_data_control_source_listener, &wls);
+		zwlr_data_control_source_v1_offer(ss.selection_data_control_source, "text/plain");
+
+		zwlr_data_control_device_v1_set_selection(ss.wlr_data_control_device, ss.selection_data_control_source);
 
 		// Wait for the message to get to the server before continuing, otherwise the
 		// clipboard update might come with a delay.
 		wl_display_roundtrip(wls.display);
 	}
 
-	wls.selection_data = p_text.to_utf8_buffer();
+	ss.selection_data = p_text.to_utf8_buffer();
 }
 
 String DisplayServerWayland::clipboard_get() const {
 	MutexLock mutex_lock(wls.mutex);
 
-	return read_data_control_offer(wls.selection_data_control_offer);
+	if (!wls.current_seat) {
+		return String();
+	}
+
+	return read_data_control_offer(wls.current_seat->selection_data_control_offer);
 }
 
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 	MutexLock mutex_lock(wls.mutex);
 
-	if (!wls.primary_data_control_source) {
-		wls.primary_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
-		zwlr_data_control_source_v1_add_listener(wls.primary_data_control_source, &wlr_data_control_source_listener, &wls);
-		zwlr_data_control_source_v1_offer(wls.primary_data_control_source, "text/plain");
+	if (!wls.current_seat) {
+		return;
+	}
 
-		zwlr_data_control_device_v1_set_primary_selection(wls.wlr_data_control_device, wls.primary_data_control_source);
+	SeatState &ss = *wls.current_seat;
+
+	if (!ss.primary_data_control_source) {
+		ss.primary_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
+		zwlr_data_control_source_v1_add_listener(ss.primary_data_control_source, &wlr_data_control_source_listener, &wls);
+		zwlr_data_control_source_v1_offer(ss.primary_data_control_source, "text/plain");
+
+		zwlr_data_control_device_v1_set_primary_selection(ss.wlr_data_control_device, ss.primary_data_control_source);
 
 		// Wait for the message to get to the server before continuing, otherwise the
 		// clipboard update might come with a delay.
 		wl_display_roundtrip(wls.display);
 	}
 
-	wls.primary_data = p_text.to_utf8_buffer();
+	ss.primary_data = p_text.to_utf8_buffer();
 }
 
 String DisplayServerWayland::clipboard_get_primary() const {
-	return read_data_control_offer(wls.primary_data_control_offer);
+	if (!wls.current_seat) {
+		return String();
+	}
+
+	return read_data_control_offer(wls.current_seat->primary_data_control_offer);
 }
 
 int DisplayServerWayland::get_screen_count() const {
@@ -1494,38 +1672,21 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
-	MutexLock mutex_lock(wls.mutex);
-
-	PointerState &ps = wls.pointer_state;
-
-	ERR_FAIL_NULL(ps.cursor_surface);
-
-	struct wl_cursor_image *cursor_image = ps.cursor_images[p_shape];
-
-	// Other than returning if we don't have an image or if the shape is the same,
-	// we also return if the mode isn't supposed to be invisible, as otherwise
-	// setting a cursor would make it visible again.
-	if (p_shape == ps.cursor_shape || !cursor_image || (ps.mode != MOUSE_MODE_VISIBLE && ps.mode != MOUSE_MODE_CONFINED)) {
+	if (p_shape == wls.cursor_shape) {
 		return;
 	}
 
-	// Update the cursor's hotspot.
-	wl_pointer_set_cursor(ps.wl_pointer, 0, ps.cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+	MutexLock mutex_lock(wls.mutex);
 
-	// Attach the new cursor's buffer and damage it.
-	wl_surface_attach(ps.cursor_surface, ps.cursor_bufs[p_shape], 0, 0);
-	wl_surface_damage_buffer(ps.cursor_surface, 0, 0, INT_MAX, INT_MAX);
+	wls.cursor_shape = p_shape;
 
-	// Commit everything.
-	wl_surface_commit(ps.cursor_surface);
-
-	ps.cursor_shape = p_shape;
+	_wayland_state_update_cursor(wls);
 }
 
 DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const {
 	MutexLock mutex_lock(wls.mutex);
 
-	return wls.pointer_state.cursor_shape;
+	return wls.cursor_shape;
 }
 
 void DisplayServerWayland::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -1536,8 +1697,8 @@ void DisplayServerWayland::cursor_set_custom_image(const RES &p_cursor, CursorSh
 int DisplayServerWayland::keyboard_get_layout_count() const {
 	MutexLock mutex_lock(wls.mutex);
 
-	if (wls.keyboard_state.xkb_keymap) {
-		return xkb_keymap_num_layouts(wls.keyboard_state.xkb_keymap);
+	if (wls.current_seat && wls.current_seat->xkb_keymap) {
+		return xkb_keymap_num_layouts(wls.current_seat->xkb_keymap);
 	}
 
 	return 0;
@@ -1546,13 +1707,19 @@ int DisplayServerWayland::keyboard_get_layout_count() const {
 int DisplayServerWayland::keyboard_get_current_layout() const {
 	MutexLock mutex_lock(wls.mutex);
 
-	return wls.keyboard_state.current_layout_index;
+	if (wls.current_seat) {
+		return wls.current_seat->current_layout_index;
+	}
+
+	return 0;
 }
 
 void DisplayServerWayland::keyboard_set_current_layout(int p_index) {
 	MutexLock mutex_lock(wls.mutex);
 
-	wls.keyboard_state.current_layout_index = p_index;
+	if (wls.current_seat) {
+		wls.current_seat->current_layout_index = p_index;
+	}
 }
 
 String DisplayServerWayland::keyboard_get_layout_language(int p_index) const {
@@ -1566,8 +1733,8 @@ String DisplayServerWayland::keyboard_get_layout_name(int p_index) const {
 
 	String ret;
 
-	if (wls.keyboard_state.xkb_keymap) {
-		ret.parse_utf8(xkb_keymap_layout_get_name(wls.keyboard_state.xkb_keymap, p_index));
+	if (wls.current_seat && wls.current_seat->xkb_keymap) {
+		ret.parse_utf8(xkb_keymap_layout_get_name(wls.current_seat->xkb_keymap, p_index));
 	}
 
 	return ret;
@@ -1578,10 +1745,16 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 
 	xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_keycode);
 
-	Key key = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(wls.keyboard_state.xkb_state, xkb_keycode));
+	Key key = Key::NONE;
+
+	if (wls.current_seat && wls.current_seat->xkb_state) {
+		// NOTE: Be aware that this method will always return something, even if this
+		// line might never be executed if the current seat doesn't have a keyboard.
+		key = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(wls.current_seat->xkb_state, xkb_keycode));
+	}
 
 	// If not found, fallback to QWERTY.
-	// This should match the behavior of the event pump
+	// This should match the behavior of the event pump.
 	if (key == Key::NONE) {
 		return p_keycode;
 	}
@@ -1628,13 +1801,13 @@ void DisplayServerWayland::process_events() {
 			}
 
 			if (id == MAIN_WINDOW_ID) {
-				if (wls.pointer_state.wp_locked_pointer) {
+				if (wls.current_seat && wls.current_seat->wp_locked_pointer) {
 					// Since the window changes size, we have to reset its position hint, to
 					// successfully have a centered cursor on unlock.
 					wl_fixed_t unlock_x = wl_fixed_from_int(rect.size.width / 2);
 					wl_fixed_t unlock_y = wl_fixed_from_int(rect.size.height / 2);
 
-					zwp_locked_pointer_v1_set_cursor_position_hint(wls.pointer_state.wp_locked_pointer, unlock_x, unlock_y);
+					zwp_locked_pointer_v1_set_cursor_position_hint(wls.current_seat->wp_locked_pointer, unlock_x, unlock_y);
 				}
 			}
 		}
@@ -1664,26 +1837,30 @@ void DisplayServerWayland::process_events() {
 		wls.message_queue.pop_front();
 	}
 
-	KeyboardState &ks = wls.keyboard_state;
+	if (!wls.current_seat) {
+		return;
+	}
 
-	if (ks.repeat_key_delay_msec && ks.repeating_keycode != XKB_KEYCODE_INVALID) {
+	SeatState &seat = *wls.current_seat;
+
+	if (seat.repeat_key_delay_msec && seat.repeating_keycode != XKB_KEYCODE_INVALID) {
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_msec();
-		uint64_t delayed_start_ticks = ks.last_repeat_start_msec + ks.repeat_start_delay_msec;
+		uint64_t delayed_start_ticks = seat.last_repeat_start_msec + seat.repeat_start_delay_msec;
 
-		if (ks.last_repeat_msec < delayed_start_ticks) {
-			ks.last_repeat_msec = delayed_start_ticks;
+		if (seat.last_repeat_msec < delayed_start_ticks) {
+			seat.last_repeat_msec = delayed_start_ticks;
 		}
 
 		if (current_ticks >= delayed_start_ticks) {
-			uint64_t ticks_delta = current_ticks - ks.last_repeat_msec;
+			uint64_t ticks_delta = current_ticks - seat.last_repeat_msec;
 
-			int keys_amount = (ticks_delta / ks.repeat_key_delay_msec);
+			int keys_amount = (ticks_delta / seat.repeat_key_delay_msec);
 
 			for (int i = 0; i < keys_amount; i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
 
-				if (!_keyboard_state_configure_key_event(ks, k, ks.repeating_keycode, true)) {
+				if (!_seat_state_configure_key_event(seat, k, seat.repeating_keycode, true)) {
 					continue;
 				}
 
@@ -1692,7 +1869,7 @@ void DisplayServerWayland::process_events() {
 				Input::get_singleton()->parse_input_event(k);
 			}
 
-			ks.last_repeat_msec += ticks_delta - (ticks_delta % ks.repeat_key_delay_msec);
+			seat.last_repeat_msec += ticks_delta - (ticks_delta % seat.repeat_key_delay_msec);
 		}
 	}
 
@@ -1775,10 +1952,9 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	// TODO: Perhaps gracefully handle missing protocols when possible?
 	// TODO: Split this huge check into something more manageble.
-	ERR_FAIL_COND(!wls.globals.wl_shm || !wls.globals.wl_compositor || !wls.globals.wl_seat || !wls.globals.wp_pointer_constraints || !wls.globals.wlr_data_control_manager || !wls.globals.xdg_wm_base);
+	ERR_FAIL_COND(!wls.globals.wl_shm || !wls.globals.wl_compositor || !wls.globals.wp_pointer_constraints || !wls.globals.wlr_data_control_manager || !wls.globals.xdg_wm_base);
 
 	// Input.
-	wl_seat_add_listener(wls.globals.wl_seat, &wl_seat_listener, &wls);
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
 
 	// Wait for seat capabilities.
@@ -1800,9 +1976,9 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif
 
 	// FIXME: We should get the cursor size from the user, somehow.
-	wls.pointer_state.wl_cursor_theme = wl_cursor_theme_load(nullptr, 24, wls.globals.wl_shm);
+	wls.wl_cursor_theme = wl_cursor_theme_load(nullptr, 24, wls.globals.wl_shm);
 
-	ERR_FAIL_NULL(wls.pointer_state.wl_cursor_theme);
+	ERR_FAIL_NULL(wls.wl_cursor_theme);
 
 	static const char *cursor_names[] = {
 		"left_ptr",
@@ -1845,18 +2021,18 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	};
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
-		struct wl_cursor *cursor = wl_cursor_theme_get_cursor(wls.pointer_state.wl_cursor_theme, cursor_names[i]);
+		struct wl_cursor *cursor = wl_cursor_theme_get_cursor(wls.wl_cursor_theme, cursor_names[i]);
 
 		if (!cursor && cursor_names_fallback[i]) {
-			cursor = wl_cursor_theme_get_cursor(wls.pointer_state.wl_cursor_theme, cursor_names[i]);
+			cursor = wl_cursor_theme_get_cursor(wls.wl_cursor_theme, cursor_names[i]);
 		}
 
 		if (cursor && cursor->image_count > 0) {
-			wls.pointer_state.cursor_images[i] = cursor->images[0];
-			wls.pointer_state.cursor_bufs[i] = wl_cursor_image_get_buffer(cursor->images[0]);
+			wls.cursor_images[i] = cursor->images[0];
+			wls.cursor_bufs[i] = wl_cursor_image_get_buffer(cursor->images[0]);
 		} else {
-			wls.pointer_state.cursor_images[i] = nullptr;
-			wls.pointer_state.cursor_bufs[i] = nullptr;
+			wls.cursor_images[i] = nullptr;
+			wls.cursor_bufs[i] = nullptr;
 			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
 		}
 	}
@@ -1886,6 +2062,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 		_destroy_window(E.key);
+	}
+
+	for (SeatState &seat : wls.seats) {
+		munmap((void *)seat.keymap_buffer, seat.keymap_buffer_size);
 	}
 
 	// Free all screens.

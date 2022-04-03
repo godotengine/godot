@@ -103,9 +103,6 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_compositor *wl_compositor = nullptr;
 		uint32_t wl_compositor_name = 0;
 
-		struct wl_seat *wl_seat = nullptr;
-		uint32_t wl_seat_name = 0;
-
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
@@ -176,32 +173,32 @@ class DisplayServerWayland : public DisplayServer {
 		Vector2 scroll_vector;
 	};
 
-	struct PointerState {
+	struct WaylandState;
+
+	struct SeatState {
+		WaylandState *wls = nullptr;
+
+		struct wl_seat *wl_seat = nullptr;
+		uint32_t wl_seat_name = 0;
+
+		// Pointer.
 		struct wl_pointer *wl_pointer = nullptr;
 
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
-
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
 
-		struct wl_cursor_theme *wl_cursor_theme = nullptr;
-		struct wl_cursor_image *cursor_images[CURSOR_MAX];
-		struct wl_buffer *cursor_bufs[CURSOR_MAX];
 		struct wl_surface *cursor_surface = nullptr;
-
-		CursorShape cursor_shape = CURSOR_ARROW;
-		MouseMode mode = MOUSE_MODE_VISIBLE;
 
 		// This variable is needed to buffer all pointer changes until a
 		// wl_pointer.frame event, as per Wayland's specification. Everything is
 		// first set in `data_buffer` and then `data` is set with its contents on
 		// an input frame event. All methods should generally read from `data` and
 		// write to `data_buffer`.
-		PointerData data_buffer;
-		PointerData data;
-	};
+		PointerData pointer_data_buffer;
+		PointerData pointer_data;
 
-	struct KeyboardState {
+		// Keyboard.
 		struct wl_keyboard *wl_keyboard = nullptr;
 
 		struct xkb_context *xkb_context = nullptr;
@@ -226,6 +223,18 @@ class DisplayServerWayland : public DisplayServer {
 		bool ctrl_pressed = false;
 		bool alt_pressed = false;
 		bool meta_pressed = false;
+
+		// Clipboard.
+		struct zwlr_data_control_device_v1 *wlr_data_control_device = nullptr;
+
+		struct zwlr_data_control_offer_v1 *selection_data_control_offer = nullptr;
+		struct zwlr_data_control_source_v1 *selection_data_control_source = nullptr;
+
+		struct zwlr_data_control_offer_v1 *primary_data_control_offer = nullptr;
+		struct zwlr_data_control_source_v1 *primary_data_control_source = nullptr;
+
+		Vector<uint8_t> selection_data;
+		Vector<uint8_t> primary_data;
 	};
 
 	// TODO: Perhaps we could make this just contain references to in-class
@@ -240,6 +249,15 @@ class DisplayServerWayland : public DisplayServer {
 
 		WindowID window_id_counter = MAIN_WINDOW_ID;
 		Map<WindowID, WindowData> windows;
+
+		SeatState *current_seat = nullptr;
+
+		struct wl_cursor_theme *wl_cursor_theme = nullptr;
+		struct wl_cursor_image *cursor_images[CURSOR_MAX];
+		struct wl_buffer *cursor_bufs[CURSOR_MAX];
+
+		CursorShape cursor_shape = CURSOR_ARROW;
+		MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
 
 		// NOTE: This variable is a `LocalVector` of `ScreenData` pointers because
 		// this list will:
@@ -264,20 +282,7 @@ class DisplayServerWayland : public DisplayServer {
 		// simpler (albeit, I think techcnically more wasteful but only in extreme
 		// circumstances) plain `List`.
 		LocalVector<ScreenData *> screens;
-
-		PointerState pointer_state;
-		KeyboardState keyboard_state;
-
-		struct zwlr_data_control_device_v1 *wlr_data_control_device = nullptr;
-
-		struct zwlr_data_control_offer_v1 *selection_data_control_offer = nullptr;
-		struct zwlr_data_control_source_v1 *selection_data_control_source = nullptr;
-
-		struct zwlr_data_control_offer_v1 *primary_data_control_offer = nullptr;
-		struct zwlr_data_control_source_v1 *primary_data_control_source = nullptr;
-
-		Vector<uint8_t> selection_data;
-		Vector<uint8_t> primary_data;
+		List<SeatState> seats;
 
 		SafeFlag events_thread_done;
 
@@ -295,9 +300,13 @@ class DisplayServerWayland : public DisplayServer {
 
 	String read_data_control_offer(zwlr_data_control_offer_v1 *wlr_data_control_offer) const;
 
-	static void _get_key_modifier_state(KeyboardState &ks, Ref<InputEventWithModifiers> state);
+	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
+	static void _seat_state_set_current(SeatState &p_ss);
+	static void _wayland_state_update_cursor(WaylandState &p_wls);
 
-	static bool _keyboard_state_configure_key_event(KeyboardState &ks, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool pressed);
+	static void _get_key_modifier_state(SeatState &p_seat, Ref<InputEventWithModifiers> p_event);
+
+	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	void _destroy_window(WindowID p_id);
