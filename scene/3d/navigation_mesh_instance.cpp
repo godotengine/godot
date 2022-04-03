@@ -172,13 +172,17 @@ void _bake_navigation_mesh(void *p_user_data) {
 	}
 }
 
-void NavigationMeshInstance::bake_navigation_mesh() {
+void NavigationMeshInstance::bake_navigation_mesh(bool p_on_thread) {
 	ERR_FAIL_COND_MSG(bake_thread.is_started(), "Navigation Mesh Bake thread is already baking a Navigation Mesh. Unable to start another bake request.");
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
 
-	bake_thread.start(_bake_navigation_mesh, args);
+	if (p_on_thread) {
+		bake_thread.start(_bake_navigation_mesh, args);
+	} else {
+		_bake_navigation_mesh(args);
+	}
 }
 
 void NavigationMeshInstance::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
@@ -216,7 +220,7 @@ void NavigationMeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationMeshInstance::get_region_rid);
 
-	ClassDB::bind_method(D_METHOD("bake_navigation_mesh"), &NavigationMeshInstance::bake_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationMeshInstance::bake_navigation_mesh, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationMeshInstance::_bake_finished);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");

@@ -62,9 +62,9 @@ public:
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 
-	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// Bakes the navigation mesh; once done, automatically
 	/// sets the new navigation mesh and emits a signal
-	void bake_navigation_mesh();
+	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
 	String get_configuration_warning() const;
