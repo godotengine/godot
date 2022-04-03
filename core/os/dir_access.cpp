@@ -249,6 +249,12 @@ DirAccess *DirAccess::create(AccessType p_access) {
 	DirAccess *da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da) {
 		da->_access_type = p_access;
+
+		if (p_access == ACCESS_RESOURCES) {
+			da->change_dir("res://");
+		} else if (p_access == ACCESS_USERDATA) {
+			da->change_dir("user://");
+		}
 	}
 
 	return da;
