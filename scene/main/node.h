@@ -112,8 +112,6 @@ private:
 #ifdef TOOLS_ENABLED
 		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
-		String editor_description;
-
 		Viewport *viewport = nullptr;
 
 		Map<StringName, GroupData> grouped;

@@ -1833,11 +1833,15 @@ String Node::get_scene_file_path() const {
 }
 
 void Node::set_editor_description(const String &p_editor_description) {
-	data.editor_description = p_editor_description;
+	if (p_editor_description.is_empty()) {
+		remove_meta("_editor_description_");
+	} else {
+		set_meta("_editor_description_", p_editor_description);
+	}
 }
 
 String Node::get_editor_description() const {
-	return data.editor_description;
+	return get_meta("_editor_description_", "");
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
@@ -2739,8 +2743,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "call_local", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(false), DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
-	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
+	ClassDB::bind_method(D_METHOD("_set_editor_description", "editor_description"), &Node::set_editor_description);
+	ClassDB::bind_method(D_METHOD("_get_editor_description"), &Node::get_editor_description);
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
@@ -2845,7 +2849,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 
 	ADD_GROUP("Editor Description", "editor_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_editor_description", "_get_editor_description");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");
