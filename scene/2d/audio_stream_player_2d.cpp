@@ -272,7 +272,10 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 void AudioStreamPlayer2D::set_stream(Ref<AudioStream> p_stream) {
 	// Instancing audio streams can cause large memory allocations, do it prior to AudioServer::lock.
-	Ref<AudioStreamPlayback> pre_instanced_playback = p_stream->instance_playback();
+	Ref<AudioStreamPlayback> pre_instanced_playback;
+	if (p_stream.is_valid()) {
+		pre_instanced_playback = p_stream->instance_playback();
+	}
 
 	AudioServer::get_singleton()->lock();
 
