@@ -250,7 +250,7 @@ void GridMapEditor::_menu_option(int p_option) {
 
 void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = Transform3D();
-	cursor_transform.origin = cursor_origin;
+	cursor_transform.origin = node->map_to_local(cursor_cell);
 	cursor_transform.basis = node->get_basis_with_orthogonal_index(cursor_rot);
 	cursor_transform.basis *= node->get_cell_scale();
 	cursor_transform = node->get_global_transform() * cursor_transform;
@@ -384,25 +384,13 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		}
 	}
 
-	int cell[3];
-	Vector3 cell_size = node->get_cell_size();
-
-	for (int i = 0; i < 3; i++) {
-		if (i == edit_axis) {
-			cell[i] = edit_floor[i];
-		} else {
-			cell[i] = inters[i] / cell_size[i];
-			if (inters[i] < 0) {
-				cell[i] -= 1; // Compensate negative.
-			}
-			grid_ofs[i] = cell[i] * cell_size[i];
-		}
-	}
+	Vector3 cell = node->local_to_map(inters);
+	cell[edit_axis] = edit_floor[edit_axis];
 
 	RS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
 
 	if (cursor_instance.is_valid()) {
-		cursor_origin = (Vector3(cell[0], cell[1], cell[2]) + Vector3(0.5 * node->get_center_x(), 0.5 * node->get_center_y(), 0.5 * node->get_center_z())) * node->get_cell_size();
+		cursor_cell = cell;
 		cursor_visible = true;
 
 		if (input_action == INPUT_SELECT || input_action == INPUT_PASTE) {
@@ -1006,7 +994,98 @@ void GridMapEditor::update_grid() {
 	updating = false;
 }
 
-void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
+void GridMapEditor::_draw_floor_grid(RID p_mesh_id, int p_floor) {
+	Vector<Vector2> shape_points;
+	if (node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE) {
+		shape_points.append(Vector2(-0.5, -0.5));
+		shape_points.append(Vector2(0.5, -0.5));
+		shape_points.append(Vector2(0.5, 0.5));
+		shape_points.append(Vector2(-0.5, 0.5));
+	} else {
+		float overlap = 0.25;
+		shape_points.append(Vector2(0.0, -0.5));
+		shape_points.append(Vector2(-0.5, overlap - 0.5));
+		shape_points.append(Vector2(-0.5, 0.5 - overlap));
+		shape_points.append(Vector2(0.0, 0.5));
+		shape_points.append(Vector2(0.5, 0.5 - overlap));
+		shape_points.append(Vector2(0.5, overlap - 0.5));
+
+		if (node->get_cell_offset_axis() == GridMap::CELL_OFFSET_AXIS_VERTICAL) {
+			for (int i = 0; i < shape_points.size(); i++) {
+				shape_points.write[i] = Vector2(shape_points[i].y, shape_points[i].x);
+			}
+		}
+	}
+
+	Vector3 cell_size = node->get_cell_size();
+
+	Vector<Vector3> grid_points;
+	Vector<Color> grid_colors;
+
+	for (int x = -GRID_CURSOR_SIZE; x <= GRID_CURSOR_SIZE; x++) {
+		for (int z = -GRID_CURSOR_SIZE; z <= GRID_CURSOR_SIZE; z++) {
+			Vector3 center = node->map_to_local(Vector3(x, p_floor, z));
+
+			for (int i = 1; i < shape_points.size(); i++) {
+				grid_points.append(center + Vector3(shape_points[i - 1].x * cell_size.x, 0, shape_points[i - 1].y * cell_size.z));
+				grid_points.append(center + Vector3(shape_points[i].x * cell_size.x, 0, shape_points[i].y * cell_size.z));
+
+				float a1 = Math::pow(MAX(0, 1.0 - (Vector2(x + 1, z).length() / GRID_CURSOR_SIZE)), 2);
+				float a2 = Math::pow(MAX(0, 1.0 - (Vector2(x, z + 1).length() / GRID_CURSOR_SIZE)), 2);
+				grid_colors.append(Color(1, 1, 1, a1));
+				grid_colors.append(Color(1, 1, 1, a2));
+			}
+		}
+	}
+
+	Array d;
+	d.resize(RS::ARRAY_MAX);
+	d[RS::ARRAY_VERTEX] = grid_points;
+	d[RS::ARRAY_COLOR] = grid_colors;
+	RenderingServer::get_singleton()->mesh_add_surface_from_arrays(p_mesh_id, RenderingServer::PRIMITIVE_LINES, d);
+	RenderingServer::get_singleton()->mesh_surface_set_material(p_mesh_id, 0, indicator_mat->get_rid());
+}
+
+void GridMapEditor::_draw_plane_grid(RID p_mesh_id, const Vector3 &p_axis_n1, const Vector3 &p_axis_n2) {
+	Vector<Vector3> grid_points;
+	Vector<Color> grid_colors;
+
+	Vector3 cell_size = node->get_cell_size();
+	Vector3 axis_n1 = p_axis_n1 * cell_size;
+	Vector3 axis_n2 = p_axis_n2 * cell_size;
+
+	for (int j = -GRID_CURSOR_SIZE; j <= GRID_CURSOR_SIZE; j++) {
+		for (int k = -GRID_CURSOR_SIZE; k <= GRID_CURSOR_SIZE; k++) {
+			Vector3 p = axis_n1 * j + axis_n2 * k;
+			float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / GRID_CURSOR_SIZE)), 2);
+
+			Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
+			float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / GRID_CURSOR_SIZE)), 2);
+
+			Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
+			float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / GRID_CURSOR_SIZE)), 2);
+
+			grid_points.push_back(p);
+			grid_points.push_back(pk);
+			grid_colors.push_back(Color(1, 1, 1, trans));
+			grid_colors.push_back(Color(1, 1, 1, transk));
+
+			grid_points.push_back(p);
+			grid_points.push_back(pj);
+			grid_colors.push_back(Color(1, 1, 1, trans));
+			grid_colors.push_back(Color(1, 1, 1, transj));
+		}
+	}
+
+	Array d;
+	d.resize(RS::ARRAY_MAX);
+	d[RS::ARRAY_VERTEX] = grid_points;
+	d[RS::ARRAY_COLOR] = grid_colors;
+	RenderingServer::get_singleton()->mesh_add_surface_from_arrays(p_mesh_id, RenderingServer::PRIMITIVE_LINES, d);
+	RenderingServer::get_singleton()->mesh_surface_set_material(p_mesh_id, 0, indicator_mat->get_rid());
+}
+
+void GridMapEditor::_draw_grids(const Vector3 &p_cell_size) {
 	Vector3 edited_floor = node->get_meta("_editor_floor_", Vector3());
 
 	for (int i = 0; i < 3; i++) {
@@ -1014,47 +1093,9 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 		edit_floor[i] = edited_floor[i];
 	}
 
-	Vector<Vector3> grid_points[3];
-	Vector<Color> grid_colors[3];
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis;
-		axis[i] = 1;
-		Vector3 axis_n1;
-		axis_n1[(i + 1) % 3] = cell_size[(i + 1) % 3];
-		Vector3 axis_n2;
-		axis_n2[(i + 2) % 3] = cell_size[(i + 2) % 3];
-
-		for (int j = -GRID_CURSOR_SIZE; j <= GRID_CURSOR_SIZE; j++) {
-			for (int k = -GRID_CURSOR_SIZE; k <= GRID_CURSOR_SIZE; k++) {
-				Vector3 p = axis_n1 * j + axis_n2 * k;
-				float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / GRID_CURSOR_SIZE)), 2);
-
-				Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
-				float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / GRID_CURSOR_SIZE)), 2);
-
-				Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
-				float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / GRID_CURSOR_SIZE)), 2);
-
-				grid_points[i].push_back(p);
-				grid_points[i].push_back(pk);
-				grid_colors[i].push_back(Color(1, 1, 1, trans));
-				grid_colors[i].push_back(Color(1, 1, 1, transk));
-
-				grid_points[i].push_back(p);
-				grid_points[i].push_back(pj);
-				grid_colors[i].push_back(Color(1, 1, 1, trans));
-				grid_colors[i].push_back(Color(1, 1, 1, transj));
-			}
-		}
-
-		Array d;
-		d.resize(RS::ARRAY_MAX);
-		d[RS::ARRAY_VERTEX] = grid_points[i];
-		d[RS::ARRAY_COLOR] = grid_colors[i];
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[i], RenderingServer::PRIMITIVE_LINES, d);
-		RenderingServer::get_singleton()->mesh_surface_set_material(grid[i], 0, indicator_mat->get_rid());
-	}
+	_draw_plane_grid(grid[0], Vector3(0, 1, 0), Vector3(0, 0, 1));
+	_draw_floor_grid(grid[1], edit_floor[1]);
+	_draw_plane_grid(grid[2], Vector3(1, 0, 0), Vector3(0, 1, 0));
 }
 
 void GridMapEditor::_update_theme() {
@@ -1155,8 +1196,8 @@ void GridMapEditor::_update_cursor_instance() {
 	}
 }
 
-void GridMapEditor::_item_selected_cbk(int idx) {
-	selected_palette = mesh_library_palette->get_item_metadata(idx);
+void GridMapEditor::_item_selected_cbk(int p_idx) {
+	selected_palette = mesh_library_palette->get_item_metadata(p_idx);
 
 	_update_cursor_instance();
 }
