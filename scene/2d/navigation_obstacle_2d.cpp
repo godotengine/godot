@@ -147,7 +147,7 @@ void NavigationObstacle2D::initialize_agent() {
 }
 
 void NavigationObstacle2D::reevaluate_agent_radius() {
-	if (!estimate_agent_radius()) {
+	if (!estimate_radius) {
 		Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
 	} else if (parent_node2d && parent_node2d->is_inside_tree()) {
 		Navigation2DServer::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
