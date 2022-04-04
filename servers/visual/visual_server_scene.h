@@ -57,6 +57,11 @@ public:
 	uint64_t render_pass;
 	static VisualServerScene *singleton;
 
+	/* EVENT QUEUING */
+
+	void tick();
+	void pre_draw(bool p_will_draw);
+
 	/* CAMERA API */
 	struct Scenario;
 
@@ -78,8 +83,6 @@ public:
 		Transform transform;
 		Transform transform_prev;
 
-		Scenario *scenario;
-
 		bool interpolated : 1;
 		bool on_interpolate_transform_list : 1;
 
@@ -88,10 +91,7 @@ public:
 
 		int32_t previous_room_id_hint;
 
-		// call get transform to get either the transform straight,
-		// or the interpolated transform if using fixed timestep interpolation
-		Transform get_transform() const;
-		bool is_currently_interpolated() const { return scenario && scenario->is_physics_interpolation_enabled() && interpolated; }
+		Transform get_transform_interpolated() const;
 
 		Camera() {
 			visible_layers = 0xFFFFFFFF;
@@ -102,7 +102,6 @@ public:
 			size = 1.0;
 			offset = Vector2();
 			vaspect = false;
-			scenario = nullptr;
 			previous_room_id_hint = -1;
 			interpolated = true;
 			on_interpolate_transform_list = false;
@@ -113,7 +112,6 @@ public:
 	mutable RID_Owner<Camera> camera_owner;
 
 	virtual RID camera_create();
-	virtual void camera_set_scenario(RID p_camera, RID p_scenario);
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
@@ -270,26 +268,6 @@ public:
 
 		SelfList<Instance>::List instances;
 
-		bool is_physics_interpolation_enabled() const { return _interpolation_data.interpolation_enabled; }
-
-		// fixed timestep interpolation
-		struct InterpolationData {
-			void notify_free_camera(RID p_rid, Camera &r_camera);
-			void notify_free_instance(RID p_rid, Instance &r_instance);
-			LocalVector<RID> instance_interpolate_update_list;
-			LocalVector<RID> instance_transform_update_lists[2];
-			LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
-			LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
-			LocalVector<RID> instance_teleport_list;
-
-			LocalVector<RID> camera_transform_update_lists[2];
-			LocalVector<RID> *camera_transform_update_list_curr = &camera_transform_update_lists[0];
-			LocalVector<RID> *camera_transform_update_list_prev = &camera_transform_update_lists[1];
-			LocalVector<RID> camera_teleport_list;
-
-			bool interpolation_enabled;
-		} _interpolation_data;
-
 		Scenario();
 		~Scenario() { memdelete(sps); }
 	};
@@ -305,9 +283,6 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size, int p_subdiv);
-	virtual void scenario_set_physics_interpolation_enabled(RID p_scenario, bool p_enabled);
-	void _scenario_tick(RID p_scenario);
-	void _scenario_pre_draw(RID p_scenario, bool p_will_draw);
 
 	/* INSTANCING API */
 
@@ -365,8 +340,6 @@ public:
 			singleton->_instance_queue_update(this, p_aabb, p_materials);
 		}
 
-		bool is_currently_interpolated() const { return scenario && scenario->is_physics_interpolation_enabled() && interpolated; }
-
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
@@ -411,6 +384,26 @@ public:
 	};
 
 	SelfList<Instance>::List _instance_update_list;
+
+	// fixed timestep interpolation
+	virtual void set_physics_interpolation_enabled(bool p_enabled);
+
+	struct InterpolationData {
+		void notify_free_camera(RID p_rid, Camera &r_camera);
+		void notify_free_instance(RID p_rid, Instance &r_instance);
+		LocalVector<RID> instance_interpolate_update_list;
+		LocalVector<RID> instance_transform_update_lists[2];
+		LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
+		LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
+		LocalVector<RID> instance_teleport_list;
+
+		LocalVector<RID> camera_transform_update_lists[2];
+		LocalVector<RID> *camera_transform_update_list_curr = &camera_transform_update_lists[0];
+		LocalVector<RID> *camera_transform_update_list_prev = &camera_transform_update_lists[1];
+		LocalVector<RID> camera_teleport_list;
+
+		bool interpolation_enabled = false;
+	} _interpolation_data;
 
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials = false);
 
@@ -688,6 +681,8 @@ private:
 	void _ghost_destroy_occlusion_rep(Ghost *p_ghost);
 
 public:
+	/* PORTALS API */
+
 	struct Portal : RID_Data {
 		// all interactions with actual portals are indirect, as the portal is part of the scenario
 		uint32_t scenario_portal_id = 0;
@@ -708,7 +703,8 @@ public:
 	virtual void portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way);
 	virtual void portal_set_active(RID p_portal, bool p_active);
 
-	// RoomGroups
+	/* ROOMGROUPS API */
+
 	struct RoomGroup : RID_Data {
 		// all interactions with actual roomgroups are indirect, as the roomgroup is part of the scenario
 		uint32_t scenario_roomgroup_id = 0;
@@ -728,7 +724,8 @@ public:
 	virtual void roomgroup_set_scenario(RID p_roomgroup, RID p_scenario);
 	virtual void roomgroup_add_room(RID p_roomgroup, RID p_room);
 
-	// Occluders
+	/* OCCLUDERS API */
+
 	struct OccluderInstance : RID_Data {
 		uint32_t scenario_occluder_id = 0;
 		Scenario *scenario = nullptr;
@@ -768,10 +765,15 @@ public:
 
 	// editor only .. slow
 	virtual Geometry::MeshData occlusion_debug_get_current_polys(RID p_scenario) const;
-	const PortalResources &get_portal_resources() const { return _portal_resources; }
-	PortalResources &get_portal_resources() { return _portal_resources; }
+	const PortalResources &get_portal_resources() const {
+		return _portal_resources;
+	}
+	PortalResources &get_portal_resources() {
+		return _portal_resources;
+	}
 
-	// Rooms
+	/* ROOMS API */
+
 	struct Room : RID_Data {
 		// all interactions with actual rooms are indirect, as the room is part of the scenario
 		uint32_t scenario_room_id = 0;
@@ -805,7 +807,9 @@ public:
 	virtual bool rooms_is_loaded(RID p_scenario) const;
 
 	virtual void callbacks_register(VisualServerCallbacks *p_callbacks);
-	VisualServerCallbacks *get_callbacks() const { return _visual_server_callbacks; }
+	VisualServerCallbacks *get_callbacks() const {
+		return _visual_server_callbacks;
+	}
 
 	// don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const;
@@ -840,8 +844,8 @@ public:
 	void update_dirty_instances();
 
 	// interpolation
-	void update_interpolation_tick(Scenario::InterpolationData &r_interpolation_data, bool p_process = true);
-	void update_interpolation_frame(Scenario::InterpolationData &r_interpolation_data, bool p_process = true);
+	void update_interpolation_tick(bool p_process = true);
+	void update_interpolation_frame(bool p_process = true);
 
 	//probes
 	struct GIProbeDataHeader {
