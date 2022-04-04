@@ -2138,16 +2138,21 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 	if (p_move_by_word) {
 		int cc = caret.column;
-
+		// If the caret is at the start of the line, and not on the first line, move it up to the end of the previous line.
 		if (cc == 0 && caret.line > 0) {
 			set_caret_line(caret.line - 1);
 			set_caret_column(text[caret.line].length());
 		} else {
 			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-			for (int i = words.size() - 2; i >= 0; i = i - 2) {
-				if (words[i] < cc) {
-					cc = words[i];
-					break;
+			if (words.is_empty() || cc <= words[0]) {
+				// This solves the scenario where there are no words but glyfs that can be ignored.
+				cc = 0;
+			} else {
+				for (int i = words.size() - 2; i >= 0; i = i - 2) {
+					if (words[i] < cc) {
+						cc = words[i];
+						break;
+					}
 				}
 			}
 			set_caret_column(cc);
@@ -2189,16 +2194,21 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 	if (p_move_by_word) {
 		int cc = caret.column;
-
+		// If the caret is at the end of the line, and not on the last line, move it down to the beginning of the next line.
 		if (cc == text[caret.line].length() && caret.line < text.size() - 1) {
 			set_caret_line(caret.line + 1);
 			set_caret_column(0);
 		} else {
 			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-			for (int i = 1; i < words.size(); i = i + 2) {
-				if (words[i] > cc) {
-					cc = words[i];
-					break;
+			if (words.is_empty() || cc >= words[words.size() - 1]) {
+				// This solves the scenario where there are no words but glyfs that can be ignored.
+				cc = text[caret.line].length();
+			} else {
+				for (int i = 1; i < words.size(); i = i + 2) {
+					if (words[i] > cc) {
+						cc = words[i];
+						break;
+					}
 				}
 			}
 			set_caret_column(cc);
@@ -2369,11 +2379,11 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
-	if (!editable) {
+	if (!editable || (caret.column == 0 && caret.line == 0)) {
 		return;
 	}
 
-	if (has_selection() || (!p_all_to_left && !p_word)) {
+	if (has_selection() || (!p_all_to_left && !p_word) || caret.column == 0) {
 		backspace();
 		return;
 	}
@@ -2386,20 +2396,30 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	}
 
 	if (p_word) {
-		int line = caret.line;
 		int column = caret.column;
-
-		PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-		for (int i = words.size() - 2; i >= 0; i = i - 2) {
-			if (words[i] < column) {
-				column = words[i];
-				break;
+		// Check for the case "<word><space><caret>" and ignore the space.
+		// No need to check for column being 0 since it is cheked above.
+		if (is_whitespace(text[caret.line][caret.column - 1])) {
+			column -= 1;
+		}
+		// Get a list with the indices of the word bounds of the given text line.
+		const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
+		if (words.is_empty() || column <= words[0]) {
+			// If "words" is empty, meaning no words are left, we can remove everything until the begining of the line.
+			column = 0;
+		} else {
+			// Otherwise search for the first word break that is smaller than the index from we're currentlu deleteing
+			for (int i = words.size() - 2; i >= 0; i = i - 2) {
+				if (words[i] < column) {
+					column = words[i];
+					break;
+				}
 			}
 		}
 
-		_remove_text(line, column, caret.line, caret.column);
+		_remove_text(caret.line, column, caret.line, caret.column);
 
-		set_caret_line(line, false);
+		set_caret_line(caret.line, false);
 		set_caret_column(column);
 		return;
 	}
