@@ -130,7 +130,7 @@ void WebSocketClient::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "verify_ssl", PROPERTY_HINT_NONE, "", 0), "set_verify_ssl_enabled", "is_verify_ssl_enabled");
 
 	ClassDB::bind_method(D_METHOD("get_trusted_ssl_certificate"), &WebSocketClient::get_trusted_ssl_certificate);
-	ClassDB::bind_method(D_METHOD("set_trusted_ssl_certificate"), &WebSocketClient::set_trusted_ssl_certificate);
+	ClassDB::bind_method(D_METHOD("set_trusted_ssl_certificate", "certificate"), &WebSocketClient::set_trusted_ssl_certificate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trusted_ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_trusted_ssl_certificate", "get_trusted_ssl_certificate");
 

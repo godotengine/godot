@@ -41,7 +41,7 @@ ARVRServer *ARVRServer::get_singleton() {
 
 void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &ARVRServer::get_world_scale);
-	ClassDB::bind_method(D_METHOD("set_world_scale"), &ARVRServer::set_world_scale);
+	ClassDB::bind_method(D_METHOD("set_world_scale", "world_scale"), &ARVRServer::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_reference_frame"), &ARVRServer::get_reference_frame);
 	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &ARVRServer::center_on_hmd);
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &ARVRServer::get_hmd_transform);

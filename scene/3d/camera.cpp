@@ -481,7 +481,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera::clear_current, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("set_current"), &Camera::set_current);
+	ClassDB::bind_method(D_METHOD("set_current", "enable"), &Camera::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera::get_camera_transform);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera::get_fov);
@@ -489,13 +489,13 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera::get_size);
 	ClassDB::bind_method(D_METHOD("get_zfar"), &Camera::get_zfar);
 	ClassDB::bind_method(D_METHOD("get_znear"), &Camera::get_znear);
-	ClassDB::bind_method(D_METHOD("set_fov"), &Camera::set_fov);
-	ClassDB::bind_method(D_METHOD("set_frustum_offset"), &Camera::set_frustum_offset);
-	ClassDB::bind_method(D_METHOD("set_size"), &Camera::set_size);
-	ClassDB::bind_method(D_METHOD("set_zfar"), &Camera::set_zfar);
-	ClassDB::bind_method(D_METHOD("set_znear"), &Camera::set_znear);
+	ClassDB::bind_method(D_METHOD("set_fov", "fov"), &Camera::set_fov);
+	ClassDB::bind_method(D_METHOD("set_frustum_offset", "frustum_offset"), &Camera::set_frustum_offset);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &Camera::set_size);
+	ClassDB::bind_method(D_METHOD("set_zfar", "zfar"), &Camera::set_zfar);
+	ClassDB::bind_method(D_METHOD("set_znear", "znear"), &Camera::set_znear);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera::get_projection);
-	ClassDB::bind_method(D_METHOD("set_projection"), &Camera::set_projection);
+	ClassDB::bind_method(D_METHOD("set_projection", "projection"), &Camera::set_projection);
 	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera::get_h_offset);
 	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera::set_v_offset);

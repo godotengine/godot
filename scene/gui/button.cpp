@@ -372,7 +372,7 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_align"), &Button::get_text_align);
 	ClassDB::bind_method(D_METHOD("set_icon_align", "icon_align"), &Button::set_icon_align);
 	ClassDB::bind_method(D_METHOD("get_icon_align"), &Button::get_icon_align);
-	ClassDB::bind_method(D_METHOD("set_expand_icon"), &Button::set_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
