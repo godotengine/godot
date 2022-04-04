@@ -62,6 +62,7 @@ public:
 	int size() const;
 	bool empty() const;
 	void clear();
+	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;

@@ -197,6 +197,14 @@ void Dictionary::clear() {
 	_p->variant_map.clear();
 }
 
+void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = p_dictionary._p->variant_map.front(); E; E = E.next()) {
+		if (p_overwrite || !has(E.key())) {
+			this->operator[](E.key()) = E.value();
+		}
+	}
+}
+
 void Dictionary::_unref() const {
 	ERR_FAIL_COND(!_p);
 	if (_p->refcount.unref()) {
