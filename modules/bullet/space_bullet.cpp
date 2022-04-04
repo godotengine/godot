@@ -1256,6 +1256,9 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 			if (otherObject->getCollisionShape()->isCompound()) {
 				const btCompoundShape *cs = static_cast<const btCompoundShape *>(otherObject->getCollisionShape());
+				if (cs->getNumChildShapes() == 0) {
+					continue; // No shapes to depenetrate from.
+				}
 				int shape_idx = recover_broad_result.results[i].compound_child_index;
 				ERR_FAIL_COND_V(shape_idx < 0 || shape_idx >= cs->getNumChildShapes(), false);
 
