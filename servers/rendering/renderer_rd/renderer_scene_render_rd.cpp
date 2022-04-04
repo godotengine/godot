@@ -5501,7 +5501,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 
 	GeometryInstance *gi = geometry_instance_create(p_base);
 
-	uint32_t sc = RSG::storage->mesh_get_surface_count(p_base);
+	uint32_t sc = RSG::mesh_storage->mesh_get_surface_count(p_base);
 	Vector<RID> materials;
 	materials.resize(sc);
 

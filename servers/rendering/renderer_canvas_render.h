@@ -31,6 +31,7 @@
 #ifndef RENDERINGSERVERCANVASRENDER_H
 #define RENDERINGSERVERCANVASRENDER_H
 
+#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_storage.h"
 
 class RendererCanvasRender {
@@ -403,14 +404,14 @@ public:
 					} break;
 					case Item::Command::TYPE_MESH: {
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-						AABB aabb = RendererStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
+						AABB aabb = RendererRD::MeshStorage::get_singleton()->mesh_get_aabb(mesh->mesh, RID());
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
 					} break;
 					case Item::Command::TYPE_MULTIMESH: {
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
-						AABB aabb = RendererStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
+						AABB aabb = RendererRD::MeshStorage::get_singleton()->multimesh_get_aabb(multimesh->multimesh);
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
