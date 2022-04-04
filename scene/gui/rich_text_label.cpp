@@ -1650,8 +1650,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (deselect_on_focus_loss_enabled) {
-				selection.active = false;
-				update();
+				deselect();
 			}
 		} break;
 
@@ -1742,9 +1741,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 								selection.to_line = 0;
 								selection.to_item = nullptr;
 								selection.to_char = 0;
-								selection.active = false;
-
-								update();
+								deselect();
 							}
 						}
 					}
@@ -1802,9 +1799,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 						selection.to_line = 0;
 						selection.to_item = nullptr;
 						selection.to_char = 0;
-						selection.active = false;
-
-						update();
+						deselect();
 					}
 				}
 
@@ -1925,8 +1920,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				if (selection.from_char > selection.to_char) {
 					swap = true;
 				} else if (selection.from_char == selection.to_char) {
-					selection.active = false;
-					update();
+					deselect();
 					return;
 				}
 			}
@@ -2977,11 +2971,10 @@ void RichTextLabel::clear() {
 	main->lines.clear();
 	main->lines.resize(1);
 	main->first_invalid_line = 0;
-	update();
 
 	selection.click_frame = nullptr;
 	selection.click_item = nullptr;
-	selection.active = false;
+	deselect();
 
 	current_idx = 1;
 	current_char_ofs = 0;
@@ -3890,8 +3883,7 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 	selection.enabled = p_enabled;
 	if (!p_enabled) {
 		if (selection.active) {
-			selection.active = false;
-			update();
+			deselect();
 		}
 		set_focus_mode(FOCUS_NONE);
 	} else {
@@ -3902,8 +3894,7 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
 	deselect_on_focus_loss_enabled = p_enabled;
 	if (p_enabled && selection.active && !has_focus()) {
-		selection.active = false;
-		update();
+		deselect();
 	}
 }
 
@@ -4152,6 +4143,11 @@ String RichTextLabel::get_selected_text() const {
 		text += _get_line_text(main, i, selection);
 	}
 	return text;
+}
+
+void RichTextLabel::deselect() {
+	selection.active = false;
+	update();
 }
 
 void RichTextLabel::selection_copy() {
@@ -4460,6 +4456,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selection_to"), &RichTextLabel::get_selection_to);
 
 	ClassDB::bind_method(D_METHOD("get_selected_text"), &RichTextLabel::get_selected_text);
+	ClassDB::bind_method(D_METHOD("deselect"), &RichTextLabel::deselect);
 
 	ClassDB::bind_method(D_METHOD("parse_bbcode", "bbcode"), &RichTextLabel::parse_bbcode);
 	ClassDB::bind_method(D_METHOD("append_text", "bbcode"), &RichTextLabel::append_text);
