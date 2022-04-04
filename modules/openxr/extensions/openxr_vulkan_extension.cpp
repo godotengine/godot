@@ -30,9 +30,9 @@
 
 #include "core/string/print_string.h"
 
-#include "modules/openxr/extensions/openxr_vulkan_extension.h"
-#include "modules/openxr/openxr_api.h"
-#include "modules/openxr/openxr_util.h"
+#include "../extensions/openxr_vulkan_extension.h"
+#include "../openxr_api.h"
+#include "../openxr_util.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"

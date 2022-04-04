@@ -472,6 +472,10 @@ void TabContainer::_on_tab_selected(int p_tab) {
 	emit_signal(SNAME("tab_selected"), p_tab);
 }
 
+void TabContainer::_on_tab_button_pressed(int p_tab) {
+	emit_signal(SNAME("tab_button_pressed"), p_tab);
+}
+
 void TabContainer::_refresh_tab_names() {
 	Vector<Control *> controls = _get_tab_controls();
 	for (int i = 0; i < controls.size(); i++) {
@@ -733,6 +737,17 @@ bool TabContainer::is_tab_hidden(int p_tab) const {
 	return tab_bar->is_tab_hidden(p_tab);
 }
 
+void TabContainer::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
+	tab_bar->set_tab_button_icon(p_tab, p_icon);
+
+	_update_margins();
+	_repaint();
+}
+
+Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
+	return tab_bar->get_tab_button_icon(p_tab);
+}
+
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 	Vector<Control *> controls = _get_tab_controls();
 	for (int i = 0; i < controls.size(); i++) {
@@ -877,6 +892,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabContainer::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
 	ClassDB::bind_method(D_METHOD("is_tab_hidden", "tab_idx"), &TabContainer::is_tab_hidden);
+	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
+	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_from_control", "control"), &TabContainer::get_tab_idx_from_control);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
@@ -896,6 +913,7 @@ void TabContainer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
@@ -915,6 +933,7 @@ TabContainer::TabContainer() {
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
+	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 
 	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }
