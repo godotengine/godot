@@ -41,16 +41,16 @@ class GPUParticles3DEditorBase : public Control {
 	GDCLASS(GPUParticles3DEditorBase, Control);
 
 protected:
-	Node3D *base_node;
-	Panel *panel;
-	MenuButton *options;
-	HBoxContainer *particles_editor_hb;
+	Node3D *base_node = nullptr;
+	Panel *panel = nullptr;
+	MenuButton *options = nullptr;
+	HBoxContainer *particles_editor_hb = nullptr;
 
-	SceneTreeDialog *emission_tree_dialog;
+	SceneTreeDialog *emission_tree_dialog = nullptr;
 
-	ConfirmationDialog *emission_dialog;
-	SpinBox *emission_amount;
-	OptionButton *emission_fill;
+	ConfirmationDialog *emission_dialog = nullptr;
+	SpinBox *emission_amount = nullptr;
+	OptionButton *emission_fill = nullptr;
 
 	Vector<Face3> geometry;
 
@@ -67,9 +67,9 @@ public:
 class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 	GDCLASS(GPUParticles3DEditor, GPUParticles3DEditorBase);
 
-	ConfirmationDialog *generate_aabb;
-	SpinBox *generate_seconds;
-	GPUParticles3D *node;
+	ConfirmationDialog *generate_aabb = nullptr;
+	SpinBox *generate_seconds = nullptr;
+	GPUParticles3D *node = nullptr;
 
 	enum Menu {
 		MENU_OPTION_GENERATE_AABB,
@@ -101,7 +101,7 @@ public:
 class GPUParticles3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles3DEditorPlugin, EditorPlugin);
 
-	GPUParticles3DEditor *particles_editor;
+	GPUParticles3DEditor *particles_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "GPUParticles3D"; }

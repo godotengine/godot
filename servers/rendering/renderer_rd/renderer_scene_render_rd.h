@@ -92,7 +92,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 	double time;
 	double time_step = 0;
 
@@ -314,10 +314,10 @@ private:
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
 
-	float *directional_penumbra_shadow_kernel;
-	float *directional_soft_shadow_kernel;
-	float *penumbra_shadow_kernel;
-	float *soft_shadow_kernel;
+	float *directional_penumbra_shadow_kernel = nullptr;
+	float *directional_soft_shadow_kernel = nullptr;
+	float *penumbra_shadow_kernel = nullptr;
+	float *soft_shadow_kernel = nullptr;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -705,27 +705,27 @@ private:
 		template <class T>
 		struct InstanceSort {
 			float depth;
-			T *instance;
+			T *instance = nullptr;
 			bool operator<(const InstanceSort &p_sort) const {
 				return depth < p_sort.depth;
 			}
 		};
 
-		ReflectionData *reflections;
+		ReflectionData *reflections = nullptr;
 		InstanceSort<ReflectionProbeInstance> *reflection_sort;
 		uint32_t max_reflections;
 		RID reflection_buffer;
 		uint32_t max_reflection_probes_per_instance;
 		uint32_t reflection_count = 0;
 
-		DecalData *decals;
+		DecalData *decals = nullptr;
 		InstanceSort<DecalInstance> *decal_sort;
 		uint32_t max_decals;
 		RID decal_buffer;
 		uint32_t decal_count;
 
-		LightData *omni_lights;
-		LightData *spot_lights;
+		LightData *omni_lights = nullptr;
+		LightData *spot_lights = nullptr;
 
 		InstanceSort<LightInstance> *omni_light_sort;
 		InstanceSort<LightInstance> *spot_light_sort;
@@ -735,7 +735,7 @@ private:
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
 		uint32_t max_directional_lights;
 		RID directional_light_buffer;
 
@@ -938,7 +938,7 @@ private:
 	};
 
 	struct FogMaterialData : public RendererRD::MaterialData {
-		FogShaderData *shader_data;
+		FogShaderData *shader_data = nullptr;
 		RID uniform_set;
 		bool uniform_set_updated;
 

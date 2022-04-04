@@ -70,14 +70,14 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	bool valid;
 	bool hidden;
 	Vector<Instance> instances;
-	Node3D *spatial_node;
+	Node3D *spatial_node = nullptr;
 
 	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Node3D>(p_node)); }
 
 protected:
 	static void _bind_methods();
 
-	EditorNode3DGizmoPlugin *gizmo_plugin;
+	EditorNode3DGizmoPlugin *gizmo_plugin = nullptr;
 
 	GDVIRTUAL0(_redraw)
 	GDVIRTUAL2RC(String, _get_handle_name, int, bool)
@@ -618,7 +618,7 @@ public:
 class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 	uint64_t update_idx = 0;
 
 	void incremental_update_gizmos();

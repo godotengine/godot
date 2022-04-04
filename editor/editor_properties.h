@@ -52,7 +52,7 @@ public:
 
 class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
-	LineEdit *text;
+	LineEdit *text = nullptr;
 
 	bool updating = false;
 	bool string_name = false;
@@ -72,11 +72,11 @@ public:
 
 class EditorPropertyMultilineText : public EditorProperty {
 	GDCLASS(EditorPropertyMultilineText, EditorProperty);
-	TextEdit *text;
+	TextEdit *text = nullptr;
 
-	AcceptDialog *big_text_dialog;
-	TextEdit *big_text;
-	Button *open_big_text;
+	AcceptDialog *big_text_dialog = nullptr;
+	TextEdit *big_text = nullptr;
+	Button *open_big_text = nullptr;
 
 	void _big_text_changed();
 	void _text_changed();
@@ -95,15 +95,15 @@ public:
 class EditorPropertyTextEnum : public EditorProperty {
 	GDCLASS(EditorPropertyTextEnum, EditorProperty);
 
-	HBoxContainer *default_layout;
-	HBoxContainer *edit_custom_layout;
+	HBoxContainer *default_layout = nullptr;
+	HBoxContainer *edit_custom_layout = nullptr;
 
-	OptionButton *option_button;
-	Button *edit_button;
+	OptionButton *option_button = nullptr;
+	Button *edit_button = nullptr;
 
-	LineEdit *custom_value_edit;
-	Button *accept_button;
-	Button *cancel_button;
+	LineEdit *custom_value_edit = nullptr;
+	Button *accept_button = nullptr;
+	Button *cancel_button = nullptr;
 
 	Vector<String> options;
 	bool string_name = false;
@@ -134,9 +134,9 @@ class EditorPropertyPath : public EditorProperty {
 	bool folder = false;
 	bool global = false;
 	bool save_mode = false;
-	EditorFileDialog *dialog;
-	LineEdit *path;
-	Button *path_edit;
+	EditorFileDialog *dialog = nullptr;
+	LineEdit *path = nullptr;
+	Button *path_edit = nullptr;
 
 	void _path_selected(const String &p_path);
 	void _path_pressed();
@@ -156,9 +156,9 @@ public:
 
 class EditorPropertyLocale : public EditorProperty {
 	GDCLASS(EditorPropertyLocale, EditorProperty);
-	EditorLocaleDialog *dialog;
-	LineEdit *locale;
-	Button *locale_edit;
+	EditorLocaleDialog *dialog = nullptr;
+	LineEdit *locale = nullptr;
+	Button *locale_edit = nullptr;
 
 	void _locale_selected(const String &p_locale);
 	void _locale_pressed();
@@ -178,8 +178,8 @@ class EditorPropertyClassName : public EditorProperty {
 	GDCLASS(EditorPropertyClassName, EditorProperty);
 
 private:
-	CreateDialog *dialog;
-	Button *property;
+	CreateDialog *dialog = nullptr;
+	Button *property = nullptr;
 	String selected_type;
 	String base_type;
 	void _property_selected();
@@ -212,8 +212,8 @@ public:
 
 private:
 	Type hint;
-	PropertySelector *selector;
-	Button *property;
+	PropertySelector *selector = nullptr;
+	Button *property = nullptr;
 	String hint_text;
 
 	void _property_selected(const String &p_selected);
@@ -231,7 +231,7 @@ public:
 
 class EditorPropertyCheck : public EditorProperty {
 	GDCLASS(EditorPropertyCheck, EditorProperty);
-	CheckBox *checkbox;
+	CheckBox *checkbox = nullptr;
 
 	void _checkbox_pressed();
 
@@ -246,7 +246,7 @@ public:
 
 class EditorPropertyEnum : public EditorProperty {
 	GDCLASS(EditorPropertyEnum, EditorProperty);
-	OptionButton *options;
+	OptionButton *options = nullptr;
 
 	void _option_selected(int p_which);
 
@@ -263,7 +263,7 @@ public:
 
 class EditorPropertyFlags : public EditorProperty {
 	GDCLASS(EditorPropertyFlags, EditorProperty);
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 	Vector<CheckBox *> flags;
 	Vector<int> flag_indices;
 
@@ -293,9 +293,9 @@ private:
 	int hovered_index = -1;
 	bool read_only = false;
 	int renamed_layer_index = -1;
-	PopupMenu *layer_rename;
-	ConfirmationDialog *rename_dialog;
-	LineEdit *rename_dialog_text;
+	PopupMenu *layer_rename = nullptr;
+	ConfirmationDialog *rename_dialog = nullptr;
+	LineEdit *rename_dialog_text = nullptr;
 
 	void _rename_pressed(int p_menu);
 	void _rename_operation_confirm();
@@ -334,12 +334,12 @@ public:
 	};
 
 private:
-	EditorPropertyLayersGrid *grid;
+	EditorPropertyLayersGrid *grid = nullptr;
 	void _grid_changed(uint32_t p_grid);
 	String basename;
 	LayerType layer_type;
-	PopupMenu *layers;
-	Button *button;
+	PopupMenu *layers = nullptr;
+	Button *button = nullptr;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
@@ -358,7 +358,7 @@ public:
 
 class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
-	EditorSpinSlider *spin;
+	EditorSpinSlider *spin = nullptr;
 	bool setting = false;
 	void _value_changed(int64_t p_val);
 
@@ -374,7 +374,7 @@ public:
 
 class EditorPropertyObjectID : public EditorProperty {
 	GDCLASS(EditorPropertyObjectID, EditorProperty);
-	Button *edit;
+	Button *edit = nullptr;
 	String base_type;
 	void _edit_pressed();
 
@@ -390,7 +390,7 @@ public:
 
 class EditorPropertyFloat : public EditorProperty {
 	GDCLASS(EditorPropertyFloat, EditorProperty);
-	EditorSpinSlider *spin;
+	EditorSpinSlider *spin = nullptr;
 	bool setting = false;
 	bool angle_in_radians = false;
 	void _value_changed(double p_val);
@@ -407,9 +407,9 @@ public:
 
 class EditorPropertyEasing : public EditorProperty {
 	GDCLASS(EditorPropertyEasing, EditorProperty);
-	Control *easing_draw;
-	PopupMenu *preset;
-	EditorSpinSlider *spin;
+	Control *easing_draw = nullptr;
+	PopupMenu *preset = nullptr;
+	EditorSpinSlider *spin = nullptr;
 	bool setting = false;
 
 	bool dragging = false;
@@ -657,7 +657,7 @@ public:
 
 class EditorPropertyColor : public EditorProperty {
 	GDCLASS(EditorPropertyColor, EditorProperty);
-	ColorPickerButton *picker;
+	ColorPickerButton *picker = nullptr;
 	void _color_changed(const Color &p_color);
 	void _popup_closed();
 	void _picker_created();
@@ -677,9 +677,9 @@ public:
 
 class EditorPropertyNodePath : public EditorProperty {
 	GDCLASS(EditorPropertyNodePath, EditorProperty);
-	Button *assign;
-	Button *clear;
-	SceneTreeDialog *scene_tree;
+	Button *assign = nullptr;
+	Button *clear = nullptr;
+	SceneTreeDialog *scene_tree = nullptr;
 	NodePath base_hint;
 	bool use_path_from_scene_root = false;
 
@@ -705,7 +705,7 @@ public:
 
 class EditorPropertyRID : public EditorProperty {
 	GDCLASS(EditorPropertyRID, EditorProperty);
-	Label *label;
+	Label *label = nullptr;
 
 public:
 	virtual void update_property() override;

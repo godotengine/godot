@@ -763,19 +763,19 @@ private:
 		tree._extra[p_handle.id()].last_updated_tick = 0;
 	}
 
-	PairCallback pair_callback;
-	UnpairCallback unpair_callback;
-	CheckPairCallback check_pair_callback;
-	void *pair_callback_userdata;
-	void *unpair_callback_userdata;
-	void *check_pair_callback_userdata;
+	PairCallback pair_callback = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	CheckPairCallback check_pair_callback = nullptr;
+	void *pair_callback_userdata = nullptr;
+	void *unpair_callback_userdata = nullptr;
+	void *check_pair_callback_userdata = nullptr;
 
 	BVHTREE_CLASS tree;
 
 	// for collision pairing,
 	// maintain a list of all items moved etc on each frame / tick
 	LocalVector<BVHHandle, uint32_t, true> changed_items;
-	uint32_t _tick;
+	uint32_t _tick = 1; // Start from 1 so items with 0 indicate never updated.
 
 	class BVHLockedFunction {
 	public:
@@ -801,23 +801,16 @@ private:
 		}
 
 	private:
-		Mutex *_mutex;
+		Mutex *_mutex = nullptr;
 	};
 
 	Mutex _mutex;
 
 	// local toggle for turning on and off thread safety in project settings
-	bool _thread_safe;
+	bool _thread_safe = BVH_THREAD_SAFE;
 
 public:
-	BVH_Manager() {
-		_tick = 1; // start from 1 so items with 0 indicate never updated
-		pair_callback = nullptr;
-		unpair_callback = nullptr;
-		pair_callback_userdata = nullptr;
-		unpair_callback_userdata = nullptr;
-		_thread_safe = BVH_THREAD_SAFE;
-	}
+	BVH_Manager() {}
 };
 
 #undef BVHTREE_CLASS

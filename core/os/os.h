@@ -60,8 +60,6 @@ class OS {
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 
-	char *last_error;
-
 	CompositeLogger *_logger = nullptr;
 
 	bool restart_on_exit = false;

@@ -193,7 +193,7 @@ typedef PhysicsServer3D::MotionCollision PhysicsServer3DExtensionMotionCollision
 typedef PhysicsServer3D::MotionResult PhysicsServer3DExtensionMotionResult;
 
 struct PhysicsServer3DExtensionStateCallback {
-	void *instance;
+	void *instance = nullptr;
 	void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state);
 };
 

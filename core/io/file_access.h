@@ -183,7 +183,7 @@ struct FileAccessRef {
 
 	operator bool() const { return f != nullptr; }
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
 	operator FileAccess *() { return f; }
 

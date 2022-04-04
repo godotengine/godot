@@ -68,7 +68,7 @@ private:
 
 	ControllerDevice controllers[MAX_CONTROLLERS];
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);

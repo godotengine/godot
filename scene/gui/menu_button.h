@@ -40,7 +40,7 @@ class MenuButton : public Button {
 	bool clicked = false;
 	bool switch_on_hover = false;
 	bool disable_shortcuts = false;
-	PopupMenu *popup;
+	PopupMenu *popup = nullptr;
 
 	Vector2i mouse_pos_adjusted;
 

@@ -134,7 +134,7 @@ private:
 		List<PairData *, AL> pair_list;
 
 		struct OctantOwner {
-			Octant *octant;
+			Octant *octant = nullptr;
 			typename List<Element *, AL>::Element *E;
 		}; // an element can be in max 8 octants
 
@@ -147,7 +147,7 @@ private:
 		int refcount;
 		bool intersect;
 		Element *A, *B;
-		void *ud;
+		void *ud = nullptr;
 		typename List<PairData *, AL>::Element *eA, *eB;
 	};
 
@@ -156,18 +156,18 @@ private:
 	ElementMap element_map;
 	PairMap pair_map;
 
-	PairCallback pair_callback;
-	UnpairCallback unpair_callback;
-	void *pair_callback_userdata;
-	void *unpair_callback_userdata;
+	PairCallback pair_callback = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *pair_callback_userdata = nullptr;
+	void *unpair_callback_userdata = nullptr;
 
-	OctreeElementID last_element_id;
-	uint64_t pass;
+	OctreeElementID last_element_id = 1;
+	uint64_t pass = 1;
 
-	real_t unit_size;
-	Octant *root;
-	int octant_count;
-	int pair_count;
+	real_t unit_size = 1.0;
+	Octant *root = nullptr;
+	int octant_count = 0;
+	int pair_count = 0;
 
 	_FORCE_INLINE_ void _pair_check(PairData *p_pair) {
 		bool intersect = p_pair->A->aabb.intersects_inclusive(p_pair->B->aabb);
@@ -294,7 +294,7 @@ private:
 		const Vector3 *points;
 		int point_count;
 		T **result_array;
-		int *result_idx;
+		int *result_idx = nullptr;
 		int result_max;
 		uint32_t mask;
 	};
@@ -1265,18 +1265,7 @@ void Octree<T, use_pairs, AL>::set_unpair_callback(UnpairCallback p_callback, vo
 
 template <class T, bool use_pairs, class AL>
 Octree<T, use_pairs, AL>::Octree(real_t p_unit_size) {
-	last_element_id = 1;
-	pass = 1;
 	unit_size = p_unit_size;
-	root = nullptr;
-
-	octant_count = 0;
-	pair_count = 0;
-
-	pair_callback = nullptr;
-	unpair_callback = nullptr;
-	pair_callback_userdata = nullptr;
-	unpair_callback_userdata = nullptr;
 }
 
 #endif // OCTREE_H

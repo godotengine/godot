@@ -149,7 +149,7 @@ struct Mesh {
 /* Mesh Instance */
 
 struct MeshInstance {
-	Mesh *mesh;
+	Mesh *mesh = nullptr;
 	RID skeleton;
 	struct Surface {
 		RID vertex_buffer;

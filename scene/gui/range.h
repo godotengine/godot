@@ -50,7 +50,7 @@ class Range : public Control {
 		void emit_changed(const char *p_what = "");
 	};
 
-	Shared *shared;
+	Shared *shared = nullptr;
 
 	void _ref_shared(Shared *p_shared);
 	void _unref_shared();

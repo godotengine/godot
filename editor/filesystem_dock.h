@@ -102,57 +102,57 @@ private:
 
 	FileSortOption file_sort = FILE_SORT_NAME;
 
-	VBoxContainer *scanning_vb;
-	ProgressBar *scanning_progress;
-	VSplitContainer *split_box;
-	VBoxContainer *file_list_vb;
+	VBoxContainer *scanning_vb = nullptr;
+	ProgressBar *scanning_progress = nullptr;
+	VSplitContainer *split_box = nullptr;
+	VBoxContainer *file_list_vb = nullptr;
 
 	Set<String> favorites;
 
-	Button *button_toggle_display_mode;
-	Button *button_reload;
-	Button *button_file_list_display_mode;
-	Button *button_hist_next;
-	Button *button_hist_prev;
-	LineEdit *current_path;
+	Button *button_toggle_display_mode = nullptr;
+	Button *button_reload = nullptr;
+	Button *button_file_list_display_mode = nullptr;
+	Button *button_hist_next = nullptr;
+	Button *button_hist_prev = nullptr;
+	LineEdit *current_path = nullptr;
 
-	HBoxContainer *toolbar2_hbc;
-	LineEdit *tree_search_box;
-	MenuButton *tree_button_sort;
+	HBoxContainer *toolbar2_hbc = nullptr;
+	LineEdit *tree_search_box = nullptr;
+	MenuButton *tree_button_sort = nullptr;
 
-	LineEdit *file_list_search_box;
-	MenuButton *file_list_button_sort;
+	LineEdit *file_list_search_box = nullptr;
+	MenuButton *file_list_button_sort = nullptr;
 
 	String searched_string;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon;
-	HBoxContainer *path_hb;
+	TextureRect *search_icon = nullptr;
+	HBoxContainer *path_hb = nullptr;
 
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
 	DisplayMode old_display_mode;
 
-	PopupMenu *file_list_popup;
-	PopupMenu *tree_popup;
+	PopupMenu *file_list_popup = nullptr;
+	PopupMenu *tree_popup = nullptr;
 
-	DependencyEditor *deps_editor;
-	DependencyEditorOwners *owners_editor;
-	DependencyRemoveDialog *remove_dialog;
+	DependencyEditor *deps_editor = nullptr;
+	DependencyEditorOwners *owners_editor = nullptr;
+	DependencyRemoveDialog *remove_dialog = nullptr;
 
-	EditorDirDialog *move_dialog;
-	ConfirmationDialog *rename_dialog;
-	LineEdit *rename_dialog_text;
-	ConfirmationDialog *duplicate_dialog;
-	LineEdit *duplicate_dialog_text;
-	ConfirmationDialog *make_dir_dialog;
-	LineEdit *make_dir_dialog_text;
-	ConfirmationDialog *make_scene_dialog;
-	LineEdit *make_scene_dialog_text;
-	ConfirmationDialog *overwrite_dialog;
-	ScriptCreateDialog *make_script_dialog;
-	ShaderCreateDialog *make_shader_dialog;
-	CreateDialog *new_resource_dialog;
+	EditorDirDialog *move_dialog = nullptr;
+	ConfirmationDialog *rename_dialog = nullptr;
+	LineEdit *rename_dialog_text = nullptr;
+	ConfirmationDialog *duplicate_dialog = nullptr;
+	LineEdit *duplicate_dialog_text = nullptr;
+	ConfirmationDialog *make_dir_dialog = nullptr;
+	LineEdit *make_dir_dialog_text = nullptr;
+	ConfirmationDialog *make_scene_dialog = nullptr;
+	LineEdit *make_scene_dialog_text = nullptr;
+	ConfirmationDialog *overwrite_dialog = nullptr;
+	ScriptCreateDialog *make_script_dialog = nullptr;
+	ShaderCreateDialog *make_shader_dialog = nullptr;
+	CreateDialog *new_resource_dialog = nullptr;
 
 	bool always_show_folders = false;
 
@@ -181,8 +181,8 @@ private:
 
 	bool updating_tree = false;
 	int tree_update_id;
-	Tree *tree;
-	ItemList *files;
+	Tree *tree = nullptr;
+	ItemList *files = nullptr;
 	bool import_dock_needs_update = false;
 
 	bool holding_branch = false;

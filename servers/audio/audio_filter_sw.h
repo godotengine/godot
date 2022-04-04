@@ -57,7 +57,7 @@ public:
 
 	class Processor { // simple filter processor
 
-		AudioFilterSW *filter;
+		AudioFilterSW *filter = nullptr;
 		Coeffs coeffs;
 		float ha1, ha2, hb1, hb2; //history
 		Coeffs incr_coeffs;

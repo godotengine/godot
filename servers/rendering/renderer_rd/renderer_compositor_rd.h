@@ -48,15 +48,15 @@
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
-	UniformSetCacheRD *uniform_set_cache;
-	RendererCanvasRenderRD *canvas;
+	UniformSetCacheRD *uniform_set_cache = nullptr;
+	RendererCanvasRenderRD *canvas = nullptr;
 	RendererRD::CanvasTextureStorage *canvas_texture_storage;
 	RendererRD::MaterialStorage *material_storage;
 	RendererRD::MeshStorage *mesh_storage;
 	RendererRD::TextureStorage *texture_storage;
 	RendererRD::DecalAtlasStorage *decal_atlas_storage;
-	RendererStorageRD *storage;
-	RendererSceneRenderRD *scene;
+	RendererStorageRD *storage = nullptr;
+	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,

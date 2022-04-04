@@ -62,7 +62,7 @@ public:
 	typedef int ResolverID;
 
 private:
-	_IP_ResolverPrivate *resolver;
+	_IP_ResolverPrivate *resolver = nullptr;
 
 protected:
 	static IP *singleton;

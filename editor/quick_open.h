@@ -39,8 +39,8 @@
 class EditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(EditorQuickOpen, ConfirmationDialog);
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 	StringName base_type;
 	bool allow_multi_select = false;
 

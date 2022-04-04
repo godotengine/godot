@@ -169,7 +169,7 @@ public:
 		LocalVector<GLsync> fences;
 		uint32_t current_buffer = 0;
 
-		InstanceData *instance_data_array;
+		InstanceData *instance_data_array = nullptr;
 		bool canvas_texscreen_used;
 		CanvasShaderGLES3 canvas_shader;
 		RID canvas_shader_current_version;
@@ -198,7 +198,7 @@ public:
 		bool end_batch = false;
 
 		Transform3D vp;
-		Light *using_light;
+		Light *using_light = nullptr;
 		bool using_shadow;
 		bool using_transparent_rt;
 
@@ -220,9 +220,9 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES3 *scene_render;
+	RasterizerSceneGLES3 *scene_render = nullptr;
 
-	RasterizerStorageGLES3 *storage;
+	RasterizerStorageGLES3 *storage = nullptr;
 
 	void _set_uniforms();
 

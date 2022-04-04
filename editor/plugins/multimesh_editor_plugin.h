@@ -43,26 +43,26 @@ class MultiMeshEditor : public Control {
 
 	friend class MultiMeshEditorPlugin;
 
-	AcceptDialog *err_dialog;
-	MenuButton *options;
-	MultiMeshInstance3D *_last_pp_node;
+	AcceptDialog *err_dialog = nullptr;
+	MenuButton *options = nullptr;
+	MultiMeshInstance3D *_last_pp_node = nullptr;
 	bool browsing_source;
 
-	Panel *panel;
-	MultiMeshInstance3D *node;
+	Panel *panel = nullptr;
+	MultiMeshInstance3D *node = nullptr;
 
-	LineEdit *surface_source;
-	LineEdit *mesh_source;
+	LineEdit *surface_source = nullptr;
+	LineEdit *mesh_source = nullptr;
 
-	SceneTreeDialog *std;
+	SceneTreeDialog *std = nullptr;
 
-	ConfirmationDialog *populate_dialog;
-	OptionButton *populate_axis;
-	HSlider *populate_rotate_random;
-	HSlider *populate_tilt_random;
-	SpinBox *populate_scale_random;
-	SpinBox *populate_scale;
-	SpinBox *populate_amount;
+	ConfirmationDialog *populate_dialog = nullptr;
+	OptionButton *populate_axis = nullptr;
+	HSlider *populate_rotate_random = nullptr;
+	HSlider *populate_tilt_random = nullptr;
+	SpinBox *populate_scale_random = nullptr;
+	SpinBox *populate_scale = nullptr;
+	SpinBox *populate_amount = nullptr;
 
 	enum Menu {
 		MENU_OPTION_POPULATE
@@ -85,7 +85,7 @@ public:
 class MultiMeshEditorPlugin : public EditorPlugin {
 	GDCLASS(MultiMeshEditorPlugin, EditorPlugin);
 
-	MultiMeshEditor *multimesh_editor;
+	MultiMeshEditor *multimesh_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "MultiMesh"; }

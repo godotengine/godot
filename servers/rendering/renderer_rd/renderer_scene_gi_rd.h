@@ -55,7 +55,7 @@ class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
 private:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	/* VOXEL_GI INSTANCE */
 
@@ -331,8 +331,8 @@ public:
 
 	struct VoxelGIInstance {
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		RID probe;
 		RID texture;
@@ -455,8 +455,8 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		// used for rendering (voxelization)
 		RID render_albedo;

@@ -75,13 +75,13 @@ private:
 	typedef int EntryArrayPos;
 	typedef int EntryIndicesPos;
 
-	Entry *entry_array;
-	int *entry_indices;
+	Entry *entry_array = nullptr;
+	int *entry_indices = nullptr;
 	int entry_max;
 	int entry_count;
 
-	uint8_t *pool;
-	void *mem_ptr;
+	uint8_t *pool = nullptr;
+	void *mem_ptr = nullptr;
 	int pool_size;
 
 	int free_mem;

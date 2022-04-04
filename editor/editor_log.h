@@ -117,23 +117,23 @@ private:
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	Map<MessageType, LogFilter *> type_filter_map;
 
-	RichTextLabel *log;
+	RichTextLabel *log = nullptr;
 
-	Button *clear_button;
-	Button *copy_button;
+	Button *clear_button = nullptr;
+	Button *copy_button = nullptr;
 
-	Button *collapse_button;
+	Button *collapse_button = nullptr;
 	bool collapse = false;
 
-	Button *show_search_button;
-	LineEdit *search_box;
+	Button *show_search_button = nullptr;
+	LineEdit *search_box = nullptr;
 
 	// Reference to the "Output" button on the toolbar so we can update it's icon when
 	// Warnings or Errors are encounetered.
-	Button *tool_button;
+	Button *tool_button = nullptr;
 
 	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try trigger a save, which happens during loading).
-	Timer *save_state_timer;
+	Timer *save_state_timer = nullptr;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 

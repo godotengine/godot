@@ -89,7 +89,7 @@ class PopupMenu : public Popup {
 	bool close_allowed = false;
 
 	Timer *minimum_lifetime_timer = nullptr;
-	Timer *submenu_timer;
+	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
 	MouseButton initial_button_mask = MouseButton::NONE;
@@ -125,9 +125,9 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
-	MarginContainer *margin_container;
-	ScrollContainer *scroll_container;
-	Control *control;
+	MarginContainer *margin_container = nullptr;
+	ScrollContainer *scroll_container = nullptr;
+	Control *control = nullptr;
 
 	void _draw_items();
 	void _draw_background();

@@ -39,7 +39,7 @@ class Noise : public Resource {
 	// Helper struct for get_seamless_image(). See comments in .cpp for usage.
 	template <typename T>
 	struct img_buff {
-		T *img;
+		T *img = nullptr;
 		int width; // Array dimensions & default modulo for image.
 		int height;
 		int offset_x; // Offset index location on image (wrapped by specified modulo).

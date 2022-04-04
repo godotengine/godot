@@ -64,7 +64,7 @@ public:
 		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
 		uint8_t md5[16];
-		PackSource *src;
+		PackSource *src = nullptr;
 		bool encrypted;
 	};
 
@@ -103,7 +103,7 @@ private:
 
 	Vector<PackSource *> sources;
 
-	PackedDir *root;
+	PackedDir *root = nullptr;
 
 	static PackedData *singleton;
 	bool disabled = false;
@@ -150,7 +150,7 @@ class FileAccessPack : public FileAccess {
 	mutable bool eof;
 	uint64_t off;
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 	virtual Error _open(const String &p_path, int p_mode_flags);
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }

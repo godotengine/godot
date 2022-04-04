@@ -39,8 +39,8 @@
 class PhysicalBone3DEditor : public Object {
 	GDCLASS(PhysicalBone3DEditor, Object);
 
-	HBoxContainer *spatial_editor_hb;
-	Button *button_transform_joint;
+	HBoxContainer *spatial_editor_hb = nullptr;
+	Button *button_transform_joint = nullptr;
 
 	PhysicalBone3D *selected = nullptr;
 

@@ -102,8 +102,8 @@ public:
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 	String function;
 
 	void _update_search();
@@ -242,55 +242,55 @@ class ScriptEditor : public PanelContainer {
 		DISPLAY_FULL_PATH,
 	};
 
-	HBoxContainer *menu_hb;
-	MenuButton *file_menu;
-	MenuButton *edit_menu;
-	MenuButton *script_search_menu;
-	MenuButton *debug_menu;
-	PopupMenu *context_menu;
-	Timer *autosave_timer;
+	HBoxContainer *menu_hb = nullptr;
+	MenuButton *file_menu = nullptr;
+	MenuButton *edit_menu = nullptr;
+	MenuButton *script_search_menu = nullptr;
+	MenuButton *debug_menu = nullptr;
+	PopupMenu *context_menu = nullptr;
+	Timer *autosave_timer = nullptr;
 	uint64_t idle;
 
-	PopupMenu *recent_scripts;
-	PopupMenu *theme_submenu;
+	PopupMenu *recent_scripts = nullptr;
+	PopupMenu *theme_submenu = nullptr;
 
-	Button *help_search;
-	Button *site_search;
-	EditorHelpSearch *help_search_dialog;
+	Button *help_search = nullptr;
+	Button *site_search = nullptr;
+	EditorHelpSearch *help_search_dialog = nullptr;
 
-	ItemList *script_list;
-	HSplitContainer *script_split;
-	ItemList *members_overview;
-	LineEdit *filter_scripts;
-	LineEdit *filter_methods;
-	VBoxContainer *scripts_vbox;
-	VBoxContainer *overview_vbox;
-	HBoxContainer *buttons_hbox;
-	Label *filename;
-	Button *members_overview_alphabeta_sort_button;
+	ItemList *script_list = nullptr;
+	HSplitContainer *script_split = nullptr;
+	ItemList *members_overview = nullptr;
+	LineEdit *filter_scripts = nullptr;
+	LineEdit *filter_methods = nullptr;
+	VBoxContainer *scripts_vbox = nullptr;
+	VBoxContainer *overview_vbox = nullptr;
+	HBoxContainer *buttons_hbox = nullptr;
+	Label *filename = nullptr;
+	Button *members_overview_alphabeta_sort_button = nullptr;
 	bool members_overview_enabled;
-	ItemList *help_overview;
+	ItemList *help_overview = nullptr;
 	bool help_overview_enabled;
-	VSplitContainer *list_split;
-	TabContainer *tab_container;
-	EditorFileDialog *file_dialog;
-	AcceptDialog *error_dialog;
-	ConfirmationDialog *erase_tab_confirm;
-	ScriptCreateDialog *script_create_dialog;
-	Button *scripts_visible;
-	FindReplaceBar *find_replace_bar;
+	VSplitContainer *list_split = nullptr;
+	TabContainer *tab_container = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
+	AcceptDialog *error_dialog = nullptr;
+	ConfirmationDialog *erase_tab_confirm = nullptr;
+	ScriptCreateDialog *script_create_dialog = nullptr;
+	Button *scripts_visible = nullptr;
+	FindReplaceBar *find_replace_bar = nullptr;
 
 	String current_theme;
 
-	TextureRect *script_icon;
-	Label *script_name_label;
+	TextureRect *script_icon = nullptr;
+	Label *script_name_label = nullptr;
 
-	Button *script_back;
-	Button *script_forward;
+	Button *script_back = nullptr;
+	Button *script_forward = nullptr;
 
-	FindInFilesDialog *find_in_files_dialog;
-	FindInFilesPanel *find_in_files;
-	Button *find_in_files_button;
+	FindInFilesDialog *find_in_files_dialog = nullptr;
+	FindInFilesPanel *find_in_files = nullptr;
+	Button *find_in_files_button = nullptr;
 
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
@@ -320,8 +320,8 @@ class ScriptEditor : public PanelContainer {
 	bool _has_script_tab() const;
 	void _prepare_file_menu();
 
-	Tree *disk_changed_list;
-	ConfirmationDialog *disk_changed;
+	Tree *disk_changed_list = nullptr;
+	ConfirmationDialog *disk_changed = nullptr;
 
 	bool restoring_layout;
 
@@ -361,7 +361,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _update_selected_editor_menu();
 
-	EditorScriptCodeCompletionCache *completion_cache;
+	EditorScriptCodeCompletionCache *completion_cache = nullptr;
 
 	void _editor_stop();
 
@@ -528,7 +528,7 @@ public:
 class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
-	ScriptEditor *script_editor;
+	ScriptEditor *script_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "Script"; }

@@ -66,7 +66,7 @@ private:
 	struct GLDisplay {
 		GLDisplay() { context = nullptr; }
 		~GLDisplay();
-		GLManager_X11_Private *context;
+		GLManager_X11_Private *context = nullptr;
 		::Display *x11_display;
 		XVisualInfo x_vi;
 		XSetWindowAttributes x_swa;
@@ -82,7 +82,7 @@ private:
 	LocalVector<GLWindow> _windows;
 	LocalVector<GLDisplay> _displays;
 
-	GLWindow *_current_window;
+	GLWindow *_current_window = nullptr;
 
 	void _internal_set_current_window(GLWindow *p_win);
 

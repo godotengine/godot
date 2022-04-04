@@ -328,7 +328,7 @@ protected:
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 

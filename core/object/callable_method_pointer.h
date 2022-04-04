@@ -38,7 +38,7 @@
 #include "core/variant/callable.h"
 
 class CallableCustomMethodPointerBase : public CallableCustom {
-	uint32_t *comp_ptr;
+	uint32_t *comp_ptr = nullptr;
 	uint32_t comp_size;
 	uint32_t h;
 #ifdef DEBUG_METHODS_ENABLED

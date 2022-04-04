@@ -51,7 +51,7 @@ private:
 
 	Ref<SceneReplicationConfig> config;
 	NodePath deleting;
-	Tree *tree;
+	Tree *tree = nullptr;
 	bool keying = false;
 
 	Ref<Texture2D> _get_class_icon(const Node *p_node);
@@ -84,7 +84,7 @@ class ReplicationEditorPlugin : public EditorPlugin {
 	GDCLASS(ReplicationEditorPlugin, EditorPlugin);
 
 private:
-	ReplicationEditor *repl_editor;
+	ReplicationEditor *repl_editor = nullptr;
 
 	void _node_removed(Node *p_node);
 	void _keying_changed();

@@ -71,7 +71,7 @@ public:
 class RegEx : public RefCounted {
 	GDCLASS(RegEx, RefCounted);
 
-	void *general_ctx;
+	void *general_ctx = nullptr;
 	void *code = nullptr;
 	String pattern;
 

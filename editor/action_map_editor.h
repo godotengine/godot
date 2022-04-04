@@ -63,24 +63,24 @@ private:
 
 	Ref<InputEvent> event = Ref<InputEvent>();
 
-	TabContainer *tab_container;
+	TabContainer *tab_container = nullptr;
 
 	// Listening for input
-	Label *event_as_text;
-	ColorRect *mouse_detection_rect;
+	Label *event_as_text = nullptr;
+	ColorRect *mouse_detection_rect = nullptr;
 
 	// List of All Key/Mouse/Joypad input options.
 	int allowed_input_types;
-	Tree *input_list_tree;
-	LineEdit *input_list_search;
+	Tree *input_list_tree = nullptr;
+	LineEdit *input_list_search = nullptr;
 
 	// Additional Options, shown depending on event selected
-	VBoxContainer *additional_options_container;
+	VBoxContainer *additional_options_container = nullptr;
 
-	HBoxContainer *device_container;
-	OptionButton *device_id_option;
+	HBoxContainer *device_container = nullptr;
+	OptionButton *device_id_option = nullptr;
 
-	HBoxContainer *mod_container; // Contains the subcontainer and the store command checkbox.
+	HBoxContainer *mod_container = nullptr; // Contains the subcontainer and the store command checkbox.
 
 	enum ModCheckbox {
 		MOD_ALT,
@@ -93,9 +93,9 @@ private:
 	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Ctrl", "Metakey" };
 
 	CheckBox *mod_checkboxes[MOD_MAX];
-	CheckBox *store_command_checkbox;
+	CheckBox *store_command_checkbox = nullptr;
 
-	CheckBox *physical_key_checkbox;
+	CheckBox *physical_key_checkbox = nullptr;
 
 	void _set_event(const Ref<InputEvent> &p_event);
 
@@ -149,7 +149,7 @@ private:
 	};
 
 	Vector<ActionInfo> actions_cache;
-	Tree *action_tree;
+	Tree *action_tree = nullptr;
 
 	// Storing which action/event is currently being edited in the InputEventConfigurationDialog.
 
@@ -159,17 +159,17 @@ private:
 
 	// Popups
 
-	InputEventConfigurationDialog *event_config_dialog;
-	AcceptDialog *message;
+	InputEventConfigurationDialog *event_config_dialog = nullptr;
+	AcceptDialog *message = nullptr;
 
 	// Filtering and Adding actions
 
 	bool show_builtin_actions = false;
-	CheckButton *show_builtin_actions_checkbutton;
-	LineEdit *action_list_search;
+	CheckButton *show_builtin_actions_checkbutton = nullptr;
+	LineEdit *action_list_search = nullptr;
 
-	HBoxContainer *add_hbox;
-	LineEdit *add_edit;
+	HBoxContainer *add_hbox = nullptr;
+	LineEdit *add_edit = nullptr;
 
 	void _event_config_confirmed();
 

@@ -43,24 +43,24 @@ private:
 	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	TileMapCell from;
 	TileMapCell to;
 
 	// GUI
-	ItemList *source_level_list;
-	ItemList *coords_level_list;
-	ItemList *alternative_level_list;
+	ItemList *source_level_list = nullptr;
+	ItemList *coords_level_list = nullptr;
+	ItemList *alternative_level_list = nullptr;
 
-	EditorPropertyInteger *source_from_property_editor;
-	EditorPropertyVector2i *coords_from_property_editor;
-	EditorPropertyInteger *alternative_from_property_editor;
-	EditorPropertyInteger *source_to_property_editor;
-	EditorPropertyVector2i *coords_to_property_editor;
-	EditorPropertyInteger *alternative_to_property_editor;
+	EditorPropertyInteger *source_from_property_editor = nullptr;
+	EditorPropertyVector2i *coords_from_property_editor = nullptr;
+	EditorPropertyInteger *alternative_from_property_editor = nullptr;
+	EditorPropertyInteger *source_to_property_editor = nullptr;
+	EditorPropertyVector2i *coords_to_property_editor = nullptr;
+	EditorPropertyInteger *alternative_to_property_editor = nullptr;
 
-	PopupMenu *popup_menu;
+	PopupMenu *popup_menu = nullptr;
 	void _right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list);
 	void _menu_id_pressed(int p_id);
 	void _delete_selected_bindings();

@@ -43,32 +43,32 @@
 class GroupDialog : public AcceptDialog {
 	GDCLASS(GroupDialog, AcceptDialog);
 
-	ConfirmationDialog *error;
+	ConfirmationDialog *error = nullptr;
 
-	SceneTree *scene_tree;
-	TreeItem *groups_root;
+	SceneTree *scene_tree = nullptr;
+	TreeItem *groups_root = nullptr;
 
-	LineEdit *add_group_text;
-	Button *add_group_button;
+	LineEdit *add_group_text = nullptr;
+	Button *add_group_button = nullptr;
 
-	Tree *groups;
+	Tree *groups = nullptr;
 
-	Tree *nodes_to_add;
-	TreeItem *add_node_root;
-	LineEdit *add_filter;
+	Tree *nodes_to_add = nullptr;
+	TreeItem *add_node_root = nullptr;
+	LineEdit *add_filter = nullptr;
 
-	Tree *nodes_to_remove;
-	TreeItem *remove_node_root;
-	LineEdit *remove_filter;
+	Tree *nodes_to_remove = nullptr;
+	TreeItem *remove_node_root = nullptr;
+	LineEdit *remove_filter = nullptr;
 
-	Label *group_empty;
+	Label *group_empty = nullptr;
 
-	Button *add_button;
-	Button *remove_button;
+	Button *add_button = nullptr;
+	Button *remove_button = nullptr;
 
 	String selected_group;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void _group_selected();
 
@@ -111,15 +111,15 @@ public:
 class GroupsEditor : public VBoxContainer {
 	GDCLASS(GroupsEditor, VBoxContainer);
 
-	Node *node;
+	Node *node = nullptr;
 
-	GroupDialog *group_dialog;
+	GroupDialog *group_dialog = nullptr;
 
-	LineEdit *group_name;
-	Button *add;
-	Tree *tree;
+	LineEdit *group_name = nullptr;
+	Button *add = nullptr;
+	Tree *tree = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void update_tree();
 	void _add_group(const String &p_group = "");

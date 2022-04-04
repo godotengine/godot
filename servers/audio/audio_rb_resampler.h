@@ -55,8 +55,8 @@ struct AudioRBResampler {
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
 
-	float *read_buf;
-	float *rb;
+	float *read_buf = nullptr;
+	float *rb = nullptr;
 
 	template <int C>
 	uint32_t _resample(AudioFrame *p_dest, int p_todo, int32_t p_increment);

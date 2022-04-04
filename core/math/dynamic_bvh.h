@@ -183,7 +183,7 @@ private:
 		Node *parent = nullptr;
 		union {
 			Node *childs[2];
-			void *data;
+			void *data = nullptr;
 		};
 
 		_FORCE_INLINE_ bool is_leaf() const { return childs[1] == nullptr; }
@@ -215,10 +215,7 @@ private:
 			return axis.dot(volume.get_center() - org) <= 0;
 		}
 
-		Node() {
-			childs[0] = nullptr;
-			childs[1] = nullptr;
-		}
+		Node() {}
 	};
 
 	PagedAllocator<Node> node_allocator;

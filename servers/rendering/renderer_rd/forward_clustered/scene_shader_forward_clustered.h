@@ -42,7 +42,7 @@ private:
 	static SceneShaderForwardClustered *singleton;
 
 public:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
@@ -199,7 +199,7 @@ public:
 	}
 
 	struct MaterialData : public RendererRD::MaterialData {
-		ShaderData *shader_data;
+		ShaderData *shader_data = nullptr;
 		RID uniform_set;
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
