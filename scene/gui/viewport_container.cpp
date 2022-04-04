@@ -147,7 +147,7 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_global_transform_with_canvas();
 
 	if (stretch) {
 		Transform2D scale_xf;
@@ -174,7 +174,7 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_global_transform_with_canvas();
 
 	if (stretch) {
 		Transform2D scale_xf;
