@@ -116,8 +116,12 @@ public:
 #define BIND4RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4) \
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
 
+#define BIND0N(m_name) \
+	void m_name() { BINDBASE->m_name(); }
 #define BIND1(m_name, m_type1) \
 	void m_name(m_type1 arg1) { DISPLAY_CHANGED BINDBASE->m_name(arg1); }
+#define BIND1N(m_name, m_type1) \
+	void m_name(m_type1 arg1) { BINDBASE->m_name(arg1); }
 #define BIND2(m_name, m_type1, m_type2) \
 	void m_name(m_type1 arg1, m_type2 arg2) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2); }
 #define BIND2C(m_name, m_type1, m_type2) \
@@ -448,10 +452,14 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene
 
+	/* EVENT QUEUING */
+
+	BIND0N(tick)
+	BIND1N(pre_draw, bool)
+
 	/* CAMERA API */
 
 	BIND0R(RID, camera_create)
-	BIND2(camera_set_scenario, RID, RID)
 	BIND4(camera_set_perspective, RID, float, float, float)
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
@@ -548,10 +556,14 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
-	/* SCENARIO API */
-
 #undef BINDBASE
 #define BINDBASE VSG::scene
+
+	/* INTERPOLATION */
+
+	BIND1(set_physics_interpolation_enabled, bool)
+
+	/* SCENARIO API */
 
 	BIND0R(RID, scenario_create)
 
@@ -559,9 +571,9 @@ public:
 	BIND2(scenario_set_environment, RID, RID)
 	BIND3(scenario_set_reflection_atlas_size, RID, int, int)
 	BIND2(scenario_set_fallback_environment, RID, RID)
-	BIND2(scenario_set_physics_interpolation_enabled, RID, bool)
 
 	/* INSTANCING API */
+
 	BIND0R(RID, instance_create)
 
 	BIND2(instance_set_base, RID, RID)
@@ -583,7 +595,8 @@ public:
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 
-	// Portals
+	/* PORTALS */
+
 	BIND2(instance_set_portal_mode, RID, InstancePortalMode)
 
 	BIND0R(RID, ghost_create)
@@ -596,13 +609,15 @@ public:
 	BIND4(portal_link, RID, RID, RID, bool)
 	BIND2(portal_set_active, RID, bool)
 
-	// Roomgroups
+	/* ROOMGROUPS */
+
 	BIND0R(RID, roomgroup_create)
 	BIND2(roomgroup_prepare, RID, ObjectID)
 	BIND2(roomgroup_set_scenario, RID, RID)
 	BIND2(roomgroup_add_room, RID, RID)
 
-	// Occluders
+	/* OCCLUDERS */
+
 	BIND0R(RID, occluder_instance_create)
 	BIND2(occluder_instance_set_scenario, RID, RID)
 	BIND2(occluder_instance_link_resource, RID, RID)
@@ -616,7 +631,8 @@ public:
 	BIND1(set_use_occlusion_culling, bool)
 	BIND1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
 
-	// Rooms
+	/* ROOMS */
+
 	BIND0R(RID, room_create)
 	BIND2(room_set_scenario, RID, RID)
 	BIND4(room_add_instance, RID, RID, const AABB &, const Vector<Vector3> &)
@@ -764,8 +780,6 @@ public:
 	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const;
 	virtual void init();
 	virtual void finish();
-	virtual void scenario_tick(RID p_scenario);
-	virtual void scenario_pre_draw(RID p_scenario, bool p_will_draw);
 
 	/* STATUS INFORMATION */
 

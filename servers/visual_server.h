@@ -619,7 +619,6 @@ public:
 	/* CAMERA API */
 
 	virtual RID camera_create() = 0;
-	virtual void camera_set_scenario(RID p_camera, RID p_scenario) = 0;
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) = 0;
@@ -821,6 +820,10 @@ public:
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
 
+	/* INTERPOLATION API */
+
+	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
+
 	/* SCENARIO API */
 
 	virtual RID scenario_create() = 0;
@@ -837,7 +840,6 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size, int p_subdiv) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
-	virtual void scenario_set_physics_interpolation_enabled(RID p_scenario, bool p_enabled) = 0;
 
 	/* INSTANCING API */
 
@@ -881,8 +883,8 @@ public:
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
 
-	/* ROOMS AND PORTALS API */
-	// Portals
+	/* PORTALS API */
+
 	enum InstancePortalMode {
 		INSTANCE_PORTAL_MODE_STATIC, // not moving within a room
 		INSTANCE_PORTAL_MODE_DYNAMIC, //  moving within room
@@ -903,13 +905,15 @@ public:
 	virtual void portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way) = 0;
 	virtual void portal_set_active(RID p_portal, bool p_active) = 0;
 
-	// Roomgroups
+	/* ROOMGROUPS API */
+
 	virtual RID roomgroup_create() = 0;
 	virtual void roomgroup_prepare(RID p_roomgroup, ObjectID p_roomgroup_object_id) = 0;
 	virtual void roomgroup_set_scenario(RID p_roomgroup, RID p_scenario) = 0;
 	virtual void roomgroup_add_room(RID p_roomgroup, RID p_room) = 0;
 
-	// Occluders
+	/* OCCLUDERS API */
+
 	enum OccluderType {
 		OCCLUDER_TYPE_UNDEFINED,
 		OCCLUDER_TYPE_SPHERE,
@@ -931,7 +935,8 @@ public:
 	virtual void set_use_occlusion_culling(bool p_enable) = 0;
 	virtual Geometry::MeshData occlusion_debug_get_current_polys(RID p_scenario) const = 0;
 
-	// Rooms
+	/* ROOMS API */
+
 	enum RoomsDebugFeature {
 		ROOMS_DEBUG_SPRAWL,
 	};
@@ -1131,8 +1136,8 @@ public:
 	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init() = 0;
 	virtual void finish() = 0;
-	virtual void scenario_tick(RID p_scenario) = 0;
-	virtual void scenario_pre_draw(RID p_scenario, bool p_will_draw) = 0;
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	/* STATUS INFORMATION */
 
