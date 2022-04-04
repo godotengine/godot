@@ -250,11 +250,11 @@ TypedArray<String> LightOccluder2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!occluder_polygon.is_valid()) {
-		warnings.push_back(TTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
+		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		warnings.push_back(TTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
+		warnings.push_back(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 
 	return warnings;

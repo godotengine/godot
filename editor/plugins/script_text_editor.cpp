@@ -684,12 +684,12 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 }
 
-void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
 	ste->_code_complete_script(p_code, r_options, r_force);
 }
 
-void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	if (color_panel->is_visible()) {
 		return;
 	}
@@ -699,6 +699,9 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 	}
 	String hint;
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+
+	r_options->sort_custom_inplace<CodeCompletionOptionCompare>();
+
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
 	}
@@ -771,7 +774,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		_goto_line(p_row);
 
 		switch (result.type) {
-			case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
+			case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION: {
 				if (result.script.is_valid()) {
 					emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
 				} else {
@@ -779,10 +782,10 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					goto_line_centered(result.location - 1);
 				}
 			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS: {
+			case ScriptLanguage::LOOKUP_RESULT_CLASS: {
 				emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
 			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT: {
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
 				StringName cname = result.class_name;
 				bool success;
 				while (true) {
@@ -798,11 +801,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal(SNAME("go_to_help"), "class_constant:" + result.class_name + ":" + result.class_member);
 
 			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY: {
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
 				emit_signal(SNAME("go_to_help"), "class_property:" + result.class_name + ":" + result.class_member);
 
 			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_METHOD: {
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD: {
 				StringName cname = result.class_name;
 
 				while (true) {
@@ -817,7 +820,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal(SNAME("go_to_help"), "class_method:" + result.class_name + ":" + result.class_member);
 
 			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_ENUM: {
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
 				StringName cname = result.class_name;
 				StringName success;
 				while (true) {
@@ -833,9 +836,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
 
 			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE: {
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: {
 				emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
 			} break;
+			default: {
+			}
 		}
 	} else if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
 		// Check for Autoload scenes.

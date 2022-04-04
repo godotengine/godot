@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 
 #include "openxr_action.h"
+#include "openxr_defs.h"
 
 class OpenXRIPBinding : public Resource {
 	GDCLASS(OpenXRIPBinding, Resource);
@@ -46,15 +47,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> p_action, const char *p_paths);
+	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> p_action, const char *p_paths); // Helper function for adding a new binding
 
-	void set_action(const Ref<OpenXRAction> p_action);
-	Ref<OpenXRAction> get_action() const;
+	void set_action(const Ref<OpenXRAction> p_action); // Set the action for this binding
+	Ref<OpenXRAction> get_action() const; // Get the action for this binding
 
-	void set_paths(const PackedStringArray p_paths);
-	PackedStringArray get_paths() const;
+	int get_path_count() const; // Get the number of io paths
+	void set_paths(const PackedStringArray p_paths); // Set our paths (for loading from resource)
+	PackedStringArray get_paths() const; // Get our paths (for saving to resource)
 
-	void parse_paths(const String p_paths);
+	void parse_paths(const String p_paths); // Parse a comma separated string of io paths.
+
+	bool has_path(const String p_path) const; // Has this io path
+	void add_path(const String p_path); // Add an io path
+	void remove_path(const String p_path); // Remove an io path
+
+	// TODO add validation that we can display in the interface that checks if no two paths belong to the same top level path
 
 	~OpenXRIPBinding();
 };
@@ -70,18 +78,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<OpenXRInteractionProfile> new_profile(const char *p_input_profile_path);
+	static Ref<OpenXRInteractionProfile> new_profile(const char *p_input_profile_path); // Helper function to create a new interaction profile
 
-	void set_interaction_profile_path(const String p_input_profile_path);
-	String get_interaction_profile_path() const;
+	void set_interaction_profile_path(const String p_input_profile_path); // Set our input profile path
+	String get_interaction_profile_path() const; // get our input profile path
 
-	void set_bindings(Array p_bindings);
-	Array get_bindings() const;
+	int get_binding_count() const; // Retrieve the number of bindings in this profile path
+	Ref<OpenXRIPBinding> get_binding(int p_index) const;
+	void set_bindings(Array p_bindings); // Set the bindings (for loading from a resource)
+	Array get_bindings() const; // Get the bindings (for saving to a resource)
 
-	void add_binding(Ref<OpenXRIPBinding> p_binding);
-	void remove_binding(Ref<OpenXRIPBinding> p_binding);
+	Ref<OpenXRIPBinding> get_binding_for_action(const Ref<OpenXRAction> p_action) const; // Get our binding record for a given action
+	void add_binding(Ref<OpenXRIPBinding> p_binding); // Add a binding object
+	void remove_binding(Ref<OpenXRIPBinding> p_binding); // Remove a binding object
 
-	void add_new_binding(const Ref<OpenXRAction> p_action, const char *p_paths);
+	void add_new_binding(const Ref<OpenXRAction> p_action, const char *p_paths); // Create a new binding for this profile
+	void remove_binding_for_action(const Ref<OpenXRAction> p_action); // Remove all bindings for this action
 
 	~OpenXRInteractionProfile();
 };

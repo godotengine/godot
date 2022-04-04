@@ -36,113 +36,6 @@
 
 class RasterizerStorageDummy : public RendererStorage {
 public:
-	/* SHADER API */
-
-	RID shader_allocate() override { return RID(); }
-	void shader_initialize(RID p_rid) override {}
-	void shader_set_code(RID p_shader, const String &p_code) override {}
-	String shader_get_code(RID p_shader) const override { return ""; }
-	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
-
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override {}
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override { return RID(); }
-	Variant shader_get_param_default(RID p_material, const StringName &p_param) const override { return Variant(); }
-
-	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
-
-	/* COMMON MATERIAL API */
-
-	RID material_allocate() override { return RID(); }
-	void material_initialize(RID p_rid) override {}
-	void material_set_render_priority(RID p_material, int priority) override {}
-	void material_set_shader(RID p_shader_material, RID p_shader) override {}
-
-	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override {}
-	Variant material_get_param(RID p_material, const StringName &p_param) const override { return Variant(); }
-
-	void material_set_next_pass(RID p_material, RID p_next_material) override {}
-
-	bool material_is_animated(RID p_material) override { return false; }
-	bool material_casts_shadows(RID p_material) override { return false; }
-	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
-
-	/* MESH API */
-
-	RID mesh_allocate() override { return RID(); }
-	void mesh_initialize(RID p_rid) override {}
-	void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override {}
-	bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override { return false; }
-	RID mesh_instance_create(RID p_base) override { return RID(); }
-	void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override {}
-	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override {}
-	void mesh_instance_check_for_update(RID p_mesh_instance) override {}
-	void update_mesh_instances() override {}
-	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override {}
-	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override { return 0.0; }
-
-	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {}
-
-	int mesh_get_blend_shape_count(RID p_mesh) const override { return 0; }
-
-	void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {}
-	RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override { return RS::BLEND_SHAPE_MODE_NORMALIZED; }
-
-	void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
-	void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
-	void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
-
-	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
-	RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
-
-	RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override { return RS::SurfaceData(); }
-	int mesh_get_surface_count(RID p_mesh) const override { return 0; }
-
-	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override {}
-	AABB mesh_get_custom_aabb(RID p_mesh) const override { return AABB(); }
-
-	AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override { return AABB(); }
-	void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
-	void mesh_clear(RID p_mesh) override {}
-
-	/* MULTIMESH API */
-
-	RID multimesh_allocate() override { return RID(); }
-	void multimesh_initialize(RID p_rid) override {}
-	void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override {}
-	int multimesh_get_instance_count(RID p_multimesh) const override { return 0; }
-
-	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) override {}
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) override {}
-	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) override {}
-	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) override {}
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override {}
-
-	RID multimesh_get_mesh(RID p_multimesh) const override { return RID(); }
-	AABB multimesh_get_aabb(RID p_multimesh) const override { return AABB(); }
-
-	Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const override { return Transform3D(); }
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const override { return Transform2D(); }
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const override { return Color(); }
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const override { return Color(); }
-	void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override {}
-	Vector<float> multimesh_get_buffer(RID p_multimesh) const override { return Vector<float>(); }
-
-	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override {}
-	int multimesh_get_visible_instances(RID p_multimesh) const override { return 0; }
-
-	/* SKELETON API */
-
-	RID skeleton_allocate() override { return RID(); }
-	void skeleton_initialize(RID p_rid) override {}
-	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override {}
-	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) override {}
-	int skeleton_get_bone_count(RID p_skeleton) const override { return 0; }
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) override {}
-	Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override { return Transform3D(); }
-	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override {}
-	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override { return Transform2D(); }
-
 	/* Light API */
 
 	RID directional_light_allocate() override { return RID(); }
@@ -202,6 +95,8 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override {}
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override {}
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution) override {}
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override {}
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
@@ -212,7 +107,6 @@ public:
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
 
 	void base_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
-	void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
 
 	/* VOXEL GI API */
 
@@ -352,6 +246,8 @@ public:
 	void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override {}
 	void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override {}
 
+	bool particles_is_inactive(RID p_particles) const override { return false; }
+
 	/* FOG VOLUMES */
 
 	RID fog_volume_allocate() override { return RID(); }
@@ -371,26 +267,6 @@ public:
 
 	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const override { return AABB(); }
 	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override {}
-
-	/* GLOBAL VARIABLES */
-
-	void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) override {}
-	void global_variable_remove(const StringName &p_name) override {}
-	Vector<StringName> global_variable_get_list() const override { return Vector<StringName>(); }
-
-	void global_variable_set(const StringName &p_name, const Variant &p_value) override {}
-	void global_variable_set_override(const StringName &p_name, const Variant &p_value) override {}
-	Variant global_variable_get(const StringName &p_name) const override { return Variant(); }
-	RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const override { return RS::GLOBAL_VAR_TYPE_MAX; }
-
-	void global_variables_load_settings(bool p_load_textures = true) override {}
-	void global_variables_clear() override {}
-
-	int32_t global_variables_instance_allocate(RID p_instance) override { return 0; }
-	void global_variables_instance_free(RID p_instance) override {}
-	void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) override {}
-
-	bool particles_is_inactive(RID p_particles) const override { return false; }
 
 	/* RENDER TARGET */
 

@@ -48,8 +48,6 @@ _helper_module("methods", "methods.py")
 _helper_module("platform_methods", "platform_methods.py")
 _helper_module("version", "version.py")
 _helper_module("core.core_builders", "core/core_builders.py")
-_helper_module("editor.editor_builders", "editor/editor_builders.py")
-_helper_module("editor.template_builders", "editor/template_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("modules.modules_builders", "modules/modules_builders.py")
 
@@ -57,6 +55,10 @@ _helper_module("modules.modules_builders", "modules/modules_builders.py")
 import methods
 import glsl_builders
 import gles3_builders
+
+if methods.get_cmdline_bool("tools", True):
+    _helper_module("editor.editor_builders", "editor/editor_builders.py")
+    _helper_module("editor.template_builders", "editor/template_builders.py")
 
 # Scan possible build platforms
 

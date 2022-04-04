@@ -202,9 +202,9 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		// TODO
-		static Vector<DocData::ClassDoc> docs;
+		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
 #endif // TOOLS_ENABLED

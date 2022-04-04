@@ -1732,8 +1732,15 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 
 	if (result == Success && data) {
 		Atom *atoms = (Atom *)data;
-		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
-		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		Atom wm_act_max_horz;
+		Atom wm_act_max_vert;
+		if (strcmp(p_atom_name, "_NET_WM_STATE") == 0) {
+			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+		} else {
+			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
+			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		}
 		bool found_wm_act_max_horz = false;
 		bool found_wm_act_max_vert = false;
 

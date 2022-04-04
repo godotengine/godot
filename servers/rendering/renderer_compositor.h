@@ -36,6 +36,8 @@
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/storage/canvas_texture_storage.h"
 #include "servers/rendering/storage/decal_atlas_storage.h"
+#include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering_server.h"
 
@@ -74,6 +76,8 @@ public:
 	static RendererCompositor *create();
 
 	virtual RendererCanvasTextureStorage *get_canvas_texture_storage() = 0;
+	virtual RendererMaterialStorage *get_material_storage() = 0;
+	virtual RendererMeshStorage *get_mesh_storage() = 0;
 	virtual RendererTextureStorage *get_texture_storage() = 0;
 	virtual RendererDecalAtlasStorage *get_decal_atlas_storage() = 0;
 	virtual RendererStorage *get_storage() = 0;

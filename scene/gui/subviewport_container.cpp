@@ -176,7 +176,7 @@ void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_global_transform_with_canvas();
 
 	if (stretch) {
 		Transform2D scale_xf;
@@ -203,7 +203,7 @@ void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_global_transform_with_canvas();
 
 	if (stretch) {
 		Transform2D scale_xf;
@@ -234,7 +234,7 @@ TypedArray<String> SubViewportContainer::get_configuration_warnings() const {
 		}
 	}
 	if (!has_viewport) {
-		warnings.push_back(TTR("This node doesn't have a SubViewport as child, so it can't display its intended content.\nConsider adding a SubViewport as a child to provide something displayable."));
+		warnings.push_back(RTR("This node doesn't have a SubViewport as child, so it can't display its intended content.\nConsider adding a SubViewport as a child to provide something displayable."));
 	}
 
 	return warnings;

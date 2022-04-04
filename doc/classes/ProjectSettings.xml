@@ -512,7 +512,7 @@
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
-			[b]Note:[/b] This setting is ignored on iOS and Android.
+			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height.
@@ -552,6 +552,14 @@
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
+		</member>
+		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
+			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
+		</member>
+		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
+			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
@@ -1915,7 +1923,7 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://default_action_map.tres&quot;">
+		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
@@ -1928,7 +1936,7 @@
 			Specify the default reference space.
 		</member>
 		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
-			Specify the view configuration with which to configure OpenXR settting up either Mono or Stereo rendering.
+			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.
 		</member>
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.

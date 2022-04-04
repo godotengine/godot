@@ -277,7 +277,7 @@ TypedArray<String> ShaderGlobalsOverride::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!active) {
-		warnings.push_back(TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
+		warnings.push_back(RTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
 	}
 
 	return warnings;

@@ -42,18 +42,17 @@
 #include "servers/rendering/shader_language.h"
 #include "storage/canvas_texture_storage.h"
 #include "storage/config.h"
+#include "storage/material_storage.h"
 #include "storage/render_target_storage.h"
 #include "storage/texture_storage.h"
 
-#include "shaders/copy.glsl.gen.h"
-
-class RasterizerCanvasGLES3;
-class RasterizerSceneGLES3;
+// class RasterizerCanvasGLES3;
+// class RasterizerSceneGLES3;
 
 class RasterizerStorageGLES3 : public RendererStorage {
 public:
-	RasterizerCanvasGLES3 *canvas;
-	RasterizerSceneGLES3 *scene;
+	// RasterizerCanvasGLES3 *canvas;
+	// RasterizerSceneGLES3 *scene;
 
 	static GLuint system_fbo;
 
@@ -78,19 +77,6 @@ public:
 		LocalVector<float> skeleton_transform_cpu_buffer;
 
 	} resources;
-
-	mutable struct Shaders {
-		ShaderCompiler compiler;
-
-		CopyShaderGLES3 copy;
-		RID copy_version;
-		//CubemapFilterShaderGLES3 cubemap_filter;
-
-		ShaderCompiler::IdentifierActions actions_canvas;
-		ShaderCompiler::IdentifierActions actions_scene;
-		ShaderCompiler::IdentifierActions actions_particles;
-
-	} shaders;
 
 	struct Info {
 		uint64_t texture_mem = 0;
@@ -145,368 +131,6 @@ public:
 
 	RID sky_create();
 	void sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size);
-
-	// SHADER API
-
-	struct Material;
-
-	struct Shader {
-		RID self;
-
-		RS::ShaderMode mode;
-		ShaderGLES3 *shader;
-		String code;
-		SelfList<Material>::List materials;
-
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-
-		RID version;
-
-		SelfList<Shader> dirty_list;
-
-		Map<StringName, Map<int, RID>> default_textures;
-
-		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
-
-		bool valid;
-
-		String path;
-
-		uint32_t index;
-		uint64_t last_pass;
-
-		struct CanvasItem {
-			enum BlendMode {
-				BLEND_MODE_MIX,
-				BLEND_MODE_ADD,
-				BLEND_MODE_SUB,
-				BLEND_MODE_MUL,
-				BLEND_MODE_PMALPHA,
-			};
-
-			int blend_mode;
-
-			enum LightMode {
-				LIGHT_MODE_NORMAL,
-				LIGHT_MODE_UNSHADED,
-				LIGHT_MODE_LIGHT_ONLY
-			};
-
-			int light_mode;
-
-			bool uses_screen_texture;
-			bool uses_screen_uv;
-			bool uses_time;
-			bool uses_modulate;
-			bool uses_color;
-			bool uses_vertex;
-
-			// all these should disable item joining if used in a custom shader
-			bool uses_model_matrix;
-			bool uses_extra_matrix;
-			bool uses_projection_matrix;
-			bool uses_instance_custom;
-
-		} canvas_item;
-
-		struct Spatial {
-			enum BlendMode {
-				BLEND_MODE_MIX,
-				BLEND_MODE_ADD,
-				BLEND_MODE_SUB,
-				BLEND_MODE_MUL,
-			};
-
-			int blend_mode;
-
-			enum DepthDrawMode {
-				DEPTH_DRAW_OPAQUE,
-				DEPTH_DRAW_ALWAYS,
-				DEPTH_DRAW_NEVER,
-				DEPTH_DRAW_ALPHA_PREPASS,
-			};
-
-			int depth_draw_mode;
-
-			enum CullMode {
-				CULL_MODE_FRONT,
-				CULL_MODE_BACK,
-				CULL_MODE_DISABLED,
-			};
-
-			int cull_mode;
-
-			bool uses_alpha;
-			bool uses_alpha_scissor;
-			bool unshaded;
-			bool no_depth_test;
-			bool uses_vertex;
-			bool uses_discard;
-			bool uses_sss;
-			bool uses_screen_texture;
-			bool uses_depth_texture;
-			bool uses_time;
-			bool uses_tangent;
-			bool uses_ensure_correct_normals;
-			bool writes_modelview_or_projection;
-			bool uses_vertex_lighting;
-			bool uses_world_coordinates;
-
-		} spatial;
-
-		struct Particles {
-		} particles;
-
-		bool uses_vertex_time;
-		bool uses_fragment_time;
-
-		Shader() :
-				dirty_list(this) {
-			shader = nullptr;
-			valid = false;
-			version = RID();
-			last_pass = 0;
-		}
-	};
-
-	mutable RID_PtrOwner<Shader> shader_owner;
-	mutable SelfList<Shader>::List _shader_dirty_list;
-
-	void _shader_make_dirty(Shader *p_shader);
-
-	RID shader_allocate() override;
-	void shader_initialize(RID p_rid) override;
-
-	//RID shader_create() override;
-
-	void shader_set_code(RID p_shader, const String &p_code) override;
-	String shader_get_code(RID p_shader) const override;
-	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
-
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override;
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override;
-
-	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
-
-	void _update_shader(Shader *p_shader) const;
-	void update_dirty_shaders();
-
-	// new
-	Variant shader_get_param_default(RID p_material, const StringName &p_param) const override { return Variant(); }
-
-	// COMMON MATERIAL API
-
-	struct Material {
-		RID self;
-		Shader *shader;
-		Map<StringName, Variant> params;
-		SelfList<Material> list;
-		SelfList<Material> dirty_list;
-		Vector<Pair<StringName, RID>> textures;
-		float line_width;
-		int render_priority;
-
-		RID next_pass;
-
-		uint32_t index;
-		uint64_t last_pass;
-
-		//		Map<Geometry *, int> geometry_owners;
-		//		Map<InstanceBaseDependency *, int> instance_owners;
-
-		bool can_cast_shadow_cache;
-		bool is_animated_cache;
-
-		Material() :
-				list(this),
-				dirty_list(this) {
-			can_cast_shadow_cache = false;
-			is_animated_cache = false;
-			shader = nullptr;
-			line_width = 1.0;
-			last_pass = 0;
-			render_priority = 0;
-		}
-	};
-
-	mutable SelfList<Material>::List _material_dirty_list;
-	void _material_make_dirty(Material *p_material) const;
-
-	//	void _material_add_geometry(RID p_material, Geometry *p_geometry);
-	//	void _material_remove_geometry(RID p_material, Geometry *p_geometry);
-
-	void _update_material(Material *p_material);
-
-	mutable RID_PtrOwner<Material> material_owner;
-
-	// new
-	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
-
-	// old
-	RID material_allocate() override;
-	void material_initialize(RID p_rid) override;
-
-	//RID material_create() override;
-
-	void material_set_shader(RID p_material, RID p_shader) override;
-	RID material_get_shader(RID p_material) const;
-
-	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override;
-	Variant material_get_param(RID p_material, const StringName &p_param) const override;
-	Variant material_get_param_default(RID p_material, const StringName &p_param) const;
-
-	void material_set_line_width(RID p_material, float p_width);
-	void material_set_next_pass(RID p_material, RID p_next_material) override;
-
-	bool material_is_animated(RID p_material) override;
-	bool material_casts_shadows(RID p_material) override;
-	bool material_uses_tangents(RID p_material);
-	bool material_uses_ensure_correct_normals(RID p_material);
-
-	void material_add_instance_owner(RID p_material, DependencyTracker *p_instance);
-	void material_remove_instance_owner(RID p_material, DependencyTracker *p_instance);
-
-	void material_set_render_priority(RID p_material, int priority) override;
-
-	void update_dirty_materials();
-
-	/* MESH API */
-
-	RID mesh_allocate() override;
-	void mesh_initialize(RID p_rid) override;
-	void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override;
-	bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override;
-	RID mesh_instance_create(RID p_base) override;
-	void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override;
-	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override;
-	void mesh_instance_check_for_update(RID p_mesh_instance) override;
-	void update_mesh_instances() override;
-	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
-	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
-
-	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override;
-
-	int mesh_get_blend_shape_count(RID p_mesh) const override;
-
-	void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override;
-	RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override;
-
-	void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
-	void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
-	void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
-
-	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
-	RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
-
-	RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
-	int mesh_get_surface_count(RID p_mesh) const override;
-
-	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override;
-	AABB mesh_get_custom_aabb(RID p_mesh) const override;
-
-	AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override;
-	void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
-	void mesh_clear(RID p_mesh) override;
-
-	/* MULTIMESH API */
-
-	struct MultiMesh {
-		RID mesh;
-		int instances = 0;
-		RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
-		bool uses_colors = false;
-		bool uses_custom_data = false;
-		int visible_instances = -1;
-		AABB aabb;
-		bool aabb_dirty = false;
-		bool buffer_set = false;
-		uint32_t stride_cache = 0;
-		uint32_t color_offset_cache = 0;
-		uint32_t custom_data_offset_cache = 0;
-
-		Vector<float> data_cache; //used if individual setting is used
-		bool *data_cache_dirty_regions = nullptr;
-		uint32_t data_cache_used_dirty_regions = 0;
-
-		RID buffer; //storage buffer
-		RID uniform_set_3d;
-		RID uniform_set_2d;
-
-		bool dirty = false;
-		MultiMesh *dirty_list = nullptr;
-
-		Dependency dependency;
-	};
-
-	mutable RID_Owner<MultiMesh, true> multimesh_owner;
-
-	MultiMesh *multimesh_dirty_list = nullptr;
-
-	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
-	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
-	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
-	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
-	void _update_dirty_multimeshes();
-
-	RID multimesh_allocate() override;
-	void multimesh_initialize(RID p_rid) override;
-	void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override;
-	int multimesh_get_instance_count(RID p_multimesh) const override;
-
-	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) override;
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) override;
-	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) override;
-	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) override;
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override;
-
-	RID multimesh_get_mesh(RID p_multimesh) const override;
-	AABB multimesh_get_aabb(RID p_multimesh) const override;
-
-	Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const override;
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const override;
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const override;
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const override;
-	void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override;
-	Vector<float> multimesh_get_buffer(RID p_multimesh) const override;
-
-	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
-	int multimesh_get_visible_instances(RID p_multimesh) const override;
-
-	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->xform_format;
-	}
-
-	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->uses_colors;
-	}
-
-	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->uses_custom_data;
-	}
-
-	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		if (multimesh->visible_instances >= 0) {
-			return multimesh->visible_instances;
-		}
-		return multimesh->instances;
-	}
-
-	/* SKELETON API */
-
-	RID skeleton_allocate() override;
-	void skeleton_initialize(RID p_rid) override;
-	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override;
-	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) override;
-	int skeleton_get_bone_count(RID p_skeleton) const override;
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) override;
-	Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override;
-	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override;
-	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override;
 
 	/* Light API */
 
@@ -567,6 +191,8 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override;
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override;
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution) override;
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
 	AABB reflection_probe_get_aabb(RID p_probe) const override;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override;
@@ -577,7 +203,6 @@ public:
 	bool reflection_probe_renders_shadows(RID p_probe) const override;
 
 	void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
-	void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	/* VOXEL GI API */
 
@@ -694,6 +319,7 @@ public:
 	void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) override;
 
 	void update_particles() override;
+	bool particles_is_inactive(RID p_particles) const override;
 
 	/* PARTICLES COLLISION */
 
@@ -736,26 +362,6 @@ public:
 
 	AABB visibility_notifier_get_aabb(RID p_notifier) const override;
 	void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override;
-
-	/* GLOBAL VARIABLES */
-
-	void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) override;
-	void global_variable_remove(const StringName &p_name) override;
-	Vector<StringName> global_variable_get_list() const override;
-
-	void global_variable_set(const StringName &p_name, const Variant &p_value) override;
-	void global_variable_set_override(const StringName &p_name, const Variant &p_value) override;
-	Variant global_variable_get(const StringName &p_name) const override;
-	RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const override;
-
-	void global_variables_load_settings(bool p_load_textures = true) override;
-	void global_variables_clear() override;
-
-	int32_t global_variables_instance_allocate(RID p_instance) override;
-	void global_variables_instance_free(RID p_instance) override;
-	void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) override;
-
-	bool particles_is_inactive(RID p_particles) const override;
 
 	// RENDER TARGET
 

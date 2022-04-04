@@ -997,8 +997,8 @@ void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, con
 	ERR_FAIL_COND(!m);
 	m->mesh = p_mesh;
 	if (canvas_item->skeleton.is_valid()) {
-		m->mesh_instance = RSG::storage->mesh_instance_create(p_mesh);
-		RSG::storage->mesh_instance_set_skeleton(m->mesh_instance, canvas_item->skeleton);
+		m->mesh_instance = RSG::mesh_storage->mesh_instance_create(p_mesh);
+		RSG::mesh_storage->mesh_instance_set_skeleton(m->mesh_instance, canvas_item->skeleton);
 	}
 
 	m->texture = p_texture;
@@ -1093,12 +1093,12 @@ void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton)
 			Item::CommandMesh *cm = static_cast<Item::CommandMesh *>(c);
 			if (canvas_item->skeleton.is_valid()) {
 				if (cm->mesh_instance.is_null()) {
-					cm->mesh_instance = RSG::storage->mesh_instance_create(cm->mesh);
+					cm->mesh_instance = RSG::mesh_storage->mesh_instance_create(cm->mesh);
 				}
-				RSG::storage->mesh_instance_set_skeleton(cm->mesh_instance, canvas_item->skeleton);
+				RSG::mesh_storage->mesh_instance_set_skeleton(cm->mesh_instance, canvas_item->skeleton);
 			} else {
 				if (cm->mesh_instance.is_valid()) {
-					RSG::storage->free(cm->mesh_instance);
+					RSG::mesh_storage->mesh_instance_free(cm->mesh_instance);
 					cm->mesh_instance = RID();
 				}
 			}
@@ -1663,6 +1663,11 @@ bool RendererCanvasCull::free(RID p_rid) {
 			canvas_item->material->owners.erase(canvas_item);
 		}
 		*/
+
+		if (canvas_item->canvas_group != nullptr) {
+			memdelete(canvas_item->canvas_group);
+			canvas_item->canvas_group = nullptr;
+		}
 
 		canvas_item_owner.free(p_rid);
 

@@ -30,6 +30,7 @@
 
 #include "editor_performance_profiler.h"
 
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/performance.h"
@@ -386,8 +387,8 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	monitor_draw->add_child(info_message);
 
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-		String base = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 0).capitalize();
-		String name = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 1).capitalize();
+		String base = EditorPropertyNameProcessor::get_singleton()->process_name(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 0), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+		String name = EditorPropertyNameProcessor::get_singleton()->process_name(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)).get_slicec('/', 1), EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 		monitors.insert(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)), Monitor(name, base, i, Performance::get_singleton()->get_monitor_type(Performance::Monitor(i)), nullptr));
 	}
 

@@ -400,6 +400,8 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::rasterizer = RendererCompositor::create();
 	RSG::canvas_texture_storage = RSG::rasterizer->get_canvas_texture_storage();
 	RSG::decal_atlas_storage = RSG::rasterizer->get_decal_atlas_storage();
+	RSG::material_storage = RSG::rasterizer->get_material_storage();
+	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();

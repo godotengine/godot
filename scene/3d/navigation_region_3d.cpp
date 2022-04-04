@@ -181,7 +181,7 @@ TypedArray<String> NavigationRegion3D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navmesh.is_valid()) {
-			warnings.push_back(TTR("A NavigationMesh resource must be set or created for this node to work."));
+			warnings.push_back(RTR("A NavigationMesh resource must be set or created for this node to work."));
 		}
 	}
 

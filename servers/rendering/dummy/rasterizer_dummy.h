@@ -39,6 +39,8 @@
 #include "servers/rendering/dummy/rasterizer_storage_dummy.h"
 #include "servers/rendering/dummy/storage/canvas_texture_storage.h"
 #include "servers/rendering/dummy/storage/decal_atlas_storage.h"
+#include "servers/rendering/dummy/storage/material_storage.h"
+#include "servers/rendering/dummy/storage/mesh_storage.h"
 #include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
@@ -51,6 +53,8 @@ private:
 protected:
 	RasterizerCanvasDummy canvas;
 	RendererDummy::CanvasTextureStorage canvas_texture_storage;
+	RendererDummy::MaterialStorage material_storage;
+	RendererDummy::MeshStorage mesh_storage;
 	RendererDummy::TextureStorage texture_storage;
 	RendererDummy::DecalAtlasStorage decal_atlas_storage;
 	RasterizerStorageDummy storage;
@@ -58,6 +62,8 @@ protected:
 
 public:
 	RendererCanvasTextureStorage *get_canvas_texture_storage() override { return &canvas_texture_storage; };
+	RendererMaterialStorage *get_material_storage() override { return &material_storage; };
+	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; };
 	RendererTextureStorage *get_texture_storage() override { return &texture_storage; };
 	RendererDecalAtlasStorage *get_decal_atlas_storage() override { return &decal_atlas_storage; };
 	RendererStorage *get_storage() override { return &storage; }

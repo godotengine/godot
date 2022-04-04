@@ -74,6 +74,9 @@ if env["builtin_freetype"]:
     env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
     env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
 
+    if env.get("use_ubsan") or env.get("use_asan") or env.get("use_tsan") or env.get("use_lsan") or env.get("use_msan"):
+        env_freetype.Append(CPPDEFINES=["BROTLI_BUILD_PORTABLE"])
+
     if env["platform"] == "uwp":
         # Include header for UWP to fix build issues
         env_freetype.Append(CCFLAGS=["/FI", '"modules/freetype/uwpdef.h"'])

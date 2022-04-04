@@ -16,3 +16,5 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME}
         SYSTEM PUBLIC
         ${GODOT_ROOT_DIR})
+
+add_definitions(-DUNIX_ENABLED -DVULKAN_ENABLED -DANDROID_ENABLED)

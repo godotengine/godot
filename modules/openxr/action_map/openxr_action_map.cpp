@@ -35,6 +35,9 @@ void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRActionMap::get_action_sets);
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "action_sets", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRActionSet", PROPERTY_USAGE_NO_EDITOR), "set_action_sets", "get_action_sets");
 
+	ClassDB::bind_method(D_METHOD("get_action_set_count"), &OpenXRActionMap::get_action_set_count);
+	ClassDB::bind_method(D_METHOD("find_action_set", "name"), &OpenXRActionMap::find_action_set);
+	ClassDB::bind_method(D_METHOD("get_action_set", "idx"), &OpenXRActionMap::get_action_set);
 	ClassDB::bind_method(D_METHOD("add_action_set", "action_set"), &OpenXRActionMap::add_action_set);
 	ClassDB::bind_method(D_METHOD("remove_action_set", "action_set"), &OpenXRActionMap::remove_action_set);
 
@@ -42,6 +45,9 @@ void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_interaction_profiles"), &OpenXRActionMap::get_interaction_profiles);
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "interaction_profiles", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRInteractionProfile", PROPERTY_USAGE_NO_EDITOR), "set_interaction_profiles", "get_interaction_profiles");
 
+	ClassDB::bind_method(D_METHOD("get_interaction_profile_count"), &OpenXRActionMap::get_interaction_profile_count);
+	ClassDB::bind_method(D_METHOD("find_interaction_profile", "name"), &OpenXRActionMap::find_interaction_profile);
+	ClassDB::bind_method(D_METHOD("get_interaction_profile", "idx"), &OpenXRActionMap::get_interaction_profile);
 	ClassDB::bind_method(D_METHOD("add_interaction_profile", "interaction_profile"), &OpenXRActionMap::add_interaction_profile);
 	ClassDB::bind_method(D_METHOD("remove_interaction_profile", "interaction_profile"), &OpenXRActionMap::remove_interaction_profile);
 
@@ -54,6 +60,27 @@ void OpenXRActionMap::set_action_sets(Array p_action_sets) {
 
 Array OpenXRActionMap::get_action_sets() const {
 	return action_sets;
+}
+
+int OpenXRActionMap::get_action_set_count() const {
+	return action_sets.size();
+}
+
+Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(String p_name) const {
+	for (int i = 0; i < action_sets.size(); i++) {
+		Ref<OpenXRActionSet> action_set = action_sets[i];
+		if (action_set->get_name() == p_name) {
+			return action_set;
+		}
+	}
+
+	return Ref<OpenXRActionSet>();
+}
+
+Ref<OpenXRActionSet> OpenXRActionMap::get_action_set(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, action_sets.size(), Ref<OpenXRActionSet>());
+
+	return action_sets[p_idx];
 }
 
 void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
@@ -77,6 +104,27 @@ void OpenXRActionMap::set_interaction_profiles(Array p_interaction_profiles) {
 
 Array OpenXRActionMap::get_interaction_profiles() const {
 	return interaction_profiles;
+}
+
+int OpenXRActionMap::get_interaction_profile_count() const {
+	return interaction_profiles.size();
+}
+
+Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(String p_path) const {
+	for (int i = 0; i < interaction_profiles.size(); i++) {
+		Ref<OpenXRInteractionProfile> interaction_profile = interaction_profiles[i];
+		if (interaction_profile->get_interaction_profile_path() == p_path) {
+			return interaction_profile;
+		}
+	}
+
+	return Ref<OpenXRInteractionProfile>();
+}
+
+Ref<OpenXRInteractionProfile> OpenXRActionMap::get_interaction_profile(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, interaction_profiles.size(), Ref<OpenXRInteractionProfile>());
+
+	return interaction_profiles[p_idx];
 }
 
 void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile) {
@@ -165,7 +213,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
 	// wmr controller has no a/b/x/y buttons
 	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value"); // OpenXR will conver float to bool
+	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value"); // OpenXR will convert float to bool
 	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click"); // OpenXR will convert bool to float
 	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
 	// primary on our wmr controller is our thumbstick, no touch
@@ -253,6 +301,69 @@ void OpenXRActionMap::create_default_action_sets() {
 
 void OpenXRActionMap::create_editor_action_sets() {
 	// TODO implement
+}
+
+Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
+	PackedStringArray paths = p_path.split("/", false);
+	ERR_FAIL_COND_V(paths.size() != 2, Ref<OpenXRAction>());
+
+	Ref<OpenXRActionSet> action_set = find_action_set(paths[0]);
+	if (action_set.is_valid()) {
+		return action_set->get_action(paths[1]);
+	}
+
+	return Ref<OpenXRAction>();
+}
+
+void OpenXRActionMap::remove_action(const String p_path) {
+	Ref<OpenXRAction> action = get_action(p_path);
+	if (action.is_valid()) {
+		OpenXRActionSet *action_set = action->get_action_set();
+		if (action_set != nullptr) {
+			// Remove the action from this action set
+			action_set->remove_action(action);
+		}
+
+		for (int i = 0; i < interaction_profiles.size(); i++) {
+			Ref<OpenXRInteractionProfile> interaction_profile = interaction_profiles[i];
+
+			// Remove any bindings for this action
+			interaction_profile->remove_binding_for_action(action);
+		}
+	}
+}
+
+PackedStringArray OpenXRActionMap::get_top_level_paths(Ref<OpenXRAction> p_action) {
+	PackedStringArray arr;
+
+	for (int i = 0; i < interaction_profiles.size(); i++) {
+		Ref<OpenXRInteractionProfile> ip = interaction_profiles[i];
+		const OpenXRDefs::InteractionProfile *profile = OpenXRDefs::get_profile(ip->get_interaction_profile_path());
+
+		if (profile != nullptr) {
+			for (int j = 0; j < ip->get_binding_count(); j++) {
+				Ref<OpenXRIPBinding> binding = ip->get_binding(j);
+				if (binding->get_action() == p_action) {
+					PackedStringArray paths = binding->get_paths();
+
+					for (int k = 0; k < paths.size(); k++) {
+						const OpenXRDefs::IOPath *io_path = profile->get_io_path(paths[k]);
+						if (io_path != nullptr) {
+							String top_path = String(io_path->top_level_path->openxr_path);
+
+							if (!arr.has(top_path)) {
+								arr.push_back(top_path);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	print_line("Toplevel paths for", p_action->get_name_with_set(), "are", arr);
+
+	return arr;
 }
 
 OpenXRActionMap::~OpenXRActionMap() {

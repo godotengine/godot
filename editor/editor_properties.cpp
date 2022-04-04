@@ -2806,8 +2806,8 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 		if (!base_node) {
 			//try a base node within history
-			if (EditorNode::get_singleton()->get_editor_history()->get_path_size() > 0) {
-				Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(0));
+			if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
+				Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
 				if (base) {
 					base_node = Object::cast_to<Node>(base);
 				}
@@ -2975,6 +2975,12 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 };
 
 void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
+	if (p_resource->is_built_in() && !p_resource->get_path().is_empty() && p_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
+		// If the resource belongs to another scene, edit it in that scene instead.
+		EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
+		return;
+	}
+
 	if (!p_edit && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
@@ -3172,9 +3178,8 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 
 void EditorPropertyResource::setup(Object *p_object, const String &p_path, const String &p_base_type) {
 	if (resource_picker) {
-		resource_picker->disconnect("resource_selected", callable_mp(this, &EditorPropertyResource::_resource_selected));
-		resource_picker->disconnect("resource_changed", callable_mp(this, &EditorPropertyResource::_resource_changed));
 		memdelete(resource_picker);
+		resource_picker = nullptr;
 	}
 
 	if (p_path == "script" && p_base_type == "Script" && Object::cast_to<Node>(p_object)) {
@@ -3221,7 +3226,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);
-				sub_inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+				sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
 				sub_inspector->connect("property_keyed", callable_mp(this, &EditorPropertyResource::_sub_inspector_property_keyed));
 				sub_inspector->connect("resource_selected", callable_mp(this, &EditorPropertyResource::_sub_inspector_resource_selected));

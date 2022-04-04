@@ -273,6 +273,8 @@ if env["platform"] == "android" or env["platform"] == "linuxbsd":
 
 env_harfbuzz.Append(
     CCFLAGS=[
+        "-DU_HAVE_LIB_SUFFIX=1",
+        "-DU_LIB_SUFFIX_C_NAME=_godot",
         "-DHAVE_ICU_BUILTIN",
         "-DHAVE_ICU",
     ]
@@ -587,11 +589,16 @@ env_icu.Append(
         "-DUCONFIG_NO_FILE_IO",
         "-DUCONFIG_NO_TRANSLITERATION",
         "-DPKGDATA_MODE=static",
+        "-DU_ENABLE_DYLOAD=0",
+        "-DU_HAVE_LIB_SUFFIX=1",
+        "-DU_LIB_SUFFIX_C_NAME=_godot",
         "-DICU_DATA_NAME=" + icu_data_name,
     ]
 )
 env.Append(
     CXXFLAGS=[
+        "-DU_HAVE_LIB_SUFFIX=1",
+        "-DU_LIB_SUFFIX_C_NAME=_godot",
         "-DICU_DATA_NAME=" + icu_data_name,
     ]
 )

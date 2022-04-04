@@ -65,7 +65,6 @@ public:
 		Map<DependencyTracker *, uint32_t> instances;
 	};
 
-public:
 	struct DependencyTracker {
 		void *userdata = nullptr;
 		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
@@ -119,135 +118,6 @@ public:
 		uint32_t instance_version = 0;
 		Set<Dependency *> dependencies;
 	};
-
-	/* SHADER API */
-
-	virtual RID shader_allocate() = 0;
-	virtual void shader_initialize(RID p_rid) = 0;
-
-	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
-	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
-
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
-	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
-
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
-
-	/* COMMON MATERIAL API */
-
-	virtual RID material_allocate() = 0;
-	virtual void material_initialize(RID p_rid) = 0;
-
-	virtual void material_set_render_priority(RID p_material, int priority) = 0;
-	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
-
-	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
-	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
-
-	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
-
-	virtual bool material_is_animated(RID p_material) = 0;
-	virtual bool material_casts_shadows(RID p_material) = 0;
-
-	struct InstanceShaderParam {
-		PropertyInfo info;
-		int index;
-		Variant default_value;
-	};
-
-	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
-
-	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
-
-	/* MESH API */
-
-	virtual RID mesh_allocate() = 0;
-	virtual void mesh_initialize(RID p_rid) = 0;
-
-	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) = 0;
-
-	/// Returns stride
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) = 0;
-
-	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
-
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) = 0;
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
-
-	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
-	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
-	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
-
-	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
-	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
-
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
-
-	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
-
-	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
-
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) = 0;
-
-	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
-
-	virtual void mesh_clear(RID p_mesh) = 0;
-
-	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;
-
-	/* MESH INSTANCE */
-
-	virtual RID mesh_instance_create(RID p_base) = 0;
-	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) = 0;
-	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) = 0;
-	virtual void mesh_instance_check_for_update(RID p_mesh_instance) = 0;
-	virtual void update_mesh_instances() = 0;
-
-	/* MULTIMESH API */
-
-	virtual RID multimesh_allocate() = 0;
-	virtual void multimesh_initialize(RID p_rid) = 0;
-
-	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
-
-	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
-
-	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) = 0;
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
-	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
-
-	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
-
-	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
-	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
-
-	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
-	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
-
-	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
-	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
-
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
-
-	/* SKELETON API */
-
-	virtual RID skeleton_allocate() = 0;
-	virtual void skeleton_initialize(RID p_rid) = 0;
-
-	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
-	virtual int skeleton_get_bone_count(RID p_skeleton) const = 0;
-	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) = 0;
-	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
-	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
-	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
-	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 
 	/* Light API */
 
@@ -324,7 +194,6 @@ public:
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const = 0;
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
-	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 
 	/* VOXEL GI API */
 
@@ -490,24 +359,6 @@ public:
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
-
-	/* GLOBAL VARIABLES */
-
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) = 0;
-	virtual void global_variable_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_variable_get_list() const = 0;
-
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
-	virtual Variant global_variable_get(const StringName &p_name) const = 0;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
-
-	virtual void global_variables_load_settings(bool p_load_textures = true) = 0;
-	virtual void global_variables_clear() = 0;
-
-	virtual int32_t global_variables_instance_allocate(RID p_instance) = 0;
-	virtual void global_variables_instance_free(RID p_instance) = 0;
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) = 0;
 
 	/* RENDER TARGET */
 

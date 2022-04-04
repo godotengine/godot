@@ -1221,7 +1221,7 @@ ColorPicker::ColorPicker() :
 
 	hhb->add_child(text_type);
 	text_type->set_text("#");
-	text_type->set_tooltip(TTR("Switch between hexadecimal and code values."));
+	text_type->set_tooltip(RTR("Switch between hexadecimal and code values."));
 	if (Engine::get_singleton()->is_editor_hint()) {
 		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {

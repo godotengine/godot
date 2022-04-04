@@ -464,10 +464,10 @@ void RendererSceneCull::instance_initialize(RID p_rid) {
 }
 
 void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) {
-	bool needs_instance = RSG::storage->mesh_needs_instance(p_instance->base, p_instance->skeleton.is_valid());
+	bool needs_instance = RSG::mesh_storage->mesh_needs_instance(p_instance->base, p_instance->skeleton.is_valid());
 	if (needs_instance != p_instance->mesh_instance.is_valid()) {
 		if (needs_instance) {
-			p_instance->mesh_instance = RSG::storage->mesh_instance_create(p_instance->base);
+			p_instance->mesh_instance = RSG::mesh_storage->mesh_instance_create(p_instance->base);
 
 		} else {
 			RSG::storage->free(p_instance->mesh_instance);
@@ -488,7 +488,7 @@ void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) {
 	}
 
 	if (p_instance->mesh_instance.is_valid()) {
-		RSG::storage->mesh_instance_set_skeleton(p_instance->mesh_instance, p_instance->skeleton);
+		RSG::mesh_storage->mesh_instance_set_skeleton(p_instance->mesh_instance, p_instance->skeleton);
 	}
 }
 
@@ -890,7 +890,7 @@ void RendererSceneCull::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	}
 
 	if (instance->mesh_instance.is_valid()) {
-		RSG::storage->mesh_instance_set_blend_shape_weight(instance->mesh_instance, p_shape, p_weight);
+		RSG::mesh_storage->mesh_instance_set_blend_shape_weight(instance->mesh_instance, p_shape, p_weight);
 	}
 }
 
@@ -900,7 +900,7 @@ void RendererSceneCull::instance_set_surface_override_material(RID p_instance, i
 
 	if (instance->base_type == RS::INSTANCE_MESH) {
 		//may not have been updated yet, may also have not been set yet. When updated will be correcte, worst case
-		instance->materials.resize(MAX(p_surface + 1, RSG::storage->mesh_get_surface_count(instance->base)));
+		instance->materials.resize(MAX(p_surface + 1, RSG::mesh_storage->mesh_get_surface_count(instance->base)));
 	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
@@ -997,7 +997,7 @@ void RendererSceneCull::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 
 	if (p_skeleton.is_valid()) {
 		//update the dependency now, so if cleared, we remove it
-		RSG::storage->skeleton_update_dependency(p_skeleton, &instance->dependency_tracker);
+		RSG::mesh_storage->skeleton_update_dependency(p_skeleton, &instance->dependency_tracker);
 	}
 
 	_instance_queue_update(instance, true, true);
@@ -1438,7 +1438,7 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 		E->get().value = p_value;
 		if (E->get().index >= 0 && instance->instance_allocated_shader_parameters) {
 			//update directly
-			RSG::storage->global_variables_instance_update(p_instance, E->get().index, p_value);
+			RSG::material_storage->global_variables_instance_update(p_instance, E->get().index, p_value);
 		}
 	}
 }
@@ -1847,7 +1847,7 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
 			} else {
-				new_aabb = RSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
+				new_aabb = RSG::mesh_storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
 			}
 
 		} break;
@@ -1856,7 +1856,7 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
 			} else {
-				new_aabb = RSG::storage->multimesh_get_aabb(p_instance->base);
+				new_aabb = RSG::mesh_storage->multimesh_get_aabb(p_instance->base);
 			}
 
 		} break;
@@ -2271,14 +2271,14 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 
 							if (instance->mesh_instance.is_valid()) {
-								RSG::storage->mesh_instance_check_for_update(instance->mesh_instance);
+								RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 							}
 						}
 
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 					}
 
-					RSG::storage->update_mesh_instances();
+					RSG::mesh_storage->update_mesh_instances();
 
 					scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i, 0);
 					shadow_data.light = light->instance;
@@ -2348,14 +2348,14 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 								animated_material_found = true;
 							}
 							if (instance->mesh_instance.is_valid()) {
-								RSG::storage->mesh_instance_check_for_update(instance->mesh_instance);
+								RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 							}
 						}
 
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 					}
 
-					RSG::storage->update_mesh_instances();
+					RSG::mesh_storage->update_mesh_instances();
 					scene_render->light_instance_set_shadow_transform(light->instance, cm, xform, radius, 0, i, 0);
 
 					shadow_data.light = light->instance;
@@ -2412,13 +2412,13 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					}
 
 					if (instance->mesh_instance.is_valid()) {
-						RSG::storage->mesh_instance_check_for_update(instance->mesh_instance);
+						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 					}
 				}
 				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 			}
 
-			RSG::storage->update_mesh_instances();
+			RSG::mesh_storage->update_mesh_instances();
 
 			scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0, 0);
 			shadow_data.light = light->instance;
@@ -3037,9 +3037,9 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 		if (scene_cull_result.mesh_instances.size()) {
 			for (uint64_t i = 0; i < scene_cull_result.mesh_instances.size(); i++) {
-				RSG::storage->mesh_instance_check_for_update(scene_cull_result.mesh_instances[i]);
+				RSG::mesh_storage->mesh_instance_check_for_update(scene_cull_result.mesh_instances[i]);
 			}
-			RSG::storage->update_mesh_instances();
+			RSG::mesh_storage->update_mesh_instances();
 		}
 	}
 
@@ -3627,9 +3627,9 @@ void RendererSceneCull::render_particle_colliders() {
 }
 
 void RendererSceneCull::_update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) {
-	List<RendererStorage::InstanceShaderParam> plist;
-	RSG::storage->material_get_instance_shader_parameters(p_material, &plist);
-	for (const RendererStorage::InstanceShaderParam &E : plist) {
+	List<RendererMaterialStorage::InstanceShaderParam> plist;
+	RSG::material_storage->material_get_instance_shader_parameters(p_material, &plist);
+	for (const RendererMaterialStorage::InstanceShaderParam &E : plist) {
 		StringName name = E.info.name;
 		if (isparams.has(name)) {
 			if (isparams[name].info.type != E.info.type) {
@@ -3667,17 +3667,17 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 		}
 
 		if (p_instance->material_override.is_valid()) {
-			RSG::storage->material_update_dependency(p_instance->material_override, &p_instance->dependency_tracker);
+			RSG::material_storage->material_update_dependency(p_instance->material_override, &p_instance->dependency_tracker);
 		}
 
 		if (p_instance->material_overlay.is_valid()) {
-			RSG::storage->material_update_dependency(p_instance->material_overlay, &p_instance->dependency_tracker);
+			RSG::material_storage->material_update_dependency(p_instance->material_overlay, &p_instance->dependency_tracker);
 		}
 
 		if (p_instance->base_type == RS::INSTANCE_MESH) {
 			//remove materials no longer used and un-own them
 
-			int new_mat_count = RSG::storage->mesh_get_surface_count(p_instance->base);
+			int new_mat_count = RSG::mesh_storage->mesh_get_surface_count(p_instance->base);
 			p_instance->materials.resize(new_mat_count);
 
 			_instance_update_mesh_instance(p_instance);
@@ -3688,7 +3688,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 			RID particle_material = RSG::storage->particles_get_process_material(p_instance->base);
 			if (particle_material.is_valid()) {
-				RSG::storage->material_update_dependency(particle_material, &p_instance->dependency_tracker);
+				RSG::material_storage->material_update_dependency(particle_material, &p_instance->dependency_tracker);
 			}
 		}
 
@@ -3704,10 +3704,10 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			}
 
 			if (p_instance->material_override.is_valid()) {
-				if (!RSG::storage->material_casts_shadows(p_instance->material_override)) {
+				if (!RSG::material_storage->material_casts_shadows(p_instance->material_override)) {
 					can_cast_shadows = false;
 				}
-				is_animated = RSG::storage->material_is_animated(p_instance->material_override);
+				is_animated = RSG::material_storage->material_is_animated(p_instance->material_override);
 				_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, p_instance->material_override);
 			} else {
 				if (p_instance->base_type == RS::INSTANCE_MESH) {
@@ -3717,22 +3717,22 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 						bool cast_shadows = false;
 
 						for (int i = 0; i < p_instance->materials.size(); i++) {
-							RID mat = p_instance->materials[i].is_valid() ? p_instance->materials[i] : RSG::storage->mesh_surface_get_material(mesh, i);
+							RID mat = p_instance->materials[i].is_valid() ? p_instance->materials[i] : RSG::mesh_storage->mesh_surface_get_material(mesh, i);
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
 							} else {
-								if (RSG::storage->material_casts_shadows(mat)) {
+								if (RSG::material_storage->material_casts_shadows(mat)) {
 									cast_shadows = true;
 								}
 
-								if (RSG::storage->material_is_animated(mat)) {
+								if (RSG::material_storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
 
 								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
-								RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
+								RSG::material_storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 							}
 						}
 
@@ -3742,28 +3742,28 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					}
 
 				} else if (p_instance->base_type == RS::INSTANCE_MULTIMESH) {
-					RID mesh = RSG::storage->multimesh_get_mesh(p_instance->base);
+					RID mesh = RSG::mesh_storage->multimesh_get_mesh(p_instance->base);
 					if (mesh.is_valid()) {
 						bool cast_shadows = false;
 
-						int sc = RSG::storage->mesh_get_surface_count(mesh);
+						int sc = RSG::mesh_storage->mesh_get_surface_count(mesh);
 						for (int i = 0; i < sc; i++) {
-							RID mat = RSG::storage->mesh_surface_get_material(mesh, i);
+							RID mat = RSG::mesh_storage->mesh_surface_get_material(mesh, i);
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
 
 							} else {
-								if (RSG::storage->material_casts_shadows(mat)) {
+								if (RSG::material_storage->material_casts_shadows(mat)) {
 									cast_shadows = true;
 								}
-								if (RSG::storage->material_is_animated(mat)) {
+								if (RSG::material_storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
 
 								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
-								RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
+								RSG::material_storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 							}
 						}
 
@@ -3784,24 +3784,24 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 							continue;
 						}
 
-						int sc = RSG::storage->mesh_get_surface_count(mesh);
+						int sc = RSG::mesh_storage->mesh_get_surface_count(mesh);
 						for (int j = 0; j < sc; j++) {
-							RID mat = RSG::storage->mesh_surface_get_material(mesh, j);
+							RID mat = RSG::mesh_storage->mesh_surface_get_material(mesh, j);
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
 							} else {
-								if (RSG::storage->material_casts_shadows(mat)) {
+								if (RSG::material_storage->material_casts_shadows(mat)) {
 									cast_shadows = true;
 								}
 
-								if (RSG::storage->material_is_animated(mat)) {
+								if (RSG::material_storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
 
 								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
-								RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
+								RSG::material_storage->material_update_dependency(mat, &p_instance->dependency_tracker);
 							}
 						}
 					}
@@ -3813,8 +3813,8 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			}
 
 			if (p_instance->material_overlay.is_valid()) {
-				can_cast_shadows = can_cast_shadows || RSG::storage->material_casts_shadows(p_instance->material_overlay);
-				is_animated = is_animated || RSG::storage->material_is_animated(p_instance->material_overlay);
+				can_cast_shadows = can_cast_shadows || RSG::material_storage->material_casts_shadows(p_instance->material_overlay);
+				is_animated = is_animated || RSG::material_storage->material_is_animated(p_instance->material_overlay);
 				_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, p_instance->material_overlay);
 			}
 
@@ -3834,16 +3834,16 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			if (p_instance->instance_allocated_shader_parameters != (p_instance->instance_shader_parameters.size() > 0)) {
 				p_instance->instance_allocated_shader_parameters = (p_instance->instance_shader_parameters.size() > 0);
 				if (p_instance->instance_allocated_shader_parameters) {
-					p_instance->instance_allocated_shader_parameters_offset = RSG::storage->global_variables_instance_allocate(p_instance->self);
+					p_instance->instance_allocated_shader_parameters_offset = RSG::material_storage->global_variables_instance_allocate(p_instance->self);
 					scene_render->geometry_instance_set_instance_shader_parameters_offset(geom->geometry_instance, p_instance->instance_allocated_shader_parameters_offset);
 
 					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_parameters) {
 						if (E.value.value.get_type() != Variant::NIL) {
-							RSG::storage->global_variables_instance_update(p_instance->self, E.value.index, E.value.value);
+							RSG::material_storage->global_variables_instance_update(p_instance->self, E.value.index, E.value.value);
 						}
 					}
 				} else {
-					RSG::storage->global_variables_instance_free(p_instance->self);
+					RSG::material_storage->global_variables_instance_free(p_instance->self);
 					p_instance->instance_allocated_shader_parameters_offset = -1;
 					scene_render->geometry_instance_set_instance_shader_parameters_offset(geom->geometry_instance, -1);
 				}
@@ -3851,7 +3851,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 		}
 
 		if (p_instance->skeleton.is_valid()) {
-			RSG::storage->skeleton_update_dependency(p_instance->skeleton, &p_instance->dependency_tracker);
+			RSG::mesh_storage->skeleton_update_dependency(p_instance->skeleton, &p_instance->dependency_tracker);
 		}
 
 		p_instance->dependency_tracker.update_end();
@@ -3939,7 +3939,7 @@ bool RendererSceneCull::free(RID p_rid) {
 
 		if (instance->instance_allocated_shader_parameters) {
 			//free the used shader parameters
-			RSG::storage->global_variables_instance_free(instance->self);
+			RSG::material_storage->global_variables_instance_free(instance->self);
 		}
 		update_dirty_instances(); //in case something changed this
 

@@ -222,8 +222,7 @@ protected:
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 r_angular_velocity);
 
 public:
-	static void setup_global_defs();
-	static bool openxr_is_enabled();
+	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	static OpenXRAPI *get_singleton();
 
 	String get_error_string(XrResult result);

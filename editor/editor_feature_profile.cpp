@@ -608,18 +608,24 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 
+		const EditorPropertyNameProcessor::Style text_style = EditorPropertyNameProcessor::get_settings_style();
+		const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(text_style);
+
 		for (const PropertyInfo &E : props) {
 			String name = E.name;
 			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
+			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style);
+
 			TreeItem *property = property_list->create_item(properties);
 			property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			property->set_editable(0, true);
 			property->set_selectable(0, true);
 			property->set_checked(0, !edited->is_class_property_disabled(class_name, name));
-			property->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(name));
-			property->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(name));
+			property->set_text(0, text);
+			property->set_tooltip(0, tooltip);
 			property->set_metadata(0, name);
 			String icon_type = Variant::get_type_name(E.type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));

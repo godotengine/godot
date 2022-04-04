@@ -1232,9 +1232,6 @@ void ScriptEditor::_menu_option(int p_option) {
 					if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
 						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 							EditorNode::get_singleton()->load_scene(res_path);
-							script_editor->call_deferred(SNAME("_menu_option"), p_option);
-							previous_scripts.push_back(path); //repeat the operation
-							return;
 						}
 					} else {
 						EditorNode::get_singleton()->load_resource(res_path);
@@ -1250,7 +1247,6 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				edit(scr);
 				file_dialog_option = -1;
-				return;
 			} else {
 				Error error;
 				Ref<TextFile> text_file = _load_text_file(path, &error);
@@ -1261,7 +1257,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (text_file.is_valid()) {
 					edit(text_file);
 					file_dialog_option = -1;
-					return;
 				}
 			}
 		} break;
@@ -1348,7 +1343,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				if (script != nullptr) {
-					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					Vector<DocData::ClassDoc> documentations = script->get_documentation();
 					for (int j = 0; j < documentations.size(); j++) {
 						const DocData::ClassDoc &doc = documentations.get(j);
 						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
@@ -1361,7 +1356,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				EditorNode::get_singleton()->save_resource_as(resource);
 
 				if (script != nullptr) {
-					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+					Vector<DocData::ClassDoc> documentations = script->get_documentation();
 					for (int j = 0; j < documentations.size(); j++) {
 						const DocData::ClassDoc &doc = documentations.get(j);
 						EditorHelp::get_doc_data()->add_doc(doc);
@@ -2464,7 +2459,7 @@ void ScriptEditor::save_current_script() {
 	}
 
 	if (script != nullptr) {
-		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		Vector<DocData::ClassDoc> documentations = script->get_documentation();
 		for (int j = 0; j < documentations.size(); j++) {
 			const DocData::ClassDoc &doc = documentations.get(j);
 			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
@@ -2486,7 +2481,7 @@ void ScriptEditor::save_current_script() {
 	}
 
 	if (script != nullptr) {
-		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		Vector<DocData::ClassDoc> documentations = script->get_documentation();
 		for (int j = 0; j < documentations.size(); j++) {
 			const DocData::ClassDoc &doc = documentations.get(j);
 			EditorHelp::get_doc_data()->add_doc(doc);
@@ -2537,7 +2532,7 @@ void ScriptEditor::save_all_scripts() {
 			}
 
 			if (script != nullptr) {
-				const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+				Vector<DocData::ClassDoc> documentations = script->get_documentation();
 				for (int j = 0; j < documentations.size(); j++) {
 					const DocData::ClassDoc &doc = documentations.get(j);
 					if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
@@ -2549,7 +2544,7 @@ void ScriptEditor::save_all_scripts() {
 			EditorNode::get_singleton()->save_resource(edited_res); //external script, save it
 
 			if (script != nullptr) {
-				const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+				Vector<DocData::ClassDoc> documentations = script->get_documentation();
 				for (int j = 0; j < documentations.size(); j++) {
 					const DocData::ClassDoc &doc = documentations.get(j);
 					EditorHelp::get_doc_data()->add_doc(doc);
@@ -3960,7 +3955,7 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 		Script *p_script = Object::cast_to<Script>(p_object);
 		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (p_script->is_built_in()) {
+		if (p_script->is_built_in() && !res_path.is_empty()) {
 			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
 				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 					EditorNode::get_singleton()->load_scene(res_path);

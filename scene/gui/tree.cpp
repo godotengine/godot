@@ -1162,24 +1162,23 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 	return cell.cached_minimum_size;
 }
 
-Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
-		return Variant();
+		return;
 	}
 
 	if (p_args[0]->get_type() != Variant::STRING && p_args[0]->get_type() != Variant::STRING_NAME) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	StringName method = *p_args[0];
 
 	call_recursive(method, &p_args[1], p_argcount - 1, r_error);
-	return Variant();
 }
 
 void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

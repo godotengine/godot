@@ -132,7 +132,7 @@ public:
 	virtual Error reload(bool p_keep_state = false) = 0;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const = 0;
+	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
 #endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const = 0;
@@ -212,97 +212,10 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return get_script()->get_rpc_methods(); }
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
-};
-
-struct ScriptCodeCompletionOption {
-	/* Keep enum in Sync with:                               */
-	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
-	enum Kind {
-		KIND_CLASS,
-		KIND_FUNCTION,
-		KIND_SIGNAL,
-		KIND_VARIABLE,
-		KIND_MEMBER,
-		KIND_ENUM,
-		KIND_CONSTANT,
-		KIND_NODE_PATH,
-		KIND_FILE_PATH,
-		KIND_PLAIN_TEXT,
-	};
-
-	enum Location {
-		LOCATION_LOCAL = 0,
-		LOCATION_PARENT_MASK = (1 << 8),
-		LOCATION_OTHER_USER_CODE = (1 << 9),
-		LOCATION_OTHER = (1 << 10),
-	};
-
-	Kind kind = KIND_PLAIN_TEXT;
-	String display;
-	String insert_text;
-	Color font_color;
-	RES icon;
-	Variant default_value;
-	Vector<Pair<int, int>> matches;
-	int location = LOCATION_OTHER;
-
-	ScriptCodeCompletionOption() {}
-
-	ScriptCodeCompletionOption(const String &p_text, Kind p_kind, int p_location = LOCATION_OTHER) {
-		display = p_text;
-		insert_text = p_text;
-		kind = p_kind;
-		location = p_location;
-	}
-};
-
-const int KIND_COUNT = 10;
-const ScriptCodeCompletionOption::Kind KIND_SORT_ORDER[KIND_COUNT] = {
-	ScriptCodeCompletionOption::Kind::KIND_VARIABLE,
-	ScriptCodeCompletionOption::Kind::KIND_MEMBER,
-	ScriptCodeCompletionOption::Kind::KIND_FUNCTION,
-	ScriptCodeCompletionOption::Kind::KIND_ENUM,
-	ScriptCodeCompletionOption::Kind::KIND_SIGNAL,
-	ScriptCodeCompletionOption::Kind::KIND_CONSTANT,
-	ScriptCodeCompletionOption::Kind::KIND_CLASS,
-	ScriptCodeCompletionOption::Kind::KIND_NODE_PATH,
-	ScriptCodeCompletionOption::Kind::KIND_FILE_PATH,
-	ScriptCodeCompletionOption::Kind::KIND_PLAIN_TEXT,
-};
-
-struct ScriptCodeCompletionOptionCompare {
-	_FORCE_INLINE_ bool operator()(const ScriptCodeCompletionOption &l, const ScriptCodeCompletionOption &r) const {
-		if (l.location == r.location) {
-			// If locations are same, sort on kind
-			if (l.kind == r.kind) {
-				// If kinds are same, sort alphanumeric
-				return l.display < r.display;
-			}
-
-			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
-			int l_index = -1;
-			int r_index = -1;
-			for (int i = 0; i < KIND_COUNT; i++) {
-				const ScriptCodeCompletionOption::Kind kind = KIND_SORT_ORDER[i];
-				l_index = kind == l.kind ? i : l_index;
-				r_index = kind == r.kind ? i : r_index;
-
-				if (l_index != -1 && r_index != -1) {
-					return l_index < r_index;
-				}
-			}
-
-			// This return should never be hit unless something goes wrong.
-			// l and r should always have a Kind which is in the sort order array.
-			return l.display < r.display;
-		}
-
-		return l.location < r.location;
-	}
 };
 
 class ScriptCodeCompletionCache {
@@ -316,7 +229,8 @@ public:
 	virtual ~ScriptCodeCompletionCache() {}
 };
 
-class ScriptLanguage {
+class ScriptLanguage : public Object {
+	GDCLASS(ScriptLanguage, Object)
 public:
 	virtual String get_name() const = 0;
 
@@ -381,19 +295,64 @@ public:
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	/* Keep enum in Sync with:                               */
+	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
+	enum CodeCompletionKind {
+		CODE_COMPLETION_KIND_CLASS,
+		CODE_COMPLETION_KIND_FUNCTION,
+		CODE_COMPLETION_KIND_SIGNAL,
+		CODE_COMPLETION_KIND_VARIABLE,
+		CODE_COMPLETION_KIND_MEMBER,
+		CODE_COMPLETION_KIND_ENUM,
+		CODE_COMPLETION_KIND_CONSTANT,
+		CODE_COMPLETION_KIND_NODE_PATH,
+		CODE_COMPLETION_KIND_FILE_PATH,
+		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_MAX
+	};
+
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
+	};
+
+	struct CodeCompletionOption {
+		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
+		String display;
+		String insert_text;
+		Color font_color;
+		RES icon;
+		Variant default_value;
+		Vector<Pair<int, int>> matches;
+		int location = LOCATION_OTHER;
+
+		CodeCompletionOption() {}
+
+		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER) {
+			display = p_text;
+			insert_text = p_text;
+			kind = p_kind;
+			location = p_location;
+		}
+	};
+
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+
+	enum LookupResultType {
+		LOOKUP_RESULT_SCRIPT_LOCATION,
+		LOOKUP_RESULT_CLASS,
+		LOOKUP_RESULT_CLASS_CONSTANT,
+		LOOKUP_RESULT_CLASS_PROPERTY,
+		LOOKUP_RESULT_CLASS_METHOD,
+		LOOKUP_RESULT_CLASS_ENUM,
+		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE,
+		LOOKUP_RESULT_MAX
+	};
 
 	struct LookupResult {
-		enum Type {
-			RESULT_SCRIPT_LOCATION,
-			RESULT_CLASS,
-			RESULT_CLASS_CONSTANT,
-			RESULT_CLASS_PROPERTY,
-			RESULT_CLASS_METHOD,
-			RESULT_CLASS_ENUM,
-			RESULT_CLASS_TBD_GLOBALSCOPE
-		};
-		Type type;
+		LookupResultType type;
 		Ref<Script> script;
 		String class_name;
 		String class_member;

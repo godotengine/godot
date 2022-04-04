@@ -194,7 +194,7 @@
 		<method name="get_rids" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns [Array] of valid [FontData] [RID]s, which can be passsed to the [TextServer] methods.
+				Returns [Array] of valid [FontData] [RID]s, which can be passed to the [TextServer] methods.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">

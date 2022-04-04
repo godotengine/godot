@@ -577,10 +577,11 @@ struct gvar
 
 	hb_bytes_t bytes ((const char *) p, length);
 	hb_vector_t<unsigned int> private_indices;
-	if (iterator.current_tuple->has_private_points () &&
+	bool has_private_points = iterator.current_tuple->has_private_points ();
+	if (has_private_points &&
 	    !GlyphVariationData::unpack_points (p, private_indices, bytes))
 	  return false;
-	const hb_array_t<unsigned int> &indices = private_indices.length ? private_indices : shared_indices;
+	const hb_array_t<unsigned int> &indices = has_private_points ? private_indices : shared_indices;
 
 	bool apply_to_all = (indices.length == 0);
 	unsigned int num_deltas = apply_to_all ? points.length : indices.length;

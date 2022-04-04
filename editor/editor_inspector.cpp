@@ -44,14 +44,14 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
-static bool _property_path_matches(const String &p_property_path, const String &p_filter) {
+static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
 		return true;
 	}
 
 	const Vector<String> sections = p_property_path.split("/");
 	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i]))) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
 			return true;
 		}
 	}
@@ -2456,6 +2456,8 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
+	bool in_script_variables = false;
+
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
@@ -2547,6 +2549,9 @@ void EditorInspector::update_tree() {
 				if (category->icon.is_null() && has_theme_icon(base_type, SNAME("EditorIcons"))) {
 					category->icon = get_theme_icon(base_type, SNAME("EditorIcons"));
 				}
+				in_script_variables = true;
+			} else {
+				in_script_variables = false;
 			}
 			if (category->icon.is_null()) {
 				if (!type.is_empty()) { // Can happen for built-in scripts.
@@ -2673,17 +2678,21 @@ void EditorInspector::update_tree() {
 
 		// Get the property label's string.
 		String name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
-		String property_label_string = name_override;
-		if (capitalize_paths) {
-			// Capitalize paths.
-			int dot = property_label_string.find(".");
+		String feature_tag;
+		{
+			const int dot = name_override.find(".");
 			if (dot != -1) {
+				feature_tag = name_override.right(dot);
 				name_override = name_override.substr(0, dot);
-				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override) + property_label_string.substr(dot);
-			} else {
-				property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
 			}
 		}
+
+		// Don't localize properties in Script Variables category.
+		EditorPropertyNameProcessor::Style name_style = property_name_style;
+		if (in_script_variables && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+		}
+		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
 
 		// Remove the property from the path.
 		int idx = path.rfind("/");
@@ -2696,7 +2705,7 @@ void EditorInspector::update_tree() {
 		// Ignore properties that do not fit the filter.
 		if (use_filter && !filter.is_empty()) {
 			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
-			if (!_property_path_matches(property_path, filter)) {
+			if (!_property_path_matches(property_path, filter, property_name_style)) {
 				continue;
 			}
 		}
@@ -2733,15 +2742,27 @@ void EditorInspector::update_tree() {
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
-				String label = component;
-				if (capitalize_paths) {
-					label = EditorPropertyNameProcessor::get_singleton()->process_name(label);
+				String label;
+				String tooltip;
+
+				// Only process group label if this is not the group or subgroup.
+				if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
+					if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+						label = TTRGET(component);
+						tooltip = component;
+					} else {
+						label = component;
+						tooltip = TTRGET(component);
+					}
+				} else {
+					label = EditorPropertyNameProcessor::get_singleton()->process_name(component, property_name_style);
+					tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
 				}
 
 				Color c = sscolor;
 				c.a /= level;
 				section->setup(acc_path, label, object, c, use_folding, section_depth);
-				section->set_tooltip(EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(component));
+				section->set_tooltip(tooltip);
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -2773,7 +2794,7 @@ void EditorInspector::update_tree() {
 				editor_inspector_array = memnew(EditorInspectorArray);
 
 				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
-				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string);
+				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
 				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request), varray(array_element_prefix));
@@ -3037,12 +3058,15 @@ void EditorInspector::set_read_only(bool p_read_only) {
 	update_tree();
 }
 
-bool EditorInspector::is_capitalize_paths_enabled() const {
-	return capitalize_paths;
+EditorPropertyNameProcessor::Style EditorInspector::get_property_name_style() const {
+	return property_name_style;
 }
 
-void EditorInspector::set_enable_capitalize_paths(bool p_capitalize) {
-	capitalize_paths = p_capitalize;
+void EditorInspector::set_property_name_style(EditorPropertyNameProcessor::Style p_style) {
+	if (property_name_style == p_style) {
+		return;
+	}
+	property_name_style = p_style;
 	update_tree();
 }
 

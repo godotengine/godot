@@ -741,9 +741,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 	oversampling = 1.0f;
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	if (f == nullptr) {
-		ERR_FAIL_V_MSG(ERR_CANT_CREATE, TTR("Cannot open font from file ") + "\"" + p_path + "\".");
-	}
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, vformat(RTR("Cannot open font from file: %s."), p_path));
 
 	int base_size = 16;
 	int height = 0;
@@ -762,7 +760,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 	f->get_buffer((unsigned char *)&magic, 4);
 	if (magic[0] == 'B' && magic[1] == 'M' && magic[2] == 'F') {
 		// Binary BMFont file.
-		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat(TTR("Version %d of BMFont is not supported."), (int)magic[3]));
+		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat(RTR("Version %d of BMFont is not supported."), (int)magic[3]));
 
 		uint8_t block_type = f->get_8();
 		uint32_t block_size = f->get_32();
@@ -770,10 +768,10 @@ Error FontData::load_bitmap_font(const String &p_path) {
 			uint64_t off = f->get_position();
 			switch (block_type) {
 				case 1: /* info */ {
-					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, TTR("Invalid BMFont info block size."));
+					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, RTR("Invalid BMFont info block size."));
 					base_size = f->get_16();
 					uint8_t flags = f->get_8();
-					ERR_FAIL_COND_V_MSG(flags & 0x02, ERR_CANT_CREATE, TTR("Non-unicode version of BMFont is not supported."));
+					ERR_FAIL_COND_V_MSG(flags & 0x02, ERR_CANT_CREATE, RTR("Non-unicode version of BMFont is not supported."));
 					if (flags & (1 << 3)) {
 						st_flags |= TextServer::FONT_BOLD;
 					}
@@ -794,7 +792,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 					set_fixed_size(base_size);
 				} break;
 				case 2: /* common */ {
-					ERR_FAIL_COND_V_MSG(block_size != 15, ERR_CANT_CREATE, TTR("Invalid BMFont common block size."));
+					ERR_FAIL_COND_V_MSG(block_size != 15, ERR_CANT_CREATE, RTR("Invalid BMFont common block size."));
 					height = f->get_16();
 					ascent = f->get_16();
 					f->get_32(); // scale, skip
@@ -829,40 +827,40 @@ Error FontData::load_bitmap_font(const String &p_path) {
 								Ref<Image> img;
 								img.instantiate();
 								Error err = ImageLoader::load_image(file, img);
-								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture: ") + "\"" + file + "\".");
+								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat(RTR("Can't load font texture: %s."), file));
 
 								if (packed) {
 									if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 										outline = 0;
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										_convert_packed_8bit(img, page, base_size);
 									} else if ((ch[3] == 2) && (outline > 0)) { // 4 x 4 bit monochrome, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										_convert_packed_4bit(img, page, base_size);
 									} else {
-										ERR_FAIL_V_MSG(ERR_CANT_CREATE, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
 									}
 								} else {
 									if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
 										outline = 0;
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										set_texture_image(0, Vector2i(base_size, 0), page, img);
 									} else if ((ch[0] == 2) && (ch[1] == 2) && (ch[2] == 2) && (ch[3] == 2) && (outline > 0)) { // RGBA4 color, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										_convert_rgba_4bit(img, page, base_size);
 									} else if ((first_gl_ch >= 0) && (first_ol_ch >= 0) && (outline > 0)) { // 1 x 8 bit monochrome, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 										_convert_mono_8bit(img, page, first_ol_ch, base_size, 1);
 									} else if ((first_cm_ch >= 0) && (outline > 0)) { // 1 x 4 bit monochrome, gl + outline
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										_convert_mono_4bit(img, page, first_cm_ch, base_size, 1);
 									} else if (first_gl_ch >= 0) { // 1 x 8 bit monochrome, no outline
 										outline = 0;
-										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 										_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 									} else {
-										ERR_FAIL_V_MSG(ERR_CANT_CREATE, TTR("Unsupported BMFont texture format."));
+										ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
 									}
 								}
 							}
@@ -899,7 +897,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 						int texture_idx = f->get_8();
 						uint8_t channel = f->get_8();
 
-						ERR_FAIL_COND_V_MSG(!packed && channel != 15, ERR_CANT_CREATE, TTR("Invalid glyph channel."));
+						ERR_FAIL_COND_V_MSG(!packed && channel != 15, ERR_CANT_CREATE, RTR("Invalid glyph channel."));
 						int ch_off = 0;
 						switch (channel) {
 							case 1:
@@ -941,7 +939,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 					}
 				} break;
 				default: {
-					ERR_FAIL_V_MSG(ERR_CANT_CREATE, TTR("Invalid BMFont block type."));
+					ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Invalid BMFont block type."));
 				} break;
 			}
 			f->seek(off + block_size);
@@ -1016,7 +1014,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 				if (keys.has("face")) {
 					font_name = keys["face"];
 				}
-				ERR_FAIL_COND_V_MSG((!keys.has("unicode") || keys["unicode"].to_int() != 1), ERR_CANT_CREATE, TTR("Non-unicode version of BMFont is not supported."));
+				ERR_FAIL_COND_V_MSG((!keys.has("unicode") || keys["unicode"].to_int() != 1), ERR_CANT_CREATE, RTR("Non-unicode version of BMFont is not supported."));
 			} else if (type == "common") {
 				if (keys.has("lineHeight")) {
 					height = keys["lineHeight"].to_int();
@@ -1062,39 +1060,39 @@ Error FontData::load_bitmap_font(const String &p_path) {
 						Ref<Image> img;
 						img.instantiate();
 						Error err = ImageLoader::load_image(file, img);
-						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture: ") + "\"" + file + "\".");
+						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat(RTR("Can't load font texture: %s."), file));
 						if (packed) {
 							if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 								outline = 0;
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								_convert_packed_8bit(img, page, base_size);
 							} else if ((ch[3] == 2) && (outline > 0)) { // 4 x 4 bit monochrome, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								_convert_packed_4bit(img, page, base_size);
 							} else {
-								ERR_FAIL_V_MSG(ERR_CANT_CREATE, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
 							}
 						} else {
 							if ((ch[0] == 0) && (ch[1] == 0) && (ch[2] == 0) && (ch[3] == 0)) { // RGBA8 color, no outline
 								outline = 0;
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								set_texture_image(0, Vector2i(base_size, 0), page, img);
 							} else if ((ch[0] == 2) && (ch[1] == 2) && (ch[2] == 2) && (ch[3] == 2) && (outline > 0)) { // RGBA4 color, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								_convert_rgba_4bit(img, page, base_size);
 							} else if ((first_gl_ch >= 0) && (first_ol_ch >= 0) && (outline > 0)) { // 1 x 8 bit monochrome, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 								_convert_mono_8bit(img, page, first_ol_ch, base_size, 1);
 							} else if ((first_cm_ch >= 0) && (outline > 0)) { // 1 x 4 bit monochrome, gl + outline
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								_convert_mono_4bit(img, page, first_cm_ch, base_size, 1);
 							} else if (first_gl_ch >= 0) { // 1 x 8 bit monochrome, no outline
 								outline = 0;
-								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_COND_V_MSG(img->get_format() != Image::FORMAT_RGBA8 && img->get_format() != Image::FORMAT_L8, ERR_FILE_CANT_READ, RTR("Unsupported BMFont texture format."));
 								_convert_mono_8bit(img, page, first_gl_ch, base_size, 0);
 							} else {
-								ERR_FAIL_V_MSG(ERR_CANT_CREATE, TTR("Unsupported BMFont texture format."));
+								ERR_FAIL_V_MSG(ERR_CANT_CREATE, RTR("Unsupported BMFont texture format."));
 							}
 						}
 					}
@@ -1144,7 +1142,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 					channel = keys["chnl"].to_int();
 				}
 
-				ERR_FAIL_COND_V_MSG(!packed && channel != 15, ERR_CANT_CREATE, TTR("Invalid glyph channel."));
+				ERR_FAIL_COND_V_MSG(!packed && channel != 15, ERR_CANT_CREATE, RTR("Invalid glyph channel."));
 				int ch_off = 0;
 				switch (channel) {
 					case 1:

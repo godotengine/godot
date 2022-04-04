@@ -35,9 +35,14 @@ void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action"), &OpenXRIPBinding::get_action);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction"), "set_action", "get_action");
 
+	ClassDB::bind_method(D_METHOD("get_path_count"), &OpenXRIPBinding::get_path_count);
 	ClassDB::bind_method(D_METHOD("set_paths", "paths"), &OpenXRIPBinding::set_paths);
 	ClassDB::bind_method(D_METHOD("get_paths"), &OpenXRIPBinding::get_paths);
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "paths", PROPERTY_HINT_ARRAY_TYPE, "STRING"), "set_paths", "get_paths");
+
+	ClassDB::bind_method(D_METHOD("has_path"), &OpenXRIPBinding::has_path);
+	ClassDB::bind_method(D_METHOD("add_path", "path"), &OpenXRIPBinding::add_path);
+	ClassDB::bind_method(D_METHOD("remove_path", "path"), &OpenXRIPBinding::remove_path);
 }
 
 Ref<OpenXRIPBinding> OpenXRIPBinding::new_binding(const Ref<OpenXRAction> p_action, const char *p_paths) {
@@ -59,6 +64,10 @@ Ref<OpenXRAction> OpenXRIPBinding::get_action() const {
 	return action;
 }
 
+int OpenXRIPBinding::get_path_count() const {
+	return paths.size();
+}
+
 void OpenXRIPBinding::set_paths(const PackedStringArray p_paths) {
 	paths = p_paths;
 }
@@ -71,6 +80,22 @@ void OpenXRIPBinding::parse_paths(const String p_paths) {
 	paths = p_paths.split(",", false);
 }
 
+bool OpenXRIPBinding::has_path(const String p_path) const {
+	return paths.has(p_path);
+}
+
+void OpenXRIPBinding::add_path(const String p_path) {
+	if (!paths.has(p_path)) {
+		paths.push_back(p_path);
+	}
+}
+
+void OpenXRIPBinding::remove_path(const String p_path) {
+	if (paths.has(p_path)) {
+		paths.erase(p_path);
+	}
+}
+
 OpenXRIPBinding::~OpenXRIPBinding() {
 	action.unref();
 }
@@ -80,6 +105,8 @@ void OpenXRInteractionProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_interaction_profile_path"), &OpenXRInteractionProfile::get_interaction_profile_path);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "interaction_profile_path"), "set_interaction_profile_path", "get_interaction_profile_path");
 
+	ClassDB::bind_method(D_METHOD("get_binding_count"), &OpenXRInteractionProfile::get_binding_count);
+	ClassDB::bind_method(D_METHOD("get_binding", "index"), &OpenXRInteractionProfile::get_binding);
 	ClassDB::bind_method(D_METHOD("set_bindings", "bindings"), &OpenXRInteractionProfile::set_bindings);
 	ClassDB::bind_method(D_METHOD("get_bindings"), &OpenXRInteractionProfile::get_bindings);
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRIPBinding", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
@@ -101,18 +128,43 @@ String OpenXRInteractionProfile::get_interaction_profile_path() const {
 	return interaction_profile_path;
 }
 
+int OpenXRInteractionProfile::get_binding_count() const {
+	return bindings.size();
+}
+
+Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, bindings.size(), Ref<OpenXRIPBinding>());
+
+	return bindings[p_index];
+}
+
 void OpenXRInteractionProfile::set_bindings(Array p_bindings) {
 	bindings = p_bindings;
+
+	// TODO add check here that our bindings don't contain duplicate actions
 }
 
 Array OpenXRInteractionProfile::get_bindings() const {
 	return bindings;
 }
 
+Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding_for_action(const Ref<OpenXRAction> p_action) const {
+	for (int i = 0; i < bindings.size(); i++) {
+		Ref<OpenXRIPBinding> binding = bindings[i];
+		if (binding->get_action() == p_action) {
+			return binding;
+		}
+	}
+
+	return Ref<OpenXRIPBinding>();
+}
+
 void OpenXRInteractionProfile::add_binding(Ref<OpenXRIPBinding> p_binding) {
 	ERR_FAIL_COND(p_binding.is_null());
 
 	if (bindings.find(p_binding) == -1) {
+		ERR_FAIL_COND_MSG(get_binding_for_action(p_binding->get_action()).is_valid(), "There is already a binding for this action in this interaction profile");
+
 		bindings.push_back(p_binding);
 	}
 }
@@ -129,6 +181,15 @@ void OpenXRInteractionProfile::add_new_binding(const Ref<OpenXRAction> p_action,
 
 	Ref<OpenXRIPBinding> binding = OpenXRIPBinding::new_binding(p_action, p_paths);
 	add_binding(binding);
+}
+
+void OpenXRInteractionProfile::remove_binding_for_action(const Ref<OpenXRAction> p_action) {
+	for (int i = bindings.size() - 1; i >= 0; i--) {
+		Ref<OpenXRIPBinding> binding = bindings[i];
+		if (binding->get_action() == p_action) {
+			remove_binding(binding);
+		}
+	}
 }
 
 OpenXRInteractionProfile::~OpenXRInteractionProfile() {

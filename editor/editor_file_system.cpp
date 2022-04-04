@@ -520,6 +520,45 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	return false; //nothing changed
 }
 
+bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
+	if (import_support_queries.size() == 0) {
+		return false;
+	}
+	Map<String, int> import_support_test;
+	Vector<bool> import_support_tested;
+	import_support_tested.resize(import_support_queries.size());
+	for (int i = 0; i < import_support_queries.size(); i++) {
+		import_support_tested.write[i] = false;
+		if (import_support_queries[i]->is_active()) {
+			Vector<String> extensions = import_support_queries[i]->get_file_extensions();
+			for (int j = 0; j < extensions.size(); j++) {
+				import_support_test.insert(extensions[j], i);
+			}
+		}
+	}
+
+	if (import_support_test.size() == 0) {
+		return false; //well nothing to do
+	}
+
+	for (int i = 0; i < reimports.size(); i++) {
+		Map<String, int>::Element *E = import_support_test.find(reimports[i].get_extension());
+		if (E) {
+			import_support_tested.write[E->get()] = true;
+		}
+	}
+
+	for (int i = 0; i < import_support_tested.size(); i++) {
+		if (import_support_tested[i]) {
+			if (import_support_queries.write[i]->query()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool EditorFileSystem::_update_scan_actions() {
 	sources_changed.clear();
 
@@ -612,7 +651,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	if (_scan_extensions()) {
 		//needs editor restart
 		//extensions also may provide filetypes to be imported, so they must run before importing
-		if (EditorNode::immediate_confirmation_dialog(TTR("Some extensions need the editor to restart to take effect."), first_scan ? TTR("Restart") : TTR("Save&Restart"), TTR("Continue"))) {
+		if (EditorNode::immediate_confirmation_dialog(TTR("Some extensions need the editor to restart to take effect."), first_scan ? TTR("Restart") : TTR("Save & Restart"), TTR("Continue"))) {
 			if (!first_scan) {
 				EditorNode::get_singleton()->save_all_scenes();
 			}
@@ -621,7 +660,12 @@ bool EditorFileSystem::_update_scan_actions() {
 			return true;
 		}
 	}
+
 	if (reimports.size()) {
+		if (_scan_import_support(reimports)) {
+			return true;
+		}
+
 		reimport_files(reimports);
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
@@ -888,7 +932,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				if (script == nullptr) {
 					continue;
 				}
-				const Vector<DocData::ClassDoc> &docs = script->get_documentation();
+				Vector<DocData::ClassDoc> docs = script->get_documentation();
 				for (int j = 0; j < docs.size(); j++) {
 					EditorHelp::get_doc_data()->add_doc(docs[j]);
 				}
@@ -2274,6 +2318,7 @@ static void _scan_extensions_dir(EditorFileSystemDirectory *d, Set<String> &exte
 bool EditorFileSystem::_scan_extensions() {
 	EditorFileSystemDirectory *d = get_filesystem();
 	Set<String> extensions;
+
 	_scan_extensions_dir(d, extensions);
 
 	//verify against loaded extensions
@@ -2372,6 +2417,14 @@ void EditorFileSystem::_update_extensions() {
 	for (const String &E : extensionsl) {
 		import_extensions.insert(E);
 	}
+}
+
+void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
+	ERR_FAIL_COND(import_support_queries.find(p_query) != -1);
+	import_support_queries.push_back(p_query);
+}
+void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
+	import_support_queries.erase(p_query);
 }
 
 EditorFileSystem::EditorFileSystem() {

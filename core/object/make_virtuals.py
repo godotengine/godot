@@ -28,7 +28,7 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	}\\
 	\\
 	if (required) {\\
-	        ERR_PRINT_ONCE("Required virtual method: "+get_class()+"::" + #m_name + " must be overriden before calling.");\\
+	        ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");\\
 	        $RVOID\\
     }\\
 \\

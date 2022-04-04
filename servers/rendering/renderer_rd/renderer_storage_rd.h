@@ -39,10 +39,8 @@
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
-#include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_compiler.h"
@@ -127,331 +125,11 @@ public:
 		}
 	}
 
-	enum ShaderType {
-		SHADER_TYPE_2D,
-		SHADER_TYPE_3D,
-		SHADER_TYPE_PARTICLES,
-		SHADER_TYPE_SKY,
-		SHADER_TYPE_FOG,
-		SHADER_TYPE_MAX
-	};
-
-	struct ShaderData {
-		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
-
-		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
-		virtual bool is_param_texture(const StringName &p_param) const = 0;
-		virtual bool is_animated() const = 0;
-		virtual bool casts_shadows() const = 0;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
-
-		virtual ~ShaderData() {}
-	};
-
-	typedef ShaderData *(*ShaderDataRequestFunction)();
-
-	struct MaterialData {
-		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
-
-		virtual void set_render_priority(int p_priority) = 0;
-		virtual void set_next_pass(RID p_pass) = 0;
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
-		virtual ~MaterialData();
-
-		//to be used internally by update_parameters, in the most common configuration of material parameters
-		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
-		void free_parameters_uniform_set(RID p_uniform_set);
-
-	private:
-		friend class RendererStorageRD;
-		RID self;
-		List<RID>::Element *global_buffer_E = nullptr;
-		List<RID>::Element *global_texture_E = nullptr;
-		uint64_t global_textures_pass = 0;
-		Map<StringName, uint64_t> used_global_textures;
-
-		//internally by update_parameters_uniform_set
-		Vector<uint8_t> ubo_data;
-		RID uniform_buffer;
-		Vector<RID> texture_cache;
-	};
-	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
-	static void _material_uniform_set_erased(void *p_material);
-
-	enum DefaultRDBuffer {
-		DEFAULT_RD_BUFFER_VERTEX,
-		DEFAULT_RD_BUFFER_NORMAL,
-		DEFAULT_RD_BUFFER_TANGENT,
-		DEFAULT_RD_BUFFER_COLOR,
-		DEFAULT_RD_BUFFER_TEX_UV,
-		DEFAULT_RD_BUFFER_TEX_UV2,
-		DEFAULT_RD_BUFFER_CUSTOM0,
-		DEFAULT_RD_BUFFER_CUSTOM1,
-		DEFAULT_RD_BUFFER_CUSTOM2,
-		DEFAULT_RD_BUFFER_CUSTOM3,
-		DEFAULT_RD_BUFFER_BONES,
-		DEFAULT_RD_BUFFER_WEIGHTS,
-		DEFAULT_RD_BUFFER_MAX,
-	};
-
 private:
 	/* TEXTURE API */
 
 	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 	RID custom_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
-	RID default_rd_storage_buffer;
-
-	/* SHADER */
-
-	struct Material;
-
-	struct Shader {
-		ShaderData *data;
-		String code;
-		ShaderType type;
-		Map<StringName, Map<int, RID>> default_texture_parameter;
-		Set<Material *> owners;
-	};
-
-	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
-	mutable RID_Owner<Shader, true> shader_owner;
-
-	/* Material */
-
-	struct Material {
-		RID self;
-		MaterialData *data = nullptr;
-		Shader *shader = nullptr;
-		//shortcut to shader data and type
-		ShaderType shader_type = SHADER_TYPE_MAX;
-		uint32_t shader_id = 0;
-		bool uniform_dirty = false;
-		bool texture_dirty = false;
-		Map<StringName, Variant> params;
-		int32_t priority = 0;
-		RID next_pass;
-		SelfList<Material> update_element;
-
-		Dependency dependency;
-
-		Material() :
-				update_element(this) {}
-	};
-
-	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
-	mutable RID_Owner<Material, true> material_owner;
-
-	SelfList<Material>::List material_update_list;
-	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
-	void _update_queued_materials();
-
-	/* Mesh */
-
-	struct MeshInstance;
-
-	struct Mesh {
-		struct Surface {
-			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
-			uint32_t format = 0;
-
-			RID vertex_buffer;
-			RID attribute_buffer;
-			RID skin_buffer;
-			uint32_t vertex_count = 0;
-			uint32_t vertex_buffer_size = 0;
-			uint32_t skin_buffer_size = 0;
-
-			// A different pipeline needs to be allocated
-			// depending on the inputs available in the
-			// material.
-			// There are never that many geometry/material
-			// combinations, so a simple array is the most
-			// cache-efficient structure.
-
-			struct Version {
-				uint32_t input_mask = 0;
-				RD::VertexFormatID vertex_format = 0;
-				RID vertex_array;
-			};
-
-			SpinLock version_lock; //needed to access versions
-			Version *versions = nullptr; //allocated on demand
-			uint32_t version_count = 0;
-
-			RID index_buffer;
-			RID index_array;
-			uint32_t index_count = 0;
-
-			struct LOD {
-				float edge_length = 0.0;
-				uint32_t index_count = 0;
-				RID index_buffer;
-				RID index_array;
-			};
-
-			LOD *lods = nullptr;
-			uint32_t lod_count = 0;
-
-			AABB aabb;
-
-			Vector<AABB> bone_aabbs;
-
-			RID blend_shape_buffer;
-
-			RID material;
-
-			uint32_t render_index = 0;
-			uint64_t render_pass = 0;
-
-			uint32_t multimesh_render_index = 0;
-			uint64_t multimesh_render_pass = 0;
-
-			uint32_t particles_render_index = 0;
-			uint64_t particles_render_pass = 0;
-
-			RID uniform_set;
-		};
-
-		uint32_t blend_shape_count = 0;
-		RS::BlendShapeMode blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
-
-		Surface **surfaces = nullptr;
-		uint32_t surface_count = 0;
-
-		Vector<AABB> bone_aabbs;
-
-		bool has_bone_weights = false;
-
-		AABB aabb;
-		AABB custom_aabb;
-
-		Vector<RID> material_cache;
-
-		List<MeshInstance *> instances;
-
-		RID shadow_mesh;
-		Set<Mesh *> shadow_owners;
-
-		Dependency dependency;
-	};
-
-	mutable RID_Owner<Mesh, true> mesh_owner;
-
-	struct MeshInstance {
-		Mesh *mesh;
-		RID skeleton;
-		struct Surface {
-			RID vertex_buffer;
-			RID uniform_set;
-
-			Mesh::Surface::Version *versions = nullptr; //allocated on demand
-			uint32_t version_count = 0;
-		};
-		LocalVector<Surface> surfaces;
-		LocalVector<float> blend_weights;
-
-		RID blend_weights_buffer;
-		List<MeshInstance *>::Element *I = nullptr; //used to erase itself
-		uint64_t skeleton_version = 0;
-		bool dirty = false;
-		bool weights_dirty = false;
-		SelfList<MeshInstance> weight_update_list;
-		SelfList<MeshInstance> array_update_list;
-		MeshInstance() :
-				weight_update_list(this), array_update_list(this) {}
-	};
-
-	void _mesh_instance_clear(MeshInstance *mi);
-	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
-
-	mutable RID_Owner<MeshInstance> mesh_instance_owner;
-
-	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
-	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
-
-	struct SkeletonShader {
-		struct PushConstant {
-			uint32_t has_normal;
-			uint32_t has_tangent;
-			uint32_t has_skeleton;
-			uint32_t has_blend_shape;
-
-			uint32_t vertex_count;
-			uint32_t vertex_stride;
-			uint32_t skin_stride;
-			uint32_t skin_weight_offset;
-
-			uint32_t blend_shape_count;
-			uint32_t normalized_blend_shapes;
-			uint32_t pad0;
-			uint32_t pad1;
-		};
-
-		enum {
-			UNIFORM_SET_INSTANCE = 0,
-			UNIFORM_SET_SURFACE = 1,
-			UNIFORM_SET_SKELETON = 2,
-		};
-		enum {
-			SHADER_MODE_2D,
-			SHADER_MODE_3D,
-			SHADER_MODE_MAX
-		};
-
-		SkeletonShaderRD shader;
-		RID version;
-		RID version_shader[SHADER_MODE_MAX];
-		RID pipeline[SHADER_MODE_MAX];
-
-		RID default_skeleton_uniform_set;
-	} skeleton_shader;
-
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis = nullptr);
-
-	RID mesh_default_rd_buffers[DEFAULT_RD_BUFFER_MAX];
-
-	/* MultiMesh */
-	struct MultiMesh {
-		RID mesh;
-		int instances = 0;
-		RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
-		bool uses_colors = false;
-		bool uses_custom_data = false;
-		int visible_instances = -1;
-		AABB aabb;
-		bool aabb_dirty = false;
-		bool buffer_set = false;
-		uint32_t stride_cache = 0;
-		uint32_t color_offset_cache = 0;
-		uint32_t custom_data_offset_cache = 0;
-
-		Vector<float> data_cache; //used if individual setting is used
-		bool *data_cache_dirty_regions = nullptr;
-		uint32_t data_cache_used_dirty_regions = 0;
-
-		RID buffer; //storage buffer
-		RID uniform_set_3d;
-		RID uniform_set_2d;
-
-		bool dirty = false;
-		MultiMesh *dirty_list = nullptr;
-
-		Dependency dependency;
-	};
-
-	mutable RID_Owner<MultiMesh, true> multimesh_owner;
-
-	MultiMesh *multimesh_dirty_list = nullptr;
-
-	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
-	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
-	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
-	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
-	void _update_dirty_multimeshes();
 
 	/* PARTICLES */
 
@@ -714,7 +392,7 @@ private:
 
 	Particles *particle_update_list = nullptr;
 
-	struct ParticlesShaderData : public ShaderData {
+	struct ParticlesShaderData : public RendererRD::ShaderData {
 		bool valid;
 		RID version;
 		bool uses_collision = false;
@@ -740,7 +418,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -751,12 +429,12 @@ private:
 		virtual ~ParticlesShaderData();
 	};
 
-	ShaderData *_create_particles_shader_func();
-	static RendererStorageRD::ShaderData *_create_particles_shader_funcs() {
+	RendererRD::ShaderData *_create_particles_shader_func();
+	static RendererRD::ShaderData *_create_particles_shader_funcs() {
 		return base_singleton->_create_particles_shader_func();
 	}
 
-	struct ParticlesMaterialData : public MaterialData {
+	struct ParticlesMaterialData : public RendererRD::MaterialData {
 		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
 
@@ -766,8 +444,8 @@ private:
 		virtual ~ParticlesMaterialData();
 	};
 
-	MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_particles_material_funcs(ShaderData *p_shader) {
+	RendererRD::MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
+	static RendererRD::MaterialData *_create_particles_material_funcs(RendererRD::ShaderData *p_shader) {
 		return base_singleton->_create_particles_material_func(static_cast<ParticlesShaderData *>(p_shader));
 	}
 
@@ -828,34 +506,6 @@ private:
 	};
 
 	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
-
-	/* Skeleton */
-
-	struct Skeleton {
-		bool use_2d = false;
-		int size = 0;
-		Vector<float> data;
-		RID buffer;
-
-		bool dirty = false;
-		Skeleton *dirty_list = nullptr;
-		Transform2D base_transform_2d;
-
-		RID uniform_set_3d;
-		RID uniform_set_mi;
-
-		uint64_t version = 1;
-
-		Dependency dependency;
-	};
-
-	mutable RID_Owner<Skeleton, true> skeleton_owner;
-
-	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
-
-	Skeleton *skeleton_dirty_list = nullptr;
-
-	void _update_dirty_skeletons();
 
 	/* LIGHT */
 
@@ -1054,72 +704,6 @@ private:
 		RID pipelines[SHADER_MAX];
 	} rt_sdf;
 
-	/* GLOBAL SHADER VARIABLES */
-
-	struct GlobalVariables {
-		enum {
-			BUFFER_DIRTY_REGION_SIZE = 1024
-		};
-		struct Variable {
-			Set<RID> texture_materials; // materials using this
-
-			RS::GlobalVariableType type;
-			Variant value;
-			Variant override;
-			int32_t buffer_index; //for vectors
-			int32_t buffer_elements; //for vectors
-		};
-
-		HashMap<StringName, Variable> variables;
-
-		struct Value {
-			float x;
-			float y;
-			float z;
-			float w;
-		};
-
-		struct ValueInt {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-			int32_t w;
-		};
-
-		struct ValueUInt {
-			uint32_t x;
-			uint32_t y;
-			uint32_t z;
-			uint32_t w;
-		};
-
-		struct ValueUsage {
-			uint32_t elements = 0;
-		};
-
-		List<RID> materials_using_buffer;
-		List<RID> materials_using_texture;
-
-		RID buffer;
-		Value *buffer_values;
-		ValueUsage *buffer_usage;
-		bool *buffer_dirty_regions;
-		uint32_t buffer_dirty_region_count = 0;
-
-		uint32_t buffer_size;
-
-		bool must_update_texture_materials = false;
-		bool must_update_buffer_materials = false;
-
-		HashMap<RID, int32_t> instance_buffer_pos;
-
-	} global_variables;
-
-	int32_t _global_variable_allocate(uint32_t p_elements);
-	void _global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value);
-	void _global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
-
-	void _update_global_variables();
 	/* EFFECTS */
 
 	EffectsRD *effects = nullptr;
@@ -1138,412 +722,6 @@ public:
 
 	void sampler_rd_set_default(float p_mipmap_bias);
 
-	/* SHADER API */
-
-	RID shader_allocate();
-	void shader_initialize(RID p_shader);
-
-	void shader_set_code(RID p_shader, const String &p_code);
-	String shader_get_code(RID p_shader) const;
-	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
-
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index);
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const;
-	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
-	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
-
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const;
-
-	/* COMMON MATERIAL API */
-
-	RID material_allocate();
-	void material_initialize(RID p_material);
-
-	void material_set_shader(RID p_material, RID p_shader);
-
-	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value);
-	Variant material_get_param(RID p_material, const StringName &p_param) const;
-
-	void material_set_next_pass(RID p_material, RID p_next_material);
-	void material_set_render_priority(RID p_material, int priority);
-
-	bool material_is_animated(RID p_material);
-	bool material_casts_shadows(RID p_material);
-
-	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
-
-	void material_update_dependency(RID p_material, DependencyTracker *p_instance);
-
-	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
-
-	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
-		Material *material = material_owner.get_or_null(p_material);
-		return material->shader_id;
-	}
-
-	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
-		Material *material = material_owner.get_or_null(p_material);
-		if (!material || material->shader_type != p_shader_type) {
-			return nullptr;
-		} else {
-			return material->data;
-		}
-	}
-
-	/* MESH API */
-
-	RID mesh_allocate();
-	void mesh_initialize(RID p_mesh);
-
-	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count);
-
-	/// Return stride
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface);
-
-	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
-
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode);
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
-
-	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
-	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
-	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
-
-	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
-	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
-
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const;
-
-	virtual int mesh_get_surface_count(RID p_mesh) const;
-
-	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb);
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
-
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID());
-	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh);
-
-	virtual void mesh_clear(RID p_mesh);
-
-	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton);
-
-	/* MESH INSTANCE */
-
-	virtual RID mesh_instance_create(RID p_base);
-	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton);
-	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight);
-	virtual void mesh_instance_check_for_update(RID p_mesh_instance);
-	virtual void update_mesh_instances();
-
-	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, nullptr);
-		r_surface_count = mesh->surface_count;
-		if (r_surface_count == 0) {
-			return nullptr;
-		}
-		if (mesh->material_cache.is_empty()) {
-			mesh->material_cache.resize(mesh->surface_count);
-			for (uint32_t i = 0; i < r_surface_count; i++) {
-				mesh->material_cache.write[i] = mesh->surfaces[i]->material;
-			}
-		}
-
-		return mesh->material_cache.ptr();
-	}
-
-	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, nullptr);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
-
-		return mesh->surfaces[p_surface_index];
-	}
-
-	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, RID());
-
-		return mesh->shadow_mesh;
-	}
-
-	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
-		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
-		return surface->primitive;
-	}
-
-	_FORCE_INLINE_ bool mesh_surface_has_lod(void *p_surface) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-		return s->lod_count > 0;
-	}
-
-	_FORCE_INLINE_ uint32_t mesh_surface_get_vertices_drawn_count(void *p_surface) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-		return s->index_count ? s->index_count : s->vertex_count;
-	}
-
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-
-		int32_t current_lod = -1;
-		if (r_index_count) {
-			*r_index_count = s->index_count;
-		}
-		for (uint32_t i = 0; i < s->lod_count; i++) {
-			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
-			if (screen_size > p_mesh_lod_threshold) {
-				break;
-			}
-			current_lod = i;
-		}
-		if (current_lod == -1) {
-			return 0;
-		} else {
-			if (r_index_count) {
-				*r_index_count = s->lods[current_lod].index_count;
-			}
-			return current_lod + 1;
-		}
-	}
-
-	_FORCE_INLINE_ RID mesh_surface_get_index_array(void *p_surface, uint32_t p_lod) const {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-
-		if (p_lod == 0) {
-			return s->index_array;
-		} else {
-			return s->lods[p_lod - 1].index_array;
-		}
-	}
-
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
-		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-
-		s->version_lock.lock();
-
-		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
-
-		for (uint32_t i = 0; i < s->version_count; i++) {
-			if (s->versions[i].input_mask != p_input_mask) {
-				continue;
-			}
-			//we have this version, hooray
-			r_vertex_format = s->versions[i].vertex_format;
-			r_vertex_array_rd = s->versions[i].vertex_array;
-			s->version_lock.unlock();
-			return;
-		}
-
-		uint32_t version = s->version_count;
-		s->version_count++;
-		s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
-
-		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask);
-
-		r_vertex_format = s->versions[version].vertex_format;
-		r_vertex_array_rd = s->versions[version].vertex_array;
-
-		s->version_lock.unlock();
-	}
-
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
-		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
-		ERR_FAIL_COND(!mi);
-		Mesh *mesh = mi->mesh;
-		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
-
-		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
-		Mesh::Surface *s = mesh->surfaces[p_surface_index];
-
-		s->version_lock.lock();
-
-		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
-
-		for (uint32_t i = 0; i < mis->version_count; i++) {
-			if (mis->versions[i].input_mask != p_input_mask) {
-				continue;
-			}
-			//we have this version, hooray
-			r_vertex_format = mis->versions[i].vertex_format;
-			r_vertex_array_rd = mis->versions[i].vertex_array;
-			s->version_lock.unlock();
-			return;
-		}
-
-		uint32_t version = mis->version_count;
-		mis->version_count++;
-		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
-
-		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, mis);
-
-		r_vertex_format = mis->versions[version].vertex_format;
-		r_vertex_array_rd = mis->versions[version].vertex_array;
-
-		s->version_lock.unlock();
-	}
-
-	_FORCE_INLINE_ RID mesh_get_default_rd_buffer(DefaultRDBuffer p_buffer) {
-		ERR_FAIL_INDEX_V(p_buffer, DEFAULT_RD_BUFFER_MAX, RID());
-		return mesh_default_rd_buffers[p_buffer];
-	}
-
-	_FORCE_INLINE_ uint32_t mesh_surface_get_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		Mesh::Surface *s = mesh->surfaces[p_surface_index];
-
-		if (s->render_pass != p_render_pass) {
-			(*r_index)++;
-			s->render_pass = p_render_pass;
-			s->render_index = *r_index;
-		}
-
-		return s->render_index;
-	}
-
-	_FORCE_INLINE_ uint32_t mesh_surface_get_multimesh_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		Mesh::Surface *s = mesh->surfaces[p_surface_index];
-
-		if (s->multimesh_render_pass != p_render_pass) {
-			(*r_index)++;
-			s->multimesh_render_pass = p_render_pass;
-			s->multimesh_render_index = *r_index;
-		}
-
-		return s->multimesh_render_index;
-	}
-
-	_FORCE_INLINE_ uint32_t mesh_surface_get_particles_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		Mesh::Surface *s = mesh->surfaces[p_surface_index];
-
-		if (s->particles_render_pass != p_render_pass) {
-			(*r_index)++;
-			s->particles_render_pass = p_render_pass;
-			s->particles_render_index = *r_index;
-		}
-
-		return s->particles_render_index;
-	}
-
-	/* MULTIMESH API */
-
-	RID multimesh_allocate();
-	void multimesh_initialize(RID p_multimesh);
-
-	void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false);
-	int multimesh_get_instance_count(RID p_multimesh) const;
-
-	void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform);
-	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
-	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
-
-	RID multimesh_get_mesh(RID p_multimesh) const;
-
-	Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
-
-	void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer);
-	Vector<float> multimesh_get_buffer(RID p_multimesh) const;
-
-	void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
-	int multimesh_get_visible_instances(RID p_multimesh) const;
-
-	AABB multimesh_get_aabb(RID p_multimesh) const;
-
-	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->xform_format;
-	}
-
-	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->uses_colors;
-	}
-
-	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		return multimesh->uses_custom_data;
-	}
-
-	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		if (multimesh->visible_instances >= 0) {
-			return multimesh->visible_instances;
-		}
-		return multimesh->instances;
-	}
-
-	_FORCE_INLINE_ RID multimesh_get_3d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		if (!multimesh->uniform_set_3d.is_valid()) {
-			Vector<RD::Uniform> uniforms;
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 0;
-			u.append_id(multimesh->buffer);
-			uniforms.push_back(u);
-			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
-		}
-
-		return multimesh->uniform_set_3d;
-	}
-
-	_FORCE_INLINE_ RID multimesh_get_2d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
-		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-		if (!multimesh->uniform_set_2d.is_valid()) {
-			Vector<RD::Uniform> uniforms;
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 0;
-			u.append_id(multimesh->buffer);
-			uniforms.push_back(u);
-			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
-		}
-
-		return multimesh->uniform_set_2d;
-	}
-
-	/* SKELETON API */
-
-	RID skeleton_allocate();
-	void skeleton_initialize(RID p_skeleton);
-
-	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false);
-	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform3D &p_world_transform);
-	int skeleton_get_bone_count(RID p_skeleton) const;
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform);
-	Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
-	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
-	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
-
-	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
-		return skeleton_owner.get_or_null(p_skeleton) != nullptr;
-	}
-
-	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
-		Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
-		ERR_FAIL_COND_V(!skeleton, RID());
-		ERR_FAIL_COND_V(skeleton->size == 0, RID());
-		if (skeleton->use_2d) {
-			return RID();
-		}
-		if (!skeleton->uniform_set_3d.is_valid()) {
-			Vector<RD::Uniform> uniforms;
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 0;
-			u.append_id(skeleton->buffer);
-			uniforms.push_back(u);
-			skeleton->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
-		}
-
-		return skeleton->uniform_set_3d;
-	}
 	/* Light API */
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
@@ -1713,7 +891,6 @@ public:
 	float reflection_probe_get_ambient_color_energy(RID p_probe) const;
 
 	void base_update_dependency(RID p_base, DependencyTracker *p_instance);
-	void skeleton_update_dependency(RID p_skeleton, DependencyTracker *p_instance);
 
 	/* VOXEL GI API */
 
@@ -1972,27 +1149,6 @@ public:
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform);
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
 
-	/* GLOBAL VARIABLES API */
-
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value);
-	virtual void global_variable_remove(const StringName &p_name);
-	virtual Vector<StringName> global_variable_get_list() const;
-
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value);
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value);
-	virtual Variant global_variable_get(const StringName &p_name) const;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const;
-	RS::GlobalVariableType global_variable_get_type_internal(const StringName &p_name) const;
-
-	virtual void global_variables_load_settings(bool p_load_textures = true);
-	virtual void global_variables_clear();
-
-	virtual int32_t global_variables_instance_allocate(RID p_instance);
-	virtual void global_variables_instance_free(RID p_instance);
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value);
-
-	RID global_variables_get_storage_buffer() const;
-
 	/* RENDER TARGET API */
 
 	RID render_target_create();
@@ -2064,8 +1220,6 @@ public:
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const;
-
-	RID get_default_rd_storage_buffer() { return default_rd_storage_buffer; }
 
 	static RendererStorageRD *base_singleton;
 

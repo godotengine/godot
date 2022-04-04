@@ -1641,18 +1641,18 @@ TypedArray<String> AnimationTree::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!root.is_valid()) {
-		warnings.push_back(TTR("No root AnimationNode for the graph is set."));
+		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
 
 	if (!has_node(animation_player)) {
-		warnings.push_back(TTR("Path to an AnimationPlayer node containing animations is not set."));
+		warnings.push_back(RTR("Path to an AnimationPlayer node containing animations is not set."));
 	} else {
 		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
 		if (!player) {
-			warnings.push_back(TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node."));
+			warnings.push_back(RTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node."));
 		} else if (!player->has_node(player->get_root())) {
-			warnings.push_back(TTR("The AnimationPlayer root node is not a valid node."));
+			warnings.push_back(RTR("The AnimationPlayer root node is not a valid node."));
 		}
 	}
 

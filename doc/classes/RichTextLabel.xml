@@ -49,6 +49,12 @@
 				Clears the tag stack and sets [member text] to an empty string.
 			</description>
 		</method>
+		<method name="deselect">
+			<return type="void" />
+			<description>
+				Clears the current selection.
+			</description>
+		</method>
 		<method name="get_character_line">
 			<return type="int" />
 			<argument index="0" name="character" type="int" />

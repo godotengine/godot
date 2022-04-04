@@ -69,16 +69,14 @@ __pycache__/
 doc/_build/
 
 # Android
-.gradle
+.gradle/
 local.properties
 *.iml
 .gradletasknamecache
 project.properties
-platform/android/java/lib/.cxx/
-platform/android/java/libs/*
-platform/android/java/app/libs/*
-platform/android/java/lib/.cxx/*
-platform/android/java/nativeSrcsConfigs/.cxx/
+platform/android/java/*/.cxx/
+platform/android/java/*/build/
+platform/android/java/*/libs/
 
 # iOS
 *.dSYM
@@ -333,6 +331,9 @@ UpgradeLog*.XML
 UpgradeLog*.htm
 ServiceFabricBackup/
 *.rptproj.bak
+
+# Hint file for IntelliSense
+cpp.hint
 
 ###################
 ### OS specific ###

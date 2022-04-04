@@ -36,6 +36,8 @@
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/storage/canvas_texture_storage.h"
 #include "servers/rendering/storage/decal_atlas_storage.h"
+#include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 class RendererCanvasCull;
@@ -47,6 +49,8 @@ public:
 	static bool threaded;
 
 	static RendererCanvasTextureStorage *canvas_texture_storage;
+	static RendererMaterialStorage *material_storage;
+	static RendererMeshStorage *mesh_storage;
 	static RendererTextureStorage *texture_storage;
 	static RendererDecalAtlasStorage *decal_atlas_storage;
 	static RendererStorage *storage;

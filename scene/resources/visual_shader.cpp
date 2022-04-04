@@ -2580,8 +2580,8 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "modelview_matrix", "MODELVIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_view_matrix", "INV_VIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "view_matrix", "VIEW_MATRIX" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "projection", "PROJECTION_MATRIX" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_projection", "INV_PROJECTION_MATRIX" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "projection_matrix", "PROJECTION_MATRIX" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_projection_matrix", "INV_PROJECTION_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_2D, "viewport_size", "VIEWPORT_SIZE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_BOOLEAN, "output_is_srgb", "OUTPUT_IS_SRGB" },
@@ -2627,7 +2627,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "light", "LIGHT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "light_color", "LIGHT_COLOR" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "attenuation", "ATTENUATION" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "shadow_attenuation", "SHADOW_ATTENUATION" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "albedo", "ALBEDO" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "backlight", "BACKLIGHT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "diffuse", "DIFFUSE_LIGHT" },
@@ -3106,7 +3105,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 		}
 
 		if (port_list.is_empty()) {
-			port_list = TTR("None");
+			port_list = RTR("None");
 		}
 		property.hint_string = port_list;
 	}
@@ -3649,7 +3648,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 	List<String> keyword_list;
 	ShaderLanguage::get_keyword_list(&keyword_list);
 	if (keyword_list.find(uniform_name)) {
-		return TTR("Shader keywords cannot be used as uniform names.\nChoose another name.");
+		return RTR("Shader keywords cannot be used as uniform names.\nChoose another name.");
 	}
 	if (!is_qualifier_supported(qualifier)) {
 		String qualifier_str;
@@ -3665,11 +3664,11 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 			default:
 				break;
 		}
-		return vformat(TTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
+		return vformat(RTR("This uniform type does not support the '%s' qualifier."), qualifier_str);
 	} else if (qualifier == Qualifier::QUAL_GLOBAL) {
 		RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(uniform_name);
 		if (gvt == RS::GLOBAL_VAR_TYPE_MAX) {
-			return vformat(TTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
+			return vformat(RTR("Global uniform '%s' does not exist.\nCreate it in the Project Settings."), uniform_name);
 		}
 		bool incompatible_type = false;
 		switch (gvt) {
@@ -3727,7 +3726,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 				break;
 		}
 		if (incompatible_type) {
-			return vformat(TTR("Global uniform '%s' has an incompatible type for this kind of node.\nChange it in the Project Settings."), uniform_name);
+			return vformat(RTR("Global uniform '%s' has an incompatible type for this kind of node.\nChange it in the Project Settings."), uniform_name);
 		}
 	}
 

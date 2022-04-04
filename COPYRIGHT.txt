@@ -63,13 +63,6 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
-Files: ./modules/fbx/fbx_parser/
-Comment: Open Asset Import Library (FBX parser)
-Copyright: 2006-2020, assimp team
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
-License: BSD-3-clause
-
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
@@ -310,11 +303,10 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
-Files: ./thirdparty/misc/open-simplex-noise.c
- ./thirdparty/misc/open-simplex-noise.h
-Comment: OpenSimplex Noise
-Copyright: 2014, Stephen M. Cameron
-License: public-domain or Unlicense
+Files: ./thirdparty/noise/FastNoiseLite.h
+Comment: FastNoise Lite
+Copyright: 2020, Jordan Peck and contributors
+License: MIT
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h

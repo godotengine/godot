@@ -38,13 +38,28 @@
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
 
+#ifdef TOOLS_ENABLED
+
+#include "editor/editor_node.h"
+#include "editor/openxr_editor_plugin.h"
+
+static void _editor_init() {
+	if (OpenXRAPI::openxr_is_enabled(false)) {
+		// Only add our OpenXR action map editor if OpenXR is enabled for our project
+
+		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
+	}
+}
+
+#endif
+
 OpenXRAPI *openxr_api = nullptr;
 Ref<OpenXRInterface> openxr_interface;
 
 void preregister_openxr_types() {
 	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
-	OpenXRAPI::setup_global_defs();
 	if (OpenXRAPI::openxr_is_enabled()) {
 		openxr_api = memnew(OpenXRAPI);
 		ERR_FAIL_NULL(openxr_api);
@@ -75,6 +90,10 @@ void register_openxr_types() {
 			openxr_interface->initialize();
 		}
 	}
+
+#ifdef TOOLS_ENABLED
+	EditorNode::add_init_callback(_editor_init);
+#endif
 }
 
 void unregister_openxr_types() {

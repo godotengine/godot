@@ -45,17 +45,17 @@
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
 #include "editor/bindings_generator.h"
+#include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/node_dock.h"
+#include "editor/script_templates/templates.gen.h"
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED
 #include "class_db_api_json.h"
 #endif
 
-#include "editor/editor_internal_calls.h"
-#include "editor_templates/templates.gen.h"
 #include "godotsharp_dirs.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
@@ -373,11 +373,13 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 
 Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(StringName p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
+#ifdef TOOLS_ENABLED
 	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
 		if (TEMPLATES[i].inherit == p_object) {
 			templates.append(TEMPLATES[i]);
 		}
 	}
+#endif
 	return templates;
 }
 
@@ -386,7 +388,7 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	List<String> keywords;
 	get_reserved_words(&keywords);
 	if (keywords.find(class_name)) {
-		return TTR("Class name can't be a reserved keyword");
+		return RTR("Class name can't be a reserved keyword");
 	}
 	return "";
 }

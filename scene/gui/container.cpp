@@ -196,7 +196,7 @@ TypedArray<String> Container::get_configuration_warnings() const {
 	TypedArray<String> warnings = Control::get_configuration_warnings();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		warnings.push_back(TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
+		warnings.push_back(RTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
 
 	return warnings;

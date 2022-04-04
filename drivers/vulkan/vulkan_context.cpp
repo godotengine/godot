@@ -900,7 +900,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 			free(device_queue_props);
 			print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + dev_type);
 
-			if (present_supported) { // Select first supported device of preffered type: Discrete > Integrated > Virtual > CPU > Other.
+			if (present_supported) { // Select first supported device of preferred type: Discrete > Integrated > Virtual > CPU > Other.
 				switch (props.deviceType) {
 					case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
 						if (type_selected < 4) {

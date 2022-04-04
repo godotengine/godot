@@ -2075,8 +2075,8 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	_push_item(nullptr);
 
-	// Fixes the EditorHistory from still offering deleted notes
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	// Fixes the EditorSelectionHistory from still offering deleted notes
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	editor_history->cleanup_history();
 	InspectorDock::get_singleton()->call("_prepare_history");
 }
@@ -2547,10 +2547,10 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 			property_drop_node = node;
 			resource_drop_path = res_path;
 
-			bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
+			const EditorPropertyNameProcessor::Style style = InspectorDock::get_singleton()->get_property_name_style();
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
-				menu_properties->add_item(capitalize ? p.capitalize() : p);
+				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style));
 				menu_properties->set_item_metadata(-1, p);
 			}
 

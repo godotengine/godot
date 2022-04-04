@@ -38,7 +38,7 @@ static ImageLoaderSVG *image_loader_svg = nullptr;
 
 void register_svg_types() {
 	tvg::CanvasEngine tvgEngine = tvg::CanvasEngine::Sw;
-	if (tvg::Initializer::init(tvgEngine, 0) != tvg::Result::Success) {
+	if (tvg::Initializer::init(tvgEngine, 1) != tvg::Result::Success) {
 		return;
 	}
 	image_loader_svg = memnew(ImageLoaderSVG);

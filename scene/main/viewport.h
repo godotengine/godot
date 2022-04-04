@@ -609,6 +609,8 @@ public:
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 
+	virtual Transform2D get_screen_transform() const;
+
 #ifndef _3D_DISABLED
 	bool use_xr = false;
 	friend class AudioListener3D;
@@ -731,6 +733,8 @@ public:
 
 	void set_clear_mode(ClearMode p_mode);
 	ClearMode get_clear_mode() const;
+
+	virtual Transform2D get_screen_transform() const override;
 
 	SubViewport();
 	~SubViewport();

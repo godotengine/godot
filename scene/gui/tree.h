@@ -189,7 +189,7 @@ protected:
 		return d;
 	}
 
-	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 public:
 	/* cell mode */

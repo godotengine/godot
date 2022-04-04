@@ -956,8 +956,14 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	}
 }
 
-Variant Object::get_meta(const StringName &p_name) const {
-	ERR_FAIL_COND_V_MSG(!metadata.has(p_name), Variant(), "The object does not have any 'meta' values with the key '" + p_name + "'.");
+Variant Object::get_meta(const StringName &p_name, const Variant &p_default) const {
+	if (!metadata.has(p_name)) {
+		if (p_default != Variant()) {
+			return p_default;
+		} else {
+			ERR_FAIL_V_MSG(Variant(), "The object does not have any 'meta' values with the key '" + p_name + "'.");
+		}
+	}
 	return metadata[p_name];
 }
 
@@ -1022,15 +1028,15 @@ struct _ObjectSignalDisconnectData {
 	Callable callable;
 };
 
-Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 
-	ERR_FAIL_COND_V(p_argcount < 1, Variant());
+	ERR_FAIL_COND_V(p_argcount < 1, Error::ERR_INVALID_PARAMETER);
 	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Variant());
+		ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Error::ERR_INVALID_PARAMETER);
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -1044,9 +1050,7 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::C
 		args = &p_args[1];
 	}
 
-	emit_signalp(signal, args, argc);
-
-	return Variant();
+	return emit_signalp(signal, args, argc);
 }
 
 Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) {
@@ -1559,7 +1563,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
 	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);
-	ClassDB::bind_method(D_METHOD("get_meta", "name"), &Object::get_meta);
+	ClassDB::bind_method(D_METHOD("get_meta", "name", "default"), &Object::get_meta, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
 
