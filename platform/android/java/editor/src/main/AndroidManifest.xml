@@ -29,8 +29,7 @@
             android:name=".GodotProjectManager"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:launchMode="singleTask"
-            android:resizeableActivity="false"
-            android:screenOrientation="landscape"
+            android:screenOrientation="userLandscape"
             android:exported="true"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:process=":GodotProjectManager">
@@ -46,8 +45,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:process=":GodotEditor"
             android:launchMode="singleTask"
-            android:resizeableActivity="false"
-            android:screenOrientation="landscape"
+            android:screenOrientation="userLandscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
 
@@ -57,8 +55,7 @@
             android:label="@string/godot_project_name_string"
             android:process=":GodotGame"
             android:launchMode="singleTask"
-            android:resizeableActivity="false"
-            android:screenOrientation="landscape"
+            android:screenOrientation="userLandscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
 
