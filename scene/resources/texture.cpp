@@ -1142,7 +1142,7 @@ bool Texture3D::has_mipmaps() const {
 	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
 		return ret;
 	}
-	return 0;
+	return false;
 }
 
 Vector<Ref<Image>> Texture3D::get_data() const {

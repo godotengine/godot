@@ -408,7 +408,7 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 
 	for (uint32_t i = 0; i < view_count; i++) {
 		view_configuration_views[i].type = XR_TYPE_VIEW_CONFIGURATION_VIEW;
-		view_configuration_views[i].next = NULL;
+		view_configuration_views[i].next = nullptr;
 	}
 
 	result = xrEnumerateViewConfigurationViews(instance, system_id, p_configuration_type, view_count, &view_count, view_configuration_views);
@@ -680,10 +680,10 @@ bool OpenXRAPI::create_main_swapchain() {
 
 	for (uint32_t i = 0; i < view_count; i++) {
 		views[i].type = XR_TYPE_VIEW;
-		views[i].next = NULL;
+		views[i].next = nullptr;
 
 		projection_views[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-		projection_views[i].next = NULL;
+		projection_views[i].next = nullptr;
 		projection_views[i].subImage.swapchain = swapchain;
 		projection_views[i].subImage.imageArrayIndex = i;
 		projection_views[i].subImage.imageRect.offset.x = 0;
@@ -1147,7 +1147,7 @@ bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
 	}
 
 	// we don't have valid view info
-	if (views == NULL || !view_pose_valid) {
+	if (views == nullptr || !view_pose_valid) {
 		return false;
 	}
 
@@ -1167,7 +1167,7 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 	}
 
 	// we don't have valid view info
-	if (views == NULL || !view_pose_valid) {
+	if (views == nullptr || !view_pose_valid) {
 		return false;
 	}
 
