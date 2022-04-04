@@ -253,11 +253,13 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
-			"tools:replace=\"android:screenOrientation,android:excludeFromRecents\" "
+			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"android:excludeFromRecents=\"%s\" "
-			"android:screenOrientation=\"%s\">\n",
+			"android:screenOrientation=\"%s\" "
+			"android:resizeableActivity=\"%s\">\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
-			orientation);
+			orientation,
+			bool_to_string(p_preset->get("screen/is_resizeable")));
 	if (uses_xr) {
 		manifest_activity_text += "            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n";
 	} else {

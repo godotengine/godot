@@ -863,6 +863,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	bool classify_as_game = p_preset->get("package/classify_as_game");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
 	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
+	bool is_resizeable = p_preset->get("screen/is_resizeable");
 
 	Vector<String> perms;
 	// Write permissions into the perms variable.
@@ -978,6 +979,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "activity" && attrname == "excludeFromRecents") {
 						encode_uint32(exclude_from_recents, &p_manifest.write[iofs + 16]);
+					}
+
+					if (tname == "activity" && attrname == "resizeableActivity") {
+						encode_uint32(is_resizeable, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "supports-screens") {
@@ -1733,6 +1738,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/is_resizeable"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 

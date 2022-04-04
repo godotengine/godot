@@ -198,11 +198,14 @@ void GodotIOJavaWrapper::hide_vk() {
 }
 
 void GodotIOJavaWrapper::set_screen_orientation(int p_orient) {
+	// The Godot Android Editor sets its own orientation via its AndroidManifest
+#ifndef TOOLS_ENABLED
 	if (_set_screen_orientation) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND(env == nullptr);
 		env->CallVoidMethod(godot_io_instance, _set_screen_orientation, p_orient);
 	}
+#endif
 }
 
 int GodotIOJavaWrapper::get_screen_orientation() {
