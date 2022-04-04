@@ -52,7 +52,7 @@ RES ResourceFormatGLES2Texture::load(const String &p_path, const String &p_origi
 	uint8_t **row_p = memnew_arr(uint8_t *, height);
 
 	for (unsigned int i = 0; i < height; i++) {
-		row_p[i] = 0; //No colors any more, I want them to turn black
+		row_p[i] = nullptr; // No colors any more, I want them to turn black.
 	}
 
 	memdelete_arr(row_p);

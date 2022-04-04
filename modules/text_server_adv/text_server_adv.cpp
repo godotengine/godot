@@ -1044,7 +1044,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 			if (RenderingServer::get_singleton() != nullptr) {
 				Ref<Image> img;
 				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, 0, Image::FORMAT_RGBA8, tex.imgdata);
+				img->create_from_data(tex.texture_w, tex.texture_h, false, Image::FORMAT_RGBA8, tex.imgdata);
 				if (tex.texture.is_null()) {
 					tex.texture.instantiate();
 					tex.texture->create_from_image(img);
@@ -1129,7 +1129,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 		if (RenderingServer::get_singleton() != nullptr) {
 			Ref<Image> img;
 			img.instantiate();
-			img->create_from_data(tex.texture_w, tex.texture_h, 0, require_format, tex.imgdata);
+			img->create_from_data(tex.texture_w, tex.texture_h, false, require_format, tex.imgdata);
 
 			if (tex.texture.is_null()) {
 				tex.texture.instantiate();
@@ -2306,7 +2306,7 @@ void TextServerAdvanced::font_set_texture_image(const RID &p_font_rid, const Vec
 
 	Ref<Image> img;
 	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata);
+	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 
 	tex.texture = Ref<ImageTexture>();
 	tex.texture.instantiate();
@@ -2325,7 +2325,7 @@ Ref<Image> TextServerAdvanced::font_get_texture_image(const RID &p_font_rid, con
 	const FontTexture &tex = fd->cache[size]->textures[p_texture_index];
 	Ref<Image> img;
 	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata);
+	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 
 	return img;
 }
