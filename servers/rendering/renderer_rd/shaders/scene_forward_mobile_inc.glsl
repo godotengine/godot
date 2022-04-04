@@ -125,7 +125,7 @@ global_variables;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-layout(set = 1, binding = 0, std140) uniform SceneData {
+struct SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 inv_projection_matrix;
 	highp mat4 inv_view_matrix;
@@ -189,8 +189,12 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	uint pad1;
 	uint pad2;
 	uint pad3;
+};
+
+layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
+	SceneData data;
 }
-scene_data;
+scene_data_block;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 

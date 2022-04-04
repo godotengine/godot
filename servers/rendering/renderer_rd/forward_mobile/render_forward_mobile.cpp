@@ -87,7 +87,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 	}
 }
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
+void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) {
 	clear();
 
 	msaa = p_msaa;
@@ -1321,6 +1321,10 @@ RID RenderForwardMobile::_render_buffers_get_normal_texture(RID p_render_buffers
 
 	// We don't have this. This is for debugging
 	// return rb->normal_roughness_buffer;
+	return RID();
+}
+
+RID RenderForwardMobile::_render_buffers_get_velocity_texture(RID p_render_buffers) {
 	return RID();
 }
 

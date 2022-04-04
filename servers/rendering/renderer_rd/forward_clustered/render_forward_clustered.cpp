@@ -82,6 +82,27 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_specular()
 	}
 }
 
+void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_velocity() {
+	if (!velocity_buffer.is_valid()) {
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R16G16_SFLOAT;
+		tf.width = width;
+		tf.height = height;
+		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		if (msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			RD::TextureFormat tf_aa = tf;
+			tf_aa.samples = texture_samples;
+			tf_aa.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			velocity_buffer_msaa = RD::get_singleton()->texture_create(tf_aa, RD::TextureView());
+
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		}
+
+		velocity_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+}
+
 void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_voxelgi() {
 	if (!voxelgi_buffer.is_valid()) {
 		RD::TextureFormat tf;
@@ -169,12 +190,23 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	if (!render_sdfgi_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_sdfgi_uniform_set)) {
 		RD::get_singleton()->free(render_sdfgi_uniform_set);
 	}
+
+	if (velocity_buffer != RID()) {
+		RD::get_singleton()->free(velocity_buffer);
+		velocity_buffer = RID();
+	}
+
+	if (velocity_buffer_msaa != RID()) {
+		RD::get_singleton()->free(velocity_buffer_msaa);
+		velocity_buffer_msaa = RID();
+	}
 }
 
-void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
+void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) {
 	clear();
 
 	msaa = p_msaa;
+	use_taa = p_use_taa;
 
 	width = p_width;
 	height = p_height;
@@ -256,6 +288,13 @@ RID RenderForwardClustered::RenderBufferDataForwardClustered::get_color_pass_fb(
 	if (p_color_pass_flags & COLOR_PASS_FLAG_SEPARATE_SPECULAR) {
 		ensure_specular();
 		fb.push_back(use_msaa ? specular_msaa : specular);
+	} else {
+		fb.push_back(RID());
+	}
+
+	if (p_color_pass_flags & COLOR_PASS_FLAG_MOTION_VECTORS) {
+		ensure_velocity();
+		fb.push_back(use_msaa ? velocity_buffer_msaa : velocity_buffer);
 	} else {
 		fb.push_back(RID());
 	}
@@ -445,6 +484,10 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 					pipeline_color_pass_flags |= SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR;
 				}
 
+				if constexpr ((p_color_pass_flags & COLOR_PASS_FLAG_MOTION_VECTORS) != 0) {
+					pipeline_color_pass_flags |= SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS;
+				}
+
 				if constexpr ((p_color_pass_flags & COLOR_PASS_FLAG_TRANSPARENT) != 0) {
 					pipeline_color_pass_flags |= SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_TRANSPARENT;
 				}
@@ -567,9 +610,14 @@ void RenderForwardClustered::_render_list(RenderingDevice::DrawListID p_draw_lis
 			switch (p_params->color_pass_flags) {
 				VALID_FLAG_COMBINATION(0);
 				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_TRANSPARENT);
-				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
-				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_MULTIVIEW);
 				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_TRANSPARENT | COLOR_PASS_FLAG_MULTIVIEW);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_TRANSPARENT | COLOR_PASS_FLAG_MOTION_VECTORS);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_SEPARATE_SPECULAR | COLOR_PASS_FLAG_MULTIVIEW);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_SEPARATE_SPECULAR | COLOR_PASS_FLAG_MOTION_VECTORS);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_MULTIVIEW);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_MULTIVIEW | COLOR_PASS_FLAG_MOTION_VECTORS);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_MOTION_VECTORS);
 				default: {
 					ERR_FAIL_MSG("Invalid color pass flag combination " + itos(p_params->color_pass_flags));
 				}
@@ -631,6 +679,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
 	CameraMatrix correction;
 	correction.set_depth_correction(p_flip_y);
+	correction.add_jitter_offset(p_render_data->taa_jitter);
 	CameraMatrix projection = correction * p_render_data->cam_projection;
 
 	//store camera into ubo
@@ -644,6 +693,9 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix_view[v]);
 		RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix_view[v]);
 	}
+
+	scene_state.ubo.taa_jitter[0] = p_render_data->taa_jitter.x;
+	scene_state.ubo.taa_jitter[1] = p_render_data->taa_jitter.y;
 
 	scene_state.ubo.z_far = p_render_data->z_far;
 	scene_state.ubo.z_near = p_render_data->z_near;
@@ -708,61 +760,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 			}
 		}
 	}
-#if 0
-	if (p_render_data->render_buffers.is_valid() && render_buffers_is_sdfgi_enabled(p_render_data->render_buffers)) {
-		scene_state.ubo.sdfgi_cascade_count = render_buffers_get_sdfgi_cascade_count(p_render_data->render_buffers);
-		scene_state.ubo.sdfgi_probe_axis_size = render_buffers_get_sdfgi_cascade_probe_count(p_render_data->render_buffers);
-		scene_state.ubo.sdfgi_cascade_probe_size[0] = scene_state.ubo.sdfgi_probe_axis_size - 1; //float version for performance
-		scene_state.ubo.sdfgi_cascade_probe_size[1] = scene_state.ubo.sdfgi_probe_axis_size - 1;
-		scene_state.ubo.sdfgi_cascade_probe_size[2] = scene_state.ubo.sdfgi_probe_axis_size - 1;
 
-		float csize = render_buffers_get_sdfgi_cascade_size(p_render_data->render_buffers);
-		scene_state.ubo.sdfgi_probe_to_uvw = 1.0 / float(scene_state.ubo.sdfgi_cascade_probe_size[0]);
-		float occ_bias = 0.0;
-		scene_state.ubo.sdfgi_occlusion_bias = occ_bias / csize;
-		scene_state.ubo.sdfgi_use_occlusion = render_buffers_is_sdfgi_using_occlusion(p_render_data->render_buffers);
-		scene_state.ubo.sdfgi_energy = render_buffers_get_sdfgi_energy(p_render_data->render_buffers);
-
-		float cascade_voxel_size = (csize / scene_state.ubo.sdfgi_cascade_probe_size[0]);
-		float occlusion_clamp = (cascade_voxel_size - 0.5) / cascade_voxel_size;
-		scene_state.ubo.sdfgi_occlusion_clamp[0] = occlusion_clamp;
-		scene_state.ubo.sdfgi_occlusion_clamp[1] = occlusion_clamp;
-		scene_state.ubo.sdfgi_occlusion_clamp[2] = occlusion_clamp;
-		scene_state.ubo.sdfgi_normal_bias = (render_buffers_get_sdfgi_normal_bias(p_render_data->render_buffers) / csize) * scene_state.ubo.sdfgi_cascade_probe_size[0];
-
-		//vec2 tex_pixel_size = 1.0 / vec2(ivec2( (OCT_SIZE+2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE+2) * params.probe_axis_size ) );
-		//vec3 probe_uv_offset = (ivec3(OCT_SIZE+2,OCT_SIZE+2,(OCT_SIZE+2) * params.probe_axis_size)) * tex_pixel_size.xyx;
-
-		uint32_t oct_size = gi.sdfgi_get_lightprobe_octahedron_size();
-
-		scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[0] = 1.0 / ((oct_size + 2) * scene_state.ubo.sdfgi_probe_axis_size * scene_state.ubo.sdfgi_probe_axis_size);
-		scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[1] = 1.0 / ((oct_size + 2) * scene_state.ubo.sdfgi_probe_axis_size);
-		scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[2] = 1.0;
-
-		scene_state.ubo.sdfgi_probe_uv_offset[0] = float(oct_size + 2) * scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[0];
-		scene_state.ubo.sdfgi_probe_uv_offset[1] = float(oct_size + 2) * scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[1];
-		scene_state.ubo.sdfgi_probe_uv_offset[2] = float((oct_size + 2) * scene_state.ubo.sdfgi_probe_axis_size) * scene_state.ubo.sdfgi_lightprobe_tex_pixel_size[0];
-
-		scene_state.ubo.sdfgi_occlusion_renormalize[0] = 0.5;
-		scene_state.ubo.sdfgi_occlusion_renormalize[1] = 1.0;
-		scene_state.ubo.sdfgi_occlusion_renormalize[2] = 1.0 / float(scene_state.ubo.sdfgi_cascade_count);
-
-		for (uint32_t i = 0; i < scene_state.ubo.sdfgi_cascade_count; i++) {
-			SceneState::UBO::SDFGICascade &c = scene_state.ubo.sdfgi_cascades[i];
-			Vector3 pos = render_buffers_get_sdfgi_cascade_offset(p_render_data->render_buffers, i);
-			pos -= p_render_data->cam_transform.origin; //make pos local to camera, to reduce numerical error
-			c.position[0] = pos.x;
-			c.position[1] = pos.y;
-			c.position[2] = pos.z;
-			c.to_probe = 1.0 / render_buffers_get_sdfgi_cascade_probe_size(p_render_data->render_buffers, i);
-
-			Vector3i probe_ofs = render_buffers_get_sdfgi_cascade_probe_offset(p_render_data->render_buffers, i);
-			c.probe_world_offset[0] = probe_ofs.x;
-			c.probe_world_offset[1] = probe_ofs.y;
-			c.probe_world_offset[2] = probe_ofs.z;
-		}
-	}
-#endif
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		scene_state.ubo.use_ambient_light = true;
 		scene_state.ubo.ambient_light_color_energy[0] = 1;
@@ -862,14 +860,41 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	scene_state.ubo.roughness_limiter_amount = screen_space_roughness_limiter_get_amount();
 	scene_state.ubo.roughness_limiter_limit = screen_space_roughness_limiter_get_limit();
 
+	if (p_render_data->render_buffers.is_valid()) {
+		RenderBufferDataForwardClustered *render_buffers = static_cast<RenderBufferDataForwardClustered *>(render_buffers_get_data(p_render_data->render_buffers));
+		if (render_buffers->use_taa || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
+			memcpy(&scene_state.prev_ubo, &scene_state.ubo, sizeof(SceneState::UBO));
+
+			CameraMatrix prev_correction;
+			prev_correction.set_depth_correction(true);
+			prev_correction.add_jitter_offset(p_render_data->prev_taa_jitter);
+			CameraMatrix prev_projection = prev_correction * p_render_data->prev_cam_projection;
+
+			//store camera into ubo
+			RendererStorageRD::store_camera(prev_projection, scene_state.prev_ubo.projection_matrix);
+			RendererStorageRD::store_camera(prev_projection.inverse(), scene_state.prev_ubo.inv_projection_matrix);
+			RendererStorageRD::store_transform(p_render_data->prev_cam_transform, scene_state.prev_ubo.inv_view_matrix);
+			RendererStorageRD::store_transform(p_render_data->prev_cam_transform.affine_inverse(), scene_state.prev_ubo.view_matrix);
+
+			for (uint32_t v = 0; v < p_render_data->view_count; v++) {
+				prev_projection = prev_correction * p_render_data->view_projection[v];
+				RendererStorageRD::store_camera(prev_projection, scene_state.prev_ubo.projection_matrix_view[v]);
+				RendererStorageRD::store_camera(prev_projection.inverse(), scene_state.prev_ubo.inv_projection_matrix_view[v]);
+			}
+			scene_state.prev_ubo.taa_jitter[0] = p_render_data->prev_taa_jitter.x;
+			scene_state.prev_ubo.taa_jitter[1] = p_render_data->prev_taa_jitter.y;
+			scene_state.prev_ubo.time -= time_step;
+		}
+	}
+
 	if (p_index >= (int)scene_state.uniform_buffers.size()) {
 		uint32_t from = scene_state.uniform_buffers.size();
 		scene_state.uniform_buffers.resize(p_index + 1);
 		for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
-			scene_state.uniform_buffers[i] = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
+			scene_state.uniform_buffers[i] = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO) * 2);
 		}
 	}
-	RD::get_singleton()->buffer_update(scene_state.uniform_buffers[p_index], 0, sizeof(SceneState::UBO), &scene_state.ubo, RD::BARRIER_MASK_RASTER);
+	RD::get_singleton()->buffer_update(scene_state.uniform_buffers[p_index], 0, sizeof(SceneState::UBO) * 2, &scene_state.ubo_data, RD::BARRIER_MASK_RASTER);
 }
 
 void RenderForwardClustered::_update_instance_data_buffer(RenderListType p_render_list) {
@@ -895,6 +920,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 	if (p_render_info) {
 		p_render_info[RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += element_total;
 	}
+	uint64_t frame = RSG::rasterizer->get_frame_number();
 	uint32_t repeats = 0;
 	GeometryInstanceSurfaceDataCache *prev_surface = nullptr;
 	for (uint32_t i = 0; i < element_total; i++) {
@@ -903,10 +929,17 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 
 		SceneState::InstanceData &instance_data = scene_state.instance_data[p_render_list][i + p_offset];
 
+		if (inst->prev_transform_dirty && frame > inst->prev_transform_change_frame + 1 && inst->prev_transform_change_frame) {
+			inst->prev_transform = inst->transform;
+			inst->prev_transform_dirty = false;
+		}
+
 		if (inst->store_transform_cache) {
 			RendererStorageRD::store_transform(inst->transform, instance_data.transform);
+			RendererStorageRD::store_transform(inst->prev_transform, instance_data.prev_transform);
 		} else {
 			RendererStorageRD::store_transform(Transform3D(), instance_data.transform);
+			RendererStorageRD::store_transform(Transform3D(), instance_data.prev_transform);
 		}
 
 		instance_data.flags = inst->flags_cache;
@@ -1281,6 +1314,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		screen_size.x = render_buffer->width;
 		screen_size.y = render_buffer->height;
 
+		if (render_buffer->use_taa || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
+			color_pass_flags |= COLOR_PASS_FLAG_MOTION_VECTORS;
+		}
+
 		if (p_render_data->voxel_gi_instances->size() > 0) {
 			using_voxelgi = true;
 		}
@@ -1529,7 +1566,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			c.push_back(cc);
 
 			if (render_buffer) {
-				c.push_back(Color(0, 0, 0, 0));
+				c.push_back(Color(0, 0, 0, 0)); // Separate specular
+				c.push_back(Color(0, 0, 0, 0)); // Motion vectors
 			}
 		}
 
@@ -1642,7 +1680,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
 
 	{
-		uint32_t transparent_color_pass_flags = (color_pass_flags | COLOR_PASS_FLAG_TRANSPARENT) & ~COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+		uint32_t transparent_color_pass_flags = (color_pass_flags | COLOR_PASS_FLAG_TRANSPARENT) & ~(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
 		RID alpha_framebuffer = render_buffer ? render_buffer->get_color_pass_fb(transparent_color_pass_flags) : color_only_framebuffer;
 		RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), false, PASS_MODE_COLOR, transparent_color_pass_flags, render_buffer == nullptr, p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->view_count);
 		_render_list_with_threads(&render_list_params, alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
@@ -1656,6 +1694,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		RD::get_singleton()->texture_resolve_multisample(render_buffer->color_msaa, render_buffer->color);
+		if (render_buffer->use_taa) {
+			RD::get_singleton()->texture_resolve_multisample(render_buffer->velocity_buffer_msaa, render_buffer->velocity_buffer);
+		}
 		storage->get_effects()->resolve_depth(render_buffer->depth_msaa, render_buffer->depth, Vector2i(render_buffer->width, render_buffer->height), texture_multisamples[render_buffer->msaa]);
 	}
 
@@ -1667,6 +1708,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_copy_framebuffer_to_ssil(p_render_data->render_buffers);
 	}
 	RD::get_singleton()->draw_command_end_label();
+
+	if (render_buffer && render_buffer->use_taa) {
+		RENDER_TIMESTAMP("TAA")
+		_process_taa(p_render_data->render_buffers, render_buffer->velocity_buffer, p_render_data->z_near, p_render_data->z_far);
+	}
 
 	if (p_render_data->render_buffers.is_valid()) {
 		_debug_draw_cluster(p_render_data->render_buffers);
@@ -2594,7 +2640,13 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 RID RenderForwardClustered::_render_buffers_get_normal_texture(RID p_render_buffers) {
 	RenderBufferDataForwardClustered *rb = static_cast<RenderBufferDataForwardClustered *>(render_buffers_get_data(p_render_buffers));
 
-	return rb->normal_roughness_buffer;
+	return rb->msaa == RS::VIEWPORT_MSAA_DISABLED ? rb->normal_roughness_buffer : rb->normal_roughness_buffer_msaa;
+}
+
+RID RenderForwardClustered::_render_buffers_get_velocity_texture(RID p_render_buffers) {
+	RenderBufferDataForwardClustered *rb = static_cast<RenderBufferDataForwardClustered *>(render_buffers_get_data(p_render_buffers));
+
+	return rb->msaa == RS::VIEWPORT_MSAA_DISABLED ? rb->velocity_buffer : rb->velocity_buffer_msaa;
 }
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
@@ -3014,6 +3066,13 @@ void RenderForwardClustered::geometry_instance_set_mesh_instance(GeometryInstanc
 void RenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
+
+	uint64_t frame = RSG::rasterizer->get_frame_number();
+	if (frame != ginstance->prev_transform_change_frame) {
+		ginstance->prev_transform = ginstance->transform;
+		ginstance->prev_transform_change_frame = frame;
+		ginstance->prev_transform_dirty = true;
+	}
 	ginstance->transform = p_transform;
 	ginstance->mirror = p_transform.basis.determinant() < 0;
 	ginstance->data->aabb = p_aabb;
