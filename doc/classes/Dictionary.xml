@@ -291,6 +291,14 @@
 				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
+		<method name="merge">
+			<return type="void" />
+			<argument index="0" name="dictionary" type="Dictionary" />
+			<argument index="1" name="overwrite" type="bool" default="false" />
+			<description>
+				Adds elements from [code]dictionary[/code] to this [Dictionary]. By default, duplicate keys will not be copied over, unless [code]overwrite[/code] is [code]true[/code].
+			</description>
+		</method>
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
