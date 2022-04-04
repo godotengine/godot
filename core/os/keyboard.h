@@ -315,7 +315,7 @@ constexpr Key operator-(uint32_t a, Key b) {
 }
 
 constexpr Key &operator-=(Key &a, int b) {
-  a = static_cast<Key>(static_cast<int>(a) - static_cast<int>(b));
+	a = static_cast<Key>(static_cast<int>(a) - static_cast<int>(b));
 	return a;
 }
 
@@ -340,17 +340,17 @@ constexpr Key operator|(Key a, Key b) {
 }
 
 constexpr Key &operator|=(Key &a, Key b) {
-  a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
+	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
 	return a;
 }
 
 constexpr Key &operator|=(Key &a, KeyModifierMask b) {
-  a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
+	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
 	return a;
 }
 
 constexpr Key &operator&=(Key &a, KeyModifierMask b) {
-  a = static_cast<Key>(static_cast<int>(a) & static_cast<int>(b));
+	a = static_cast<Key>(static_cast<int>(a) & static_cast<int>(b));
 	return a;
 }
 
