@@ -51,6 +51,7 @@ private:
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
+	jmethodID _get_scaled_density = 0;
 	jmethodID _get_screen_refresh_rate = 0;
 	jmethodID _screen_get_usable_rect = 0;
 	jmethodID _get_unique_id = 0;
@@ -72,6 +73,7 @@ public:
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
+	float get_scaled_density();
 	float get_screen_refresh_rate(float fallback);
 	void screen_get_usable_rect(int (&p_rect_xywh)[4]);
 	String get_unique_id();
