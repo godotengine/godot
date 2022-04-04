@@ -176,6 +176,7 @@ EditorLog::EditorLog() {
 	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_deselect_on_focus_loss_enabled(false);
 	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2007-2022 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
