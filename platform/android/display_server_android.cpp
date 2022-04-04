@@ -161,6 +161,13 @@ int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_COND_V(!godot_io_java, 1.0f);
+
+	return godot_io_java->get_scaled_density();
+}
+
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	if (!godot_io_java) {
