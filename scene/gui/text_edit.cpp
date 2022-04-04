@@ -471,6 +471,11 @@ void TextEdit::_notification(int p_what) {
 				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
+				// Prevent too small velocity to block scrolling
+				if (Math::abs(vel) < v_scroll->get_step()) {
+					vel = v_scroll->get_step() * SIGN(vel);
+				}
+
 				if (Math::abs(vel) >= dist) {
 					set_v_scroll(target_v_scroll);
 					scrolling = false;
@@ -4390,6 +4395,8 @@ int TextEdit::get_h_scroll() const {
 }
 
 void TextEdit::set_v_scroll_speed(float p_speed) {
+	// Prevent setting a vertical scroll speed value under 1.0
+	ERR_FAIL_COND(p_speed < 1.0);
 	v_scroll_speed = p_speed;
 }
 
