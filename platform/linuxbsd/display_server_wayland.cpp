@@ -52,6 +52,8 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 			wl_display_dispatch_pending(wls->display);
 		}
 
+		wl_display_flush(wls->display);
+
 		// Wait for the event file descriptor to have new data.
 		poll(&poll_fd, 1, -1);
 
