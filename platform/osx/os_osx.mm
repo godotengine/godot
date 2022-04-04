@@ -313,21 +313,22 @@ String OS_OSX::get_executable_path() const {
 }
 
 Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
-	if (@available(macOS 10.15, *)) {
-		// Use NSWorkspace if path is an .app bundle.
-		NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
-		NSBundle *bundle = [NSBundle bundleWithURL:url];
-		if (bundle) {
-			NSMutableArray *arguments = [[NSMutableArray alloc] init];
-			for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-				[arguments addObject:[NSString stringWithUTF8String:E->get().utf8().get_data()]];
-			}
+	// Use NSWorkspace if path is an .app bundle.
+	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+	NSBundle *bundle = [NSBundle bundleWithURL:url];
+	if (bundle) {
+		NSMutableArray *arguments = [[NSMutableArray alloc] init];
+		for (const String &arg : p_arguments) {
+			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
+		}
+		if (@available(macOS 10.15, *)) {
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
 			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
 			__block Error err = ERR_TIMEOUT;
 			__block pid_t pid = 0;
+
 			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
 												  configuration:configuration
 											  completionHandler:^(NSRunningApplication *app, NSError *error) {
@@ -350,7 +351,19 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 
 			return err;
 		} else {
-			return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
+			Error err = ERR_TIMEOUT;
+			NSError *error = nullptr;
+			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
+			if (error) {
+				err = ERR_CANT_FORK;
+				NSLog(@"Failed to execute: %@", error.localizedDescription);
+			} else {
+				if (r_child_id) {
+					*r_child_id = (ProcessID)[app processIdentifier];
+				}
+				err = OK;
+			}
+			return err;
 		}
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
