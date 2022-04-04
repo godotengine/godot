@@ -692,8 +692,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("hover", "CheckBox", sb_checkbox);
 	theme->set_icon("checked", "CheckBox", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "CheckBox", theme->get_icon("GuiUnchecked", "EditorIcons"));
+	theme->set_icon("checked_disabled", "CheckBox", theme->get_icon("GuiCheckedDisabled", "EditorIcons"));
+	theme->set_icon("unchecked_disabled", "CheckBox", theme->get_icon("GuiUncheckedDisabled", "EditorIcons"));
 	theme->set_icon("radio_checked", "CheckBox", theme->get_icon("GuiRadioChecked", "EditorIcons"));
 	theme->set_icon("radio_unchecked", "CheckBox", theme->get_icon("GuiRadioUnchecked", "EditorIcons"));
+	theme->set_icon("radio_checked_disabled", "CheckBox", theme->get_icon("GuiRadioCheckedDisabled", "EditorIcons"));
+	theme->set_icon("radio_unchecked_disabled", "CheckBox", theme->get_icon("GuiRadioUncheckedDisabled", "EditorIcons"));
 
 	theme->set_color("font_color", "CheckBox", font_color);
 	theme->set_color("font_color_hover", "CheckBox", font_color_hl);

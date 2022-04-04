@@ -39,6 +39,8 @@ Size2 CheckBox::get_icon_size() const {
 	Ref<Texture> unchecked_disabled = Control::get_icon("unchecked_disabled");
 	Ref<Texture> radio_checked = Control::get_icon("radio_checked");
 	Ref<Texture> radio_unchecked = Control::get_icon("radio_unchecked");
+	Ref<Texture> radio_checked_disabled = Control::get_icon("radio_checked_disabled");
+	Ref<Texture> radio_unchecked_disabled = Control::get_icon("radio_unchecked_disabled");
 
 	Size2 tex_size = Size2(0, 0);
 	if (!checked.is_null()) {
@@ -52,6 +54,18 @@ Size2 CheckBox::get_icon_size() const {
 	}
 	if (!radio_unchecked.is_null()) {
 		tex_size = Size2(MAX(tex_size.width, radio_unchecked->get_width()), MAX(tex_size.height, radio_unchecked->get_height()));
+	}
+	if (!checked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, checked_disabled->get_width()), MAX(tex_size.height, checked_disabled->get_height()));
+	}
+	if (!unchecked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, unchecked_disabled->get_width()), MAX(tex_size.height, unchecked_disabled->get_height()));
+	}
+	if (!radio_checked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, radio_checked_disabled->get_width()), MAX(tex_size.height, radio_checked_disabled->get_height()));
+	}
+	if (!radio_unchecked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, radio_unchecked_disabled->get_width()), MAX(tex_size.height, radio_unchecked_disabled->get_height()));
 	}
 	return tex_size;
 }
