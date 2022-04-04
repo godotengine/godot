@@ -512,7 +512,7 @@
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
-			[b]Note:[/b] This setting is ignored on iOS and Android.
+			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height.
