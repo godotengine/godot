@@ -406,7 +406,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	} else if (script.is_valid()) {
 		StringName ibt = script->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
+		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit from Node: " + p_path + ".");
 
 		Object *obj = ClassDB::instantiate(ibt);
 
