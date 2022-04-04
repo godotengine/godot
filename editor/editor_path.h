@@ -42,12 +42,12 @@ class EditorSelectionHistory;
 class EditorPath : public Button {
 	GDCLASS(EditorPath, Button);
 
-	EditorSelectionHistory *history;
+	EditorSelectionHistory *history = nullptr;
 
-	TextureRect *current_object_icon;
-	Label *current_object_label;
-	TextureRect *sub_objects_icon;
-	PopupMenu *sub_objects_menu;
+	TextureRect *current_object_icon = nullptr;
+	Label *current_object_label = nullptr;
+	TextureRect *sub_objects_icon = nullptr;
+	PopupMenu *sub_objects_menu = nullptr;
 
 	Vector<ObjectID> objects;
 

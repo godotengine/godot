@@ -65,7 +65,7 @@ public:
 class PopupPanel : public Popup {
 	GDCLASS(PopupPanel, Popup);
 
-	Panel *panel;
+	Panel *panel = nullptr;
 
 protected:
 	void _update_child_rects();

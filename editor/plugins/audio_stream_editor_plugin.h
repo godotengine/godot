@@ -75,7 +75,7 @@ public:
 class AudioStreamEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
-	AudioStreamEditor *audio_editor;
+	AudioStreamEditor *audio_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "Audio"; }

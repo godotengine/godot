@@ -430,11 +430,11 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-	Object *owner;
+	Object *owner = nullptr;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
 	Map<StringName, Variant> constants;
-	ScriptLanguage *language;
+	ScriptLanguage *language = nullptr;
 	Ref<Script> script;
 
 public:

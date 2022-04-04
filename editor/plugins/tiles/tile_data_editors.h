@@ -93,7 +93,7 @@ private:
 	bool multiple_polygon_mode = false;
 
 	bool use_undo_redo = true;
-	UndoRedo *editor_undo_redo;
+	UndoRedo *editor_undo_redo = nullptr;
 
 	// UI
 	int hovered_polygon_index = -1;
@@ -113,20 +113,20 @@ private:
 	Vector2 drag_last_pos;
 	PackedVector2Array drag_old_polygon;
 
-	HBoxContainer *toolbar;
+	HBoxContainer *toolbar = nullptr;
 	Ref<ButtonGroup> tools_button_group;
-	Button *button_create;
-	Button *button_edit;
-	Button *button_delete;
-	Button *button_pixel_snap;
-	MenuButton *button_advanced_menu;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
+	Button *button_pixel_snap = nullptr;
+	MenuButton *button_advanced_menu = nullptr;
 
 	Vector<Point2> in_creation_polygon;
 
-	Panel *panel;
-	Control *base_control;
-	EditorZoomWidget *editor_zoom_widget;
-	Button *button_center_view;
+	Panel *panel = nullptr;
+	Control *base_control = nullptr;
+	EditorZoomWidget *editor_zoom_widget = nullptr;
+	Button *button_center_view = nullptr;
 	Vector2 panning;
 
 	Ref<Texture2D> background_texture;
@@ -188,12 +188,12 @@ class TileDataDefaultEditor : public TileDataEditor {
 private:
 	// Toolbar
 	HBoxContainer *toolbar = memnew(HBoxContainer);
-	Button *picker_button;
+	Button *picker_button = nullptr;
 
 	// UI
 	Ref<Texture2D> tile_bool_checked;
 	Ref<Texture2D> tile_bool_unchecked;
-	Label *label;
+	Label *label = nullptr;
 
 	EditorProperty *property_editor = nullptr;
 
@@ -214,7 +214,7 @@ private:
 protected:
 	DummyObject *dummy_object = memnew(DummyObject);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	StringName type;
 	String property;
@@ -268,7 +268,7 @@ private:
 	int occlusion_layer = -1;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor;
+	GenericTilePolygonEditor *polygon_editor = nullptr;
 
 	void _polygon_changed(PackedVector2Array p_polygon);
 
@@ -279,7 +279,7 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _tile_set_changed() override;
 
@@ -299,7 +299,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	int physics_layer = -1;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor;
+	GenericTilePolygonEditor *polygon_editor = nullptr;
 	DummyObject *dummy_object = memnew(DummyObject);
 	Map<StringName, EditorProperty *> property_editors;
 
@@ -314,7 +314,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _tile_set_changed() override;
 
@@ -335,7 +335,7 @@ class TileDataTerrainsEditor : public TileDataEditor {
 private:
 	// Toolbar
 	HBoxContainer *toolbar = memnew(HBoxContainer);
-	Button *picker_button;
+	Button *picker_button = nullptr;
 
 	// Painting state.
 	enum DragType {
@@ -352,7 +352,7 @@ private:
 	Variant drag_painted_value;
 
 	// UI
-	Label *label;
+	Label *label = nullptr;
 	DummyObject *dummy_object = memnew(DummyObject);
 	EditorPropertyEnum *terrain_set_property_editor = nullptr;
 	EditorPropertyEnum *terrain_property_editor = nullptr;
@@ -366,7 +366,7 @@ protected:
 
 	void _notification(int p_what);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 public:
 	virtual Control *get_toolbar() override { return toolbar; };
@@ -388,7 +388,7 @@ private:
 	PackedVector2Array navigation_polygon;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor;
+	GenericTilePolygonEditor *polygon_editor = nullptr;
 
 	void _polygon_changed(PackedVector2Array p_polygon);
 
@@ -399,7 +399,7 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _tile_set_changed() override;
 

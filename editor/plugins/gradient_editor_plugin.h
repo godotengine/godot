@@ -65,9 +65,9 @@ class GradientReverseButton : public BaseButton {
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
 
-	GradientEditor *editor;
-	HBoxContainer *gradient_tools_hbox;
-	GradientReverseButton *reverse_btn;
+	GradientEditor *editor = nullptr;
+	HBoxContainer *gradient_tools_hbox = nullptr;
+	GradientReverseButton *reverse_btn = nullptr;
 
 	void _reverse_button_pressed();
 

@@ -85,8 +85,8 @@ public:
 		int index;
 		StringName setter;
 		StringName getter;
-		MethodBind *_setptr;
-		MethodBind *_getptr;
+		MethodBind *_setptr = nullptr;
+		MethodBind *_getptr = nullptr;
 		Variant::Type type;
 	};
 

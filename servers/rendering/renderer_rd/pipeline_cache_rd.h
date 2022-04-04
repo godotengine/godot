@@ -57,7 +57,7 @@ class PipelineCacheRD {
 		RID pipeline;
 	};
 
-	Version *versions;
+	Version *versions = nullptr;
 	uint32_t version_count;
 
 	RID _generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe, uint32_t p_render_pass, uint32_t p_bool_specializations = 0);

@@ -56,11 +56,11 @@ private:
 	void _version_button_pressed();
 	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column = 0);
 
-	LinkButton *version_btn;
-	Tree *_tpl_tree;
-	RichTextLabel *_license_text;
-	RichTextLabel *_tpl_text;
-	TextureRect *_logo;
+	LinkButton *version_btn = nullptr;
+	Tree *_tpl_tree = nullptr;
+	RichTextLabel *_license_text = nullptr;
+	RichTextLabel *_tpl_text = nullptr;
+	TextureRect *_logo = nullptr;
 
 	void _theme_changed();
 

@@ -66,7 +66,7 @@ struct Shader {
 	RID self;
 
 	RS::ShaderMode mode;
-	ShaderGLES3 *shader;
+	ShaderGLES3 *shader = nullptr;
 	String code;
 	SelfList<Material>::List materials;
 
@@ -185,7 +185,7 @@ struct Shader {
 
 struct Material {
 	RID self;
-	Shader *shader;
+	Shader *shader = nullptr;
 	Map<StringName, Variant> params;
 	SelfList<Material> list;
 	SelfList<Material> dirty_list;

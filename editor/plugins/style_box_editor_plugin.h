@@ -40,7 +40,7 @@
 class StyleBoxPreview : public VBoxContainer {
 	GDCLASS(StyleBoxPreview, VBoxContainer);
 
-	Control *preview;
+	Control *preview = nullptr;
 	Ref<StyleBox> stylebox;
 
 	void _sb_changed();

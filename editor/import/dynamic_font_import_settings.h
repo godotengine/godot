@@ -66,7 +66,7 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
 
-	EditorLocaleDialog *locale_select;
+	EditorLocaleDialog *locale_select = nullptr;
 	Vector<String> script_codes;
 
 	// Root layout

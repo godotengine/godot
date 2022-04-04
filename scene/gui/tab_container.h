@@ -38,7 +38,7 @@
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
-	TabBar *tab_bar;
+	TabBar *tab_bar = nullptr;
 	bool tabs_visible = true;
 	bool all_tabs_in_front = false;
 	bool menu_hovered = false;

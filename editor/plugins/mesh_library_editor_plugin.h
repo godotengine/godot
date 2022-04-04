@@ -43,10 +43,10 @@ class MeshLibraryEditor : public Control {
 
 	Ref<MeshLibrary> mesh_library;
 
-	MenuButton *menu;
-	ConfirmationDialog *cd_remove;
-	ConfirmationDialog *cd_update;
-	EditorFileDialog *file;
+	MenuButton *menu = nullptr;
+	ConfirmationDialog *cd_remove = nullptr;
+	ConfirmationDialog *cd_update = nullptr;
+	EditorFileDialog *file = nullptr;
 	bool apply_xforms;
 	int to_erase;
 
@@ -81,7 +81,7 @@ public:
 class MeshLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(MeshLibraryEditorPlugin, EditorPlugin);
 
-	MeshLibraryEditor *mesh_library_editor;
+	MeshLibraryEditor *mesh_library_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "MeshLibrary"; }

@@ -75,8 +75,8 @@ public:
 	class Iterator {
 		friend class SafeList;
 
-		SafeListNode *cursor;
-		SafeList *list;
+		SafeListNode *cursor = nullptr;
+		SafeList *list = nullptr;
 
 		Iterator(SafeListNode *p_cursor, SafeList *p_list) :
 				cursor(p_cursor), list(p_list) {
@@ -253,8 +253,8 @@ public:
 	class Iterator {
 		friend class SafeList;
 
-		SafeListNode *cursor;
-		SafeList *list;
+		SafeListNode *cursor = nullptr;
+		SafeList *list = nullptr;
 
 	public:
 		Iterator(SafeListNode *p_cursor, SafeList *p_list) :

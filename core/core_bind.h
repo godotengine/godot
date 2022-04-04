@@ -447,7 +447,7 @@ public:
 
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
-	DirAccess *d;
+	DirAccess *d = nullptr;
 
 	bool dir_open = false;
 	bool include_navigational = false;

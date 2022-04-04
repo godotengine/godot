@@ -37,7 +37,7 @@
 class OpenXREditorPlugin : public EditorPlugin {
 	GDCLASS(OpenXREditorPlugin, EditorPlugin);
 
-	OpenXRActionMapEditor *action_map_editor;
+	OpenXRActionMapEditor *action_map_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "OpenXRPlugin"; }

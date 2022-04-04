@@ -38,11 +38,11 @@
 class InputEventConfigContainer : public HBoxContainer {
 	GDCLASS(InputEventConfigContainer, HBoxContainer);
 
-	Label *input_event_text;
-	Button *open_config_button;
+	Label *input_event_text = nullptr;
+	Button *open_config_button = nullptr;
 
 	Ref<InputEvent> input_event;
-	InputEventConfigurationDialog *config_dialog;
+	InputEventConfigurationDialog *config_dialog = nullptr;
 
 	void _config_dialog_confirmed();
 	void _configure_pressed();

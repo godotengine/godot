@@ -47,7 +47,7 @@ private:
 	void _free_remotes(int p_peer);
 
 	Ref<SceneReplicationState> rep_state;
-	MultiplayerAPI *multiplayer;
+	MultiplayerAPI *multiplayer = nullptr;
 	PackedByteArray packet_cache;
 	int sync_mtu = 1350; // Highly dependent on underlying protocol.
 

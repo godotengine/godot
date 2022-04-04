@@ -40,7 +40,7 @@
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
-	Path3D *path;
+	Path3D *path = nullptr;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
@@ -70,14 +70,14 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
-	Separator *sep;
-	Button *curve_create;
-	Button *curve_edit;
-	Button *curve_del;
-	Button *curve_close;
-	MenuButton *handle_menu;
+	Separator *sep = nullptr;
+	Button *curve_create = nullptr;
+	Button *curve_edit = nullptr;
+	Button *curve_del = nullptr;
+	Button *curve_close = nullptr;
+	MenuButton *handle_menu = nullptr;
 
-	Path3D *path;
+	Path3D *path = nullptr;
 
 	void _update_theme();
 

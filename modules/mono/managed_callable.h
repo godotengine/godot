@@ -43,7 +43,7 @@
 class ManagedCallable : public CallableCustom {
 	friend class CSharpLanguage;
 	MonoGCHandleData delegate_handle;
-	GDMonoMethod *delegate_invoke;
+	GDMonoMethod *delegate_invoke = nullptr;
 
 #ifdef GD_MONO_HOT_RELOAD
 	SelfList<ManagedCallable> self_instance = this;

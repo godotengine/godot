@@ -39,8 +39,8 @@
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
 
-	SpinBox *layer;
-	Label *info;
+	SpinBox *layer = nullptr;
+	Label *info = nullptr;
 	Ref<TextureLayered> texture;
 
 	Ref<Shader> shaders[3];
@@ -48,7 +48,7 @@ class TextureLayeredEditor : public Control {
 
 	float x_rot = 0;
 	float y_rot = 0;
-	Control *texture_rect;
+	Control *texture_rect = nullptr;
 
 	void _make_shaders();
 

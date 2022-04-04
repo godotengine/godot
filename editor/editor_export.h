@@ -380,7 +380,7 @@ class EditorExport : public Node {
 
 	StringName _export_presets_updated;
 
-	Timer *save_timer;
+	Timer *save_timer = nullptr;
 	bool block_save = false;
 
 	static EditorExport *singleton;

@@ -70,11 +70,11 @@ class GDMonoClass {
 	StringName namespace_name;
 	StringName class_name;
 
-	MonoClass *mono_class;
-	GDMonoAssembly *assembly;
+	MonoClass *mono_class = nullptr;
+	GDMonoAssembly *assembly = nullptr;
 
 	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+	MonoCustomAttrInfo *attributes = nullptr;
 
 	// This contains both the original method names and remapped method names from the native Godot identifiers to the C# functions.
 	// Most method-related functions refer to this and it's possible this is unintuitive for outside users; this may be a prime location for refactoring or renaming.

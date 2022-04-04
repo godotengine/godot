@@ -74,7 +74,7 @@ private:
 		KEY_EVENT_BUFFER_SIZE = 512
 	};
 
-	FILE *stdo;
+	FILE *stdo = nullptr;
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
@@ -87,16 +87,16 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	RenderingServer *rendering_server;
+	RenderingServer *rendering_server = nullptr;
 	int pressrc;
 
-	ContextEGL_UWP *gl_context;
+	ContextEGL_UWP *gl_context = nullptr;
 	Windows::UI::Core::CoreWindow ^ window;
 
 	VideoMode video_mode;
 	int video_driver_index;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	AudioDriverXAudio2 audio_driver;
 
@@ -111,7 +111,7 @@ private:
 
 	CursorShape cursor_shape;
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	JoypadUWP ^ joypad;
 

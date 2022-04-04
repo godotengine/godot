@@ -40,22 +40,22 @@ class EditorFileDialog;
 class LocalizationEditor : public VBoxContainer {
 	GDCLASS(LocalizationEditor, VBoxContainer);
 
-	Tree *translation_list;
+	Tree *translation_list = nullptr;
 
-	EditorLocaleDialog *locale_select;
-	EditorFileDialog *translation_file_open;
+	EditorLocaleDialog *locale_select = nullptr;
+	EditorFileDialog *translation_file_open = nullptr;
 
-	Button *translation_res_option_add_button;
-	EditorFileDialog *translation_res_file_open_dialog;
-	EditorFileDialog *translation_res_option_file_open_dialog;
-	Tree *translation_remap;
-	Tree *translation_remap_options;
+	Button *translation_res_option_add_button = nullptr;
+	EditorFileDialog *translation_res_file_open_dialog = nullptr;
+	EditorFileDialog *translation_res_option_file_open_dialog = nullptr;
+	Tree *translation_remap = nullptr;
+	Tree *translation_remap_options = nullptr;
 
-	Tree *translation_pot_list;
-	EditorFileDialog *pot_file_open_dialog;
-	EditorFileDialog *pot_generate_dialog;
+	Tree *translation_pot_list = nullptr;
+	EditorFileDialog *pot_file_open_dialog = nullptr;
+	EditorFileDialog *pot_generate_dialog = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	bool updating_translations = false;
 	String localization_changed;
 

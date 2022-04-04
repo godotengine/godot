@@ -70,34 +70,34 @@ class InspectorDock : public VBoxContainer {
 		OBJECT_METHOD_BASE = 500
 	};
 
-	EditorData *editor_data;
+	EditorData *editor_data = nullptr;
 
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 
-	Object *current;
+	Object *current = nullptr;
 
-	Button *backward_button;
-	Button *forward_button;
+	Button *backward_button = nullptr;
+	Button *forward_button = nullptr;
 
-	EditorFileDialog *load_resource_dialog;
-	CreateDialog *new_resource_dialog;
-	Button *resource_new_button;
-	Button *resource_load_button;
-	MenuButton *resource_save_button;
-	MenuButton *resource_extra_button;
-	MenuButton *history_menu;
-	LineEdit *search;
+	EditorFileDialog *load_resource_dialog = nullptr;
+	CreateDialog *new_resource_dialog = nullptr;
+	Button *resource_new_button = nullptr;
+	Button *resource_load_button = nullptr;
+	MenuButton *resource_save_button = nullptr;
+	MenuButton *resource_extra_button = nullptr;
+	MenuButton *history_menu = nullptr;
+	LineEdit *search = nullptr;
 
-	Button *open_docs_button;
-	MenuButton *object_menu;
-	EditorPath *editor_path;
+	Button *open_docs_button = nullptr;
+	MenuButton *object_menu = nullptr;
+	EditorPath *editor_path = nullptr;
 
-	Button *warning;
-	AcceptDialog *warning_dialog;
+	Button *warning = nullptr;
+	AcceptDialog *warning_dialog = nullptr;
 
 	int current_option = -1;
-	ConfirmationDialog *unique_resources_confirmation;
-	Tree *unique_resources_list_tree;
+	ConfirmationDialog *unique_resources_confirmation = nullptr;
+	Tree *unique_resources_list_tree = nullptr;
 
 	EditorPropertyNameProcessor::Style property_name_style;
 

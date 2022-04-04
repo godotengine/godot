@@ -36,11 +36,11 @@
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
 
-	Tree *tree;
-	Label *asset_contents;
+	Tree *tree = nullptr;
+	Label *asset_contents = nullptr;
 	String package_path;
 	String asset_name;
-	AcceptDialog *error;
+	AcceptDialog *error = nullptr;
 	Map<String, TreeItem *> status_map;
 	bool updating = false;
 	void _item_edited();

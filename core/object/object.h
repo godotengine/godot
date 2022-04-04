@@ -538,8 +538,8 @@ private:
 
 	std::mutex _instance_binding_mutex;
 	struct InstanceBinding {
-		void *binding;
-		void *token;
+		void *binding = nullptr;
+		void *token = nullptr;
 		GDNativeInstanceBindingFreeCallback free_callback = nullptr;
 		GDNativeInstanceBindingReferenceCallback reference_callback = nullptr;
 	};
@@ -849,7 +849,7 @@ class ObjectDB {
 		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
 		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
 		uint64_t is_ref_counted : 1;
-		Object *object;
+		Object *object = nullptr;
 	};
 
 	static SpinLock spin_lock;

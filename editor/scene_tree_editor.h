@@ -41,7 +41,7 @@
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
 
-	EditorSelection *editor_selection;
+	EditorSelection *editor_selection = nullptr;
 
 	enum SceneTreeEditorButton {
 		BUTTON_SUBSCENE = 0,
@@ -55,14 +55,14 @@ class SceneTreeEditor : public Control {
 		BUTTON_PIN = 8,
 	};
 
-	Tree *tree;
-	Node *selected;
+	Tree *tree = nullptr;
+	Node *selected = nullptr;
 	ObjectID instance_node;
 
 	String filter;
 
-	AcceptDialog *error;
-	AcceptDialog *warning;
+	AcceptDialog *error = nullptr;
+	AcceptDialog *warning = nullptr;
 
 	bool auto_expand_selected = true;
 	bool connect_to_script_mode = false;
@@ -96,7 +96,7 @@ class SceneTreeEditor : public Control {
 	bool show_enabled_subscene = false;
 
 	void _renamed();
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	Set<Node *> marked;
 	bool marked_selectable = false;
@@ -125,7 +125,7 @@ class SceneTreeEditor : public Control {
 
 	void _warning_changed(Node *p_for_node);
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 
 	List<StringName> *script_types;
 	bool _is_script_type(const StringName &p_type) const;
@@ -166,10 +166,10 @@ public:
 class SceneTreeDialog : public ConfirmationDialog {
 	GDCLASS(SceneTreeDialog, ConfirmationDialog);
 
-	SceneTreeEditor *tree;
+	SceneTreeEditor *tree = nullptr;
 	//Button *select;
 	//Button *cancel;
-	LineEdit *filter;
+	LineEdit *filter = nullptr;
 
 	void _select();
 	void _cancel();
