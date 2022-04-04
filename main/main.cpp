@@ -2336,7 +2336,7 @@ bool Main::start() {
 					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
