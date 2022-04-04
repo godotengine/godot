@@ -513,7 +513,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
 
-	ClassDB::bind_method(D_METHOD("set_download_chunk_size"), &HTTPRequest::set_download_chunk_size);
+	ClassDB::bind_method(D_METHOD("set_download_chunk_size", "chunk_size"), &HTTPRequest::set_download_chunk_size);
 	ClassDB::bind_method(D_METHOD("get_download_chunk_size"), &HTTPRequest::get_download_chunk_size);
 
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);

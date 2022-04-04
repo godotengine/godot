@@ -7506,15 +7506,15 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_show_line_numbers", "enable"), &TextEdit::set_show_line_numbers);
 	ClassDB::bind_method(D_METHOD("is_show_line_numbers_enabled"), &TextEdit::is_show_line_numbers_enabled);
-	ClassDB::bind_method(D_METHOD("set_draw_tabs"), &TextEdit::set_draw_tabs);
+	ClassDB::bind_method(D_METHOD("set_draw_tabs", "enable"), &TextEdit::set_draw_tabs);
 	ClassDB::bind_method(D_METHOD("is_drawing_tabs"), &TextEdit::is_drawing_tabs);
-	ClassDB::bind_method(D_METHOD("set_draw_spaces"), &TextEdit::set_draw_spaces);
+	ClassDB::bind_method(D_METHOD("set_draw_spaces", "enable"), &TextEdit::set_draw_spaces);
 	ClassDB::bind_method(D_METHOD("is_drawing_spaces"), &TextEdit::is_drawing_spaces);
 	ClassDB::bind_method(D_METHOD("set_bookmark_gutter_enabled", "enable"), &TextEdit::set_bookmark_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("is_bookmark_gutter_enabled"), &TextEdit::is_bookmark_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("set_breakpoint_gutter_enabled", "enable"), &TextEdit::set_breakpoint_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("is_breakpoint_gutter_enabled"), &TextEdit::is_breakpoint_gutter_enabled);
-	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter"), &TextEdit::set_draw_fold_gutter);
+	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &TextEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &TextEdit::is_drawing_fold_gutter);
 	ClassDB::bind_method(D_METHOD("get_total_gutter_width"), &TextEdit::get_total_gutter_width);
 	ClassDB::bind_method(D_METHOD("get_visible_rows"), &TextEdit::get_visible_rows);
