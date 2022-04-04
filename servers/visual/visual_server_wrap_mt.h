@@ -669,13 +669,13 @@ public:
 	/* EVENT QUEUING */
 
 	FUNC3(request_frame_drawn_callback, Object *, const StringName &, const Variant &)
+	FUNC1(scenario_tick, RID)
+	FUNC2(scenario_pre_draw, RID, bool)
 
 	virtual void init();
 	virtual void finish();
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
-	virtual void scenario_tick(RID p_scenario);
-	virtual void scenario_pre_draw(RID p_scenario, bool p_will_draw);
 	FUNC1RC(bool, has_changed, ChangedPriority)
 
 	/* RENDER INFO */

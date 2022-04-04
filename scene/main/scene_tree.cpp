@@ -535,7 +535,7 @@ bool SceneTree::iteration(float p_time) {
 
 	current_frame++;
 
-	if (root->get_world().is_valid()) {
+	if (_physics_interpolation_enabled && root->get_world().is_valid()) {
 		RID scenario = root->get_world()->get_scenario();
 		if (scenario.is_valid()) {
 			VisualServer::get_singleton()->scenario_tick(scenario);
@@ -686,7 +686,7 @@ bool SceneTree::idle(float p_time) {
 
 #endif
 
-	if (root->get_world().is_valid()) {
+	if (_physics_interpolation_enabled && root->get_world().is_valid()) {
 		RID scenario = root->get_world()->get_scenario();
 		if (scenario.is_valid()) {
 			VisualServer::get_singleton()->scenario_pre_draw(scenario, true);

@@ -118,10 +118,14 @@ public:
 
 #define BIND1(m_name, m_type1) \
 	void m_name(m_type1 arg1) { DISPLAY_CHANGED BINDBASE->m_name(arg1); }
+#define BIND1N(m_name, m_type1) \
+	void m_name(m_type1 arg1) { BINDBASE->m_name(arg1); }
 #define BIND2(m_name, m_type1, m_type2) \
 	void m_name(m_type1 arg1, m_type2 arg2) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2); }
 #define BIND2C(m_name, m_type1, m_type2) \
 	void m_name(m_type1 arg1, m_type2 arg2) const { BINDBASE->m_name(arg1, arg2); }
+#define BIND2N(m_name, m_type1, m_type2) \
+	void m_name(m_type1 arg1, m_type2 arg2) { BINDBASE->m_name(arg1, arg2); }
 #define BIND3(m_name, m_type1, m_type2, m_type3) \
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3); }
 #define BIND4(m_name, m_type1, m_type2, m_type3, m_type4) \
@@ -149,7 +153,6 @@ public:
 #define BINDBASE VSG::storage
 
 	/* TEXTURE API */
-
 	BIND0R(RID, texture_create)
 	BIND7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
 	BIND3(texture_set_data, RID, const Ref<Image> &, int)
@@ -447,6 +450,11 @@ public:
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene
+
+	/* EVENT QUEUING */
+
+	BIND1N(scenario_tick, RID)
+	BIND2N(scenario_pre_draw, RID, bool)
 
 	/* CAMERA API */
 
@@ -764,8 +772,6 @@ public:
 	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const;
 	virtual void init();
 	virtual void finish();
-	virtual void scenario_tick(RID p_scenario);
-	virtual void scenario_pre_draw(RID p_scenario, bool p_will_draw);
 
 	/* STATUS INFORMATION */
 

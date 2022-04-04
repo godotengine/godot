@@ -306,8 +306,8 @@ public:
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size, int p_subdiv);
 	virtual void scenario_set_physics_interpolation_enabled(RID p_scenario, bool p_enabled);
-	void _scenario_tick(RID p_scenario);
-	void _scenario_pre_draw(RID p_scenario, bool p_will_draw);
+	void scenario_tick(RID p_scenario);
+	void scenario_pre_draw(RID p_scenario, bool p_will_draw);
 
 	/* INSTANCING API */
 

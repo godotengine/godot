@@ -36,18 +36,6 @@ void VisualServerWrapMT::thread_exit() {
 	exit.set();
 }
 
-void VisualServerWrapMT::thread_scenario_tick(RID p_scenario) {
-	if (!draw_pending.decrement()) {
-		visual_server->scenario_tick(p_scenario);
-	}
-}
-
-void VisualServerWrapMT::thread_scenario_pre_draw(RID p_scenario, bool p_will_draw) {
-	if (!draw_pending.decrement()) {
-		visual_server->scenario_pre_draw(p_scenario, p_will_draw);
-	}
-}
-
 void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 	if (!draw_pending.decrement()) {
 		visual_server->draw(p_swap_buffers, frame_step);
@@ -91,24 +79,6 @@ void VisualServerWrapMT::sync() {
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
-	}
-}
-
-void VisualServerWrapMT::scenario_tick(RID p_scenario) {
-	if (create_thread) {
-		draw_pending.increment();
-		command_queue.push(this, &VisualServerWrapMT::thread_scenario_tick, p_scenario);
-	} else {
-		visual_server->scenario_tick(p_scenario);
-	}
-}
-
-void VisualServerWrapMT::scenario_pre_draw(RID p_scenario, bool p_will_draw) {
-	if (create_thread) {
-		draw_pending.increment();
-		command_queue.push(this, &VisualServerWrapMT::thread_scenario_pre_draw, p_scenario, p_will_draw);
-	} else {
-		visual_server->scenario_pre_draw(p_scenario, p_will_draw);
 	}
 }
 

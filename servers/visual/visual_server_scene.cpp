@@ -476,7 +476,7 @@ void VisualServerScene::scenario_set_physics_interpolation_enabled(RID p_scenari
 	scenario->_interpolation_data.interpolation_enabled = p_enabled;
 }
 
-void VisualServerScene::_scenario_tick(RID p_scenario) {
+void VisualServerScene::scenario_tick(RID p_scenario) {
 	Scenario *scenario = scenario_owner.get(p_scenario);
 	ERR_FAIL_COND(!scenario);
 
@@ -485,7 +485,7 @@ void VisualServerScene::_scenario_tick(RID p_scenario) {
 	}
 }
 
-void VisualServerScene::_scenario_pre_draw(RID p_scenario, bool p_will_draw) {
+void VisualServerScene::scenario_pre_draw(RID p_scenario, bool p_will_draw) {
 	Scenario *scenario = scenario_owner.get(p_scenario);
 	ERR_FAIL_COND(!scenario);
 
