@@ -157,6 +157,8 @@ public:
 	virtual bool has_clipboard() const;
 	virtual String get_model_name() const;
 	virtual int get_screen_dpi(int p_screen = 0) const;
+	virtual float get_screen_scale(int p_screen = -1) const;
+	virtual float get_screen_max_scale() const;
 	virtual float get_screen_refresh_rate(int p_screen = 0) const;
 
 	virtual bool get_window_per_pixel_transparency_enabled() const { return transparency_enabled; }

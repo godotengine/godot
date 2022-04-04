@@ -222,8 +222,12 @@ public class GodotIO {
 	}
 
 	public int getScreenDPI() {
-		DisplayMetrics metrics = activity.getApplicationContext().getResources().getDisplayMetrics();
+		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
 		return (int)(metrics.density * 160f);
+	}
+
+	public float getScaledDensity() {
+		return activity.getResources().getDisplayMetrics().scaledDensity;
 	}
 
 	public double getScreenRefreshRate(double fallback) {
