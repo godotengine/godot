@@ -331,7 +331,10 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
-			match.name = term.is_empty() || _match_string(term, class_doc.name);
+			// If the search term is empty, add any classes which are not script docs or which don't start with
+			// a double-quotation. This will ensure that only C++ classes and explictly named classes will
+			// be added.
+			match.name = (term.is_empty() && (!class_doc.is_script_doc || class_doc.name[0] != '\"')) || _match_string(term, class_doc.name);
 		}
 
 		// Match members if the term is long enough.
@@ -398,6 +401,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 				}
 			}
 		}
+		matches[class_doc.name] = match;
 	}
 
 	iterator_doc = iterator_doc->next();
