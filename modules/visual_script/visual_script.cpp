@@ -487,6 +487,43 @@ int VisualScriptModule::get_available_id() const {
 	return (max + 1);
 }
 
+void VisualScript::add_module(const StringName &p_name, Ref<VisualScriptModule> p_mod) {
+	ERR_FAIL_COND(has_module(p_name));
+	if (!has_module(p_name)) {
+		modules[p_name] = p_mod;
+	}
+}
+
+void VisualScript::remove_module(const StringName &p_name) {
+	ERR_FAIL_COND(!has_module(p_name));
+	modules.erase(p_name);
+}
+
+Ref<VisualScriptModule> VisualScript::get_module(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!has_module(p_name), Ref<VisualScriptModule>());
+	return modules[p_name];
+}
+
+bool VisualScript::has_module(const StringName &p_name) const {
+	return modules.has(p_name);
+}
+
+String VisualScript::validate_module_name(const StringName &p_name) const {
+	int i = 1;
+	while (modules.has(p_name)) {
+		String t = String(p_name) + "_" + String::num_int64(i);
+		if (!modules.has(t))
+			return t;
+		i++;
+	}
+	return p_name;
+}
+
+void VisualScript::get_module_list(List<StringName> *r_module_names) const {
+	modules.get_key_list(r_module_names);
+}
+
+
 void VisualScript::add_function(const StringName &p_name, int p_func_node_id) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!String(p_name).is_valid_identifier());

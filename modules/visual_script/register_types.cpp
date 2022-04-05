@@ -54,7 +54,7 @@ void register_visual_script_types() {
 	ScriptServer::register_language(visual_script_language);
 
 	GDREGISTER_ABSTRACT_CLASS(VisualScript);
-	GDREGISTER_VIRTUAL_CLASS(VisualScriptNode);
+	GDREGISTER_ABSTRACT_CLASS(VisualScriptNode);
 	GDREGISTER_CLASS(VisualScriptModule);
 	GDREGISTER_CLASS(VisualScriptModuleNode);
 	GDREGISTER_CLASS(VisualScriptModuleEntryNode);

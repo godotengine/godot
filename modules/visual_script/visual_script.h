@@ -243,6 +243,8 @@ private:
 
 	bool is_tool_script;
 
+	HashMap<StringName, Ref<VisualScriptModule>> modules;
+
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);

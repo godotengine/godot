@@ -66,7 +66,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_CREATE_FUNCTION,
 		EDIT_TOGGLE_BREAKPOINT,
 		EDIT_FIND_NODE_TYPE,
-		EXIT_MODULE,
+		EXIT_SUBMODULE,
 		REFRESH_GRAPH,
 	};
 
@@ -216,11 +216,11 @@ class VisualScriptEditor : public ScriptEditorBase {
 	EditorFileDialog *module_resource_dialog;
 
 	void _load_module(int p_select, int p_id);
-	void _load_module_from_path();
+	//void _load_module_from_path();
 	void _new_module();
-	void _save_module();
+	//void _save_module();
 	void _edit_module();
-	void _module_name_save(const String &p_text, Ref<VisualScriptModule> p_module);
+	//void _module_name_save(const String &p_text, Ref<VisualScriptModule> p_module);
 	void _module_action(String p_file);
 
 	void _port_action_menu(int p_option);
@@ -297,6 +297,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _remove_func_input(Node *p_node);
 	void _deselect_input_names();
 	void _add_node_dialog();
+	void _node_double_clicked(Node *p_node);
 	void _node_item_selected();
 	void _node_item_unselected();
 
