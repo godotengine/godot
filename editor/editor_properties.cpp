@@ -1597,6 +1597,18 @@ void EditorPropertyVector2::_value_changed(double val, const String &p_name) {
 		return;
 	}
 
+	if (linked->is_pressed()) {
+		setting = true;
+		if (p_name == "x") {
+			spin[1]->set_value(spin[0]->get_value() * ratio_yx);
+		}
+
+		if (p_name == "y") {
+			spin[0]->set_value(spin[1]->get_value() * ratio_xy);
+		}
+		setting = false;
+	}
+
 	Vector2 v2;
 	v2.x = spin[0]->get_value();
 	v2.y = spin[1]->get_value();
@@ -1609,12 +1621,28 @@ void EditorPropertyVector2::update_property() {
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
 	setting = false;
+	_update_ratio();
+}
+
+void EditorPropertyVector2::_update_ratio() {
+	linked->set_modulate(Color(1, 1, 1, linked->is_pressed() ? 1.0 : 0.5));
+
+	if (spin[0]->get_value() != 0 && spin[1]->get_value() != 0) {
+		ratio_xy = spin[0]->get_value() / spin[1]->get_value();
+		ratio_yx = spin[1]->get_value() / spin[0]->get_value();
+	} else {
+		ratio_xy = 1.0;
+		ratio_yx = 1.0;
+	}
 }
 
 void EditorPropertyVector2::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 2; i++) {
 				spin[i]->add_theme_color_override("label_color", colors[i]);
@@ -1623,10 +1651,7 @@ void EditorPropertyVector2::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVector2::_bind_methods() {
-}
-
-void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 2; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -1636,24 +1661,34 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
 	}
+
+	if (!p_link) {
+		linked->hide();
+	} else {
+		linked->set_pressed(true);
+	}
 }
 
 EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
 
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	BoxContainer *bc;
 
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	} else if (horizontal) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
-		set_bottom_editor(bc);
+		hb->add_child(bc);
+		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	}
+	bc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
@@ -1668,6 +1703,13 @@ EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 		}
 	}
 
+	linked = memnew(TextureButton);
+	linked->set_toggle_mode(true);
+	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	linked->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyVector2::_update_ratio));
+	hb->add_child(linked);
+
+	add_child(hb);
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
@@ -1789,6 +1831,25 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 		return;
 	}
 
+	if (linked->is_pressed()) {
+		setting = true;
+		if (p_name == "x") {
+			spin[1]->set_value(spin[0]->get_value() * ratio_yx);
+			spin[2]->set_value(spin[0]->get_value() * ratio_zx);
+		}
+
+		if (p_name == "y") {
+			spin[0]->set_value(spin[1]->get_value() * ratio_xy);
+			spin[2]->set_value(spin[1]->get_value() * ratio_zy);
+		}
+
+		if (p_name == "z") {
+			spin[0]->set_value(spin[2]->get_value() * ratio_xz);
+			spin[1]->set_value(spin[2]->get_value() * ratio_yz);
+		}
+		setting = false;
+	}
+
 	Vector3 v3;
 	v3.x = spin[0]->get_value();
 	v3.y = spin[1]->get_value();
@@ -1803,6 +1864,27 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 
 void EditorPropertyVector3::update_property() {
 	update_using_vector(get_edited_object()->get(get_edited_property()));
+	_update_ratio();
+}
+
+void EditorPropertyVector3::_update_ratio() {
+	linked->set_modulate(Color(1, 1, 1, linked->is_pressed() ? 1.0 : 0.5));
+
+	if (spin[0]->get_value() != 0 && spin[1]->get_value() != 0) {
+		ratio_yx = spin[1]->get_value() / spin[0]->get_value();
+		ratio_zx = spin[2]->get_value() / spin[0]->get_value();
+		ratio_xy = spin[0]->get_value() / spin[1]->get_value();
+		ratio_zy = spin[2]->get_value() / spin[1]->get_value();
+		ratio_xz = spin[0]->get_value() / spin[2]->get_value();
+		ratio_yz = spin[1]->get_value() / spin[2]->get_value();
+	} else {
+		ratio_yx = 1.0;
+		ratio_zx = 1.0;
+		ratio_xy = 1.0;
+		ratio_zy = 1.0;
+		ratio_xz = 1.0;
+		ratio_yz = 1.0;
+	}
 }
 
 void EditorPropertyVector3::update_using_vector(Vector3 p_vector) {
@@ -1836,6 +1918,9 @@ void EditorPropertyVector3::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 3; i++) {
 				spin[i]->add_theme_color_override("label_color", colors[i]);
@@ -1847,7 +1932,7 @@ void EditorPropertyVector3::_notification(int p_what) {
 void EditorPropertyVector3::_bind_methods() {
 }
 
-void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, bool p_angle_in_radians) {
+void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link, const String &p_suffix, bool p_angle_in_radians) {
 	angle_in_radians = p_angle_in_radians;
 	for (int i = 0; i < 3; i++) {
 		spin[i]->set_min(p_min);
@@ -1858,24 +1943,34 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
 	}
+
+	if (!p_link) {
+		linked->hide();
+	} else {
+		linked->set_pressed(true);
+	}
 }
 
 EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	BoxContainer *bc;
 
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	} else if (horizontal) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
-		set_bottom_editor(bc);
+		hb->add_child(bc);
+		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	}
+	bc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	static const char *desc[3] = { "x", "y", "z" };
 	for (int i = 0; i < 3; i++) {
@@ -1890,6 +1985,13 @@ EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 		}
 	}
 
+	linked = memnew(TextureButton);
+	linked->set_toggle_mode(true);
+	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	linked->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyVector3::_update_ratio));
+	hb->add_child(linked);
+
+	add_child(hb);
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
@@ -1908,6 +2010,18 @@ void EditorPropertyVector2i::_value_changed(double val, const String &p_name) {
 		return;
 	}
 
+	if (linked->is_pressed()) {
+		setting = true;
+		if (p_name == "x") {
+			spin[1]->set_value(spin[0]->get_value() * ratio_yx);
+		}
+
+		if (p_name == "y") {
+			spin[0]->set_value(spin[1]->get_value() * ratio_xy);
+		}
+		setting = false;
+	}
+
 	Vector2i v2;
 	v2.x = spin[0]->get_value();
 	v2.y = spin[1]->get_value();
@@ -1920,12 +2034,28 @@ void EditorPropertyVector2i::update_property() {
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
 	setting = false;
+	_update_ratio();
+}
+
+void EditorPropertyVector2i::_update_ratio() {
+	linked->set_modulate(Color(1, 1, 1, linked->is_pressed() ? 1.0 : 0.5));
+
+	if (spin[0]->get_value() != 0 && spin[1]->get_value() != 0) {
+		ratio_xy = spin[0]->get_value() / spin[1]->get_value();
+		ratio_yx = spin[1]->get_value() / spin[0]->get_value();
+	} else {
+		ratio_xy = 1.0;
+		ratio_yx = 1.0;
+	}
 }
 
 void EditorPropertyVector2i::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 2; i++) {
 				spin[i]->add_theme_color_override("label_color", colors[i]);
@@ -1934,10 +2064,7 @@ void EditorPropertyVector2i::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVector2i::_bind_methods() {
-}
-
-void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 2; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -1947,24 +2074,34 @@ void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider, const
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
 	}
+
+	if (!p_link) {
+		linked->hide();
+	} else {
+		linked->set_pressed(true);
+	}
 }
 
 EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
 
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	BoxContainer *bc;
 
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	} else if (horizontal) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
-		set_bottom_editor(bc);
+		hb->add_child(bc);
+		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	}
+	bc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
@@ -1979,6 +2116,13 @@ EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 		}
 	}
 
+	linked = memnew(TextureButton);
+	linked->set_toggle_mode(true);
+	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	linked->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyVector2i::_update_ratio));
+	hb->add_child(linked);
+
+	add_child(hb);
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
@@ -2100,6 +2244,25 @@ void EditorPropertyVector3i::_value_changed(double val, const String &p_name) {
 		return;
 	}
 
+	if (linked->is_pressed()) {
+		setting = true;
+		if (p_name == "x") {
+			spin[1]->set_value(spin[0]->get_value() * ratio_yx);
+			spin[2]->set_value(spin[0]->get_value() * ratio_zx);
+		}
+
+		if (p_name == "y") {
+			spin[0]->set_value(spin[1]->get_value() * ratio_xy);
+			spin[2]->set_value(spin[1]->get_value() * ratio_zy);
+		}
+
+		if (p_name == "z") {
+			spin[0]->set_value(spin[2]->get_value() * ratio_xz);
+			spin[1]->set_value(spin[2]->get_value() * ratio_yz);
+		}
+		setting = false;
+	}
+
 	Vector3i v3;
 	v3.x = spin[0]->get_value();
 	v3.y = spin[1]->get_value();
@@ -2114,12 +2277,36 @@ void EditorPropertyVector3i::update_property() {
 	spin[1]->set_value(val.y);
 	spin[2]->set_value(val.z);
 	setting = false;
+	_update_ratio();
+}
+
+void EditorPropertyVector3i::_update_ratio() {
+	linked->set_modulate(Color(1, 1, 1, linked->is_pressed() ? 1.0 : 0.5));
+
+	if (spin[0]->get_value() != 0 && spin[1]->get_value() != 0) {
+		ratio_yx = spin[1]->get_value() / spin[0]->get_value();
+		ratio_zx = spin[2]->get_value() / spin[0]->get_value();
+		ratio_xy = spin[0]->get_value() / spin[1]->get_value();
+		ratio_zy = spin[2]->get_value() / spin[1]->get_value();
+		ratio_xz = spin[0]->get_value() / spin[2]->get_value();
+		ratio_yz = spin[1]->get_value() / spin[2]->get_value();
+	} else {
+		ratio_yx = 1.0;
+		ratio_zx = 1.0;
+		ratio_xy = 1.0;
+		ratio_zy = 1.0;
+		ratio_xz = 1.0;
+		ratio_yz = 1.0;
+	}
 }
 
 void EditorPropertyVector3i::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 3; i++) {
 				spin[i]->add_theme_color_override("label_color", colors[i]);
@@ -2131,7 +2318,7 @@ void EditorPropertyVector3i::_notification(int p_what) {
 void EditorPropertyVector3i::_bind_methods() {
 }
 
-void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 3; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -2141,22 +2328,31 @@ void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider, const
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
 	}
+
+	if (!p_link) {
+		linked->hide();
+	} else {
+		linked->set_pressed(true);
+	}
 }
 
 EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	BoxContainer *bc;
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	} else if (horizontal) {
 		bc = memnew(HBoxContainer);
-		add_child(bc);
-		set_bottom_editor(bc);
+		hb->add_child(bc);
+		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
-		add_child(bc);
+		hb->add_child(bc);
 	}
 
 	static const char *desc[3] = { "x", "y", "z" };
@@ -2171,7 +2367,15 @@ EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
 	}
+	bc->set_h_size_flags(SIZE_EXPAND_FILL);
 
+	linked = memnew(TextureButton);
+	linked->set_toggle_mode(true);
+	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	linked->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyVector3i::_update_ratio));
+	hb->add_child(linked);
+
+	add_child(hb);
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
@@ -3608,14 +3812,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2(p_wide));
 
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
@@ -3635,14 +3839,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR3: {
 			EditorPropertyVector3 *editor = memnew(EditorPropertyVector3(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.radians);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix, hint.radians);
 			return editor;
 
 		} break;
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
