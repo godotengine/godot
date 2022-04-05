@@ -1421,7 +1421,7 @@
 			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
 			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="40" enum="PropertyHint">
 			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
 			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
@@ -1431,63 +1431,66 @@
 		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LINK" value="6" enum="PropertyHint">
+			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
+		</constant>
+		<constant name="PROPERTY_HINT_KEY_ACCEL" value="8" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="8" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS" value="9" enum="PropertyHint">
 			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="10" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="11" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="12" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="13" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="13" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="14" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="15" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE" value="16" enum="PropertyHint">
 			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="17" enum="PropertyHint">
 			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="17" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="18" enum="PropertyHint">
 			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="19" enum="PropertyHint">
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="20" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="21" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="22" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="23" enum="PropertyHint">
 			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="23" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="24" enum="PropertyHint">
 			Hints that an image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="25" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="27" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
@@ -1497,34 +1500,34 @@
 			[/codeblock]
 			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="33" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="35" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="36" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="41" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
