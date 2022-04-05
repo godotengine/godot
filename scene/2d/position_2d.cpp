@@ -30,8 +30,6 @@
 
 #include "position_2d.h"
 
-const real_t DEFAULT_GIZMO_EXTENTS = 10.0;
-
 void Position2D::_draw_cross() {
 	const real_t extents = get_gizmo_extents();
 
@@ -103,28 +101,19 @@ void Position2D::_notification(int p_what) {
 }
 
 void Position2D::set_gizmo_extents(real_t p_extents) {
-	if (p_extents == DEFAULT_GIZMO_EXTENTS) {
-		set_meta("_gizmo_extents_", Variant());
-	} else {
-		set_meta("_gizmo_extents_", p_extents);
-	}
-
+	gizmo_extents = p_extents;
 	update();
 }
 
 real_t Position2D::get_gizmo_extents() const {
-	if (has_meta("_gizmo_extents_")) {
-		return get_meta("_gizmo_extents_");
-	} else {
-		return DEFAULT_GIZMO_EXTENTS;
-	}
+	return gizmo_extents;
 }
 
 void Position2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_set_gizmo_extents", "extents"), &Position2D::set_gizmo_extents);
-	ClassDB::bind_method(D_METHOD("_get_gizmo_extents"), &Position2D::get_gizmo_extents);
+	ClassDB::bind_method(D_METHOD("set_gizmo_extents", "extents"), &Position2D::set_gizmo_extents);
+	ClassDB::bind_method(D_METHOD("get_gizmo_extents"), &Position2D::get_gizmo_extents);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,1000,0.1,or_greater", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_gizmo_extents", "_get_gizmo_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,1000,0.1,or_greater"), "set_gizmo_extents", "get_gizmo_extents");
 }
 
 Position2D::Position2D() {
