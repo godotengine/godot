@@ -270,6 +270,10 @@ PrimitiveMesh::~PrimitiveMesh() {
 */
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, radius, mid_height, radial_segments, rings);
+}
+
+void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float mid_height, const int radial_segments, const int rings) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, w;
 	float onethird = 1.0 / 3.0;
@@ -472,8 +476,8 @@ CapsuleMesh::CapsuleMesh() {
 	// defaults
 	radius = 1.0;
 	mid_height = 1.0;
-	radial_segments = 64;
-	rings = 8;
+	radial_segments = default_radial_segments;
+	rings = default_rings;
 }
 
 /**
@@ -481,6 +485,10 @@ CapsuleMesh::CapsuleMesh() {
 */
 
 void CubeMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d);
+}
+
+void CubeMesh::create_mesh_array(Array &p_arr, const Vector3 size, const int subdivide_w, const int subdivide_h, const int subdivide_d) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
@@ -728,9 +736,9 @@ int CubeMesh::get_subdivide_depth() const {
 CubeMesh::CubeMesh() {
 	// defaults
 	size = Vector3(2.0, 2.0, 2.0);
-	subdivide_w = 0;
-	subdivide_h = 0;
-	subdivide_d = 0;
+	subdivide_w = default_subdivide_w;
+	subdivide_h = default_subdivide_h;
+	subdivide_d = default_subdivide_d;
 }
 
 /**
@@ -738,6 +746,10 @@ CubeMesh::CubeMesh() {
 */
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings);
+}
+
+void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
@@ -943,8 +955,8 @@ CylinderMesh::CylinderMesh() {
 	top_radius = 1.0;
 	bottom_radius = 1.0;
 	height = 2.0;
-	radial_segments = 64;
-	rings = 4;
+	radial_segments = default_radial_segments;
+	rings = default_rings;
 }
 
 /**
@@ -1453,6 +1465,10 @@ Vector3 QuadMesh::get_center_offset() const {
 */
 
 void SphereMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere);
+}
+
+void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int radial_segments, int rings, bool is_hemisphere) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
@@ -1595,9 +1611,9 @@ SphereMesh::SphereMesh() {
 	// defaults
 	radius = 1.0;
 	height = 2.0;
-	radial_segments = 64;
-	rings = 32;
-	is_hemisphere = false;
+	radial_segments = default_radial_segments;
+	rings = default_rings;
+	is_hemisphere = default_is_hemisphere;
 }
 
 /**
