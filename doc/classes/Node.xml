@@ -732,7 +732,7 @@
 			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
 		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
-			Add a custom description to a node.
+			Add a custom description to a node. It will be displayed in a tooltip when hovered in editor's scene tree.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
