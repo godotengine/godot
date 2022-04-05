@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,35 +30,52 @@
 
 #include "pool_vector.h"
 
-Mutex pool_vector_lock;
+#ifdef GODOT_POOL_VECTOR_REPORT_LEAKS
+#include "core/print_string.h"
+#endif
 
-PoolAllocator *MemoryPool::memory_pool = nullptr;
-uint8_t *MemoryPool::pool_memory = nullptr;
-size_t *MemoryPool::pool_size = nullptr;
-
-MemoryPool::Alloc *MemoryPool::allocs = nullptr;
-MemoryPool::Alloc *MemoryPool::free_list = nullptr;
-uint32_t MemoryPool::alloc_count = 0;
+#ifdef GODOT_POOL_VECTOR_USE_GLOBAL_LOCK
+Mutex MemoryPool::global_mutex;
+#endif
+Mutex MemoryPool::counter_mutex;
 uint32_t MemoryPool::allocs_used = 0;
-Mutex MemoryPool::alloc_mutex;
-
 size_t MemoryPool::total_memory = 0;
 size_t MemoryPool::max_memory = 0;
 
-void MemoryPool::setup(uint32_t p_max_allocs) {
-	allocs = memnew_arr(Alloc, p_max_allocs);
-	alloc_count = p_max_allocs;
-	allocs_used = 0;
+#ifdef GODOT_POOL_VECTOR_REPORT_LEAKS
+struct PoolVector_AllocLog {
+	void *addr;
+	int line;
+};
 
-	for (uint32_t i = 0; i < alloc_count - 1; i++) {
-		allocs[i].free_list = &allocs[i + 1];
+LocalVector<PoolVector_AllocLog> g_pool_vector_alloc_list;
+
+void MemoryPool::report_alloc(void *p_alloc, int p_line) {
+	MemoryPool::counter_mutex.lock();
+	PoolVector_AllocLog l;
+	l.addr = p_alloc;
+	l.line = p_line;
+
+	g_pool_vector_alloc_list.push_back(l);
+	MemoryPool::counter_mutex.unlock();
+}
+
+void MemoryPool::report_free(void *p_alloc) {
+	MemoryPool::counter_mutex.lock();
+	for (unsigned int n = 0; n < g_pool_vector_alloc_list.size(); n++) {
+		if (g_pool_vector_alloc_list[n].addr == p_alloc) {
+			g_pool_vector_alloc_list.remove_unordered(n);
+			MemoryPool::counter_mutex.unlock();
+			return;
+		}
 	}
+	MemoryPool::alloc_mutex.unlock();
 
-	free_list = &allocs[0];
+	ERR_PRINT("report_free alloc not found");
 }
 
-void MemoryPool::cleanup() {
-	memdelete_arr(allocs);
-
-	ERR_FAIL_COND_MSG(allocs_used > 0, "There are still MemoryPool allocs in use at exit!");
+void MemoryPool::report_leaks() {
+	print_line("MemoryPool reports " + itos(g_pool_vector_alloc_list.size()) + " leaks.");
 }
+
+#endif // !GODOT_POOL_VECTOR_REPORT_LEAKS
