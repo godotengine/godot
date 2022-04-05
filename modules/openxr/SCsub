@@ -88,4 +88,3 @@ if env["tools"]:
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)
-
