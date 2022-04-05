@@ -319,6 +319,26 @@ void Theme::add_icon_type(const StringName &p_theme_type) {
 	icon_map[p_theme_type] = HashMap<StringName, Ref<Texture>>();
 }
 
+void Theme::remove_icon_type(const StringName &p_theme_type) {
+	if (!icon_map.has(p_theme_type)) {
+		return;
+	}
+
+	_freeze_change_propagation();
+
+	const StringName *L = nullptr;
+	while ((L = icon_map[p_theme_type].next(L))) {
+		Ref<Texture> icon = icon_map[p_theme_type][*L];
+		if (icon.is_valid()) {
+			icon->disconnect("changed", this, "_emit_theme_changed");
+		}
+	}
+
+	icon_map.erase(p_theme_type);
+
+	_unfreeze_and_propagate_changes();
+}
+
 void Theme::get_icon_types(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -449,6 +469,26 @@ void Theme::add_stylebox_type(const StringName &p_theme_type) {
 	style_map[p_theme_type] = HashMap<StringName, Ref<StyleBox>>();
 }
 
+void Theme::remove_stylebox_type(const StringName &p_theme_type) {
+	if (!style_map.has(p_theme_type)) {
+		return;
+	}
+
+	_freeze_change_propagation();
+
+	const StringName *L = nullptr;
+	while ((L = style_map[p_theme_type].next(L))) {
+		Ref<StyleBox> style = style_map[p_theme_type][*L];
+		if (style.is_valid()) {
+			style->disconnect("changed", this, "_emit_theme_changed");
+		}
+	}
+
+	style_map.erase(p_theme_type);
+
+	_unfreeze_and_propagate_changes();
+}
+
 void Theme::get_stylebox_types(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -538,6 +578,26 @@ void Theme::add_font_type(const StringName &p_theme_type) {
 	font_map[p_theme_type] = HashMap<StringName, Ref<Font>>();
 }
 
+void Theme::remove_font_type(const StringName &p_theme_type) {
+	if (!font_map.has(p_theme_type)) {
+		return;
+	}
+
+	_freeze_change_propagation();
+
+	const StringName *L = nullptr;
+	while ((L = font_map[p_theme_type].next(L))) {
+		Ref<Font> font = font_map[p_theme_type][*L];
+		if (font.is_valid()) {
+			font->disconnect("changed", this, "_emit_theme_changed");
+		}
+	}
+
+	font_map.erase(p_theme_type);
+
+	_unfreeze_and_propagate_changes();
+}
+
 void Theme::get_font_types(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -612,6 +672,14 @@ void Theme::add_color_type(const StringName &p_theme_type) {
 	color_map[p_theme_type] = HashMap<StringName, Color>();
 }
 
+void Theme::remove_color_type(const StringName &p_theme_type) {
+	if (!color_map.has(p_theme_type)) {
+		return;
+	}
+
+	color_map.erase(p_theme_type);
+}
+
 void Theme::get_color_types(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -684,6 +752,14 @@ void Theme::add_constant_type(const StringName &p_theme_type) {
 		return;
 	}
 	constant_map[p_theme_type] = HashMap<StringName, int>();
+}
+
+void Theme::remove_constant_type(const StringName &p_theme_type) {
+	if (!constant_map.has(p_theme_type)) {
+		return;
+	}
+
+	constant_map.erase(p_theme_type);
 }
 
 void Theme::get_constant_types(List<StringName> *p_list) const {
@@ -878,6 +954,28 @@ void Theme::add_theme_item_type(DataType p_data_type, const StringName &p_theme_
 	}
 }
 
+void Theme::remove_theme_item_type(DataType p_data_type, const StringName &p_theme_type) {
+	switch (p_data_type) {
+		case DATA_TYPE_COLOR:
+			remove_color_type(p_theme_type);
+			break;
+		case DATA_TYPE_CONSTANT:
+			remove_constant_type(p_theme_type);
+			break;
+		case DATA_TYPE_FONT:
+			remove_font_type(p_theme_type);
+			break;
+		case DATA_TYPE_ICON:
+			remove_icon_type(p_theme_type);
+			break;
+		case DATA_TYPE_STYLEBOX:
+			remove_stylebox_type(p_theme_type);
+			break;
+		case DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+}
+
 void Theme::get_theme_item_types(DataType p_data_type, List<StringName> *p_list) const {
 	switch (p_data_type) {
 		case DATA_TYPE_COLOR:
@@ -959,6 +1057,38 @@ void Theme::get_type_variation_list(const StringName &p_base_type, List<StringNa
 }
 
 // Theme types.
+void Theme::add_type(const StringName &p_theme_type) {
+	// Add a record to every data type map.
+	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
+		Theme::DataType dt = (Theme::DataType)i;
+		add_theme_item_type(dt, p_theme_type);
+	}
+
+	_emit_theme_changed(true);
+}
+
+void Theme::remove_type(const StringName &p_theme_type) {
+	// Gracefully remove the record from every data type map.
+	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
+		Theme::DataType dt = (Theme::DataType)i;
+		remove_theme_item_type(dt, p_theme_type);
+	}
+
+	// If type is a variation, remove that connection.
+	if (get_type_variation_base(p_theme_type) != StringName()) {
+		clear_type_variation(p_theme_type);
+	}
+
+	// If type is a variation base, remove all those connections.
+	List<StringName> names;
+	get_type_variation_list(p_theme_type, &names);
+	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+		clear_type_variation(E->get());
+	}
+
+	_emit_theme_changed(true);
+}
+
 void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -1512,6 +1642,8 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_type_variation_base", "theme_type"), &Theme::get_type_variation_base);
 	ClassDB::bind_method(D_METHOD("get_type_variation_list", "base_type"), &Theme::_get_type_variation_list);
 
+	ClassDB::bind_method(D_METHOD("add_type", "theme_type"), &Theme::add_type);
+	ClassDB::bind_method(D_METHOD("remove_type", "theme_type"), &Theme::remove_type);
 	ClassDB::bind_method(D_METHOD("get_type_list", "theme_type"), &Theme::_get_type_list);
 
 	ClassDB::bind_method(D_METHOD("_emit_theme_changed", "notify_list_changed"), &Theme::_emit_theme_changed, DEFVAL(false));
