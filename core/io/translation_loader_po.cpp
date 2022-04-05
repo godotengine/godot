@@ -98,7 +98,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			{
 				Vector<uint8_t> data;
 				f->seek(trans_table_offset + i * 8);
-				uint32_t str_start = 0;
 				uint32_t str_len = f->get_32();
 				uint32_t str_offset = f->get_32();
 
@@ -116,6 +115,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 						translation->set_plural_rule(config.substr(p_start, p_end - p_start));
 					}
 				} else {
+					uint32_t str_start = 0;
 					Vector<String> plural_msg;
 					for (uint32_t j = 0; j < str_len + 1; j++) {
 						if (data[j] == 0x00) {

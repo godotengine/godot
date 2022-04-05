@@ -133,7 +133,7 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 #undef TEST_AXIS
 
-	Vector3 edge_norms[3] = {
+	const Vector3 edge_norms[3] = {
 		vertex[0] - vertex[1],
 		vertex[1] - vertex[2],
 		vertex[2] - vertex[0],

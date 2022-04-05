@@ -485,7 +485,7 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
-		EditorNode *en = (EditorNode *)ud;
+		EditorNode *en = static_cast<EditorNode *>(ud);
 		if (!en->dependency_errors.has(p_path)) {
 			en->dependency_errors[p_path] = Set<String>();
 		}

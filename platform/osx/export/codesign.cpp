@@ -947,7 +947,7 @@ CodeSignCodeDirectory::CodeSignCodeDirectory(uint8_t p_hash_size, uint8_t p_hash
 	}
 	blob.resize(cd_size);
 	memset(blob.ptrw() + 8, 0x00, cd_size - 8);
-	CodeDirectoryHeader *cd = (CodeDirectoryHeader *)(blob.ptrw() + 8);
+	CodeDirectoryHeader *cd = reinterpret_cast<CodeDirectoryHeader *>(blob.ptrw() + 8);
 
 	bool is_64_cl = (p_code_limit >= std::numeric_limits<uint32_t>::max());
 

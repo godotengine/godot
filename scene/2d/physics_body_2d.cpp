@@ -277,7 +277,7 @@ void AnimatableBody2D::_update_kinematic_motion() {
 }
 
 void AnimatableBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	AnimatableBody2D *body = (AnimatableBody2D *)p_instance;
+	AnimatableBody2D *body = static_cast<AnimatableBody2D *>(p_instance);
 	body->_body_state_changed(p_state);
 }
 
@@ -443,7 +443,7 @@ struct _RigidDynamicBody2DInOut {
 };
 
 void RigidDynamicBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	RigidDynamicBody2D *body = (RigidDynamicBody2D *)p_instance;
+	RigidDynamicBody2D *body = static_cast<RigidDynamicBody2D *>(p_instance);
 	body->_body_state_changed(p_state);
 }
 

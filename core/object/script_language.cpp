@@ -144,7 +144,7 @@ void ScriptServer::register_language(ScriptLanguage *p_language) {
 	_languages[_language_count++] = p_language;
 }
 
-void ScriptServer::unregister_language(ScriptLanguage *p_language) {
+void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 	for (int i = 0; i < _language_count; i++) {
 		if (_languages[i] == p_language) {
 			_language_count--;

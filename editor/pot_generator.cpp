@@ -46,8 +46,8 @@ void POTGenerator::_print_all_translation_strings() {
 			print_line("msgid: " + E.key());
 			print_line("context: " + v_md[i].ctx);
 			print_line("msgid_plural: " + v_md[i].plural);
-			for (Set<String>::Element *E = v_md[i].locations.front(); E; E = E->next()) {
-				print_line("location: " + E->get());
+			for (Set<String>::Element *F = v_md[i].locations.front(); F; F = F->next()) {
+				print_line("location: " + F->get());
 			}
 		}
 	}

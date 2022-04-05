@@ -363,7 +363,6 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 			state.instance_data_array[r_index].dst_rect[i] = 0.0;
 			state.instance_data_array[r_index].lights[i] = uint32_t(0);
 		}
-		state.instance_data_array[r_index].flags = base_flags;
 		state.instance_data_array[r_index].color_texture_pixel_size[0] = 0.0;
 		state.instance_data_array[r_index].color_texture_pixel_size[1] = 0.0;
 

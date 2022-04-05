@@ -259,6 +259,9 @@ void EditorAssetInstaller::ok_pressed() {
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String name = String::utf8(fname);
 

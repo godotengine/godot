@@ -301,7 +301,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	FileMeta meta;
 	meta.name = p_file_name;
 	meta.uncompressed_size = p_len;
-	meta.compressed_size = p_len;
 	meta.compressed = p_compress;
 	meta.zip_offset = package->get_position();
 

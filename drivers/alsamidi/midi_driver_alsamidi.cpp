@@ -73,7 +73,7 @@ static int get_message_size(uint8_t message) {
 }
 
 void MIDIDriverALSAMidi::thread_func(void *p_udata) {
-	MIDIDriverALSAMidi *md = (MIDIDriverALSAMidi *)p_udata;
+	MIDIDriverALSAMidi *md = static_cast<MIDIDriverALSAMidi *>(p_udata);
 	uint64_t timestamp = 0;
 	uint8_t buffer[256];
 	int expected_size = 255;

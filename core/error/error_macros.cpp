@@ -50,7 +50,7 @@ void add_error_handler(ErrorHandlerList *p_handler) {
 	_global_unlock();
 }
 
-void remove_error_handler(ErrorHandlerList *p_handler) {
+void remove_error_handler(const ErrorHandlerList *p_handler) {
 	_global_lock();
 
 	ErrorHandlerList *prev = nullptr;

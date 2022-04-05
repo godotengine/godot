@@ -2012,7 +2012,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	bool entire_scene = false;
 
-	for (Node *E : remove_list) {
+	for (const Node *E : remove_list) {
 		if (E == edited_scene) {
 			entire_scene = true;
 		}

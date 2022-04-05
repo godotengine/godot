@@ -824,7 +824,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorSel
 Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history) {
 	ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), Dictionary());
 
-	EditedScene &es = edited_scene.write[current_edited_scene];
+	const EditedScene &es = edited_scene.write[current_edited_scene];
 
 	p_history->current_elem_idx = es.history_current;
 	p_history->history = es.history_stored;

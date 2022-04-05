@@ -417,7 +417,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	static Error save_appx_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-		AppxPackager *packager = (AppxPackager *)p_userdata;
+		AppxPackager *packager = static_cast<AppxPackager *>(p_userdata);
 		String dst_path = p_path.replace_first("res://", "game/");
 
 		return packager->add_file(dst_path, p_data.ptr(), p_data.size(), p_file, p_total, _should_compress_asset(p_path, p_data));

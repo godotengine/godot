@@ -606,8 +606,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = I->next();
 	}
 
-	I = args.front();
-
 	String display_driver = "";
 	String audio_driver = "";
 	String project_path = ".";

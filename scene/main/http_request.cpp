@@ -164,7 +164,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 }
 
 void HTTPRequest::_thread_func(void *p_userdata) {
-	HTTPRequest *hr = (HTTPRequest *)p_userdata;
+	HTTPRequest *hr = static_cast<HTTPRequest *>(p_userdata);
 
 	Error err = hr->_request();
 
