@@ -117,4 +117,21 @@ using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
 
 #endif // !NO_THREADS
 
+// Replacement for std::lock_guard for javascript NO_THREADS support
+template <class T>
+class lock_guard {
+private:
+	T &mux;
+
+public:
+	explicit lock_guard(T &__m) :
+			mux(__m) { mux.lock(); }
+
+	~lock_guard() { mux.unlock(); }
+
+	lock_guard(const lock_guard &) = delete;
+
+	lock_guard &operator=(const lock_guard &) = delete;
+};
+
 #endif // MUTEX_H
