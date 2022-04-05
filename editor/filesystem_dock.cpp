@@ -1427,17 +1427,17 @@ void FileSystemDock::_make_dir_confirm() {
 		directory = directory.get_base_dir();
 	}
 
-	if (EditorFileSystem::get_singleton()->get_filesystem_path(directory + dir_name)) {
+	print_verbose("Making folder " + dir_name + " in " + directory);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Error err = da->change_dir(directory);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot open directory '" + directory + "'.");
+
+	if (da->dir_exists(directory)) {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder. File with that name already exists."));
 		return;
 	}
 
-	print_verbose("Making folder " + dir_name + " in " + directory);
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	Error err = da->change_dir(directory);
-	if (err == OK) {
-		err = da->make_dir(dir_name);
-	}
+	err = da->make_dir(dir_name);
 
 	if (err == OK) {
 		print_verbose("FileSystem: calling rescan.");
