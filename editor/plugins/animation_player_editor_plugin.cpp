@@ -1267,7 +1267,7 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 	}
 }
 
-void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
+void AnimationPlayerEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
@@ -1750,7 +1750,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	last_active = false;
 	timeline_position = 0;
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);

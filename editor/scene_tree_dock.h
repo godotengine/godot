@@ -220,7 +220,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _nodes_drag_begin();
 	virtual void input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void _import_subscene();
 

@@ -106,7 +106,7 @@ void EditorFileDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				set_process_unhandled_input(false);
+				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -126,7 +126,7 @@ void EditorFileDialog::_notification(int p_what) {
 	}
 }
 
-void EditorFileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -327,7 +327,7 @@ void EditorFileDialog::_post_popup() {
 		_update_favorites();
 	}
 
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 }
 
 void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {

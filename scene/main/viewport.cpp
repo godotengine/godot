@@ -2744,11 +2744,18 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 		ev = p_event;
 	}
 
-	// Unhandled Input.
-	get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, ev, this);
+	// Shortcut Input.
+	if (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr) {
+		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, ev, this);
+	}
 
-	// Unhandled key Input - used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, etc.
-	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr)) {
+	// Unhandled Input.
+	if (!is_input_handled()) {
+		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, ev, this);
+	}
+
+	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
+	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr)) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, ev, this);
 	}
 
@@ -3879,6 +3886,7 @@ Viewport::Viewport() {
 	input_group = "_vp_input" + id;
 	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;
+	shortcut_input_group = "_vp_shortcut_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
 	// Window tooltip.

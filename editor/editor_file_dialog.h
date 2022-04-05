@@ -201,7 +201,7 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _request_single_thumbnail(const String &p_path);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 

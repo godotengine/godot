@@ -79,6 +79,9 @@ void Node::_notification(int p_notification) {
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
+			if (data.shortcut_input) {
+				add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+			}
 			if (data.unhandled_input) {
 				add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -99,6 +102,9 @@ void Node::_notification(int p_notification) {
 
 			if (data.input) {
 				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+			}
+			if (data.shortcut_input) {
+				remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
 			}
 			if (data.unhandled_input) {
 				remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
@@ -124,6 +130,10 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_READY: {
 			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 				set_process_input(true);
+			}
+
+			if (GDVIRTUAL_IS_OVERRIDDEN(_shortcut_input)) {
+				set_process_shortcut_input(true);
 			}
 
 			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
@@ -833,6 +843,26 @@ void Node::set_process_input(bool p_enable) {
 
 bool Node::is_processing_input() const {
 	return data.input;
+}
+
+void Node::set_process_shortcut_input(bool p_enable) {
+	if (p_enable == data.shortcut_input) {
+		return;
+	}
+	data.shortcut_input = p_enable;
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (p_enable) {
+		add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+	} else {
+		remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+	}
+}
+
+bool Node::is_processing_shortcut_input() const {
+	return data.shortcut_input;
 }
 
 void Node::set_process_unhandled_input(bool p_enable) {
@@ -2615,6 +2645,15 @@ void Node::_call_input(const Ref<InputEvent> &p_event) {
 	}
 	input(p_event);
 }
+
+void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_shortcut_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	shortcut_input(p_event);
+}
+
 void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	GDVIRTUAL_CALL(_unhandled_input, p_event);
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -2622,6 +2661,7 @@ void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 	unhandled_input(p_event);
 }
+
 void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	GDVIRTUAL_CALL(_unhandled_key_input, p_event);
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -2631,6 +2671,9 @@ void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node::input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::shortcut_input(const Ref<InputEvent> &p_key_event) {
 }
 
 void Node::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2694,6 +2737,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_processing"), &Node::is_processing);
 	ClassDB::bind_method(D_METHOD("set_process_input", "enable"), &Node::set_process_input);
 	ClassDB::bind_method(D_METHOD("is_processing_input"), &Node::is_processing_input);
+	ClassDB::bind_method(D_METHOD("set_process_shortcut_input", "enable"), &Node::set_process_shortcut_input);
+	ClassDB::bind_method(D_METHOD("is_processing_shortcut_input"), &Node::is_processing_shortcut_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_input", "enable"), &Node::set_process_unhandled_input);
 	ClassDB::bind_method(D_METHOD("is_processing_unhandled_input"), &Node::is_processing_unhandled_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_key_input", "enable"), &Node::set_process_unhandled_key_input);
@@ -2854,6 +2899,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_ready);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
+	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }

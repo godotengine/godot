@@ -685,7 +685,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorProperty::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (!selected || !p_event->is_pressed()) {
 		return;
 	}
@@ -971,7 +971,7 @@ EditorProperty::EditorProperty() {
 	label_reference = nullptr;
 	bottom_editor = nullptr;
 	menu = nullptr;
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 }
 
 void EditorProperty::_update_popup() {

@@ -3019,7 +3019,7 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ScriptEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
@@ -3750,7 +3750,7 @@ ScriptEditor::ScriptEditor() {
 	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::PERIOD);
 	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::COMMA);
 	set_process_input(true);
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));

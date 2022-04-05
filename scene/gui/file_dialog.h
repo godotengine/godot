@@ -133,7 +133,7 @@ private:
 
 	void _update_drives(bool p_select = true);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 
