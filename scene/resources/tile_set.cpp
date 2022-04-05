@@ -840,7 +840,7 @@ bool TileSet::is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode,
 				return true;
 			}
 		}
-	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	} else if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 		if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
 			if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
@@ -1422,7 +1422,7 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() {
 	} else {
 		float overlap = 0.0;
 		switch (tile_shape) {
-			case TileSet::TILE_SHAPE_ISOMETRIC:
+			case TileSet::TILE_SHAPE_DIAMOND:
 				overlap = 0.5;
 				break;
 			case TileSet::TILE_SHAPE_HEXAGON:
@@ -1507,7 +1507,7 @@ Vector<Point2> TileSet::get_terrain_bit_polygon(int p_terrain_set, TileSet::Cell
 		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
 			return _get_square_side_terrain_bit_polygon(tile_size, p_bit);
 		}
-	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	} else if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
 			return _get_isometric_corner_or_side_terrain_bit_polygon(tile_size, p_bit);
 		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
@@ -1561,7 +1561,7 @@ void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, 
 						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
 							polygon = _get_square_side_terrain_bit_polygon(tile_size, bit);
 						}
-					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+					} else if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
 							polygon = _get_isometric_corner_or_side_terrain_bit_polygon(tile_size, bit);
 						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
@@ -3172,7 +3172,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tile_size", "size"), &TileSet::set_tile_size);
 	ClassDB::bind_method(D_METHOD("get_tile_size"), &TileSet::get_tile_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Diamond,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size"), "set_tile_size", "get_tile_size");
@@ -3278,7 +3278,7 @@ void TileSet::_bind_methods() {
 
 	// -- Enum binding --
 	BIND_ENUM_CONSTANT(TILE_SHAPE_SQUARE);
-	BIND_ENUM_CONSTANT(TILE_SHAPE_ISOMETRIC);
+	BIND_ENUM_CONSTANT(TILE_SHAPE_DIAMOND);
 	BIND_ENUM_CONSTANT(TILE_SHAPE_HALF_OFFSET_SQUARE);
 	BIND_ENUM_CONSTANT(TILE_SHAPE_HEXAGON);
 

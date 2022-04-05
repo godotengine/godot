@@ -65,7 +65,7 @@ Map<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlapping
 			default:
 				ERR_FAIL_V(output);
 		}
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	} else if (shape == TileSet::TILE_SHAPE_DIAMOND) {
 		switch (bit) {
 			case 0:
 				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_RIGHT_CORNER;
@@ -198,7 +198,7 @@ TileMap::TerrainConstraint::TerrainConstraint(const TileMap *p_tile_map, const V
 				ERR_FAIL();
 				break;
 		}
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	} else if (shape == TileSet::TILE_SHAPE_DIAMOND) {
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
 				bit = 1;
@@ -2741,7 +2741,7 @@ Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
 	TileSet::TileShape tile_shape = tile_set->get_tile_shape();
 	TileSet::TileOffsetAxis tile_offset_axis = tile_set->get_tile_offset_axis();
 
-	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
 		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
@@ -2792,14 +2792,14 @@ Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
 	// Multiply by the overlapping ratio
 	double overlapping_ratio = 1.0;
 	if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 			overlapping_ratio = 0.5;
 		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
 			overlapping_ratio = 0.75;
 		}
 		ret.y *= overlapping_ratio;
 	} else { // TILE_OFFSET_AXIS_VERTICAL
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 			overlapping_ratio = 0.5;
 		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
 			overlapping_ratio = 0.75;
@@ -2823,14 +2823,14 @@ Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
 	// Divide by the overlapping ratio
 	double overlapping_ratio = 1.0;
 	if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 			overlapping_ratio = 0.5;
 		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
 			overlapping_ratio = 0.75;
 		}
 		ret.y /= overlapping_ratio;
 	} else { // TILE_OFFSET_AXIS_VERTICAL
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		if (tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 			overlapping_ratio = 0.5;
 		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
 			overlapping_ratio = 0.75;
@@ -2839,7 +2839,7 @@ Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
 	}
 
 	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the world position accordingly.
-	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_DIAMOND) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
 		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
@@ -2991,7 +2991,7 @@ bool TileMap::is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const 
 				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE ||
 				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
 
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	} else if (shape == TileSet::TILE_SHAPE_DIAMOND) {
 		return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
 				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
 				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
@@ -3049,21 +3049,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 			case TileSet::TILE_LAYOUT_STACKED: {
 				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
 					bool is_offset = p_coords.y % 2;
-					if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+					if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 						return p_coords + Vector2i(1, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 						return p_coords + Vector2i(is_offset ? 1 : 0, 1);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
 						return p_coords + Vector2i(0, 2);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 						return p_coords + Vector2i(is_offset ? 0 : -1, 1);
-					} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+					} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
 						return p_coords + Vector2i(-1, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 						return p_coords + Vector2i(is_offset ? 0 : -1, -1);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
 						return p_coords + Vector2i(0, -2);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 						return p_coords + Vector2i(is_offset ? 1 : 0, -1);
@@ -3073,21 +3073,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 				} else {
 					bool is_offset = p_coords.x % 2;
 
-					if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+					if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
 						return p_coords + Vector2i(0, 1);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 						return p_coords + Vector2i(1, is_offset ? 1 : 0);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
 						return p_coords + Vector2i(2, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 						return p_coords + Vector2i(1, is_offset ? 0 : -1);
-					} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+					} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
 						return p_coords + Vector2i(0, -1);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 						return p_coords + Vector2i(-1, is_offset ? 0 : -1);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
 						return p_coords + Vector2i(-2, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 						return p_coords + Vector2i(-1, is_offset ? 1 : 0);
@@ -3100,21 +3100,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
 					bool is_offset = p_coords.y % 2;
 
-					if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+					if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 						return p_coords + Vector2i(1, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 						return p_coords + Vector2i(is_offset ? 0 : 1, 1);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
 						return p_coords + Vector2i(0, 2);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 						return p_coords + Vector2i(is_offset ? -1 : 0, 1);
-					} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+					} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
 						return p_coords + Vector2i(-1, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 						return p_coords + Vector2i(is_offset ? -1 : 0, -1);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
 						return p_coords + Vector2i(0, -2);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 						return p_coords + Vector2i(is_offset ? 0 : 1, -1);
@@ -3124,21 +3124,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 				} else {
 					bool is_offset = p_coords.x % 2;
 
-					if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+					if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
 						return p_coords + Vector2i(0, 1);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 						return p_coords + Vector2i(1, is_offset ? 0 : 1);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
 						return p_coords + Vector2i(2, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 						return p_coords + Vector2i(1, is_offset ? -1 : 0);
-					} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
-							(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+					} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+							(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
 						return p_coords + Vector2i(0, -1);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 						return p_coords + Vector2i(-1, is_offset ? -1 : 0);
-					} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+					} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
 						return p_coords + Vector2i(-2, 0);
 					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 						return p_coords + Vector2i(-1, is_offset ? 0 : 1);
@@ -3151,21 +3151,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 			case TileSet::TILE_LAYOUT_STAIRS_DOWN: {
 				if ((tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
 					if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 							return p_coords + Vector2i(1, 0);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(0, 1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
 							return p_coords + Vector2i(-1, 2);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 1);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
 							return p_coords + Vector2i(-1, 0);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(0, -1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
 							return p_coords + Vector2i(1, -2);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, -1);
@@ -3174,21 +3174,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 						}
 
 					} else {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
 							return p_coords + Vector2i(0, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
 							return p_coords + Vector2i(2, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, -1);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
 							return p_coords + Vector2i(0, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
 							return p_coords + Vector2i(-2, 1);
 
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
@@ -3199,21 +3199,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 					}
 				} else {
 					if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 							return p_coords + Vector2i(2, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
 							return p_coords + Vector2i(0, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 1);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
 							return p_coords + Vector2i(-2, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
 							return p_coords + Vector2i(0, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, -1);
@@ -3222,21 +3222,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 						}
 
 					} else {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
 							return p_coords + Vector2i(-1, 2);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(0, 1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
 							return p_coords + Vector2i(1, 0);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, -1);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
 							return p_coords + Vector2i(1, -2);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(0, -1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
 							return p_coords + Vector2i(-1, 0);
 
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
@@ -3251,21 +3251,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 			case TileSet::TILE_LAYOUT_DIAMOND_DOWN: {
 				if ((tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_DIAMOND_RIGHT) ^ (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
 					if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 							return p_coords + Vector2i(1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(0, 1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
 							return p_coords + Vector2i(-1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 0);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
 							return p_coords + Vector2i(-1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(0, -1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
 							return p_coords + Vector2i(1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, 0);
@@ -3274,21 +3274,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 						}
 
 					} else {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
 							return p_coords + Vector2i(1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
 							return p_coords + Vector2i(1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(0, -1);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
 							return p_coords + Vector2i(-1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
 							return p_coords + Vector2i(-1, 1);
 
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
@@ -3299,21 +3299,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 					}
 				} else {
 					if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 							return p_coords + Vector2i(1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
 							return p_coords + Vector2i(1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
 							return p_coords + Vector2i(0, 1);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
 							return p_coords + Vector2i(-1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(-1, 0);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
 							return p_coords + Vector2i(-1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(0, -1);
@@ -3322,21 +3322,21 @@ Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeigh
 						}
 
 					} else {
-						if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+						if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
 							return p_coords + Vector2i(-1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
 							return p_coords + Vector2i(0, 1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
 							return p_coords + Vector2i(1, 1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
 							return p_coords + Vector2i(1, 0);
-						} else if ((shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
-								(shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+						} else if ((shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(shape != TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
 							return p_coords + Vector2i(1, -1);
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
 							return p_coords + Vector2i(0, -1);
-						} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+						} else if (shape == TileSet::TILE_SHAPE_DIAMOND && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
 							return p_coords + Vector2i(-1, -1);
 
 						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
@@ -3486,7 +3486,7 @@ TypedArray<Vector2i> TileMap::get_surrounding_tiles(Vector2i coords) {
 		around.push_back(get_neighbor_cell(coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE));
 		around.push_back(get_neighbor_cell(coords, TileSet::CELL_NEIGHBOR_LEFT_SIDE));
 		around.push_back(get_neighbor_cell(coords, TileSet::CELL_NEIGHBOR_TOP_SIDE));
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+	} else if (shape == TileSet::TILE_SHAPE_DIAMOND) {
 		around.push_back(get_neighbor_cell(coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE));
 		around.push_back(get_neighbor_cell(coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE));
 		around.push_back(get_neighbor_cell(coords, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE));
@@ -3539,7 +3539,7 @@ void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Colo
 			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_SIDE, 0, 1);
 		} else {
 			if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-				if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+				if (shape == TileSet::TILE_SHAPE_DIAMOND) {
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 2, 3);
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
@@ -3553,7 +3553,7 @@ void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Colo
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, 4, 5);
 				}
 			} else {
-				if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+				if (shape == TileSet::TILE_SHAPE_DIAMOND) {
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 5, 0);
 					DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
