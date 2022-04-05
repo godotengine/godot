@@ -66,6 +66,12 @@
 				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
 			</description>
 		</method>
+		<method name="get_selected_text">
+			<return type="String" />
+			<description>
+				Returns the current selection text. Does not include BBCodes.
+			</description>
+		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int" />
 			<description>
