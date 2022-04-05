@@ -902,7 +902,7 @@
 			Optional name for the 3D render layer 13.
 		</member>
 		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 14
+			Optional name for the 3D render layer 14.
 		</member>
 		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 15.
