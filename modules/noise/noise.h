@@ -101,6 +101,7 @@ class Noise : public Resource {
 		on Source it's translated to
 		corner of Q1/s3 unless the ALT_XY modulo moves it to Q4
 		*/
+		ERR_FAIL_COND_V(p_blend_skirt < 0, Ref<Image>());
 
 		int skirt_width = MAX(1, p_width * p_blend_skirt);
 		int skirt_height = MAX(1, p_height * p_blend_skirt);
