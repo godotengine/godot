@@ -159,6 +159,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int texture_h = 0;
 		PackedInt32Array offsets;
 		Ref<ImageTexture> texture;
+		bool dirty = true;
 	};
 
 	struct FontTexturePosition {

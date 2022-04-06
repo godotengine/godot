@@ -127,6 +127,7 @@ class TextServerFallback : public TextServerExtension {
 		int texture_h = 0;
 		PackedInt32Array offsets;
 		Ref<ImageTexture> texture;
+		bool dirty = true;
 	};
 
 	struct FontTexturePosition {
@@ -343,8 +344,12 @@ public:
 	virtual bool has(const RID &p_rid) override;
 	virtual bool load_support_data(const String &p_filename) override;
 
-	virtual String get_support_data_filename() const override { return ""; };
-	virtual String get_support_data_info() const override { return "Not supported"; };
+	virtual String get_support_data_filename() const override {
+		return "";
+	};
+	virtual String get_support_data_info() const override {
+		return "Not supported";
+	};
 	virtual bool save_support_data(const String &p_filename) const override;
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const override;

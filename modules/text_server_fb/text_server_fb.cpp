@@ -209,12 +209,6 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 	for (int i = 0; i < p_data->textures.size(); i++) {
 		const FontTexture &ct = p_data->textures[i];
 
-		if (RenderingServer::get_singleton() != nullptr) {
-			if (ct.texture->get_format() != p_image_format) {
-				continue;
-			}
-		}
-
 		if (mw > ct.texture_w || mh > ct.texture_h) { // Too big for this texture.
 			continue;
 		}
@@ -256,12 +250,6 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		ret.y = 0;
 
 		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
-		if (mw > texsize) {
-			texsize = mw; // Special case, adapt to it?
-		}
-		if (mh > texsize) {
-			texsize = mh; // Special case, adapt to it?
-		}
 
 #ifdef GDEXTENSION
 		texsize = Math::next_power_of_2(texsize);
@@ -273,6 +261,20 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
+		}
+		if (mw > texsize) { // Special case, adapt to it?
+#ifdef GDEXTENSION
+			texsize = Math::next_power_of_2(mw);
+#else
+			texsize = next_power_of_2(mw);
+#endif
+		}
+		if (mh > texsize) { // Special case, adapt to it?
+#ifdef GDEXTENSION
+			texsize = Math::next_power_of_2(mh);
+#else
+			texsize = next_power_of_2(mh);
+#endif
 		}
 
 		FontTexture tex;
@@ -439,8 +441,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		int mw = w + p_rect_margin * 2;
 		int mh = h + p_rect_margin * 2;
 
-		ERR_FAIL_COND_V(mw > 1024, FontGlyph());
-		ERR_FAIL_COND_V(mh > 1024, FontGlyph());
+		ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+		ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
 		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, Image::FORMAT_RGBA8, mw, mh, true);
 		ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
@@ -481,20 +483,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 			}
 		}
 
-		// Blit to image and texture.
-		{
-			if (RenderingServer::get_singleton() != nullptr) {
-				Ref<Image> img;
-				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, false, Image::FORMAT_RGBA8, tex.imgdata);
-				if (tex.texture.is_null()) {
-					tex.texture.instantiate();
-					tex.texture->create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
-			}
-		}
+		tex.dirty = true;
 
 		// Update height array.
 		int32_t *offw = tex.offsets.ptrw();
@@ -520,8 +509,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	int mw = w + p_rect_margin * 2;
 	int mh = h + p_rect_margin * 2;
 
-	ERR_FAIL_COND_V(mw > 1024, FontGlyph());
-	ERR_FAIL_COND_V(mh > 1024, FontGlyph());
+	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
 	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
 	Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
@@ -566,21 +555,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 		}
 	}
 
-	// Blit to image and texture.
-	{
-		if (RenderingServer::get_singleton() != nullptr) {
-			Ref<Image> img;
-			img.instantiate();
-			img->create_from_data(tex.texture_w, tex.texture_h, false, require_format, tex.imgdata);
-
-			if (tex.texture.is_null()) {
-				tex.texture.instantiate();
-				tex.texture->create_from_image(img);
-			} else {
-				tex.texture->update(img);
-			}
-		}
-	}
+	tex.dirty = true;
 
 	// Update height array.
 	int32_t *offw = tex.offsets.ptrw();
@@ -1472,6 +1447,7 @@ void TextServerFallback::font_set_texture_image(const RID &p_font_rid, const Vec
 	tex.texture = Ref<ImageTexture>();
 	tex.texture.instantiate();
 	tex.texture->create_from_image(img);
+	tex.dirty = false;
 }
 
 Ref<Image> TextServerFallback::font_get_texture_image(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) const {
@@ -2019,6 +1995,19 @@ void TextServerFallback::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
+				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
+					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
+					Ref<Image> img;
+					img.instantiate();
+					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					if (tex.texture.is_null()) {
+						tex.texture.instantiate();
+						tex.texture->create_from_image(img);
+					} else {
+						tex.texture->update(img);
+					}
+					tex.dirty = false;
+				}
 				RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
 				if (fd->msdf) {
 					Point2 cpos = p_pos;
@@ -2082,6 +2071,19 @@ void TextServerFallback::font_draw_glyph_outline(const RID &p_font_rid, const RI
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
+				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
+					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
+					Ref<Image> img;
+					img.instantiate();
+					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					if (tex.texture.is_null()) {
+						tex.texture.instantiate();
+						tex.texture->create_from_image(img);
+					} else {
+						tex.texture->update(img);
+					}
+					tex.dirty = false;
+				}
 				RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
 				if (fd->msdf) {
 					Point2 cpos = p_pos;
