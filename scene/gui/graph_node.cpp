@@ -596,14 +596,18 @@ bool GraphNode::is_selected() {
 }
 
 void GraphNode::set_drag(bool p_drag) {
-	if (p_drag) {
-		drag_from = get_offset();
-	} else {
+	if (!p_drag) {
 		emit_signal("dragged", drag_from, get_offset()); //useful for undo/redo
 	}
+	drag_from = get_offset();
 }
 
 Vector2 GraphNode::get_drag_from() {
+
+	if (drag_from == Vector2(0,0)) {
+		drag_from = get_offset();
+	}
+
 	return drag_from;
 }
 
