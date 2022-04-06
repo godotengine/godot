@@ -957,7 +957,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 	bool _static = base_type.is_meta_type;
 
 	if (_static && base_type.kind != GDScriptParser::DataType::BUILTIN) {
-		ScriptLanguage::CodeCompletionOption option("new", ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+		ScriptLanguage::CodeCompletionOption option("new", ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, ScriptLanguage::LOCATION_LOCAL);
 		option.insert_text += "(";
 		r_result.insert(option.display, option);
 	}
@@ -1058,22 +1058,25 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 				}
 
-				if (!_static || Engine::get_singleton()->has_singleton(type)) {
-					List<MethodInfo> methods;
-					ClassDB::get_method_list(type, &methods, false, true);
-					for (const MethodInfo &E : methods) {
-						if (E.name.begins_with("_")) {
-							continue;
-						}
-						int location = p_recursion_depth + _get_method_location(type, E.name);
-						ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-						if (E.arguments.size()) {
-							option.insert_text += "(";
-						} else {
-							option.insert_text += "()";
-						}
-						r_result.insert(option.display, option);
+				bool only_static = _static && !Engine::get_singleton()->has_singleton(type);
+
+				List<MethodInfo> methods;
+				ClassDB::get_method_list(type, &methods, false, true);
+				for (const MethodInfo &E : methods) {
+					if (only_static && (E.flags & METHOD_FLAG_STATIC) == 0) {
+						continue;
 					}
+					if (E.name.begins_with("_")) {
+						continue;
+					}
+					int location = p_recursion_depth + _get_method_location(type, E.name);
+					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
+					if (E.arguments.size()) {
+						option.insert_text += "(";
+					} else {
+						option.insert_text += "()";
+					}
+					r_result.insert(option.display, option);
 				}
 				return;
 			} break;

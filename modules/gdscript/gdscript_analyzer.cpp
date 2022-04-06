@@ -2508,8 +2508,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 		call_type = return_type;
 	} else {
-		// Check if the name exists as something else.
 		bool found = false;
+
+		// Check if the name exists as something else.
 		if (!p_call->is_super && callee_type != GDScriptParser::Node::NONE) {
 			GDScriptParser::IdentifierNode *callee_id;
 			if (callee_type == GDScriptParser::Node::IDENTIFIER) {
@@ -2539,6 +2540,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (!found && (is_self || (base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN))) {
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 			push_error(vformat(R"*(Function "%s()" not found in base %s.)*", p_call->function_name, base_name), p_call->is_super ? p_call : p_call->callee);
+		} else if (!found && (!p_call->is_super && base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::NATIVE && base_type.is_meta_type)) {
+			push_error(vformat(R"*(Static function "%s()" not found in base "%s".)*", p_call->function_name, base_type.native_type.operator String()), p_call);
 		}
 	}
 
@@ -3773,6 +3776,7 @@ bool GDScriptAnalyzer::function_signature_from_info(const MethodInfo &p_info, GD
 	r_return_type = type_from_property(p_info.return_val);
 	r_default_arg_count = p_info.default_arguments.size();
 	r_vararg = (p_info.flags & METHOD_FLAG_VARARG) != 0;
+	r_static = (p_info.flags & METHOD_FLAG_STATIC) != 0;
 
 	for (const PropertyInfo &E : p_info.arguments) {
 		r_par_types.push_back(type_from_property(E));
