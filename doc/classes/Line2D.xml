@@ -4,7 +4,7 @@
 		A 2D line.
 	</brief_description>
 	<description>
-		A line through several points in 2D space.
+		A line through several points in 2D space. Supports varying width and color over the line's length, texturing, and several cap/joint types.
 		[b]Note:[/b] By default, Godot can only draw up to 4,096 polygon points at a time. To increase this limit, open the Project Settings and increase [member ProjectSettings.rendering/limits/buffers/canvas_polygon_buffer_size_kb] and [member ProjectSettings.rendering/limits/buffers/canvas_polygon_index_buffer_size_kb].
 	</description>
 	<tutorials>
@@ -58,8 +58,9 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
-			If [code]true[/code], the line's border will be anti-aliased.
-			[b]Note:[/b] Line2D is not accelerated by batching when being anti-aliased.
+			If [code]true[/code], the line's border will attempt to perform antialiasing by drawing thin OpenGL smooth lines on the line's edges.
+			[b]Note:[/b] Line2D is not accelerated by batching if [member antialiased] is [code]true[/code].
+			[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent lines and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedLine2D node. That node relies on a texture with custom mipmaps to perform antialiasing. 2D batching is also still supported with those antialiased lines.
 		</member>
 		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
 			Controls the style of the line's first point. Use [enum LineCapMode] constants.
