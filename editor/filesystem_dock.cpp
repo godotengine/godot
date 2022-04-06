@@ -1432,7 +1432,7 @@ void FileSystemDock::_make_dir_confirm() {
 	Error err = da->change_dir(directory);
 	ERR_FAIL_COND_MSG(err != OK, "Cannot open directory '" + directory + "'.");
 
-	if (da->dir_exists(directory)) {
+	if (da->dir_exists(dir_name)) {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder. File with that name already exists."));
 		return;
 	}
