@@ -2081,19 +2081,23 @@ Rect2i DisplayServerWindows::window_get_popup_safe_rect(WindowID p_window) const
 }
 
 void DisplayServerWindows::popup_open(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	WindowData &wd = windows[p_window];
 	if (wd.is_popup) {
-		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		// Find current popup parent, or root popup if new window is not transient.
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
 		while (E) {
 			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
-				_send_window_event(windows[E->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			} else {
 				break;
 			}
+		}
+		if (C) {
+			_send_window_event(windows[C->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 
 		time_since_popup = OS::get_singleton()->get_ticks_msec();
@@ -2102,17 +2106,22 @@ void DisplayServerWindows::popup_open(WindowID p_window) {
 }
 
 void DisplayServerWindows::popup_close(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	List<WindowID>::Element *E = popup_list.find(p_window);
 	while (E) {
-		_send_window_event(windows[E->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
 		List<WindowID>::Element *F = E->next();
+		WindowID win_id = E->get();
 		popup_list.erase(E);
+
+		_send_window_event(windows[win_id], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
 		E = F;
 	}
 }
 
 LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) {
 	_THREAD_SAFE_METHOD_
+
 	uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
 	if (delta > 250) {
 		switch (wParam) {
@@ -2123,7 +2132,9 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 			case WM_MBUTTONDOWN: {
 				MOUSEHOOKSTRUCT *ms = (MOUSEHOOKSTRUCT *)lParam;
 				Point2i pos = Point2i(ms->pt.x, ms->pt.y);
+				List<WindowID>::Element *C = nullptr;
 				List<WindowID>::Element *E = popup_list.back();
+				// Find top popup to close.
 				while (E) {
 					// Popup window area.
 					Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
@@ -2134,13 +2145,13 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 					} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 						break;
 					} else {
-						_send_window_event(windows[E->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
-						List<WindowID>::Element *F = E->prev();
-						popup_list.erase(E);
-						E = F;
+						C = E;
+						E = E->prev();
 					}
 				}
-
+				if (C) {
+					_send_window_event(windows[C->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+				}
 			} break;
 		}
 	}
