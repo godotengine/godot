@@ -603,7 +603,6 @@ void GraphNode::set_drag(bool p_drag) {
 }
 
 Vector2 GraphNode::get_drag_from() {
-
 	if (drag_from == Vector2(0,0)) {
 		drag_from = get_offset();
 	}
