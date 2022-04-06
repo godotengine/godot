@@ -42,10 +42,10 @@ class EditorFileSystemDirectory;
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
-	Tree *tree;
-	Button *fixdeps;
+	Tree *tree = nullptr;
+	Button *fixdeps = nullptr;
 
-	EditorFileDialog *search;
+	EditorFileDialog *search = nullptr;
 
 	String replacing;
 	String editing;
@@ -71,8 +71,8 @@ public:
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
-	ItemList *owners;
-	PopupMenu *file_options;
+	ItemList *owners = nullptr;
+	PopupMenu *file_options = nullptr;
 	String editing;
 
 	void _fill_owners(EditorFileSystemDirectory *efsd);
@@ -95,8 +95,8 @@ public:
 class DependencyRemoveDialog : public ConfirmationDialog {
 	GDCLASS(DependencyRemoveDialog, ConfirmationDialog);
 
-	Label *text;
-	Tree *owners;
+	Label *text = nullptr;
+	Tree *owners = nullptr;
 
 	Map<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
@@ -142,9 +142,9 @@ public:
 private:
 	String for_file;
 	Mode mode;
-	Button *fdep;
-	Label *text;
-	Tree *files;
+	Button *fdep = nullptr;
+	Label *text = nullptr;
+	Tree *files = nullptr;
 	void ok_pressed() override;
 	void custom_action(const String &) override;
 
@@ -156,9 +156,9 @@ public:
 class OrphanResourcesDialog : public ConfirmationDialog {
 	GDCLASS(OrphanResourcesDialog, ConfirmationDialog);
 
-	DependencyEditor *dep_edit;
-	Tree *files;
-	ConfirmationDialog *delete_confirm;
+	DependencyEditor *dep_edit = nullptr;
+	Tree *files = nullptr;
+	ConfirmationDialog *delete_confirm = nullptr;
 	void ok_pressed() override;
 
 	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent);

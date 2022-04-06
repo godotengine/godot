@@ -47,18 +47,18 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 
 	String base_type;
 	String icon_fallback;
 	String preferred_search_result_type;
 
-	Button *favorite;
+	Button *favorite = nullptr;
 	Vector<String> favorite_list;
-	Tree *favorites;
-	ItemList *recent;
-	EditorHelpBit *help_bit;
+	Tree *favorites = nullptr;
+	ItemList *recent = nullptr;
+	EditorHelpBit *help_bit = nullptr;
 
 	HashMap<String, TreeItem *> search_options_types;
 	HashMap<String, String> custom_type_parents;

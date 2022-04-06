@@ -41,7 +41,7 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
-	DIR *dir_stream;
+	DIR *dir_stream = nullptr;
 
 	static DirAccess *create_fs();
 

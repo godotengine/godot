@@ -3865,7 +3865,7 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	Error err = scene_singleton->volumetric_fog.compiler.compile(RS::SHADER_FOG, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Fog shader compilation failed.");
@@ -3966,7 +3966,7 @@ Variant RendererSceneRenderRD::FogShaderData::get_default_parameter(const String
 }
 
 RS::ShaderNativeSourceCode RendererSceneRenderRD::FogShaderData::get_native_source_code() const {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	return scene_singleton->volumetric_fog.shader.version_get_native_source_code(version);
 }
@@ -3976,7 +3976,7 @@ RendererSceneRenderRD::FogShaderData::FogShaderData() {
 }
 
 RendererSceneRenderRD::FogShaderData::~FogShaderData() {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 	ERR_FAIL_COND(!scene_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -3988,7 +3988,7 @@ RendererSceneRenderRD::FogShaderData::~FogShaderData() {
 // Fog material
 
 bool RendererSceneRenderRD::FogMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	uniform_set_updated = true;
 
@@ -4276,7 +4276,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			FogMaterialData *material = nullptr;
 
 			if (fog_material.is_valid()) {
-				material = (FogMaterialData *)material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG);
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
 				if (!material || !material->shader_data->valid) {
 					material = nullptr;
 				}
@@ -4284,7 +4284,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			if (!material) {
 				fog_material = volumetric_fog.default_material;
-				material = (FogMaterialData *)material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG);
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
 			}
 
 			ERR_FAIL_COND(!material);
@@ -5501,7 +5501,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 
 	GeometryInstance *gi = geometry_instance_create(p_base);
 
-	uint32_t sc = RSG::storage->mesh_get_surface_count(p_base);
+	uint32_t sc = RSG::mesh_storage->mesh_get_surface_count(p_base);
 	Vector<RID> materials;
 	materials.resize(sc);
 
@@ -5732,7 +5732,7 @@ void fog() {
 			material_storage->material_initialize(volumetric_fog.default_material);
 			material_storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
 
-			FogMaterialData *md = (FogMaterialData *)material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG);
+			FogMaterialData *md = static_cast<FogMaterialData *>(material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG));
 			volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, 0);
 
 			Vector<RD::Uniform> uniforms;

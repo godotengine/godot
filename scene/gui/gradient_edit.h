@@ -38,8 +38,8 @@
 class GradientEdit : public Control {
 	GDCLASS(GradientEdit, Control);
 
-	PopupPanel *popup;
-	ColorPicker *picker;
+	PopupPanel *popup = nullptr;
+	ColorPicker *picker = nullptr;
 
 	bool grabbing = false;
 	int grabbed = -1;

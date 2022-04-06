@@ -39,7 +39,7 @@ class Noise : public Resource {
 	// Helper struct for get_seamless_image(). See comments in .cpp for usage.
 	template <typename T>
 	struct img_buff {
-		T *img;
+		T *img = nullptr;
 		int width; // Array dimensions & default modulo for image.
 		int height;
 		int offset_x; // Offset index location on image (wrapped by specified modulo).
@@ -101,6 +101,7 @@ class Noise : public Resource {
 		on Source it's translated to
 		corner of Q1/s3 unless the ALT_XY modulo moves it to Q4
 		*/
+		ERR_FAIL_COND_V(p_blend_skirt < 0, Ref<Image>());
 
 		int skirt_width = MAX(1, p_width * p_blend_skirt);
 		int skirt_height = MAX(1, p_height * p_blend_skirt);

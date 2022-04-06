@@ -651,7 +651,7 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_run_icon() const {
 }
 
 void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
-	EditorExportPlatformJavaScript *ej = (EditorExportPlatformJavaScript *)data;
+	EditorExportPlatformJavaScript *ej = static_cast<EditorExportPlatformJavaScript *>(data);
 	while (!ej->server_quit) {
 		OS::get_singleton()->delay_usec(6900);
 		{

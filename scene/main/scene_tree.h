@@ -115,7 +115,7 @@ private:
 	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
-	Node *edited_scene_root;
+	Node *edited_scene_root = nullptr;
 #endif
 	struct UGCall {
 		StringName group;
@@ -138,7 +138,7 @@ private:
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
-	Node *current_scene;
+	Node *current_scene = nullptr;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -204,6 +204,7 @@ private:
 
 	enum CallInputType {
 		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_SHORTCUT_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
 	};

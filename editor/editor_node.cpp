@@ -430,7 +430,7 @@ void EditorNode::_update_title() {
 	DisplayServer::get_singleton()->window_set_title(title);
 }
 
-void EditorNode::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -3854,7 +3854,7 @@ void EditorNode::add_io_error(const String &p_error) {
 }
 
 void EditorNode::_load_error_notify(void *p_ud, const String &p_text) {
-	EditorNode *en = (EditorNode *)p_ud;
+	EditorNode *en = static_cast<EditorNode *>(p_ud);
 	en->load_errors->add_image(en->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 	en->load_errors->add_text(p_text + "\n");
 	en->load_error_dialog->popup_centered_ratio(0.5);
@@ -4261,7 +4261,7 @@ void EditorNode::_copy_warning(const String &p_str) {
 
 void EditorNode::_dock_floating_close_request(Control *p_control) {
 	// Through the MarginContainer to the Window.
-	Window *window = (Window *)p_control->get_parent()->get_parent();
+	Window *window = static_cast<Window *>(p_control->get_parent()->get_parent());
 	int window_slot = window->get_meta("dock_slot");
 
 	p_control->get_parent()->remove_child(p_control);
@@ -5773,7 +5773,7 @@ static Node *_resource_get_edited_scene() {
 }
 
 void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error) {
-	EditorNode *en = (EditorNode *)p_this;
+	EditorNode *en = static_cast<EditorNode *>(p_this);
 	en->log->add_message(p_string, p_error ? EditorLog::MSG_TYPE_ERROR : EditorLog::MSG_TYPE_STD);
 }
 
@@ -7168,7 +7168,7 @@ EditorNode::EditorNode() {
 	_update_recent_scenes();
 
 	editor_data.restore_editor_global_states();
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	load_errors = memnew(RichTextLabel);
 	load_error_dialog = memnew(AcceptDialog);

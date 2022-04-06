@@ -40,7 +40,7 @@ class GDScriptTextDocument : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	FileAccess *file_checker;
+	FileAccess *file_checker = nullptr;
 
 	void didOpen(const Variant &p_param);
 	void didClose(const Variant &p_param);

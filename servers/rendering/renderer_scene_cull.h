@@ -47,7 +47,7 @@
 
 class RendererSceneCull : public RendererScene {
 public:
-	RendererSceneRender *scene_render;
+	RendererSceneRender *scene_render = nullptr;
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
@@ -115,7 +115,7 @@ public:
 
 	/* VISIBILITY NOTIFIER API */
 
-	RendererSceneOcclusionCull *dummy_occlusion_culling;
+	RendererSceneOcclusionCull *dummy_occlusion_culling = nullptr;
 
 	/* SCENARIO API */
 
@@ -273,7 +273,7 @@ public:
 		union {
 			uint64_t instance_data_rid;
 			RendererSceneRender::GeometryInstance *instance_geometry;
-			InstanceVisibilityNotifierData *visibility_notifier;
+			InstanceVisibilityNotifierData *visibility_notifier = nullptr;
 		};
 		Instance *instance = nullptr;
 		int32_t parent_array_index = -1;
@@ -365,8 +365,8 @@ public:
 	/* INSTANCING API */
 
 	struct InstancePair {
-		Instance *a;
-		Instance *b;
+		Instance *a = nullptr;
+		Instance *b = nullptr;
 		SelfList<InstancePair> list_a;
 		SelfList<InstancePair> list_b;
 		InstancePair() :
@@ -409,7 +409,7 @@ public:
 		bool dynamic_gi : 2; //same above for dynamic objects
 		bool redraw_if_visible : 4;
 
-		Instance *lightmap;
+		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
 		int lightmap_slice_index;
 		uint32_t lightmap_cull_index;
@@ -455,7 +455,7 @@ public:
 
 		SelfList<Instance> update_item;
 
-		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
+		AABB *custom_aabb = nullptr; // <Zylann> would using aabb directly with a bool be better?
 		float extra_margin;
 		ObjectID object_id;
 
@@ -465,7 +465,7 @@ public:
 
 		uint64_t version; // changes to this, and changes to base increase version
 
-		InstanceBaseData *base_data;
+		InstanceBaseData *base_data = nullptr;
 
 		SelfList<InstancePair>::List pairs;
 		uint64_t pair_check;
@@ -597,7 +597,7 @@ public:
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
 		Set<Instance *> geometries;
 
@@ -613,7 +613,7 @@ public:
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 		RID instance;
 
 		Set<Instance *> geometries;
@@ -656,7 +656,7 @@ public:
 
 		Set<Instance *> geometries;
 
-		Instance *baked_light;
+		Instance *baked_light = nullptr;
 
 		RS::LightBakeMode bake_mode;
 		uint32_t max_sdfgi_cascade = 2;
@@ -671,7 +671,7 @@ public:
 	};
 
 	struct InstanceVoxelGIData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
 		Set<Instance *> geometries;
 		Set<Instance *> dynamic_geometries;
@@ -1023,7 +1023,7 @@ public:
 
 	struct VisibilityCullData {
 		uint64_t viewport_mask;
-		Scenario *scenario;
+		Scenario *scenario = nullptr;
 		Vector3 camera_position;
 		uint32_t cull_offset;
 		uint32_t cull_count;
@@ -1035,12 +1035,12 @@ public:
 	_FORCE_INLINE_ int _visibility_range_check(InstanceVisibilityData &r_vis_data, const Vector3 &p_camera_pos, uint64_t p_viewport_mask);
 
 	struct CullData {
-		Cull *cull;
-		Scenario *scenario;
+		Cull *cull = nullptr;
+		Scenario *scenario = nullptr;
 		RID shadow_atlas;
 		Transform3D cam_transform;
 		uint32_t visible_layers;
-		Instance *render_reflection_probe;
+		Instance *render_reflection_probe = nullptr;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
 		const CameraMatrix *camera_matrix;
 		uint64_t visibility_viewport_mask;

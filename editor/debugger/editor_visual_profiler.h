@@ -67,20 +67,20 @@ public:
 	};
 
 private:
-	Button *activate;
-	Button *clear_button;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
 
-	TextureRect *graph;
+	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
-	Tree *variables;
-	HSplitContainer *h_split;
-	CheckBox *frame_relative;
-	CheckBox *linked;
+	Tree *variables = nullptr;
+	HSplitContainer *h_split = nullptr;
+	CheckBox *frame_relative = nullptr;
+	CheckBox *linked = nullptr;
 
-	OptionButton *display_mode;
+	OptionButton *display_mode = nullptr;
 
-	SpinBox *cursor_metric_edit;
+	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
 	int last_metric;
@@ -99,8 +99,8 @@ private:
 
 	bool seeking;
 
-	Timer *frame_delay;
-	Timer *plot_delay;
+	Timer *frame_delay = nullptr;
+	Timer *plot_delay = nullptr;
 
 	void _update_frame(bool p_focus_selected = false);
 

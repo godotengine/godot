@@ -72,6 +72,13 @@
 				[b]Note:[/b] The [Tween] will become invalid after finished, but you can call [method stop] after the step, to keep it and reset.
 			</description>
 		</method>
+		<method name="get_total_elapsed_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the total time in seconds the [Tween] has been animating (i.e. time since it started, not counting pauses etc.). The time is affected by [method set_speed_scale] and [method stop] will reset it to [code]0[/code].
+				[b]Note:[/code] As it results from accumulating frame deltas, the time returned after the [Tween] has finished animating will be slightly greater than the actual [Tween] duration.
+			</description>
+		</method>
 		<method name="interpolate_value">
 			<return type="Variant" />
 			<argument index="0" name="initial_value" type="Variant" />

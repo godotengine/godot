@@ -75,9 +75,9 @@ class ThemeItemImportTree : public VBoxContainer {
 
 	Map<ThemeItem, ItemCheckedState> selected_items;
 
-	LineEdit *import_items_filter;
+	LineEdit *import_items_filter = nullptr;
 
-	Tree *import_items_tree;
+	Tree *import_items_tree = nullptr;
 	List<TreeItem *> tree_color_items;
 	List<TreeItem *> tree_constant_items;
 	List<TreeItem *> tree_font_items;
@@ -92,57 +92,57 @@ class ThemeItemImportTree : public VBoxContainer {
 		IMPORT_ITEM_DATA = 2,
 	};
 
-	TextureRect *select_colors_icon;
-	Label *select_colors_label;
-	Button *select_all_colors_button;
-	Button *select_full_colors_button;
-	Button *deselect_all_colors_button;
-	Label *total_selected_colors_label;
+	TextureRect *select_colors_icon = nullptr;
+	Label *select_colors_label = nullptr;
+	Button *select_all_colors_button = nullptr;
+	Button *select_full_colors_button = nullptr;
+	Button *deselect_all_colors_button = nullptr;
+	Label *total_selected_colors_label = nullptr;
 
-	TextureRect *select_constants_icon;
-	Label *select_constants_label;
-	Button *select_all_constants_button;
-	Button *select_full_constants_button;
-	Button *deselect_all_constants_button;
-	Label *total_selected_constants_label;
+	TextureRect *select_constants_icon = nullptr;
+	Label *select_constants_label = nullptr;
+	Button *select_all_constants_button = nullptr;
+	Button *select_full_constants_button = nullptr;
+	Button *deselect_all_constants_button = nullptr;
+	Label *total_selected_constants_label = nullptr;
 
-	TextureRect *select_fonts_icon;
-	Label *select_fonts_label;
-	Button *select_all_fonts_button;
-	Button *select_full_fonts_button;
-	Button *deselect_all_fonts_button;
-	Label *total_selected_fonts_label;
+	TextureRect *select_fonts_icon = nullptr;
+	Label *select_fonts_label = nullptr;
+	Button *select_all_fonts_button = nullptr;
+	Button *select_full_fonts_button = nullptr;
+	Button *deselect_all_fonts_button = nullptr;
+	Label *total_selected_fonts_label = nullptr;
 
-	TextureRect *select_font_sizes_icon;
-	Label *select_font_sizes_label;
-	Button *select_all_font_sizes_button;
-	Button *select_full_font_sizes_button;
-	Button *deselect_all_font_sizes_button;
-	Label *total_selected_font_sizes_label;
+	TextureRect *select_font_sizes_icon = nullptr;
+	Label *select_font_sizes_label = nullptr;
+	Button *select_all_font_sizes_button = nullptr;
+	Button *select_full_font_sizes_button = nullptr;
+	Button *deselect_all_font_sizes_button = nullptr;
+	Label *total_selected_font_sizes_label = nullptr;
 
-	TextureRect *select_icons_icon;
-	Label *select_icons_label;
-	Button *select_all_icons_button;
-	Button *select_full_icons_button;
-	Button *deselect_all_icons_button;
-	Label *total_selected_icons_label;
+	TextureRect *select_icons_icon = nullptr;
+	Label *select_icons_label = nullptr;
+	Button *select_all_icons_button = nullptr;
+	Button *select_full_icons_button = nullptr;
+	Button *deselect_all_icons_button = nullptr;
+	Label *total_selected_icons_label = nullptr;
 
-	TextureRect *select_styleboxes_icon;
-	Label *select_styleboxes_label;
-	Button *select_all_styleboxes_button;
-	Button *select_full_styleboxes_button;
-	Button *deselect_all_styleboxes_button;
-	Label *total_selected_styleboxes_label;
+	TextureRect *select_styleboxes_icon = nullptr;
+	Label *select_styleboxes_label = nullptr;
+	Button *select_all_styleboxes_button = nullptr;
+	Button *select_full_styleboxes_button = nullptr;
+	Button *deselect_all_styleboxes_button = nullptr;
+	Label *total_selected_styleboxes_label = nullptr;
 
-	HBoxContainer *select_icons_warning_hb;
-	TextureRect *select_icons_warning_icon;
-	Label *select_icons_warning;
+	HBoxContainer *select_icons_warning_hb = nullptr;
+	TextureRect *select_icons_warning_icon = nullptr;
+	Label *select_icons_warning = nullptr;
 
-	Button *import_collapse_types_button;
-	Button *import_expand_types_button;
-	Button *import_select_all_button;
-	Button *import_select_full_button;
-	Button *import_deselect_all_button;
+	Button *import_collapse_types_button = nullptr;
+	Button *import_expand_types_button = nullptr;
+	Button *import_select_all_button = nullptr;
+	Button *import_select_full_button = nullptr;
+	Button *import_deselect_all_button = nullptr;
 
 	void _update_items_tree();
 	void _toggle_type_items(bool p_collapse);
@@ -186,31 +186,31 @@ class ThemeTypeEditor;
 class ThemeItemEditorDialog : public AcceptDialog {
 	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
 
-	ThemeTypeEditor *theme_type_editor;
+	ThemeTypeEditor *theme_type_editor = nullptr;
 
 	Ref<Theme> edited_theme;
 
-	TabContainer *tc;
+	TabContainer *tc = nullptr;
 
 	enum TypesTreeAction {
 		TYPES_TREE_REMOVE_ITEM,
 	};
 
-	Tree *edit_type_list;
-	LineEdit *edit_add_type_value;
+	Tree *edit_type_list = nullptr;
+	LineEdit *edit_add_type_value = nullptr;
 	String edited_item_type;
 
-	Button *edit_items_add_color;
-	Button *edit_items_add_constant;
-	Button *edit_items_add_font;
-	Button *edit_items_add_font_size;
-	Button *edit_items_add_icon;
-	Button *edit_items_add_stylebox;
-	Button *edit_items_remove_class;
-	Button *edit_items_remove_custom;
-	Button *edit_items_remove_all;
-	Tree *edit_items_tree;
-	Label *edit_items_message;
+	Button *edit_items_add_color = nullptr;
+	Button *edit_items_add_constant = nullptr;
+	Button *edit_items_add_font = nullptr;
+	Button *edit_items_add_font_size = nullptr;
+	Button *edit_items_add_icon = nullptr;
+	Button *edit_items_add_stylebox = nullptr;
+	Button *edit_items_remove_class = nullptr;
+	Button *edit_items_remove_custom = nullptr;
+	Button *edit_items_remove_all = nullptr;
+	Tree *edit_items_tree = nullptr;
+	Label *edit_items_message = nullptr;
 
 	enum ItemsTreeAction {
 		ITEMS_TREE_RENAME_ITEM,
@@ -218,10 +218,10 @@ class ThemeItemEditorDialog : public AcceptDialog {
 		ITEMS_TREE_REMOVE_DATA_TYPE,
 	};
 
-	ConfirmationDialog *edit_theme_item_dialog;
-	VBoxContainer *edit_theme_item_old_vb;
-	Label *theme_item_old_name;
-	LineEdit *theme_item_name;
+	ConfirmationDialog *edit_theme_item_dialog = nullptr;
+	VBoxContainer *edit_theme_item_old_vb = nullptr;
+	Label *theme_item_old_name = nullptr;
+	LineEdit *theme_item_name = nullptr;
 
 	enum ItemPopupMode {
 		CREATE_THEME_ITEM,
@@ -233,15 +233,15 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	String edit_item_old_name;
 	Theme::DataType edit_item_data_type = Theme::DATA_TYPE_MAX;
 
-	ThemeItemImportTree *import_default_theme_items;
-	ThemeItemImportTree *import_editor_theme_items;
-	ThemeItemImportTree *import_other_theme_items;
+	ThemeItemImportTree *import_default_theme_items = nullptr;
+	ThemeItemImportTree *import_editor_theme_items = nullptr;
+	ThemeItemImportTree *import_other_theme_items = nullptr;
 
-	LineEdit *import_another_theme_value;
-	Button *import_another_theme_button;
-	EditorFileDialog *import_another_theme_dialog;
+	LineEdit *import_another_theme_value = nullptr;
+	Button *import_another_theme_button = nullptr;
+	EditorFileDialog *import_another_theme_dialog = nullptr;
 
-	ConfirmationDialog *confirm_closing_dialog;
+	ConfirmationDialog *confirm_closing_dialog = nullptr;
 
 	void ok_pressed() override;
 	void _close_dialog();
@@ -288,9 +288,9 @@ class ThemeTypeDialog : public ConfirmationDialog {
 
 	String pre_submitted_value;
 
-	LineEdit *add_type_filter;
-	ItemList *add_type_options;
-	ConfirmationDialog *add_type_confirmation;
+	LineEdit *add_type_filter = nullptr;
+	ItemList *add_type_options = nullptr;
+	ConfirmationDialog *add_type_confirmation = nullptr;
 
 	void _dialog_about_to_show();
 	void ok_pressed() override;
@@ -332,22 +332,22 @@ class ThemeTypeEditor : public MarginContainer {
 
 	LeadingStylebox leading_stylebox;
 
-	OptionButton *theme_type_list;
-	Button *add_type_button;
+	OptionButton *theme_type_list = nullptr;
+	Button *add_type_button = nullptr;
 
-	CheckButton *show_default_items_button;
+	CheckButton *show_default_items_button = nullptr;
 
-	TabContainer *data_type_tabs;
-	VBoxContainer *color_items_list;
-	VBoxContainer *constant_items_list;
-	VBoxContainer *font_items_list;
-	VBoxContainer *font_size_items_list;
-	VBoxContainer *icon_items_list;
-	VBoxContainer *stylebox_items_list;
+	TabContainer *data_type_tabs = nullptr;
+	VBoxContainer *color_items_list = nullptr;
+	VBoxContainer *constant_items_list = nullptr;
+	VBoxContainer *font_items_list = nullptr;
+	VBoxContainer *font_size_items_list = nullptr;
+	VBoxContainer *icon_items_list = nullptr;
+	VBoxContainer *stylebox_items_list = nullptr;
 
-	LineEdit *type_variation_edit;
-	Button *type_variation_button;
-	Label *type_variation_locked;
+	LineEdit *type_variation_edit = nullptr;
+	Button *type_variation_button = nullptr;
+	Label *type_variation_locked = nullptr;
 
 	enum TypeDialogMode {
 		ADD_THEME_TYPE,
@@ -355,10 +355,10 @@ class ThemeTypeEditor : public MarginContainer {
 	};
 
 	TypeDialogMode add_type_mode = ADD_THEME_TYPE;
-	ThemeTypeDialog *add_type_dialog;
+	ThemeTypeDialog *add_type_dialog = nullptr;
 
 	Vector<Control *> focusables;
-	Timer *update_debounce_timer;
+	Timer *update_debounce_timer = nullptr;
 
 	VBoxContainer *_create_item_list(Theme::DataType p_data_type);
 	void _update_type_list();
@@ -417,15 +417,15 @@ class ThemeEditor : public VBoxContainer {
 
 	Ref<Theme> theme;
 
-	TabBar *preview_tabs;
-	PanelContainer *preview_tabs_content;
-	Button *add_preview_button;
-	EditorFileDialog *preview_scene_dialog;
+	TabBar *preview_tabs = nullptr;
+	PanelContainer *preview_tabs_content = nullptr;
+	Button *add_preview_button = nullptr;
+	EditorFileDialog *preview_scene_dialog = nullptr;
 
-	ThemeTypeEditor *theme_type_editor;
+	ThemeTypeEditor *theme_type_editor = nullptr;
 
-	Label *theme_name;
-	ThemeItemEditorDialog *theme_edit_dialog;
+	Label *theme_name = nullptr;
+	ThemeItemEditorDialog *theme_edit_dialog = nullptr;
 
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
@@ -452,8 +452,8 @@ public:
 class ThemeEditorPlugin : public EditorPlugin {
 	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
-	ThemeEditor *theme_editor;
-	Button *button;
+	ThemeEditor *theme_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "Theme"; }

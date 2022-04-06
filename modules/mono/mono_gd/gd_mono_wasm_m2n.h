@@ -47,11 +47,11 @@ struct Mono_InterpMethodArguments {
 	size_t ilen;
 	void **iargs;
 	size_t flen;
-	double *fargs;
+	double *fargs = nullptr;
 	void **retval;
 	size_t is_float_ret;
 	//#ifdef TARGET_WASM
-	void *sig;
+	void *sig = nullptr;
 	//#endif
 };
 } // extern "C"

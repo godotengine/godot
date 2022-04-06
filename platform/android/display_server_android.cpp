@@ -42,7 +42,7 @@
 #endif
 
 DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
-	return (DisplayServerAndroid *)DisplayServer::get_singleton();
+	return static_cast<DisplayServerAndroid *>(DisplayServer::get_singleton());
 }
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
@@ -161,6 +161,13 @@ int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_COND_V(!godot_io_java, 1.0f);
+
+	return godot_io_java->get_scaled_density();
+}
+
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	if (!godot_io_java) {
@@ -270,7 +277,7 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 			return 0; // Not supported.
 		}
 		case WINDOW_HANDLE: {
-			return (int64_t)((OS_Android *)OS::get_singleton())->get_godot_java()->get_activity();
+			return reinterpret_cast<int64_t>(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 		}
 		case WINDOW_VIEW: {
 			return 0; // Not supported.

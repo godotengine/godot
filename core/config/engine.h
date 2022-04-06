@@ -40,7 +40,7 @@ class Engine {
 public:
 	struct Singleton {
 		StringName name;
-		Object *ptr;
+		Object *ptr = nullptr;
 		StringName class_name; //used for binding generation hinting
 		bool user_created = false;
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());

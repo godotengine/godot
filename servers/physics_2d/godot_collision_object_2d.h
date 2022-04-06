@@ -104,7 +104,7 @@ public:
 	_FORCE_INLINE_ void set_canvas_instance_id(const ObjectID &p_canvas_instance_id) { canvas_instance_id = p_canvas_instance_id; }
 	_FORCE_INLINE_ ObjectID get_canvas_instance_id() const { return canvas_instance_id; }
 
-	void _shape_changed();
+	void _shape_changed() override;
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	void add_shape(GodotShape2D *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
@@ -166,7 +166,7 @@ public:
 	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
 
-	void remove_shape(GodotShape2D *p_shape);
+	void remove_shape(GodotShape2D *p_shape) override;
 	void remove_shape(int p_index);
 
 	virtual void set_space(GodotSpace2D *p_space) = 0;

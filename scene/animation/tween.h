@@ -103,6 +103,7 @@ private:
 	ObjectID bound_node;
 
 	Vector<List<Ref<Tweener>>> tweeners;
+	float total_time = 0;
 	int current_step = -1;
 	int loops = 1;
 	int loops_done = 0;
@@ -166,6 +167,7 @@ public:
 	bool step(float p_delta);
 	bool can_process(bool p_tree_paused) const;
 	Node *get_bound_node() const;
+	float get_total_time() const;
 
 	Tween() {}
 };

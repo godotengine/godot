@@ -30,6 +30,13 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
+		<method name="get_tab_button_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the button icon from the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
 		<method name="get_tab_control" qualifiers="const">
 			<return type="Control" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -90,6 +97,14 @@
 			<argument index="0" name="popup" type="Node" />
 			<description>
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
+			</description>
+		</method>
+		<method name="set_tab_button_icon">
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the button icon from the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -156,6 +171,12 @@
 		<signal name="pre_popup_pressed">
 			<description>
 				Emitted when the [TabContainer]'s [Popup] button is clicked. See [method set_popup] for details.
+			</description>
+		</signal>
+		<signal name="tab_button_pressed">
+			<argument index="0" name="tab" type="int" />
+			<description>
+				Emitted when the user clicks on the button icon on this tab.
 			</description>
 		</signal>
 		<signal name="tab_changed">

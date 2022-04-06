@@ -144,7 +144,7 @@ public:
 	void set_max_redirects(int p_max);
 	int get_max_redirects() const;
 
-	Timer *timer;
+	Timer *timer = nullptr;
 
 	void set_timeout(double p_timeout);
 	double get_timeout();

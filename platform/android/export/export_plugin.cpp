@@ -249,7 +249,7 @@ static const int DEFAULT_TARGET_SDK_VERSION = 30; // Should match the value in '
 const String SDK_VERSION_RANGE = vformat("%s,%s,1", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
 
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
-	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
+	EditorExportPlatformAndroid *ea = static_cast<EditorExportPlatformAndroid *>(ud);
 
 	while (!ea->quit_request.is_set()) {
 		// Check for plugins updates
@@ -685,7 +685,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 		ERR_PRINT(err);
 		return FAILED;
 	}
-	APKExportData *ed = (APKExportData *)p_userdata;
+	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 	Vector<String> abis = get_abis();
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
@@ -710,7 +710,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 }
 
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-	APKExportData *ed = (APKExportData *)p_userdata;
+	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 	String dst_path = p_path.replace_first("res://", "assets/");
 
 	store_in_apk(ed, dst_path, p_data, _should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0);
@@ -725,7 +725,7 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 	ERR_FAIL_COND_V_MSG(!p_so.path.get_file().begins_with("lib"), FAILED,
 			"Android .so file names must start with \"lib\", but got: " + p_so.path);
 	Vector<String> abis = get_abis();
-	CustomExportData *export_data = (CustomExportData *)p_userdata;
+	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
 		int abi_index = abis.find(p_so.tags[i]);
@@ -863,6 +863,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	bool classify_as_game = p_preset->get("package/classify_as_game");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
 	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
+	bool is_resizeable = bool(GLOBAL_GET("display/window/size/resizable"));
 
 	Vector<String> perms;
 	// Write permissions into the perms variable.
@@ -978,6 +979,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "activity" && attrname == "excludeFromRecents") {
 						encode_uint32(exclude_from_recents, &p_manifest.write[iofs + 16]);
+					}
+
+					if (tname == "activity" && attrname == "resizeableActivity") {
+						encode_uint32(is_resizeable, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "supports-screens") {
@@ -2807,6 +2812,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		bool skip = false;
 
@@ -2991,6 +2999,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		char fname[16384];
 		char extra[16384];
 		ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 

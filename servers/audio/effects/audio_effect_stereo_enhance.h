@@ -44,7 +44,7 @@ class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
 		MAX_DELAY_MS = 50
 	};
 
-	float *delay_ringbuff;
+	float *delay_ringbuff = nullptr;
 	unsigned int ringbuff_pos;
 	unsigned int ringbuff_mask;
 

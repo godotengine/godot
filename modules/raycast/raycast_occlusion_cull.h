@@ -115,7 +115,7 @@ private:
 
 	struct Scenario {
 		struct RaycastThreadData {
-			CameraRayTile *rays;
+			CameraRayTile *rays = nullptr;
 			const uint32_t *masks;
 		};
 
@@ -124,7 +124,7 @@ private:
 			uint32_t vertex_count;
 			Transform3D xform;
 			const Vector3 *read;
-			Vector3 *write;
+			Vector3 *write = nullptr;
 		};
 
 		Thread *commit_thread = nullptr;

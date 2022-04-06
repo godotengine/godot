@@ -53,7 +53,7 @@ void EditorFileServer::_close_client(ClientData *cd) {
 }
 
 void EditorFileServer::_subthread_start(void *s) {
-	ClientData *cd = (ClientData *)s;
+	ClientData *cd = static_cast<ClientData *>(s);
 
 	cd->connection->set_no_delay(true);
 	uint8_t buf4[8];
@@ -259,7 +259,7 @@ void EditorFileServer::_subthread_start(void *s) {
 }
 
 void EditorFileServer::_thread_start(void *s) {
-	EditorFileServer *self = (EditorFileServer *)s;
+	EditorFileServer *self = static_cast<EditorFileServer *>(s);
 	while (!self->quit) {
 		if (self->cmd == CMD_ACTIVATE) {
 			self->server->listen(self->port);

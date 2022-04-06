@@ -470,20 +470,20 @@ struct VariantUtilityFunctions {
 			r_error.argument = 1;
 			return String();
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
 		r_error.error = Callable::CallError::CALL_OK;
 
-		return str;
+		return s;
 	}
 
 	static inline String error_string(Error error) {
@@ -495,98 +495,98 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			String str;
+			String s;
 			for (int i = 0; i < p_arg_count; i++) {
 				String os = p_args[i]->operator String();
 
 				if (i == 0) {
-					str = os;
+					s = os;
 				} else {
-					str += os;
+					s += os;
 				}
 			}
 
 			// No need to use `print_verbose()` as this call already only happens
 			// when verbose mode is enabled. This avoids performing string argument concatenation
 			// when not needed.
-			print_line(str);
+			print_line(s);
 		}
 
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		print_error(str);
+		print_error(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
-				str += "\t";
+				s += "\t";
 			}
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
-				str += " ";
+				s += " ";
 			}
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		OS::get_singleton()->print("%s", str.utf8().get_data());
+		OS::get_singleton()->print("%s", s.utf8().get_data());
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -595,18 +595,18 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		ERR_PRINT(str);
+		ERR_PRINT(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -615,18 +615,18 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		WARN_PRINT(str);
+		WARN_PRINT(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 

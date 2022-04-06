@@ -49,7 +49,7 @@ class EditorFileSystemDirectory : public Object {
 	uint64_t modified_time;
 	bool verified = false; //used for checking changes
 
-	EditorFileSystemDirectory *parent;
+	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
 
 	struct FileInfo {
@@ -167,7 +167,7 @@ class EditorFileSystem : public Node {
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
-	EditorFileSystemDirectory *new_filesystem;
+	EditorFileSystemDirectory *new_filesystem = nullptr;
 
 	bool abort_scan = false;
 	bool scanning = false;
@@ -184,7 +184,7 @@ class EditorFileSystem : public Node {
 
 	void _save_late_updated_files();
 
-	EditorFileSystemDirectory *filesystem;
+	EditorFileSystemDirectory *filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
 

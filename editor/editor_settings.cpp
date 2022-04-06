@@ -542,7 +542,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
-	_initial_set("text_editor/behavior/navigation/v_scroll_speed", 80);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -1365,7 +1365,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#ifdef OSX_ENABLED
+#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -1389,7 +1389,7 @@ float EditorSettings::get_auto_display_scale() const {
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
+void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 

@@ -108,7 +108,7 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 
 #if defined(DBUS_ENABLED)
-	FreeDesktopScreenSaver *screensaver;
+	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool keep_screen_on = false;
 #endif
 
@@ -168,7 +168,7 @@ class DisplayServerX11 : public DisplayServer {
 	String internal_clipboard_primary;
 	Window xdnd_source_window;
 	::Display *x11_display;
-	char *xmbstring;
+	char *xmbstring = nullptr;
 	int xmblen;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
@@ -249,7 +249,7 @@ class DisplayServerX11 : public DisplayServer {
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
 	xrr_get_monitors_t xrr_get_monitors;
 	xrr_free_monitors_t xrr_free_monitors;
-	void *xrandr_handle;
+	void *xrandr_handle = nullptr;
 	Bool xrandr_ext_ok;
 
 	struct Property {

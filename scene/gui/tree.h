@@ -134,7 +134,7 @@ private:
 
 	Vector<TreeItem *> children_cache;
 	bool is_root = false; // for tree root
-	Tree *tree; // tree (for reference)
+	Tree *tree = nullptr; // tree (for reference)
 
 	TreeItem(Tree *p_tree);
 
@@ -428,18 +428,18 @@ private:
 
 	bool show_column_titles = false;
 
-	VBoxContainer *popup_editor_vb;
+	VBoxContainer *popup_editor_vb = nullptr;
 
-	Popup *popup_editor;
+	Popup *popup_editor = nullptr;
 	LineEdit *text_editor = nullptr;
-	HSlider *value_editor;
+	HSlider *value_editor = nullptr;
 	bool updating_value_editor = false;
 	uint64_t focus_in_id = 0;
 	PopupMenu *popup_menu = nullptr;
 
 	Vector<ColumnInfo> columns;
 
-	Timer *range_click_timer;
+	Timer *range_click_timer = nullptr;
 	TreeItem *range_item_last = nullptr;
 	bool range_up_last = false;
 	void _range_click_timeout();
@@ -553,8 +553,8 @@ private:
 	int _get_title_button_height() const;
 
 	void _scroll_moved(float p_value);
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	bool h_scroll_enabled = true;
 	bool v_scroll_enabled = true;

@@ -150,7 +150,7 @@ struct _ConcaveCollisionInfo2D {
 };
 
 bool GodotCollisionSolver2D::concave_callback(void *p_userdata, GodotShape2D *p_convex) {
-	_ConcaveCollisionInfo2D &cinfo = *(_ConcaveCollisionInfo2D *)(p_userdata);
+	_ConcaveCollisionInfo2D &cinfo = *(static_cast<_ConcaveCollisionInfo2D *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, cinfo.motion_A, p_convex, *cinfo.transform_B, cinfo.motion_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, cinfo.sep_axis, cinfo.margin_A, cinfo.margin_B);

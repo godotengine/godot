@@ -332,7 +332,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
 		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
-		LightmapCaptureData *lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 

@@ -133,7 +133,7 @@ void Node2D::_update_transform() {
 
 void Node2D::set_position(const Point2 &p_pos) {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 	position = p_pos;
 	_update_transform();
@@ -141,7 +141,7 @@ void Node2D::set_position(const Point2 &p_pos) {
 
 void Node2D::set_rotation(real_t p_radians) {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 	rotation = p_radians;
 	_update_transform();
@@ -149,7 +149,7 @@ void Node2D::set_rotation(real_t p_radians) {
 
 void Node2D::set_skew(real_t p_radians) {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 	skew = p_radians;
 	_update_transform();
@@ -157,7 +157,7 @@ void Node2D::set_skew(real_t p_radians) {
 
 void Node2D::set_scale(const Size2 &p_scale) {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 	scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
@@ -172,14 +172,14 @@ void Node2D::set_scale(const Size2 &p_scale) {
 
 Point2 Node2D::get_position() const {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 	return position;
 }
 
 real_t Node2D::get_rotation() const {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 
 	return rotation;
@@ -187,7 +187,7 @@ real_t Node2D::get_rotation() const {
 
 real_t Node2D::get_skew() const {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 
 	return skew;
@@ -195,7 +195,7 @@ real_t Node2D::get_skew() const {
 
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty) {
-		((Node2D *)this)->_update_xform_values();
+		const_cast<Node2D *>(this)->_update_xform_values();
 	}
 
 	return scale;

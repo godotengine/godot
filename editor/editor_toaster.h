@@ -61,11 +61,11 @@ private:
 	Ref<StyleBoxFlat> warning_panel_style_progress;
 	Ref<StyleBoxFlat> error_panel_style_progress;
 
-	Button *main_button;
-	PanelContainer *disable_notifications_panel;
-	Button *disable_notifications_button;
+	Button *main_button = nullptr;
+	PanelContainer *disable_notifications_panel = nullptr;
+	Button *disable_notifications_button = nullptr;
 
-	VBoxContainer *vbox_container;
+	VBoxContainer *vbox_container = nullptr;
 	const int max_temporary_count = 5;
 	struct Toast {
 		Severity severity = SEVERITY_INFO;

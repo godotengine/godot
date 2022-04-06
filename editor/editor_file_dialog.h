@@ -84,50 +84,50 @@ private:
 		ITEM_MENU_SHOW_IN_EXPLORER
 	};
 
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
 
-	Button *makedir;
+	Button *makedir = nullptr;
 	Access access;
 
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 	FileMode mode;
 	bool can_create_dir;
-	LineEdit *dir;
+	LineEdit *dir = nullptr;
 
-	Button *dir_prev;
-	Button *dir_next;
-	Button *dir_up;
+	Button *dir_prev = nullptr;
+	Button *dir_next = nullptr;
+	Button *dir_up = nullptr;
 
-	HBoxContainer *drives_container;
-	HBoxContainer *shortcuts_container;
-	OptionButton *drives;
-	ItemList *item_list;
-	PopupMenu *item_menu;
-	TextureRect *preview;
-	VBoxContainer *preview_vb;
-	HSplitContainer *list_hb;
-	HBoxContainer *file_box;
-	LineEdit *file;
-	OptionButton *filter;
-	AcceptDialog *error_dialog;
-	DirAccess *dir_access;
-	ConfirmationDialog *confirm_save;
-	DependencyRemoveDialog *dep_remove_dialog;
-	ConfirmationDialog *global_remove_dialog;
+	HBoxContainer *drives_container = nullptr;
+	HBoxContainer *shortcuts_container = nullptr;
+	OptionButton *drives = nullptr;
+	ItemList *item_list = nullptr;
+	PopupMenu *item_menu = nullptr;
+	TextureRect *preview = nullptr;
+	VBoxContainer *preview_vb = nullptr;
+	HSplitContainer *list_hb = nullptr;
+	HBoxContainer *file_box = nullptr;
+	LineEdit *file = nullptr;
+	OptionButton *filter = nullptr;
+	AcceptDialog *error_dialog = nullptr;
+	DirAccess *dir_access = nullptr;
+	ConfirmationDialog *confirm_save = nullptr;
+	DependencyRemoveDialog *dep_remove_dialog = nullptr;
+	ConfirmationDialog *global_remove_dialog = nullptr;
 
-	Button *mode_thumbnails;
-	Button *mode_list;
+	Button *mode_thumbnails = nullptr;
+	Button *mode_list = nullptr;
 
-	Button *refresh;
-	Button *favorite;
-	Button *show_hidden;
+	Button *refresh = nullptr;
+	Button *favorite = nullptr;
+	Button *show_hidden = nullptr;
 
-	Button *fav_up;
-	Button *fav_down;
+	Button *fav_up = nullptr;
+	Button *fav_down = nullptr;
 
-	ItemList *favorites;
-	ItemList *recent;
+	ItemList *favorites = nullptr;
+	ItemList *recent = nullptr;
 
 	Vector<String> local_history;
 	int local_history_pos;
@@ -201,7 +201,7 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _request_single_thumbnail(const String &p_path);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 

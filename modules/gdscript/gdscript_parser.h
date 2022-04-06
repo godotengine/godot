@@ -312,7 +312,7 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		virtual bool is_expression() const { return true; }
+		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
 
 	protected:

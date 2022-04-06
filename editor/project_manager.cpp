@@ -202,6 +202,9 @@ private:
 						unz_file_info info;
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+						if (ret != UNZ_OK) {
+							break;
+						}
 
 						if (String::utf8(fname).ends_with("project.godot")) {
 							break;
@@ -534,6 +537,9 @@ private:
 						unz_file_info info;
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+						if (ret != UNZ_OK) {
+							break;
+						}
 
 						String path = String::utf8(fname);
 
@@ -552,7 +558,10 @@ private:
 
 							//read
 							unzOpenCurrentFile(pkg);
-							unzReadCurrentFile(pkg, data.ptrw(), data.size());
+							ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+							if (ret != UNZ_OK) {
+								break;
+							}
 							unzCloseCurrentFile(pkg);
 
 							FileAccess *f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);
@@ -1903,7 +1912,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			set_process_unhandled_key_input(is_visible_in_tree());
+			set_process_shortcut_input(is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
@@ -1962,7 +1971,7 @@ void ProjectManager::_update_project_buttons() {
 	erase_missing_btn->set_disabled(!_project_list->is_any_project_missing());
 }
 
-void ProjectManager::unhandled_key_input(const Ref<InputEvent> &p_ev) {
+void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;

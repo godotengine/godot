@@ -403,7 +403,7 @@ struct _RestCallbackData2D {
 };
 
 static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
-	_RestCallbackData2D *rd = (_RestCallbackData2D *)p_userdata;
+	_RestCallbackData2D *rd = static_cast<_RestCallbackData2D *>(p_userdata);
 
 	Vector2 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
@@ -1005,7 +1005,7 @@ void *GodotSpace2D::_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A
 		SWAP(type_A, type_B);
 	}
 
-	GodotSpace2D *self = (GodotSpace2D *)p_self;
+	GodotSpace2D *self = static_cast<GodotSpace2D *>(p_self);
 	self->collision_pairs++;
 
 	if (type_A == GodotCollisionObject2D::TYPE_AREA) {
@@ -1021,7 +1021,7 @@ void *GodotSpace2D::_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A
 		}
 
 	} else {
-		GodotBodyPair2D *b = memnew(GodotBodyPair2D((GodotBody2D *)A, p_subindex_A, (GodotBody2D *)B, p_subindex_B));
+		GodotBodyPair2D *b = memnew(GodotBodyPair2D(static_cast<GodotBody2D *>(A), p_subindex_A, static_cast<GodotBody2D *>(B), p_subindex_B));
 		return b;
 	}
 

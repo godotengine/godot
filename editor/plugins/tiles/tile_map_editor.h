@@ -51,8 +51,8 @@ class UndoRedo;
 class TileMapEditorPlugin : public Object {
 public:
 	struct TabData {
-		Control *toolbar;
-		Control *panel;
+		Control *toolbar = nullptr;
+		Control *panel = nullptr;
 	};
 
 	virtual Vector<TabData> get_tabs() const {
@@ -69,33 +69,33 @@ class TileMapEditorTilesPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTilesPlugin, TileMapEditorPlugin);
 
 private:
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
 
 	///// Toolbar /////
-	HBoxContainer *toolbar;
+	HBoxContainer *toolbar = nullptr;
 
 	Ref<ButtonGroup> tool_buttons_group;
-	Button *select_tool_button;
-	Button *paint_tool_button;
-	Button *line_tool_button;
-	Button *rect_tool_button;
-	Button *bucket_tool_button;
+	Button *select_tool_button = nullptr;
+	Button *paint_tool_button = nullptr;
+	Button *line_tool_button = nullptr;
+	Button *rect_tool_button = nullptr;
+	Button *bucket_tool_button = nullptr;
 
-	HBoxContainer *tools_settings;
+	HBoxContainer *tools_settings = nullptr;
 
-	VSeparator *tools_settings_vsep;
-	Button *picker_button;
-	Button *erase_button;
+	VSeparator *tools_settings_vsep = nullptr;
+	Button *picker_button = nullptr;
+	Button *erase_button = nullptr;
 
-	VSeparator *tools_settings_vsep_2;
-	CheckBox *bucket_contiguous_checkbox;
-	CheckBox *random_tile_checkbox;
+	VSeparator *tools_settings_vsep_2 = nullptr;
+	CheckBox *bucket_contiguous_checkbox = nullptr;
+	CheckBox *random_tile_checkbox = nullptr;
 	float scattering = 0.0;
-	Label *scatter_label;
-	SpinBox *scatter_spinbox;
+	Label *scatter_label = nullptr;
+	SpinBox *scatter_spinbox = nullptr;
 	void _on_random_tile_checkbox_toggled(bool p_pressed);
 	void _on_scattering_spinbox_changed(double p_value);
 
@@ -148,12 +148,12 @@ private:
 	void _tab_changed();
 
 	///// Bottom panel tiles ////
-	VBoxContainer *tiles_bottom_panel;
-	Label *missing_source_label;
-	Label *invalid_source_label;
+	VBoxContainer *tiles_bottom_panel = nullptr;
+	Label *missing_source_label = nullptr;
+	Label *invalid_source_label = nullptr;
 
-	ItemList *sources_list;
-	MenuButton *source_sort_button;
+	ItemList *sources_list = nullptr;
+	MenuButton *source_sort_button = nullptr;
 
 	Ref<Texture2D> missing_atlas_texture_icon;
 	void _update_tile_set_sources_list();
@@ -162,18 +162,18 @@ private:
 
 	// Atlas sources.
 	TileMapCell hovered_tile;
-	TileAtlasView *tile_atlas_view;
-	HSplitContainer *atlas_sources_split_container;
+	TileAtlasView *tile_atlas_view = nullptr;
+	HSplitContainer *atlas_sources_split_container = nullptr;
 
 	bool tile_set_dragging_selection = false;
 	Vector2i tile_set_drag_start_mouse_pos;
 
-	Control *tile_atlas_control;
+	Control *tile_atlas_control = nullptr;
 	void _tile_atlas_control_mouse_exited();
 	void _tile_atlas_control_gui_input(const Ref<InputEvent> &p_event);
 	void _tile_atlas_control_draw();
 
-	Control *alternative_tiles_control;
+	Control *alternative_tiles_control = nullptr;
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_mouse_exited();
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
@@ -182,7 +182,7 @@ private:
 	void _set_source_sort(int p_sort);
 
 	// Scenes collection sources.
-	ItemList *scene_tiles_list;
+	ItemList *scene_tiles_list = nullptr;
 
 	void _update_scenes_collection_view();
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
@@ -190,9 +190,9 @@ private:
 	void _scenes_list_nothing_selected();
 
 	///// Bottom panel patterns ////
-	VBoxContainer *patterns_bottom_panel;
-	ItemList *patterns_item_list;
-	Label *patterns_help_label;
+	VBoxContainer *patterns_bottom_panel = nullptr;
+	ItemList *patterns_item_list = nullptr;
+	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
 	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
 	bool select_last_pattern = false;
@@ -220,32 +220,32 @@ class TileMapEditorTerrainsPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTerrainsPlugin, TileMapEditorPlugin);
 
 private:
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
 
 	// Toolbar.
-	HBoxContainer *toolbar;
+	HBoxContainer *toolbar = nullptr;
 
 	Ref<ButtonGroup> tool_buttons_group;
-	Button *paint_tool_button;
-	Button *line_tool_button;
-	Button *rect_tool_button;
-	Button *bucket_tool_button;
+	Button *paint_tool_button = nullptr;
+	Button *line_tool_button = nullptr;
+	Button *rect_tool_button = nullptr;
+	Button *bucket_tool_button = nullptr;
 
-	HBoxContainer *tools_settings;
+	HBoxContainer *tools_settings = nullptr;
 
-	VSeparator *tools_settings_vsep;
-	Button *picker_button;
-	Button *erase_button;
+	VSeparator *tools_settings_vsep = nullptr;
+	Button *picker_button = nullptr;
+	Button *erase_button = nullptr;
 
-	VSeparator *tools_settings_vsep_2;
-	CheckBox *bucket_contiguous_checkbox;
+	VSeparator *tools_settings_vsep_2 = nullptr;
+	CheckBox *bucket_contiguous_checkbox = nullptr;
 	void _update_toolbar();
 
 	// Main vbox.
-	VBoxContainer *main_vbox_container;
+	VBoxContainer *main_vbox_container = nullptr;
 
 	// TileMap editing.
 	bool has_mouse = false;
@@ -278,8 +278,8 @@ private:
 	void _update_selection();
 
 	// Bottom panel.
-	Tree *terrains_tree;
-	ItemList *terrains_tile_list;
+	Tree *terrains_tree = nullptr;
+	ItemList *terrains_tile_list = nullptr;
 
 	// Cache.
 	LocalVector<LocalVector<Set<TileSet::TerrainsPattern>>> per_terrain_terrains_patterns;
@@ -306,7 +306,7 @@ class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 private:
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	bool tileset_changed_needs_update = false;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
@@ -315,24 +315,24 @@ private:
 	Vector<TileMapEditorPlugin *> tile_map_editor_plugins;
 
 	// Toolbar.
-	HBoxContainer *tile_map_toolbar;
+	HBoxContainer *tile_map_toolbar = nullptr;
 
-	PopupMenu *layers_selection_popup;
-	Button *layers_selection_button;
-	Button *toogle_highlight_selected_layer_button;
+	PopupMenu *layers_selection_popup = nullptr;
+	Button *layers_selection_button = nullptr;
+	Button *toogle_highlight_selected_layer_button = nullptr;
 	void _layers_selection_button_draw();
 	void _layers_selection_button_pressed();
 	void _layers_selection_id_pressed(int p_id);
 
-	Button *toggle_grid_button;
+	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);
 
-	MenuButton *advanced_menu_button;
+	MenuButton *advanced_menu_button = nullptr;
 	void _advanced_menu_button_id_pressed(int p_id);
 
 	// Bottom panel.
-	Label *missing_tileset_label;
-	TabBar *tabs_bar;
+	Label *missing_tileset_label = nullptr;
+	TabBar *tabs_bar = nullptr;
 	LocalVector<TileMapEditorPlugin::TabData> tabs_data;
 	LocalVector<TileMapEditorPlugin *> tabs_plugins;
 	void _update_bottom_panel();

@@ -87,7 +87,7 @@ int GodotBroadPhase3DBVH::cull_aabb(const AABB &p_aabb, GodotCollisionObject3D *
 }
 
 void *GodotBroadPhase3DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollisionObject3D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject3D *p_object_B, int subindex_B) {
-	GodotBroadPhase3DBVH *bpo = (GodotBroadPhase3DBVH *)(self);
+	GodotBroadPhase3DBVH *bpo = static_cast<GodotBroadPhase3DBVH *>(self);
 	if (!bpo->pair_callback) {
 		return nullptr;
 	}
@@ -96,7 +96,7 @@ void *GodotBroadPhase3DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollis
 }
 
 void GodotBroadPhase3DBVH::_unpair_callback(void *self, uint32_t p_A, GodotCollisionObject3D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject3D *p_object_B, int subindex_B, void *pairdata) {
-	GodotBroadPhase3DBVH *bpo = (GodotBroadPhase3DBVH *)(self);
+	GodotBroadPhase3DBVH *bpo = static_cast<GodotBroadPhase3DBVH *>(self);
 	if (!bpo->unpair_callback) {
 		return;
 	}

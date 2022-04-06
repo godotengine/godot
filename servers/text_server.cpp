@@ -758,7 +758,7 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, in
 
 	int word_start = range.x;
 
-	int l_size = shaped_text_get_glyph_count(p_shaped);
+	const int l_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
 	for (int i = 0; i < l_size; i++) {

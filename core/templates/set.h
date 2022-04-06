@@ -328,7 +328,7 @@ private:
 	void _insert_rb_fix(Element *p_new_node) {
 		Element *node = p_new_node;
 		Element *nparent = node->parent;
-		Element *ngrand_parent;
+		Element *ngrand_parent = nullptr;
 
 		while (nparent->color == RED) {
 			ngrand_parent = nparent->parent;
@@ -482,7 +482,7 @@ private:
 		Element *rp = ((p_node->left == _data._nil) || (p_node->right == _data._nil)) ? p_node : p_node->_next;
 		Element *node = (rp->left == _data._nil) ? rp->right : rp->left;
 
-		Element *sibling;
+		Element *sibling = nullptr;
 		if (rp == rp->parent->left) {
 			rp->parent->left = node;
 			sibling = rp->parent->right;

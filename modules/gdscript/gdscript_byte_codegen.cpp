@@ -1080,6 +1080,24 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 	append(Variant::get_validated_builtin_method(p_type, p_method));
 }
 
+void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) {
+	bool is_validated = false;
+
+	MethodBind *method = ClassDB::get_method(p_class, p_method);
+
+	if (!is_validated) {
+		// Perform regular call.
+		append(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
+		for (int i = 0; i < p_arguments.size(); i++) {
+			append(p_arguments[i]);
+		}
+		append(p_target);
+		append(method);
+		append(p_arguments.size());
+		return;
+	}
+}
+
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {

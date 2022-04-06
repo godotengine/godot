@@ -42,19 +42,21 @@
 #include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
-	UniformSetCacheRD *uniform_set_cache;
-	RendererCanvasRenderRD *canvas;
+	UniformSetCacheRD *uniform_set_cache = nullptr;
+	RendererCanvasRenderRD *canvas = nullptr;
 	RendererRD::CanvasTextureStorage *canvas_texture_storage;
 	RendererRD::MaterialStorage *material_storage;
+	RendererRD::MeshStorage *mesh_storage;
 	RendererRD::TextureStorage *texture_storage;
 	RendererRD::DecalAtlasStorage *decal_atlas_storage;
-	RendererStorageRD *storage;
-	RendererSceneRenderRD *scene;
+	RendererStorageRD *storage = nullptr;
+	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,
@@ -99,6 +101,7 @@ public:
 	RendererCanvasTextureStorage *get_canvas_texture_storage() { return canvas_texture_storage; }
 	RendererDecalAtlasStorage *get_decal_atlas_storage() { return decal_atlas_storage; }
 	RendererMaterialStorage *get_material_storage() { return material_storage; };
+	RendererMeshStorage *get_mesh_storage() { return mesh_storage; };
 	RendererTextureStorage *get_texture_storage() { return texture_storage; };
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }

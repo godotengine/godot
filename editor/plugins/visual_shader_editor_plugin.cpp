@@ -2061,10 +2061,8 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 
 		if (!expression_node.is_null() && text_box) {
 			Size2 box_size = size;
-			if (gn != nullptr) {
-				if (box_size.x < 150 * EDSCALE || box_size.y < 0) {
-					box_size.x = gn->get_size().x;
-				}
+			if (box_size.x < 150 * EDSCALE || box_size.y < 0) {
+				box_size.x = gn->get_size().x;
 			}
 			box_size.x -= text_box->get_offset(SIDE_LEFT);
 			box_size.x -= 28 * EDSCALE;

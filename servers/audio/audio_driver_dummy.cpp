@@ -54,7 +54,7 @@ Error AudioDriverDummy::init() {
 };
 
 void AudioDriverDummy::thread_func(void *p_udata) {
-	AudioDriverDummy *ad = (AudioDriverDummy *)p_udata;
+	AudioDriverDummy *ad = static_cast<AudioDriverDummy *>(p_udata);
 
 	uint64_t usdelay = (ad->buffer_frames / float(ad->mix_rate)) * 1000000;
 

@@ -5,8 +5,7 @@
 	</brief_description>
 	<description>
 		Action sets in OpenXR define a collection of actions that can be activated in unison. This allows games to easily change between different states that require different inputs or need to reinterpret inputs. For instance we could have an action set that is active when a menu is open, an action set that is active when the player is freely walking around and an action set that is active when the player is controlling a vehicle.
-		Action sets can contain the same actions, or actions with the same name, if such action sets are active at the same time the action set with the highest priority defines which binding is active.
-		Note that the name of the resource is used to identify the action set within OpenXR.
+		Action sets can contain the same action with the same name, if such action sets are active at the same time the action set with the highest priority defines which binding is active.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,6 +15,12 @@
 			<argument index="0" name="action" type="OpenXRAction" />
 			<description>
 				Add an action to this action set.
+			</description>
+		</method>
+		<method name="get_action_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Retrieve the number of actions in our action set.
 			</description>
 		</method>
 		<method name="remove_action">

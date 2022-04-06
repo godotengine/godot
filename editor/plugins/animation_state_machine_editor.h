@@ -47,36 +47,36 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
-	Button *tool_select;
-	Button *tool_create;
-	Button *tool_connect;
-	Popup *name_edit_popup;
-	LineEdit *name_edit;
+	Button *tool_select = nullptr;
+	Button *tool_create = nullptr;
+	Button *tool_connect = nullptr;
+	Popup *name_edit_popup = nullptr;
+	LineEdit *name_edit = nullptr;
 
-	HBoxContainer *tool_erase_hb;
-	Button *tool_erase;
-	Button *tool_autoplay;
-	Button *tool_end;
+	HBoxContainer *tool_erase_hb = nullptr;
+	Button *tool_erase = nullptr;
+	Button *tool_autoplay = nullptr;
+	Button *tool_end = nullptr;
 
-	OptionButton *transition_mode;
-	OptionButton *play_mode;
+	OptionButton *transition_mode = nullptr;
+	OptionButton *play_mode = nullptr;
 
-	PanelContainer *panel;
+	PanelContainer *panel = nullptr;
 
 	StringName selected_node;
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
-	Control *state_machine_draw;
-	Control *state_machine_play_pos;
+	Control *state_machine_draw = nullptr;
+	Control *state_machine_play_pos = nullptr;
 
-	PanelContainer *error_panel;
-	Label *error_label;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
 	bool updating;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	static AnimationNodeStateMachineEditor *singleton;
 
@@ -87,8 +87,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _update_graph();
 
-	PopupMenu *menu;
-	PopupMenu *animations_menu;
+	PopupMenu *menu = nullptr;
+	PopupMenu *animations_menu = nullptr;
 	Vector<String> animations_to_add;
 
 	Vector2 add_node_pos;
@@ -166,7 +166,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	float error_time;
 	String error_text;
 
-	EditorFileDialog *open_file;
+	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 

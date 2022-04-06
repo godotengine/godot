@@ -38,7 +38,7 @@
 #include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
-	EditorLog *self = (EditorLog *)p_self;
+	EditorLog *self = static_cast<EditorLog *>(p_self);
 	if (self->current != Thread::get_caller_id()) {
 		return;
 	}
@@ -216,7 +216,7 @@ void EditorLog::set_tool_button(Button *p_tool_button) {
 }
 
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
-	EditorLog *self = (EditorLog *)p_self;
+	EditorLog *self = static_cast<EditorLog *>(p_self);
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -347,6 +347,7 @@ EditorLog::EditorLog() {
 	log->set_focus_mode(FOCUS_CLICK);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_deselect_on_focus_loss_enabled(false);
 	vb_left->add_child(log);
 
 	// Search box

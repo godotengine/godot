@@ -445,7 +445,7 @@ struct _RestCallbackData {
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-	_RestCallbackData *rd = (_RestCallbackData *)p_userdata;
+	_RestCallbackData *rd = static_cast<_RestCallbackData *>(p_userdata);
 
 	Vector3 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
@@ -1017,7 +1017,7 @@ void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A
 		SWAP(type_A, type_B);
 	}
 
-	GodotSpace3D *self = (GodotSpace3D *)p_self;
+	GodotSpace3D *self = static_cast<GodotSpace3D *>(p_self);
 
 	self->collision_pairs++;
 
@@ -1038,10 +1038,10 @@ void *GodotSpace3D::_broadphase_pair(GodotCollisionObject3D *A, int p_subindex_A
 		}
 	} else if (type_A == GodotCollisionObject3D::TYPE_BODY) {
 		if (type_B == GodotCollisionObject3D::TYPE_SOFT_BODY) {
-			GodotBodySoftBodyPair3D *soft_pair = memnew(GodotBodySoftBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotSoftBody3D *)B));
+			GodotBodySoftBodyPair3D *soft_pair = memnew(GodotBodySoftBodyPair3D(static_cast<GodotBody3D *>(A), p_subindex_A, static_cast<GodotSoftBody3D *>(B)));
 			return soft_pair;
 		} else {
-			GodotBodyPair3D *b = memnew(GodotBodyPair3D((GodotBody3D *)A, p_subindex_A, (GodotBody3D *)B, p_subindex_B));
+			GodotBodyPair3D *b = memnew(GodotBodyPair3D(static_cast<GodotBody3D *>(A), p_subindex_A, static_cast<GodotBody3D *>(B), p_subindex_B));
 			return b;
 		}
 	} else {
@@ -1056,9 +1056,9 @@ void GodotSpace3D::_broadphase_unpair(GodotCollisionObject3D *A, int p_subindex_
 		return;
 	}
 
-	GodotSpace3D *self = (GodotSpace3D *)p_self;
+	GodotSpace3D *self = static_cast<GodotSpace3D *>(p_self);
 	self->collision_pairs--;
-	GodotConstraint3D *c = (GodotConstraint3D *)p_data;
+	GodotConstraint3D *c = static_cast<GodotConstraint3D *>(p_data);
 	memdelete(c);
 }
 

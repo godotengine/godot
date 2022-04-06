@@ -62,21 +62,21 @@ class GridMapEditor : public VBoxContainer {
 		DISPLAY_LIST
 	};
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	InputAction input_action = INPUT_NONE;
-	Panel *panel;
-	MenuButton *options;
-	SpinBox *floor;
+	Panel *panel = nullptr;
+	MenuButton *options = nullptr;
+	SpinBox *floor = nullptr;
 	double accumulated_floor_delta = 0.0;
-	Button *mode_thumbnail;
-	Button *mode_list;
-	LineEdit *search_box;
-	HSlider *size_slider;
-	HBoxContainer *spatial_editor_hb;
-	ConfirmationDialog *settings_dialog;
-	VBoxContainer *settings_vbc;
-	SpinBox *settings_pick_distance;
-	Label *spin_box_label;
+	Button *mode_thumbnail = nullptr;
+	Button *mode_list = nullptr;
+	LineEdit *search_box = nullptr;
+	HSlider *size_slider = nullptr;
+	HBoxContainer *spatial_editor_hb = nullptr;
+	ConfirmationDialog *settings_dialog = nullptr;
+	VBoxContainer *settings_vbc = nullptr;
+	SpinBox *settings_pick_distance = nullptr;
+	Label *spin_box_label = nullptr;
 
 	struct SetItem {
 		Vector3i position;
@@ -89,7 +89,7 @@ class GridMapEditor : public VBoxContainer {
 	List<SetItem> set_items;
 
 	GridMap *node = nullptr;
-	MeshLibrary *last_mesh_library;
+	MeshLibrary *last_mesh_library = nullptr;
 
 	Transform3D grid_xform;
 	Transform3D edit_grid_xform;
@@ -173,15 +173,15 @@ class GridMapEditor : public VBoxContainer {
 
 	};
 
-	Node3DEditorPlugin *spatial_editor;
+	Node3DEditorPlugin *spatial_editor = nullptr;
 
 	struct AreaDisplay {
 		RID mesh;
 		RID instance;
 	};
 
-	ItemList *mesh_library_palette;
-	Label *info_message;
+	ItemList *mesh_library_palette = nullptr;
+	Label *info_message = nullptr;
 
 	void update_grid(); // Change which and where the grid is displayed
 	void _draw_grids(const Vector3 &cell_size);
@@ -234,7 +234,7 @@ public:
 class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
-	GridMapEditor *grid_map_editor;
+	GridMapEditor *grid_map_editor = nullptr;
 
 protected:
 	void _notification(int p_what);

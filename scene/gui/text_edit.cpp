@@ -471,6 +471,11 @@ void TextEdit::_notification(int p_what) {
 				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
+				// Prevent too small velocity to block scrolling
+				if (Math::abs(vel) < v_scroll->get_step()) {
+					vel = v_scroll->get_step() * SIGN(vel);
+				}
+
 				if (Math::abs(vel) >= dist) {
 					set_v_scroll(target_v_scroll);
 					scrolling = false;
@@ -1537,6 +1542,21 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
+void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			return;
+		}
+		// Handle Unicode (with modifiers active, process after shortcuts).
+		if (has_focus() && editable && (k->get_unicode() >= 32)) {
+			handle_unicode_input(k->get_unicode());
+			accept_event();
+		}
+	}
+}
+
 void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -2133,16 +2153,21 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 	if (p_move_by_word) {
 		int cc = caret.column;
-
+		// If the caret is at the start of the line, and not on the first line, move it up to the end of the previous line.
 		if (cc == 0 && caret.line > 0) {
 			set_caret_line(caret.line - 1);
 			set_caret_column(text[caret.line].length());
 		} else {
 			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-			for (int i = words.size() - 2; i >= 0; i = i - 2) {
-				if (words[i] < cc) {
-					cc = words[i];
-					break;
+			if (words.is_empty() || cc <= words[0]) {
+				// This solves the scenario where there are no words but glyfs that can be ignored.
+				cc = 0;
+			} else {
+				for (int i = words.size() - 2; i >= 0; i = i - 2) {
+					if (words[i] < cc) {
+						cc = words[i];
+						break;
+					}
 				}
 			}
 			set_caret_column(cc);
@@ -2184,16 +2209,21 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 	if (p_move_by_word) {
 		int cc = caret.column;
-
+		// If the caret is at the end of the line, and not on the last line, move it down to the beginning of the next line.
 		if (cc == text[caret.line].length() && caret.line < text.size() - 1) {
 			set_caret_line(caret.line + 1);
 			set_caret_column(0);
 		} else {
 			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-			for (int i = 1; i < words.size(); i = i + 2) {
-				if (words[i] > cc) {
-					cc = words[i];
-					break;
+			if (words.is_empty() || cc >= words[words.size() - 1]) {
+				// This solves the scenario where there are no words but glyfs that can be ignored.
+				cc = text[caret.line].length();
+			} else {
+				for (int i = 1; i < words.size(); i = i + 2) {
+					if (words[i] > cc) {
+						cc = words[i];
+						break;
+					}
 				}
 			}
 			set_caret_column(cc);
@@ -2364,11 +2394,11 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
-	if (!editable) {
+	if (!editable || (caret.column == 0 && caret.line == 0)) {
 		return;
 	}
 
-	if (has_selection() || (!p_all_to_left && !p_word)) {
+	if (has_selection() || (!p_all_to_left && !p_word) || caret.column == 0) {
 		backspace();
 		return;
 	}
@@ -2381,20 +2411,30 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	}
 
 	if (p_word) {
-		int line = caret.line;
 		int column = caret.column;
-
-		PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-		for (int i = words.size() - 2; i >= 0; i = i - 2) {
-			if (words[i] < column) {
-				column = words[i];
-				break;
+		// Check for the case "<word><space><caret>" and ignore the space.
+		// No need to check for column being 0 since it is cheked above.
+		if (is_whitespace(text[caret.line][caret.column - 1])) {
+			column -= 1;
+		}
+		// Get a list with the indices of the word bounds of the given text line.
+		const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
+		if (words.is_empty() || column <= words[0]) {
+			// If "words" is empty, meaning no words are left, we can remove everything until the begining of the line.
+			column = 0;
+		} else {
+			// Otherwise search for the first word break that is smaller than the index from we're currentlu deleteing
+			for (int i = words.size() - 2; i >= 0; i = i - 2) {
+				if (words[i] < column) {
+					column = words[i];
+					break;
+				}
 			}
 		}
 
-		_remove_text(line, column, caret.line, caret.column);
+		_remove_text(caret.line, column, caret.line, caret.column);
 
-		set_caret_line(line, false);
+		set_caret_line(caret.line, false);
 		set_caret_column(column);
 		return;
 	}
@@ -3461,9 +3501,6 @@ void TextEdit::undo() {
 
 	TextOperation op = undo_stack_pos->get();
 	_do_text_op(op, true);
-	if (op.type != TextOperation::TYPE_INSERT && (op.from_line != op.to_line || op.to_column != op.from_column + 1)) {
-		select(op.from_line, op.from_column, op.to_line, op.to_column);
-	}
 
 	current_op.version = op.prev_version;
 	if (undo_stack_pos->get().chain_backward) {
@@ -3477,6 +3514,10 @@ void TextEdit::undo() {
 				break;
 			}
 		}
+	}
+
+	if (op.type != TextOperation::TYPE_INSERT && (op.from_line != op.to_line || op.to_column != op.from_column + 1)) {
+		select(op.from_line, op.from_column, op.to_line, op.to_column);
 	}
 
 	_update_scrollbars();
@@ -4390,6 +4431,8 @@ int TextEdit::get_h_scroll() const {
 }
 
 void TextEdit::set_v_scroll_speed(float p_speed) {
+	// Prevent setting a vertical scroll speed value under 1.0
+	ERR_FAIL_COND(p_speed < 1.0);
 	v_scroll_speed = p_speed;
 }
 
@@ -6592,6 +6635,7 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
 	set_default_cursor_shape(CURSOR_IBEAM);
+	set_process_unhandled_key_input(true);
 
 	text.set_tab_size(text.get_tab_size());
 

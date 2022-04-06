@@ -94,7 +94,7 @@ class JoypadOSX {
 	};
 
 private:
-	Input *input;
+	Input *input = nullptr;
 	IOHIDManagerRef hid_manager;
 
 	Vector<joypad> device_list;

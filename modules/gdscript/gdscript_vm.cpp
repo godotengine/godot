@@ -93,9 +93,13 @@ static String _get_var_type(const Variant *p_var) {
 				basestr = "null instance";
 			}
 		} else {
-			basestr = bobj->get_class();
-			if (bobj->get_script_instance()) {
-				basestr += " (" + _get_script_name(bobj->get_script_instance()->get_script()) + ")";
+			if (bobj->is_class_ptr(GDScriptNativeClass::get_class_ptr_static())) {
+				basestr = Object::cast_to<GDScriptNativeClass>(bobj)->get_name();
+			} else {
+				basestr = bobj->get_class();
+				if (bobj->get_script_instance()) {
+					basestr += " (" + _get_script_name(bobj->get_script_instance()->get_script()) + ")";
+				}
 			}
 		}
 
@@ -263,6 +267,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_METHOD_BIND,                   \
 		&&OPCODE_CALL_METHOD_BIND_RET,               \
 		&&OPCODE_CALL_BUILTIN_STATIC,                \
+		&&OPCODE_CALL_NATIVE_STATIC,                 \
 		&&OPCODE_CALL_PTRCALL_NO_RETURN,             \
 		&&OPCODE_CALL_PTRCALL_BOOL,                  \
 		&&OPCODE_CALL_PTRCALL_INT,                   \
@@ -1707,6 +1712,47 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_NATIVE_STATIC) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				GD_ERR_BREAK(_code_ptr[ip + 1] < 0 || _code_ptr[ip + 1] >= _methods_count);
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
+
+				int argc = _code_ptr[ip + 2];
+				GD_ERR_BREAK(argc < 0);
+
+				GET_INSTRUCTION_ARG(ret, argc);
+
+				const Variant **argptrs = const_cast<const Variant **>(instruction_args);
+
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				Callable::CallError err;
+				*ret = method->call(nullptr, argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				}
+
+				if (err.error != Callable::CallError::CALL_OK) {
+					err_text = _get_call_error(err, "static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs);
+					OPCODE_BREAK;
+				}
+#endif
+
+				ip += 3;
 			}
 			DISPATCH_OPCODE;
 

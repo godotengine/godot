@@ -89,12 +89,12 @@ TextServerAdvanced::bmp_font_t *TextServerAdvanced::_bmp_font_create(TextServerA
 }
 
 void TextServerAdvanced::_bmp_font_destroy(void *p_data) {
-	bmp_font_t *bm_font = reinterpret_cast<bmp_font_t *>(p_data);
+	bmp_font_t *bm_font = static_cast<bmp_font_t *>(p_data);
 	memdelete(bm_font);
 }
 
 hb_bool_t TextServerAdvanced::_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -114,7 +114,7 @@ hb_bool_t TextServerAdvanced::_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_
 }
 
 hb_position_t TextServerAdvanced::_bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return 0;
@@ -128,7 +128,7 @@ hb_position_t TextServerAdvanced::_bmp_get_glyph_h_advance(hb_font_t *p_font, vo
 }
 
 hb_position_t TextServerAdvanced::_bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return 0;
@@ -142,7 +142,7 @@ hb_position_t TextServerAdvanced::_bmp_get_glyph_v_advance(hb_font_t *p_font, vo
 }
 
 hb_position_t TextServerAdvanced::_bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return 0;
@@ -156,7 +156,7 @@ hb_position_t TextServerAdvanced::_bmp_get_glyph_h_kerning(hb_font_t *p_font, vo
 }
 
 hb_bool_t TextServerAdvanced::_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -173,7 +173,7 @@ hb_bool_t TextServerAdvanced::_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p
 }
 
 hb_bool_t TextServerAdvanced::_bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -192,7 +192,7 @@ hb_bool_t TextServerAdvanced::_bmp_get_glyph_extents(hb_font_t *p_font, void *p_
 }
 
 hb_bool_t TextServerAdvanced::_bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data) {
-	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
+	const bmp_font_t *bm_font = static_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -768,12 +768,6 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 	for (int i = 0; i < p_data->textures.size(); i++) {
 		const FontTexture &ct = p_data->textures[i];
 
-		if (RenderingServer::get_singleton() != nullptr) {
-			if (ct.texture->get_format() != p_image_format) {
-				continue;
-			}
-		}
-
 		if (mw > ct.texture_w || mh > ct.texture_h) { // Too big for this texture.
 			continue;
 		}
@@ -815,12 +809,6 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		ret.y = 0;
 
 		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
-		if (mw > texsize) {
-			texsize = mw; // Special case, adapt to it?
-		}
-		if (mh > texsize) {
-			texsize = mh; // Special case, adapt to it?
-		}
 
 #ifdef GDEXTENSION
 		texsize = Math::next_power_of_2(texsize);
@@ -831,6 +819,20 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
+		}
+		if (mw > texsize) { // Special case, adapt to it?
+#ifdef GDEXTENSION
+			texsize = Math::next_power_of_2(mw);
+#else
+			texsize = next_power_of_2(mw);
+#endif
+		}
+		if (mh > texsize) { // Special case, adapt to it?
+#ifdef GDEXTENSION
+			texsize = Math::next_power_of_2(mh);
+#else
+			texsize = next_power_of_2(mh);
+#endif
 		}
 
 		FontTexture tex;
@@ -908,7 +910,7 @@ static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
 }
 
 static int ft_move_to(const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	if (!(context->contour && context->contour->edges.empty())) {
 		context->contour = &context->shape->addContour();
 	}
@@ -917,7 +919,7 @@ static int ft_move_to(const FT_Vector *to, void *user) {
 }
 
 static int ft_line_to(const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	msdfgen::Point2 endpoint = ft_point2(*to);
 	if (endpoint != context->position) {
 		context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint));
@@ -927,21 +929,21 @@ static int ft_line_to(const FT_Vector *to, void *user) {
 }
 
 static int ft_conic_to(const FT_Vector *control, const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ft_point2(*control), ft_point2(*to)));
 	context->position = ft_point2(*to);
 	return 0;
 }
 
 static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to)));
 	context->position = ft_point2(*to);
 	return 0;
 }
 
 void TextServerAdvanced::_generateMTSDF_threaded(uint32_t y, void *p_td) const {
-	MSDFThreadData *td = (MSDFThreadData *)p_td;
+	MSDFThreadData *td = static_cast<MSDFThreadData *>(p_td);
 
 	msdfgen::ShapeDistanceFinder<msdfgen::OverlappingContourCombiner<msdfgen::MultiAndTrueDistanceSelector>> distanceFinder(*td->shape);
 	int row = td->shape->inverseYAxis ? td->output->height() - y - 1 : y;
@@ -997,8 +999,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		int mw = w + p_rect_margin * 2;
 		int mh = h + p_rect_margin * 2;
 
-		ERR_FAIL_COND_V(mw > 1024, FontGlyph());
-		ERR_FAIL_COND_V(mh > 1024, FontGlyph());
+		ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+		ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
 		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, Image::FORMAT_RGBA8, mw, mh, true);
 		ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
@@ -1039,20 +1041,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 			}
 		}
 
-		// Blit to image and texture.
-		{
-			if (RenderingServer::get_singleton() != nullptr) {
-				Ref<Image> img;
-				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, 0, Image::FORMAT_RGBA8, tex.imgdata);
-				if (tex.texture.is_null()) {
-					tex.texture.instantiate();
-					tex.texture->create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
-			}
-		}
+		tex.dirty = true;
 
 		// Update height array.
 		int32_t *offw = tex.offsets.ptrw();
@@ -1078,8 +1067,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	int mw = w + p_rect_margin * 2;
 	int mh = h + p_rect_margin * 2;
 
-	ERR_FAIL_COND_V(mw > 1024, FontGlyph());
-	ERR_FAIL_COND_V(mh > 1024, FontGlyph());
+	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
 	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
 	Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
@@ -1124,21 +1113,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 		}
 	}
 
-	// Blit to image and texture.
-	{
-		if (RenderingServer::get_singleton() != nullptr) {
-			Ref<Image> img;
-			img.instantiate();
-			img->create_from_data(tex.texture_w, tex.texture_h, 0, require_format, tex.imgdata);
-
-			if (tex.texture.is_null()) {
-				tex.texture.instantiate();
-				tex.texture->create_from_image(img);
-			} else {
-				tex.texture->update(img);
-			}
-		}
-	}
+	tex.dirty = true;
 
 	// Update height array.
 	int32_t *offw = tex.offsets.ptrw();
@@ -1885,9 +1860,7 @@ void TextServerAdvanced::font_set_fixed_size(const RID &p_font_rid, int64_t p_fi
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->fixed_size != p_fixed_size) {
-		fd->fixed_size = p_fixed_size;
-	}
+	fd->fixed_size = p_fixed_size;
 }
 
 int64_t TextServerAdvanced::font_get_fixed_size(const RID &p_font_rid) const {
@@ -1941,9 +1914,7 @@ void TextServerAdvanced::font_set_subpixel_positioning(const RID &p_font_rid, Te
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->subpixel_positioning != p_subpixel) {
-		fd->subpixel_positioning = p_subpixel;
-	}
+	fd->subpixel_positioning = p_subpixel;
 }
 
 TextServer::SubpixelPositioning TextServerAdvanced::font_get_subpixel_positioning(const RID &p_font_rid) const {
@@ -2306,11 +2277,12 @@ void TextServerAdvanced::font_set_texture_image(const RID &p_font_rid, const Vec
 
 	Ref<Image> img;
 	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata);
+	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 
 	tex.texture = Ref<ImageTexture>();
 	tex.texture.instantiate();
 	tex.texture->create_from_image(img);
+	tex.dirty = false;
 }
 
 Ref<Image> TextServerAdvanced::font_get_texture_image(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) const {
@@ -2325,7 +2297,7 @@ Ref<Image> TextServerAdvanced::font_get_texture_image(const RID &p_font_rid, con
 	const FontTexture &tex = fd->cache[size]->textures[p_texture_index];
 	Ref<Image> img;
 	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata);
+	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 
 	return img;
 }
@@ -2598,10 +2570,10 @@ Dictionary TextServerAdvanced::font_get_glyph_contours(const RID &p_font_rid, in
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
 
+#ifdef MODULE_FREETYPE_ENABLED
 	PackedVector3Array points;
 	PackedInt32Array contours;
-	bool orientation;
-#ifdef MODULE_FREETYPE_ENABLED
+
 	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
 
 	int error = FT_Load_Glyph(fd->cache[size]->face, index, FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
@@ -2618,16 +2590,16 @@ Dictionary TextServerAdvanced::font_get_glyph_contours(const RID &p_font_rid, in
 	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_contours; i++) {
 		contours.push_back(fd->cache[size]->face->glyph->outline.contours[i]);
 	}
-	orientation = (FT_Outline_Get_Orientation(&fd->cache[size]->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
-#else
-	return Dictionary();
-#endif
+	bool orientation = (FT_Outline_Get_Orientation(&fd->cache[size]->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
 
 	Dictionary out;
 	out["points"] = points;
 	out["contours"] = contours;
 	out["orientation"] = orientation;
 	return out;
+#else
+	return Dictionary();
+#endif
 }
 
 Array TextServerAdvanced::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
@@ -2890,6 +2862,19 @@ void TextServerAdvanced::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
+				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
+					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
+					Ref<Image> img;
+					img.instantiate();
+					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					if (tex.texture.is_null()) {
+						tex.texture.instantiate();
+						tex.texture->create_from_image(img);
+					} else {
+						tex.texture->update(img);
+					}
+					tex.dirty = false;
+				}
 				RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
 				if (fd->msdf) {
 					Point2 cpos = p_pos;
@@ -2953,6 +2938,19 @@ void TextServerAdvanced::font_draw_glyph_outline(const RID &p_font_rid, const RI
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
+				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
+					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
+					Ref<Image> img;
+					img.instantiate();
+					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					if (tex.texture.is_null()) {
+						tex.texture.instantiate();
+						tex.texture->create_from_image(img);
+					} else {
+						tex.texture->update(img);
+					}
+					tex.dirty = false;
+				}
 				RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
 				if (fd->msdf) {
 					Point2 cpos = p_pos;
@@ -3876,9 +3874,9 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 			}
 		}
 	}
-	double adv_remain = 0;
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
 		double delta_width_per_space = (p_width - justification_width) / space_count;
+		double adv_remain = 0;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
@@ -4638,6 +4636,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	}
 
 	RID f = p_fonts[p_fb_index];
+	FontDataAdvanced *fd = font_owner.get_or_null(f);
+	Vector2i fss = _get_size(fd, fs);
 	hb_font_t *hb_font = _font_get_hb_handle(f, fs);
 	double scale = font_get_scale(f, fs);
 	double sp_sp = font_get_spacing(f, fs, SPACING_SPACE);
@@ -4719,6 +4719,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
+				_ensure_glyph(fd, fss, gl.index);
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					if (subpos) {
 						gl.advance = glyph_pos[i].x_advance / (64.0 / scale) + ea;

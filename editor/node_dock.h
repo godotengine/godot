@@ -38,15 +38,15 @@ class ConnectionsDock;
 class NodeDock : public VBoxContainer {
 	GDCLASS(NodeDock, VBoxContainer);
 
-	Button *connections_button;
-	Button *groups_button;
+	Button *connections_button = nullptr;
+	Button *groups_button = nullptr;
 
-	ConnectionsDock *connections;
-	GroupsEditor *groups;
+	ConnectionsDock *connections = nullptr;
+	GroupsEditor *groups = nullptr;
 
-	HBoxContainer *mode_hb;
+	HBoxContainer *mode_hb = nullptr;
 
-	Label *select_a_node;
+	Label *select_a_node = nullptr;
 
 private:
 	static NodeDock *singleton;

@@ -46,8 +46,8 @@ class AnimationPlayerEditorPlugin;
 class AnimationPlayerEditor : public VBoxContainer {
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
-	AnimationPlayerEditorPlugin *plugin;
-	AnimationPlayer *player;
+	AnimationPlayerEditorPlugin *plugin = nullptr;
+	AnimationPlayer *player = nullptr;
 
 	enum {
 		TOOL_NEW_ANIM,
@@ -88,31 +88,31 @@ class AnimationPlayerEditor : public VBoxContainer {
 		RESOURCE_SAVE
 	};
 
-	OptionButton *animation;
-	Button *stop;
-	Button *play;
-	Button *play_from;
-	Button *play_bw;
-	Button *play_bw_from;
-	Button *autoplay;
+	OptionButton *animation = nullptr;
+	Button *stop = nullptr;
+	Button *play = nullptr;
+	Button *play_from = nullptr;
+	Button *play_bw = nullptr;
+	Button *play_bw_from = nullptr;
+	Button *autoplay = nullptr;
 
-	MenuButton *tool_anim;
-	Button *onion_toggle;
-	MenuButton *onion_skinning;
-	Button *pin;
-	SpinBox *frame;
-	LineEdit *scale;
-	LineEdit *name;
-	Label *name_title;
-	UndoRedo *undo_redo;
+	MenuButton *tool_anim = nullptr;
+	Button *onion_toggle = nullptr;
+	MenuButton *onion_skinning = nullptr;
+	Button *pin = nullptr;
+	SpinBox *frame = nullptr;
+	LineEdit *scale = nullptr;
+	LineEdit *name = nullptr;
+	Label *name_title = nullptr;
+	UndoRedo *undo_redo = nullptr;
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
 	bool last_active;
 	float timeline_position;
 
-	EditorFileDialog *file;
-	ConfirmationDialog *delete_dialog;
+	EditorFileDialog *file = nullptr;
+	ConfirmationDialog *delete_dialog = nullptr;
 
 	struct BlendEditor {
 		AcceptDialog *dialog = nullptr;
@@ -121,14 +121,14 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	} blend_editor;
 
-	ConfirmationDialog *name_dialog;
-	ConfirmationDialog *error_dialog;
+	ConfirmationDialog *name_dialog = nullptr;
+	ConfirmationDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
 	bool updating;
 	bool updating_blends;
 
-	AnimationTrackEditor *track_editor;
+	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
 
 	// Onion skinning.
@@ -204,7 +204,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_ev) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 	void _animation_tool_menu(int p_option);
 	void _onion_skinning_menu(int p_option);
 
@@ -250,7 +250,7 @@ public:
 class AnimationPlayerEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationPlayerEditorPlugin, EditorPlugin);
 
-	AnimationPlayerEditor *anim_editor;
+	AnimationPlayerEditor *anim_editor = nullptr;
 
 protected:
 	void _notification(int p_what);

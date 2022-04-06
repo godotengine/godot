@@ -122,7 +122,7 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when custom build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-	CustomExportData *export_data = (CustomExportData *)p_userdata;
+	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
 	print_verbose("Saving project files from " + p_path + " into " + dst_path);
 	Error err = store_file_at_path(dst_path, p_data);
@@ -253,11 +253,13 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
-			"tools:replace=\"android:screenOrientation,android:excludeFromRecents\" "
+			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"android:excludeFromRecents=\"%s\" "
-			"android:screenOrientation=\"%s\">\n",
+			"android:screenOrientation=\"%s\" "
+			"android:resizeableActivity=\"%s\">\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
-			orientation);
+			orientation,
+			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
 	if (uses_xr) {
 		manifest_activity_text += "            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n";
 	} else {

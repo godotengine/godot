@@ -38,8 +38,8 @@
 class PropertySelector : public ConfirmationDialog {
 	GDCLASS(PropertySelector, ConfirmationDialog);
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 
 	void _text_changed(const String &p_newtext);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
@@ -48,14 +48,14 @@ class PropertySelector : public ConfirmationDialog {
 	void _item_selected();
 	void _hide_requested();
 
-	EditorHelpBit *help_bit;
+	EditorHelpBit *help_bit = nullptr;
 
 	bool properties;
 	String selected;
 	Variant::Type type;
 	String base_type;
 	ObjectID script;
-	Object *instance;
+	Object *instance = nullptr;
 	bool virtuals_only = false;
 
 	Vector<Variant::Type> type_filter;

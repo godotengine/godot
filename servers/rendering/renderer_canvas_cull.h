@@ -124,7 +124,7 @@ public:
 		Set<RID> viewports;
 		struct ChildItem {
 			Point2 mirror;
-			Item *item;
+			Item *item = nullptr;
 			bool operator<(const ChildItem &p_item) const {
 				return item->index < p_item.item->index;
 			}

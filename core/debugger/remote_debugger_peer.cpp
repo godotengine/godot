@@ -162,7 +162,7 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	int port = p_port;
 
 	const int tries = 6;
-	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
+	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
 
 	tcp_client->connect_to_host(ip, port);
 
@@ -192,7 +192,7 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 	// Update in time for 144hz monitors
 	const uint64_t min_tick = 6900;
-	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
+	RemoteDebuggerPeerTCP *peer = static_cast<RemoteDebuggerPeerTCP *>(p_ud);
 	while (peer->running && peer->is_peer_connected()) {
 		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
 		peer->_poll();

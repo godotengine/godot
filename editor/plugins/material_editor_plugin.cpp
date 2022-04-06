@@ -270,7 +270,7 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 		Texture2D *texture = Object::cast_to<Texture2D>(p_new_value);
 		if (texture) {
 			if (p_property == "roughness_texture") {
-				if (base_material->get_texture(StandardMaterial3D::TEXTURE_ROUGHNESS).is_null() && texture) {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_ROUGHNESS).is_null()) {
 					undo_redo->add_do_property(p_edited, "roughness", 1.0);
 
 					bool valid = false;
@@ -280,7 +280,7 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 					}
 				}
 			} else if (p_property == "metallic_texture") {
-				if (base_material->get_texture(StandardMaterial3D::TEXTURE_METALLIC).is_null() && texture) {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_METALLIC).is_null()) {
 					undo_redo->add_do_property(p_edited, "metallic", 1.0);
 
 					bool valid = false;

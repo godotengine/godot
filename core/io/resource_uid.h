@@ -46,7 +46,7 @@ public:
 	static String get_cache_file();
 
 private:
-	void *crypto; // CryptoCore::RandomGenerator (avoid including crypto_core.h)
+	void *crypto = nullptr; // CryptoCore::RandomGenerator (avoid including crypto_core.h)
 	Mutex mutex;
 	struct Cache {
 		CharString cs;

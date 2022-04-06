@@ -215,7 +215,7 @@
 		T *instance;                                                   \
 		M method;                                                      \
 		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
-		virtual void call() {                                          \
+		virtual void call() override {                                 \
 			(instance->*method)(COMMA_SEP_LIST(ARG, N));               \
 		}                                                              \
 	};
@@ -227,7 +227,7 @@
 		T *instance;                                                            \
 		M method;                                                               \
 		SEMIC_SEP_LIST(PARAM_DECL, N);                                          \
-		virtual void call() {                                                   \
+		virtual void call() override {                                          \
 			*ret = (instance->*method)(COMMA_SEP_LIST(ARG, N));                 \
 		}                                                                       \
 	};
@@ -238,7 +238,7 @@
 		T *instance;                                                   \
 		M method;                                                      \
 		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
-		virtual void call() {                                          \
+		virtual void call() override {                                 \
 			(instance->*method)(COMMA_SEP_LIST(ARG, N));               \
 		}                                                              \
 	};
@@ -311,9 +311,9 @@ class CommandQueueMT {
 	};
 
 	struct SyncCommand : public CommandBase {
-		SyncSemaphore *sync_sem;
+		SyncSemaphore *sync_sem = nullptr;
 
-		virtual void post() {
+		virtual void post() override {
 			sync_sem->sem.post();
 		}
 	};

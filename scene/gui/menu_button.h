@@ -40,7 +40,7 @@ class MenuButton : public Button {
 	bool clicked = false;
 	bool switch_on_hover = false;
 	bool disable_shortcuts = false;
-	PopupMenu *popup;
+	PopupMenu *popup = nullptr;
 
 	Vector2i mouse_pos_adjusted;
 
@@ -54,7 +54,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual void pressed() override;

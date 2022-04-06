@@ -108,7 +108,7 @@ public:
 
 private:
 	List *_root = nullptr;
-	T *_self;
+	T *_self = nullptr;
 	SelfList<T> *_next = nullptr;
 	SelfList<T> *_prev = nullptr;
 
