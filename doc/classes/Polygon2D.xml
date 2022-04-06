@@ -70,7 +70,8 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
-			If [code]true[/code], polygon edges will be anti-aliased.
+			If [code]true[/code], attempts to perform antialiasing for polygon edges by drawing a thin OpenGL smooth line on the edges.
+			[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 		</member>
 		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones" default="[  ]">
 		</member>

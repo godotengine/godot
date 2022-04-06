@@ -35,6 +35,8 @@
 			<argument index="7" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a unfilled arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve. See also [method draw_circle].
+				[b]Note:[/b] Line drawing is not accelerated by batching if [code]antialiased[/code] is [code]true[/code].
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent lines and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedRegularPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing. 2D batching is also still supported with those antialiased lines.
 			</description>
 		</method>
 		<method name="draw_char">
@@ -55,6 +57,7 @@
 			<argument index="2" name="color" type="Color" />
 			<description>
 				Draws a colored, unfilled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
+				[b]Note:[/b] Built-in antialiasing is not provided for [method draw_circle]. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedRegularPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
@@ -67,6 +70,7 @@
 			<argument index="5" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a colored polygon of any amount of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
 		<method name="draw_line">
@@ -78,6 +82,8 @@
 			<argument index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
+				[b]Note:[/b] Line drawing is not accelerated by batching if [code]antialiased[/code] is [code]true[/code].
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent lines and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedLine2D node. That node relies on a texture with custom mipmaps to perform antialiasing. 2D batching is also still supported with those antialiased lines.
 			</description>
 		</method>
 		<method name="draw_mesh">
@@ -99,7 +105,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws multiple disconnected lines with a uniform [code]color[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
-				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedLine2D node. That node relies on a texture with custom mipmaps to perform antialiasing. 2D batching is also still supported with those antialiased lines.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -110,7 +116,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws multiple disconnected lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
-				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedLine2D node. That node relies on a texture with custom mipmaps to perform antialiasing. 2D batching is also still supported with those antialiased lines.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -132,6 +138,7 @@
 			<argument index="5" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a solid polygon of any amount of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -142,6 +149,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -152,6 +160,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -174,8 +183,9 @@
 			<argument index="3" name="width" type="float" default="1.0" />
 			<argument index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified. If [code]antialiased[/code] is [code]true[/code], the lines will be antialiased.
+				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified. If [code]antialiased[/code] is [code]true[/code], the lines will attempt to perform antialiasing using OpenGL line smoothing.
 				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are only effective if [code]filled[/code] is [code]false[/code].
+				[b]Note:[/b] Due to how it works, built-in antialiasing will not look correct for translucent polygons and may not work on certain platforms. As a workaround, install the [url=https://github.com/godot-extended-libraries/godot-antialiased-line2d]Antialiased Line2D[/url] add-on then create an AntialiasedPolygon2D node. That node relies on a texture with custom mipmaps to perform antialiasing.
 			</description>
 		</method>
 		<method name="draw_set_transform">
