@@ -39,6 +39,7 @@
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
+#include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
@@ -768,7 +769,7 @@ void EditorFileDialog::update_file_list() {
 			}
 		} else if (!dir_access->current_is_hidden()) {
 			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir() && !EditorFileSystem::_should_skip_directory(full_path)) {
+			if (dir_access->current_is_dir() && (!EditorFileSystem::_should_skip_directory(full_path) || Main::is_project_manager())) {
 				dirs.push_back(item);
 			} else {
 				files.push_back(item);
