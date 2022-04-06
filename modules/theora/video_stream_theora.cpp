@@ -627,7 +627,7 @@ int VideoStreamPlaybackTheora::get_mix_rate() const {
 #ifdef THEORA_USE_THREAD_STREAMING
 
 void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
-	VideoStreamPlaybackTheora *vs = (VideoStreamPlaybackTheora *)ud;
+	VideoStreamPlaybackTheora *vs = static_cast<VideoStreamPlaybackTheora *>(ud);
 
 	while (!vs->thread_exit) {
 		//just fill back the buffer

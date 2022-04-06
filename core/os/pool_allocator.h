@@ -108,7 +108,7 @@ private:
 	void compact_up(int p_from = 0);
 	bool get_free_entry(EntryArrayPos *p_pos);
 	bool find_hole(EntryArrayPos *p_pos, int p_for_size);
-	bool find_entry_index(EntryIndicesPos *p_map_pos, Entry *p_entry);
+	bool find_entry_index(EntryIndicesPos *p_map_pos, const Entry *p_entry);
 	Entry *get_entry(ID p_mem);
 	const Entry *get_entry(ID p_mem) const;
 

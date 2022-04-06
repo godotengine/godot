@@ -298,7 +298,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 
 	RenderBufferDataForwardMobile *rb = nullptr;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
-		rb = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
+		rb = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
 
 	// default render buffer and scene state uniform set
@@ -477,7 +477,7 @@ void RenderForwardMobile::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, c
 void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) {
 	RenderBufferDataForwardMobile *render_buffer = nullptr;
 	if (p_render_data->render_buffers.is_valid()) {
-		render_buffer = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
+		render_buffer = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
 	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
 
@@ -1569,7 +1569,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 	scene_state.ubo.fog_enabled = false;
 
 	if (p_render_data->render_buffers.is_valid()) {
-		RenderBufferDataForwardMobile *render_buffers = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
+		RenderBufferDataForwardMobile *render_buffers = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 		if (render_buffers->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			scene_state.ubo.gi_upscale_for_msaa = true;
 		}
@@ -2335,7 +2335,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	void *surface_shadow = nullptr;
 	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
-		material_shadow = (SceneShaderForwardMobile::MaterialData *)RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D);
+		material_shadow = static_cast<SceneShaderForwardMobile::MaterialData *>(RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D));
 
 		RID shadow_mesh = mesh_storage->mesh_get_shadow_mesh(p_mesh);
 
@@ -2394,7 +2394,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(Geo
 
 	while (material->next_pass.is_valid()) {
 		RID next_pass = material->next_pass;
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(next_pass, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(next_pass, RendererRD::SHADER_TYPE_3D));
 		if (!material || !material->shader_data->valid) {
 			break;
 		}
@@ -2414,7 +2414,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 	SceneShaderForwardMobile::MaterialData *material = nullptr;
 
 	if (m_src.is_valid()) {
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D));
 		if (!material || !material->shader_data->valid) {
 			material = nullptr;
 		}
@@ -2425,7 +2425,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 			material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);
 		}
 	} else {
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D));
 		m_src = scene_shader.default_material;
 	}
 
@@ -2436,7 +2436,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 	if (ginstance->data->material_overlay.is_valid()) {
 		m_src = ginstance->data->material_overlay;
 
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D));
 		if (material && material->shader_data->valid) {
 			if (ginstance->data->dirty_dependencies) {
 				material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);

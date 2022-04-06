@@ -369,11 +369,11 @@ LocalDebugger::LocalDebugger() {
 	Profiler scr_prof(
 			scripts_profiler,
 			[](void *p_user, bool p_enable, const Array &p_opts) {
-				((ScriptsProfiler *)p_user)->toggle(p_enable, p_opts);
+				static_cast<ScriptsProfiler *>(p_user)->toggle(p_enable, p_opts);
 			},
 			nullptr,
 			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-				((ScriptsProfiler *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+				static_cast<ScriptsProfiler *>(p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
 			});
 	register_profiler("scripts", scr_prof);
 }

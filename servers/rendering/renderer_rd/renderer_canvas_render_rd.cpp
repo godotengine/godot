@@ -1109,7 +1109,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 		if (material != prev_material) {
 			CanvasMaterialData *material_data = nullptr;
 			if (material.is_valid()) {
-				material_data = (CanvasMaterialData *)material_storage->material_get_data(material, RendererRD::SHADER_TYPE_2D);
+				material_data = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::SHADER_TYPE_2D));
 			}
 
 			if (material_data) {
@@ -1374,7 +1374,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
 		if (material.is_valid()) {
-			CanvasMaterialData *md = (CanvasMaterialData *)material_storage->material_get_data(material, RendererRD::SHADER_TYPE_2D);
+			CanvasMaterialData *md = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::SHADER_TYPE_2D));
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
 					if (!material_screen_texture_found) {
@@ -1986,7 +1986,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
+	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
@@ -2209,7 +2209,7 @@ Variant RendererCanvasRenderRD::CanvasShaderData::get_default_parameter(const St
 }
 
 RS::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
-	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
+	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);
 }
 
@@ -2220,7 +2220,7 @@ RendererCanvasRenderRD::CanvasShaderData::CanvasShaderData() {
 }
 
 RendererCanvasRenderRD::CanvasShaderData::~CanvasShaderData() {
-	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
+	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 	ERR_FAIL_COND(!canvas_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -2234,7 +2234,7 @@ RendererRD::ShaderData *RendererCanvasRenderRD::_create_shader_func() {
 }
 
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
+	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 
 	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
 }

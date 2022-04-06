@@ -56,7 +56,7 @@ void TilesEditorPlugin::_pattern_preview_done() {
 }
 
 void TilesEditorPlugin::_thread_func(void *ud) {
-	TilesEditorPlugin *te = (TilesEditorPlugin *)ud;
+	TilesEditorPlugin *te = static_cast<TilesEditorPlugin *>(ud);
 	te->_thread();
 }
 

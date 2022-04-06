@@ -449,7 +449,7 @@ Set<String> FindInFilesDialog::get_filter() const {
 	// Could check the _filters_preferences but it might not have been generated yet.
 	Set<String> filters;
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		if (cb->is_pressed()) {
 			filters.insert(cb->get_text());
 		}
@@ -489,7 +489,7 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 
 void FindInFilesDialog::custom_action(const String &p_action) {
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		_filters_preferences[cb->get_text()] = cb->is_pressed();
 	}
 

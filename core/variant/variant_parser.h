@@ -51,9 +51,9 @@ public:
 	struct StreamFile : public Stream {
 		FileAccess *f = nullptr;
 
-		virtual char32_t get_char();
-		virtual bool is_utf8() const;
-		virtual bool is_eof() const;
+		virtual char32_t get_char() override;
+		virtual bool is_utf8() const override;
+		virtual bool is_eof() const override;
 
 		StreamFile() {}
 	};
@@ -62,9 +62,9 @@ public:
 		String s;
 		int pos = 0;
 
-		virtual char32_t get_char();
-		virtual bool is_utf8() const;
-		virtual bool is_eof() const;
+		virtual char32_t get_char() override;
+		virtual bool is_utf8() const override;
+		virtual bool is_eof() const override;
 
 		StreamString() {}
 	};

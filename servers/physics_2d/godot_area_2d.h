@@ -96,7 +96,7 @@ class GodotArea2D : public GodotCollisionObject2D {
 
 	Set<GodotConstraint2D *> constraints;
 
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
 
 	void _set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode &r_mode, PhysicsServer2D::AreaSpaceOverrideMode p_new_mode);
@@ -151,7 +151,7 @@ public:
 
 	void set_transform(const Transform2D &p_transform);
 
-	void set_space(GodotSpace2D *p_space);
+	void set_space(GodotSpace2D *p_space) override;
 
 	void call_queries();
 

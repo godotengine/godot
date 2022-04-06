@@ -1389,7 +1389,7 @@ float EditorSettings::get_auto_display_scale() const {
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
+void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 

@@ -96,7 +96,7 @@ class TranslationServer : public Object {
 	String double_vowels(String &p_message) const;
 	String replace_with_accented_string(String &p_message) const;
 	String wrap_with_fakebidi_characters(String &p_message) const;
-	String add_padding(String &p_message, int p_length) const;
+	String add_padding(const String &p_message, int p_length) const;
 	const char32_t *get_accented_version(char32_t p_character) const;
 	bool is_placeholder(String &p_message, int p_index) const;
 

@@ -157,9 +157,9 @@ private:
 	};
 
 	struct JoyEvent {
-		int type;
-		int index; // Can be either JoyAxis or JoyButton.
-		float value;
+		int type = TYPE_MAX;
+		int index = -1; // Can be either JoyAxis or JoyButton.
+		float value = 0.f;
 	};
 
 	struct JoyBinding {

@@ -473,16 +473,16 @@ public:
 		uint32_t x = ci.ui;
 		uint32_t sign = (unsigned short)(x >> 31);
 		uint32_t mantissa;
-		uint32_t exp;
+		uint32_t exponent;
 		uint16_t hf;
 
 		// get mantissa
 		mantissa = x & ((1 << 23) - 1);
 		// get exponent bits
-		exp = x & (0xFF << 23);
-		if (exp >= 0x47800000) {
+		exponent = x & (0xFF << 23);
+		if (exponent >= 0x47800000) {
 			// check if the original single precision float number is a NaN
-			if (mantissa && (exp == (0xFF << 23))) {
+			if (mantissa && (exponent == (0xFF << 23))) {
 				// we have a single precision NaN
 				mantissa = (1 << 23) - 1;
 			} else {
@@ -493,17 +493,18 @@ public:
 					(uint16_t)(mantissa >> 13);
 		}
 		// check if exponent is <= -15
-		else if (exp <= 0x38000000) {
-			/*// store a denorm half-float value or zero
-		exp = (0x38000000 - exp) >> 23;
-		mantissa >>= (14 + exp);
+		else if (exponent <= 0x38000000) {
+			/*
+			// store a denorm half-float value or zero
+			exponent = (0x38000000 - exponent) >> 23;
+			mantissa >>= (14 + exponent);
 
-		hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
-		*/
+			hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
+			*/
 			hf = 0; //denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
-					(uint16_t)((exp - 0x38000000) >> 13) |
+					(uint16_t)((exponent - 0x38000000) >> 13) |
 					(uint16_t)(mantissa >> 13);
 		}
 

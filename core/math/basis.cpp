@@ -1002,7 +1002,7 @@ void Basis::rotate_sh(real_t *p_values) {
 	const static real_t s_scale_dst2 = s_c3 * s_c_scale_inv;
 	const static real_t s_scale_dst4 = s_c5 * s_c_scale_inv;
 
-	real_t src[9] = { p_values[0], p_values[1], p_values[2], p_values[3], p_values[4], p_values[5], p_values[6], p_values[7], p_values[8] };
+	const real_t src[9] = { p_values[0], p_values[1], p_values[2], p_values[3], p_values[4], p_values[5], p_values[6], p_values[7], p_values[8] };
 
 	real_t m00 = elements[0][0];
 	real_t m01 = elements[0][1];

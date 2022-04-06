@@ -141,7 +141,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	}
 
 	static void _check_for_changes_poll_thread(void *ud) {
-		EditorExportPlatformIOS *ea = (EditorExportPlatformIOS *)ud;
+		EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
 
 		while (!ea->quit_request.is_set()) {
 			// Nothing to do if we already know the plugins have changed.

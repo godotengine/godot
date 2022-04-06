@@ -351,7 +351,7 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 			undo_redo->create_action(TTR("Edit Input Action Event"));
 		} else if (event_count > old_event_count) {
 			undo_redo->create_action(TTR("Add Input Action Event"));
-		} else if (event_count < old_event_count) {
+		} else {
 			undo_redo->create_action(TTR("Remove Input Action Event"));
 		}
 

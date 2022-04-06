@@ -332,6 +332,9 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		unz_file_info info;
 		char fname[16834];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String path = String::utf8(fname);
 

@@ -35,11 +35,11 @@
 #include "core/io/stream_peer_ssl.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
+	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
@@ -53,11 +53,11 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 }
 
 int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
+	PacketPeerMbedDTLS *sp = static_cast<PacketPeerMbedDTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 

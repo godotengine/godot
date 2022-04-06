@@ -3052,7 +3052,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 }
 
 void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
-	((DisplayServerX11 *)(get_singleton()))->_dispatch_input_event(p_event);
+	static_cast<DisplayServerX11 *>(get_singleton())->_dispatch_input_event(p_event);
 }
 
 void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
@@ -3106,7 +3106,7 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 }
 
 void DisplayServerX11::_poll_events_thread(void *ud) {
-	DisplayServerX11 *display_server = (DisplayServerX11 *)ud;
+	DisplayServerX11 *display_server = static_cast<DisplayServerX11 *>(ud);
 	display_server->_poll_events();
 }
 

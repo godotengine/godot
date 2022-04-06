@@ -395,6 +395,9 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 		if (file.ends_with("version.txt")) {
@@ -404,6 +407,9 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			// Read.
 			unzOpenCurrentFile(pkg);
 			ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			if (ret != UNZ_OK) {
+				break;
+			}
 			unzCloseCurrentFile(pkg);
 
 			String data_str;
@@ -455,7 +461,10 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		// Get filename.
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file_path(String::utf8(fname).simplify_path());
 
@@ -471,7 +480,10 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		// Read
 		unzOpenCurrentFile(pkg);
-		unzReadCurrentFile(pkg, data.ptrw(), data.size());
+		ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+		if (ret != UNZ_OK) {
+			break;
+		}
 		unzCloseCurrentFile(pkg);
 
 		String base_dir = file_path.get_base_dir().trim_suffix("/");
@@ -697,6 +709,9 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		unz_file_info info;
 		char fpath[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String path = String::utf8(fpath);
 		String base_dir = path.get_base_dir();

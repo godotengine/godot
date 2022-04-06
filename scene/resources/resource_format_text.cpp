@@ -1489,7 +1489,7 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 /*****************************************************************************************************/
 
 String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_resource) {
-	ResourceFormatSaverTextInstance *rsi = (ResourceFormatSaverTextInstance *)ud;
+	ResourceFormatSaverTextInstance *rsi = static_cast<ResourceFormatSaverTextInstance *>(ud);
 	return rsi->_write_resource(p_resource);
 }
 

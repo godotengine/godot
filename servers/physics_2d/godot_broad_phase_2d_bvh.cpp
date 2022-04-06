@@ -82,7 +82,7 @@ int GodotBroadPhase2DBVH::cull_aabb(const Rect2 &p_aabb, GodotCollisionObject2D 
 }
 
 void *GodotBroadPhase2DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollisionObject2D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject2D *p_object_B, int subindex_B) {
-	GodotBroadPhase2DBVH *bpo = (GodotBroadPhase2DBVH *)(self);
+	GodotBroadPhase2DBVH *bpo = static_cast<GodotBroadPhase2DBVH *>(self);
 	if (!bpo->pair_callback) {
 		return nullptr;
 	}
@@ -91,7 +91,7 @@ void *GodotBroadPhase2DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollis
 }
 
 void GodotBroadPhase2DBVH::_unpair_callback(void *self, uint32_t p_A, GodotCollisionObject2D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject2D *p_object_B, int subindex_B, void *pairdata) {
-	GodotBroadPhase2DBVH *bpo = (GodotBroadPhase2DBVH *)(self);
+	GodotBroadPhase2DBVH *bpo = static_cast<GodotBroadPhase2DBVH *>(self);
 	if (!bpo->unpair_callback) {
 		return;
 	}

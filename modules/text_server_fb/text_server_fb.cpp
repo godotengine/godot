@@ -352,7 +352,7 @@ static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
 }
 
 static int ft_move_to(const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	if (!(context->contour && context->contour->edges.empty())) {
 		context->contour = &context->shape->addContour();
 	}
@@ -361,7 +361,7 @@ static int ft_move_to(const FT_Vector *to, void *user) {
 }
 
 static int ft_line_to(const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	msdfgen::Point2 endpoint = ft_point2(*to);
 	if (endpoint != context->position) {
 		context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint));
@@ -371,21 +371,21 @@ static int ft_line_to(const FT_Vector *to, void *user) {
 }
 
 static int ft_conic_to(const FT_Vector *control, const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ft_point2(*control), ft_point2(*to)));
 	context->position = ft_point2(*to);
 	return 0;
 }
 
 static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user) {
-	MSContext *context = reinterpret_cast<MSContext *>(user);
+	MSContext *context = static_cast<MSContext *>(user);
 	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to)));
 	context->position = ft_point2(*to);
 	return 0;
 }
 
 void TextServerFallback::_generateMTSDF_threaded(uint32_t y, void *p_td) const {
-	MSDFThreadData *td = (MSDFThreadData *)p_td;
+	MSDFThreadData *td = static_cast<MSDFThreadData *>(p_td);
 
 	msdfgen::ShapeDistanceFinder<msdfgen::OverlappingContourCombiner<msdfgen::MultiAndTrueDistanceSelector>> distanceFinder(*td->shape);
 	int row = td->shape->inverseYAxis ? td->output->height() - y - 1 : y;
@@ -1021,9 +1021,7 @@ void TextServerFallback::font_set_fixed_size(const RID &p_font_rid, int64_t p_fi
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->fixed_size != p_fixed_size) {
-		fd->fixed_size = p_fixed_size;
-	}
+	fd->fixed_size = p_fixed_size;
 }
 
 int64_t TextServerFallback::font_get_fixed_size(const RID &p_font_rid) const {
@@ -1077,9 +1075,7 @@ void TextServerFallback::font_set_subpixel_positioning(const RID &p_font_rid, Te
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->subpixel_positioning != p_subpixel) {
-		fd->subpixel_positioning = p_subpixel;
-	}
+	fd->subpixel_positioning = p_subpixel;
 }
 
 TextServer::SubpixelPositioning TextServerFallback::font_get_subpixel_positioning(const RID &p_font_rid) const {
@@ -1721,10 +1717,10 @@ Dictionary TextServerFallback::font_get_glyph_contours(const RID &p_font_rid, in
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
 
+#ifdef MODULE_FREETYPE_ENABLED
 	PackedVector3Array points;
 	PackedInt32Array contours;
-	bool orientation;
-#ifdef MODULE_FREETYPE_ENABLED
+
 	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
 
 	int error = FT_Load_Glyph(fd->cache[size]->face, FT_Get_Char_Index(fd->cache[size]->face, index), FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
@@ -1741,16 +1737,16 @@ Dictionary TextServerFallback::font_get_glyph_contours(const RID &p_font_rid, in
 	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_contours; i++) {
 		contours.push_back(fd->cache[size]->face->glyph->outline.contours[i]);
 	}
-	orientation = (FT_Outline_Get_Orientation(&fd->cache[size]->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
-#else
-	return Dictionary();
-#endif
+	bool orientation = (FT_Outline_Get_Orientation(&fd->cache[size]->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
 
 	Dictionary out;
 	out["points"] = points;
 	out["contours"] = contours;
 	out["orientation"] = orientation;
 	return out;
+#else
+	return Dictionary();
+#endif
 }
 
 Array TextServerFallback::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {

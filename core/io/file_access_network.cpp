@@ -165,7 +165,7 @@ void FileAccessNetworkClient::_thread_func() {
 }
 
 void FileAccessNetworkClient::_thread_func(void *s) {
-	FileAccessNetworkClient *self = (FileAccessNetworkClient *)s;
+	FileAccessNetworkClient *self = static_cast<FileAccessNetworkClient *>(s);
 
 	self->_thread_func();
 }

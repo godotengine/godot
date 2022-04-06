@@ -119,7 +119,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture::_thread_function(void *p_ud) {
-	NoiseTexture *tex = (NoiseTexture *)p_ud;
+	NoiseTexture *tex = static_cast<NoiseTexture *>(p_ud);
 	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
 }
 

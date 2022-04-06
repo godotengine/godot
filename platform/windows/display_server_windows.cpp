@@ -430,9 +430,8 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 	}
 
 	UINT x = 0, y = 0;
-	HRESULT hr = E_FAIL;
 	if (hmon && (Shcore != (HMODULE)INVALID_HANDLE_VALUE)) {
-		hr = getDPIForMonitor(hmon, dpiType /*MDT_Effective_DPI*/, &x, &y);
+		HRESULT hr = getDPIForMonitor(hmon, dpiType /*MDT_Effective_DPI*/, &x, &y);
 		if (SUCCEEDED(hr) && (x > 0) && (y > 0)) {
 			dpiX = (int)x;
 			dpiY = (int)y;
@@ -844,8 +843,8 @@ void DisplayServerWindows::window_set_exclusive(WindowID p_window, bool p_exclus
 	if (wd.exclusive != p_exclusive) {
 		wd.exclusive = p_exclusive;
 		if (wd.transient_parent != INVALID_WINDOW_ID) {
-			WindowData &wd_parent = windows[wd.transient_parent];
 			if (wd.exclusive) {
+				WindowData &wd_parent = windows[wd.transient_parent];
 				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
 			} else {
 				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
@@ -1281,7 +1280,7 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	const WindowData &wd = windows[p_window];
 
 	FLASHWINFO info;
 	info.cbSize = sizeof(FLASHWINFO);
@@ -1562,13 +1561,8 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 			}
 		}
 
-		if (hAndMask != nullptr) {
-			DeleteObject(hAndMask);
-		}
-
-		if (hXorMask != nullptr) {
-			DeleteObject(hXorMask);
-		}
+		DeleteObject(hAndMask);
+		DeleteObject(hXorMask);
 
 		memfree(buffer);
 		DeleteObject(bitmap);
@@ -1994,7 +1988,7 @@ void DisplayServerWindows::_send_window_event(const WindowData &wd, WindowEvent 
 }
 
 void DisplayServerWindows::_dispatch_input_events(const Ref<InputEvent> &p_event) {
-	((DisplayServerWindows *)(get_singleton()))->_dispatch_input_event(p_event);
+	static_cast<DisplayServerWindows *>(get_singleton())->_dispatch_input_event(p_event);
 }
 
 void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event) {
@@ -2083,7 +2077,7 @@ Rect2i DisplayServerWindows::window_get_popup_safe_rect(WindowID p_window) const
 void DisplayServerWindows::popup_open(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	WindowData &wd = windows[p_window];
+	const WindowData &wd = windows[p_window];
 	if (wd.is_popup) {
 		// Find current popup parent, or root popup if new window is not transient.
 		List<WindowID>::Element *C = nullptr;
@@ -3494,7 +3488,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	shift_mem = false;
 	control_mem = false;
 	meta_mem = false;
-	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
+	hInstance = static_cast<OS_Windows *>(OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;
 	old_invalid = true;
@@ -3662,7 +3656,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	r_error = OK;
 
-	((OS_Windows *)OS::get_singleton())->set_main_window(windows[MAIN_WINDOW_ID].hWnd);
+	static_cast<OS_Windows *>(OS::get_singleton())->set_main_window(windows[MAIN_WINDOW_ID].hWnd);
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 }
 

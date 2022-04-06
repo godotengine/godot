@@ -202,6 +202,9 @@ private:
 						unz_file_info info;
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+						if (ret != UNZ_OK) {
+							break;
+						}
 
 						if (String::utf8(fname).ends_with("project.godot")) {
 							break;
@@ -534,6 +537,9 @@ private:
 						unz_file_info info;
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+						if (ret != UNZ_OK) {
+							break;
+						}
 
 						String path = String::utf8(fname);
 
@@ -552,7 +558,10 @@ private:
 
 							//read
 							unzOpenCurrentFile(pkg);
-							unzReadCurrentFile(pkg, data.ptrw(), data.size());
+							ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+							if (ret != UNZ_OK) {
+								break;
+							}
 							unzCloseCurrentFile(pkg);
 
 							FileAccess *f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);

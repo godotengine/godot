@@ -142,7 +142,7 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 	for (Item *it = p_item_from; it && it != p_item_to; it = _get_next_item(it)) {
 		switch (it->type) {
 			case ITEM_TEXT: {
-				ItemText *t = (ItemText *)it;
+				ItemText *t = static_cast<ItemText *>(it);
 				offset += t->text.length();
 				if (offset > p_position) {
 					return it;
@@ -166,16 +166,16 @@ String RichTextLabel::_roman(int p_num, bool p_capitalize) const {
 	};
 	String s;
 	if (p_capitalize) {
-		String M[] = { "", "M", "MM", "MMM" };
-		String C[] = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
-		String X[] = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
-		String I[] = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
+		const String M[] = { "", "M", "MM", "MMM" };
+		const String C[] = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
+		const String X[] = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
+		const String I[] = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
 		s = M[p_num / 1000] + C[(p_num % 1000) / 100] + X[(p_num % 100) / 10] + I[p_num % 10];
 	} else {
-		String M[] = { "", "m", "mm", "mmm" };
-		String C[] = { "", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm" };
-		String X[] = { "", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc" };
-		String I[] = { "", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix" };
+		const String M[] = { "", "m", "mm", "mmm" };
+		const String C[] = { "", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm" };
+		const String X[] = { "", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc" };
+		const String I[] = { "", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix" };
 		s = M[p_num / 1000] + C[(p_num % 1000) / 100] + X[(p_num % 100) / 10] + I[p_num % 10];
 	}
 	return s;
@@ -215,7 +215,7 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 	RID t = l.text_buf->get_rid();
 	int spans = TS->shaped_get_span_count(t);
 	for (int i = 0; i < spans; i++) {
-		ItemText *it = (ItemText *)(uint64_t)TS->shaped_get_span_meta(t, i);
+		ItemText *it = reinterpret_cast<ItemText *>((uint64_t)TS->shaped_get_span_meta(t, i));
 		if (it) {
 			Ref<Font> font = _find_font(it);
 			if (font.is_null()) {
@@ -466,15 +466,11 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 		switch (it->type) {
 			case ITEM_DROPCAP: {
 				// Add dropcap.
-				const ItemDropcap *dc = (ItemDropcap *)it;
-				if (dc != nullptr) {
-					l.text_buf->set_dropcap(dc->text, dc->font, dc->font_size, dc->dropcap_margins);
-					l.dc_color = dc->color;
-					l.dc_ol_size = dc->ol_size;
-					l.dc_ol_color = dc->ol_color;
-				} else {
-					l.text_buf->clear_dropcap();
-				}
+				const ItemDropcap *dc = static_cast<ItemDropcap *>(it);
+				l.text_buf->set_dropcap(dc->text, dc->font, dc->font_size, dc->dropcap_margins);
+				l.dc_color = dc->color;
+				l.dc_ol_size = dc->ol_size;
+				l.dc_ol_color = dc->ol_color;
 			} break;
 			case ITEM_NEWLINE: {
 				Ref<Font> font = _find_font(it);
@@ -491,7 +487,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				remaining_characters--;
 			} break;
 			case ITEM_TEXT: {
-				ItemText *t = (ItemText *)it;
+				ItemText *t = static_cast<ItemText *>(it);
 				Ref<Font> font = _find_font(it);
 				if (font.is_null()) {
 					font = p_base_font;
@@ -513,7 +509,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				l.char_count += tx.length();
 			} break;
 			case ITEM_IMAGE: {
-				ItemImage *img = (ItemImage *)it;
+				ItemImage *img = static_cast<ItemImage *>(it);
 				l.text_buf->add_object((uint64_t)it, img->size, img->inline_align, 1);
 				text += String::chr(0xfffc);
 				l.char_count++;
@@ -842,7 +838,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		// Draw inlined objects.
 		Array objects = TS->shaped_text_get_objects(rid);
 		for (int i = 0; i < objects.size(); i++) {
-			Item *it = (Item *)(uint64_t)objects[i];
+			Item *it = reinterpret_cast<Item *>((uint64_t)objects[i]);
 			if (it != nullptr) {
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
 				//draw_rect(rect, Color(1,0,0), false, 2); //DEBUG_RECTS
@@ -944,8 +940,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 
 			//Apply fx.
-			float faded_visibility = 1.0f;
 			if (fade) {
+				float faded_visibility = 1.0f;
 				if (glyphs[i].start >= fade->starting_index) {
 					faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
 					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
@@ -1160,8 +1156,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 
 			//Apply fx.
-			float faded_visibility = 1.0f;
 			if (fade) {
+				float faded_visibility = 1.0f;
 				if (glyphs[i].start >= fade->starting_index) {
 					faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
 					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
@@ -1386,7 +1382,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 
 		Array objects = TS->shaped_text_get_objects(rid);
 		for (int i = 0; i < objects.size(); i++) {
-			Item *it = (Item *)(uint64_t)objects[i];
+			Item *it = reinterpret_cast<Item *>((uint64_t)objects[i]);
 			if (it != nullptr) {
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
 				rect.position += p_ofs + off;
@@ -1493,7 +1489,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				if (it_to != nullptr) {
 					*r_click_item = _get_prev_item(it_to);
 				} else {
-					for (Item *i = it; i && i != it_to; i = _get_next_item(i)) {
+					for (Item *i = it; i; i = _get_next_item(i)) {
 						*r_click_item = i;
 					}
 				}
@@ -1725,9 +1721,9 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 
 	Item *item = nullptr;
 	bool outside = true;
-	((RichTextLabel *)(this))->_find_click(main, p_pos, nullptr, nullptr, &item, nullptr, &outside);
+	const_cast<RichTextLabel *>(this)->_find_click(main, p_pos, nullptr, nullptr, &item, nullptr, &outside);
 
-	if (item && !outside && ((RichTextLabel *)(this))->_find_meta(item, nullptr)) {
+	if (item && !outside && const_cast<RichTextLabel *>(this)->_find_meta(item, nullptr)) {
 		return CURSOR_POINTING_HAND;
 	}
 
@@ -2024,7 +2020,7 @@ void RichTextLabel::_find_frame(Item *p_item, ItemFrame **r_frame, int *r_line) 
 	while (item) {
 		if (item->parent != nullptr && item->parent->type == ITEM_FRAME) {
 			if (r_frame != nullptr) {
-				*r_frame = (ItemFrame *)item->parent;
+				*r_frame = static_cast<ItemFrame *>(item->parent);
 			}
 			if (r_line != nullptr) {
 				*r_line = item->line;
@@ -2559,7 +2555,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	p_item->index = current_idx++;
 	p_item->char_ofs = current_char_ofs;
 	if (p_item->type == ITEM_TEXT) {
-		ItemText *t = (ItemText *)p_item;
+		ItemText *t = static_cast<ItemText *>(p_item);
 		current_char_ofs += t->text.length();
 	} else if (p_item->type == ITEM_IMAGE) {
 		current_char_ofs++;
@@ -4000,7 +3996,7 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 				text += "\n";
 			} break;
 			case ITEM_TEXT: {
-				ItemText *t = (ItemText *)it;
+				ItemText *t = static_cast<ItemText *>(it);
 				text += t->text;
 			} break;
 			case ITEM_IMAGE: {
@@ -4133,7 +4129,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 	if (it_to != nullptr) {
 		end_idx = it_to->index;
 	} else {
-		for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
+		for (Item *it = l.from; it; it = _get_next_item(it)) {
 			end_idx = it->index + 1;
 		}
 	}
@@ -4256,10 +4252,8 @@ String RichTextLabel::get_parsed_text() const {
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_DROPCAP) {
-			const ItemDropcap *dc = (ItemDropcap *)it;
-			if (dc != nullptr) {
-				text += dc->text;
-			}
+			ItemDropcap *dc = static_cast<ItemDropcap *>(it);
+			text += dc->text;
 		} else if (it->type == ITEM_TEXT) {
 			ItemText *t = static_cast<ItemText *>(it);
 			text += t->text;
@@ -4746,7 +4740,7 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 	// Draw a box based on color tags associated with glyphs
 	for (int i = start; i < end; i++) {
 		Item *it = _get_item_at_pos(it_from, it_to, i);
-		Color color = Color(0, 0, 0, 0);
+		Color color;
 
 		if (fbg_flag == 0) {
 			color = _find_bgcolor(it);

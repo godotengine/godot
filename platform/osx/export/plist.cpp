@@ -398,7 +398,6 @@ bool PList::load_string(const String &p_string) {
 		}
 
 		if (token == "/plist") {
-			in_plist = false;
 			done_plist = true;
 			break;
 		}

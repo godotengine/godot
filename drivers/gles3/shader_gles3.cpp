@@ -554,11 +554,9 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 	for (int i = 0; i < variant_count; i++) {
 		for (OAHashMap<uint64_t, Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
-			if (it.valid) {
-				glDeleteShader(it.value->vert_id);
-				glDeleteShader(it.value->frag_id);
-				glDeleteProgram(it.value->id);
-			}
+			glDeleteShader(it.value->vert_id);
+			glDeleteShader(it.value->frag_id);
+			glDeleteProgram(it.value->id);
 		}
 	}
 
