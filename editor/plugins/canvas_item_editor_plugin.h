@@ -366,7 +366,7 @@ private:
 	void _pan_callback(Vector2 p_scroll_vec);
 	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
-	bool _is_node_locked(const Node *p_node);
+	bool _is_node_locked(const Node *p_node) const;
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
@@ -400,7 +400,7 @@ private:
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 
-	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
+	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
@@ -548,6 +548,8 @@ public:
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	EditorSelection *editor_selection = nullptr;
 
