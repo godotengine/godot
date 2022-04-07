@@ -30,8 +30,9 @@
 		</method>
 		<method name="add_separator">
 			<return type="void" />
+			<argument index="0" name="text" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a separator to the list of items. Separators help to group items. Separator also takes up an index and is appended at the end.
+				Adds a separator to the list of items. Separators help to group items, and can optionally be given a [code]text[/code] header. A separator also gets an index assigned, and is appended at the end of the item list.
 			</description>
 		</method>
 		<method name="clear">
@@ -89,6 +90,12 @@
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
+		<method name="get_selectable_item" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="from_last" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
 		<method name="get_selected_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -101,11 +108,22 @@
 				Gets the metadata of the selected item. Metadata for items can be set using [method set_item_metadata].
 			</description>
 		</method>
+		<method name="has_selectable_items" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled.
+			</description>
+		</method>
+		<method name="is_item_separator" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="remove_item">

@@ -1801,7 +1801,14 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 				name = state.animations[i]->get_name();
 			}
 
-			ap->add_animation(name, state.animations[i]);
+			Ref<AnimationLibrary> library;
+			if (!ap->has_animation_library("")) {
+				library.instantiate();
+				ap->add_animation_library("", library);
+			} else {
+				library = ap->get_animation_library("");
+			}
+			library->add_animation(name, state.animations[i]);
 		}
 		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);
