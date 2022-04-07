@@ -1367,6 +1367,8 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	bool update_skeletons = false;
 	bool time_used = false;
 
+	bool backbuffer_cleared = false;
+
 	while (ci) {
 		if (ci->copy_back_buffer && canvas_group_owner == nullptr) {
 			backbuffer_copy = true;
@@ -1416,11 +1418,12 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 		if (ci->canvas_group_owner != nullptr) {
 			if (canvas_group_owner == nullptr) {
-				//Canvas group begins here, render until before this item
+				// Canvas group begins here, render until before this item
 				if (update_skeletons) {
 					mesh_storage->update_mesh_instances();
 					update_skeletons = false;
 				}
+
 				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 				item_count = 0;
 
@@ -1428,8 +1431,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
-				} else {
-					texture_storage->render_target_clear_back_buffer(p_to_render_target, group_rect, Color(0, 0, 0, 0));
+				} else if (!backbuffer_cleared) {
+					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
+					backbuffer_cleared = true;
 				}
 
 				backbuffer_copy = false;
@@ -1437,6 +1441,11 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 
 			ci->canvas_group_owner = nullptr; //must be cleared
+		}
+
+		if (!backbuffer_cleared && canvas_group_owner == nullptr && ci->canvas_group != nullptr && !backbuffer_copy) {
+			texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
+			backbuffer_cleared = true;
 		}
 
 		if (ci == canvas_group_owner) {
@@ -1461,6 +1470,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
+
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
