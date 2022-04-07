@@ -62,10 +62,11 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		List<String> *r_missing_deps, Error *r_err) {
 	// Get global paths for source and sink.
 
-	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path);
+	// Escape paths to be valid Python strings to embed in the script.
+	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().plus_file(
 			vformat("%s-%s.gltf", p_path.get_file().get_basename(), p_path.md5_text()));
-	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink);
+	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
 
 	// Handle configuration options.
 
