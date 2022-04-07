@@ -204,6 +204,14 @@ PoolVector3Array WebXRInterfaceJS::get_bounds_geometry() const {
 	return ret;
 }
 
+void WebXRInterfaceJS::set_xr_standard_mapping(bool p_xr_standard_mapping) {
+	xr_standard_mapping = p_xr_standard_mapping;
+}
+
+bool WebXRInterfaceJS::get_xr_standard_mapping() const {
+	return xr_standard_mapping;
+}
+
 StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
 };
@@ -417,7 +425,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 			free(tracker_matrix);
 		}
 
-		int *buttons = godot_webxr_get_controller_buttons(p_controller_id);
+		int *buttons = godot_webxr_get_controller_buttons(p_controller_id, xr_standard_mapping);
 		if (buttons) {
 			for (int i = 0; i < buttons[0]; i++) {
 				input->joy_button(joy_id, i, *((float *)buttons + (i + 1)));
@@ -425,7 +433,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 			free(buttons);
 		}
 
-		int *axes = godot_webxr_get_controller_axes(p_controller_id);
+		int *axes = godot_webxr_get_controller_axes(p_controller_id, xr_standard_mapping);
 		if (axes) {
 			WebXRInterface::TargetRayMode target_ray_mode = (WebXRInterface::TargetRayMode)godot_webxr_get_controller_target_ray_mode(p_controller_id);
 			if (target_ray_mode == WebXRInterface::TARGET_RAY_MODE_SCREEN) {
@@ -481,7 +489,7 @@ void WebXRInterfaceJS::_on_input_event(int p_event_type, int p_input_source) {
 				touching[touch_index] = (p_event_type == WEBXR_INPUT_EVENT_SELECTSTART);
 			}
 
-			int *axes = godot_webxr_get_controller_axes(p_input_source);
+			int *axes = godot_webxr_get_controller_axes(p_input_source, false);
 			if (axes) {
 				Vector2 joy_vector = _get_joy_vector_from_axes(axes);
 				Vector2 position = _get_screen_position_from_joy_vector(joy_vector);
@@ -554,8 +562,7 @@ Vector2 WebXRInterfaceJS::_get_joy_vector_from_axes(int *p_axes) {
 }
 
 Vector2 WebXRInterfaceJS::_get_screen_position_from_joy_vector(const Vector2 &p_joy_vector) {
-	// Invert the y-axis.
-	Vector2 position_percentage((p_joy_vector.x + 1.0f) / 2.0f, ((-p_joy_vector.y) + 1.0f) / 2.0f);
+	Vector2 position_percentage((p_joy_vector.x + 1.0f) / 2.0f, ((p_joy_vector.y) + 1.0f) / 2.0f);
 	Vector2 position = get_render_targetsize() * position_percentage;
 
 	return position;
@@ -567,6 +574,7 @@ void WebXRInterfaceJS::notification(int p_what) {
 
 WebXRInterfaceJS::WebXRInterfaceJS() {
 	initialized = false;
+	xr_standard_mapping = false;
 	session_mode = "inline";
 	requested_reference_space_types = "local";
 };

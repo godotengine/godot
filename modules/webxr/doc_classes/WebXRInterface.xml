@@ -22,6 +22,9 @@
 
 		    webxr_interface = ARVRServer.find_interface("WebXR")
 		    if webxr_interface:
+		        # Map to the standard button/axis ids when possible.
+		        webxr_interface.xr_standard_mapping = true
+
 		        # WebXR uses a lot of asynchronous callbacks, so we connect to various
 		        # signals in order to receive them.
 		        webxr_interface.connect("session_supported", self, "_webxr_session_supported")
@@ -163,6 +166,10 @@
 		<member name="visibility_state" type="String" setter="" getter="get_visibility_state">
 			Indicates if the WebXR session's imagery is visible to the user.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRVisibilityState]WebXR's XRVisibilityState[/url], including [code]"hidden"[/code], [code]"visible"[/code], and [code]"visible-blurred"[/code].
+		</member>
+		<member name="xr_standard_mapping" type="bool" setter="set_xr_standard_mapping" getter="get_xr_standard_mapping">
+			If set to true, the button and axes ids will be converted to match the standard ids used by other AR/VR interfaces, when possible.
+			Otherwise, the ids will be passed through unaltered from WebXR.
 		</member>
 	</members>
 	<signals>

@@ -80,8 +80,8 @@ extern void godot_webxr_sample_controller_data();
 extern int godot_webxr_get_controller_count();
 extern int godot_webxr_is_controller_connected(int p_controller);
 extern float *godot_webxr_get_controller_transform(int p_controller);
-extern int *godot_webxr_get_controller_buttons(int p_controller);
-extern int *godot_webxr_get_controller_axes(int p_controller);
+extern int *godot_webxr_get_controller_buttons(int p_controller, bool p_xr_standard_mapping);
+extern int *godot_webxr_get_controller_axes(int p_controller, bool p_xr_standard_mapping);
 extern int godot_webxr_get_controller_target_ray_mode(int p_controller);
 
 extern char *godot_webxr_get_visibility_state();
