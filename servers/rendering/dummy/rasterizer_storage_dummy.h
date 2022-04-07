@@ -268,26 +268,7 @@ public:
 	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const override { return AABB(); }
 	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override {}
 
-	/* RENDER TARGET */
-
-	RID render_target_create() override { return RID(); }
-	void render_target_set_position(RID p_render_target, int p_x, int p_y) override {}
-	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override {}
-	RID render_target_get_texture(RID p_render_target) override { return RID(); }
-	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override {}
-	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override {}
-	bool render_target_was_used(RID p_render_target) override { return false; }
-	void render_target_set_as_unused(RID p_render_target) override {}
-
-	void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
-	bool render_target_is_clear_requested(RID p_render_target) override { return false; }
-	Color render_target_get_clear_request_color(RID p_render_target) override { return Color(); }
-	void render_target_disable_clear_request(RID p_render_target) override {}
-	void render_target_do_clear_request(RID p_render_target) override {}
-
-	void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override {}
-	Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
-	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override {}
+	/* STORAGE */
 
 	RS::InstanceType get_base_type(RID p_rid) const override { return RS::INSTANCE_NONE; }
 	bool free(RID p_rid) override {

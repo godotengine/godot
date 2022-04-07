@@ -35,8 +35,6 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "renderer_compositor_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -2030,7 +2028,7 @@ void RendererStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
 }
 
 void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
-	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light);
 
@@ -2039,14 +2037,14 @@ void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	}
 
 	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
-		decal_atlas_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
 
 	light->projector = p_texture;
 
 	if (light->type != RS::LIGHT_DIRECTIONAL) {
 		if (light->projector.is_valid()) {
-			decal_atlas_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 		}
 		light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 	}
@@ -2950,698 +2948,6 @@ AABB RendererStorageRD::lightmap_get_aabb(RID p_lightmap) const {
 	return lm->bounds;
 }
 
-/* RENDER TARGET API */
-
-void RendererStorageRD::_clear_render_target(RenderTarget *rt) {
-	//free in reverse dependency order
-	if (rt->framebuffer.is_valid()) {
-		RD::get_singleton()->free(rt->framebuffer);
-		rt->framebuffer_uniform_set = RID(); //chain deleted
-	}
-
-	if (rt->color.is_valid()) {
-		RD::get_singleton()->free(rt->color);
-	}
-
-	if (rt->backbuffer.is_valid()) {
-		RD::get_singleton()->free(rt->backbuffer);
-		rt->backbuffer = RID();
-		rt->backbuffer_mipmaps.clear();
-		rt->backbuffer_uniform_set = RID(); //chain deleted
-	}
-
-	_render_target_clear_sdf(rt);
-
-	rt->framebuffer = RID();
-	rt->color = RID();
-}
-
-void RendererStorageRD::_update_render_target(RenderTarget *rt) {
-	if (rt->texture.is_null()) {
-		//create a placeholder until updated
-		rt->texture = RendererRD::TextureStorage::get_singleton()->texture_allocate();
-		RendererRD::TextureStorage::get_singleton()->texture_2d_placeholder_initialize(rt->texture);
-		RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(rt->texture);
-		tex->is_render_target = true;
-	}
-
-	_clear_render_target(rt);
-
-	if (rt->size.width == 0 || rt->size.height == 0) {
-		return;
-	}
-	//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
-	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-	rt->image_format = rt->flags[RENDER_TARGET_TRANSPARENT] ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
-
-	RD::TextureFormat rd_format;
-	RD::TextureView rd_view;
-	{ //attempt register
-		rd_format.format = rt->color_format;
-		rd_format.width = rt->size.width;
-		rd_format.height = rt->size.height;
-		rd_format.depth = 1;
-		rd_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
-		rd_format.mipmaps = 1;
-		if (rd_format.array_layers > 1) { // why are we not using rt->texture_type ??
-			rd_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-		} else {
-			rd_format.texture_type = RD::TEXTURE_TYPE_2D;
-		}
-		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		rd_format.shareable_formats.push_back(rt->color_format);
-		rd_format.shareable_formats.push_back(rt->color_format_srgb);
-	}
-
-	rt->color = RD::get_singleton()->texture_create(rd_format, rd_view);
-	ERR_FAIL_COND(rt->color.is_null());
-
-	Vector<RID> fb_textures;
-	fb_textures.push_back(rt->color);
-	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
-	if (rt->framebuffer.is_null()) {
-		_clear_render_target(rt);
-		ERR_FAIL_COND(rt->framebuffer.is_null());
-	}
-
-	{ //update texture
-
-		RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(rt->texture);
-
-		//free existing textures
-		if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
-			RD::get_singleton()->free(tex->rd_texture);
-		}
-		if (RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
-			RD::get_singleton()->free(tex->rd_texture_srgb);
-		}
-
-		tex->rd_texture = RID();
-		tex->rd_texture_srgb = RID();
-
-		//create shared textures to the color buffer,
-		//so transparent can be supported
-		RD::TextureView view;
-		view.format_override = rt->color_format;
-		if (!rt->flags[RENDER_TARGET_TRANSPARENT]) {
-			view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		}
-		tex->rd_texture = RD::get_singleton()->texture_create_shared(view, rt->color);
-		if (rt->color_format_srgb != RD::DATA_FORMAT_MAX) {
-			view.format_override = rt->color_format_srgb;
-			tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(view, rt->color);
-		}
-		tex->rd_view = view;
-		tex->width = rt->size.width;
-		tex->height = rt->size.height;
-		tex->width_2d = rt->size.width;
-		tex->height_2d = rt->size.height;
-		tex->rd_format = rt->color_format;
-		tex->rd_format_srgb = rt->color_format_srgb;
-		tex->format = rt->image_format;
-
-		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
-		for (int i = 0; i < proxies.size(); i++) {
-			RendererRD::TextureStorage::get_singleton()->texture_proxy_update(proxies[i], rt->texture);
-		}
-	}
-}
-
-void RendererStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
-	ERR_FAIL_COND(rt->backbuffer.is_valid());
-
-	uint32_t mipmaps_required = Image::get_image_required_mipmaps(rt->size.width, rt->size.height, Image::FORMAT_RGBA8);
-	RD::TextureFormat tf;
-	tf.format = rt->color_format;
-	tf.width = rt->size.width;
-	tf.height = rt->size.height;
-	tf.texture_type = RD::TEXTURE_TYPE_2D;
-	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-	tf.mipmaps = mipmaps_required;
-
-	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
-	RD::get_singleton()->set_resource_name(rt->backbuffer, "Render Target Back Buffer");
-	rt->backbuffer_mipmap0 = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
-	RD::get_singleton()->set_resource_name(rt->backbuffer_mipmap0, "Back Buffer slice mipmap 0");
-
-	{
-		Vector<RID> fb_tex;
-		fb_tex.push_back(rt->backbuffer_mipmap0);
-		rt->backbuffer_fb = RD::get_singleton()->framebuffer_create(fb_tex);
-	}
-
-	if (rt->framebuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->framebuffer_uniform_set)) {
-		//the new one will require the backbuffer.
-		RD::get_singleton()->free(rt->framebuffer_uniform_set);
-		rt->framebuffer_uniform_set = RID();
-	}
-	//create mipmaps
-	for (uint32_t i = 1; i < mipmaps_required; i++) {
-		RID mipmap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, i);
-		RD::get_singleton()->set_resource_name(mipmap, "Back Buffer slice mip: " + itos(i));
-
-		rt->backbuffer_mipmaps.push_back(mipmap);
-	}
-}
-
-RID RendererStorageRD::render_target_create() {
-	RenderTarget render_target;
-
-	render_target.was_used = false;
-	render_target.clear_requested = false;
-
-	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
-		render_target.flags[i] = false;
-	}
-	_update_render_target(&render_target);
-	return render_target_owner.make_rid(render_target);
-}
-
-void RendererStorageRD::render_target_set_position(RID p_render_target, int p_x, int p_y) {
-	//unused for this render target
-}
-
-void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	if (rt->size.x != p_width || rt->size.y != p_height || rt->view_count != p_view_count) {
-		rt->size.x = p_width;
-		rt->size.y = p_height;
-		rt->view_count = p_view_count;
-		_update_render_target(rt);
-	}
-}
-
-RID RendererStorageRD::render_target_get_texture(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-
-	return rt->texture;
-}
-
-void RendererStorageRD::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
-}
-
-void RendererStorageRD::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	rt->flags[p_flag] = p_value;
-	_update_render_target(rt);
-}
-
-bool RendererStorageRD::render_target_was_used(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
-	return rt->was_used;
-}
-
-void RendererStorageRD::render_target_set_as_unused(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	rt->was_used = false;
-}
-
-Size2 RendererStorageRD::render_target_get_size(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Size2());
-
-	return rt->size;
-}
-
-RID RendererStorageRD::render_target_get_rd_framebuffer(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-
-	return rt->framebuffer;
-}
-
-RID RendererStorageRD::render_target_get_rd_texture(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-
-	return rt->color;
-}
-
-RID RendererStorageRD::render_target_get_rd_backbuffer(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-	return rt->backbuffer;
-}
-
-RID RendererStorageRD::render_target_get_rd_backbuffer_framebuffer(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-
-	if (!rt->backbuffer.is_valid()) {
-		_create_render_target_backbuffer(rt);
-	}
-
-	return rt->backbuffer_fb;
-}
-
-void RendererStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	rt->clear_requested = true;
-	rt->clear_color = p_clear_color;
-}
-
-bool RendererStorageRD::render_target_is_clear_requested(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
-	return rt->clear_requested;
-}
-
-Color RendererStorageRD::render_target_get_clear_request_color(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Color());
-	return rt->clear_color;
-}
-
-void RendererStorageRD::render_target_disable_clear_request(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	rt->clear_requested = false;
-}
-
-void RendererStorageRD::render_target_do_clear_request(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	if (!rt->clear_requested) {
-		return;
-	}
-	Vector<Color> clear_colors;
-	clear_colors.push_back(rt->clear_color);
-	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
-	RD::get_singleton()->draw_list_end();
-	rt->clear_requested = false;
-}
-
-void RendererStorageRD::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	if (rt->sdf_oversize == p_size && rt->sdf_scale == p_scale) {
-		return;
-	}
-
-	rt->sdf_oversize = p_size;
-	rt->sdf_scale = p_scale;
-
-	_render_target_clear_sdf(rt);
-}
-
-Rect2i RendererStorageRD::_render_target_get_sdf_rect(const RenderTarget *rt) const {
-	Size2i margin;
-	int scale;
-	switch (rt->sdf_oversize) {
-		case RS::VIEWPORT_SDF_OVERSIZE_100_PERCENT: {
-			scale = 100;
-		} break;
-		case RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT: {
-			scale = 120;
-		} break;
-		case RS::VIEWPORT_SDF_OVERSIZE_150_PERCENT: {
-			scale = 150;
-		} break;
-		case RS::VIEWPORT_SDF_OVERSIZE_200_PERCENT: {
-			scale = 200;
-		} break;
-		default: {
-		}
-	}
-
-	margin = (rt->size * scale / 100) - rt->size;
-
-	Rect2i r(Vector2i(), rt->size);
-	r.position -= margin;
-	r.size += margin * 2;
-
-	return r;
-}
-
-Rect2i RendererStorageRD::render_target_get_sdf_rect(RID p_render_target) const {
-	const RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Rect2i());
-
-	return _render_target_get_sdf_rect(rt);
-}
-
-void RendererStorageRD::render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->sdf_enabled = p_enabled;
-}
-
-bool RendererStorageRD::render_target_is_sdf_enabled(RID p_render_target) const {
-	const RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
-
-	return rt->sdf_enabled;
-}
-
-RID RendererStorageRD::render_target_get_sdf_texture(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-	if (rt->sdf_buffer_read.is_null()) {
-		// no texture, create a dummy one for the 2D uniform set
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_2D;
-
-		Vector<uint8_t> pv;
-		pv.resize(16 * 4);
-		memset(pv.ptrw(), 0, 16 * 4);
-		Vector<Vector<uint8_t>> vpv;
-
-		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-	}
-
-	return rt->sdf_buffer_read;
-}
-
-void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
-	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_valid());
-	if (rt->sdf_buffer_read.is_valid()) {
-		RD::get_singleton()->free(rt->sdf_buffer_read);
-		rt->sdf_buffer_read = RID();
-	}
-
-	Size2i size = _render_target_get_sdf_rect(rt).size;
-
-	RD::TextureFormat tformat;
-	tformat.format = RD::DATA_FORMAT_R8_UNORM;
-	tformat.width = size.width;
-	tformat.height = size.height;
-	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-	tformat.texture_type = RD::TEXTURE_TYPE_2D;
-
-	rt->sdf_buffer_write = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-
-	{
-		Vector<RID> write_fb;
-		write_fb.push_back(rt->sdf_buffer_write);
-		rt->sdf_buffer_write_fb = RD::get_singleton()->framebuffer_create(write_fb);
-	}
-
-	int scale;
-	switch (rt->sdf_scale) {
-		case RS::VIEWPORT_SDF_SCALE_100_PERCENT: {
-			scale = 100;
-		} break;
-		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
-			scale = 50;
-		} break;
-		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
-			scale = 25;
-		} break;
-		default: {
-			scale = 100;
-		} break;
-	}
-
-	rt->process_size = size * scale / 100;
-	rt->process_size.x = MAX(rt->process_size.x, 1);
-	rt->process_size.y = MAX(rt->process_size.y, 1);
-
-	tformat.format = RD::DATA_FORMAT_R16G16_SINT;
-	tformat.width = rt->process_size.width;
-	tformat.height = rt->process_size.height;
-	tformat.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
-
-	rt->sdf_buffer_process[0] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-	rt->sdf_buffer_process[1] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-
-	tformat.format = RD::DATA_FORMAT_R16_SNORM;
-	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-
-	rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView());
-
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 1;
-			u.append_id(rt->sdf_buffer_write);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 2;
-			u.append_id(rt->sdf_buffer_read);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 3;
-			u.append_id(rt->sdf_buffer_process[0]);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 4;
-			u.append_id(rt->sdf_buffer_process[1]);
-			uniforms.push_back(u);
-		}
-
-		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
-		RID aux2 = uniforms.write[2].get_id(0);
-		RID aux3 = uniforms.write[3].get_id(0);
-		uniforms.write[2].set_id(0, aux3);
-		uniforms.write[3].set_id(0, aux2);
-		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
-	}
-}
-
-void RendererStorageRD::_render_target_clear_sdf(RenderTarget *rt) {
-	if (rt->sdf_buffer_read.is_valid()) {
-		RD::get_singleton()->free(rt->sdf_buffer_read);
-		rt->sdf_buffer_read = RID();
-	}
-	if (rt->sdf_buffer_write_fb.is_valid()) {
-		RD::get_singleton()->free(rt->sdf_buffer_write);
-		RD::get_singleton()->free(rt->sdf_buffer_process[0]);
-		RD::get_singleton()->free(rt->sdf_buffer_process[1]);
-		rt->sdf_buffer_write = RID();
-		rt->sdf_buffer_write_fb = RID();
-		rt->sdf_buffer_process[0] = RID();
-		rt->sdf_buffer_process[1] = RID();
-		rt->sdf_buffer_process_uniform_sets[0] = RID();
-		rt->sdf_buffer_process_uniform_sets[1] = RID();
-	}
-}
-
-RID RendererStorageRD::render_target_get_sdf_framebuffer(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-
-	if (rt->sdf_buffer_write_fb.is_null()) {
-		_render_target_allocate_sdf(rt);
-	}
-
-	return rt->sdf_buffer_write_fb;
-}
-void RendererStorageRD::render_target_sdf_process(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_null());
-
-	RenderTargetSDF::PushConstant push_constant;
-
-	Rect2i r = _render_target_get_sdf_rect(rt);
-
-	push_constant.size[0] = r.size.width;
-	push_constant.size[1] = r.size.height;
-	push_constant.stride = 0;
-	push_constant.shift = 0;
-	push_constant.base_size[0] = r.size.width;
-	push_constant.base_size[1] = r.size.height;
-
-	bool shrink = false;
-
-	switch (rt->sdf_scale) {
-		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
-			push_constant.size[0] >>= 1;
-			push_constant.size[1] >>= 1;
-			push_constant.shift = 1;
-			shrink = true;
-		} break;
-		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
-			push_constant.size[0] >>= 2;
-			push_constant.size[1] >>= 2;
-			push_constant.shift = 2;
-			shrink = true;
-		} break;
-		default: {
-		};
-	}
-
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-	/* Load */
-
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_LOAD_SHRINK : RenderTargetSDF::SHADER_LOAD]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[1], 0); //fill [0]
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
-
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
-
-	/* Process */
-
-	int stride = nearest_power_of_2_templated(MAX(push_constant.size[0], push_constant.size[1]) / 2);
-
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[RenderTargetSDF::SHADER_PROCESS]);
-
-	RD::get_singleton()->compute_list_add_barrier(compute_list);
-	bool swap = false;
-
-	//jumpflood
-	while (stride > 0) {
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
-		push_constant.stride = stride;
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
-		stride /= 2;
-		swap = !swap;
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
-	}
-
-	/* Store */
-
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_STORE_SHRINK : RenderTargetSDF::SHADER_STORE]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
-
-	RD::get_singleton()->compute_list_end();
-}
-
-void RendererStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	if (!rt->backbuffer.is_valid()) {
-		_create_render_target_backbuffer(rt);
-	}
-
-	Rect2i region;
-	if (p_region == Rect2i()) {
-		region.size = rt->size;
-	} else {
-		region = Rect2i(Size2i(), rt->size).intersection(p_region);
-		if (region.size == Size2i()) {
-			return; //nothing to do
-		}
-	}
-
-	//single texture copy for backbuffer
-	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
-	effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
-
-	if (!p_gen_mipmaps) {
-		return;
-	}
-	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps");
-	//then mipmap blur
-	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
-
-	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
-		region.position.x >>= 1;
-		region.position.y >>= 1;
-		region.size.x = MAX(1, region.size.x >> 1);
-		region.size.y = MAX(1, region.size.y >> 1);
-
-		RID mipmap = rt->backbuffer_mipmaps[i];
-		effects->gaussian_blur(prev_texture, mipmap, region, true);
-		prev_texture = mipmap;
-	}
-	RD::get_singleton()->draw_command_end_label();
-}
-
-void RendererStorageRD::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	if (!rt->backbuffer.is_valid()) {
-		_create_render_target_backbuffer(rt);
-	}
-
-	Rect2i region;
-	if (p_region == Rect2i()) {
-		region.size = rt->size;
-	} else {
-		region = Rect2i(Size2i(), rt->size).intersection(p_region);
-		if (region.size == Size2i()) {
-			return; //nothing to do
-		}
-	}
-
-	//single texture copy for backbuffer
-	effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
-}
-
-void RendererStorageRD::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	if (!rt->backbuffer.is_valid()) {
-		_create_render_target_backbuffer(rt);
-	}
-
-	Rect2i region;
-	if (p_region == Rect2i()) {
-		region.size = rt->size;
-	} else {
-		region = Rect2i(Size2i(), rt->size).intersection(p_region);
-		if (region.size == Size2i()) {
-			return; //nothing to do
-		}
-	}
-	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps2");
-	//then mipmap blur
-	RID prev_texture = rt->backbuffer_mipmap0;
-
-	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
-		region.position.x >>= 1;
-		region.position.y >>= 1;
-		region.size.x = MAX(1, region.size.x >> 1);
-		region.size.y = MAX(1, region.size.y >> 1);
-
-		RID mipmap = rt->backbuffer_mipmaps[i];
-		effects->gaussian_blur(prev_texture, mipmap, region, true);
-		prev_texture = mipmap;
-	}
-	RD::get_singleton()->draw_command_end_label();
-}
-
-RID RendererStorageRD::render_target_get_framebuffer_uniform_set(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-	return rt->framebuffer_uniform_set;
-}
-RID RendererStorageRD::render_target_get_backbuffer_uniform_set(RID p_render_target) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-	return rt->backbuffer_uniform_set;
-}
-
-void RendererStorageRD::render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	rt->framebuffer_uniform_set = p_uniform_set;
-}
-void RendererStorageRD::render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-	rt->backbuffer_uniform_set = p_uniform_set;
-}
-
 void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
 	if (RendererRD::MeshStorage::get_singleton()->owns_mesh(p_base)) {
 		RendererRD::Mesh *mesh = RendererRD::MeshStorage::get_singleton()->get_mesh(p_base);
@@ -3655,8 +2961,8 @@ void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_
 	} else if (reflection_probe_owner.owns(p_base)) {
 		ReflectionProbe *rp = reflection_probe_owner.get_or_null(p_base);
 		p_instance->update_dependency(&rp->dependency);
-	} else if (RendererRD::DecalAtlasStorage::get_singleton()->owns_decal(p_base)) {
-		RendererRD::Decal *decal = RendererRD::DecalAtlasStorage::get_singleton()->get_decal(p_base);
+	} else if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_base)) {
+		RendererRD::Decal *decal = RendererRD::TextureStorage::get_singleton()->get_decal(p_base);
 		p_instance->update_dependency(&decal->dependency);
 	} else if (voxel_gi_owner.owns(p_base)) {
 		VoxelGI *gip = voxel_gi_owner.get_or_null(p_base);
@@ -3692,7 +2998,7 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	if (reflection_probe_owner.owns(p_rid)) {
 		return RS::INSTANCE_REFLECTION_PROBE;
 	}
-	if (RendererRD::DecalAtlasStorage::get_singleton()->owns_decal(p_rid)) {
+	if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
 		return RS::INSTANCE_DECAL;
 	}
 	if (voxel_gi_owner.owns(p_rid)) {
@@ -3725,7 +3031,7 @@ void RendererStorageRD::update_dirty_resources() {
 	RendererRD::MaterialStorage::get_singleton()->_update_queued_materials();
 	RendererRD::MeshStorage::get_singleton()->_update_dirty_multimeshes();
 	RendererRD::MeshStorage::get_singleton()->_update_dirty_skeletons();
-	RendererRD::DecalAtlasStorage::get_singleton()->update_decal_atlas();
+	RendererRD::TextureStorage::get_singleton()->update_decal_atlas();
 }
 
 bool RendererStorageRD::has_os_feature(const String &p_feature) const {
@@ -3751,8 +3057,8 @@ bool RendererStorageRD::has_os_feature(const String &p_feature) const {
 bool RendererStorageRD::free(RID p_rid) {
 	if (RendererRD::TextureStorage::get_singleton()->owns_texture(p_rid)) {
 		RendererRD::TextureStorage::get_singleton()->texture_free(p_rid);
-	} else if (RendererRD::CanvasTextureStorage::get_singleton()->owns_canvas_texture(p_rid)) {
-		RendererRD::CanvasTextureStorage::get_singleton()->canvas_texture_free(p_rid);
+	} else if (RendererRD::TextureStorage::get_singleton()->owns_canvas_texture(p_rid)) {
+		RendererRD::TextureStorage::get_singleton()->canvas_texture_free(p_rid);
 	} else if (RendererRD::MaterialStorage::get_singleton()->owns_shader(p_rid)) {
 		RendererRD::MaterialStorage::get_singleton()->shader_free(p_rid);
 	} else if (RendererRD::MaterialStorage::get_singleton()->owns_material(p_rid)) {
@@ -3769,8 +3075,8 @@ bool RendererStorageRD::free(RID p_rid) {
 		ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
 		reflection_probe->dependency.deleted_notify(p_rid);
 		reflection_probe_owner.free(p_rid);
-	} else if (RendererRD::DecalAtlasStorage::get_singleton()->owns_decal(p_rid)) {
-		RendererRD::DecalAtlasStorage::get_singleton()->decal_free(p_rid);
+	} else if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
+		RendererRD::TextureStorage::get_singleton()->decal_free(p_rid);
 	} else if (voxel_gi_owner.owns(p_rid)) {
 		voxel_gi_allocate_data(p_rid, Transform3D(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
 		VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_rid);
@@ -3813,18 +3119,8 @@ bool RendererStorageRD::free(RID p_rid) {
 		FogVolume *fog_volume = fog_volume_owner.get_or_null(p_rid);
 		fog_volume->dependency.deleted_notify(p_rid);
 		fog_volume_owner.free(p_rid);
-	} else if (render_target_owner.owns(p_rid)) {
-		RenderTarget *rt = render_target_owner.get_or_null(p_rid);
-
-		_clear_render_target(rt);
-
-		if (rt->texture.is_valid()) {
-			RendererRD::Texture *tex = RendererRD::TextureStorage::get_singleton()->get_texture(rt->texture);
-			tex->is_render_target = false;
-			free(rt->texture);
-		}
-
-		render_target_owner.free(p_rid);
+	} else if (RendererRD::TextureStorage::get_singleton()->owns_render_target(p_rid)) {
+		RendererRD::TextureStorage::get_singleton()->render_target_free(p_rid);
 	} else {
 		return false;
 	}
@@ -4159,24 +3455,6 @@ void process() {
 			}
 		}
 	}
-
-	{
-		Vector<String> sdf_modes;
-		sdf_modes.push_back("\n#define MODE_LOAD\n");
-		sdf_modes.push_back("\n#define MODE_LOAD_SHRINK\n");
-		sdf_modes.push_back("\n#define MODE_PROCESS\n");
-		sdf_modes.push_back("\n#define MODE_PROCESS_OPTIMIZED\n");
-		sdf_modes.push_back("\n#define MODE_STORE\n");
-		sdf_modes.push_back("\n#define MODE_STORE_SHRINK\n");
-
-		rt_sdf.shader.initialize(sdf_modes);
-
-		rt_sdf.shader_version = rt_sdf.shader.version_create();
-
-		for (int i = 0; i < RenderTargetSDF::SHADER_MAX; i++) {
-			rt_sdf.pipelines[i] = RD::get_singleton()->compute_pipeline_create(rt_sdf.shader.version_get_shader(rt_sdf.shader_version, i));
-		}
-	}
 }
 
 RendererStorageRD::~RendererStorageRD() {
@@ -4199,7 +3477,6 @@ RendererStorageRD::~RendererStorageRD() {
 	}
 
 	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
-	rt_sdf.shader.version_free(rt_sdf.shader_version);
 
 	material_storage->material_free(particles_shader.default_material);
 	material_storage->shader_free(particles_shader.default_shader);

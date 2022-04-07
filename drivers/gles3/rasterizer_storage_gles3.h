@@ -40,10 +40,8 @@
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
-#include "storage/canvas_texture_storage.h"
 #include "storage/config.h"
 #include "storage/material_storage.h"
-#include "storage/render_target_storage.h"
 #include "storage/texture_storage.h"
 
 // class RasterizerCanvasGLES3;
@@ -53,8 +51,6 @@ class RasterizerStorageGLES3 : public RendererStorage {
 public:
 	// RasterizerCanvasGLES3 *canvas;
 	// RasterizerSceneGLES3 *scene;
-
-	static GLuint system_fbo;
 
 	GLES3::Config *config;
 
@@ -363,43 +359,6 @@ public:
 	AABB visibility_notifier_get_aabb(RID p_notifier) const override;
 	void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override;
 
-	// RENDER TARGET
-
-	mutable RID_PtrOwner<GLES3::RenderTarget> render_target_owner;
-
-	void _render_target_clear(GLES3::RenderTarget *rt);
-	void _render_target_allocate(GLES3::RenderTarget *rt);
-	void _set_current_render_target(RID p_render_target);
-
-	RID render_target_create() override;
-	void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
-	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
-	Size2i render_target_get_size(RID p_render_target);
-	RID render_target_get_texture(RID p_render_target) override;
-	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
-
-	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override;
-	bool render_target_was_used(RID p_render_target) override;
-	void render_target_clear_used(RID p_render_target);
-	void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa);
-	void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
-	void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
-
-	// new
-	void render_target_set_as_unused(RID p_render_target) override {
-		render_target_clear_used(p_render_target);
-	}
-
-	void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override;
-	bool render_target_is_clear_requested(RID p_render_target) override;
-	Color render_target_get_clear_request_color(RID p_render_target) override;
-	void render_target_disable_clear_request(RID p_render_target) override;
-	void render_target_do_clear_request(RID p_render_target) override;
-
-	void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override;
-	Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
-	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
-
 	// access from canvas
 	//	GLES3::RenderTarget * render_target_get(RID p_render_target);
 
@@ -438,24 +397,6 @@ public:
 	RS::InstanceType get_base_type(RID p_rid) const override;
 
 	bool free(RID p_rid) override;
-
-	struct Frame {
-		GLES3::RenderTarget *current_rt;
-
-		// these 2 may have been superseded by the equivalents in the render target.
-		// these may be able to be removed.
-		bool clear_request;
-		Color clear_request_color;
-
-		float time;
-		float delta;
-		uint64_t count;
-
-		Frame() {
-			//			current_rt = nullptr;
-			//			clear_request = false;
-		}
-	} frame;
 
 	void initialize();
 	void finalize();
@@ -498,33 +439,8 @@ public:
 		return String();
 	}
 
-	// make access easier to these
-	struct Dimensions {
-		// render target
-		int rt_width;
-		int rt_height;
-
-		// window
-		int win_width;
-		int win_height;
-		Dimensions() {
-			rt_width = 0;
-			rt_height = 0;
-			win_width = 0;
-			win_height = 0;
-		}
-	} _dims;
-
 	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
 	bool safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const;
-
-	void bind_framebuffer(GLuint framebuffer) {
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	}
-
-	void bind_framebuffer_system() {
-		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-	}
 
 	RasterizerStorageGLES3();
 	~RasterizerStorageGLES3();

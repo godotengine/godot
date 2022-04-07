@@ -399,8 +399,8 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererDecalAtlasStorage
-#define server_name RSG::decal_atlas_storage
+#define ServerName RendererTextureStorage
+#define server_name RSG::texture_storage
 
 	FUNCRIDSPLIT(decal)
 

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
 const Vector3i RendererSceneGIRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
@@ -1245,8 +1246,8 @@ void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, cons
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_width, p_height, 1);
 	RD::get_singleton()->compute_list_end();
 
-	Size2 rtsize = storage->render_target_get_size(p_render_target);
-	storage->get_effects()->copy_to_fb_rect(p_texture, storage->render_target_get_rd_framebuffer(p_render_target), Rect2(Vector2(), rtsize), true);
+	Size2 rtsize = texture_storage->render_target_get_size(p_render_target);
+	storage->get_effects()->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2(Vector2(), rtsize), true);
 }
 
 void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {

@@ -37,7 +37,6 @@
 #include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "storage/canvas_texture_storage.h"
 #include "storage/material_storage.h"
 #include "storage/texture_storage.h"
 

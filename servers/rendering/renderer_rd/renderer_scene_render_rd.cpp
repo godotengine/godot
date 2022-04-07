@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "renderer_compositor_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -2557,7 +2556,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = p_render_data->view_count;
 
-		storage->get_effects()->tonemapper(rb->internal_texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
+		storage->get_effects()->tonemapper(rb->internal_texture, texture_storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -2570,7 +2569,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	storage->render_target_disable_clear_request(rb->render_target);
+	texture_storage->render_target_disable_clear_request(rb->render_target);
 }
 
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
@@ -2647,7 +2646,8 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	storage->render_target_disable_clear_request(rb->render_target);
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	texture_storage->render_target_disable_clear_request(rb->render_target);
 }
 
 void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
@@ -2665,64 +2665,64 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 				shadow_atlas_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
 			}
 
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
-			effects->copy_to_fb_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, true);
+			Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
+			effects->copy_to_fb_rect(shadow_atlas_texture, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, true);
 		}
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
 		if (directional_shadow_get_texture().is_valid()) {
 			RID shadow_atlas_texture = directional_shadow_get_texture();
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+			Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
 
-			effects->copy_to_fb_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, true);
+			effects->copy_to_fb_rect(shadow_atlas_texture, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, true);
 		}
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
-		RID decal_atlas = RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture();
+		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
 
 		if (decal_atlas.is_valid()) {
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+			Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
 
-			effects->copy_to_fb_rect(decal_atlas, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
+			effects->copy_to_fb_rect(decal_atlas, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
 		}
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
 		if (rb->luminance.current.is_valid()) {
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+			Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
 
-			effects->copy_to_fb_rect(rb->luminance.current, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize / 8), false, true);
+			effects->copy_to_fb_rect(rb->luminance.current, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize / 8), false, true);
 		}
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ss_effects.ssao.ao_final.is_valid()) {
-		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		effects->copy_to_fb_rect(rb->ss_effects.ssao.ao_final, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
+		Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
+		effects->copy_to_fb_rect(rb->ss_effects.ssao.ao_final, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSIL && rb->ss_effects.ssil.ssil_final.is_valid()) {
-		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		effects->copy_to_fb_rect(rb->ss_effects.ssil.ssil_final, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
+		Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
+		effects->copy_to_fb_rect(rb->ss_effects.ssil.ssil_final, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(p_render_buffers).is_valid()) {
-		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		effects->copy_to_fb_rect(_render_buffers_get_normal_texture(p_render_buffers), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
+		Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
+		effects->copy_to_fb_rect(_render_buffers_get_normal_texture(p_render_buffers), texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER && rb->ambient_buffer.is_valid()) {
-		Size2 rtsize = storage->render_target_get_size(rb->render_target);
+		Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
 		RID ambient_texture = rb->ambient_buffer;
 		RID reflection_texture = rb->reflection_buffer;
-		effects->copy_to_fb_rect(ambient_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture);
+		effects->copy_to_fb_rect(ambient_texture, texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
 		if (p_occlusion_buffer.is_valid()) {
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
-			effects->copy_to_fb_rect(texture_storage->texture_get_rd_texture(p_occlusion_buffer), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize), true, false);
+			Size2 rtsize = texture_storage->render_target_get_size(rb->render_target);
+			effects->copy_to_fb_rect(texture_storage->texture_get_rd_texture(p_occlusion_buffer), texture_storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize), true, false);
 		}
 	}
 }
@@ -2943,6 +2943,8 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 }
 
 void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
 	if (!_render_buffers_can_be_storage()) {
@@ -3040,7 +3042,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		rb->texture_fb = RD::get_singleton()->framebuffer_create(fb, RenderingDevice::INVALID_ID, rb->view_count);
 	}
 
-	RID target_texture = storage->render_target_get_rd_texture(rb->render_target);
+	RID target_texture = texture_storage->render_target_get_rd_texture(rb->render_target);
 	rb->data->configure(rb->internal_texture, rb->depth_texture, target_texture, p_internal_width, p_internal_height, p_msaa, p_view_count);
 
 	if (is_clustered_enabled()) {
@@ -3268,7 +3270,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 }
 
 void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
-	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
@@ -3553,7 +3555,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		RID projector = storage->light_get_projector(base);
 
 		if (projector.is_valid()) {
-			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(projector);
+			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(projector);
 
 			if (type == RS::LIGHT_SPOT) {
 				light_data.projector_rect[0] = rect.position.x;
@@ -3669,7 +3671,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 }
 
 void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform) {
-	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	Transform3D uv_xform;
 	uv_xform.basis.scale(Vector3(2.0, 1.0, 2.0));
@@ -3694,9 +3696,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
 
-		if (decal_atlas_storage->decal_is_distance_fade_enabled(decal)) {
-			float fade_begin = decal_atlas_storage->decal_get_distance_fade_begin(decal);
-			float fade_length = decal_atlas_storage->decal_get_distance_fade_length(decal);
+		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
+			float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
+			float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
 				if (distance > fade_begin + fade_length) {
@@ -3724,15 +3726,15 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			_map_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id, i);
 		}
 
-		di->cull_mask = decal_atlas_storage->decal_get_cull_mask(decal);
+		di->cull_mask = texture_storage->decal_get_cull_mask(decal);
 
 		Transform3D xform = di->transform;
 		float fade = 1.0;
 
-		if (decal_atlas_storage->decal_is_distance_fade_enabled(decal)) {
+		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
 			real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
-			float fade_begin = decal_atlas_storage->decal_get_distance_fade_begin(decal);
-			float fade_length = decal_atlas_storage->decal_get_distance_fade_length(decal);
+			float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
+			float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
 				fade = 1.0 - (distance - fade_begin) / fade_length;
@@ -3741,7 +3743,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		Cluster::DecalData &dd = cluster.decals[i];
 
-		Vector3 decal_extents = decal_atlas_storage->decal_get_extents(decal);
+		Vector3 decal_extents = texture_storage->decal_get_extents(decal);
 
 		Transform3D scale_xform;
 		scale_xform.basis.scale(decal_extents);
@@ -3754,12 +3756,12 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		dd.normal[0] = normal.x;
 		dd.normal[1] = normal.y;
 		dd.normal[2] = normal.z;
-		dd.normal_fade = decal_atlas_storage->decal_get_normal_fade(decal);
+		dd.normal_fade = texture_storage->decal_get_normal_fade(decal);
 
-		RID albedo_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
-		RID emission_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
+		RID albedo_tex = texture_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
+		RID emission_tex = texture_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
 		if (albedo_tex.is_valid()) {
-			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(albedo_tex);
+			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(albedo_tex);
 			dd.albedo_rect[0] = rect.position.x;
 			dd.albedo_rect[1] = rect.position.y;
 			dd.albedo_rect[2] = rect.size.x;
@@ -3774,10 +3776,10 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.albedo_rect[3] = 0;
 		}
 
-		RID normal_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
+		RID normal_tex = texture_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
 
 		if (normal_tex.is_valid()) {
-			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(normal_tex);
+			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(normal_tex);
 			dd.normal_rect[0] = rect.position.x;
 			dd.normal_rect[1] = rect.position.y;
 			dd.normal_rect[2] = rect.size.x;
@@ -3792,9 +3794,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.normal_rect[3] = 0;
 		}
 
-		RID orm_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ORM);
+		RID orm_tex = texture_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ORM);
 		if (orm_tex.is_valid()) {
-			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(orm_tex);
+			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(orm_tex);
 			dd.orm_rect[0] = rect.position.x;
 			dd.orm_rect[1] = rect.position.y;
 			dd.orm_rect[2] = rect.size.x;
@@ -3807,7 +3809,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		}
 
 		if (emission_tex.is_valid()) {
-			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(emission_tex);
+			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(emission_tex);
 			dd.emission_rect[0] = rect.position.x;
 			dd.emission_rect[1] = rect.position.y;
 			dd.emission_rect[2] = rect.size.x;
@@ -3819,16 +3821,16 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.emission_rect[3] = 0;
 		}
 
-		Color modulate = decal_atlas_storage->decal_get_modulate(decal);
+		Color modulate = texture_storage->decal_get_modulate(decal);
 		dd.modulate[0] = modulate.r;
 		dd.modulate[1] = modulate.g;
 		dd.modulate[2] = modulate.b;
 		dd.modulate[3] = modulate.a * fade;
-		dd.emission_energy = decal_atlas_storage->decal_get_emission_energy(decal) * fade;
-		dd.albedo_mix = decal_atlas_storage->decal_get_albedo_mix(decal);
-		dd.mask = decal_atlas_storage->decal_get_cull_mask(decal);
-		dd.upper_fade = decal_atlas_storage->decal_get_upper_fade(decal);
-		dd.lower_fade = decal_atlas_storage->decal_get_lower_fade(decal);
+		dd.emission_energy = texture_storage->decal_get_emission_energy(decal) * fade;
+		dd.albedo_mix = texture_storage->decal_get_albedo_mix(decal);
+		dd.mask = texture_storage->decal_get_cull_mask(decal);
+		dd.upper_fade = texture_storage->decal_get_upper_fade(decal);
+		dd.lower_fade = texture_storage->decal_get_lower_fade(decal);
 
 		if (current_cluster_builder != nullptr) {
 			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_DECAL, xform, decal_extents);
@@ -4974,6 +4976,8 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 }
 
 void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	// getting this here now so we can direct call a bunch of things more easily
 	RenderBuffers *rb = nullptr;
 	if (p_render_buffers.is_valid()) {
@@ -5052,7 +5056,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
-		clear_color = storage->render_target_get_clear_request_color(rb->render_target);
+		clear_color = texture_storage->render_target_get_clear_request_color(rb->render_target);
 	} else {
 		clear_color = storage->get_default_clear_color();
 	}

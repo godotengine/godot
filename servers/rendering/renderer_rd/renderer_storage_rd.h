@@ -36,7 +36,6 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects_rd.h"
-#include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
@@ -627,83 +626,6 @@ private:
 
 	float lightmap_probe_capture_update_speed = 4;
 
-	/* RENDER TARGET */
-
-	struct RenderTarget {
-		Size2i size;
-		uint32_t view_count;
-		RID framebuffer;
-		RID color;
-
-		//used for retrieving from CPU
-		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
-		RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
-		Image::Format image_format = Image::FORMAT_L8;
-
-		bool flags[RENDER_TARGET_FLAG_MAX];
-
-		bool sdf_enabled = false;
-
-		RID backbuffer; //used for effects
-		RID backbuffer_fb;
-		RID backbuffer_mipmap0;
-
-		Vector<RID> backbuffer_mipmaps;
-
-		RID framebuffer_uniform_set;
-		RID backbuffer_uniform_set;
-
-		RID sdf_buffer_write;
-		RID sdf_buffer_write_fb;
-		RID sdf_buffer_process[2];
-		RID sdf_buffer_read;
-		RID sdf_buffer_process_uniform_sets[2];
-		RS::ViewportSDFOversize sdf_oversize = RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
-		RS::ViewportSDFScale sdf_scale = RS::VIEWPORT_SDF_SCALE_50_PERCENT;
-		Size2i process_size;
-
-		//texture generated for this owner (nor RD).
-		RID texture;
-		bool was_used;
-
-		//clear request
-		bool clear_requested;
-		Color clear_color;
-	};
-
-	mutable RID_Owner<RenderTarget> render_target_owner;
-
-	void _clear_render_target(RenderTarget *rt);
-	void _update_render_target(RenderTarget *rt);
-	void _create_render_target_backbuffer(RenderTarget *rt);
-	void _render_target_allocate_sdf(RenderTarget *rt);
-	void _render_target_clear_sdf(RenderTarget *rt);
-	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
-
-	struct RenderTargetSDF {
-		enum {
-			SHADER_LOAD,
-			SHADER_LOAD_SHRINK,
-			SHADER_PROCESS,
-			SHADER_PROCESS_OPTIMIZED,
-			SHADER_STORE,
-			SHADER_STORE_SHRINK,
-			SHADER_MAX
-		};
-
-		struct PushConstant {
-			int32_t size[2];
-			int32_t stride;
-			int32_t shift;
-			int32_t base_size[2];
-			int32_t pad[2];
-		};
-
-		CanvasSdfShaderRD shader;
-		RID shader_version;
-		RID pipelines[SHADER_MAX];
-	} rt_sdf;
-
 	/* EFFECTS */
 
 	EffectsRD *effects = nullptr;
@@ -1148,48 +1070,6 @@ public:
 	virtual RID particles_collision_instance_create(RID p_collision);
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform);
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
-
-	/* RENDER TARGET API */
-
-	RID render_target_create();
-	void render_target_set_position(RID p_render_target, int p_x, int p_y);
-	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count);
-	RID render_target_get_texture(RID p_render_target);
-	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
-	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
-	bool render_target_was_used(RID p_render_target);
-	void render_target_set_as_unused(RID p_render_target);
-	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
-	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
-	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
-
-	RID render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader);
-
-	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color);
-	virtual bool render_target_is_clear_requested(RID p_render_target);
-	virtual Color render_target_get_clear_request_color(RID p_render_target);
-	virtual void render_target_disable_clear_request(RID p_render_target);
-	virtual void render_target_do_clear_request(RID p_render_target);
-
-	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale);
-	RID render_target_get_sdf_texture(RID p_render_target);
-	RID render_target_get_sdf_framebuffer(RID p_render_target);
-	void render_target_sdf_process(RID p_render_target);
-	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const;
-	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled);
-	bool render_target_is_sdf_enabled(RID p_render_target) const;
-
-	Size2 render_target_get_size(RID p_render_target);
-	RID render_target_get_rd_framebuffer(RID p_render_target);
-	RID render_target_get_rd_texture(RID p_render_target);
-	RID render_target_get_rd_backbuffer(RID p_render_target);
-	RID render_target_get_rd_backbuffer_framebuffer(RID p_render_target);
-
-	RID render_target_get_framebuffer_uniform_set(RID p_render_target);
-	RID render_target_get_backbuffer_uniform_set(RID p_render_target);
-
-	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set);
-	void render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set);
 
 	RS::InstanceType get_base_type(RID p_rid) const;
 

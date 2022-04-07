@@ -35,8 +35,6 @@
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "renderer_compositor_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -364,7 +362,7 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 	bool use_normal;
 	bool use_specular;
 
-	bool success = RendererRD::CanvasTextureStorage::get_singleton()->canvas_texture_get_uniform_set(p_texture, p_base_filter, p_base_repeat, shader.default_version_rd_shader, CANVAS_TEXTURE_UNIFORM_SET, uniform_set, size, specular_shininess, use_normal, use_specular);
+	bool success = RendererRD::TextureStorage::get_singleton()->canvas_texture_get_uniform_set(p_texture, p_base_filter, p_base_repeat, shader.default_version_rd_shader, CANVAS_TEXTURE_UNIFORM_SET, uniform_set, size, specular_shininess, use_normal, use_specular);
 	//something odd happened
 	if (!success) {
 		_bind_canvas_texture(p_draw_list, default_canvas_texture, p_base_filter, p_base_repeat, r_last_texture, push_constant, r_texpixel_size);
@@ -401,6 +399,7 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 
 void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants) {
 	//create an empty push constant
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 
 	RS::CanvasItemTextureFilter current_filter = default_filter;
@@ -809,7 +808,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					mesh = storage->particles_get_draw_pass_mesh(pt->particles, 0); //higher ones are ignored
 					texture = pt->texture;
 
-					if (storage->particles_has_collision(pt->particles) && storage->render_target_is_sdf_enabled(p_render_target)) {
+					if (storage->particles_has_collision(pt->particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
 						//pass collision information
 						Transform2D xform;
 						if (local_coords) {
@@ -818,11 +817,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 							xform = p_canvas_transform_inverse;
 						}
 
-						RID sdf_texture = storage->render_target_get_sdf_texture(p_render_target);
+						RID sdf_texture = texture_storage->render_target_get_sdf_texture(p_render_target);
 
 						Rect2 to_screen;
 						{
-							Rect2 sdf_rect = storage->render_target_get_sdf_rect(p_render_target);
+							Rect2 sdf_rect = texture_storage->render_target_get_sdf_rect(p_render_target);
 
 							to_screen.size = Vector2(1.0 / sdf_rect.size.width, 1.0 / sdf_rect.size.height);
 							to_screen.position = -sdf_rect.position * to_screen.size;
@@ -931,6 +930,8 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 }
 
 RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, bool p_backbuffer) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	//re create canvas state
 	Vector<RD::Uniform> uniforms;
 
@@ -954,7 +955,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 3;
-		u.append_id(RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture());
+		u.append_id(RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture());
 		uniforms.push_back(u);
 	}
 
@@ -980,9 +981,9 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		u.binding = 6;
 		RID screen;
 		if (p_backbuffer) {
-			screen = storage->render_target_get_rd_texture(p_to_render_target);
+			screen = texture_storage->render_target_get_rd_texture(p_to_render_target);
 		} else {
-			screen = storage->render_target_get_rd_backbuffer(p_to_render_target);
+			screen = texture_storage->render_target_get_rd_backbuffer(p_to_render_target);
 			if (screen.is_null()) { //unallocated backbuffer
 				screen = RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 			}
@@ -995,7 +996,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 7;
-		RID sdf = storage->render_target_get_sdf_texture(p_to_render_target);
+		RID sdf = texture_storage->render_target_get_sdf_texture(p_to_render_target);
 		u.append_id(sdf);
 		uniforms.push_back(u);
 	}
@@ -1033,9 +1034,9 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, BASE_UNIFORM_SET);
 	if (p_backbuffer) {
-		storage->render_target_set_backbuffer_uniform_set(p_to_render_target, uniform_set);
+		texture_storage->render_target_set_backbuffer_uniform_set(p_to_render_target, uniform_set);
 	} else {
-		storage->render_target_set_framebuffer_uniform_set(p_to_render_target, uniform_set);
+		texture_storage->render_target_set_framebuffer_uniform_set(p_to_render_target, uniform_set);
 	}
 
 	return uniform_set;
@@ -1043,6 +1044,8 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	Item *current_clip = nullptr;
 
 	Transform2D canvas_transform_inverse = p_canvas_transform_inverse;
@@ -1053,21 +1056,21 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	Vector<Color> clear_colors;
 
 	if (p_to_backbuffer) {
-		framebuffer = storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target);
-		fb_uniform_set = storage->render_target_get_backbuffer_uniform_set(p_to_render_target);
+		framebuffer = texture_storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target);
+		fb_uniform_set = texture_storage->render_target_get_backbuffer_uniform_set(p_to_render_target);
 	} else {
-		framebuffer = storage->render_target_get_rd_framebuffer(p_to_render_target);
+		framebuffer = texture_storage->render_target_get_rd_framebuffer(p_to_render_target);
 
-		if (storage->render_target_is_clear_requested(p_to_render_target)) {
+		if (texture_storage->render_target_is_clear_requested(p_to_render_target)) {
 			clear = true;
-			clear_colors.push_back(storage->render_target_get_clear_request_color(p_to_render_target));
-			storage->render_target_disable_clear_request(p_to_render_target);
+			clear_colors.push_back(texture_storage->render_target_get_clear_request_color(p_to_render_target));
+			texture_storage->render_target_disable_clear_request(p_to_render_target);
 		}
 #ifndef _MSC_VER
 #warning TODO obtain from framebuffer format eventually when this is implemented
 #endif
 
-		fb_uniform_set = storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
+		fb_uniform_set = texture_storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
 	}
 
 	if (fb_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fb_uniform_set)) {
@@ -1136,6 +1139,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 }
 
 void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 
@@ -1264,7 +1268,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 
 			if (clight->texture.is_valid()) {
-				Rect2 atlas_rect = RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture_rect(clight->texture);
+				Rect2 atlas_rect = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture_rect(clight->texture);
 				state.light_uniforms[index].atlas_rect[0] = atlas_rect.position.x;
 				state.light_uniforms[index].atlas_rect[1] = atlas_rect.position.y;
 				state.light_uniforms[index].atlas_rect[2] = atlas_rect.size.width;
@@ -1294,7 +1298,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		//update canvas state uniform buffer
 		State::Buffer state_buffer;
 
-		Size2i ssize = storage->render_target_get_size(p_to_render_target);
+		Size2i ssize = texture_storage->render_target_get_size(p_to_render_target);
 
 		Transform3D screen_transform;
 		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
@@ -1313,7 +1317,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		state_buffer.canvas_modulate[2] = p_modulate.b;
 		state_buffer.canvas_modulate[3] = p_modulate.a;
 
-		Size2 render_target_size = storage->render_target_get_size(p_to_render_target);
+		Size2 render_target_size = texture_storage->render_target_get_size(p_to_render_target);
 		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;
 		state_buffer.screen_pixel_size[1] = 1.0 / render_target_size.y;
 
@@ -1330,7 +1334,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		state_buffer.screen_to_sdf[0] = 1.0 / state_buffer.sdf_to_screen[0];
 		state_buffer.screen_to_sdf[1] = 1.0 / state_buffer.sdf_to_screen[1];
 
-		Rect2 sdf_rect = storage->render_target_get_sdf_rect(p_to_render_target);
+		Rect2 sdf_rect = texture_storage->render_target_get_sdf_rect(p_to_render_target);
 		Rect2 sdf_tex_rect(sdf_rect.position / canvas_scale, sdf_rect.size / canvas_scale);
 
 		state_buffer.sdf_to_tex[0] = 1.0 / sdf_tex_rect.size.width;
@@ -1420,9 +1424,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
 
 				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
-					storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
+					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
 				} else {
-					storage->render_target_clear_back_buffer(p_to_render_target, group_rect, Color(0, 0, 0, 0));
+					texture_storage->render_target_clear_back_buffer(p_to_render_target, group_rect, Color(0, 0, 0, 0));
 				}
 
 				backbuffer_copy = false;
@@ -1442,7 +1446,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			item_count = 0;
 
 			if (ci->canvas_group->blur_mipmaps) {
-				storage->render_target_gen_back_buffer_mipmaps(p_to_render_target, ci->global_rect_cache);
+				texture_storage->render_target_gen_back_buffer_mipmaps(p_to_render_target, ci->global_rect_cache);
 			}
 
 			canvas_group_owner = nullptr;
@@ -1457,7 +1461,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
-			storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
+			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
 
 			backbuffer_copy = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
@@ -1490,7 +1494,7 @@ RID RendererCanvasRenderRD::light_create() {
 }
 
 void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
-	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl);
@@ -1498,12 +1502,12 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 		return;
 	}
 	if (cl->texture.is_valid()) {
-		decal_atlas_storage->texture_remove_from_decal_atlas(cl->texture);
+		texture_storage->texture_remove_from_decal_atlas(cl->texture);
 	}
 	cl->texture = p_texture;
 
 	if (cl->texture.is_valid()) {
-		decal_atlas_storage->texture_add_to_decal_atlas(cl->texture);
+		texture_storage->texture_add_to_decal_atlas(cl->texture);
 	}
 }
 
@@ -1703,8 +1707,10 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 }
 
 void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) {
-	RID fb = storage->render_target_get_sdf_framebuffer(p_render_target);
-	Rect2i rect = storage->render_target_get_sdf_rect(p_render_target);
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
+	RID fb = texture_storage->render_target_get_sdf_framebuffer(p_render_target);
+	Rect2i rect = texture_storage->render_target_get_sdf_rect(p_render_target);
 
 	Transform2D to_sdf;
 	to_sdf.elements[0] *= rect.size.width;
@@ -1761,7 +1767,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 
 	RD::get_singleton()->draw_list_end();
 
-	storage->render_target_sdf_process(p_render_target); //done rendering, process it
+	texture_storage->render_target_sdf_process(p_render_target); //done rendering, process it
 }
 
 RID RendererCanvasRenderRD::occluder_polygon_create() {
@@ -2258,7 +2264,7 @@ void RendererCanvasRenderRD::update() {
 }
 
 RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
-	RendererRD::CanvasTextureStorage *canvas_texture_storage = RendererRD::CanvasTextureStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	storage = p_storage;
 
@@ -2590,8 +2596,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		state.default_transforms_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 	}
 
-	default_canvas_texture = canvas_texture_storage->canvas_texture_allocate();
-	canvas_texture_storage->canvas_texture_initialize(default_canvas_texture);
+	default_canvas_texture = texture_storage->canvas_texture_allocate();
+	texture_storage->canvas_texture_initialize(default_canvas_texture);
 
 	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 
@@ -2712,6 +2718,6 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	}
 	RD::get_singleton()->free(state.shadow_texture);
 
-	RendererRD::CanvasTextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
+	RendererRD::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone
 }

@@ -360,33 +360,6 @@ public:
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 
-	/* RENDER TARGET */
-
-	enum RenderTargetFlags {
-		RENDER_TARGET_TRANSPARENT,
-		RENDER_TARGET_DIRECT_TO_SCREEN,
-		RENDER_TARGET_FLAG_MAX
-	};
-
-	virtual RID render_target_create() = 0;
-	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
-	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) = 0;
-	virtual RID render_target_get_texture(RID p_render_target) = 0;
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
-	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
-	virtual bool render_target_was_used(RID p_render_target) = 0;
-	virtual void render_target_set_as_unused(RID p_render_target) = 0;
-
-	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
-	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;
-	virtual Color render_target_get_clear_request_color(RID p_render_target) = 0;
-	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
-	virtual void render_target_do_clear_request(RID p_render_target) = 0;
-
-	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) = 0;
-	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;
-	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) = 0;
-
 	virtual RS::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
