@@ -589,8 +589,6 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_button = get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons"));
 			icon_cache.joypad_axis = get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons"));
 
-			mouse_detection_rect->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
-
 			_update_input_list();
 		} break;
 	}
@@ -624,7 +622,7 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		device_id_option->select(0);
 	}
 
-	popup_centered();
+	popup_centered(Size2(0, 400) * EDSCALE);
 }
 
 Ref<InputEvent> InputEventConfigurationDialog::get_event() const {
@@ -656,8 +654,8 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_as_text = memnew(Label);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vb->add_child(event_as_text);
-	// Mouse button detection rect (Mouse button event outside this ColorRect will be ignored)
-	mouse_detection_rect = memnew(ColorRect);
+	// Mouse button detection rect (Mouse button event outside this rect will be ignored)
+	mouse_detection_rect = memnew(Panel);
 	mouse_detection_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(mouse_detection_rect);
 	tab_container->add_child(vb);
@@ -1171,7 +1169,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 void ActionMapEditor::show_message(const String &p_message) {
 	message->set_text(p_message);
-	message->popup_centered(Size2(300, 100) * EDSCALE);
+	message->popup_centered();
 }
 
 void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {

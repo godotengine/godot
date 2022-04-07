@@ -35,8 +35,8 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 
-class InputEventConfigContainer : public HBoxContainer {
-	GDCLASS(InputEventConfigContainer, HBoxContainer);
+class InputEventConfigContainer : public VBoxContainer {
+	GDCLASS(InputEventConfigContainer, VBoxContainer);
 
 	Label *input_event_text = nullptr;
 	Button *open_config_button = nullptr;
@@ -50,10 +50,10 @@ class InputEventConfigContainer : public HBoxContainer {
 	void _event_changed();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const override;
 	void set_event(const Ref<InputEvent> &p_event);
 
 	InputEventConfigContainer();
