@@ -1947,7 +1947,6 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 
 void ThemeTypeDialog::_dialog_about_to_show() {
 	add_type_filter->set_text("");
-	add_type_filter->grab_focus();
 
 	_update_add_type_options();
 }
@@ -2027,14 +2026,13 @@ void ThemeTypeDialog::_notification(int p_what) {
 			connect("about_to_show", this, "_dialog_about_to_show");
 			FALLTHROUGH;
 		}
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_add_type_options();
 		} break;
 
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				add_type_filter->grab_focus();
-			}
+		case NOTIFICATION_POST_POPUP: {
+			add_type_filter->grab_focus();
 		} break;
 	}
 }
