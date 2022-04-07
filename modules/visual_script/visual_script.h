@@ -56,6 +56,7 @@ class VisualScriptNode : public Resource {
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
 
+	void set_visual_script(Ref<VisualScript> script);
 	void validate_input_default_values();
 
 protected:
@@ -64,7 +65,6 @@ protected:
 
 public:
 	Ref<VisualScript> get_visual_script() const;
-	void set_visual_script(Ref<VisualScript> script); // not sure expose
 
 	virtual int get_output_sequence_port_count() const = 0;
 	virtual bool has_input_sequence_port() const = 0;
@@ -649,6 +649,8 @@ private:
 
 	Vector2 scroll;
 
+	StringName base_type;
+
 protected:
 	static void _bind_methods();
 
@@ -681,9 +683,13 @@ public:
 	void data_disconnect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	bool has_data_connection(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	void get_data_connection_list(List<VisualScript::DataConnection> *r_connection) const;
+	StringName get_instance_base_type() const;
 
 	void _node_ports_changed(int p_id);
 	Set<int> get_output_sequence_ports_connected(int from_node);
+
+	bool is_input_value_port_connected(int p_node, int p_port) const;
+	bool get_input_value_port_connection_source(int p_node, int p_port, int *r_node, int *r_port) const;
 
 	VisualScriptModule();
 	~VisualScriptModule();

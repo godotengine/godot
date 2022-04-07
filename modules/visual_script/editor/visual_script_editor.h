@@ -33,6 +33,7 @@
 
 #include "../visual_script.h"
 #include "editor/create_dialog.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/gui/graph_edit.h"
@@ -216,11 +217,11 @@ class VisualScriptEditor : public ScriptEditorBase {
 	EditorFileDialog *module_resource_dialog;
 
 	void _load_module(int p_select, int p_id);
-	//void _load_module_from_path();
+	void _load_module_from_path();
 	void _new_module();
-	//void _save_module();
+	void _save_module();
 	void _edit_module();
-	//void _module_name_save(const String &p_text, Ref<VisualScriptModule> p_module);
+	void _module_name_save(const String &p_text, Ref<VisualScriptModule> p_module);
 	void _module_action(String p_file);
 
 	void _port_action_menu(int p_option);

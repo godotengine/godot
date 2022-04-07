@@ -418,8 +418,32 @@ void VisualScriptModule::get_data_connection_list(List<VisualScript::DataConnect
 	}
 }
 
+bool VisualScriptModule::is_input_value_port_connected(int p_node, int p_port) const {
+	for (const Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
+		if (E->get().to_node == p_node && E->get().to_port == p_port) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool VisualScriptModule::get_input_value_port_connection_source(int p_node, int p_port, int *r_node, int *r_port) const {
+	for (const Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
+		if (E->get().to_node == p_node && E->get().to_port == p_port) {
+			*r_node = E->get().from_node;
+			*r_port = E->get().from_port;
+			return true;
+		}
+	}
+	return false;
+}
+
+StringName VisualScriptModule::get_instance_base_type() const {
+	return base_type;
+}
+
 VisualScriptModule::VisualScriptModule() {
-	// maybe do some init here
+	base_type = "Node";
 	name = "Module";
 }
 
