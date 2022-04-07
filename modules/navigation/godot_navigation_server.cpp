@@ -40,43 +40,43 @@
 /// an instance of that struct with the submitted parameters.
 /// Then, that struct is stored in an array; the `sync` function consume that array.
 
-#define COMMAND_1(F_NAME, T_0, D_0)                        \
-	struct MERGE(F_NAME, _command) : public SetCommand {   \
-		T_0 d_0;                                           \
-		MERGE(F_NAME, _command)                            \
-		(T_0 p_d_0) :                                      \
-				d_0(p_d_0) {}                              \
-		virtual void exec(GodotNavigationServer *server) { \
-			server->MERGE(_cmd_, F_NAME)(d_0);             \
-		}                                                  \
-	};                                                     \
-	void GodotNavigationServer::F_NAME(T_0 D_0) const {    \
-		auto cmd = memnew(MERGE(F_NAME, _command)(         \
-				D_0));                                     \
-		add_command(cmd);                                  \
-	}                                                      \
+#define COMMAND_1(F_NAME, T_0, D_0)                                 \
+	struct MERGE(F_NAME, _command) : public SetCommand {            \
+		T_0 d_0;                                                    \
+		MERGE(F_NAME, _command)                                     \
+		(T_0 p_d_0) :                                               \
+				d_0(p_d_0) {}                                       \
+		virtual void exec(GodotNavigationServer *server) override { \
+			server->MERGE(_cmd_, F_NAME)(d_0);                      \
+		}                                                           \
+	};                                                              \
+	void GodotNavigationServer::F_NAME(T_0 D_0) const {             \
+		auto cmd = memnew(MERGE(F_NAME, _command)(                  \
+				D_0));                                              \
+		add_command(cmd);                                           \
+	}                                                               \
 	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)                    \
-	struct MERGE(F_NAME, _command) : public SetCommand {         \
-		T_0 d_0;                                                 \
-		T_1 d_1;                                                 \
-		MERGE(F_NAME, _command)                                  \
-		(                                                        \
-				T_0 p_d_0,                                       \
-				T_1 p_d_1) :                                     \
-				d_0(p_d_0),                                      \
-				d_1(p_d_1) {}                                    \
-		virtual void exec(GodotNavigationServer *server) {       \
-			server->MERGE(_cmd_, F_NAME)(d_0, d_1);              \
-		}                                                        \
-	};                                                           \
-	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1) const { \
-		auto cmd = memnew(MERGE(F_NAME, _command)(               \
-				D_0,                                             \
-				D_1));                                           \
-		add_command(cmd);                                        \
-	}                                                            \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)                       \
+	struct MERGE(F_NAME, _command) : public SetCommand {            \
+		T_0 d_0;                                                    \
+		T_1 d_1;                                                    \
+		MERGE(F_NAME, _command)                                     \
+		(                                                           \
+				T_0 p_d_0,                                          \
+				T_1 p_d_1) :                                        \
+				d_0(p_d_0),                                         \
+				d_1(p_d_1) {}                                       \
+		virtual void exec(GodotNavigationServer *server) override { \
+			server->MERGE(_cmd_, F_NAME)(d_0, d_1);                 \
+		}                                                           \
+	};                                                              \
+	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1) const {    \
+		auto cmd = memnew(MERGE(F_NAME, _command)(                  \
+				D_0,                                                \
+				D_1));                                              \
+		add_command(cmd);                                           \
+	}                                                               \
 	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 #define COMMAND_4(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3)                  \
@@ -95,7 +95,7 @@
 				d_1(p_d_1),                                                        \
 				d_2(p_d_2),                                                        \
 				d_3(p_d_3) {}                                                      \
-		virtual void exec(GodotNavigationServer *server) {                         \
+		virtual void exec(GodotNavigationServer *server) override {                \
 			server->MERGE(_cmd_, F_NAME)(d_0, d_1, d_2, d_3);                      \
 		}                                                                          \
 	};                                                                             \

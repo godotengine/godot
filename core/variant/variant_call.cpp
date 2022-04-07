@@ -1239,10 +1239,10 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
+	const _VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
 #ifdef DEBUG_ENABLED
-	for (List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
+	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
 	for (const KeyValue<StringName, int> &E : cd.value) {
@@ -1251,7 +1251,7 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	}
 
 #ifdef DEBUG_ENABLED
-	for (List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
+	for (const List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
 	for (const KeyValue<StringName, Variant> &E : cd.variant_value) {

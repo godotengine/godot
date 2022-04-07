@@ -145,7 +145,7 @@ void TextureRegionEditor::_region_draw() {
 		}
 	} else if (snap_mode == SNAP_AUTOSLICE) {
 		for (const Rect2 &r : autoslice_cache) {
-			Vector2 endpoints[4] = {
+			const Vector2 endpoints[4] = {
 				mtx.basis_xform(r.position),
 				mtx.basis_xform(r.position + Vector2(r.size.x, 0)),
 				mtx.basis_xform(r.position + r.size),

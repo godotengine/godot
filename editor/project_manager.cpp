@@ -575,16 +575,16 @@ private:
 					unzClose(pkg);
 
 					if (failed_files.size()) {
-						String msg = TTR("The following files failed extraction from package:") + "\n\n";
+						String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
 						for (int i = 0; i < failed_files.size(); i++) {
 							if (i > 15) {
-								msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
+								err_msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
 								break;
 							}
-							msg += failed_files[i] + "\n";
+							err_msg += failed_files[i] + "\n";
 						}
 
-						dialog_error->set_text(msg);
+						dialog_error->set_text(err_msg);
 						dialog_error->popup_centered();
 
 					} else if (!project_path->get_text().ends_with(".zip")) {

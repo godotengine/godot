@@ -379,7 +379,7 @@ float AudioDriverPulseAudio::get_latency() {
 }
 
 void AudioDriverPulseAudio::thread_func(void *p_udata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(p_udata);
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();

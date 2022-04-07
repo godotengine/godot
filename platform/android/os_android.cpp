@@ -139,7 +139,7 @@ void OS_Android::finalize() {
 }
 
 OS_Android *OS_Android::get_singleton() {
-	return (OS_Android *)OS::get_singleton();
+	return static_cast<OS_Android *>(OS::get_singleton());
 }
 
 GodotJavaWrapper *OS_Android::get_godot_java() {
