@@ -46,6 +46,7 @@ class WebXRInterfaceJS : public WebXRInterface {
 
 private:
 	bool initialized;
+	bool xr_standard_mapping;
 
 	String session_mode;
 	String required_features;
@@ -80,6 +81,8 @@ public:
 	virtual TargetRayMode get_controller_target_ray_mode(int p_controller_id) const;
 	virtual String get_visibility_state() const;
 	virtual PoolVector3Array get_bounds_geometry() const;
+	virtual void set_xr_standard_mapping(bool p_xr_standard_mapping);
+	virtual bool get_xr_standard_mapping() const;
 
 	virtual StringName get_name() const;
 	virtual int get_capabilities() const;
