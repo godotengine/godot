@@ -218,31 +218,33 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 
 	// Determine toplevel paths
 	Vector<const OpenXRDefs::TopLevelPath *> top_level_paths;
-	for (int i = 0; i < profile_def->io_path_count; i++) {
-		const OpenXRDefs::IOPath *io_path = &profile_def->io_paths[i];
+	if (profile_def != nullptr) {
+		for (int i = 0; i < profile_def->io_path_count; i++) {
+			const OpenXRDefs::IOPath *io_path = &profile_def->io_paths[i];
 
-		if (!top_level_paths.has(io_path->top_level_path)) {
-			top_level_paths.push_back(io_path->top_level_path);
+			if (!top_level_paths.has(io_path->top_level_path)) {
+				top_level_paths.push_back(io_path->top_level_path);
+			}
 		}
-	}
 
-	for (int i = 0; i < top_level_paths.size(); i++) {
-		PanelContainer *panel = memnew(PanelContainer);
-		panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		main_hb->add_child(panel);
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+		for (int i = 0; i < top_level_paths.size(); i++) {
+			PanelContainer *panel = memnew(PanelContainer);
+			panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			main_hb->add_child(panel);
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 
-		VBoxContainer *container = memnew(VBoxContainer);
-		panel->add_child(container);
+			VBoxContainer *container = memnew(VBoxContainer);
+			panel->add_child(container);
 
-		Label *label = memnew(Label);
-		label->set_text(top_level_paths[i]->display_name);
-		container->add_child(label);
+			Label *label = memnew(Label);
+			label->set_text(top_level_paths[i]->display_name);
+			container->add_child(label);
 
-		for (int j = 0; j < profile_def->io_path_count; j++) {
-			const OpenXRDefs::IOPath *io_path = &profile_def->io_paths[j];
-			if (io_path->top_level_path == top_level_paths[i]) {
-				_add_io_path(container, io_path);
+			for (int j = 0; j < profile_def->io_path_count; j++) {
+				const OpenXRDefs::IOPath *io_path = &profile_def->io_paths[j];
+				if (io_path->top_level_path == top_level_paths[i]) {
+					_add_io_path(container, io_path);
+				}
 			}
 		}
 	}
