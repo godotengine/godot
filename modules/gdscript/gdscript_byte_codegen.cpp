@@ -468,7 +468,7 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BASIS, 1);
 			break;
 		case Variant::TRANSFORM3D:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM, 1);
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM3D, 1);
 			break;
 		case Variant::COLOR:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR, 1);
