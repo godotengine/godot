@@ -2298,7 +2298,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			}
 
 			add_node_menu->reset_size();
-			add_node_menu->set_position(get_screen_transform().xform(b->get_position()));
+			add_node_menu->set_position(viewport->get_screen_transform().xform(b->get_position()));
 			add_node_menu->popup();
 			node_create_position = transform.affine_inverse().xform(b->get_position());
 			return true;
