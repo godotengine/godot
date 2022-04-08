@@ -1944,44 +1944,45 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		// SELECT ALL, SELECT WORD UNDER CARET, CUT, COPY, PASTE.
+		if (is_shortcut_keys_enabled()) {
+			// SELECT ALL, SELECT WORD UNDER CARET, CUT, COPY, PASTE.
+			if (k->is_action("ui_text_select_all", true)) {
+				select_all();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_text_select_word_under_caret", true)) {
+				select_word_under_caret();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_cut", true)) {
+				cut();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_copy", true)) {
+				copy();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_paste", true)) {
+				paste();
+				accept_event();
+				return;
+			}
 
-		if (k->is_action("ui_text_select_all", true)) {
-			select_all();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_select_word_under_caret", true)) {
-			select_word_under_caret();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_cut", true)) {
-			cut();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_copy", true)) {
-			copy();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_paste", true)) {
-			paste();
-			accept_event();
-			return;
-		}
-
-		// UNDO/REDO.
-		if (k->is_action("ui_undo", true)) {
-			undo();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_redo", true)) {
-			redo();
-			accept_event();
-			return;
+			// UNDO/REDO.
+			if (k->is_action("ui_undo", true)) {
+				undo();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_redo", true)) {
+				redo();
+				accept_event();
+				return;
+			}
 		}
 
 		// MISC.
