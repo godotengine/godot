@@ -840,6 +840,7 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_DISABLED(TOOL_EDIT_TRANSITIONS, animlist.size() == 0);
 	ITEM_DISABLED(TOOL_COPY_ANIM, animlist.size() == 0);
 	ITEM_DISABLED(TOOL_REMOVE_ANIM, animlist.size() == 0);
+	ITEM_DISABLED(TOOL_EDIT_RESOURCE, animlist.size() == 0);
 
 	stop->set_disabled(animlist.size() == 0);
 	play->set_disabled(animlist.size() == 0);
@@ -1139,15 +1140,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_animation_remove();
 		} break;
 		case TOOL_COPY_ANIM: {
-			if (!animation->get_item_count()) {
-				error_dialog->set_text(TTR("No animation to copy!"));
-				error_dialog->popup_centered_minsize();
-				return;
+			if (anim.is_valid()) {
+				EditorSettings::get_singleton()->set_resource_clipboard(anim);
 			}
-
-			String current2 = animation->get_item_text(animation->get_selected());
-			Ref<Animation> anim2 = player->get_animation(current2);
-			EditorSettings::get_singleton()->set_resource_clipboard(anim2);
 		} break;
 		case TOOL_PASTE_ANIM: {
 			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
@@ -1179,15 +1174,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_select_anim_by_name(name);
 		} break;
 		case TOOL_EDIT_RESOURCE: {
-			if (!animation->get_item_count()) {
-				error_dialog->set_text(TTR("No animation to edit!"));
-				error_dialog->popup_centered_minsize();
-				return;
+			if (anim.is_valid()) {
+				editor->edit_resource(anim);
 			}
-
-			String current2 = animation->get_item_text(animation->get_selected());
-			Ref<Animation> anim2 = player->get_animation(current2);
-			editor->edit_resource(anim2);
 		} break;
 	}
 }
