@@ -270,6 +270,10 @@ PrimitiveMesh::~PrimitiveMesh() {
 */
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, radius, height, radial_segments, rings);
+}
+
+void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float height, const int radial_segments, const int rings) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, w;
 	float onethird = 1.0 / 3.0;
@@ -481,6 +485,10 @@ CapsuleMesh::CapsuleMesh() {}
 */
 
 void BoxMesh::_create_mesh_array(Array &p_arr) const {
+	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d);
+}
+
+void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int subdivide_h, int subdivide_d) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
@@ -732,6 +740,10 @@ BoxMesh::BoxMesh() {}
 */
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings);
+}
+
+void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
@@ -1431,6 +1443,10 @@ Vector3 QuadMesh::get_center_offset() const {
 */
 
 void SphereMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere);
+}
+
+void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int radial_segments, int rings, bool is_hemisphere) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
