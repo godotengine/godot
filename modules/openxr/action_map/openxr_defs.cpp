@@ -234,6 +234,112 @@ OpenXRDefs::IOPath OpenXRDefs::index_io_paths[] = {
 	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
 };
 
+// Samsung odyssey controller
+OpenXRDefs::IOPath OpenXRDefs::odyssey_io_paths[] = {
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "X click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/x/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "X touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/x/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Y click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/y/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Y touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/y/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "A click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/a/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "A touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/a/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "B click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/b/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "B touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/b/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/trigger/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/trigger/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Squeeze", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/squeeze/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Squeeze", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/squeeze/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+
+	{ "Thumbstick", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Thumbstick click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Thumbstick click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+};
+
+// Vive focus 3 controller
+OpenXRDefs::IOPath OpenXRDefs::vive_focus3_io_paths[] = {
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "X click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/x/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "X touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/x/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Y click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/y/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Y touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/y/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "A click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/a/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "A touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/a/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "B click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/b/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "B touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/b/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/trigger/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/trigger/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Squeeze", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/squeeze/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Squeeze", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/squeeze/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+
+	{ "Thumbstick", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Thumbstick click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Thumbstick click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+};
+
+// Huawei controller
+OpenXRDefs::IOPath OpenXRDefs::huawei_io_paths[] = {
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "X click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/x/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Y click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/y/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "A click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/a/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "B click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/b/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+
+	{ "Squeeze", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/squeeze/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Squeeze", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/squeeze/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+
+	{ "Thumbstick", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Thumbstick click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/thumbstick/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Thumbstick", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Thumbstick click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/thumbstick/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+};
+
 OpenXRDefs::InteractionProfile OpenXRDefs::available_interaction_profiles[] = {
 	{
 			"Simple controller", // display_name
@@ -270,6 +376,24 @@ OpenXRDefs::InteractionProfile OpenXRDefs::available_interaction_profiles[] = {
 			"/interaction_profiles/valve/index_controller", // openxr_path
 			index_io_paths, // io_paths
 			sizeof(index_io_paths) / sizeof(OpenXRDefs::IOPath) // io_path_count
+	},
+	{
+			"Odyssey controller", // display_name
+			"/interaction_profiles/samsung/odyssey_controller", // openxr_path
+			odyssey_io_paths, // io_paths
+			sizeof(odyssey_io_paths) / sizeof(OpenXRDefs::IOPath) // io_path_count
+	},
+	{
+			"Vive Focus 3 controller", // display_name
+			"/interaction_profiles/htc/vive_focus3_controller", // openxr_path
+			vive_focus3_io_paths, // io_paths
+			sizeof(vive_focus3_io_paths) / sizeof(OpenXRDefs::IOPath) // io_path_count
+	},
+	{
+			"Huawei controller", // display_name
+			"/interaction_profiles/huawei/huawei_controller", // openxr_path
+			huawei_io_paths, // io_paths
+			sizeof(huawei_io_paths) / sizeof(OpenXRDefs::IOPath) // io_path_count
 	},
 };
 
