@@ -101,6 +101,50 @@ void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 	}
 }
 
+static Error read_reals(real_t *dst, FileAccess &f, size_t count) {
+	if (f.real_is_double) {
+		if (sizeof(real_t) == 8) {
+			// Ideal case with double-precision
+			f.get_buffer((uint8_t *)dst, count * sizeof(double));
+#ifdef BIG_ENDIAN_ENABLED
+			{
+				uint64_t *dst = (uint64_t *)dst;
+				for (size_t i = 0; i < count; i++) {
+					dst[i] = BSWAP64(dst[i]);
+				}
+			}
+#endif
+		} else if (sizeof(real_t) == 4) {
+			// May be slower, but this is for compatibility. Eventually the data should be converted.
+			for (size_t i = 0; i < count; ++i) {
+				dst[i] = f.get_double();
+			}
+		} else {
+			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
+		}
+	} else {
+		if (sizeof(real_t) == 4) {
+			// Ideal case with float-precision
+			f.get_buffer((uint8_t *)dst, count * sizeof(float));
+#ifdef BIG_ENDIAN_ENABLED
+			{
+				uint32_t *dst = (uint32_t *)dst;
+				for (size_t i = 0; i < count; i++) {
+					dst[i] = BSWAP32(dst[i]);
+				}
+			}
+#endif
+		} else if (sizeof(real_t) == 8) {
+			for (size_t i = 0; i < count; ++i) {
+				dst[i] = f.get_float();
+			}
+		} else {
+			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
+		}
+	}
+	return OK;
+}
+
 StringName ResourceLoaderBinary::_get_string() {
 	uint32_t id = f->get_32();
 	if (id & 0x80000000) {
@@ -528,21 +572,9 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			Vector<Vector2> array;
 			array.resize(len);
 			Vector2 *w = array.ptrw();
-			if (sizeof(Vector2) == 8) {
-				f->get_buffer((uint8_t *)w, len * sizeof(real_t) * 2);
-#ifdef BIG_ENDIAN_ENABLED
-				{
-					uint32_t *ptr = (uint32_t *)w.ptr();
-					for (int i = 0; i < len * 2; i++) {
-						ptr[i] = BSWAP32(ptr[i]);
-					}
-				}
-
-#endif
-
-			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector2 size is NOT 8!");
-			}
+			static_assert(sizeof(Vector2) == 2 * sizeof(real_t));
+			const Error err = read_reals(reinterpret_cast<real_t *>(w), *f, len * 2);
+			ERR_FAIL_COND_V(err != OK, err);
 
 			r_v = array;
 
@@ -553,21 +585,9 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			Vector<Vector3> array;
 			array.resize(len);
 			Vector3 *w = array.ptrw();
-			if (sizeof(Vector3) == 12) {
-				f->get_buffer((uint8_t *)w, len * sizeof(real_t) * 3);
-#ifdef BIG_ENDIAN_ENABLED
-				{
-					uint32_t *ptr = (uint32_t *)w.ptr();
-					for (int i = 0; i < len * 3; i++) {
-						ptr[i] = BSWAP32(ptr[i]);
-					}
-				}
-
-#endif
-
-			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector3 size is NOT 12!");
-			}
+			static_assert(sizeof(Vector3) == 3 * sizeof(real_t));
+			const Error err = read_reals(reinterpret_cast<real_t *>(w), *f, len * 3);
+			ERR_FAIL_COND_V(err != OK, err);
 
 			r_v = array;
 
@@ -578,21 +598,18 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			Vector<Color> array;
 			array.resize(len);
 			Color *w = array.ptrw();
-			if (sizeof(Color) == 16) {
-				f->get_buffer((uint8_t *)w, len * sizeof(real_t) * 4);
+			// Colors always use `float` even with double-precision support enabled
+			static_assert(sizeof(Color) == 4 * sizeof(float));
+			f->get_buffer((uint8_t *)w, len * sizeof(float) * 4);
 #ifdef BIG_ENDIAN_ENABLED
-				{
-					uint32_t *ptr = (uint32_t *)w.ptr();
-					for (int i = 0; i < len * 4; i++) {
-						ptr[i] = BSWAP32(ptr[i]);
-					}
+			{
+				uint32_t *ptr = (uint32_t *)w.ptr();
+				for (int i = 0; i < len * 4; i++) {
+					ptr[i] = BSWAP32(ptr[i]);
 				}
+			}
 
 #endif
-
-			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Color size is NOT 16!");
-			}
 
 			r_v = array;
 		} break;
