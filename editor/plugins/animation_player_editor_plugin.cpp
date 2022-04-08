@@ -783,6 +783,7 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
 	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
 	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
+	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
 
 #undef ITEM_CHECK_DISABLED
 
@@ -1079,15 +1080,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_animation_remove();
 		} break;
 		case TOOL_EDIT_RESOURCE: {
-			if (!animation->has_selectable_items()) {
-				error_dialog->set_text(TTR("No animation to edit!"));
-				error_dialog->popup_centered();
-				return;
+			if (anim.is_valid()) {
+				EditorNode::get_singleton()->edit_resource(anim);
 			}
-
-			String current2 = animation->get_item_text(animation->get_selected());
-			Ref<Animation> anim2 = player->get_animation(current2);
-			EditorNode::get_singleton()->edit_resource(anim2);
 		} break;
 	}
 }
