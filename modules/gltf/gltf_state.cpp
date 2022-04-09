@@ -57,6 +57,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_materials", "materials"), &GLTFState::set_materials);
 	ClassDB::bind_method(D_METHOD("get_scene_name"), &GLTFState::get_scene_name);
 	ClassDB::bind_method(D_METHOD("set_scene_name", "scene_name"), &GLTFState::set_scene_name);
+	ClassDB::bind_method(D_METHOD("get_base_path"), &GLTFState::get_base_path);
+	ClassDB::bind_method(D_METHOD("set_base_path", "base_path"), &GLTFState::set_base_path);
 	ClassDB::bind_method(D_METHOD("get_root_nodes"), &GLTFState::get_root_nodes);
 	ClassDB::bind_method(D_METHOD("set_root_nodes", "root_nodes"), &GLTFState::set_root_nodes);
 	ClassDB::bind_method(D_METHOD("get_textures"), &GLTFState::get_textures);
@@ -93,6 +95,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "meshes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_meshes", "get_meshes"); // Vector<Ref<GLTFMesh>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "materials", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_materials", "get_materials"); // Vector<Ref<Material>
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_name"), "set_scene_name", "get_scene_name"); // String
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_path"), "set_base_path", "get_base_path"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "root_nodes"), "set_root_nodes", "get_root_nodes"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_textures", "get_textures"); // Vector<Ref<GLTFTexture>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "images", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_images", "get_images"); // Vector<Ref<Texture>
@@ -312,4 +315,12 @@ void GLTFState::set_discard_meshes_and_materials(bool p_discard_meshes_and_mater
 
 bool GLTFState::get_discard_meshes_and_materials() {
 	return discard_meshes_and_materials;
+}
+
+String GLTFState::get_base_path() {
+	return base_path;
+}
+
+void GLTFState::set_base_path(String p_base_path) {
+	base_path = p_base_path;
 }

@@ -31,14 +31,10 @@
 #ifndef GLTF_EXTENSION_EDITOR_H
 #define GLTF_EXTENSION_EDITOR_H
 
-#include "core/io/resource.h"
-#include "core/variant/dictionary.h"
-
-#include "gltf_document.h"
 #include "gltf_document_extension.h"
+
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/main/node.h"
 #include "scene/resources/importer_mesh.h"
 
 class GLTFDocumentExtension;
@@ -50,6 +46,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error import_post(Ref<GLTFDocument> p_document, Node *p_node) override;
+	Error import_post(Ref<GLTFState> p_state, Node *p_root) override;
 };
 #endif // GLTF_EXTENSION_EDITOR_H

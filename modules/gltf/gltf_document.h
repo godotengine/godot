@@ -33,19 +33,12 @@
 
 #include "gltf_animation.h"
 
-#include "core/error/error_list.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
-#include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
