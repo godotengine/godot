@@ -2031,7 +2031,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	String dk = p_preset->get("keystore/debug");
 	String dk_user = p_preset->get("keystore/debug_user");
 	String dk_password = p_preset->get("keystore/debug_keystore_password");
-	String dk_user_password=p_preset->get("keystore/debug_user_password");
+	String dk_user_password = p_preset->get("keystore/debug_user_password");
 
 	if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (!dk.is_empty() || !dk_user.is_empty() || !dk_password.is_empty())) {
 		valid = false;
@@ -2270,13 +2270,13 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		keystore = p_preset->get("keystore/debug");
 		password = p_preset->get("keystore/debug_keystore_password");
 		user = p_preset->get("keystore/debug_user");
-		userPassword=p_preset->get("keystore/debug_user_password");
+		userPassword = p_preset->get("keystore/debug_user_password");
 
 		if (keystore.is_empty()) {
 			keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 			password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 			user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
-			userPassword=EditorSettings::get_singleton()->get("export/android/debug_keystore_user_pass");
+			userPassword = EditorSettings::get_singleton()->get("export/android/debug_keystore_user_pass");
 		}
 
 		if (ep.step(vformat(TTR("Signing debug %s..."), export_label), 104)) {
@@ -2287,7 +2287,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		keystore = release_keystore;
 		password = release_password;
 		user = release_username;
-		userPassword=release_user_password;
+		userPassword = release_user_password;
 
 		if (ep.step(vformat(TTR("Signing release %s..."), export_label), 104)) {
 			return ERR_SKIP;
@@ -2310,9 +2310,9 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	args.push_back("--ks-key-alias");
 	args.push_back(user);
 
-	if(!userPassword.is_empty()) {
+	if (!userPassword.is_empty()) {
 		args.push_back("--key-pass");
-		args.push_back("pass:"+userPassword);
+		args.push_back("pass:" + userPassword);
 	}
 
 	args.push_back(export_path);
@@ -2611,7 +2611,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				cmdline.push_back("-Pdebug_keystore_file=" + debug_keystore); // argument to specify the debug keystore file.
 				cmdline.push_back("-Pdebug_keystore_alias=" + debug_user); // argument to specify the debug keystore alias.
 				cmdline.push_back("-Pdebug_keystore_password=" + debug_password); // argument to specify the debug keystore password.
-				if(!debug_user_password.is_empty()) cmdline.push_back("-Pdebug_keystore_alias_password=" + debug_user_password); // argument to specify the debug keystore alias password.
+				if (!debug_user_password.is_empty()) {
+					cmdline.push_back("-Pdebug_keystore_alias_password=" + debug_user_password); // argument to specify the debug keystore alias password.
+				}
 			} else {
 				// Pass the release keystore info as well
 				String release_keystore = p_preset->get("keystore/release");
@@ -2626,7 +2628,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				cmdline.push_back("-Prelease_keystore_file=" + release_keystore); // argument to specify the release keystore file.
 				cmdline.push_back("-Prelease_keystore_alias=" + release_username); // argument to specify the release keystore alias.
 				cmdline.push_back("-Prelease_keystore_password=" + release_password); // argument to specify the release keystore password.
-				if(!release_user_password.is_empty()) cmdline.push_back("-Prelease_keystore_alias_password=" + release_user_password); // argument to specify the release keystore alias password.
+				if (!release_user_password.is_empty()) {
+					cmdline.push_back("-Prelease_keystore_alias_password=" + release_user_password); // argument to specify the release keystore alias password.
+				}
 			}
 		}
 
