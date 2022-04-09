@@ -289,10 +289,10 @@ ext.getDebugKeyAlias = { ->
     return keyAlias
 }
 
-ext.getDebugAliasPassword={->
+ext.getDebugAliasPassword = { ->
     String keyAliasPassword = project.hasProperty("debug_keystore_alias_password") ? project.property("debug_keystore_alias_password") : ""
-    if(keyAliasPassword==null||keyAliasPassword.isEmpty()){
-        keyAliasPassword=getDebugKeystorePassword()
+    if (keyAliasPassword == null || keyAliasPassword.isEmpty()) {
+        keyAliasPassword = getDebugKeystorePassword()
     }
     return keyAliasPassword
 }
@@ -315,10 +315,10 @@ ext.getReleaseKeyAlias = { ->
     return keyAlias
 }
 
-ext.getReleaseAliasPassword={->
+ext.getReleaseAliasPassword = { ->
     String keyAliasPassword = project.hasProperty("release_keystore_alias_password") ? project.property("release_keystore_alias_password") : ""
-    if(keyAliasPassword==null||keyAliasPassword.isEmpty()){
-        keyAliasPassword=getDebugKeystorePassword()
+    if (keyAliasPassword == null || keyAliasPassword.isEmpty()) {
+        keyAliasPassword = getDebugKeystorePassword()
     }
     return keyAliasPassword
 }
