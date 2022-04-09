@@ -2348,18 +2348,18 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	String keystore;
 	String password;
 	String user;
-	String userPassword;
+	String user_password;
 	if (p_debug) {
 		keystore = p_preset->get("keystore/debug");
 		password = p_preset->get("keystore/debug_keystore_password");
 		user = p_preset->get("keystore/debug_user");
-		userPassword = p_preset->get("keystore/debug_user_password");
+		user_password = p_preset->get("keystore/debug_user_password");
 
 		if (keystore.is_empty()) {
 			keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 			password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 			user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
-			userPassword = EditorSettings::get_singleton()->get("export/android/debug_keystore_user_pass");
+			user_password = EditorSettings::get_singleton()->get("export/android/debug_keystore_user_pass");
 		}
 
 		if (ep.step(vformat(TTR("Signing debug %s..."), export_label), 104)) {
@@ -2370,7 +2370,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		keystore = release_keystore;
 		password = release_password;
 		user = release_username;
-		userPassword = release_user_password;
+		user_password = release_user_password;
 
 		if (ep.step(vformat(TTR("Signing release %s..."), export_label), 104)) {
 			return ERR_SKIP;
@@ -2395,8 +2395,8 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	
 	//Fix export or run program signature issues.
 	args.push_back("--key-pass");
-	if (!userPassword.is_empty()) {
-		args.push_back("pass:" + userPassword);
+	if (!user_password.is_empty()) {
+		args.push_back("pass:" + user_password);
 	} else {
 		args.push_back("pass:" + password);
 	}
