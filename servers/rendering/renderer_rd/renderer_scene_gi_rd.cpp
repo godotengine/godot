@@ -1459,7 +1459,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->directional_lights->get(j));
 			ERR_CONTINUE(!li);
 
-			if (storage->light_directional_get_sky_mode(li->light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+			if (RSG::light_storage->light_directional_get_sky_mode(li->light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 				continue;
 			}
 
@@ -1469,14 +1469,14 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].direction[0] = dir.x;
 			lights[idx].direction[1] = dir.y;
 			lights[idx].direction[2] = dir.z;
-			Color color = storage->light_get_color(li->light);
+			Color color = RSG::light_storage->light_get_color(li->light);
 			color = color.srgb_to_linear();
 			lights[idx].color[0] = color.r;
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RS::LIGHT_DIRECTIONAL;
-			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
-			lights[idx].has_shadow = storage->light_has_shadow(li->light);
+			lights[idx].energy = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+			lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
 
 			idx++;
 		}
@@ -1493,7 +1493,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->positional_light_instances[j]);
 			ERR_CONTINUE(!li);
 
-			uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
+			uint32_t max_sdfgi_cascade = RSG::light_storage->light_get_max_sdfgi_cascade(li->light);
 			if (i > max_sdfgi_cascade) {
 				continue;
 			}
@@ -1514,18 +1514,18 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].position[0] = pos.x;
 			lights[idx].position[1] = pos.y;
 			lights[idx].position[2] = pos.z;
-			Color color = storage->light_get_color(li->light);
+			Color color = RSG::light_storage->light_get_color(li->light);
 			color = color.srgb_to_linear();
 			lights[idx].color[0] = color.r;
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
-			lights[idx].type = storage->light_get_type(li->light);
-			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
-			lights[idx].has_shadow = storage->light_has_shadow(li->light);
-			lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
-			lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-			lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
-			lights[idx].inv_spot_attenuation = 1.0f / storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+			lights[idx].type = RSG::light_storage->light_get_type(li->light);
+			lights[idx].energy = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+			lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
+			lights[idx].attenuation = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
+			lights[idx].radius = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
+			lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+			lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 			idx++;
 		}
@@ -1929,7 +1929,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_positional_light_cull_result[i][j]);
 				ERR_CONTINUE(!li);
 
-				uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
+				uint32_t max_sdfgi_cascade = RSG::light_storage->light_get_max_sdfgi_cascade(li->light);
 				if (p_cascade_indices[i] > max_sdfgi_cascade) {
 					continue;
 				}
@@ -1938,7 +1938,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 					continue;
 				}
 
-				lights[idx].type = storage->light_get_type(li->light);
+				lights[idx].type = RSG::light_storage->light_get_type(li->light);
 
 				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
 				if (lights[idx].type == RS::LIGHT_DIRECTIONAL) {
@@ -1953,17 +1953,17 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 				lights[idx].position[0] = pos.x;
 				lights[idx].position[1] = pos.y;
 				lights[idx].position[2] = pos.z;
-				Color color = storage->light_get_color(li->light);
+				Color color = RSG::light_storage->light_get_color(li->light);
 				color = color.srgb_to_linear();
 				lights[idx].color[0] = color.r;
 				lights[idx].color[1] = color.g;
 				lights[idx].color[2] = color.b;
-				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
-				lights[idx].has_shadow = storage->light_has_shadow(li->light);
-				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
-				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-				lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
-				lights[idx].inv_spot_attenuation = 1.0f / storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				lights[idx].energy = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+				lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
+				lights[idx].attenuation = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
+				lights[idx].radius = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
+				lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				idx++;
 			}
@@ -2388,22 +2388,22 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				RID light_instance = p_light_instances[i];
 				RID light = p_scene_render->light_instance_get_base_light(light_instance);
 
-				l.type = storage->light_get_type(light);
-				if (l.type == RS::LIGHT_DIRECTIONAL && storage->light_directional_get_sky_mode(light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				l.type = RSG::light_storage->light_get_type(light);
+				if (l.type == RS::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					light_count--;
 					continue;
 				}
 
-				l.attenuation = storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
-				l.energy = storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
-				l.radius = to_cell.basis.xform(Vector3(storage->light_get_param(light, RS::LIGHT_PARAM_RANGE), 0, 0)).length();
-				Color color = storage->light_get_color(light).srgb_to_linear();
+				l.attenuation = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
+				l.energy = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+				l.radius = to_cell.basis.xform(Vector3(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_RANGE), 0, 0)).length();
+				Color color = RSG::light_storage->light_get_color(light).srgb_to_linear();
 				l.color[0] = color.r;
 				l.color[1] = color.g;
 				l.color[2] = color.b;
 
-				l.cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
-				l.inv_spot_attenuation = 1.0f / storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				l.cos_spot_angle = Math::cos(Math::deg2rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				l.inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				Transform3D xform = p_scene_render->light_instance_get_base_transform(light_instance);
 
@@ -2418,7 +2418,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				l.direction[1] = dir.y;
 				l.direction[2] = dir.z;
 
-				l.has_shadow = storage->light_has_shadow(light);
+				l.has_shadow = RSG::light_storage->light_has_shadow(light);
 			}
 
 			RD::get_singleton()->buffer_update(gi->voxel_gi_lights_uniform, 0, sizeof(VoxelGILight) * light_count, gi->voxel_gi_lights);

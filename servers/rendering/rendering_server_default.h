@@ -351,8 +351,8 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererLightStorage
+#define server_name RSG::light_storage
 
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
@@ -393,6 +393,20 @@ public:
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
+
+	/* LIGHTMAP */
+
+	FUNCRIDSPLIT(lightmap)
+
+	FUNC3(lightmap_set_textures, RID, RID, bool)
+	FUNC2(lightmap_set_probe_bounds, RID, const AABB &)
+	FUNC2(lightmap_set_probe_interior, RID, bool)
+	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
+	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
+	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
+	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
+	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
+	FUNC1(lightmap_set_probe_capture_update_speed, float)
 
 	/* DECAL API */
 
@@ -442,20 +456,6 @@ public:
 	FUNC2(voxel_gi_set_normal_bias, RID, float)
 	FUNC2(voxel_gi_set_interior, RID, bool)
 	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
-
-	/* LIGHTMAP */
-
-	FUNCRIDSPLIT(lightmap)
-
-	FUNC3(lightmap_set_textures, RID, RID, bool)
-	FUNC2(lightmap_set_probe_bounds, RID, const AABB &)
-	FUNC2(lightmap_set_probe_interior, RID, bool)
-	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
-	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
-	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
-	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
-	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
-	FUNC1(lightmap_set_probe_capture_update_speed, float)
 
 	/* PARTICLES */
 

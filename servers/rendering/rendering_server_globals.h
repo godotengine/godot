@@ -34,6 +34,7 @@
 #include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
@@ -46,6 +47,7 @@ class RenderingServerGlobals {
 public:
 	static bool threaded;
 
+	static RendererLightStorage *light_storage;
 	static RendererMaterialStorage *material_storage;
 	static RendererMeshStorage *mesh_storage;
 	static RendererTextureStorage *texture_storage;

@@ -1086,6 +1086,7 @@ RendererSceneSkyRD::~RendererSceneSkyRD() {
 }
 
 void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(!p_env);
 
@@ -1181,8 +1182,8 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 
 				ERR_CONTINUE(base.is_null());
 
-				RS::LightType type = storage->light_get_type(base);
-				if (type == RS::LIGHT_DIRECTIONAL && storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
+				RS::LightType type = light_storage->light_get_type(base);
+				if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
 					Transform3D light_transform = li->transform;
 					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
@@ -1191,17 +1192,17 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 					sky_light_data.direction[1] = world_direction.y;
 					sky_light_data.direction[2] = world_direction.z;
 
-					float sign = storage->light_is_negative(base) ? -1 : 1;
-					sky_light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+					float sign = light_storage->light_is_negative(base) ? -1 : 1;
+					sky_light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
 
-					Color linear_col = storage->light_get_color(base).srgb_to_linear();
+					Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
 					sky_light_data.color[0] = linear_col.r;
 					sky_light_data.color[1] = linear_col.g;
 					sky_light_data.color[2] = linear_col.b;
 
 					sky_light_data.enabled = true;
 
-					float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+					float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 					if (angular_diameter > 0.0) {
 						// I know tan(0) is 0, but let's not risk it with numerical precision.
 						// technically this will keep expanding until reaching the sun, but all we care

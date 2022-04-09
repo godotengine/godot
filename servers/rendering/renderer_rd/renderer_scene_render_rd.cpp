@@ -689,7 +689,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_needs_redraw(RID p_instanc
 		return true;
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+	if (RSG::light_storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		return true;
 	}
 
@@ -713,12 +713,12 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 
 	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
+	if (RSG::light_storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
+	if (RSG::light_storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
 		// Invalidate reflection atlas, need to regenerate
 		RD::get_singleton()->free(atlas->reflection);
 		atlas->reflection = RID();
@@ -735,7 +735,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 
 	if (atlas->reflection.is_null()) {
 		int mipmaps = MIN(sky.roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
+		mipmaps = RSG::light_storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
 		{
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
@@ -759,7 +759,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers, _render_buffers_get_color_format());
+			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, RSG::light_storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers, _render_buffers_get_color_format());
 			for (int j = 0; j < 6; j++) {
 				atlas->reflections.write[i].fbs[j] = reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
@@ -827,7 +827,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_ins
 		return false;
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+	if (RSG::light_storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		// Using real time reflections, all roughness is done in one step
 		atlas->reflections.write[rpi->atlas_index].data.create_reflection_fast_filter(storage, false);
 		rpi->rendering = false;
@@ -1345,7 +1345,7 @@ int RendererSceneRenderRD::get_directional_light_shadow_size(RID p_light_intance
 	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_intance);
 	ERR_FAIL_COND_V(!light_instance, 0);
 
-	switch (storage->light_directional_get_shadow_mode(light_instance->light)) {
+	switch (RSG::light_storage->light_directional_get_shadow_mode(light_instance->light)) {
 		case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 			break; //none
 		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
@@ -1407,7 +1407,7 @@ RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 
 	light_instance->self = li;
 	light_instance->light = p_light;
-	light_instance->light_type = storage->light_get_type(p_light);
+	light_instance->light_type = RSG::light_storage->light_get_type(p_light);
 	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
 		light_instance->forward_id = _allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
 	}
@@ -3191,6 +3191,7 @@ RendererSceneRenderRD::RenderBufferData *RendererSceneRenderRD::render_buffers_g
 }
 
 void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment) {
+	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	cluster.reflection_count = 0;
 
 	for (uint32_t i = 0; i < (uint32_t)p_reflections.size(); i++) {
@@ -3225,30 +3226,30 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 
 		Cluster::ReflectionData &reflection_ubo = cluster.reflections[i];
 
-		Vector3 extents = storage->reflection_probe_get_extents(base_probe);
+		Vector3 extents = light_storage->reflection_probe_get_extents(base_probe);
 
-		rpi->cull_mask = storage->reflection_probe_get_cull_mask(base_probe);
+		rpi->cull_mask = light_storage->reflection_probe_get_cull_mask(base_probe);
 
 		reflection_ubo.box_extents[0] = extents.x;
 		reflection_ubo.box_extents[1] = extents.y;
 		reflection_ubo.box_extents[2] = extents.z;
 		reflection_ubo.index = rpi->atlas_index;
 
-		Vector3 origin_offset = storage->reflection_probe_get_origin_offset(base_probe);
+		Vector3 origin_offset = light_storage->reflection_probe_get_origin_offset(base_probe);
 
 		reflection_ubo.box_offset[0] = origin_offset.x;
 		reflection_ubo.box_offset[1] = origin_offset.y;
 		reflection_ubo.box_offset[2] = origin_offset.z;
-		reflection_ubo.mask = storage->reflection_probe_get_cull_mask(base_probe);
+		reflection_ubo.mask = light_storage->reflection_probe_get_cull_mask(base_probe);
 
-		reflection_ubo.intensity = storage->reflection_probe_get_intensity(base_probe);
-		reflection_ubo.ambient_mode = storage->reflection_probe_get_ambient_mode(base_probe);
+		reflection_ubo.intensity = light_storage->reflection_probe_get_intensity(base_probe);
+		reflection_ubo.ambient_mode = light_storage->reflection_probe_get_ambient_mode(base_probe);
 
-		reflection_ubo.exterior = !storage->reflection_probe_is_interior(base_probe);
-		reflection_ubo.box_project = storage->reflection_probe_is_box_projection(base_probe);
+		reflection_ubo.exterior = !light_storage->reflection_probe_is_interior(base_probe);
+		reflection_ubo.box_project = light_storage->reflection_probe_is_box_projection(base_probe);
 
-		Color ambient_linear = storage->reflection_probe_get_ambient_color(base_probe).srgb_to_linear();
-		float interior_ambient_energy = storage->reflection_probe_get_ambient_color_energy(base_probe);
+		Color ambient_linear = light_storage->reflection_probe_get_ambient_color(base_probe).srgb_to_linear();
+		float interior_ambient_energy = light_storage->reflection_probe_get_ambient_color_energy(base_probe);
 		reflection_ubo.ambient[0] = ambient_linear.r * interior_ambient_energy;
 		reflection_ubo.ambient[1] = ambient_linear.g * interior_ambient_energy;
 		reflection_ubo.ambient[2] = ambient_linear.b * interior_ambient_energy;
@@ -3271,6 +3272,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 
 void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
@@ -3293,10 +3295,10 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 		ERR_CONTINUE(base.is_null());
 
-		RS::LightType type = storage->light_get_type(base);
+		RS::LightType type = light_storage->light_get_type(base);
 		switch (type) {
 			case RS::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_get_sky_mode(base) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				if (r_directional_light_count >= cluster.max_directional_lights || light_storage->light_directional_get_sky_mode(base) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					continue;
 				}
 
@@ -3310,19 +3312,19 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				light_data.direction[1] = direction.y;
 				light_data.direction[2] = direction.z;
 
-				float sign = storage->light_is_negative(base) ? -1 : 1;
+				float sign = light_storage->light_is_negative(base) ? -1 : 1;
 
-				light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
+				light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
 
-				Color linear_col = storage->light_get_color(base).srgb_to_linear();
+				Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
 				light_data.color[0] = linear_col.r;
 				light_data.color[1] = linear_col.g;
 				light_data.color[2] = linear_col.b;
 
-				light_data.specular = storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
-				light_data.mask = storage->light_get_cull_mask(base);
+				light_data.specular = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
+				light_data.mask = light_storage->light_get_cull_mask(base);
 
-				float size = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				float size = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 
 				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); //angle to cosine offset
 
@@ -3330,15 +3332,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					WARN_PRINT_ONCE("The DirectionalLight3D PSSM splits debug draw mode is not reimplemented yet.");
 				}
 
-				light_data.shadow_enabled = p_using_shadows && storage->light_has_shadow(base);
+				light_data.shadow_enabled = p_using_shadows && light_storage->light_has_shadow(base);
 
-				float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 				if (angular_diameter > 0.0) {
 					// I know tan(0) is 0, but let's not risk it with numerical precision.
 					// technically this will keep expanding until reaching the sun, but all we care
 					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 					angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
-					if (storage->light_has_shadow(base)) {
+					if (light_storage->light_has_shadow(base)) {
 						r_directional_light_soft_shadows = true;
 					}
 				} else {
@@ -3346,10 +3348,10 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				}
 
 				if (light_data.shadow_enabled) {
-					RS::LightDirectionalShadowMode smode = storage->light_directional_get_shadow_mode(base);
+					RS::LightDirectionalShadowMode smode = light_storage->light_directional_get_shadow_mode(base);
 
 					int limit = smode == RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL ? 0 : (smode == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS ? 1 : 3);
-					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && storage->light_directional_get_blend_splits(base);
+					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light_storage->light_directional_get_blend_splits(base);
 					for (int j = 0; j < 4; j++) {
 						Rect2 atlas_rect = li->shadow_transform[j].atlas_rect;
 						CameraMatrix matrix = li->shadow_transform[j].camera;
@@ -3365,9 +3367,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
 						float bias_scale = li->shadow_transform[j].bias_scale;
-						light_data.shadow_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0 * bias_scale;
-						light_data.shadow_normal_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * li->shadow_transform[j].shadow_texel_size;
-						light_data.shadow_transmittance_bias[j] = storage->light_get_transmittance_bias(base) * bias_scale;
+						light_data.shadow_bias[j] = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0 * bias_scale;
+						light_data.shadow_normal_bias[j] = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * li->shadow_transform[j].shadow_texel_size;
+						light_data.shadow_transmittance_bias[j] = light_storage->light_get_transmittance_bias(base) * bias_scale;
 						light_data.shadow_z_range[j] = li->shadow_transform[j].farplane;
 						light_data.shadow_range_begin[j] = li->shadow_transform[j].range_begin;
 						RendererStorageRD::store_camera(shadow_mtx, light_data.shadow_matrices[j]);
@@ -3394,14 +3396,14 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						}
 					}
 
-					float fade_start = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_FADE_START);
+					float fade_start = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_FADE_START);
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
-					light_data.shadow_volumetric_fog_fade = 1.0 / storage->light_get_shadow_volumetric_fog_fade(base);
+					light_data.shadow_volumetric_fog_fade = 1.0 / light_storage->light_get_shadow_volumetric_fog_fade(base);
 
-					light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
+					light_data.soft_shadow_scale = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
 					light_data.softshadow_angle = angular_diameter;
-					light_data.bake_mode = storage->light_get_bake_mode(base);
+					light_data.bake_mode = light_storage->light_get_bake_mode(base);
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= directional_shadow_quality_radius_get(); // Only use quality radius for PCF
@@ -3417,9 +3419,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				const real_t distance = camera_plane.distance_to(li->transform.origin);
 
-				if (storage->light_is_distance_fade_enabled(li->light)) {
-					const float fade_begin = storage->light_get_distance_fade_begin(li->light);
-					const float fade_length = storage->light_get_distance_fade_length(li->light);
+				if (light_storage->light_is_distance_fade_enabled(li->light)) {
+					const float fade_begin = light_storage->light_get_distance_fade_begin(li->light);
+					const float fade_length = light_storage->light_get_distance_fade_length(li->light);
 
 					if (distance > fade_begin) {
 						if (distance > fade_begin + fade_length) {
@@ -3440,9 +3442,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				const real_t distance = camera_plane.distance_to(li->transform.origin);
 
-				if (storage->light_is_distance_fade_enabled(li->light)) {
-					const float fade_begin = storage->light_get_distance_fade_begin(li->light);
-					const float fade_length = storage->light_get_distance_fade_length(li->light);
+				if (light_storage->light_is_distance_fade_enabled(li->light)) {
+					const float fade_begin = light_storage->light_get_distance_fade_begin(li->light);
+					const float fade_length = light_storage->light_get_distance_fade_length(li->light);
 
 					if (distance > fade_begin) {
 						if (distance > fade_begin + fade_length) {
@@ -3492,10 +3494,10 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 		Transform3D light_transform = li->transform;
 
-		float sign = storage->light_is_negative(base) ? -1 : 1;
-		Color linear_col = storage->light_get_color(base).srgb_to_linear();
+		float sign = light_storage->light_is_negative(base) ? -1 : 1;
+		Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
 
-		light_data.attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
+		light_data.attenuation = light_storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
 
 		// Reuse fade begin, fade length and distance for shadow LOD determination later.
 		float fade_begin = 0.0;
@@ -3503,9 +3505,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		real_t distance = 0.0;
 
 		float fade = 1.0;
-		if (storage->light_is_distance_fade_enabled(li->light)) {
-			fade_begin = storage->light_get_distance_fade_begin(li->light);
-			fade_length = storage->light_get_distance_fade_length(li->light);
+		if (light_storage->light_is_distance_fade_enabled(li->light)) {
+			fade_begin = light_storage->light_get_distance_fade_begin(li->light);
+			fade_length = light_storage->light_get_distance_fade_length(li->light);
 			distance = camera_plane.distance_to(li->transform.origin);
 
 			if (distance > fade_begin) {
@@ -3514,15 +3516,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			}
 		}
 
-		float energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI * fade;
+		float energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI * fade;
 
 		light_data.color[0] = linear_col.r * energy;
 		light_data.color[1] = linear_col.g * energy;
 		light_data.color[2] = linear_col.b * energy;
-		light_data.specular_amount = storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
-		light_data.bake_mode = storage->light_get_bake_mode(base);
+		light_data.specular_amount = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
+		light_data.bake_mode = light_storage->light_get_bake_mode(base);
 
-		float radius = MAX(0.001, storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
+		float radius = MAX(0.001, light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
 		light_data.inv_radius = 1.0 / radius;
 
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
@@ -3537,22 +3539,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		light_data.direction[1] = direction.y;
 		light_data.direction[2] = direction.z;
 
-		float size = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+		float size = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 
 		light_data.size = size;
 
-		light_data.inv_spot_attenuation = 1.0f / storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
-		float spot_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
+		light_data.inv_spot_attenuation = 1.0f / light_storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+		float spot_angle = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
 		light_data.cos_spot_angle = Math::cos(Math::deg2rad(spot_angle));
 
-		light_data.mask = storage->light_get_cull_mask(base);
+		light_data.mask = light_storage->light_get_cull_mask(base);
 
 		light_data.atlas_rect[0] = 0;
 		light_data.atlas_rect[1] = 0;
 		light_data.atlas_rect[2] = 0;
 		light_data.atlas_rect[3] = 0;
 
-		RID projector = storage->light_get_projector(base);
+		RID projector = light_storage->light_get_projector(base);
 
 		if (projector.is_valid()) {
 			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(projector);
@@ -3578,8 +3580,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		const bool needs_shadow = shadow_atlas && shadow_atlas->shadow_owners.has(li->self);
 
 		bool in_shadow_range = true;
-		if (needs_shadow && storage->light_is_distance_fade_enabled(li->light)) {
-			if (distance > storage->light_get_distance_fade_shadow(li->light)) {
+		if (needs_shadow && light_storage->light_is_distance_fade_enabled(li->light)) {
+			if (distance > light_storage->light_get_distance_fade_shadow(li->light)) {
 				// Out of range, don't draw shadows to improve performance.
 				in_shadow_range = false;
 			}
@@ -3591,15 +3593,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.shadow_enabled = true;
 
 			float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
-			light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 10.0;
+			light_data.shadow_normal_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 10.0;
 
 			if (type == RS::LIGHT_SPOT) {
-				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0;
+				light_data.shadow_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0;
 			} else { //omni
-				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS);
+				light_data.shadow_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS);
 			}
 
-			light_data.transmittance_bias = storage->light_get_transmittance_bias(base);
+			light_data.transmittance_bias = light_storage->light_get_transmittance_bias(base);
 
 			Vector2i omni_offset;
 			Rect2 rect = light_instance_get_shadow_atlas_rect(li->self, p_shadow_atlas, omni_offset);
@@ -3609,8 +3611,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.atlas_rect[2] = rect.size.width;
 			light_data.atlas_rect[3] = rect.size.height;
 
-			light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
-			light_data.shadow_volumetric_fog_fade = 1.0 / storage->light_get_shadow_volumetric_fog_fade(base);
+			light_data.soft_shadow_scale = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
+			light_data.shadow_volumetric_fog_fade = 1.0 / light_storage->light_get_shadow_volumetric_fog_fade(base);
 
 			if (type == RS::LIGHT_OMNI) {
 				Transform3D proj = (inverse_transform * light_transform).inverse();
@@ -3647,7 +3649,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.shadow_enabled = false;
 		}
 
-		li->cull_mask = storage->light_get_cull_mask(base);
+		li->cull_mask = light_storage->light_get_cull_mask(base);
 
 		if (current_cluster_builder != nullptr) {
 			current_cluster_builder->add_light(type == RS::LIGHT_SPOT ? ClusterBuilderRD::LIGHT_TYPE_SPOT : ClusterBuilderRD::LIGHT_TYPE_OMNI, light_transform, radius, spot_angle);
@@ -4811,6 +4813,7 @@ void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, boo
 
 void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
+	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
 		RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
@@ -4830,9 +4833,9 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
 			LightInstance *li = light_instance_owner.get_or_null(render_state.render_shadows[i].light);
 
-			if (storage->light_get_type(li->light) == RS::LIGHT_DIRECTIONAL) {
+			if (light_storage->light_get_type(li->light) == RS::LIGHT_DIRECTIONAL) {
 				render_state.directional_shadows.push_back(i);
-			} else if (storage->light_get_type(li->light) == RS::LIGHT_OMNI && storage->light_omni_get_shadow_mode(li->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
+			} else if (light_storage->light_get_type(li->light) == RS::LIGHT_OMNI && light_storage->light_omni_get_shadow_mode(li->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
 				render_state.cube_shadows.push_back(i);
 			} else {
 				render_state.shadows.push_back(i);
@@ -4942,7 +4945,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	bool using_shadows = true;
 
 	if (p_render_data->reflection_probe.is_valid()) {
-		if (!storage->reflection_probe_renders_shadows(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
+		if (!RSG::light_storage->reflection_probe_renders_shadows(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			using_shadows = false;
 		}
 	} else {
@@ -5175,7 +5178,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 	CameraMatrix light_projection;
 	Transform3D light_transform;
 
-	if (storage->light_get_type(light_instance->light) == RS::LIGHT_DIRECTIONAL) {
+	if (RSG::light_storage->light_get_type(light_instance->light) == RS::LIGHT_DIRECTIONAL) {
 		//set pssm stuff
 		if (light_instance->last_scene_shadow_pass != scene_pass) {
 			light_instance->directional_rect = _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, directional_shadow.current_light);
@@ -5183,13 +5186,13 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 			light_instance->last_scene_shadow_pass = scene_pass;
 		}
 
-		use_pancake = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0;
+		use_pancake = RSG::light_storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0;
 		light_projection = light_instance->shadow_transform[p_pass].camera;
 		light_transform = light_instance->shadow_transform[p_pass].transform;
 
 		atlas_rect = light_instance->directional_rect;
 
-		if (storage->light_directional_get_shadow_mode(light_instance->light) == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+		if (RSG::light_storage->light_directional_get_shadow_mode(light_instance->light) == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
 			atlas_rect.size.width /= 2;
 			atlas_rect.size.height /= 2;
 
@@ -5200,7 +5203,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 			} else if (p_pass == 3) {
 				atlas_rect.position += atlas_rect.size;
 			}
-		} else if (storage->light_directional_get_shadow_mode(light_instance->light) == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
+		} else if (RSG::light_storage->light_directional_get_shadow_mode(light_instance->light) == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
 			atlas_rect.size.height /= 2;
 
 			if (p_pass == 0) {
@@ -5214,7 +5217,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 		light_instance->shadow_transform[p_pass].atlas_rect.position /= directional_shadow.size;
 		light_instance->shadow_transform[p_pass].atlas_rect.size /= directional_shadow.size;
 
-		zfar = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
+		zfar = RSG::light_storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
 
 		render_fb = directional_shadow.fb;
 		render_texture = RID();
@@ -5248,13 +5251,13 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 		atlas_rect.size.width = shadow_size;
 		atlas_rect.size.height = shadow_size;
 
-		zfar = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
+		zfar = RSG::light_storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
 
-		if (storage->light_get_type(light_instance->light) == RS::LIGHT_OMNI) {
+		if (RSG::light_storage->light_get_type(light_instance->light) == RS::LIGHT_OMNI) {
 			bool wrap = (shadow + 1) % shadow_atlas->quadrants[quadrant].subdivision == 0;
 			dual_paraboloid_offset = wrap ? Vector2i(1 - shadow_atlas->quadrants[quadrant].subdivision, 1) : Vector2i(1, 0);
 
-			if (storage->light_omni_get_shadow_mode(light_instance->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
+			if (RSG::light_storage->light_omni_get_shadow_mode(light_instance->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
 				ShadowCubemap *cubemap = _get_shadow_cubemap(shadow_size / 2);
 
 				render_fb = cubemap->side_fb[p_pass];
@@ -5289,7 +5292,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 				flip_y = true;
 			}
 
-		} else if (storage->light_get_type(light_instance->light) == RS::LIGHT_SPOT) {
+		} else if (RSG::light_storage->light_get_type(light_instance->light) == RS::LIGHT_SPOT) {
 			light_projection = light_instance->shadow_transform[0].camera;
 			light_transform = light_instance->shadow_transform[0].transform;
 

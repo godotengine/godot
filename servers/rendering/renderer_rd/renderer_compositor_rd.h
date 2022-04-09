@@ -39,6 +39,7 @@
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -48,6 +49,7 @@ class RendererCompositorRD : public RendererCompositor {
 protected:
 	UniformSetCacheRD *uniform_set_cache = nullptr;
 	RendererCanvasRenderRD *canvas = nullptr;
+	RendererRD::LightStorage *light_storage;
 	RendererRD::MaterialStorage *material_storage;
 	RendererRD::MeshStorage *mesh_storage;
 	RendererRD::TextureStorage *texture_storage;
@@ -94,6 +96,7 @@ protected:
 	static uint64_t frame;
 
 public:
+	RendererLightStorage *get_light_storage() { return light_storage; };
 	RendererMaterialStorage *get_material_storage() { return material_storage; };
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; };
 	RendererTextureStorage *get_texture_storage() { return texture_storage; };

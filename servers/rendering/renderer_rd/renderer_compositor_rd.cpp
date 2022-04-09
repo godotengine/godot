@@ -155,6 +155,7 @@ void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(storage);
+	memdelete(light_storage);
 	memdelete(mesh_storage);
 	memdelete(material_storage);
 	memdelete(texture_storage);
@@ -289,6 +290,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	texture_storage = memnew(RendererRD::TextureStorage);
 	material_storage = memnew(RendererRD::MaterialStorage);
 	mesh_storage = memnew(RendererRD::MeshStorage);
+	light_storage = memnew(RendererRD::LightStorage);
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 

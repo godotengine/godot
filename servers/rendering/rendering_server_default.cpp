@@ -398,6 +398,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RendererSceneCull *sr = memnew(RendererSceneCull);
 	RSG::scene = sr;
 	RSG::rasterizer = RendererCompositor::create();
+	RSG::light_storage = RSG::rasterizer->get_light_storage();
 	RSG::material_storage = RSG::rasterizer->get_material_storage();
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
