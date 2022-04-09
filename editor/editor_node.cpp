@@ -708,7 +708,7 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
-			_menu_option_confirm(FILE_QUIT, false);
+			_menu_option_confirm(FILE_EXIT, false);
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1888,7 +1888,7 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 		} break;
 		case FILE_CLOSE:
-		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_EXIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT:
 		case SCENE_TAB_CLOSE:
@@ -2529,22 +2529,22 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_CLOSE: {
 			_scene_tab_closed(editor_data.get_edited_scene());
 		} break;
-		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_EXIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
 				tab_closing_idx = _next_unsaved_scene(false);
 				_scene_tab_changed(tab_closing_idx);
 
-				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
+				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_EXIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 					Node *scene_root = editor_data.get_edited_scene_root(tab_closing_idx);
 					if (scene_root) {
 						String scene_filename = scene_root->get_scene_file_path();
 						if (p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
-							save_confirmation->get_ok_button()->set_text(TTR("Save & Reload"));
+							save_confirmation->get_ok_button()->set_text(TTR("Save and Reload"));
 							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
 						} else {
-							save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
+							save_confirmation->get_ok_button()->set_text(TTR("Save and Quit"));
 							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
 						}
 						save_confirmation->popup_centered();
@@ -2832,11 +2832,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
 			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
-		case FILE_QUIT:
+		case FILE_EXIT:
 		case RUN_PROJECT_MANAGER:
 		case RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
-				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
+				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_exit");
 				if (_next_unsaved_scene(!save_each) == -1) {
 					_discard_changes();
 					break;
@@ -2844,8 +2844,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					if (save_each) {
 						if (p_option == RELOAD_CURRENT_PROJECT) {
 							_menu_option_confirm(FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT, false);
-						} else if (p_option == FILE_QUIT) {
-							_menu_option_confirm(FILE_CLOSE_ALL_AND_QUIT, false);
+						} else if (p_option == FILE_EXIT) {
+							_menu_option_confirm(FILE_CLOSE_ALL_AND_EXIT, false);
 						} else {
 							_menu_option_confirm(FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER, false);
 						}
@@ -2857,11 +2857,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 							i = _next_unsaved_scene(true, ++i);
 						}
 						if (p_option == RELOAD_CURRENT_PROJECT) {
-							save_confirmation->get_ok_button()->set_text(TTR("Save & Reload"));
+							save_confirmation->get_ok_button()->set_text(TTR("Save and Reload"));
 							save_confirmation->set_text(TTR("Save changes to the following scene(s) before reloading?") + unsaved_scenes);
 						} else {
-							save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
-							save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
+							save_confirmation->get_ok_button()->set_text(TTR("Save and Exit"));
+							save_confirmation->set_text((p_option == FILE_EXIT ? TTR("Save changes to the following scene(s) before exiting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
 						}
 						save_confirmation->popup_centered();
 					}
@@ -3051,7 +3051,7 @@ void EditorNode::_exit_editor(int p_exit_code) {
 
 void EditorNode::_discard_changes(const String &p_str) {
 	switch (current_menu_option) {
-		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_EXIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT:
 		case FILE_CLOSE:
@@ -3070,7 +3070,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_remove_scene(tab_closing_idx);
 			_update_scene_tabs();
 
-			if (current_menu_option == FILE_CLOSE_ALL_AND_QUIT || current_menu_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || current_menu_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
+			if (current_menu_option == FILE_CLOSE_ALL_AND_EXIT || current_menu_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || current_menu_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 				// If restore tabs is enabled, reopen the scene that has just been closed, so it's remembered properly.
 				if (bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 					_menu_option_confirm(FILE_OPEN_PREV, true);
@@ -3078,8 +3078,8 @@ void EditorNode::_discard_changes(const String &p_str) {
 				if (_next_unsaved_scene(false) == -1) {
 					if (current_menu_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 						current_menu_option = RELOAD_CURRENT_PROJECT;
-					} else if (current_menu_option == FILE_CLOSE_ALL_AND_QUIT) {
-						current_menu_option = FILE_QUIT;
+					} else if (current_menu_option == FILE_CLOSE_ALL_AND_EXIT) {
+						current_menu_option = FILE_EXIT;
 					} else {
 						current_menu_option = RUN_PROJECT_MANAGER;
 					}
@@ -3101,7 +3101,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 				save_confirmation->hide();
 			}
 		} break;
-		case FILE_QUIT: {
+		case FILE_EXIT: {
 			_menu_option_confirm(RUN_STOP, true);
 			_exit_editor(EXIT_SUCCESS);
 
@@ -6343,6 +6343,53 @@ EditorNode::EditorNode() {
 	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(left_menu_hb);
 
+	project_menu = memnew(MenuButton);
+	project_menu->set_flat(false);
+	project_menu->set_switch_on_hover(true);
+	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
+	project_menu->set_text(TTR("File"));
+	project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	left_menu_hb->add_child(project_menu);
+
+	PopupMenu *p = project_menu->get_popup();
+
+	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTR("Project Settings..."), Key::NONE, TTR("Project Settings")), RUN_SETTINGS);
+	p->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+
+	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
+	vcs_actions_menu->set_name("Version Control");
+	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
+	p->add_separator();
+	p->add_child(vcs_actions_menu);
+	p->add_submenu_item(TTR("Version Control"), "Version Control");
+	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
+	vcs_actions_menu->add_item(TTR("Set Up Version Control"), RUN_VCS_SETTINGS);
+	vcs_actions_menu->add_item(TTR("Shut Down Version Control"), RUN_VCS_SHUT_DOWN);
+
+	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
+	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
+	p->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
+
+	plugin_config_dialog = memnew(PluginConfigDialog);
+	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
+	gui_base->add_child(plugin_config_dialog);
+
+	tool_menu = memnew(PopupMenu);
+	tool_menu->set_name("Tools");
+	tool_menu->connect("index_pressed", callable_mp(this, &EditorNode::_tool_menu_option));
+	p->add_child(tool_menu);
+	p->add_submenu_item(TTR("Tools"), "Tools");
+	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
+
+	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTR("Reload Current Project")), RELOAD_CURRENT_PROJECT);
+	ED_SHORTCUT_AND_COMMAND("editor/close_project", TTR("Close Project"), KeyModifierMask::CMD + KeyModifierMask::SHIFT + Key::Q);
+	ED_SHORTCUT_OVERRIDE("editor/close_project", "macos", KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::Q);
+	p->add_shortcut(ED_GET_SHORTCUT("editor/close_project"), RUN_PROJECT_MANAGER, true);
+	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/exit", TTR("Exit"), KeyModifierMask::CMD + Key::Q), FILE_EXIT, true);
+
 	file_menu = memnew(MenuButton);
 	file_menu->set_flat(false);
 	file_menu->set_switch_on_hover(true);
@@ -6411,8 +6458,6 @@ EditorNode::EditorNode() {
 	command_palette->set_title(TTR("Command Palette"));
 	gui_base->add_child(command_palette);
 
-	PopupMenu *p;
-
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 
 	p = file_menu->get_popup();
@@ -6454,54 +6499,6 @@ EditorNode::EditorNode() {
 	recent_scenes->set_name("RecentScenes");
 	p->add_child(recent_scenes);
 	recent_scenes->connect("id_pressed", callable_mp(this, &EditorNode::_open_recent_scene));
-
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/file_quit", TTR("Quit"), KeyModifierMask::CMD + Key::Q), FILE_QUIT, true);
-
-	project_menu = memnew(MenuButton);
-	project_menu->set_flat(false);
-	project_menu->set_switch_on_hover(true);
-	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
-	project_menu->set_text(TTR("Project"));
-	project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
-	left_menu_hb->add_child(project_menu);
-
-	p = project_menu->get_popup();
-
-	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTR("Project Settings..."), Key::NONE, TTR("Project Settings")), RUN_SETTINGS);
-	p->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
-
-	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
-	vcs_actions_menu->set_name("Version Control");
-	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
-	p->add_separator();
-	p->add_child(vcs_actions_menu);
-	p->add_submenu_item(TTR("Version Control"), "Version Control");
-	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
-	vcs_actions_menu->add_item(TTR("Set Up Version Control"), RUN_VCS_SETTINGS);
-	vcs_actions_menu->add_item(TTR("Shut Down Version Control"), RUN_VCS_SHUT_DOWN);
-
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
-	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
-	p->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
-
-	plugin_config_dialog = memnew(PluginConfigDialog);
-	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
-	gui_base->add_child(plugin_config_dialog);
-
-	tool_menu = memnew(PopupMenu);
-	tool_menu->set_name("Tools");
-	tool_menu->connect("index_pressed", callable_mp(this, &EditorNode::_tool_menu_option));
-	p->add_child(tool_menu);
-	p->add_submenu_item(TTR("Tools"), "Tools");
-	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
-
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTR("Reload Current Project")), RELOAD_CURRENT_PROJECT);
-	ED_SHORTCUT_AND_COMMAND("editor/quit_to_project_list", TTR("Quit to Project List"), KeyModifierMask::CMD + KeyModifierMask::SHIFT + Key::Q);
-	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::Q);
-	p->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), RUN_PROJECT_MANAGER, true);
 
 	menu_hb->add_spacer();
 
