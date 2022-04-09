@@ -106,6 +106,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
+	bool no_editor = !Engine::get_singleton()->is_editor_hint();
+	bool ignore_editor_only_flag = GLOBAL_GET("debug/settings/nodes/keep_editor_only_nodes");
 
 	Map<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
 
@@ -273,6 +275,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						node->set(snames[nprops[j].name], value, &valid);
 					}
 				}
+			}
+
+			if (no_editor && !ignore_editor_only_flag && node->has_meta(SNAME("_editor_only_"))) {
+				stray_instances.push_back(node);
+				continue;
 			}
 
 			//name

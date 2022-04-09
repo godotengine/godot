@@ -454,6 +454,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
 	const Color font_readonly_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_placeholder_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.6);
+	const Color font_editor_only_color = dark_theme ? Color(1.0, 0.94, 0.5) : Color(0.5, 0.45, 0.08);
+
 	const Color selection_color = accent_color * Color(1, 1, 1, 0.4);
 	const Color disabled_color = mono_color.inverted().lerp(base_color, 0.7);
 	const Color disabled_bg_color = mono_color.inverted().lerp(base_color, 0.9);
@@ -975,6 +977,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("custom_button_font_highlight", "Tree", font_hover_color);
 	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_selected_color", "Tree", mono_color);
+	theme->set_color("font_editor_only_color", "Tree", font_editor_only_color);
 	theme->set_color("title_button_color", "Tree", font_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 	theme->set_constant("vseparation", "Tree", widget_default_margin.y - EDSCALE);

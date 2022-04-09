@@ -181,23 +181,7 @@ void Light3D::_update_visibility() {
 		return;
 	}
 
-	bool editor_ok = true;
-
-#ifdef TOOLS_ENABLED
-	if (editor_only) {
-		if (!Engine::get_singleton()->is_editor_hint()) {
-			editor_ok = false;
-		} else {
-			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));
-		}
-	}
-#else
-	if (editor_only) {
-		editor_ok = false;
-	}
-#endif
-
-	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
+	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
 }
 
 void Light3D::_notification(int p_what) {
@@ -207,15 +191,6 @@ void Light3D::_notification(int p_what) {
 			_update_visibility();
 		} break;
 	}
-}
-
-void Light3D::set_editor_only(bool p_editor_only) {
-	editor_only = p_editor_only;
-	_update_visibility();
-}
-
-bool Light3D::is_editor_only() const {
-	return editor_only;
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
@@ -236,9 +211,6 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 }
 
 void Light3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_editor_only", "editor_only"), &Light3D::set_editor_only);
-	ClassDB::bind_method(D_METHOD("is_editor_only"), &Light3D::is_editor_only);
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &Light3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &Light3D::get_param);
 
@@ -299,8 +271,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater"), "set_distance_fade_begin", "get_distance_fade_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_shadow", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater"), "set_distance_fade_shadow", "get_distance_fade_shadow");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater"), "set_distance_fade_length", "get_distance_fade_length");
-	ADD_GROUP("Editor", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
+
 	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(PARAM_ENERGY);

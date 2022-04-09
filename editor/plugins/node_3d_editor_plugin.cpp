@@ -5848,6 +5848,37 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->add_undo_method(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
+		case MENU_TOGGLE_EDITOR_ONLY_SELECTED: {
+			undo_redo->create_action(TTR("Toggle Editor Only Flag"));
+
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			bool all_editor_only = true;
+			for (Node *E : selection) {
+				if (!E->get_owner()) {
+					break; // Disallow setting the scene's root node editor-only.
+				}
+				if (!E->has_meta(SNAME("_editor_only_"))) {
+					all_editor_only = false;
+					break;
+				}
+			}
+
+			for (Node *node : selection) {
+				if (all_editor_only) {
+					undo_redo->add_do_method(node, "remove_meta", "_editor_only_");
+					undo_redo->add_undo_method(node, "set_meta", "_editor_only_", true);
+				} else {
+					undo_redo->add_do_method(node, "set_meta", "_editor_only_", true);
+					undo_redo->add_undo_method(node, "remove_meta", "_editor_only_");
+				}
+
+				undo_redo->add_do_method(this, "emit_signal", "item_editor_only_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_editor_only_status_changed");
+			}
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->commit_action();
+		} break;
 	}
 }
 
@@ -6656,7 +6687,8 @@ void Node3DEditor::_selection_changed() {
 void Node3DEditor::_refresh_menu_icons() {
 	bool all_locked = true;
 	bool all_grouped = true;
-
+	bool all_editor_only = true;
+	bool contains_root_node = false;
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	if (selection.is_empty()) {
@@ -6675,6 +6707,18 @@ void Node3DEditor::_refresh_menu_icons() {
 				break;
 			}
 		}
+		for (Node *E : selection) {
+			if (!E->has_meta(SNAME("_editor_only_"))) {
+				all_editor_only = false;
+				break;
+			}
+		}
+		for (Node *E : selection) {
+			if (!E->get_owner()) {
+				contains_root_node = true;
+				break;
+			}
+		}
 	}
 
 	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
@@ -6684,6 +6728,9 @@ void Node3DEditor::_refresh_menu_icons() {
 	tool_button[TOOL_GROUP_SELECTED]->set_visible(!all_grouped);
 	tool_button[TOOL_GROUP_SELECTED]->set_disabled(selection.is_empty());
 	tool_button[TOOL_UNGROUP_SELECTED]->set_visible(all_grouped);
+
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_pressed(all_editor_only);
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_disabled(selection.is_empty() || contains_root_node);
 }
 
 template <typename T>
@@ -6933,6 +6980,7 @@ void Node3DEditor::_update_theme() {
 	tool_button[TOOL_UNLOCK_SELECTED]->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
 	tool_button[TOOL_GROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_icon(get_theme_icon(SNAME("EditorOnly"), SNAME("EditorIcons")));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
@@ -7308,6 +7356,7 @@ void Node3DEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
+	ADD_SIGNAL(MethodInfo("item_editor_only_status_changed"));
 }
 
 void Node3DEditor::clear() {
@@ -7592,6 +7641,16 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::G));
+
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED] = memnew(Button);
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_flat(true);
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_toggle_mode(true);
+	hbc_menu->add_child(tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]);
+	button_binds.write[0] = MENU_TOGGLE_EDITOR_ONLY_SELECTED;
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_tooltip(TTR("Editor-only nodes will not be loaded in the scene tree when the project is run or exported."));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	tool_button[TOOL_TOGGLE_EDITOR_ONLY_SELECTED]->set_shortcut(ED_SHORTCUT("editor/toggle_editor_only_selected_nodes", TTR("Toggle Editor Only Flag For Selected Node(s)"), KeyModifierMask::CMD | Key::E));
 
 	hbc_menu->add_child(memnew(VSeparator));
 

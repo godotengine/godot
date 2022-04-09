@@ -45,9 +45,6 @@
 			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D], and only when [member shadow_enabled] is [code]true[/code].
 			[b]Note:[/b] Due to a rendering engine limitation, shadows will be disabled instantly instead of fading smoothly according to [member distance_fade_length]. This may result in visible pop-in depending on the scene topography.
 		</member>
-		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
-			If [code]true[/code], the light only appears in the editor and will not be visible at runtime.
-		</member>
 		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0">
 			The light's angular size in degrees. Increasing this will make shadows softer at greater distances. Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code].
 		</member>

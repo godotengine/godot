@@ -1947,6 +1947,23 @@ bool Node::is_property_pinned(const StringName &p_property) const {
 StringName Node::get_property_store_alias(const StringName &p_property) const {
 	return p_property;
 }
+
+bool Node::is_editor_only() const {
+	if (!is_inside_tree()) {
+		return false;
+	}
+
+	const Node *p = this;
+
+	while (p) {
+		if (p->has_meta(SNAME("_editor_only_"))) {
+			return true;
+		}
+		p = p->get_parent();
+	}
+
+	return false;
+}
 #endif
 
 void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {

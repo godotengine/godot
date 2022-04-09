@@ -442,6 +442,9 @@
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
 		</member>
+		<member name="debug/settings/nodes/keep_editor_only_nodes" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the editor-only flag is ignored when a scene is loaded, meaning that all nodes will be added to the scene tree.
+		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum amount of functions per frame allowed when profiling.
 		</member>

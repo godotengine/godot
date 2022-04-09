@@ -78,12 +78,10 @@ private:
 	real_t distance_fade_shadow = 50.0;
 	real_t distance_fade_length = 10.0;
 	RS::LightType type = RenderingServer::LIGHT_DIRECTIONAL;
-	bool editor_only = false;
-	void _update_visibility();
 	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
 
-	// bind helpers
+	void _update_visibility();
 
 protected:
 	RID light;
@@ -96,9 +94,6 @@ protected:
 
 public:
 	RS::LightType get_light_type() const { return type; }
-
-	void set_editor_only(bool p_editor_only);
-	bool is_editor_only() const;
 
 	void set_param(Param p_param, real_t p_value);
 	real_t get_param(Param p_param) const;

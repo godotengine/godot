@@ -35,23 +35,7 @@ void Light2D::_update_light_visibility() {
 		return;
 	}
 
-	bool editor_ok = true;
-
-#ifdef TOOLS_ENABLED
-	if (editor_only) {
-		if (!Engine::get_singleton()->is_editor_hint()) {
-			editor_ok = false;
-		} else {
-			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));
-		}
-	}
-#else
-	if (editor_only) {
-		editor_ok = false;
-	}
-#endif
-
-	RS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree() && editor_ok);
+	RS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree());
 }
 
 void Light2D::set_enabled(bool p_enabled) {
@@ -61,15 +45,6 @@ void Light2D::set_enabled(bool p_enabled) {
 
 bool Light2D::is_enabled() const {
 	return enabled;
-}
-
-void Light2D::set_editor_only(bool p_editor_only) {
-	editor_only = p_editor_only;
-	_update_light_visibility();
-}
-
-bool Light2D::is_editor_only() const {
-	return editor_only;
 }
 
 void Light2D::set_color(const Color &p_color) {
@@ -232,9 +207,6 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Light2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &Light2D::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_editor_only", "editor_only"), &Light2D::set_editor_only);
-	ClassDB::bind_method(D_METHOD("is_editor_only"), &Light2D::is_editor_only);
-
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &Light2D::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &Light2D::get_color);
 
@@ -278,7 +250,6 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Light2D::get_height);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Add,Subtract,Mix"), "set_blend_mode", "get_blend_mode");

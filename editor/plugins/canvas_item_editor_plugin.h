@@ -127,6 +127,7 @@ private:
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
 		UNGROUP_SELECTED,
+		TOGGLE_EDITOR_ONLY_SELECTED,
 		ANIM_INSERT_KEY,
 		ANIM_INSERT_KEY_EXISTING,
 		ANIM_INSERT_POS,
@@ -315,6 +316,8 @@ private:
 
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
+
+	Button *toggle_editor_only_button = nullptr;
 
 	MenuButton *skeleton_menu = nullptr;
 	Button *override_camera_button = nullptr;
