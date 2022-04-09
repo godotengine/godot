@@ -916,8 +916,8 @@ float GridMap::get_cell_scale() const {
 	return cell_scale;
 }
 
-Array GridMap::get_used_cells() const {
-	Array a;
+TypedArray<Vector3i> GridMap::get_used_cells() const {
+	TypedArray<Vector3i> a;
 	a.resize(cell_map.size());
 	int i = 0;
 	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
