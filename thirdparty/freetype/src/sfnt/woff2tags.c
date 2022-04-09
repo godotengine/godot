@@ -4,7 +4,7 @@
  *
  *   WOFF2 Font table tags (base).
  *
- * Copyright (C) 2019-2020 by
+ * Copyright (C) 2019-2021 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -17,6 +17,9 @@
 
 
 #include <freetype/tttags.h>
+
+#ifdef FT_CONFIG_OPTION_USE_BROTLI
+
 #include "woff2tags.h"
 
   /*
@@ -28,10 +31,10 @@
    *
    * for details.
    */
-  FT_LOCAL_DEF( FT_ULong )
+  FT_LOCAL_DEF( FT_Tag )
   woff2_known_tags( FT_Byte  index )
   {
-    const FT_ULong  known_tags[63] =
+    static const FT_Tag  known_tags[63] =
     {
       FT_MAKE_TAG('c', 'm', 'a', 'p'),  /*  0  */
       FT_MAKE_TAG('h', 'e', 'a', 'd'),  /*  1  */
@@ -104,6 +107,13 @@
 
     return known_tags[index];
   }
+
+#else /* !FT_CONFIG_OPTION_USE_BROTLI */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _woff2tags_dummy;
+
+#endif /* !FT_CONFIG_OPTION_USE_BROTLI */
 
 
 /* END */

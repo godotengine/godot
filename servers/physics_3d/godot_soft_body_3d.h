@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,8 +101,6 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 	real_t drag_coefficient = 0.0; // [0,1]
 	LocalVector<int> pinned_vertices;
 
-	Vector3 gravity;
-
 	SelfList<GodotSoftBody3D> active_list;
 
 	Set<GodotConstraint3D *> constraints;
@@ -113,7 +111,6 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	uint64_t island_step = 0;
 
-	_FORCE_INLINE_ void _compute_area_gravity(const GodotArea3D *p_area);
 	_FORCE_INLINE_ Vector3 _compute_area_windforce(const GodotArea3D *p_area, const Face *p_face);
 
 public:
@@ -151,16 +148,16 @@ public:
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
-				areas.remove(index);
+				areas.remove_at(index);
 			}
 		}
 	}
 
-	virtual void set_space(GodotSpace3D *p_space);
+	virtual void set_space(GodotSpace3D *p_space) override;
 
 	void set_mesh(RID p_mesh);
 
-	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
+	void update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler);
 
 	Vector3 get_vertex_position(int p_index) const;
 	void set_vertex_position(int p_index, const Vector3 &p_position);
@@ -207,8 +204,8 @@ public:
 	void predict_motion(real_t p_delta);
 	void solve_constraints(real_t p_delta);
 
-	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return ((Node *)p_node)->index; }
-	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return ((Face *)p_face)->index; }
+	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return static_cast<Node *>(p_node)->index; }
+	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return static_cast<Face *>(p_face)->index; }
 
 	// Return true to stop the query.
 	// p_index is the node index for AABB query, face index for Ray query.
@@ -218,7 +215,7 @@ public:
 	void query_ray(const Vector3 &p_from, const Vector3 &p_to, QueryResultCallback p_result_callback, void *p_userdata);
 
 protected:
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 
 private:
 	void update_normals_and_centroids();

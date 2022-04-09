@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CryptoKey" inherits="Resource" version="4.0">
+<class name="CryptoKey" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A cryptographic key (RSA).
 	</brief_description>
@@ -14,7 +14,7 @@
 		<method name="is_public_only" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Return [code]true[/code] if this CryptoKey only has the public part, and not the private one.
+				Returns [code]true[/code] if this CryptoKey only has the public part, and not the private one.
 			</description>
 		</method>
 		<method name="load">

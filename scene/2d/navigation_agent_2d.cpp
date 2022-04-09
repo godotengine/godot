@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "navigation_agent_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
@@ -57,6 +58,9 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_max_distance", "max_speed"), &NavigationAgent2D::set_path_max_distance);
 	ClassDB::bind_method(D_METHOD("get_path_max_distance"), &NavigationAgent2D::get_path_max_distance);
 
+	ClassDB::bind_method(D_METHOD("set_navigable_layers", "navigable_layers"), &NavigationAgent2D::set_navigable_layers);
+	ClassDB::bind_method(D_METHOD("get_navigable_layers"), &NavigationAgent2D::get_navigable_layers);
+
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent2D::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent2D::get_target_location);
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent2D::get_next_location);
@@ -78,6 +82,7 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10000,0.01"), "set_time_horizon", "get_time_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,100000,0.01"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "10,100,1"), "set_path_max_distance", "get_path_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigable_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigable_layers", "get_navigable_layers");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -96,10 +101,12 @@ void NavigationAgent2D::_notification(int p_what) {
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
@@ -124,8 +131,11 @@ NavigationAgent2D::~NavigationAgent2D() {
 }
 
 void NavigationAgent2D::set_navigable_layers(uint32_t p_layers) {
+	bool layers_changed = navigable_layers != p_layers;
 	navigable_layers = p_layers;
-	update_navigation();
+	if (layers_changed) {
+		_request_repath();
+	}
 }
 
 uint32_t NavigationAgent2D::get_navigable_layers() const {
@@ -171,10 +181,7 @@ real_t NavigationAgent2D::get_path_max_distance() {
 
 void NavigationAgent2D::set_target_location(Vector2 p_location) {
 	target_location = p_location;
-	navigation_path.clear();
-	target_reached = false;
-	navigation_finished = false;
-	update_frame_id = 0;
+	_request_repath();
 }
 
 Vector2 NavigationAgent2D::get_target_location() const {
@@ -241,7 +248,7 @@ TypedArray<String> NavigationAgent2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationAgent2D can be used only under a Node2D node"));
+		warnings.push_back(RTR("The NavigationAgent2D can be used only under a Node2D node."));
 	}
 
 	return warnings;
@@ -307,6 +314,13 @@ void NavigationAgent2D::update_navigation() {
 			}
 		}
 	}
+}
+
+void NavigationAgent2D::_request_repath() {
+	navigation_path.clear();
+	target_reached = false;
+	navigation_finished = false;
+	update_frame_id = 0;
 }
 
 void NavigationAgent2D::_check_distance_to_target() {

@@ -108,13 +108,17 @@ hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
 
 namespace OT {
   struct hb_ot_apply_context_t;
-  struct SubstLookup;
   struct hb_ot_layout_lookup_accelerator_t;
+namespace Layout {
+namespace GSUB {
+  struct SubstLookup;
+}
+}
 }
 
 HB_INTERNAL void
 hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
-				const OT::SubstLookup &lookup,
+				const OT::Layout::GSUB::SubstLookup &lookup,
 				const OT::hb_ot_layout_lookup_accelerator_t &accel);
 
 
@@ -166,17 +170,6 @@ _hb_next_syllable (hb_buffer_t *buffer, unsigned int start)
     ;
 
   return start;
-}
-
-static inline void
-_hb_clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
-		     hb_font_t *font HB_UNUSED,
-		     hb_buffer_t *buffer)
-{
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
-  for (unsigned int i = 0; i < count; i++)
-    info[i].syllable() = 0;
 }
 
 
@@ -350,24 +343,20 @@ _hb_glyph_info_is_continuation (const hb_glyph_info_t *info)
 {
   return info->unicode_props() & UPROPS_MASK_CONTINUATION;
 }
-/* Loop over grapheme. Based on foreach_cluster(). */
+
+static inline bool
+_hb_grapheme_group_func (const hb_glyph_info_t& a HB_UNUSED,
+			 const hb_glyph_info_t& b)
+{ return _hb_glyph_info_is_continuation (&b); }
+
 #define foreach_grapheme(buffer, start, end) \
-  for (unsigned int \
-       _count = buffer->len, \
-       start = 0, end = _count ? _hb_next_grapheme (buffer, 0) : 0; \
-       start < _count; \
-       start = end, end = _hb_next_grapheme (buffer, start))
+	foreach_group (buffer, start, end, _hb_grapheme_group_func)
 
-static inline unsigned int
-_hb_next_grapheme (hb_buffer_t *buffer, unsigned int start)
+static inline void
+_hb_ot_layout_reverse_graphemes (hb_buffer_t *buffer)
 {
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
-
-  while (++start < count && _hb_glyph_info_is_continuation (&info[start]))
-    ;
-
-  return start;
+  buffer->reverse_groups (_hb_grapheme_group_func,
+			  buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
 }
 
 static inline bool
@@ -486,7 +475,8 @@ _hb_glyph_info_get_lig_num_comps (const hb_glyph_info_t *info)
 }
 
 static inline uint8_t
-_hb_allocate_lig_id (hb_buffer_t *buffer) {
+_hb_allocate_lig_id (hb_buffer_t *buffer)
+{
   uint8_t lig_id = buffer->next_serial () & 0x07;
   if (unlikely (!lig_id))
     lig_id = _hb_allocate_lig_id (buffer); /* in case of overflow */

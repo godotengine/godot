@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_import_plugin.h"
+
 #include "core/object/script_language.h"
 
 EditorImportPlugin::EditorImportPlugin() {
@@ -110,12 +111,12 @@ int EditorImportPlugin::get_import_order() const {
 	ERR_FAIL_V_MSG(-1, "Unimplemented _get_import_order in add-on.");
 }
 
-void EditorImportPlugin::get_import_options(List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
+void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
 	Array needed;
 	needed.push_back("name");
 	needed.push_back("default_value");
 	Array options;
-	if (GDVIRTUAL_CALL(_get_import_options, p_preset, options)) {
+	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
 		for (int i = 0; i < options.size(); i++) {
 			Dictionary d = options[i];
 			ERR_FAIL_COND(!d.has_all(needed));
@@ -146,7 +147,7 @@ void EditorImportPlugin::get_import_options(List<ResourceImporter::ImportOption>
 	ERR_FAIL_MSG("Unimplemented _get_import_options in add-on.");
 }
 
-bool EditorImportPlugin::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool EditorImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	Dictionary d;
 	Map<StringName, Variant>::Element *E = p_options.front();
 	while (E) {
@@ -154,7 +155,7 @@ bool EditorImportPlugin::get_option_visibility(const String &p_option, const Map
 		E = E->next();
 	}
 	bool visible;
-	if (GDVIRTUAL_CALL(_get_option_visibility, p_option, d, visible)) {
+	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
 		return visible;
 	}
 
@@ -192,11 +193,11 @@ void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_preset_count)
 	GDVIRTUAL_BIND(_get_preset_name, "preset_index")
 	GDVIRTUAL_BIND(_get_recognized_extensions)
-	GDVIRTUAL_BIND(_get_import_options, "preset_index")
+	GDVIRTUAL_BIND(_get_import_options, "path", "preset_index")
 	GDVIRTUAL_BIND(_get_save_extension)
 	GDVIRTUAL_BIND(_get_resource_type)
 	GDVIRTUAL_BIND(_get_priority)
 	GDVIRTUAL_BIND(_get_import_order)
-	GDVIRTUAL_BIND(_get_option_visibility, "option_name", "options")
+	GDVIRTUAL_BIND(_get_option_visibility, "path", "option_name", "options")
 	GDVIRTUAL_BIND(_import, "source_file", "save_path", "options", "platform_variants", "gen_files");
 }

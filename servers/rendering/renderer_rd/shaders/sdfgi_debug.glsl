@@ -32,7 +32,7 @@ layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image2D screen
 
 layout(set = 0, binding = 11) uniform texture2DArray lightprobe_texture;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec3 grid_size;
 	uint max_cascades;
 

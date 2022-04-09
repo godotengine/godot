@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,12 +39,24 @@
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
-	RendererCanvasRenderRD *canvas;
-	RendererStorageRD *storage;
-	RendererSceneRenderRD *scene;
+	UniformSetCacheRD *uniform_set_cache = nullptr;
+	RendererCanvasRenderRD *canvas = nullptr;
+	RendererRD::CanvasTextureStorage *canvas_texture_storage;
+	RendererRD::MaterialStorage *material_storage;
+	RendererRD::MeshStorage *mesh_storage;
+	RendererRD::TextureStorage *texture_storage;
+	RendererRD::DecalAtlasStorage *decal_atlas_storage;
+	RendererStorageRD *storage = nullptr;
+	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,
@@ -86,6 +98,11 @@ protected:
 	static uint64_t frame;
 
 public:
+	RendererCanvasTextureStorage *get_canvas_texture_storage() { return canvas_texture_storage; }
+	RendererDecalAtlasStorage *get_decal_atlas_storage() { return decal_atlas_storage; }
+	RendererMaterialStorage *get_material_storage() { return material_storage; };
+	RendererMeshStorage *get_mesh_storage() { return mesh_storage; };
+	RendererTextureStorage *get_texture_storage() { return texture_storage; };
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
@@ -115,8 +132,6 @@ public:
 	static void make_current() {
 		_create_func = _create_current;
 	}
-
-	virtual bool is_low_end() const { return false; }
 
 	static RendererCompositorRD *singleton;
 	RendererCompositorRD();

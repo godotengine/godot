@@ -148,7 +148,8 @@ struct WebPConfig {
   int use_delta_palette;  // reserved for future lossless feature
   int use_sharp_yuv;      // if needed, use sharp (and slow) RGB->YUV conversion
 
-  uint32_t pad[2];        // padding for later use
+  int qmin;               // minimum permissible quality factor
+  int qmax;               // maximum permissible quality factor
 };
 
 // Enumerate some predefined settings for WebPConfig, depending on the type
@@ -291,6 +292,11 @@ typedef enum WebPEncodingError {
 #define WEBP_MAX_DIMENSION 16383
 
 // Main exchange structure (input samples, output bytes, statistics)
+//
+// Once WebPPictureInit() has been called, it's ok to make all the INPUT fields
+// (use_argb, y/u/v, argb, ...) point to user-owned data, even if
+// WebPPictureAlloc() has been called. Depending on the value use_argb,
+// it's guaranteed that either *argb or *y/*u/*v content will be kept untouched.
 struct WebPPicture {
   //   INPUT
   //////////////

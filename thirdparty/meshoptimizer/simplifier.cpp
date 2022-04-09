@@ -358,7 +358,7 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 
 #if TRACE
 	printf("locked: many open edges %d, disconnected seam %d, many seam edges %d, many wedges %d\n",
-	       int(stats[0]), int(stats[1]), int(stats[2]), int(stats[3]));
+	    int(stats[0]), int(stats[1]), int(stats[2]), int(stats[3]));
 #endif
 }
 
@@ -1114,8 +1114,8 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 	float error_goal_perfect = edge_collapse_goal < collapse_count ? collapses[collapse_order[edge_collapse_goal]].error : 0.f;
 
 	printf("removed %d triangles, error %e (goal %e); evaluated %d/%d collapses (done %d, skipped %d, invalid %d)\n",
-		int(triangle_collapses), sqrtf(result_error), sqrtf(error_goal_perfect),
-		int(stats[0]), int(collapse_count), int(edge_collapses), int(stats[1]), int(stats[2]));
+	    int(triangle_collapses), sqrtf(result_error), sqrtf(error_goal_perfect),
+	    int(stats[0]), int(collapse_count), int(edge_collapses), int(stats[1]), int(stats[2]));
 #endif
 
 	return edge_collapses;
@@ -1473,7 +1473,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned 
 		kinds[vertex_kind[i]] += remap[i] == i;
 
 	printf("kinds: manifold %d, border %d, seam %d, complex %d, locked %d\n",
-	       int(kinds[Kind_Manifold]), int(kinds[Kind_Border]), int(kinds[Kind_Seam]), int(kinds[Kind_Complex]), int(kinds[Kind_Locked]));
+	    int(kinds[Kind_Manifold]), int(kinds[Kind_Border]), int(kinds[Kind_Seam]), int(kinds[Kind_Complex]), int(kinds[Kind_Locked]));
 #endif
 
 	Vector3* vertex_positions = allocator.allocate<Vector3>(vertex_count);
@@ -1649,9 +1649,9 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 
 #if TRACE
 		printf("pass %d (%s): grid size %d, triangles %d, %s\n",
-		       pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
-		       grid_size, int(triangles),
-		       (triangles <= target_index_count / 3) ? "under" : "over");
+		    pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
+		    grid_size, int(triangles),
+		    (triangles <= target_index_count / 3) ? "under" : "over");
 #endif
 
 		float tip = interpolate(float(target_index_count / 3), float(min_grid), float(min_triangles), float(grid_size), float(triangles), float(max_grid), float(max_triangles));
@@ -1778,9 +1778,9 @@ size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_pos
 
 #if TRACE
 		printf("pass %d (%s): grid size %d, vertices %d, %s\n",
-		       pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
-		       grid_size, int(vertices),
-		       (vertices <= target_vertex_count) ? "under" : "over");
+		    pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
+		    grid_size, int(vertices),
+		    (vertices <= target_vertex_count) ? "under" : "over");
 #endif
 
 		float tip = interpolate(float(target_vertex_count), float(min_grid), float(min_vertices), float(grid_size), float(vertices), float(max_grid), float(max_vertices));

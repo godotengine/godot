@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="4.0">
+<class name="RichTextLabel" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -11,7 +11,7 @@
 		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/ui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
@@ -22,7 +22,7 @@
 			<argument index="1" name="width" type="int" default="0" />
 			<argument index="2" name="height" type="int" default="0" />
 			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="4" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
@@ -49,10 +49,36 @@
 				Clears the tag stack and sets [member text] to an empty string.
 			</description>
 		</method>
+		<method name="deselect">
+			<return type="void" />
+			<description>
+				Clears the current selection.
+			</description>
+		</method>
+		<method name="get_character_line">
+			<return type="int" />
+			<argument index="0" name="character" type="int" />
+			<description>
+				Returns the line number of the character position provided.
+			</description>
+		</method>
+		<method name="get_character_paragraph">
+			<return type="int" />
+			<argument index="0" name="character" type="int" />
+			<description>
+				Returns the paragraph number of the character position provided.
+			</description>
+		</method>
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the height of the content.
+			</description>
+		</method>
+		<method name="get_content_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the content.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -61,10 +87,24 @@
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
 			</description>
 		</method>
+		<method name="get_line_offset">
+			<return type="float" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns the vertical offset of the line found at the provided index.
+			</description>
+		</method>
 		<method name="get_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
+			</description>
+		</method>
+		<method name="get_paragraph_offset">
+			<return type="float" />
+			<argument index="0" name="paragraph" type="int" />
+			<description>
+				Returns the vertical offset of the paragraph found at the provided index.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">
@@ -97,7 +137,7 @@
 				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
-		<method name="get_v_scroll">
+		<method name="get_v_scroll_bar">
 			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.
@@ -222,6 +262,13 @@
 				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
+		<method name="push_hint">
+			<return type="void" />
+			<argument index="0" name="description" type="String" />
+			<description>
+				Adds a [code][hint][/code] tag to the tag stack. Same as BBCode [code][hint=something]{text}[/hint][/code].
+			</description>
+		</method>
 		<method name="push_indent">
 			<return type="void" />
 			<argument index="0" name="level" type="int" />
@@ -279,7 +326,7 @@
 		</method>
 		<method name="push_paragraph">
 			<return type="void" />
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align" />
+			<argument index="0" name="alignment" type="int" enum="HorizontalAlignment" />
 			<argument index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<argument index="2" name="language" type="String" default="&quot;&quot;" />
 			<argument index="3" name="st_parser" type="int" enum="Control.StructuredTextParser" default="0" />
@@ -296,7 +343,7 @@
 		<method name="push_table">
 			<return type="void" />
 			<argument index="0" name="columns" type="int" />
-			<argument index="1" name="inline_align" type="int" enum="InlineAlign" default="0" />
+			<argument index="1" name="inline_align" type="int" enum="InlineAlignment" default="0" />
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
@@ -372,9 +419,13 @@
 		</method>
 	</methods>
 	<members>
+		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="RichTextLabel.AutowrapMode" default="3">
+			If set to something other than [constant AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. To see how each mode behaves, see [enum AutowrapMode].
+		</member>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
 		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
@@ -385,6 +436,9 @@
 		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
 			If [code]true[/code], the label's height will be automatically updated to fit its content.
 			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
+		</member>
+		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
+			If [code]true[/code], the label underlines hint tags such as [code][hint=description]{text}[/hint][/code].
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -399,7 +453,6 @@
 			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
 			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -420,7 +473,7 @@
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] If [member bbcode_enabled] is [code]true[/code], it is unadvised to use the [code]+=[/code] operator with [code]text[/code] (e.g. [code]text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_text] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
+			[b]Note:[/b] If [member bbcode_enabled] is [code]true[/code], it is unadvised to use the [code]+=[/code] operator with [code]text[/code] (e.g. [code]text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. It will also erase all BBCode that was added to stack using [code]push_*[/code] methods. Use [method append_text] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
@@ -428,6 +481,9 @@
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
 			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
+		</member>
+		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="RichTextLabel.VisibleCharactersBehavior" default="0">
+			Sets the clipping behavior when [member visible_characters] or [member percent_visible] is set. See [enum VisibleCharactersBehavior] for more info.
 		</member>
 	</members>
 	<signals>
@@ -451,17 +507,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Makes text left aligned.
+		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
+			Autowrap is disabled.
 		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Makes text centered.
+		<constant name="AUTOWRAP_ARBITRARY" value="1" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by allowing to break lines at arbitrary positions, which is useful when very limited space is available.
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Makes text right aligned.
+		<constant name="AUTOWRAP_WORD" value="2" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by soft-breaking between words.
 		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Makes text fill width.
+		<constant name="AUTOWRAP_WORD_SMART" value="3" enum="AutowrapMode">
+			Behaves similarly to [constant AUTOWRAP_WORD], but force-breaks a word if that single word does not fit in one line.
 		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 			Each list item has a number marker.
@@ -523,29 +579,31 @@
 		</constant>
 		<constant name="ITEM_META" value="23" enum="ItemType">
 		</constant>
-		<constant name="ITEM_DROPCAP" value="24" enum="ItemType">
+		<constant name="ITEM_HINT" value="24" enum="ItemType">
 		</constant>
-		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
+		<constant name="ITEM_DROPCAP" value="25" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="26" enum="ItemType">
+		</constant>
+		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
+			Trims text before the shaping. e.g, increasing [member visible_characters] value is visually identical to typing the text.
+		</constant>
+		<constant name="VC_CHARS_AFTER_SHAPING" value="1" enum="VisibleCharactersBehavior">
+			Displays glyphs that are mapped to the first [member visible_characters] characters from the beginning of the text.
+		</constant>
+		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
+		</constant>
+		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the left.
+		</constant>
+		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the right.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bold_font" data_type="font" type="Font">
-			The font used for bold text.
-		</theme_item>
-		<theme_item name="bold_font_size" data_type="font_size" type="int">
-			The font size used for bold text.
-		</theme_item>
-		<theme_item name="bold_italics_font" data_type="font" type="Font">
-			The font used for bold italics text.
-		</theme_item>
-		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
-			The font size used for bold italics text.
-		</theme_item>
 		<theme_item name="default_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default tint of text outline.
@@ -556,35 +614,23 @@
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The color of the font's shadow.
 		</theme_item>
-		<theme_item name="italics_font" data_type="font" type="Font">
-			The font used for italics text.
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
+			The color of the selection box.
 		</theme_item>
-		<theme_item name="italics_font_size" data_type="font_size" type="int">
-			The font size used for italics text.
+		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default cell border color.
+		</theme_item>
+		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default background color for even rows.
+		</theme_item>
+		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default background color for odd rows.
 		</theme_item>
 		<theme_item name="line_separation" data_type="constant" type="int" default="0">
 			The vertical space between lines.
 		</theme_item>
-		<theme_item name="mono_font" data_type="font" type="Font">
-			The font used for monospace text.
-		</theme_item>
-		<theme_item name="mono_font_size" data_type="font_size" type="int">
-			The font size used for monospace text.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			The normal background for the [RichTextLabel].
-		</theme_item>
-		<theme_item name="normal_font" data_type="font" type="Font">
-			The default text font.
-		</theme_item>
-		<theme_item name="normal_font_size" data_type="font_size" type="int">
-			The default text font size.
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
-		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
-			The color of the selection box.
 		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the font's shadow.
@@ -595,20 +641,47 @@
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
 		</theme_item>
-		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default cell border color.
-		</theme_item>
-		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default background color for even rows.
-		</theme_item>
 		<theme_item name="table_hseparation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default background color for odd rows.
-		</theme_item>
 		<theme_item name="table_vseparation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			The font used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font" data_type="font" type="Font">
+			The font used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font" data_type="font" type="Font">
+			The font used for italics text.
+		</theme_item>
+		<theme_item name="mono_font" data_type="font" type="Font">
+			The font used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font" data_type="font" type="Font">
+			The default text font.
+		</theme_item>
+		<theme_item name="bold_font_size" data_type="font_size" type="int">
+			The font size used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
+			The font size used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font_size" data_type="font_size" type="int">
+			The font size used for italics text.
+		</theme_item>
+		<theme_item name="mono_font_size" data_type="font_size" type="int">
+			The font size used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font_size" data_type="font_size" type="int">
+			The default text font size.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The background used when the [RichTextLabel] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The normal background for the [RichTextLabel].
 		</theme_item>
 	</theme_items>
 </class>

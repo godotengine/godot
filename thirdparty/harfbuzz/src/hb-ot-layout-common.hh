@@ -37,7 +37,7 @@
 
 
 #ifndef HB_MAX_NESTING_LEVEL
-#define HB_MAX_NESTING_LEVEL	6
+#define HB_MAX_NESTING_LEVEL	64
 #endif
 #ifndef HB_MAX_CONTEXT_LENGTH
 #define HB_MAX_CONTEXT_LENGTH	64
@@ -60,6 +60,10 @@
 #define HB_MAX_LANGSYS	2000
 #endif
 
+#ifndef HB_MAX_LANGSYS_FEATURE_COUNT
+#define HB_MAX_LANGSYS_FEATURE_COUNT 50000
+#endif
+
 #ifndef HB_MAX_FEATURES
 #define HB_MAX_FEATURES 750
 #endif
@@ -68,8 +72,8 @@
 #define HB_MAX_FEATURE_INDICES	1500
 #endif
 
-#ifndef HB_MAX_LOOKUP_INDICES
-#define HB_MAX_LOOKUP_INDICES	20000
+#ifndef HB_MAX_LOOKUP_VISIT_COUNT
+#define HB_MAX_LOOKUP_VISIT_COUNT	35000
 #endif
 
 
@@ -98,54 +102,33 @@ static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 struct hb_prune_langsys_context_t
 {
   hb_prune_langsys_context_t (const void         *table_,
-                              hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map_,
+                              hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map_,
                               const hb_map_t     *duplicate_feature_map_,
                               hb_set_t           *new_collected_feature_indexes_)
       :table (table_),
       script_langsys_map (script_langsys_map_),
       duplicate_feature_map (duplicate_feature_map_),
       new_feature_indexes (new_collected_feature_indexes_),
-      script_count (0),langsys_count (0) {}
+      script_count (0),langsys_feature_count (0) {}
 
-  bool visitedScript (const void *s)
+  bool visitScript ()
+  { return script_count++ < HB_MAX_SCRIPTS; }
+
+  bool visitLangsys (unsigned feature_count)
   {
-    if (script_count++ > HB_MAX_SCRIPTS)
-      return true;
-
-    return visited (s, visited_script);
-  }
-
-  bool visitedLangsys (const void *l)
-  {
-    if (langsys_count++ > HB_MAX_LANGSYS)
-      return true;
-
-    return visited (l, visited_langsys);
-  }
-
-  private:
-  template <typename T>
-  bool visited (const T *p, hb_set_t &visited_set)
-  {
-    hb_codepoint_t delta = (hb_codepoint_t) ((uintptr_t) p - (uintptr_t) table);
-     if (visited_set.has (delta))
-      return true;
-
-    visited_set.add (delta);
-    return false;
+    langsys_feature_count += feature_count;
+    return langsys_feature_count < HB_MAX_LANGSYS_FEATURE_COUNT;
   }
 
   public:
   const void *table;
-  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map;
+  hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map;
   const hb_map_t     *duplicate_feature_map;
   hb_set_t           *new_feature_indexes;
 
   private:
-  hb_set_t visited_script;
-  hb_set_t visited_langsys;
   unsigned script_count;
-  unsigned langsys_count;
+  unsigned langsys_feature_count;
 };
 
 struct hb_subset_layout_context_t :
@@ -173,20 +156,20 @@ struct hb_subset_layout_context_t :
   bool visitLookupIndex()
   {
     lookup_index_count++;
-    return lookup_index_count < HB_MAX_LOOKUP_INDICES;
+    return lookup_index_count < HB_MAX_LOOKUP_VISIT_COUNT;
   }
 
   hb_subset_context_t *subset_context;
   const hb_tag_t table_tag;
   const hb_map_t *lookup_index_map;
-  const hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map;
+  const hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map;
   const hb_map_t *feature_index_map;
   unsigned cur_script_index;
 
   hb_subset_layout_context_t (hb_subset_context_t *c_,
 			      hb_tag_t tag_,
 			      hb_map_t *lookup_map_,
-			      hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map_,
+			      hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map_,
 			      hb_map_t *feature_index_map_) :
 				subset_context (c_),
 				table_tag (tag_),
@@ -643,11 +626,14 @@ struct LangSys
     | hb_map (feature_index_map)
     ;
 
-    if (iter.len () != o_iter.len ())
-      return false;
+    for (; iter && o_iter; iter++, o_iter++)
+    {
+      unsigned a = *iter;
+      unsigned b = *o_iter;
+      if (a != b) return false;
+    }
 
-    for (const auto _ : + hb_zip (iter, o_iter))
-      if (_.first != _.second) return false;
+    if (iter || o_iter) return false;
 
     return true;
   }
@@ -655,7 +641,6 @@ struct LangSys
   void collect_features (hb_prune_langsys_context_t *c) const
   {
     if (!has_required_feature () && !get_feature_count ()) return;
-    if (c->visitedLangsys (this)) return;
     if (has_required_feature () &&
         c->duplicate_feature_map->has (reqFeatureIndex))
       c->new_feature_indexes->add (get_required_feature_index ());
@@ -733,7 +718,7 @@ struct Script
                       unsigned script_index) const
   {
     if (!has_default_lang_sys () && !get_lang_sys_count ()) return;
-    if (c->visitedScript (this)) return;
+    if (!c->visitScript ()) return;
 
     if (!c->script_langsys_map->has (script_index))
     {
@@ -750,11 +735,14 @@ struct Script
     {
       //only collect features from non-redundant langsys
       const LangSys& d = get_default_lang_sys ();
-      d.collect_features (c);
+      if (c->visitLangsys (d.get_feature_count ())) {
+        d.collect_features (c);
+      }
 
       for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
       {
         const LangSys& l = this+_.first.offset;
+        if (!c->visitLangsys (l.get_feature_count ())) continue;
         if (l.compare (d, c->duplicate_feature_map)) continue;
 
         l.collect_features (c);
@@ -766,6 +754,7 @@ struct Script
       for (auto _ : + hb_zip (langSys, hb_range (langsys_count)))
       {
         const LangSys& l = this+_.first.offset;
+        if (!c->visitLangsys (l.get_feature_count ())) continue;
         l.collect_features (c);
         c->script_langsys_map->get (script_index)->add (_.second);
       }
@@ -845,7 +834,7 @@ struct FeatureParamsSize
     if (unlikely (!c->check_struct (this))) return_trace (false);
 
     /* This subtable has some "history", if you will.  Some earlier versions of
-     * Adobe tools calculated the offset of the FeatureParams sutable from the
+     * Adobe tools calculated the offset of the FeatureParams subtable from the
      * beginning of the FeatureList table!  Now, that is dealt with in the
      * Feature implementation.  But we still need to be able to tell junk from
      * real data.  Note: We don't check that the nameID actually exists.
@@ -1357,7 +1346,7 @@ struct Lookup
     if (unlikely (!get_subtables<TSubTable> ().sanitize (c, this, get_type ())))
       return_trace (false);
 
-    if (unlikely (get_type () == TSubTable::Extension && !c->get_edit_count ()))
+    if (unlikely (get_type () == TSubTable::Extension && subtables && !c->get_edit_count ()))
     {
       /* The spec says all subtables of an Extension lookup should
        * have the same type, which shall not be the Extension type
@@ -2926,8 +2915,6 @@ struct VariationStore
 
     hb_vector_t<hb_inc_bimap_t> inner_maps;
     inner_maps.resize ((unsigned) dataSets.len);
-    for (unsigned i = 0; i < inner_maps.length; i++)
-      inner_maps[i].init ();
 
     for (unsigned idx : c->plan->layout_variation_indices->iter ())
     {
@@ -2935,17 +2922,10 @@ struct VariationStore
       uint16_t minor = idx & 0xFFFF;
 
       if (major >= inner_maps.length)
-      {
-	for (unsigned i = 0; i < inner_maps.length; i++)
-	  inner_maps[i].fini ();
 	return_trace (false);
-      }
       inner_maps[major].add (minor);
     }
     varstore_prime->serialize (c->serializer, this, inner_maps.as_array ());
-
-    for (unsigned i = 0; i < inner_maps.length; i++)
-      inner_maps[i].fini ();
 
     return_trace (
         !c->serializer->in_error()

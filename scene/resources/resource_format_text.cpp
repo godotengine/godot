@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -153,7 +153,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			RES res = ResourceLoader::load_threaded_get(path);
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
-					error = ERR_FILE_CORRUPT;
+					error = ERR_FILE_MISSING_DEPENDENCIES;
 					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
 					_printerr();
 					return error;
@@ -165,7 +165,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 				r_res = res;
 			}
 		} else {
-			error = ERR_FILE_CORRUPT;
+			error = ERR_FILE_MISSING_DEPENDENCIES;
 			error_text = "[ext_resource] referenced non-loaded resource at: " + path;
 			_printerr();
 			return error;
@@ -265,7 +265,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
 
 				if (error) {
-					if (error != ERR_FILE_EOF) {
+					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
+						// Resource loading error, just skip it.
+					} else if (error != ERR_FILE_EOF) {
 						_printerr();
 						return Ref<PackedScene>();
 					} else {
@@ -274,12 +276,12 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					}
 				}
 
-				if (assign != String()) {
+				if (!assign.is_empty()) {
 					int nameidx = packed_scene->get_state()->add_name(assign);
 					int valueidx = packed_scene->get_state()->add_value(value);
 					packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
 					//it's assignment
-				} else if (next_tag.name != String()) {
+				} else if (!next_tag.name.is_empty()) {
 					break;
 				}
 			}
@@ -313,6 +315,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			StringName method = next_tag.fields["method"];
 			StringName signal = next_tag.fields["signal"];
 			int flags = Object::CONNECT_PERSIST;
+			int unbinds = 0;
 			Array binds;
 
 			if (next_tag.fields.has("flags")) {
@@ -321,6 +324,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("binds")) {
 				binds = next_tag.fields["binds"];
+			}
+
+			if (next_tag.fields.has("unbinds")) {
+				unbinds = next_tag.fields["unbinds"];
 			}
 
 			Vector<int> bind_ints;
@@ -334,6 +341,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					packed_scene->get_state()->add_name(signal),
 					packed_scene->get_state()->add_name(method),
 					flags,
+					unbinds,
 					bind_ints);
 
 			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
@@ -350,7 +358,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 		} else if (next_tag.name == "editable") {
 			if (!next_tag.fields.has("path")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'path' field from connection tag";
+				error_text = "missing 'path' field from editable tag";
 				_printerr();
 				return Ref<PackedScene>();
 			}
@@ -424,7 +432,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (path.find("://") == -1 && path.is_relative_path()) {
+		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -575,12 +583,12 @@ Error ResourceLoaderText::load() {
 				return error;
 			}
 
-			if (assign != String()) {
+			if (!assign.is_empty()) {
 				if (do_assign) {
 					res->set(assign, value);
 				}
 				//it's assignment
-			} else if (next_tag.name != String()) {
+			} else if (!next_tag.name.is_empty()) {
 				error = OK;
 				break;
 			} else {
@@ -659,10 +667,10 @@ Error ResourceLoaderText::load() {
 				return error;
 			}
 
-			if (assign != String()) {
+			if (!assign.is_empty()) {
 				resource->set(assign, value);
 				//it's assignment
-			} else if (next_tag.name != String()) {
+			} else if (!next_tag.name.is_empty()) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Extra tag found when parsing main resource file";
 				_printerr();
@@ -768,7 +776,7 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 			}
 		}
 
-		if (!using_uid && path.find("://") == -1 && path.is_relative_path()) {
+		if (!using_uid && !path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -900,10 +908,9 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 		return ERR_CANT_CREATE;
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	da->remove(p_path);
 	da->rename(p_path + ".depren", p_path);
-	memdelete(da);
 
 	return OK;
 }
@@ -1166,13 +1173,13 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 				return error;
 			}
 
-			if (assign != String()) {
+			if (!assign.is_empty()) {
 				Map<StringName, int> empty_string_map; //unused
 				bs_save_unicode_string(wf2, assign, true);
 				ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
 				prop_count++;
 
-			} else if (next_tag.name != String()) {
+			} else if (!next_tag.name.is_empty()) {
 				error = OK;
 				break;
 			} else {
@@ -1350,7 +1357,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderText loader;
-	String path = p_original_path != "" ? p_original_path : p_path;
+	String path = !p_original_path.is_empty() ? p_original_path : p_path;
 	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
@@ -1369,7 +1376,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 }
 
 void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
-	if (p_type == "") {
+	if (p_type.is_empty()) {
 		get_recognized_extensions(p_extensions);
 		return;
 	}
@@ -1482,7 +1489,7 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 /*****************************************************************************************************/
 
 String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_resource) {
-	ResourceFormatSaverTextInstance *rsi = (ResourceFormatSaverTextInstance *)ud;
+	ResourceFormatSaverTextInstance *rsi = static_cast<ResourceFormatSaverTextInstance *>(ud);
 	return rsi->_write_resource(p_resource);
 }
 
@@ -1655,7 +1662,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	Set<String> cached_ids_found;
 	for (KeyValue<RES, String> &E : external_resources) {
 		String cached_id = E.key->get_id_for_path(local_path);
-		if (cached_id == "" || cached_ids_found.has(cached_id)) {
+		if (cached_id.is_empty() || cached_ids_found.has(cached_id)) {
 			int sep_pos = E.value.find("_");
 			if (sep_pos != -1) {
 				E.value = E.value.substr(0, sep_pos + 1); // Keep the order found, for improved thread loading performance.
@@ -1729,7 +1736,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
 		RES res = E->get();
 		if (E->next() && res->is_built_in()) {
-			if (res->get_scene_unique_id() != "") {
+			if (!res->get_scene_unique_id().is_empty()) {
 				if (used_unique_ids.has(res->get_scene_unique_id())) {
 					res->set_scene_unique_id(""); // Repeated.
 				} else {
@@ -1752,7 +1759,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			f->store_line("[resource]");
 		} else {
 			String line = "[sub_resource ";
-			if (res->get_scene_unique_id() == "") {
+			if (res->get_scene_unique_id().is_empty()) {
 				String new_id;
 				while (true) {
 					new_id = res->get_class() + "_" + Resource::generate_scene_unique_id();
@@ -1866,7 +1873,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 			f->store_string(header);
 
-			if (instance_placeholder != String()) {
+			if (!instance_placeholder.is_empty()) {
 				String vars;
 				f->store_string(" instance_placeholder=");
 				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this);
@@ -1909,6 +1916,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 				connstr += " flags=" + itos(flags);
 			}
 
+			int unbinds = state->get_connection_unbinds(i);
+			if (unbinds > 0) {
+				connstr += " unbinds=" + itos(unbinds);
+			}
+
 			Array binds = state->get_connection_binds(i);
 			f->store_string(connstr);
 			if (binds.size()) {
@@ -1940,7 +1952,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 }
 
 Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-	if (p_path.ends_with(".sct") && p_resource->get_class() != "PackedScene") {
+	if (p_path.ends_with(".tscn") && !Ref<PackedScene>(p_resource).is_valid()) {
 		return ERR_FILE_UNRECOGNIZED;
 	}
 
@@ -1949,14 +1961,14 @@ Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource,
 }
 
 bool ResourceFormatSaverText::recognize(const RES &p_resource) const {
-	return true; // all recognized!
+	return true; // All resources recognized!
 }
 
 void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (p_resource->get_class() == "PackedScene") {
-		p_extensions->push_back("tscn"); //text scene
+	if (Ref<PackedScene>(p_resource).is_valid()) {
+		p_extensions->push_back("tscn"); // Text scene.
 	} else {
-		p_extensions->push_back("tres"); //text resource
+		p_extensions->push_back("tres"); // Text resource.
 	}
 }
 

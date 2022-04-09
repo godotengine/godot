@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,30 +31,122 @@
 #include "scene_debugger.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
+#include "core/templates/local_vector.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-void SceneDebugger::initialize() {
+Array SceneDebugger::RPCProfilerFrame::serialize() {
+	Array arr;
+	arr.push_back(infos.size() * 4);
+	for (int i = 0; i < infos.size(); ++i) {
+		arr.push_back(uint64_t(infos[i].node));
+		arr.push_back(infos[i].node_path);
+		arr.push_back(infos[i].incoming_rpc);
+		arr.push_back(infos[i].outgoing_rpc);
+	}
+	return arr;
+}
+
+bool SceneDebugger::RPCProfilerFrame::deserialize(const Array &p_arr) {
+	ERR_FAIL_COND_V(p_arr.size() < 1, false);
+	uint32_t size = p_arr[0];
+	ERR_FAIL_COND_V(size % 4, false);
+	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
+	infos.resize(size / 4);
+	int idx = 1;
+	for (uint32_t i = 0; i < size / 4; ++i) {
+		infos.write[i].node = uint64_t(p_arr[idx]);
+		infos.write[i].node_path = p_arr[idx + 1];
+		infos.write[i].incoming_rpc = p_arr[idx + 2];
+		infos.write[i].outgoing_rpc = p_arr[idx + 3];
+	}
+	return true;
+}
+
+class SceneDebugger::RPCProfiler : public EngineProfiler {
+	Map<ObjectID, RPCNodeInfo> rpc_node_data;
+	uint64_t last_profile_time = 0;
+
+	void init_node(const ObjectID p_node) {
+		if (rpc_node_data.has(p_node)) {
+			return;
+		}
+		rpc_node_data.insert(p_node, RPCNodeInfo());
+		rpc_node_data[p_node].node = p_node;
+		rpc_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
+		rpc_node_data[p_node].incoming_rpc = 0;
+		rpc_node_data[p_node].outgoing_rpc = 0;
+	}
+
+public:
+	void toggle(bool p_enable, const Array &p_opts) {
+		rpc_node_data.clear();
+	}
+
+	void add(const Array &p_data) {
+		ERR_FAIL_COND(p_data.size() < 2);
+		const ObjectID id = p_data[0];
+		const String what = p_data[1];
+		init_node(id);
+		RPCNodeInfo &info = rpc_node_data[id];
+		if (what == "rpc_in") {
+			info.incoming_rpc++;
+		} else if (what == "rpc_out") {
+			info.outgoing_rpc++;
+		}
+	}
+
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		if (pt - last_profile_time > 100) {
+			last_profile_time = pt;
+			RPCProfilerFrame frame;
+			for (const KeyValue<ObjectID, RPCNodeInfo> &E : rpc_node_data) {
+				frame.infos.push_back(E.value);
+			}
+			rpc_node_data.clear();
+			EngineDebugger::get_singleton()->send_message("multiplayer:rpc", frame.serialize());
+		}
+	}
+};
+
+SceneDebugger *SceneDebugger::singleton = nullptr;
+
+SceneDebugger::SceneDebugger() {
+	singleton = this;
+	rpc_profiler.instantiate();
+	rpc_profiler->bind("rpc");
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
 #endif
 }
 
-void SceneDebugger::deinitialize() {
+SceneDebugger::~SceneDebugger() {
 #ifdef DEBUG_ENABLED
 	if (LiveEditor::singleton) {
-		// Should be removed automatically when deiniting debugger, but just in case
-		if (EngineDebugger::has_capture("scene")) {
-			EngineDebugger::unregister_message_capture("scene");
-		}
+		EngineDebugger::unregister_message_capture("scene");
 		memdelete(LiveEditor::singleton);
 		LiveEditor::singleton = nullptr;
 	}
 #endif
+	singleton = nullptr;
+}
+
+void SceneDebugger::initialize() {
+	if (EngineDebugger::is_active()) {
+		memnew(SceneDebugger);
+	}
+}
+
+void SceneDebugger::deinitialize() {
+	if (singleton) {
+		memdelete(singleton);
+	}
 }
 
 #ifdef DEBUG_ENABLED
@@ -145,12 +237,28 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
 
 	} else if (p_msg == "live_node_call") {
-		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
-		live_editor->_node_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], p_args[8], p_args[9]);
+		LocalVector<Variant> args;
+		LocalVector<Variant *> argptrs;
+		args.resize(p_args.size() - 2);
+		argptrs.resize(args.size());
+		for (uint32_t i = 0; i < args.size(); i++) {
+			args[i] = p_args[i + 2];
+			argptrs[i] = &args[i];
+		}
+		live_editor->_node_call_func(p_args[0], p_args[1], (const Variant **)argptrs.ptr(), argptrs.size());
 
 	} else if (p_msg == "live_res_call") {
 		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
-		live_editor->_res_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], p_args[8], p_args[9]);
+
+		LocalVector<Variant> args;
+		LocalVector<Variant *> argptrs;
+		args.resize(p_args.size() - 2);
+		argptrs.resize(args.size());
+		for (uint32_t i = 0; i < args.size(); i++) {
+			args[i] = p_args[i + 2];
+			argptrs[i] = &args[i];
+		}
+		live_editor->_res_call_func(p_args[0], p_args[1], (const Variant **)argptrs.ptr(), argptrs.size());
 
 	} else if (p_msg == "live_create_node") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
@@ -226,7 +334,7 @@ void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 		return;
 	}
 
-	if (EngineDebugger::get_script_debugger() && p_filename != String()) {
+	if (EngineDebugger::get_script_debugger() && !p_filename.is_empty()) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
 }
@@ -367,7 +475,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
-		if (!res.is_null()) {
+		if (!res.is_null() && !res->get_path().is_empty()) {
 			var = res->get_path();
 		} else { //only send information that can be sent..
 			int len = 0; //test how big is this to encode
@@ -545,7 +653,7 @@ void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const St
 	_node_set_func(p_id, p_prop, r);
 }
 
-void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree) {
 		return;
@@ -577,7 +685,8 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 		}
 		Node *n2 = n->get_node(np);
 
-		n2->call(p_method, VARIANT_ARG_PASS);
+		Callable::CallError ce;
+		n2->callp(p_method, p_args, p_argcount, ce);
 	}
 }
 
@@ -608,7 +717,7 @@ void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const Str
 	_res_set_func(p_id, p_prop, r);
 }
 
-void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+void LiveEditor::_res_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	if (!live_edit_resource_cache.has(p_id)) {
 		return;
 	}
@@ -624,7 +733,8 @@ void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_AR
 		return;
 	}
 
-	r->call(p_method, VARIANT_ARG_PASS);
+	Callable::CallError ce;
+	r->callp(p_method, p_args, p_argcount, ce);
 }
 
 void LiveEditor::_root_func(const NodePath &p_scene_path, const String &p_scene_from) {

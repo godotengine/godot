@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -183,11 +183,15 @@ struct FileAccessRef {
 
 	operator bool() const { return f != nullptr; }
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
 	operator FileAccess *() { return f; }
 
 	FileAccessRef(FileAccess *fa) { f = fa; }
+	FileAccessRef(FileAccessRef &&other) {
+		f = other.f;
+		other.f = nullptr;
+	}
 	~FileAccessRef() {
 		if (f) {
 			memdelete(f);

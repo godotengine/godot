@@ -194,7 +194,8 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   }
 
   const Returned * operator -> () const { return get (); }
-  const Returned & operator * () const  { return *get (); }
+  template <typename U = Returned, hb_enable_if (!hb_is_same (U, void))>
+  const U & operator * () const  { return *get (); }
   explicit operator bool () const
   { return get_stored () != Funcs::get_null (); }
   template <typename C> operator const C * () const { return get (); }
@@ -244,19 +245,19 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   {
     Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
     if (likely (p))
-      p->init (data);
+      p = new (p) Stored (data);
     return p;
   }
   static Stored *create ()
   {
     Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
     if (likely (p))
-      p->init ();
+      p = new (p) Stored ();
     return p;
   }
   static void destroy (Stored *p)
   {
-    p->fini ();
+    p->~Stored ();
     hb_free (p);
   }
 
@@ -272,14 +273,19 @@ struct hb_face_lazy_loader_t : hb_lazy_loader_t<T,
 						hb_face_lazy_loader_t<T, WheresFace>,
 						hb_face_t, WheresFace> {};
 
-template <typename T, unsigned int WheresFace>
+template <typename T, unsigned int WheresFace, bool core=false>
 struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
-						 hb_table_lazy_loader_t<T, WheresFace>,
+						 hb_table_lazy_loader_t<T, WheresFace, core>,
 						 hb_face_t, WheresFace,
 						 hb_blob_t>
 {
   static hb_blob_t *create (hb_face_t *face)
-  { return hb_sanitize_context_t ().reference_table<T> (face); }
+  {
+    auto c = hb_sanitize_context_t ();
+    if (core)
+      c.set_num_glyphs (0); // So we don't recurse ad infinitum...
+    return c.reference_table<T> (face);
+  }
   static void destroy (hb_blob_t *p) { hb_blob_destroy (p); }
 
   static const hb_blob_t *get_null ()

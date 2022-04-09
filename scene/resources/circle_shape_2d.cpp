@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@ void CircleShape2D::_update_shape() {
 }
 
 void CircleShape2D::set_radius(real_t p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CircleShape2D radius cannot be negative.");
 	radius = p_radius;
 	_update_shape();
 }
@@ -55,7 +56,7 @@ void CircleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CircleShape2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CircleShape2D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,16384,0.5"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_radius", "get_radius");
 }
 
 Rect2 CircleShape2D::get_rect() const {
@@ -71,18 +72,19 @@ real_t CircleShape2D::get_enclosing_radius() const {
 
 void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points;
+	points.resize(24);
+
 	const real_t turn_step = Math_TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
-		points.push_back(Vector2(Math::cos(i * turn_step), Math::sin(i * turn_step)) * get_radius());
+		points.write[i] = Vector2(Math::cos(i * turn_step), Math::sin(i * turn_step)) * get_radius();
 	}
 
-	Vector<Color> col;
-	col.push_back(p_color);
+	Vector<Color> col = { p_color };
 	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
+
 	if (is_collision_outline_enabled()) {
+		points.push_back(points[0]);
 		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
-		// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
-		RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, points[points.size() - 1], points[0], p_color);
 	}
 }
 

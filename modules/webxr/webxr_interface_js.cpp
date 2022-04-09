@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,13 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "webxr_interface_js.h"
+
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "emscripten.h"
 #include "godot_webxr.h"
 #include "servers/rendering/renderer_compositor.h"
+
 #include <stdlib.h>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
@@ -385,7 +387,7 @@ CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p
 	return eye;
 }
 
-Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	Vector<BlitToScreen> blit_to_screen;
 
 	if (!initialized) {
@@ -481,7 +483,6 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 				sprintf(name, "axis_%i", i);
 
 				float value = *((float *)axes + (i + 1));
-				;
 				tracker->set_input(name, value);
 			}
 			free(axes);

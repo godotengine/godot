@@ -18,38 +18,38 @@ precision highp int;
 // attributes
 //
 
-layout(location = 0) highp vec4 vertex_attrib;
+layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
-layout(location = 1) vec3 normal_attrib;
+layout(location = 1) in vec3 normal_attrib;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-layout(location = 2) vec4 tangent_attrib;
+layout(location = 2) in vec4 tangent_attrib;
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
-layout(location = 3) vec4 color_attrib;
+layout(location = 3) in vec4 color_attrib;
 #endif
 
 #if defined(ENABLE_UV_INTERP)
-layout(location = 4) vec2 uv_attrib;
+layout(location = 4) in vec2 uv_attrib;
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
-layout(location = 5) vec2 uv2_attrib;
+layout(location = 5) in vec2 uv2_attrib;
 #endif
 
 #ifdef USE_SKELETON
 
 #ifdef USE_SKELETON_SOFTWARE
 
-layout(location = 13) highp vec4 bone_transform_row_0;
-layout(location = 14) highp vec4 bone_transform_row_1;
-layout(location = 15) highp vec4 bone_transform_row_2;
+layout(location = 13) in highp vec4 bone_transform_row_0;
+layout(location = 14) in highp vec4 bone_transform_row_1;
+layout(location = 15) in highp vec4 bone_transform_row_2;
 
 #else
 
-layout(location = 6) vec4 bone_ids;
-layout(location = 7) highp vec4 bone_weights;
+layout(location = 6) in vec4 bone_ids;
+layout(location = 7) in highp vec4 bone_weights;
 
 uniform highp sampler2D bone_transforms; // texunit:-1
 uniform ivec2 skeleton_texture_size;
@@ -60,12 +60,12 @@ uniform ivec2 skeleton_texture_size;
 
 #ifdef USE_INSTANCING
 
-layout(location = 8) highp vec4 instance_xform_row_0;
-layout(location = 9) highp vec4 instance_xform_row_1;
-layout(location = 10) highp vec4 instance_xform_row_2;
+layout(location = 8) in highp vec4 instance_xform_row_0;
+layout(location = 9) in highp vec4 instance_xform_row_1;
+layout(location = 10) in highp vec4 instance_xform_row_2;
 
-layout(location = 11) highp vec4 instance_color;
-layout(location = 12) highp vec4 instance_custom_data;
+layout(location = 11) in highp vec4 instance_color;
+layout(location = 12) in highp vec4 instance_custom_data;
 
 #endif
 
@@ -73,8 +73,8 @@ layout(location = 12) highp vec4 instance_custom_data;
 // uniforms
 //
 
-uniform highp mat4 camera_matrix;
-uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 inv_view_matrix;
+uniform highp mat4 view_matrix;
 uniform highp mat4 projection_matrix;
 uniform highp mat4 projection_inverse_matrix;
 
@@ -314,7 +314,7 @@ uniform mediump float fog_height_curve;
 void main() {
 	highp vec4 vertex = vertex_attrib;
 
-	mat4 world_matrix = world_transform;
+	mat4 model_matrix = world_transform;
 
 #ifdef USE_INSTANCING
 	{
@@ -323,7 +323,7 @@ void main() {
 				instance_xform_row_1,
 				instance_xform_row_2,
 				vec4(0.0, 0.0, 0.0, 1.0));
-		world_matrix = world_matrix * transpose(m);
+		model_matrix = model_matrix * transpose(m);
 	}
 
 #endif
@@ -356,12 +356,12 @@ void main() {
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-	vertex = world_matrix * vertex;
-	normal = normalize((world_matrix * vec4(normal, 0.0)).xyz);
+	vertex = model_matrix * vertex;
+	normal = normalize((model_matrix * vec4(normal, 0.0)).xyz);
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 
-	tangent = normalize((world_matrix * vec4(tangent, 0.0)).xyz);
-	binormal = normalize((world_matrix * vec4(binormal, 0.0)).xyz);
+	tangent = normalize((model_matrix * vec4(tangent, 0.0)).xyz);
+	binormal = normalize((model_matrix * vec4(binormal, 0.0)).xyz);
 #endif
 #endif
 
@@ -395,7 +395,7 @@ void main() {
 
 #endif
 
-	world_matrix = world_matrix * bone_transform;
+	model_matrix = model_matrix * bone_transform;
 
 #endif
 
@@ -408,11 +408,11 @@ void main() {
 
 	mat4 local_projection_matrix = projection_matrix;
 
-	mat4 modelview = camera_inverse_matrix * world_matrix;
+	mat4 modelview = view_matrix * model_matrix;
 	float roughness = 1.0;
 
 #define projection_matrix local_projection_matrix
-#define world_transform world_matrix
+#define world_transform model_matrix
 
 	float point_size = 1.0;
 
@@ -439,11 +439,11 @@ VERTEX_SHADER_CODE
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-	vertex = camera_inverse_matrix * vertex;
-	normal = normalize((camera_inverse_matrix * vec4(normal, 0.0)).xyz);
+	vertex = view_matrix * vertex;
+	normal = normalize((view_matrix * vec4(normal, 0.0)).xyz);
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-	tangent = normalize((camera_inverse_matrix * vec4(tangent, 0.0)).xyz);
-	binormal = normalize((camera_inverse_matrix * vec4(binormal, 0.0)).xyz);
+	tangent = normalize((view_matrix * vec4(tangent, 0.0)).xyz);
+	binormal = normalize((view_matrix * vec4(binormal, 0.0)).xyz);
 #endif
 #endif
 
@@ -635,7 +635,7 @@ VERTEX_SHADER_CODE
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-		float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
+		float y = (inv_view_matrix * vec4(vertex_interp, 1.0)).y;
 		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif
@@ -680,9 +680,9 @@ precision mediump int;
 // uniforms
 //
 
-uniform highp mat4 camera_matrix;
+uniform highp mat4 inv_view_matrix;
 /* clang-format on */
-uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 view_matrix;
 uniform highp mat4 projection_matrix;
 uniform highp mat4 projection_inverse_matrix;
 
@@ -1107,7 +1107,7 @@ void light_compute(
 		float rim,
 		float rim_tint,
 		float clearcoat,
-		float clearcoat_gloss,
+		float clearcoat_roughness,
 		float anisotropy,
 		inout vec3 diffuse_light,
 		inout vec3 specular_light,
@@ -1298,7 +1298,7 @@ LIGHT_SHADER_CODE
 #if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
+		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_roughness));
 		float Fr = mix(.04, 1.0, cLdotH5);
 		//float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
 		float Gr = V_GGX(cNdotL, cNdotV, 0.25);
@@ -1427,7 +1427,7 @@ void main() {
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
-	float clearcoat_gloss = 0.0;
+	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	float sss_strength = 0.0; //unused
@@ -1610,7 +1610,7 @@ FRAGMENT_SHADER_CODE
 		specular_light *= specular * metallic * albedo * 2.0;
 #else
 
-		// scales the specular reflections, needs to be be computed before lighting happens,
+		// scales the specular reflections, needs to be computed before lighting happens,
 		// but after environment and reflection probes are added
 		//TODO: this curve is not really designed for gammaspace, should be adjusted
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
@@ -1644,7 +1644,7 @@ FRAGMENT_SHADER_CODE
 		cone_dirs[10] = vec3(-0.700629, -0.509037, -0.5);
 		cone_dirs[11] = vec3(0.267617, -0.823639, -0.5);
 
-		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
+		vec3 local_normal = normalize(inv_view_matrix * vec4(normal, 0.0)).xyz;
 		vec4 captured = vec4(0.0);
 		float sum = 0.0;
 		for (int i = 0; i < 12; i++) {
@@ -2028,7 +2028,7 @@ FRAGMENT_SHADER_CODE
 			rim,
 			rim_tint,
 			clearcoat,
-			clearcoat_gloss,
+			clearcoat_roughness,
 			anisotropy,
 			diffuse_light,
 			specular_light,
@@ -2122,7 +2122,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-		float y = (camera_matrix * vec4(vertex, 1.0)).y;
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif

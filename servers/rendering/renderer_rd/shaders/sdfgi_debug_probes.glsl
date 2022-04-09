@@ -6,7 +6,7 @@
 
 #define MAX_CASCADES 8
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	mat4 projection;
 
 	uint band_power;
@@ -160,7 +160,7 @@ layout(location = 0) out vec4 frag_color;
 layout(set = 0, binding = 2) uniform texture2DArray lightprobe_texture;
 layout(set = 0, binding = 3) uniform sampler linear_sampler;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	mat4 projection;
 
 	uint band_power;

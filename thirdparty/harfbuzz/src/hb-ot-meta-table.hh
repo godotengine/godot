@@ -71,9 +71,9 @@ struct meta
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     { table = hb_sanitize_context_t ().reference_table<meta> (face); }
-    void fini () { table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     hb_blob_t *reference_entry (hb_tag_t tag) const
     { return table->dataMaps.lsearch (tag).reference_entry (table.get_blob ()); }
@@ -119,7 +119,9 @@ struct meta
   DEFINE_SIZE_ARRAY (16, dataMaps);
 };
 
-struct meta_accelerator_t : meta::accelerator_t {};
+struct meta_accelerator_t : meta::accelerator_t {
+  meta_accelerator_t (hb_face_t *face) : meta::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

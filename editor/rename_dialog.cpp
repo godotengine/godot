@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,14 @@
 
 #include "rename_dialog.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 
 #include "core/string/print_string.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
-#include "editor_themes.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_themes.h"
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/control.h"
@@ -113,7 +114,6 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(cbut_collapse_features);
 
 	tabc_features = memnew(TabContainer);
-	tabc_features->set_tab_align(TabContainer::ALIGN_LEFT);
 	tabc_features->set_use_hidden_tabs_for_min_size(true);
 	vbc->add_child(tabc_features);
 
@@ -283,6 +283,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
+	lbl_preview->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
@@ -335,7 +336,7 @@ void RenameDialog::_bind_methods() {
 }
 
 void RenameDialog::_update_substitute() {
-	LineEdit *focus_owner_line_edit = Object::cast_to<LineEdit>(scene_tree_editor->get_focus_owner());
+	LineEdit *focus_owner_line_edit = Object::cast_to<LineEdit>(scene_tree_editor->get_viewport()->gui_get_focus_owner());
 	bool is_main_field = _is_main_field(focus_owner_line_edit);
 
 	but_insert_name->set_disabled(!is_main_field);
@@ -361,7 +362,7 @@ void RenameDialog::_post_popup() {
 	Array selected_node_list = editor_selection->get_selected_nodes();
 	ERR_FAIL_COND(selected_node_list.size() == 0);
 
-	preview_node = selected_node_list[0];
+	preview_node = Object::cast_to<Node>(selected_node_list[0]);
 
 	_update_preview();
 	_update_substitute();
@@ -526,7 +527,7 @@ String RenameDialog::_postprocess(const String &subject) {
 		// To Lowercase
 		result = result.to_lower();
 	} else if (case_id == 2) {
-		// To Upercase
+		// To Uppercase
 		result = result.to_upper();
 	}
 
@@ -630,7 +631,7 @@ bool RenameDialog::_is_main_field(LineEdit *line_edit) {
 }
 
 void RenameDialog::_insert_text(String text) {
-	LineEdit *focus_owner = Object::cast_to<LineEdit>(scene_tree_editor->get_focus_owner());
+	LineEdit *focus_owner = Object::cast_to<LineEdit>(scene_tree_editor->get_viewport()->gui_get_focus_owner());
 
 	if (_is_main_field(focus_owner)) {
 		focus_owner->selection_delete();

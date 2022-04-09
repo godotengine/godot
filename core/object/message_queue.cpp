@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 
 MessageQueue *MessageQueue::singleton = nullptr;
@@ -40,23 +41,8 @@ MessageQueue *MessageQueue::get_singleton() {
 	return singleton;
 }
 
-Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
-	return push_callable(Callable(p_id, p_method), p_args, p_argcount, p_show_error);
-}
-
-Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	return push_call(p_id, p_method, argptr, argc, false);
+Error MessageQueue::push_callp(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	return push_callablep(Callable(p_id, p_method), p_args, p_argcount, p_show_error);
 }
 
 Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value) {
@@ -113,8 +99,8 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	return OK;
 }
 
-Error MessageQueue::push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	return push_call(p_object->get_instance_id(), p_method, VARIANT_ARG_PASS);
+Error MessageQueue::push_callp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	return push_callp(p_object->get_instance_id(), p_method, p_args, p_argcount, p_show_error);
 }
 
 Error MessageQueue::push_notification(Object *p_object, int p_notification) {
@@ -125,7 +111,7 @@ Error MessageQueue::push_set(Object *p_object, const StringName &p_prop, const V
 	return push_set(p_object->get_instance_id(), p_prop, p_value);
 }
 
-Error MessageQueue::push_callable(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
+Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
 	_THREAD_SAFE_METHOD_
 
 	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
@@ -153,21 +139,6 @@ Error MessageQueue::push_callable(const Callable &p_callable, const Variant **p_
 	}
 
 	return OK;
-}
-
-Error MessageQueue::push_callable(const Callable &p_callable, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	return push_callable(p_callable, argptr, argc);
 }
 
 void MessageQueue::statistics() {

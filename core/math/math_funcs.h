@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,7 @@ public:
 	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 
-	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc(Math_PI * p_x); }
+	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc((float)Math_PI * p_x); }
 	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
 
 	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
@@ -187,7 +187,7 @@ public:
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		value += 0.0;
@@ -195,10 +195,10 @@ public:
 	}
 	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) {
 		float value = Math::fmod(p_x, p_y);
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
-		value += 0.0;
+		value += 0.0f;
 		return value;
 	}
 	static _ALWAYS_INLINE_ float fposmodp(float p_x, float p_y) {
@@ -206,7 +206,7 @@ public:
 		if (value < 0) {
 			value += p_y;
 		}
-		value += 0.0;
+		value += 0.0f;
 		return value;
 	}
 	static _ALWAYS_INLINE_ double fposmodp(double p_x, double p_y) {
@@ -220,20 +220,35 @@ public:
 
 	static _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
 		int64_t value = p_x % p_y;
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		return value;
 	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
 
 	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
+
+	static _ALWAYS_INLINE_ double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
+		return 0.5 *
+				((p_from * 2.0) +
+						(-p_pre + p_to) * p_weight +
+						(2.0 * p_pre - 5.0 * p_from + 4.0 * p_to - p_post) * (p_weight * p_weight) +
+						(-p_pre + 3.0 * p_from - 3.0 * p_to + p_post) * (p_weight * p_weight * p_weight));
+	}
+	static _ALWAYS_INLINE_ float cubic_interpolate(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
+		return 0.5f *
+				((p_from * 2.0f) +
+						(-p_pre + p_to) * p_weight +
+						(2.0f * p_pre - 5.0f * p_from + 4.0f * p_to - p_post) * (p_weight * p_weight) +
+						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
+	}
 
 	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
 		double difference = fmod(p_to - p_from, Math_TAU);
@@ -266,14 +281,14 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
-	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
-	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
 
 	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
 
 	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
@@ -307,7 +322,7 @@ public:
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
-	static int range_step_decimals(double p_step);
+	static int range_step_decimals(double p_step); // For editor use only.
 	static double snapped(double p_value, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
@@ -318,6 +333,7 @@ public:
 	static uint32_t rand();
 	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
 	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
+	static double randfn(double mean, double deviation);
 
 	static double random(double from, double to);
 	static float random(float from, float to);
@@ -329,9 +345,9 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		float tolerance = CMP_EPSILON * abs(a);
-		if (tolerance < CMP_EPSILON) {
-			tolerance = CMP_EPSILON;
+		float tolerance = (float)CMP_EPSILON * abs(a);
+		if (tolerance < (float)CMP_EPSILON) {
+			tolerance = (float)CMP_EPSILON;
 		}
 		return abs(a - b) < tolerance;
 	}
@@ -346,7 +362,7 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
-		return abs(s) < CMP_EPSILON;
+		return abs(s) < (float)CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
@@ -457,16 +473,16 @@ public:
 		uint32_t x = ci.ui;
 		uint32_t sign = (unsigned short)(x >> 31);
 		uint32_t mantissa;
-		uint32_t exp;
+		uint32_t exponent;
 		uint16_t hf;
 
 		// get mantissa
 		mantissa = x & ((1 << 23) - 1);
 		// get exponent bits
-		exp = x & (0xFF << 23);
-		if (exp >= 0x47800000) {
+		exponent = x & (0xFF << 23);
+		if (exponent >= 0x47800000) {
 			// check if the original single precision float number is a NaN
-			if (mantissa && (exp == (0xFF << 23))) {
+			if (mantissa && (exponent == (0xFF << 23))) {
 				// we have a single precision NaN
 				mantissa = (1 << 23) - 1;
 			} else {
@@ -477,17 +493,18 @@ public:
 					(uint16_t)(mantissa >> 13);
 		}
 		// check if exponent is <= -15
-		else if (exp <= 0x38000000) {
-			/*// store a denorm half-float value or zero
-		exp = (0x38000000 - exp) >> 23;
-		mantissa >>= (14 + exp);
+		else if (exponent <= 0x38000000) {
+			/*
+			// store a denorm half-float value or zero
+			exponent = (0x38000000 - exponent) >> 23;
+			mantissa >>= (14 + exponent);
 
-		hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
-		*/
+			hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
+			*/
 			hf = 0; //denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
-					(uint16_t)((exp - 0x38000000) >> 13) |
+					(uint16_t)((exponent - 0x38000000) >> 13) |
 					(uint16_t)(mantissa >> 13);
 		}
 

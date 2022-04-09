@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -48,7 +48,7 @@
   int  _af_debug_disable_blue_hints;
 
   /* we use a global object instead of a local one for debugging */
-  AF_GlyphHintsRec  _af_debug_hints_rec[1];
+  static AF_GlyphHintsRec  _af_debug_hints_rec[1];
 
   void*  _af_debug_hints = _af_debug_hints_rec;
 #endif
@@ -148,7 +148,7 @@
 
       if ( !af_style_classes[ss] )
       {
-        FT_TRACE0(( "af_property_set: Invalid value %d for property `%s'\n",
+        FT_TRACE2(( "af_property_set: Invalid value %d for property `%s'\n",
                     *fallback_script, property_name ));
         return FT_THROW( Invalid_Argument );
       }
@@ -190,35 +190,6 @@
 
       return error;
     }
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    else if ( !ft_strcmp( property_name, "warping" ) )
-    {
-#ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
-      if ( value_is_string )
-      {
-        const char*  s = (const char*)value;
-        long         w = ft_strtol( s, NULL, 10 );
-
-
-        if ( w == 0 )
-          module->warping = 0;
-        else if ( w == 1 )
-          module->warping = 1;
-        else
-          return FT_THROW( Invalid_Argument );
-      }
-      else
-#endif
-      {
-        FT_Bool*  warping = (FT_Bool*)value;
-
-
-        module->warping = *warping;
-      }
-
-      return error;
-    }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
     else if ( !ft_strcmp( property_name, "darkening-parameters" ) )
     {
       FT_Int*  darken_params;
@@ -307,7 +278,7 @@
       return error;
     }
 
-    FT_TRACE0(( "af_property_set: missing property `%s'\n",
+    FT_TRACE2(( "af_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -322,9 +293,6 @@
     AF_Module  module         = (AF_Module)ft_module;
     FT_UInt    fallback_style = module->fallback_style;
     FT_UInt    default_script = module->default_script;
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    FT_Bool    warping        = module->warping;
-#endif
 
 
     if ( !ft_strcmp( property_name, "glyph-to-script-map" ) )
@@ -371,17 +339,6 @@
 
       return error;
     }
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    else if ( !ft_strcmp( property_name, "warping" ) )
-    {
-      FT_Bool*  val = (FT_Bool*)value;
-
-
-      *val = warping;
-
-      return error;
-    }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
     else if ( !ft_strcmp( property_name, "darkening-parameters" ) )
     {
       FT_Int*  darken_params = module->darken_params;
@@ -410,7 +367,7 @@
       return error;
     }
 
-    FT_TRACE0(( "af_property_get: missing property `%s'\n",
+    FT_TRACE2(( "af_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -447,9 +404,6 @@
 
     module->fallback_style    = AF_STYLE_FALLBACK;
     module->default_script    = AF_SCRIPT_DEFAULT;
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    module->warping           = 0;
-#endif
     module->no_stem_darkening = TRUE;
 
     module->darken_params[0]  = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X1;

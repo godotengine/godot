@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ void EditorFileServer::_close_client(ClientData *cd) {
 }
 
 void EditorFileServer::_subthread_start(void *s) {
-	ClientData *cd = (ClientData *)s;
+	ClientData *cd = static_cast<ClientData *>(s);
 
 	cd->connection->set_no_delay(true);
 	uint8_t buf4[8];
@@ -88,7 +88,7 @@ void EditorFileServer::_subthread_start(void *s) {
 			ERR_FAIL();
 		}
 	} else {
-		if (cd->efs->password != "") {
+		if (!cd->efs->password.is_empty()) {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
 			OS::get_singleton()->delay_usec(1000000);
@@ -259,7 +259,7 @@ void EditorFileServer::_subthread_start(void *s) {
 }
 
 void EditorFileServer::_thread_start(void *s) {
-	EditorFileServer *self = (EditorFileServer *)s;
+	EditorFileServer *self = static_cast<EditorFileServer *>(s);
 	while (!self->quit) {
 		if (self->cmd == CMD_ACTIVATE) {
 			self->server->listen(self->port);
@@ -298,8 +298,8 @@ void EditorFileServer::_thread_start(void *s) {
 
 void EditorFileServer::start() {
 	stop();
-	port = EDITOR_DEF("filesystem/file_server/port", 6010);
-	password = EDITOR_DEF("filesystem/file_server/password", "");
+	port = EDITOR_GET("filesystem/file_server/port");
+	password = EDITOR_GET("filesystem/file_server/password");
 	cmd = CMD_ACTIVATE;
 }
 

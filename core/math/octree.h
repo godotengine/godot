@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -103,7 +103,7 @@ private:
 		Octant *parent = nullptr;
 		Octant *children[8] = { nullptr };
 
-		int children_count = 0; // cache for amount of childrens (fast check for removal)
+		int children_count = 0; // cache for amount of children (fast check for removal)
 		int parent_index = -1; // cache for parent index (fast check for removal)
 
 		List<Element *, AL> pairable_elements;
@@ -134,7 +134,7 @@ private:
 		List<PairData *, AL> pair_list;
 
 		struct OctantOwner {
-			Octant *octant;
+			Octant *octant = nullptr;
 			typename List<Element *, AL>::Element *E;
 		}; // an element can be in max 8 octants
 
@@ -147,7 +147,7 @@ private:
 		int refcount;
 		bool intersect;
 		Element *A, *B;
-		void *ud;
+		void *ud = nullptr;
 		typename List<PairData *, AL>::Element *eA, *eB;
 	};
 
@@ -156,18 +156,18 @@ private:
 	ElementMap element_map;
 	PairMap pair_map;
 
-	PairCallback pair_callback;
-	UnpairCallback unpair_callback;
-	void *pair_callback_userdata;
-	void *unpair_callback_userdata;
+	PairCallback pair_callback = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *pair_callback_userdata = nullptr;
+	void *unpair_callback_userdata = nullptr;
 
-	OctreeElementID last_element_id;
-	uint64_t pass;
+	OctreeElementID last_element_id = 1;
+	uint64_t pass = 1;
 
-	real_t unit_size;
-	Octant *root;
-	int octant_count;
-	int pair_count;
+	real_t unit_size = 1.0;
+	Octant *root = nullptr;
+	int octant_count = 0;
+	int pair_count = 0;
 
 	_FORCE_INLINE_ void _pair_check(PairData *p_pair) {
 		bool intersect = p_pair->A->aabb.intersects_inclusive(p_pair->B->aabb);
@@ -211,11 +211,6 @@ private:
 			E = pair_map.insert(key, pdata);
 			E->get().eA = p_A->pair_list.push_back(&E->get());
 			E->get().eB = p_B->pair_list.push_back(&E->get());
-
-			/*
-			if (pair_callback)
-				pair_callback(pair_callback_userdata,p_A->userdata,p_B->userdata);
-			*/
 		} else {
 			E->get().refcount++;
 		}
@@ -299,7 +294,7 @@ private:
 		const Vector3 *points;
 		int point_count;
 		T **result_array;
-		int *result_idx;
+		int *result_idx = nullptr;
 		int result_max;
 		uint32_t mask;
 	};
@@ -854,11 +849,6 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 		Octant *o = F->get().octant;
 		typename List<typename Element::OctantOwner, AL>::Element *N = F->next();
 
-		/*
-		if (!use_pairs)
-			o->elements.erase( F->get().E );
-		*/
-
 		if (use_pairs && e.pairable) {
 			o->pairable_elements.erase(F->get().E);
 		} else {
@@ -1275,18 +1265,7 @@ void Octree<T, use_pairs, AL>::set_unpair_callback(UnpairCallback p_callback, vo
 
 template <class T, bool use_pairs, class AL>
 Octree<T, use_pairs, AL>::Octree(real_t p_unit_size) {
-	last_element_id = 1;
-	pass = 1;
 	unit_size = p_unit_size;
-	root = nullptr;
-
-	octant_count = 0;
-	pair_count = 0;
-
-	pair_callback = nullptr;
-	unpair_callback = nullptr;
-	pair_callback_userdata = nullptr;
-	unpair_callback_userdata = nullptr;
 }
 
 #endif // OCTREE_H

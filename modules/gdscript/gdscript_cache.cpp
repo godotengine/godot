@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,11 +117,15 @@ void GDScriptCache::remove_script(const String &p_path) {
 Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->lock);
 	Ref<GDScriptParserRef> ref;
-	if (p_owner != String()) {
+	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->parser_map.has(p_path)) {
 		ref = Ref<GDScriptParserRef>(singleton->parser_map[p_path]);
+		if (ref.is_null()) {
+			r_error = ERR_INVALID_DATA;
+			return ref;
+		}
 	} else {
 		if (!FileAccess::exists(p_path)) {
 			r_error = ERR_FILE_NOT_FOUND;
@@ -133,7 +137,6 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 		ref->path = p_path;
 		singleton->parser_map[p_path] = ref.ptr();
 	}
-
 	r_error = ref->raise_status(p_status);
 
 	return ref;
@@ -163,7 +166,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const String &p_owner) {
 	MutexLock lock(singleton->lock);
-	if (p_owner != String()) {
+	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->full_gdscript_cache.has(p_path)) {
@@ -186,7 +189,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->lock);
 
-	if (p_owner != String()) {
+	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 

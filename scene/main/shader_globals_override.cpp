@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -221,6 +221,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 }
 
 void ShaderGlobalsOverride::_activate() {
+	ERR_FAIL_NULL(get_tree());
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
 	if (nodes.size() == 0) {
@@ -246,26 +247,29 @@ void ShaderGlobalsOverride::_activate() {
 }
 
 void ShaderGlobalsOverride::_notification(int p_what) {
-	if (p_what == Node3D::NOTIFICATION_ENTER_TREE) {
-		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
-		_activate();
+	switch (p_what) {
+		case Node3D::NOTIFICATION_ENTER_TREE: {
+			add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
+			_activate();
+		} break;
 
-	} else if (p_what == Node3D::NOTIFICATION_EXIT_TREE) {
-		if (active) {
-			//remove overrides
-			const StringName *K = nullptr;
-			while ((K = overrides.next(K))) {
-				Override *o = overrides.getptr(*K);
-				if (o->in_use) {
-					RS::get_singleton()->global_variable_set_override(*K, Variant());
+		case Node3D::NOTIFICATION_EXIT_TREE: {
+			if (active) {
+				//remove overrides
+				const StringName *K = nullptr;
+				while ((K = overrides.next(K))) {
+					Override *o = overrides.getptr(*K);
+					if (o->in_use) {
+						RS::get_singleton()->global_variable_set_override(*K, Variant());
+					}
 				}
 			}
-		}
 
-		remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
-		remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
-		get_tree()->call_group(SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
-		active = false;
+			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
+			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
+			get_tree()->call_group(SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
+			active = false;
+		} break;
 	}
 }
 
@@ -273,7 +277,7 @@ TypedArray<String> ShaderGlobalsOverride::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!active) {
-		warnings.push_back(TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
+		warnings.push_back(RTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
 	}
 
 	return warnings;

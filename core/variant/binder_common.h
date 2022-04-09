@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,24 +44,42 @@
 
 #include <stdio.h>
 
+// Variant cannot define an implicit cast operator for every Object subclass, so the
+// casting is done here, to allow binding methods with parameters more specific than Object *
+
 template <class T>
 struct VariantCaster {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		return p_variant;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			return Object::cast_to<TStripped>(p_variant);
+		} else {
+			return p_variant;
+		}
 	}
 };
 
 template <class T>
 struct VariantCaster<T &> {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		return p_variant;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			return Object::cast_to<TStripped>(p_variant);
+		} else {
+			return p_variant;
+		}
 	}
 };
 
 template <class T>
 struct VariantCaster<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		return p_variant;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			return Object::cast_to<TStripped>(p_variant);
+		} else {
+			return p_variant;
+		}
 	}
 };
 
@@ -80,14 +98,21 @@ struct VariantCaster<const T &> {
 		}                                                                    \
 		typedef int64_t EncodeT;                                             \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
-			*(int64_t *)p_ptr = p_val;                                       \
+			*(int64_t *)p_ptr = (int64_t)p_val;                              \
 		}                                                                    \
+	};                                                                       \
+	template <>                                                              \
+	struct ZeroInitializer<m_enum> {                                         \
+		static void initialize(m_enum &value) { value = (m_enum)0; }         \
 	};
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
+VARIANT_ENUM_CAST(Vector2::Axis);
+VARIANT_ENUM_CAST(Vector2i::Axis);
 VARIANT_ENUM_CAST(Vector3::Axis);
+VARIANT_ENUM_CAST(Vector3i::Axis);
 VARIANT_ENUM_CAST(Basis::EulerOrder);
 
 VARIANT_ENUM_CAST(Error);
@@ -103,9 +128,9 @@ VARIANT_ENUM_CAST(KeyModifierMask);
 VARIANT_ENUM_CAST(MIDIMessage);
 VARIANT_ENUM_CAST(MouseButton);
 VARIANT_ENUM_CAST(Orientation);
-VARIANT_ENUM_CAST(HAlign);
-VARIANT_ENUM_CAST(VAlign);
-VARIANT_ENUM_CAST(InlineAlign);
+VARIANT_ENUM_CAST(HorizontalAlignment);
+VARIANT_ENUM_CAST(VerticalAlignment);
+VARIANT_ENUM_CAST(InlineAlignment);
 VARIANT_ENUM_CAST(PropertyHint);
 VARIANT_ENUM_CAST(PropertyUsageFlags);
 VARIANT_ENUM_CAST(Variant::Type);
@@ -132,7 +157,13 @@ struct PtrToArg<char32_t> {
 template <typename T>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		return true;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			Object *obj = p_variant;
+			return Object::cast_to<TStripped>(p_variant) || !obj;
+		} else {
+			return true;
+		}
 	}
 };
 
@@ -148,24 +179,6 @@ struct VariantObjectClassChecker<const Ref<T> &> {
 	}
 };
 
-template <>
-struct VariantObjectClassChecker<Node *> {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		Object *obj = p_variant;
-		Node *node = p_variant;
-		return node || !obj;
-	}
-};
-
-template <>
-struct VariantObjectClassChecker<Control *> {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		Object *obj = p_variant;
-		Control *control = p_variant;
-		return control || !obj;
-	}
-};
-
 #ifdef DEBUG_METHODS_ENABLED
 
 template <class T>
@@ -173,7 +186,7 @@ struct VariantCasterAndValidate {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(p_args[p_arg_idx])) {
+				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;
@@ -188,7 +201,7 @@ struct VariantCasterAndValidate<T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(p_args[p_arg_idx])) {
+				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;
@@ -203,7 +216,7 @@ struct VariantCasterAndValidate<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(p_args[p_arg_idx])) {
+				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;

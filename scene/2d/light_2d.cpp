@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,21 +192,24 @@ Light2D::BlendMode Light2D::get_blend_mode() const {
 }
 
 void Light2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
-		_update_light_visibility();
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
+			_update_light_visibility();
+		} break;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		_update_light_visibility();
-	}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
-		_update_light_visibility();
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_light_visibility();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
+			_update_light_visibility();
+		} break;
 	}
 }
 
@@ -391,7 +394,7 @@ TypedArray<String> PointLight2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!texture.is_valid()) {
-		warnings.push_back(TTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
+		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
 	}
 
 	return warnings;

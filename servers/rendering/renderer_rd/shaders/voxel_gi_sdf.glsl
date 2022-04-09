@@ -6,10 +6,9 @@
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
-#define MAX_DISTANCE 100000
+#define MAX_DISTANCE 100000.0
 
 #define NO_CHILDREN 0xFFFFFFFF
-#define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
 
 struct CellChildren {
 	uint children[8];
@@ -34,7 +33,7 @@ cell_data;
 
 layout(r8ui, set = 0, binding = 3) uniform restrict writeonly uimage3D sdf_tex;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint offset;
 	uint end;
 	uint pad0;
@@ -44,7 +43,7 @@ params;
 
 void main() {
 	vec3 pos = vec3(gl_GlobalInvocationID);
-	float closest_dist = 100000.0;
+	float closest_dist = MAX_DISTANCE;
 
 	for (uint i = params.offset; i < params.end; i++) {
 		vec3 posu = vec3(uvec3(cell_data.data[i].position & 0x7FF, (cell_data.data[i].position >> 11) & 0x3FF, cell_data.data[i].position >> 21));
@@ -67,7 +66,7 @@ void main() {
 }
 
 #if 0
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint stack_size;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,13 @@
 #include "tests/core/math/test_expression.h"
 #include "tests/core/math/test_geometry_2d.h"
 #include "tests/core/math/test_geometry_3d.h"
-#include "tests/core/math/test_math.h"
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
+#include "tests/core/math/test_rect2i.h"
+#include "tests/core/math/test_vector2.h"
+#include "tests/core/math/test_vector2i.h"
+#include "tests/core/math/test_vector3.h"
+#include "tests/core/math/test_vector3i.h"
 #include "tests/core/object/test_class_db.h"
 #include "tests/core/object/test_method_bind.h"
 #include "tests/core/object/test_object.h"
@@ -58,7 +62,6 @@
 #include "tests/core/templates/test_list.h"
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
-#include "tests/core/templates/test_oa_hash_map.h"
 #include "tests/core/templates/test_ordered_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_vector.h"
@@ -68,15 +71,11 @@
 #include "tests/core/variant/test_array.h"
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
+#include "tests/scene/test_animation.h"
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
-#include "tests/scene/test_gui.h"
 #include "tests/scene/test_path_3d.h"
-#include "tests/servers/test_physics_2d.h"
-#include "tests/servers/test_physics_3d.h"
-#include "tests/servers/test_render.h"
-#include "tests/servers/test_shader_lang.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
@@ -85,6 +84,11 @@
 #include "tests/test_macros.h"
 
 #include "scene/resources/default_theme/default_theme.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
 	bool run_tests = true;
@@ -150,10 +154,6 @@ int test_main(int argc, char *argv[]) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/rendering/rendering_server_default.h"
-
 struct GodotTestCaseListener : public doctest::IReporter {
 	GodotTestCaseListener(const doctest::ContextOptions &p_in) {}
 
@@ -199,7 +199,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
 
-			make_default_theme(false, Ref<Font>());
+			make_default_theme(1.0, Ref<Font>(), TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::HINTING_LIGHT, true);
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();

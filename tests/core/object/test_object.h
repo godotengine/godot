@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +87,7 @@ public:
 	bool has_method(const StringName &p_method) const override {
 		return false;
 	}
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		return Variant();
 	}
 	void notification(int p_notification) override {
@@ -133,7 +133,7 @@ TEST_CASE("[Object] Core getters") {
 }
 
 TEST_CASE("[Object] Metadata") {
-	const String meta_path = "hello/world complex métadata\n\n\t\tpath";
+	const String meta_path = "complex_metadata_path";
 	Object object;
 
 	object.set_meta(meta_path, Color(0, 1, 0));

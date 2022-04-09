@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -43,10 +44,13 @@
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/world_2d.h"
+#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
@@ -130,7 +134,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 		E = group_map.insert(p_group, Group());
 	}
 
-	ERR_FAIL_COND_V_MSG(E->get().nodes.find(p_node) != -1, &E->get(), "Already in group: " + p_group + ".");
+	ERR_FAIL_COND_V_MSG(E->get().nodes.has(p_node), &E->get(), "Already in group: " + p_group + ".");
 	E->get().nodes.push_back(p_node);
 	//E->get().last_tree_version=0;
 	E->get().changed = true;
@@ -171,13 +175,13 @@ void SceneTree::_flush_ugc() {
 	while (unique_group_calls.size()) {
 		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
 
-		Variant v[VARIANT_ARG_MAX];
+		const Variant **argptrs = (const Variant **)alloca(E->get().size() * sizeof(Variant *));
+
 		for (int i = 0; i < E->get().size(); i++) {
-			v[i] = E->get()[i];
+			argptrs[i] = &E->get()[i];
 		}
 
-		static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+		call_group_flagsp(GROUP_CALL_REALTIME, E->key().group, E->key().call, argptrs, E->get().size());
 
 		unique_group_calls.erase(E);
 	}
@@ -206,7 +210,7 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	g.changed = false;
 }
 
-void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
+void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
 		return;
@@ -227,14 +231,9 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			return;
 		}
 
-		VARIANT_ARGPTRS;
-
 		Vector<Variant> args;
-		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-			if (argptr[i]->get_type() == Variant::NIL) {
-				break;
-			}
-			args.push_back(*argptr[i]);
+		for (int i = 0; i < p_argcount; i++) {
+			args.push_back(*p_args[i]);
 		}
 
 		unique_group_calls[ug] = args;
@@ -256,9 +255,10 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				nodes[i]->call(p_function, VARIANT_ARG_PASS);
+				Callable::CallError ce;
+				nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
+				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 
@@ -269,9 +269,10 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				nodes[i]->call(p_function, VARIANT_ARG_PASS);
+				Callable::CallError ce;
+				nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
+				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 	}
@@ -384,10 +385,6 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	}
 }
 
-void SceneTree::call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
-	call_group_flags(0, p_group, p_function, VARIANT_ARG_PASS);
-}
-
 void SceneTree::notify_group(const StringName &p_group, int p_notification) {
 	notify_group_flags(0, p_group, p_notification);
 }
@@ -482,7 +479,7 @@ bool SceneTree::process(double p_time) {
 		}
 		E->get()->set_time_left(time_left);
 
-		if (time_left < 0) {
+		if (time_left <= 0) {
 			E->get()->emit_signal(SNAME("timeout"));
 			timers.erase(E);
 		}
@@ -510,7 +507,7 @@ bool SceneTree::process(double p_time) {
 			cpath = fallback->get_path();
 		}
 		if (cpath != env_path) {
-			if (env_path != String()) {
+			if (!env_path.is_empty()) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
 					//could not load fallback, set as empty
@@ -535,7 +532,7 @@ void SceneTree::process_tweens(float p_delta, bool p_physics) {
 	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
 		List<Ref<Tween>>::Element *N = E->next();
 		// Don't process if paused or process mode doesn't match.
-		if ((paused && E->get()->should_pause()) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+		if (!E->get()->can_process(paused) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
 			if (E == L) {
 				break;
 			}
@@ -612,6 +609,7 @@ void SceneTree::_notification(int p_notification) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
+
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_OS_IME_UPDATE:
 		case NOTIFICATION_WM_ABOUT:
@@ -620,13 +618,11 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_APPLICATION_PAUSED:
 		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			get_root()->propagate_notification(p_notification); //pass these to nodes, since they are mirrored
+			// Pass these to nodes, since they are mirrored.
+			get_root()->propagate_notification(p_notification);
 		} break;
-
-		default:
-			break;
-	};
-};
+	}
+}
 
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 	accept_quit = p_enable;
@@ -901,6 +897,9 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 			case CALL_INPUT_TYPE_INPUT:
 				n->_call_input(p_input);
 				break;
+			case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+				n->_call_shortcut_input(p_input);
+				break;
 			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
 				n->_call_unhandled_input(p_input);
 				break;
@@ -916,46 +915,32 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	}
 }
 
-Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	ERR_FAIL_COND_V(p_argcount < 3, Variant());
-	ERR_FAIL_COND_V(!p_args[0]->is_num(), Variant());
-	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING, Variant());
-	ERR_FAIL_COND_V(p_args[2]->get_type() != Variant::STRING_NAME && p_args[2]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND(p_argcount < 3);
+	ERR_FAIL_COND(!p_args[0]->is_num());
+	ERR_FAIL_COND(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING);
+	ERR_FAIL_COND(p_args[2]->get_type() != Variant::STRING_NAME && p_args[2]->get_type() != Variant::STRING);
 
 	int flags = *p_args[0];
 	StringName group = *p_args[1];
 	StringName method = *p_args[2];
-	Variant v[VARIANT_ARG_MAX];
 
-	for (int i = 0; i < MIN(p_argcount - 3, 5); i++) {
-		v[i] = *p_args[i + 3];
-	}
-
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
-	return Variant();
+	call_group_flagsp(flags, group, method, p_args + 3, p_argcount - 3);
 }
 
-Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	ERR_FAIL_COND_V(p_argcount < 2, Variant());
-	ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Variant());
-	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND(p_argcount < 2);
+	ERR_FAIL_COND(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING);
+	ERR_FAIL_COND(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING);
 
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];
-	Variant v[VARIANT_ARG_MAX];
 
-	for (int i = 0; i < MIN(p_argcount - 2, 5); i++) {
-		v[i] = *p_args[i + 2];
-	}
-
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	call_group_flags(0, group, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
-	return Variant();
+	call_group_flagsp(0, group, method, p_args + 2, p_argcount - 2);
 }
 
 int64_t SceneTree::get_frame() const {
@@ -1164,7 +1149,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
 	multiplayer = p_multiplayer;
-	multiplayer->set_root_node(root);
+	multiplayer->set_root_path("/" + root->get_name());
 }
 
 void SceneTree::_bind_methods() {
@@ -1253,8 +1238,6 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
-
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REALTIME);
@@ -1290,7 +1273,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 			dir_access->list_dir_begin();
 			String filename = dir_access->get_next();
 
-			while (filename != "") {
+			while (!filename.is_empty()) {
 				if (filename == "." || filename == "..") {
 					filename = dir_access->get_next();
 					continue;
@@ -1328,6 +1311,8 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
+	root->set_title(ProjectSettings::get_singleton()->get("application/config/name"));
+
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
@@ -1355,9 +1340,9 @@ SceneTree::SceneTree() {
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
 	root->set_use_occlusion_culling(use_occlusion_culling);
 
-	float lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
+	float mesh_lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/mesh_lod/lod_change/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
-	root->set_lod_threshold(lod_threshold);
+	root->set_mesh_lod_threshold(mesh_lod_threshold);
 
 	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
@@ -1400,7 +1385,7 @@ SceneTree::SceneTree() {
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
 		for (const String &E : exts) {
-			if (ext_hint != String()) {
+			if (!ext_hint.is_empty()) {
 				ext_hint += ",";
 			}
 			ext_hint += "*." + E;
@@ -1410,7 +1395,7 @@ SceneTree::SceneTree() {
 		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
-		if (env_path != String()) {
+		if (!env_path.is_empty()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
 			if (env.is_valid()) {
 				root->get_world_3d()->set_fallback_environment(env);

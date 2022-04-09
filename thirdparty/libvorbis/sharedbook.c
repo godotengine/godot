@@ -6,7 +6,7 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://xiph.org/                     *
  *                                                                  *
  ********************************************************************
 
@@ -50,7 +50,7 @@ long _float32_pack(float val){
     sign=0x80000000;
     val= -val;
   }
-  exp= floor(log(val)/log(2.f)+.001); //+epsilon
+  exp= floor(log(val)/log(2.f)+.001); /* +epsilon */
   mant=rint(ldexp(val,(VQ_FMAN-1)-exp));
   exp=(exp+VQ_FEXP_BIAS)<<VQ_FMAN;
 
@@ -62,7 +62,15 @@ float _float32_unpack(long val){
   int    sign=val&0x80000000;
   long   exp =(val&0x7fe00000L)>>VQ_FMAN;
   if(sign)mant= -mant;
-  return(ldexp(mant,exp-(VQ_FMAN-1)-VQ_FEXP_BIAS));
+  exp=exp-(VQ_FMAN-1)-VQ_FEXP_BIAS;
+  /* clamp excessive exponent values */
+  if (exp>63){
+    exp=63;
+  }
+  if (exp<-63){
+    exp=-63;
+  }
+  return(ldexp(mant,exp));
 }
 
 /* given a list of word lengths, generate a list of codewords.  Works
@@ -294,7 +302,7 @@ int vorbis_book_init_encode(codebook *c,const static_codebook *s){
   c->used_entries=s->entries;
   c->dim=s->dim;
   c->codelist=_make_words(s->lengthlist,s->entries,0);
-  //c->valuelist=_book_unquantize(s,s->entries,NULL);
+  /* c->valuelist=_book_unquantize(s,s->entries,NULL); */
   c->quantvals=_book_maptype1_quantvals(s);
   c->minval=(int)rint(_float32_unpack(s->q_min));
   c->delta=(int)rint(_float32_unpack(s->q_delta));
@@ -573,6 +581,7 @@ void run_test(static_codebook *b,float *comp){
       exit(1);
     }
   }
+  free(out);
 }
 
 int main(){

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshDataTool" inherits="RefCounted" version="4.0">
+<class name="MeshDataTool" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper tool to access and edit [Mesh] data.
 	</brief_description>
@@ -114,7 +114,7 @@
 			<argument index="1" name="edge" type="int" />
 			<description>
 				Returns specified edge associated with given face.
-				Edge argument must 2 or less because a face only has three edges.
+				Edge argument must be either 0, 1, or 2 because a face only has three edges.
 			</description>
 		</method>
 		<method name="get_face_meta" qualifiers="const">
@@ -137,7 +137,7 @@
 			<argument index="1" name="vertex" type="int" />
 			<description>
 				Returns the specified vertex of the given face.
-				Vertex argument must be 2 or less because faces contain three vertices.
+				Vertex argument must be either 0, 1, or 2 because faces contain three vertices.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,23 +73,21 @@ void init_autoloads() {
 		RES res = ResourceLoader::load(info.path);
 		ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 		Node *n = nullptr;
-		if (res->is_class("PackedScene")) {
-			Ref<PackedScene> ps = res;
-			n = ps->instantiate();
-		} else if (res->is_class("Script")) {
-			Ref<Script> script_res = res;
-			StringName ibt = script_res->get_instance_base_type();
+		Ref<PackedScene> scn = res;
+		Ref<Script> script = res;
+		if (scn.is_valid()) {
+			n = scn->instantiate();
+		} else if (script.is_valid()) {
+			StringName ibt = script->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
 
 			Object *obj = ClassDB::instantiate(ibt);
 
-			ERR_CONTINUE_MSG(obj == nullptr,
-					"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
-							String(ibt));
+			ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 			n = Object::cast_to<Node>(obj);
-			n->set_script(script_res);
+			n->set_script(script);
 		}
 
 		ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + info.path);
@@ -134,12 +132,14 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	if (do_init_languages) {
 		init_language(p_source_dir);
 	}
+#ifdef DEBUG_ENABLED
 	// Enable all warnings for GDScript, so we can test them.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
 		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
 	}
+#endif
 
 	// Enable printing to show results
 	_print_line_enabled = true;
@@ -152,6 +152,21 @@ GDScriptTestRunner::~GDScriptTestRunner() {
 		finish_language();
 	}
 }
+
+#ifndef DEBUG_ENABLED
+static String strip_warnings(const String &p_expected) {
+	// On release builds we don't have warnings. Here we remove them from the output before comparison
+	// so it doesn't fail just because of difference in warnings.
+	String expected_no_warnings;
+	for (String line : p_expected.split("\n")) {
+		if (line.begins_with(">> ")) {
+			continue;
+		}
+		expected_no_warnings += line + "\n";
+	}
+	return expected_no_warnings.strip_edges() + "\n";
+}
+#endif
 
 int GDScriptTestRunner::run_tests() {
 	if (!make_tests()) {
@@ -170,6 +185,9 @@ int GDScriptTestRunner::run_tests() {
 		GDScriptTest::TestResult result = test.run_test();
 
 		String expected = FileAccess::get_file_as_string(test.get_output_file());
+#ifndef DEBUG_ENABLED
+		expected = strip_warnings(expected);
+#endif
 		INFO(test.get_source_file());
 		if (!result.passed) {
 			INFO(expected);
@@ -233,6 +251,22 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 			}
 		} else {
 			if (next.get_extension().to_lower() == "gd") {
+#ifndef DEBUG_ENABLED
+				// On release builds, skip tests marked as debug only.
+				Error open_err = OK;
+				FileAccessRef script_file(FileAccess::open(current_dir.plus_file(next), FileAccess::READ, &open_err));
+				if (open_err != OK) {
+					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
+					next = dir->get_next();
+					continue;
+				} else {
+					if (script_file->get_line() == "#debug-only") {
+						next = dir->get_next();
+						continue;
+					}
+				}
+#endif
+
 				String out_file = next.get_basename() + ".out";
 				if (!is_generating && !dir->file_exists(out_file)) {
 					ERR_FAIL_V_MSG(false, "Could not find output file for " + next);
@@ -267,7 +301,7 @@ bool GDScriptTestRunner::generate_class_index() {
 		String base_type;
 
 		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type);
-		if (class_name == String()) {
+		if (class_name.is_empty()) {
 			continue;
 		}
 		ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
@@ -362,16 +396,16 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 	}
 
 	builder.append("\n>> on function: ");
-	builder.append(p_function);
+	builder.append(String::utf8(p_function));
 	builder.append("()\n>> ");
-	builder.append(String(p_file).trim_prefix(self->base_dir));
+	builder.append(String::utf8(p_file).trim_prefix(self->base_dir));
 	builder.append("\n>> ");
 	builder.append(itos(p_line));
 	builder.append("\n>> ");
-	builder.append(p_error);
+	builder.append(String::utf8(p_error));
 	if (strlen(p_explanation) > 0) {
 		builder.append("\n>> ");
-		builder.append(p_explanation);
+		builder.append(String::utf8(p_explanation));
 	}
 	builder.append("\n");
 
@@ -386,6 +420,10 @@ bool GDScriptTest::check_output(const String &p_output) const {
 
 	String got = p_output.strip_edges(); // TODO: may be hacky.
 	got += "\n"; // Make sure to insert newline for CI static checks.
+
+#ifndef DEBUG_ENABLED
+	expected = strip_warnings(expected);
+#endif
 
 	return got == expected;
 }
@@ -469,6 +507,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 
+#ifdef DEBUG_ENABLED
 	StringBuilder warning_string;
 	for (const GDScriptWarning &E : parser.get_warnings()) {
 		const GDScriptWarning warning = E;
@@ -482,6 +521,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		warning_string.append("\n");
 	}
 	result.output += warning_string.as_string();
+#endif
 
 	// Test compiling.
 	GDScriptCompiler compiler;
@@ -533,7 +573,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Call test function.
 	Callable::CallError call_err;
-	instance->call(GDScriptTestRunner::test_function_name, nullptr, 0, call_err);
+	instance->callp(GDScriptTestRunner::test_function_name, nullptr, 0, call_err);
 
 	// Tear down output handlers.
 	remove_print_handler(&_print_handler);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -190,7 +191,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		return false;
 	}
 
-	bool _valid_image(const StreamTexture2D *p_image, int p_width, int p_height) const {
+	bool _valid_image(const CompressedTexture2D *p_image, int p_width, int p_height) const {
 		if (!p_image) {
 			return false;
 		}
@@ -310,22 +311,22 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 	Vector<uint8_t> _get_image_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 		Vector<uint8_t> data;
-		StreamTexture2D *texture = nullptr;
+		CompressedTexture2D *texture = nullptr;
 
 		if (p_path.find("StoreLogo") != -1) {
-			texture = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/store_logo")));
+			texture = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/store_logo")));
 		} else if (p_path.find("Square44x44Logo") != -1) {
-			texture = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square44x44_logo")));
+			texture = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square44x44_logo")));
 		} else if (p_path.find("Square71x71Logo") != -1) {
-			texture = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square71x71_logo")));
+			texture = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square71x71_logo")));
 		} else if (p_path.find("Square150x150Logo") != -1) {
-			texture = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square150x150_logo")));
+			texture = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square150x150_logo")));
 		} else if (p_path.find("Square310x310Logo") != -1) {
-			texture = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/square310x310_logo")));
+			texture = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square310x310_logo")));
 		} else if (p_path.find("Wide310x150Logo") != -1) {
-			texture = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/wide310x150_logo")));
+			texture = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
-			texture = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<StreamTexture2D>(((Object *)p_preset->get("images/splash_screen")));
+			texture = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/splash_screen")));
 		} else {
 			ERR_PRINT("Unable to load logo");
 		}
@@ -392,7 +393,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			".webp", // Same reasoning as .png
 			".cfb", // Don't let small config files slow-down startup
 			".scn", // Binary scenes are usually already compressed
-			".stex", // Streamable textures are usually already compressed
+			".ctex", // Streamable textures are usually already compressed
 			// Trailer for easier processing
 			nullptr
 		};
@@ -416,7 +417,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	static Error save_appx_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-		AppxPackager *packager = (AppxPackager *)p_userdata;
+		AppxPackager *packager = static_cast<AppxPackager *>(p_userdata);
 		String dst_path = p_path.replace_first("res://", "game/");
 
 		return packager->add_file(dst_path, p_data.ptr(), p_data.size(), p_file, p_total, _should_compress_asset(p_path, p_data));

@@ -158,6 +158,8 @@ extern "C" {
 #define SLJIT_CONFIG_MIPS_64 1
 #elif defined(__sparc__) || defined(__sparc)
 #define SLJIT_CONFIG_SPARC_32 1
+#elif defined(__s390x__)
+#define SLJIT_CONFIG_S390X 1
 #else
 /* Unsupported architecture */
 #define SLJIT_CONFIG_UNSUPPORTED 1
@@ -758,6 +760,18 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 
 #define SLJIT_NUMBER_OF_SCRATCH_FLOAT_REGISTERS \
 	(SLJIT_NUMBER_OF_FLOAT_REGISTERS - SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS)
+
+/********************************/
+/* CPU status flags management. */
+/********************************/
+
+#if (defined SLJIT_CONFIG_ARM_32 && SLJIT_CONFIG_ARM_32) \
+	|| (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
+	|| (defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS) \
+	|| (defined SLJIT_CONFIG_SPARC && SLJIT_CONFIG_SPARC) \
+	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
+#define SLJIT_HAS_STATUS_FLAGS_STATE 1
+#endif
 
 /*************************************/
 /* Debug and verbose related macros. */

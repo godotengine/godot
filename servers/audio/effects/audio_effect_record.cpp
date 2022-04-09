@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,11 @@
 /*************************************************************************/
 
 #include "audio_effect_record.h"
+
+#ifdef TOOLS_ENABLED
+// FIXME: This file shouldn't depend on editor stuff.
+#include "editor/import/resource_importer_wav.h"
+#endif
 
 void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	if (!is_recording) {
@@ -57,7 +62,7 @@ void AudioEffectRecordInstance::_update_buffer() {
 }
 
 void AudioEffectRecordInstance::_update(void *userdata) {
-	AudioEffectRecordInstance *ins = (AudioEffectRecordInstance *)userdata;
+	AudioEffectRecordInstance *ins = static_cast<AudioEffectRecordInstance *>(userdata);
 	ins->_update_buffer();
 }
 
@@ -112,7 +117,7 @@ void AudioEffectRecordInstance::init() {
 	ring_buffer_read_pos = 0;
 
 	//We start a new recording
-	recording_data.resize(0); //Clear data completely and reset length
+	recording_data.clear(); //Clear data completely and reset length
 	is_recording = true;
 
 #ifdef NO_THREADS
@@ -250,8 +255,12 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 		Vector<uint8_t> bleft;
 		Vector<uint8_t> bright;
 
+#ifdef TOOLS_ENABLED
 		ResourceImporterWAV::_compress_ima_adpcm(left, bleft);
 		ResourceImporterWAV::_compress_ima_adpcm(right, bright);
+#else
+		ERR_PRINT("AudioEffectRecord cannot do IMA ADPCM compression at runtime.");
+#endif
 
 		int dl = bleft.size();
 		dst_data.resize(dl * 2);

@@ -321,6 +321,20 @@ arabic_joining (hb_buffer_t *buffer)
       info[prev].arabic_shaping_action() = entry->prev_action;
       buffer->unsafe_to_break (prev, i + 1);
     }
+    else
+    {
+      if (prev == UINT_MAX)
+      {
+        if (this_type >= JOINING_TYPE_R)
+	  buffer->unsafe_to_concat_from_outbuffer (0, i + 1);
+      }
+      else
+      {
+	if (this_type >= JOINING_TYPE_R ||
+	    (2 <= state && state <= 5) /* States that have a possible prev_action. */)
+	  buffer->unsafe_to_concat (prev, i + 1);
+      }
+    }
 
     info[i].arabic_shaping_action() = entry->curr_action;
 
@@ -337,7 +351,14 @@ arabic_joining (hb_buffer_t *buffer)
 
     const arabic_state_table_entry *entry = &arabic_state_table[state][this_type];
     if (entry->prev_action != NONE && prev != UINT_MAX)
+    {
       info[prev].arabic_shaping_action() = entry->prev_action;
+      buffer->unsafe_to_break (prev, buffer->len);
+    }
+    else if (2 <= state && state <= 5) /* States that have a possible prev_action. */
+    {
+      buffer->unsafe_to_concat (prev, buffer->len);
+    }
     break;
   }
 }
@@ -614,6 +635,11 @@ modifier_combining_marks[] =
   0x06E3u, /* ARABIC SMALL LOW SEEN */
   0x06E7u, /* ARABIC SMALL HIGH YEH */
   0x06E8u, /* ARABIC SMALL HIGH NOON */
+  0x08CAu, /* ARABIC SMALL HIGH FARSI YEH */
+  0x08CBu, /* ARABIC SMALL HIGH YEH BARREE WITH TWO DOTS BELOW */
+  0x08CDu, /* ARABIC SMALL HIGH ZAH */
+  0x08CEu, /* ARABIC LARGE ROUND DOT ABOVE */
+  0x08CFu, /* ARABIC LARGE ROUND DOT BELOW */
   0x08D3u, /* ARABIC SMALL LOW WAW */
   0x08F3u, /* ARABIC SMALL HIGH WAW */
 };

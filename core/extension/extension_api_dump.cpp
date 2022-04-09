@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 
 static String get_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
-		if (p_info.hint_string == "") {
+		if (p_info.hint_string.is_empty()) {
 			return "void*";
 		} else {
 			return p_info.hint_string + "*";
@@ -340,7 +340,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			int value = CoreConstants::get_global_constant_value(i);
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
-			if (enum_name != String()) {
+			if (!enum_name.is_empty()) {
 				enum_list[enum_name].push_back(Pair<String, int>(name, value));
 			} else {
 				Dictionary d;
@@ -666,6 +666,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						Dictionary d2;
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
+						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
@@ -708,6 +709,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 						d2["is_const"] = method->is_const();
 						d2["is_vararg"] = method->is_vararg();
+						d2["is_static"] = method->is_static();
 						d2["is_virtual"] = false;
 						d2["hash"] = method->get_hash();
 
@@ -841,27 +843,16 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		Array native_structures;
 
-		// AudioStream structures
-		{
-			Dictionary d;
-			d["name"] = "AudioFrame";
-			d["format"] = "float left,float right";
+		List<StringName> native_structs;
+		ClassDB::get_native_struct_list(&native_structs);
+		native_structs.sort_custom<StringName::AlphCompare>();
 
-			native_structures.push_back(d);
-		}
+		for (const StringName &E : native_structs) {
+			String code = ClassDB::get_native_struct_code(E);
 
-		// TextServer structures
-		{
 			Dictionary d;
-			d["name"] = "Glyph";
-			d["format"] = "int start,int end,uint8_t count,uint8_t repeat,uint16_t flags,float x_off,float y_off,float advance,RID font_rid,int font_size,int32_t index";
-
-			native_structures.push_back(d);
-		}
-		{
-			Dictionary d;
-			d["name"] = "CaretInfo";
-			d["format"] = "Rect2 leading_caret,Rect2 trailing_caret,TextServer::Direction leading_direction,TextServer::Direction trailing_direction";
+			d["name"] = String(E);
+			d["format"] = code;
 
 			native_structures.push_back(d);
 		}

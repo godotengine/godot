@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "display_layer.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "display_server_iphone.h"
@@ -152,17 +153,6 @@
 		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
 		return NO;
 	}
-
-	//    if (OS::get_singleton()) {
-	//        OS::VideoMode vm;
-	//        vm.fullscreen = true;
-	//        vm.width = backingWidth;
-	//        vm.height = backingHeight;
-	//        vm.resizable = false;
-	//        OS::get_singleton()->set_video_mode(vm);
-	//        OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
-	//    };
-	//    gl_view_base_fb = viewFramebuffer;
 
 	return YES;
 }

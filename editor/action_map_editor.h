@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,14 @@
 #ifndef ACTION_MAP_EDITOR_H
 #define ACTION_MAP_EDITOR_H
 
-#include "editor/editor_data.h"
-#include <scene/gui/color_rect.h>
+#include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/color_rect.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/tree.h"
 
 // Confirmation Dialog used when configuring an input event.
 // Separate from ActionMapEditor for code cleanliness and separation of responsibilities.
@@ -57,24 +63,24 @@ private:
 
 	Ref<InputEvent> event = Ref<InputEvent>();
 
-	TabContainer *tab_container;
+	TabContainer *tab_container = nullptr;
 
 	// Listening for input
-	Label *event_as_text;
-	ColorRect *mouse_detection_rect;
+	Label *event_as_text = nullptr;
+	ColorRect *mouse_detection_rect = nullptr;
 
 	// List of All Key/Mouse/Joypad input options.
 	int allowed_input_types;
-	Tree *input_list_tree;
-	LineEdit *input_list_search;
+	Tree *input_list_tree = nullptr;
+	LineEdit *input_list_search = nullptr;
 
 	// Additional Options, shown depending on event selected
-	VBoxContainer *additional_options_container;
+	VBoxContainer *additional_options_container = nullptr;
 
-	HBoxContainer *device_container;
-	OptionButton *device_id_option;
+	HBoxContainer *device_container = nullptr;
+	OptionButton *device_id_option = nullptr;
 
-	HBoxContainer *mod_container; // Contains the subcontainer and the store command checkbox.
+	HBoxContainer *mod_container = nullptr; // Contains the subcontainer and the store command checkbox.
 
 	enum ModCheckbox {
 		MOD_ALT,
@@ -87,9 +93,9 @@ private:
 	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Ctrl", "Metakey" };
 
 	CheckBox *mod_checkboxes[MOD_MAX];
-	CheckBox *store_command_checkbox;
+	CheckBox *store_command_checkbox = nullptr;
 
-	CheckBox *physical_key_checkbox;
+	CheckBox *physical_key_checkbox = nullptr;
 
 	void _set_event(const Ref<InputEvent> &p_event);
 
@@ -143,7 +149,7 @@ private:
 	};
 
 	Vector<ActionInfo> actions_cache;
-	Tree *action_tree;
+	Tree *action_tree = nullptr;
 
 	// Storing which action/event is currently being edited in the InputEventConfigurationDialog.
 
@@ -153,21 +159,22 @@ private:
 
 	// Popups
 
-	InputEventConfigurationDialog *event_config_dialog;
-	AcceptDialog *message;
+	InputEventConfigurationDialog *event_config_dialog = nullptr;
+	AcceptDialog *message = nullptr;
 
 	// Filtering and Adding actions
 
-	bool show_builtin_actions;
-	CheckButton *show_builtin_actions_checkbutton;
-	LineEdit *action_list_search;
+	bool show_builtin_actions = false;
+	CheckButton *show_builtin_actions_checkbutton = nullptr;
+	LineEdit *action_list_search = nullptr;
 
-	HBoxContainer *add_hbox;
-	LineEdit *add_edit;
+	HBoxContainer *add_hbox = nullptr;
+	LineEdit *add_edit = nullptr;
 
 	void _event_config_confirmed();
 
 	void _add_action_pressed();
+	bool _has_action(const String &p_name) const;
 	void _add_action(const String &p_name);
 	void _action_edited();
 

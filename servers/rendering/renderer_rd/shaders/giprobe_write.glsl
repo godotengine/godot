@@ -7,7 +7,6 @@
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #define NO_CHILDREN 0xFFFFFFFF
-#define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
 
 struct CellChildren {
 	uint children[8];
@@ -59,7 +58,7 @@ lights;
 
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint stack_size;
 

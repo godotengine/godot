@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,16 @@
 #ifndef PHYSICAL_BONE_PLUGIN_H
 #define PHYSICAL_BONE_PLUGIN_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/3d/physics_body_3d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 
 class PhysicalBone3DEditor : public Object {
 	GDCLASS(PhysicalBone3DEditor, Object);
 
-	EditorNode *editor;
-	HBoxContainer *spatial_editor_hb;
-	Button *button_transform_joint;
+	HBoxContainer *spatial_editor_hb = nullptr;
+	Button *button_transform_joint = nullptr;
 
 	PhysicalBone3D *selected = nullptr;
 
@@ -50,7 +52,7 @@ private:
 	void _set_move_joint();
 
 public:
-	PhysicalBone3DEditor(EditorNode *p_editor);
+	PhysicalBone3DEditor();
 	~PhysicalBone3DEditor() {}
 
 	void set_selected(PhysicalBone3D *p_pb);
@@ -62,7 +64,6 @@ public:
 class PhysicalBone3DEditorPlugin : public EditorPlugin {
 	GDCLASS(PhysicalBone3DEditorPlugin, EditorPlugin);
 
-	EditorNode *editor;
 	PhysicalBone3D *selected = nullptr;
 	PhysicalBone3DEditor physical_bone_editor;
 
@@ -72,7 +73,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_node) override;
 
-	PhysicalBone3DEditorPlugin(EditorNode *p_editor);
+	PhysicalBone3DEditorPlugin();
 };
 
 #endif

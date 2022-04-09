@@ -481,8 +481,8 @@ struct active_feature_t {
 	   a->rec.setting < b->rec.setting ? -1 : a->rec.setting > b->rec.setting ? 1 :
 	   0;
   }
-  bool operator== (const active_feature_t *f) {
-    return cmp (this, f) == 0;
+  bool operator== (const active_feature_t& f) const {
+    return cmp (this, &f) == 0;
   }
 };
 
@@ -677,7 +677,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       {
 	active_features.push (event->feature);
       } else {
-	active_feature_t *feature = active_features.find (&event->feature);
+	active_feature_t *feature = active_features.lsearch (event->feature);
 	if (feature)
 	  active_features.remove (feature - active_features.arrayZ);
       }
@@ -897,7 +897,7 @@ resize_and_retry:
     DEBUG_MSG (CORETEXT, nullptr, "Num runs: %d", num_runs);
 
     buffer->len = 0;
-    uint32_t status_and = ~0, status_or = 0;
+    uint32_t status_or = 0;
     CGFloat advances_so_far = 0;
     /* For right-to-left runs, CoreText returns the glyphs positioned such that
      * any trailing whitespace is to the left of (0,0).  Adjust coordinate system
@@ -918,7 +918,6 @@ resize_and_retry:
       CTRunRef run = static_cast<CTRunRef>(CFArrayGetValueAtIndex (glyph_runs, i));
       CTRunStatus run_status = CTRunGetStatus (run);
       status_or  |= run_status;
-      status_and &= run_status;
       DEBUG_MSG (CORETEXT, run, "CTRunStatus: %x", run_status);
       CGFloat run_advance = CTRunGetTypographicBounds (run, range_all, nullptr, nullptr, nullptr);
       if (HB_DIRECTION_IS_VERTICAL (buffer->props.direction))
@@ -1140,21 +1139,6 @@ resize_and_retry:
       buffer->len += num_glyphs;
     }
 
-    /* Mac OS 10.6 doesn't have kCTTypesetterOptionForcedEmbeddingLevel,
-     * or if it does, it doesn't respect it.  So we get runs with wrong
-     * directions.  As such, disable the assert...  It wouldn't crash, but
-     * cursoring will be off...
-     *
-     * https://crbug.com/419769
-     */
-    if (false)
-    {
-      /* Make sure all runs had the expected direction. */
-      HB_UNUSED bool backward = HB_DIRECTION_IS_BACKWARD (buffer->props.direction);
-      assert (bool (status_and & kCTRunStatusRightToLeft) == backward);
-      assert (bool (status_or  & kCTRunStatusRightToLeft) == backward);
-    }
-
     buffer->clear_positions ();
 
     unsigned int count = buffer->len;
@@ -1213,7 +1197,8 @@ resize_and_retry:
     }
   }
 
-  buffer->unsafe_to_break_all ();
+  buffer->clear_glyph_flags ();
+  buffer->unsafe_to_break ();
 
 #undef FAIL
 

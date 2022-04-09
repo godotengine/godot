@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -704,7 +704,7 @@ struct VariantIndexedSetGet_String {
 		String *b = VariantGetInternalPtr<String>::get_ptr(base);
 		const String *v = VariantInternal::get_string(value);
 		if (v->length() == 0) {
-			b->remove(index);
+			b->remove_at(index);
 		} else {
 			b->set(index, v->get(0));
 		}
@@ -723,7 +723,7 @@ struct VariantIndexedSetGet_String {
 		String *b = VariantGetInternalPtr<String>::get_ptr(base);
 		const String *v = VariantInternal::get_string(value);
 		if (v->length() == 0) {
-			b->remove(index);
+			b->remove_at(index);
 		} else {
 			b->set(index, v->get(0));
 		}
@@ -738,7 +738,7 @@ struct VariantIndexedSetGet_String {
 		OOB_TEST(index, v.length());
 		const String &m = *reinterpret_cast<const String *>(member);
 		if (unlikely(m.length() == 0)) {
-			v.remove(index);
+			v.remove_at(index);
 		} else {
 			v.set(index, m.unicode_at(0));
 		}
@@ -1277,7 +1277,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -1504,7 +1504,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -1686,7 +1686,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_valid = false;
@@ -2120,7 +2120,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
+			r_dst = a._data._basis->lerp(*b._data._basis, c);
 		}
 			return;
 		case TRANSFORM3D: {

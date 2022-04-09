@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,13 +81,13 @@ public:
 
 	Error connect_to_host(const String &p_host, uint16_t p_port);
 
-	void poll();
-	bool is_peer_connected();
-	bool has_message();
-	Array get_message();
-	Error put_message(const Array &p_arr);
-	int get_max_message_size() const;
-	void close();
+	void poll() override;
+	bool is_peer_connected() override;
+	bool has_message() override;
+	Array get_message() override;
+	Error put_message(const Array &p_arr) override;
+	int get_max_message_size() const override;
+	void close() override;
 
 	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>());
 	~RemoteDebuggerPeerTCP();

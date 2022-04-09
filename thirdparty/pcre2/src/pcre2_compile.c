@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,7 @@ static BOOL
 
 static int
   check_lookbehinds(uint32_t *, uint32_t **, parsed_recurse_check *,
-    compile_block *);
+    compile_block *, int *);
 
 
 /*************************************************
@@ -782,12 +782,15 @@ are allowed. */
 #define PUBLIC_COMPILE_EXTRA_OPTIONS \
    (PUBLIC_LITERAL_COMPILE_EXTRA_OPTIONS| \
     PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES|PCRE2_EXTRA_BAD_ESCAPE_IS_LITERAL| \
-    PCRE2_EXTRA_ESCAPED_CR_IS_LF|PCRE2_EXTRA_ALT_BSUX)
+    PCRE2_EXTRA_ESCAPED_CR_IS_LF|PCRE2_EXTRA_ALT_BSUX| \
+    PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK)
 
 /* Compile time error code numbers. They are given names so that they can more
 easily be tracked. When a new number is added, the tables called eint1 and
 eint2 in pcre2posix.c may need to be updated, and a new error text must be
-added to compile_error_texts in pcre2_error.c. */
+added to compile_error_texts in pcre2_error.c. Also, the error codes in
+pcre2.h.in must be updated - their values are exactly 100 greater than these
+values. */
 
 enum { ERR0 = COMPILE_ERROR_BASE,
        ERR1,  ERR2,  ERR3,  ERR4,  ERR5,  ERR6,  ERR7,  ERR8,  ERR9,  ERR10,
@@ -799,7 +802,7 @@ enum { ERR0 = COMPILE_ERROR_BASE,
        ERR61, ERR62, ERR63, ERR64, ERR65, ERR66, ERR67, ERR68, ERR69, ERR70,
        ERR71, ERR72, ERR73, ERR74, ERR75, ERR76, ERR77, ERR78, ERR79, ERR80,
        ERR81, ERR82, ERR83, ERR84, ERR85, ERR86, ERR87, ERR88, ERR89, ERR90,
-       ERR91, ERR92, ERR93, ERR94, ERR95, ERR96, ERR97, ERR98 };
+       ERR91, ERR92, ERR93, ERR94, ERR95, ERR96, ERR97, ERR98, ERR99 };
 
 /* This is a table of start-of-pattern options such as (*UTF) and settings such
 as (*LIMIT_MATCH=nnnn) and (*CRLF). For completeness and backward
@@ -1398,32 +1401,47 @@ static BOOL
 read_repeat_counts(PCRE2_SPTR *ptrptr, PCRE2_SPTR ptrend, uint32_t *minp,
   uint32_t *maxp, int *errorcodeptr)
 {
-PCRE2_SPTR p = *ptrptr;
+PCRE2_SPTR p;
 BOOL yield = FALSE;
+BOOL had_comma = FALSE;
 int32_t min = 0;
 int32_t max = REPEAT_UNLIMITED; /* This value is larger than MAX_REPEAT_COUNT */
 
-/* NB read_number() initializes the error code to zero. The only error is for a
-number that is too big. */
+/* Check the syntax */
 
+*errorcodeptr = 0;
+for (p = *ptrptr;; p++)
+  {
+  uint32_t c;
+  if (p >= ptrend) return FALSE;
+  c = *p;
+  if (IS_DIGIT(c)) continue;
+  if (c == CHAR_RIGHT_CURLY_BRACKET) break;
+  if (c == CHAR_COMMA)
+    {
+    if (had_comma) return FALSE;
+    had_comma = TRUE;
+    }
+  else return FALSE;
+  }
+
+/* The only error from read_number() is for a number that is too big. */
+
+p = *ptrptr;
 if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &min, errorcodeptr))
   goto EXIT;
-
-if (p >= ptrend) goto EXIT;
 
 if (*p == CHAR_RIGHT_CURLY_BRACKET)
   {
   p++;
   max = min;
   }
-
 else
   {
-  if (*p++ != CHAR_COMMA || p >= ptrend) goto EXIT;
-  if (*p != CHAR_RIGHT_CURLY_BRACKET)
+  if (*(++p) != CHAR_RIGHT_CURLY_BRACKET)
     {
     if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &max,
-        errorcodeptr) || p >= ptrend ||  *p != CHAR_RIGHT_CURLY_BRACKET)
+        errorcodeptr))
       goto EXIT;
     if (max < min)
       {
@@ -1438,11 +1456,10 @@ yield = TRUE;
 if (minp != NULL) *minp = (uint32_t)min;
 if (maxp != NULL) *maxp = (uint32_t)max;
 
-/* Update the pattern pointer on success, or after an error, but not when
-the result is "not a repeat quantifier". */
+/* Update the pattern pointer */
 
 EXIT:
-if (yield || *errorcodeptr != 0) *ptrptr = p;
+*ptrptr = p;
 return yield;
 }
 
@@ -1776,19 +1793,23 @@ else
       {
       oldptr = ptr;
       ptr--;   /* Back to the digit */
-      if (!read_number(&ptr, ptrend, -1, INT_MAX/10 - 1, ERR61, &s,
-          errorcodeptr))
-        break;
 
-      /* \1 to \9 are always back references. \8x and \9x are too; \1x to \7x
+      /* As we know we are at a digit, the only possible error from
+      read_number() is a number that is too large to be a group number. In this
+      case we fall through handle this as not a group reference. If we have
+      read a small enough number, check for a back reference.
+
+      \1 to \9 are always back references. \8x and \9x are too; \1x to \7x
       are octal escapes if there are not that many previous captures. */
 
-      if (s < 10 || oldptr[-1] >= CHAR_8 || s <= (int)cb->bracount)
+      if (read_number(&ptr, ptrend, -1, INT_MAX/10 - 1, 0, &s, errorcodeptr) &&
+          (s < 10 || oldptr[-1] >= CHAR_8 || s <= (int)cb->bracount))
         {
         if (s > (int)MAX_GROUP_NUMBER) *errorcodeptr = ERR61;
           else escape = -s;     /* Indicates a back reference */
         break;
         }
+
       ptr = oldptr;      /* Put the pointer back and fall through */
       }
 
@@ -7781,6 +7802,16 @@ for (;; pptr++)
       }
 #endif
 
+    /* \K is forbidden in lookarounds since 10.38 because that's what Perl has
+    done. However, there's an option, in case anyone was relying on it. */
+
+    if (cb->assert_depth > 0 && meta_arg == ESC_K &&
+        (cb->cx->extra_options & PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK) == 0)
+      {
+      *errorcodeptr = ERR99;
+      return 0;
+      }
+
     /* For the rest (including \X when Unicode is supported - if not it's
     faulted at parse time), the OP value is the escape value when PCRE2_UCP is
     not set; if it is set, these escapes do not show up here because they are
@@ -9130,7 +9161,7 @@ for (;; pptr++)
     case META_LOOKAHEAD:
     case META_LOOKAHEADNOT:
     case META_LOOKAHEAD_NA:
-    *errcodeptr = check_lookbehinds(pptr + 1, &pptr, recurses, cb);
+    *errcodeptr = check_lookbehinds(pptr + 1, &pptr, recurses, cb, lcptr);
     if (*errcodeptr != 0) return -1;
 
     /* Ignore any qualifiers that follow a lookahead assertion. */
@@ -9470,16 +9501,16 @@ Arguments
   retptr    if not NULL, return the ket pointer here
   recurses  chain of recurse_check to catch mutual recursion
   cb        points to the compile block
+  lcptr     points to loop counter
 
 Returns:    0 on success, or an errorcode (cb->erroroffset will be set)
 */
 
 static int
 check_lookbehinds(uint32_t *pptr, uint32_t **retptr,
-  parsed_recurse_check *recurses, compile_block *cb)
+  parsed_recurse_check *recurses, compile_block *cb, int *lcptr)
 {
 int errorcode = 0;
-int loopcount = 0;
 int nestlevel = 0;
 
 cb->erroroffset = PCRE2_UNSET;
@@ -9605,7 +9636,7 @@ for (; *pptr != META_END; pptr++)
     case META_LOOKBEHIND:
     case META_LOOKBEHINDNOT:
     case META_LOOKBEHIND_NA:
-    if (!set_lookbehind_lengths(&pptr, &errorcode, &loopcount, recurses, cb))
+    if (!set_lookbehind_lengths(&pptr, &errorcode, lcptr, recurses, cb))
       return errorcode;
     break;
     }
@@ -10060,7 +10091,8 @@ lengths. */
 
 if (has_lookbehind)
   {
-  errorcode = check_lookbehinds(cb.parsed_pattern, NULL, NULL, &cb);
+  int loopcount = 0;
+  errorcode = check_lookbehinds(cb.parsed_pattern, NULL, NULL, &cb, &loopcount);
   if (errorcode != 0) goto HAD_CB_ERROR;
   }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,12 +64,23 @@ public:
 
 	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const override;
 
-	virtual void add_central_force(const Vector3 &p_force) override;
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
-	virtual void add_torque(const Vector3 &p_torque) override;
 	virtual void apply_central_impulse(const Vector3 &p_impulse) override;
 	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) override;
 	virtual void apply_torque_impulse(const Vector3 &p_impulse) override;
+
+	virtual void apply_central_force(const Vector3 &p_force) override;
+	virtual void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void apply_torque(const Vector3 &p_torque) override;
+
+	virtual void add_constant_central_force(const Vector3 &p_force) override;
+	virtual void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void add_constant_torque(const Vector3 &p_torque) override;
+
+	virtual void set_constant_force(const Vector3 &p_force) override;
+	virtual Vector3 get_constant_force() const override;
+
+	virtual void set_constant_torque(const Vector3 &p_torque) override;
+	virtual Vector3 get_constant_torque() const override;
 
 	virtual void set_sleep_state(bool p_sleep) override;
 	virtual bool is_sleeping() const override;

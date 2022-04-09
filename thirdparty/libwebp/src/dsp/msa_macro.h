@@ -14,6 +14,10 @@
 #ifndef WEBP_DSP_MSA_MACRO_H_
 #define WEBP_DSP_MSA_MACRO_H_
 
+#include "src/dsp/dsp.h"
+
+#if defined(WEBP_USE_MSA)
+
 #include <stdint.h>
 #include <msa.h>
 
@@ -1389,4 +1393,5 @@ static WEBP_INLINE uint32_t func_hadd_uh_u32(v8u16 in) {
 } while (0)
 #define AVER_UB2_UB(...) AVER_UB2(v16u8, __VA_ARGS__)
 
+#endif  // WEBP_USE_MSA
 #endif  // WEBP_DSP_MSA_MACRO_H_

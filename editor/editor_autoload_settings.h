@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,11 @@
 #ifndef EDITOR_AUTOLOAD_SETTINGS_H
 #define EDITOR_AUTOLOAD_SETTINGS_H
 
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/tree.h"
 
-#include "editor_file_dialog.h"
+class EditorFileDialog;
 
 class EditorAutoloadSettings : public VBoxContainer {
 	GDCLASS(EditorAutoloadSettings, VBoxContainer);
@@ -45,9 +47,10 @@ class EditorAutoloadSettings : public VBoxContainer {
 		BUTTON_DELETE
 	};
 
-	String autoload_changed;
+	String path = "res://";
+	String autoload_changed = "autoload_changed";
 
-	struct AutoLoadInfo {
+	struct AutoloadInfo {
 		String name;
 		String path;
 		bool is_singleton = false;
@@ -55,24 +58,23 @@ class EditorAutoloadSettings : public VBoxContainer {
 		int order = 0;
 		Node *node = nullptr;
 
-		bool operator==(const AutoLoadInfo &p_info) const {
+		bool operator==(const AutoloadInfo &p_info) const {
 			return order == p_info.order;
 		}
 	};
 
-	List<AutoLoadInfo> autoload_cache;
+	List<AutoloadInfo> autoload_cache;
 
-	bool updating_autoload;
-	int number_of_autoloads;
+	bool updating_autoload = false;
 	String selected_autoload;
 
-	Tree *tree;
-	LineEdit *autoload_add_name;
-	Button *add_autoload;
-	LineEdit *autoload_add_path;
-	Label *error_message;
-	Button *browse_button;
-	EditorFileDialog *file_dialog;
+	Tree *tree = nullptr;
+	LineEdit *autoload_add_name = nullptr;
+	Button *add_autoload = nullptr;
+	LineEdit *autoload_add_path = nullptr;
+	Label *error_message = nullptr;
+	Button *browse_button = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
 
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
@@ -87,6 +89,8 @@ class EditorAutoloadSettings : public VBoxContainer {
 	void _autoload_open(const String &fpath);
 	void _autoload_file_callback(const String &p_path);
 	Node *_create_autoload(const String &p_path);
+
+	void _script_created(Ref<Script> p_script);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;

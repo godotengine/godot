@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,7 +134,7 @@ public:
 		if (pos < 0) {
 			return;
 		}
-		_cowdata.remove(pos);
+		_cowdata.remove_at(pos);
 	}
 
 	int find(const T &p_val) const {
@@ -142,6 +142,9 @@ public:
 	}
 
 	int find_nearest(const T &p_val) const {
+		if (_cowdata.is_empty()) {
+			return -1;
+		}
 		bool exact;
 		return _find(p_val, exact);
 	}
@@ -193,9 +196,8 @@ public:
 	_FORCE_INLINE_ VMap() {}
 	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
 
-	inline VMap &operator=(const VMap &p_from) {
+	inline void operator=(const VMap &p_from) {
 		_cowdata._ref(p_from._cowdata);
-		return *this;
 	}
 };
 

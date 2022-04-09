@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected device is the Default call set_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
@@ -56,7 +56,7 @@ OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected device is the Default call set_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
@@ -168,15 +168,15 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inRefCon);
 
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			AudioBuffer *abuf = &ioData->mBuffers[i];
 			memset(abuf->mData, 0, abuf->mDataByteSize);
-		};
+		}
 		return 0;
-	};
+	}
 
 	ad->start_counting_ticks();
 
@@ -195,21 +195,21 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 
 			frames_left -= frames;
 			out += frames * ad->channels;
-		};
-	};
+		}
+	}
 
 	ad->stop_counting_ticks();
 	ad->unlock();
 
 	return 0;
-};
+}
 
 OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inRefCon);
 	if (!ad->active) {
 		return 0;
 	}
@@ -251,7 +251,7 @@ void AudioDriverCoreAudio::start() {
 			active = true;
 		}
 	}
-};
+}
 
 void AudioDriverCoreAudio::stop() {
 	if (active) {
@@ -266,19 +266,19 @@ void AudioDriverCoreAudio::stop() {
 
 int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
-};
+}
 
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
-};
+}
 
 void AudioDriverCoreAudio::lock() {
 	mutex.lock();
-};
+}
 
 void AudioDriverCoreAudio::unlock() {
 	mutex.unlock();
-};
+}
 
 bool AudioDriverCoreAudio::try_lock() {
 	return mutex.try_lock() == OK;
@@ -521,8 +521,9 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 		UInt32 channelCount = 0;
-		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
+		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++) {
 			channelCount += bufferList->mBuffers[j].mNumberChannels;
+		}
 
 		memfree(bufferList);
 
@@ -540,7 +541,7 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 			ERR_FAIL_NULL_V_MSG(buffer, list, "Out of memory.");
 			if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 				// Append the ID to the name in case we have devices with duplicate name
-				list.push_back(String(buffer) + " (" + itos(audioDevices[i]) + ")");
+				list.push_back(String::utf8(buffer) + " (" + itos(audioDevices[i]) + ")");
 			}
 
 			memfree(buffer);
@@ -579,8 +580,9 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 			UInt32 channelCount = 0;
-			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
+			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++) {
 				channelCount += bufferList->mBuffers[j].mNumberChannels;
+			}
 
 			memfree(bufferList);
 
@@ -597,7 +599,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 				char *buffer = (char *)memalloc(maxSize);
 				ERR_FAIL_NULL_MSG(buffer, "Out of memory.");
 				if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
-					String name = String(buffer) + " (" + itos(audioDevices[i]) + ")";
+					String name = String::utf8(buffer) + " (" + itos(audioDevices[i]) + ")";
 					if (name == device) {
 						deviceId = audioDevices[i];
 						found = true;

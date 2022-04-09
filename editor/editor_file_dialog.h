@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define EDITORFILEDIALOG_H
 
 #include "core/io/dir_access.h"
+#include "editor/plugins/editor_preview_plugins.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -83,49 +84,50 @@ private:
 		ITEM_MENU_SHOW_IN_EXPLORER
 	};
 
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
 
-	Button *makedir;
+	Button *makedir = nullptr;
 	Access access;
-	//Button *action;
-	VBoxContainer *vbox;
+
+	VBoxContainer *vbox = nullptr;
 	FileMode mode;
 	bool can_create_dir;
-	LineEdit *dir;
+	LineEdit *dir = nullptr;
 
-	Button *dir_prev;
-	Button *dir_next;
-	Button *dir_up;
+	Button *dir_prev = nullptr;
+	Button *dir_next = nullptr;
+	Button *dir_up = nullptr;
 
-	HBoxContainer *drives_container;
-	HBoxContainer *shortcuts_container;
-	OptionButton *drives;
-	ItemList *item_list;
-	PopupMenu *item_menu;
-	TextureRect *preview;
-	VBoxContainer *preview_vb;
-	HSplitContainer *list_hb;
-	HBoxContainer *file_box;
-	LineEdit *file;
-	OptionButton *filter;
-	AcceptDialog *mkdirerr;
-	DirAccess *dir_access;
-	ConfirmationDialog *confirm_save;
-	DependencyRemoveDialog *remove_dialog;
+	HBoxContainer *drives_container = nullptr;
+	HBoxContainer *shortcuts_container = nullptr;
+	OptionButton *drives = nullptr;
+	ItemList *item_list = nullptr;
+	PopupMenu *item_menu = nullptr;
+	TextureRect *preview = nullptr;
+	VBoxContainer *preview_vb = nullptr;
+	HSplitContainer *list_hb = nullptr;
+	HBoxContainer *file_box = nullptr;
+	LineEdit *file = nullptr;
+	OptionButton *filter = nullptr;
+	AcceptDialog *error_dialog = nullptr;
+	DirAccess *dir_access = nullptr;
+	ConfirmationDialog *confirm_save = nullptr;
+	DependencyRemoveDialog *dep_remove_dialog = nullptr;
+	ConfirmationDialog *global_remove_dialog = nullptr;
 
-	Button *mode_thumbnails;
-	Button *mode_list;
+	Button *mode_thumbnails = nullptr;
+	Button *mode_list = nullptr;
 
-	Button *refresh;
-	Button *favorite;
-	Button *show_hidden;
+	Button *refresh = nullptr;
+	Button *favorite = nullptr;
+	Button *show_hidden = nullptr;
 
-	Button *fav_up;
-	Button *fav_down;
+	Button *fav_up = nullptr;
+	Button *fav_down = nullptr;
 
-	ItemList *favorites;
-	ItemList *recent;
+	ItemList *favorites = nullptr;
+	ItemList *recent = nullptr;
 
 	Vector<String> local_history;
 	int local_history_pos;
@@ -133,21 +135,25 @@ private:
 
 	Vector<String> filters;
 
-	bool preview_waiting;
+	bool previews_enabled = true;
+	bool preview_waiting = false;
 	int preview_wheel_index;
 	float preview_wheel_timeout;
+
 	static bool default_show_hidden_files;
 	static DisplayMode default_display_mode;
 	bool show_hidden_files;
 	DisplayMode display_mode;
 
-	bool disable_overwrite_warning;
-	bool invalidated;
+	bool disable_overwrite_warning = false;
+	bool invalidated = true;
 
 	void update_dir();
 	void update_file_name();
 	void update_file_list();
 	void update_filters();
+
+	void _focus_file_text();
 
 	void _update_favorites();
 	void _favorite_pressed();
@@ -177,8 +183,10 @@ private:
 	void _make_dir_confirm();
 
 	void _delete_items();
+	void _delete_files_global();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
+	void _update_icons();
 
 	void _go_up();
 	void _go_back();
@@ -187,20 +195,20 @@ private:
 	virtual void _post_popup() override;
 
 	void _save_to_recent();
-	//callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load
+	// Callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load.
 
 	void _thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _request_single_thumbnail(const String &p_path);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	//bind helpers
+
 public:
 	void popup_file_dialog();
 	void clear_filters();
@@ -228,16 +236,18 @@ public:
 	void set_access(Access p_access);
 	Access get_access() const;
 
-	void set_show_hidden_files(bool p_show);
-	bool is_showing_hidden_files() const;
-
 	static void set_default_show_hidden_files(bool p_show);
 	static void set_default_display_mode(DisplayMode p_mode);
+	void set_show_hidden_files(bool p_show);
+	bool is_showing_hidden_files() const;
 
 	void invalidate();
 
 	void set_disable_overwrite_warning(bool p_disable);
 	bool is_overwrite_warning_disabled() const;
+
+	void set_previews_enabled(bool p_enabled);
+	bool are_previews_enabled();
 
 	EditorFileDialog();
 	~EditorFileDialog();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,14 +33,16 @@
 #include "editor/editor_scale.h"
 
 void FontDataPreview::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		Color line_color = text_color;
-		line_color.a *= 0.6;
-		Vector2 pos = (get_size() - line->get_size()) / 2;
-		line->draw(get_canvas_item(), pos, text_color);
-		draw_line(Vector2(0, pos.y + line->get_line_ascent()), Vector2(pos.x - 5, pos.y + line->get_line_ascent()), line_color);
-		draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_size().x, pos.y + line->get_line_ascent()), line_color);
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Color line_color = text_color;
+			line_color.a *= 0.6;
+			Vector2 pos = (get_size() - line->get_size()) / 2;
+			line->draw(get_canvas_item(), pos, text_color);
+			draw_line(Vector2(0, pos.y + line->get_line_ascent()), Vector2(pos.x - 5, pos.y + line->get_line_ascent()), line_color);
+			draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_size().x, pos.y + line->get_line_ascent()), line_color);
+		} break;
 	}
 }
 
@@ -97,7 +99,7 @@ bool EditorInspectorPluginFont::parse_property(Object *p_object, const Variant::
 
 /*************************************************************************/
 
-FontEditorPlugin::FontEditorPlugin(EditorNode *p_node) {
+FontEditorPlugin::FontEditorPlugin() {
 	Ref<EditorInspectorPluginFont> fd_plugin;
 	fd_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fd_plugin);

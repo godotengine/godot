@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,19 @@
 #ifndef RASTERIZER_OPENGL_H
 #define RASTERIZER_OPENGL_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
 #include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "storage/canvas_texture_storage.h"
+#include "storage/config.h"
+#include "storage/decal_atlas_storage.h"
+#include "storage/material_storage.h"
+#include "storage/mesh_storage.h"
+#include "storage/render_target_storage.h"
+#include "storage/texture_storage.h"
 
 class RasterizerGLES3 : public RendererCompositor {
 private:
@@ -45,16 +51,26 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
-	double time_scale = 1.0;
 
 protected:
-	RasterizerCanvasGLES3 canvas;
+	GLES3::Config config;
+	GLES3::CanvasTextureStorage canvas_texture_storage;
+	GLES3::TextureStorage texture_storage;
+	GLES3::DecalAtlasStorage decal_atlas_storage;
+	GLES3::MaterialStorage material_storage;
+	GLES3::MeshStorage mesh_storage;
 	RasterizerStorageGLES3 storage;
+	RasterizerCanvasGLES3 canvas;
 	RasterizerSceneGLES3 scene;
 
-	void _blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect);
+	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
 
 public:
+	RendererCanvasTextureStorage *get_canvas_texture_storage() { return &canvas_texture_storage; }
+	RendererMaterialStorage *get_material_storage() { return &material_storage; }
+	RendererMeshStorage *get_mesh_storage() { return &mesh_storage; }
+	RendererTextureStorage *get_texture_storage() { return &texture_storage; }
+	RendererDecalAtlasStorage *get_decal_atlas_storage() { return &decal_atlas_storage; }
 	RendererStorage *get_storage() { return &storage; }
 	RendererCanvasRender *get_canvas() { return &canvas; }
 	RendererSceneRender *get_scene() { return &scene; }
@@ -87,6 +103,6 @@ public:
 	~RasterizerGLES3() {}
 };
 
-#endif // GLES3_BACKEND_ENABLED
+#endif // GLES3_ENABLED
 
 #endif

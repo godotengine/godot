@@ -14,7 +14,7 @@ layout(location = 4) flat out uvec3 vertex_indices;
 layout(location = 5) flat out vec3 face_normal;
 layout(location = 6) flat out uint fragment_action;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec2 atlas_size;
 	vec2 uv_offset;
 	vec3 to_cell_size;
@@ -69,7 +69,7 @@ void main() {
 
 #include "lm_common_inc.glsl"
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec2 atlas_size;
 	vec2 uv_offset;
 	vec3 to_cell_size;

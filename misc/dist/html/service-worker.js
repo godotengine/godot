@@ -4,7 +4,8 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 const CACHE_VERSION = "@GODOT_VERSION@";
-const CACHE_NAME = "@GODOT_NAME@-cache";
+const CACHE_PREFIX = "@GODOT_NAME@-sw-cache-";
+const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 const OFFLINE_URL = "@GODOT_OFFLINE_PAGE@";
 // Files that will be cached on load.
 const CACHED_FILES = @GODOT_CACHE@;
@@ -13,25 +14,34 @@ const CACHABLE_FILES = @GODOT_OPT_CACHE@;
 const FULL_CACHE = CACHED_FILES.concat(CACHABLE_FILES);
 
 self.addEventListener("install", (event) => {
-	event.waitUntil(async function () {
-		const cache = await caches.open(CACHE_NAME);
-		// Clear old cache (including optionals).
-		await Promise.all(FULL_CACHE.map(path => cache.delete(path)));
-		// Insert new one.
-		const done = await cache.addAll(CACHED_FILES);
-		return done;
-	}());
+	event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CACHED_FILES)));
 });
 
 self.addEventListener("activate", (event) => {
-	event.waitUntil(async function () {
-		if ("navigationPreload" in self.registration) {
-			await self.registration.navigationPreload.enable();
-		}
-	}());
-	// Tell the active service worker to take control of the page immediately.
-	self.clients.claim();
+	event.waitUntil(caches.keys().then(
+		function (keys) {
+			// Remove old caches.
+			return Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key != CACHE_NAME).map(key => caches.delete(key)));
+		}).then(function() {
+			// Enable navigation preload if available.
+			return ("navigationPreload" in self.registration) ? self.registration.navigationPreload.enable() : Promise.resolve();
+		})
+	);
 });
+
+async function fetchAndCache(event, cache, isCachable) {
+	// Use the preloaded response, if it's there
+	let response = await event.preloadResponse;
+	if (!response) {
+		// Or, go over network.
+		response = await self.fetch(event.request);
+	}
+	if (isCachable) {
+		// And update the cache
+		cache.put(event.request, response.clone());
+	}
+	return response;
+}
 
 self.addEventListener("fetch", (event) => {
 	const isNavigate = event.request.mode === "navigate";
@@ -42,32 +52,54 @@ self.addEventListener("fetch", (event) => {
 	const isCachable = FULL_CACHE.some(v => v === local) || (base === referrer && base.endsWith(CACHED_FILES[0]));
 	if (isNavigate || isCachable) {
 		event.respondWith(async function () {
-			try {
-				// Use the preloaded response, if it's there
-				let request = event.request.clone();
-				let response = await event.preloadResponse;
-				if (!response) {
-					// Or, go over network.
-					response = await fetch(event.request);
+			// Try to use cache first
+			const cache = await caches.open(CACHE_NAME);
+			if (event.request.mode === "navigate") {
+				// Check if we have full cache during HTML page request.
+				const fullCache = await Promise.all(FULL_CACHE.map(name => cache.match(name)));
+				const missing = fullCache.some(v => v === undefined);
+				if (missing) {
+					try {
+						// Try network if some cached file is missing (so we can display offline page in case).
+						return await fetchAndCache(event, cache, isCachable);
+					} catch (e) {
+						// And return the hopefully always cached offline page in case of network failure.
+						console.error("Network error: ", e);
+						return await caches.match(OFFLINE_URL);
+					}
 				}
-				if (isCachable) {
-					// Update the cache
-					const cache = await caches.open(CACHE_NAME);
-					cache.put(request, response.clone());
-				}
-				return response;
-			} catch (error) {
-				const cache = await caches.open(CACHE_NAME);
-				if (event.request.mode === "navigate") {
-					// Check if we have full cache.
-					const cached = await Promise.all(FULL_CACHE.map(name => cache.match(name)));
-					const missing = cached.some(v => v === undefined);
-					const cachedResponse = missing ? await caches.match(OFFLINE_URL) : await caches.match(CACHED_FILES[0]);
-					return cachedResponse;
-				}
-				const cachedResponse = await caches.match(event.request);
-				return cachedResponse;
+			}
+			const cached = await cache.match(event.request);
+			if (cached) {
+				return cached;
+			} else {
+				// Try network if don't have it in cache.
+				return await fetchAndCache(event, cache, isCachable);
 			}
 		}());
 	}
+});
+
+self.addEventListener("message", (event) => {
+	// No cross origin
+	if (event.origin != self.origin) {
+		return;
+	}
+	const id = event.source.id || "";
+	const msg = event.data || "";
+	// Ensure it's one of our clients.
+	self.clients.get(id).then(function (client) {
+		if (!client) {
+			return; // Not a valid client.
+		}
+		if (msg === "claim") {
+			self.skipWaiting().then(() => self.clients.claim());
+		} else if (msg === "clear") {
+			caches.delete(CACHE_NAME);
+		} else if (msg === "update") {
+			self.skipWaiting().then(() => self.clients.claim()).then(() => self.clients.matchAll()).then(all => all.forEach(c => c.navigate(c.url)));
+		} else {
+			onClientMessage(event);
+		}
+	});
 });

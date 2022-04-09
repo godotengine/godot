@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,10 @@
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
-void MenuButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shorcut_context()) {
+	if (!_is_focus_owner_in_shortcut_context()) {
 		return;
 	}
 
@@ -98,7 +98,13 @@ void MenuButton::pressed() {
 	popup->set_position(gp);
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
 
-	popup->take_mouse_focus();
+	// If not triggered by the mouse, start the popup with its first item selected.
+	if (popup->get_item_count() > 0 &&
+			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
+					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+		popup->set_current_index(0);
+	}
+
 	popup->popup();
 }
 
@@ -130,11 +136,16 @@ int MenuButton::get_item_count() const {
 
 void MenuButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				popup->hide();
 			}
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			Vector2i mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
 			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_find_control(mouse_pos));
@@ -184,7 +195,7 @@ void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage &= ~(!popup->is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "1,10,1,or_greater");
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
 		p_list->push_back(pi);
 
 		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
@@ -207,7 +218,7 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
-	ADD_ARRAY_COUNT("Items", "items_count", "set_item_count", "get_item_count", "popup/item_");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 }
@@ -216,11 +227,12 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
 
-MenuButton::MenuButton() {
+MenuButton::MenuButton(const String &p_text) :
+		Button(p_text) {
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 

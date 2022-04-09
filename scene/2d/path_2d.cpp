@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,30 +86,41 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 #endif
 
 void Path2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
-		//draw the curve!!
+	switch (p_what) {
+		// Draw the curve if navigation debugging is enabled.
+		case NOTIFICATION_DRAW: {
+			if (!curve.is_valid()) {
+				break;
+			}
 
-		if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
-			return;
-		}
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+				return;
+			}
+
+			if (curve->get_point_count() < 2) {
+				return;
+			}
 
 #ifdef TOOLS_ENABLED
-		const real_t line_width = 2 * EDSCALE;
+			const real_t line_width = 2 * EDSCALE;
 #else
-		const real_t line_width = 2;
+			const real_t line_width = 2;
 #endif
-		const Color color = Color(0.5, 0.6, 1.0, 0.7);
+			const Color color = Color(0.5, 0.6, 1.0, 0.7);
 
-		for (int i = 0; i < curve->get_point_count(); i++) {
-			Vector2 prev_p = curve->get_point_position(i);
+			_cached_draw_pts.resize(curve->get_point_count() * 8);
+			int count = 0;
 
-			for (int j = 1; j <= 8; j++) {
-				real_t frac = j / 8.0;
-				Vector2 p = curve->interpolate(i, frac);
-				draw_line(prev_p, p, color, line_width);
-				prev_p = p;
+			for (int i = 0; i < curve->get_point_count(); i++) {
+				for (int j = 0; j < 8; j++) {
+					real_t frac = j * (1.0 / 8.0);
+					Vector2 p = curve->interpolate(i, frac);
+					_cached_draw_pts.set(count++, p);
+				}
 			}
-		}
+
+			draw_polyline(_cached_draw_pts, color, line_width, true);
+		} break;
 	}
 }
 
@@ -220,8 +231,8 @@ void PathFollow2D::_notification(int p_what) {
 			if (path) {
 				_update_transform();
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			path = nullptr;
 		} break;
@@ -252,7 +263,7 @@ TypedArray<String> PathFollow2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {
-			warnings.push_back(TTR("PathFollow2D only works when set as a child of a Path2D node."));
+			warnings.push_back(RTR("PathFollow2D only works when set as a child of a Path2D node."));
 		}
 	}
 

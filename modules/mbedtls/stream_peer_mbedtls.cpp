@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,11 @@
 #include "core/io/stream_peer_tcp.h"
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
+	StreamPeerMbedTLS *sp = static_cast<StreamPeerMbedTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
@@ -54,11 +54,11 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 }
 
 int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0) {
+	if (buf == nullptr || len == 0) {
 		return 0;
 	}
 
-	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
+	StreamPeerMbedTLS *sp = static_cast<StreamPeerMbedTLS *>(ctx);
 
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 

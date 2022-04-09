@@ -127,7 +127,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="linear">The linear energy to convert.</param>
-        /// <returns>Audio as decibels</returns>
+        /// <returns>Audio as decibels.</returns>
         public static real_t Linear2Db(real_t linear)
         {
             return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
@@ -323,6 +323,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a normally-distributed pseudo-random number, using Box-Muller transform with the specified <c>mean</c> and a standard <c>deviation</c>.
+        /// This is also called Gaussian distribution.
+        /// </summary>
+        /// <returns>A random normally-distributed <see langword="float"/> number.</returns>
+        public static double Randfn(double mean, double deviation)
+        {
+            return godot_icall_GD_randfn(mean, deviation);
+        }
+
+        /// <summary>
         /// Returns a random unsigned 32-bit integer.
         /// Use remainder to obtain a random value in the interval <c>[0, N - 1]</c> (where N is smaller than 2^32).
         /// </summary>
@@ -390,7 +400,7 @@ namespace Godot
         /// </summary>
         /// <param name="seed">
         /// Seed to use to generate the random number.
-        /// If a different seed is used, its value will be modfied.
+        /// If a different seed is used, its value will be modified.
         /// </param>
         /// <returns>A random <see langword="uint"/> number.</returns>
         public static uint RandFromSeed(ref ulong seed)
@@ -564,19 +574,22 @@ namespace Godot
         internal static extern void godot_icall_GD_printt(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float godot_icall_GD_randf();
+        internal static extern void godot_icall_GD_randomize();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern uint godot_icall_GD_randi();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_randomize();
+        internal static extern float godot_icall_GD_randf();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int godot_icall_GD_randi_range(int from, int to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern double godot_icall_GD_randf_range(double from, double to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_GD_randi_range(int from, int to);
+        internal static extern double godot_icall_GD_randfn(double mean, double deviation);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);

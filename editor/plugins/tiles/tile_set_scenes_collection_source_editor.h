@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,13 @@
 #ifndef TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H
 #define TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/item_list.h"
 #include "scene/resources/tile_set.h"
+
+class UndoRedo;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetScenesCollectionSourceEditor, HBoxContainer);
@@ -66,7 +70,7 @@ private:
 		GDCLASS(SceneTileProxyObject, Object);
 
 	private:
-		TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor;
+		TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor = nullptr;
 
 		TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 		int source_id;
@@ -93,23 +97,23 @@ private:
 	TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 	int tile_set_source_id = -1;
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	bool tile_set_scenes_collection_source_changed_needs_update = false;
 
 	// Source inspector.
-	TileSetScenesCollectionProxyObject *scenes_collection_source_proxy_object;
-	Label *scenes_collection_source_inspector_label;
-	EditorInspector *scenes_collection_source_inspector;
+	TileSetScenesCollectionProxyObject *scenes_collection_source_proxy_object = nullptr;
+	Label *scenes_collection_source_inspector_label = nullptr;
+	EditorInspector *scenes_collection_source_inspector = nullptr;
 
 	// Tile inspector.
-	SceneTileProxyObject *tile_proxy_object;
-	Label *tile_inspector_label;
-	EditorInspector *tile_inspector;
+	SceneTileProxyObject *tile_proxy_object = nullptr;
+	Label *tile_inspector_label = nullptr;
+	EditorInspector *tile_inspector = nullptr;
 
-	ItemList *scene_tiles_list;
-	Button *scene_tile_add_button;
-	Button *scene_tile_delete_button;
+	ItemList *scene_tiles_list = nullptr;
+	Button *scene_tile_add_button = nullptr;
+	Button *scene_tile_delete_button = nullptr;
 
 	void _tile_set_scenes_collection_source_changed();
 	void _scenes_collection_source_proxy_object_changed(String p_what);

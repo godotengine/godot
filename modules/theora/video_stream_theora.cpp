@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -337,6 +337,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		Ref<Image> img;
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8);
+		texture->create_from_image(img);
 
 	} else {
 		/* tear down the partial theora setup */
@@ -603,7 +604,7 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
-	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDNative-provided video streams).");
+	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDExtension-provided video streams).");
 }
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -626,7 +627,7 @@ int VideoStreamPlaybackTheora::get_mix_rate() const {
 #ifdef THEORA_USE_THREAD_STREAMING
 
 void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
-	VideoStreamPlaybackTheora *vs = (VideoStreamPlaybackTheora *)ud;
+	VideoStreamPlaybackTheora *vs = static_cast<VideoStreamPlaybackTheora *>(ud);
 
 	while (!vs->thread_exit) {
 		//just fill back the buffer

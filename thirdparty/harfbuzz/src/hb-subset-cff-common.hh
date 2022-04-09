@@ -275,59 +275,35 @@ struct subr_flattener_t
 
 struct subr_closures_t
 {
-  subr_closures_t () : valid (false), global_closure (nullptr)
-  { local_closures.init (); }
-
-  void init (unsigned int fd_count)
+  subr_closures_t (unsigned int fd_count) : valid (false), global_closure (), local_closures ()
   {
     valid = true;
-    global_closure = hb_set_create ();
-    if (global_closure == hb_set_get_empty ())
-      valid = false;
     if (!local_closures.resize (fd_count))
       valid = false;
-
-    for (unsigned int i = 0; i < local_closures.length; i++)
-    {
-      local_closures[i] = hb_set_create ();
-      if (local_closures[i] == hb_set_get_empty ())
-	valid = false;
-    }
-  }
-
-  void fini ()
-  {
-    hb_set_destroy (global_closure);
-    for (unsigned int i = 0; i < local_closures.length; i++)
-      hb_set_destroy (local_closures[i]);
-    local_closures.fini ();
   }
 
   void reset ()
   {
-    hb_set_clear (global_closure);
+    global_closure.clear();
     for (unsigned int i = 0; i < local_closures.length; i++)
-      hb_set_clear (local_closures[i]);
+      local_closures[i].clear();
   }
 
   bool is_valid () const { return valid; }
   bool  valid;
-  hb_set_t  *global_closure;
-  hb_vector_t<hb_set_t *> local_closures;
+  hb_set_t  global_closure;
+  hb_vector_t<hb_set_t> local_closures;
 };
 
 struct parsed_cs_op_t : op_str_t
 {
   void init (unsigned int subr_num_ = 0)
   {
-    op_str_t::init ();
     subr_num = subr_num_;
     drop_flag = false;
     keep_flag = false;
     skip_flag = false;
   }
-
-  void fini () { op_str_t::fini (); }
 
   bool for_drop () const { return drop_flag; }
   void set_drop ()       { if (!for_keep ()) drop_flag = true; }
@@ -416,16 +392,6 @@ struct parsed_cs_str_t : parsed_values_t<parsed_cs_op_t>
 
 struct parsed_cs_str_vec_t : hb_vector_t<parsed_cs_str_t>
 {
-  void init (unsigned int len_ = 0)
-  {
-    SUPER::init ();
-    if (unlikely (!resize (len_)))
-      return;
-    for (unsigned int i = 0; i < length; i++)
-      (*this)[i].init ();
-  }
-  void fini () { SUPER::fini_deep (); }
-
   private:
   typedef hb_vector_t<parsed_cs_str_t> SUPER;
 };
@@ -496,7 +462,7 @@ struct subr_subset_param_t
 
 struct subr_remap_t : hb_inc_bimap_t
 {
-  void create (hb_set_t *closure)
+  void create (const hb_set_t *closure)
   {
     /* create a remapping of subroutine numbers from old to new.
      * no optimization based on usage counts. fonttools doesn't appear doing that either.
@@ -526,19 +492,9 @@ struct subr_remap_t : hb_inc_bimap_t
 
 struct subr_remaps_t
 {
-  subr_remaps_t ()
+  subr_remaps_t (unsigned int fdCount)
   {
-    global_remap.init ();
-    local_remaps.init ();
-  }
-
-  ~subr_remaps_t () { fini (); }
-
-  void init (unsigned int fdCount)
-  {
-    if (unlikely (!local_remaps.resize (fdCount))) return;
-    for (unsigned int i = 0; i < fdCount; i++)
-      local_remaps[i].init ();
+    local_remaps.resize (fdCount);
   }
 
   bool in_error()
@@ -548,15 +504,9 @@ struct subr_remaps_t
 
   void create (subr_closures_t& closures)
   {
-    global_remap.create (closures.global_closure);
+    global_remap.create (&closures.global_closure);
     for (unsigned int i = 0; i < local_remaps.length; i++)
-      local_remaps[i].create (closures.local_closures[i]);
-  }
-
-  void fini ()
-  {
-    global_remap.fini ();
-    local_remaps.fini_deep ();
+      local_remaps[i].create (&closures.local_closures[i]);
   }
 
   subr_remap_t	       global_remap;
@@ -567,21 +517,8 @@ template <typename SUBSETTER, typename SUBRS, typename ACC, typename ENV, typena
 struct subr_subsetter_t
 {
   subr_subsetter_t (ACC &acc_, const hb_subset_plan_t *plan_)
-    : acc (acc_), plan (plan_)
-  {
-    parsed_charstrings.init ();
-    parsed_global_subrs.init ();
-    parsed_local_subrs.init ();
-  }
-
-  ~subr_subsetter_t ()
-  {
-    closures.fini ();
-    remaps.fini ();
-    parsed_charstrings.fini_deep ();
-    parsed_global_subrs.fini_deep ();
-    parsed_local_subrs.fini_deep ();
-  }
+      : acc (acc_), plan (plan_), closures(acc_.fdCount), remaps(acc_.fdCount)
+  {}
 
   /* Subroutine subsetting with --no-desubroutinize runs in phases:
    *
@@ -599,11 +536,8 @@ struct subr_subsetter_t
    */
   bool subset (void)
   {
-    closures.init (acc.fdCount);
-    remaps.init (acc.fdCount);
-
-    parsed_charstrings.init (plan->num_output_glyphs ());
-    parsed_global_subrs.init (acc.globalSubrs->count);
+    parsed_charstrings.resize (plan->num_output_glyphs ());
+    parsed_global_subrs.resize (acc.globalSubrs->count);
 
     if (unlikely (remaps.in_error()
                   || parsed_charstrings.in_error ()
@@ -615,7 +549,7 @@ struct subr_subsetter_t
 
     for (unsigned int i = 0; i < acc.fdCount; i++)
     {
-      parsed_local_subrs[i].init (acc.privateDicts[i].localSubrs->count);
+      parsed_local_subrs[i].resize (acc.privateDicts[i].localSubrs->count);
       if (unlikely (parsed_local_subrs[i].in_error ())) return false;
     }
     if (unlikely (!closures.valid))
@@ -638,7 +572,7 @@ struct subr_subsetter_t
       subr_subset_param_t  param;
       param.init (&parsed_charstrings[i],
 		  &parsed_global_subrs,  &parsed_local_subrs[fd],
-		  closures.global_closure, closures.local_closures[fd],
+		  &closures.global_closure, &closures.local_closures[fd],
 		  plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 
       if (unlikely (!interp.interpret (param)))
@@ -662,7 +596,7 @@ struct subr_subsetter_t
 	subr_subset_param_t  param;
 	param.init (&parsed_charstrings[i],
 		    &parsed_global_subrs,  &parsed_local_subrs[fd],
-		    closures.global_closure, closures.local_closures[fd],
+		    &closures.global_closure, &closures.local_closures[fd],
                     plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 
 	drop_hints_param_t  drop;
@@ -687,7 +621,7 @@ struct subr_subsetter_t
 	subr_subset_param_t  param;
 	param.init (&parsed_charstrings[i],
 		    &parsed_global_subrs,  &parsed_local_subrs[fd],
-		    closures.global_closure, closures.local_closures[fd],
+		    &closures.global_closure, &closures.local_closures[fd],
                     plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 	collect_subr_refs_in_str (parsed_charstrings[i], param);
       }

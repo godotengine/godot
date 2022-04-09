@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,26 @@
 
 #include <limits.h>
 
+float StyleBox::get_style_margin(Side p_side) const {
+	float ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_style_margin, p_side, ret)) {
+		return ret;
+	}
+	return 0;
+}
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_test_mask, p_point, p_rect, ret)) {
+		return ret;
+	}
+
 	return true;
+}
+
+void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	if (GDVIRTUAL_REQUIRED_CALL(_draw, p_canvas_item, p_rect)) {
+		return;
+	}
 }
 
 void StyleBox::set_default_margin(Side p_side, float p_value) {
@@ -74,10 +92,19 @@ Point2 StyleBox::get_offset() const {
 }
 
 Size2 StyleBox::get_center_size() const {
+	Size2 ret;
+	if (GDVIRTUAL_CALL(_get_center_size, ret)) {
+		return ret;
+	}
+
 	return Size2();
 }
 
 Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {
+	Rect2 ret;
+	if (GDVIRTUAL_CALL(_get_draw_rect, p_rect, ret)) {
+		return ret;
+	}
 	return p_rect;
 }
 
@@ -100,6 +127,12 @@ void StyleBox::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", SIDE_BOTTOM);
+
+	GDVIRTUAL_BIND(_get_style_margin, "side")
+	GDVIRTUAL_BIND(_test_mask, "point", "rect")
+	GDVIRTUAL_BIND(_get_center_size)
+	GDVIRTUAL_BIND(_get_draw_rect, "rect")
+	GDVIRTUAL_BIND(_draw, "to_canvas_item", "rect")
 }
 
 StyleBox::StyleBox() {
@@ -521,21 +554,22 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
 
 	// Corner radius center points.
-	Vector<Point2> outer_points;
-	outer_points.push_back(ring_rect.position + Vector2(ring_corner_radius[0], ring_corner_radius[0])); //tl
-	outer_points.push_back(Point2(ring_rect.position.x + ring_rect.size.x - ring_corner_radius[1], ring_rect.position.y + ring_corner_radius[1])); //tr
-	outer_points.push_back(ring_rect.position + ring_rect.size - Vector2(ring_corner_radius[2], ring_corner_radius[2])); //br
-	outer_points.push_back(Point2(ring_rect.position.x + ring_corner_radius[3], ring_rect.position.y + ring_rect.size.y - ring_corner_radius[3])); //bl
+	Vector<Point2> outer_points = {
+		ring_rect.position + Vector2(ring_corner_radius[0], ring_corner_radius[0]), //tl
+		Point2(ring_rect.position.x + ring_rect.size.x - ring_corner_radius[1], ring_rect.position.y + ring_corner_radius[1]), //tr
+		ring_rect.position + ring_rect.size - Vector2(ring_corner_radius[2], ring_corner_radius[2]), //br
+		Point2(ring_rect.position.x + ring_corner_radius[3], ring_rect.position.y + ring_rect.size.y - ring_corner_radius[3]) //bl
+	};
 
 	real_t inner_corner_radius[4];
 	set_inner_corner_radius(style_rect, inner_rect, corner_radius, inner_corner_radius);
 
-	Vector<Point2> inner_points;
-	inner_points.push_back(inner_rect.position + Vector2(inner_corner_radius[0], inner_corner_radius[0])); //tl
-	inner_points.push_back(Point2(inner_rect.position.x + inner_rect.size.x - inner_corner_radius[1], inner_rect.position.y + inner_corner_radius[1])); //tr
-	inner_points.push_back(inner_rect.position + inner_rect.size - Vector2(inner_corner_radius[2], inner_corner_radius[2])); //br
-	inner_points.push_back(Point2(inner_rect.position.x + inner_corner_radius[3], inner_rect.position.y + inner_rect.size.y - inner_corner_radius[3])); //bl
-
+	Vector<Point2> inner_points = {
+		inner_rect.position + Vector2(inner_corner_radius[0], inner_corner_radius[0]), //tl
+		Point2(inner_rect.position.x + inner_rect.size.x - inner_corner_radius[1], inner_rect.position.y + inner_corner_radius[1]), //tr
+		inner_rect.position + inner_rect.size - Vector2(inner_corner_radius[2], inner_corner_radius[2]), //br
+		Point2(inner_rect.position.x + inner_corner_radius[3], inner_rect.position.y + inner_rect.size.y - inner_corner_radius[3]) //bl
+	};
 	// Calculate the vertices.
 	for (int corner_index = 0; corner_index < 4; corner_index++) {
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {

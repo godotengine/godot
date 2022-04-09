@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,11 +39,14 @@ void RendererCompositorRD::prepare_for_blitting_render_targets() {
 
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
+	if (draw_list == RD::INVALID_ID) {
+		return; // Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+	}
 
 	for (int i = 0; i < p_amount; i++) {
 		RID texture = storage->render_target_get_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(texture.is_null());
-		RID rd_texture = storage->texture_get_rd_texture(texture);
+		RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
 
 		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
@@ -53,8 +56,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u.binding = 0;
-			u.ids.push_back(blit.sampler);
-			u.ids.push_back(rd_texture);
+			u.append_id(blit.sampler);
+			u.append_id(rd_texture);
 			uniforms.push_back(u);
 			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 
@@ -152,6 +155,11 @@ void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(storage);
+	memdelete(decal_atlas_storage);
+	memdelete(mesh_storage);
+	memdelete(material_storage);
+	memdelete(texture_storage);
+	memdelete(canvas_texture_storage);
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
@@ -162,9 +170,9 @@ void RendererCompositorRD::finalize() {
 void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 	RD::get_singleton()->prepare_screen_for_drawing();
 
-	RID texture = storage->texture_allocate();
-	storage->texture_2d_initialize(texture, p_image);
-	RID rd_texture = storage->texture_get_rd_texture(texture);
+	RID texture = texture_storage->texture_allocate();
+	texture_storage->texture_2d_initialize(texture, p_image);
+	RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 
 	RID uset;
 	{
@@ -172,8 +180,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
-		u.ids.push_back(blit.sampler);
-		u.ids.push_back(rd_texture);
+		u.append_id(blit.sampler);
+		u.append_id(rd_texture);
 		uniforms.push_back(u);
 		uset = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 	}
@@ -232,15 +240,17 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->swap_buffers();
 
-	storage->free(texture);
+	texture_storage->texture_free(texture);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
+	uniform_set_cache = memnew(UniformSetCacheRD);
+
 	{
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
-		if (shader_cache_dir == String()) {
+		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
 		}
 		DirAccessRef da = DirAccess::open(shader_cache_dir);
@@ -261,7 +271,7 @@ RendererCompositorRD::RendererCompositorRD() {
 					shader_cache_dir = String(); //disable only if not editor
 				}
 
-				if (shader_cache_dir != String()) {
+				if (!shader_cache_dir.is_empty()) {
 					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
 					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
 					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
@@ -278,15 +288,20 @@ RendererCompositorRD::RendererCompositorRD() {
 	singleton = this;
 	time = 0;
 
+	canvas_texture_storage = memnew(RendererRD::CanvasTextureStorage);
+	texture_storage = memnew(RendererRD::TextureStorage);
+	decal_atlas_storage = memnew(RendererRD::DecalAtlasStorage);
+	material_storage = memnew(RendererRD::MaterialStorage);
+	mesh_storage = memnew(RendererRD::MeshStorage);
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 
-	uint32_t back_end = GLOBAL_GET("rendering/vulkan/rendering/back_end");
-	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
+	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
-	if (back_end == 1 || textures_per_stage < 48) {
+	if (back_end || textures_per_stage < 48) {
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile(storage));
-	} else { // back_end == 0
+	} else { // back_end == false
 		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 	}
@@ -298,5 +313,6 @@ RendererCompositorRD::RendererCompositorRD() {
 }
 
 RendererCompositorRD::~RendererCompositorRD() {
+	memdelete(uniform_set_cache);
 	ShaderRD::set_shader_cache_dir(String());
 }

@@ -67,6 +67,7 @@ if env["builtin_libwebp"]:
         "dsp/lossless_msa.c",
         "dsp/lossless_neon.c",
         "dsp/lossless_sse2.c",
+        "dsp/lossless_sse41.c",
         "dsp/rescaler.c",
         "dsp/rescaler_mips32.c",
         "dsp/rescaler_mips_dsp_r2.c",

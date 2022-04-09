@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,9 @@
 namespace TestString {
 
 int u32scmp(const char32_t *l, const char32_t *r) {
-	for (; *l == *r && *l && *r; l++, r++)
-		;
+	for (; *l == *r && *l && *r; l++, r++) {
+		// Continue.
+	}
 	return *l - *r;
 }
 
@@ -157,10 +158,10 @@ TEST_CASE("[String] Invalid UTF8") {
 	String s;
 	bool err = s.parse_utf8((const char *)u8str);
 	CHECK(err);
-	CHECK(s == String());
+	CHECK(s.is_empty());
 
 	CharString cs = (const char *)u8str;
-	CHECK(String::utf8(cs) == String());
+	CHECK(String::utf8(cs).is_empty());
 	ERR_PRINT_ON
 }
 
@@ -170,10 +171,10 @@ TEST_CASE("[String] Invalid UTF16") {
 	String s;
 	bool err = s.parse_utf16(u16str);
 	CHECK(err);
-	CHECK(s == String());
+	CHECK(s.is_empty());
 
 	Char16String cs = u16str;
-	CHECK(String::utf16(cs) == String());
+	CHECK(String::utf16(cs).is_empty());
 	ERR_PRINT_ON
 }
 
@@ -242,6 +243,19 @@ TEST_CASE("[String] Testing for empty string") {
 	CHECK(String("").is_empty());
 	CHECK(String("").is_empty());
 	CHECK(String("").is_empty());
+}
+
+TEST_CASE("[String] Contains") {
+	String s = "C:\\Godot\\project\\string_test.tscn";
+	CHECK(s.contains(":\\"));
+	CHECK(s.contains("Godot"));
+	CHECK(s.contains(String("project\\string_test")));
+	CHECK(s.contains(String("\\string_test.tscn")));
+
+	CHECK(!s.contains("://"));
+	CHECK(!s.contains("Godoh"));
+	CHECK(!s.contains(String("project\\string test")));
+	CHECK(!s.contains(String("\\char_test.tscn")));
 }
 
 TEST_CASE("[String] Test chr") {
@@ -355,11 +369,17 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
 
 	// String::num_real tests.
+	CHECK(String::num_real(1.0) == "1.0");
+	CHECK(String::num_real(1.0, false) == "1");
+	CHECK(String::num_real(9.9) == "9.9");
+	CHECK(String::num_real(9.99) == "9.99");
+	CHECK(String::num_real(9.999) == "9.999");
+	CHECK(String::num_real(9.9999) == "9.9999");
 	CHECK(String::num_real(3.141593) == "3.141593");
 	CHECK(String::num_real(3.141) == "3.141"); // No trailing zeros.
 #ifdef REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(String::num_real(Math_PI) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(3.1415f) == "3.14149999618530", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double).");
+	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
 #else
 	CHECK_MESSAGE(String::num_real(Math_PI) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
@@ -871,7 +891,7 @@ TEST_CASE("[String] is_subsequence_of") {
 	String a = "is subsequence of";
 	CHECK(String("sub").is_subsequence_of(a));
 	CHECK(!String("Sub").is_subsequence_of(a));
-	CHECK(String("Sub").is_subsequence_ofi(a));
+	CHECK(String("Sub").is_subsequence_ofn(a));
 }
 
 TEST_CASE("[String] match") {
@@ -1130,6 +1150,25 @@ TEST_CASE("[String] Bigrams") {
 TEST_CASE("[String] c-escape/unescape") {
 	String s = "\\1\a2\b\f3\n45\r6\t7\v8\'9\?0\"";
 	CHECK(s.c_escape().c_unescape() == s);
+}
+
+TEST_CASE("[String] indent") {
+	static const char *input[] = {
+		"",
+		"aaa\nbbb",
+		"\tcontains\n\tindent",
+		"empty\n\nline",
+	};
+	static const char *expected[] = {
+		"",
+		"\taaa\n\tbbb",
+		"\t\tcontains\n\t\tindent",
+		"\tempty\n\n\tline",
+	};
+
+	for (int i = 0; i < 3; i++) {
+		CHECK(String(input[i]).indent("\t") == expected[i]);
+	}
 }
 
 TEST_CASE("[String] dedent") {
@@ -1438,6 +1477,24 @@ TEST_CASE("[String] Variant ptr indexed set") {
 	setter(&s, 1, &v);
 
 	CHECK_EQ(s, String("azcd"));
+}
+
+TEST_CASE("[Stress][String] Empty via ' == String()'") {
+	for (int i = 0; i < 100000; ++i) {
+		String str = "Hello World!";
+		if (str.is_empty()) {
+			continue;
+		}
+	}
+}
+
+TEST_CASE("[Stress][String] Empty via `is_empty()`") {
+	for (int i = 0; i < 100000; ++i) {
+		String str = "Hello World!";
+		if (str.is_empty()) {
+			continue;
+		}
+	}
 }
 } // namespace TestString
 

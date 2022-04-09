@@ -4,8 +4,8 @@
 # To use it, install this file in `/etc/bash_completion.d` then restart your shell.
 # You can also `source` this file directly in your shell startup file.
 #
-# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ _complete_godot_options() {
 --quiet
 --editor
 --project-manager
+--debug-server
 --quit
 --language
 --path
@@ -45,21 +46,30 @@ _complete_godot_options() {
 --remote-fs
 --remote-fs-password
 --audio-driver
---video-driver
+--display-driver
+--rendering-driver
+--gpu-index
+--text-driver
+--tablet-driver
+--headless
 --fullscreen
 --maximized
 --windowed
 --always-on-top
 --resolution
 --position
---low-dpi
 --headless
+--single-window
 --debug
 --breakpoints
 --profiling
+--gpu-profile
+--vk-layers
+--gpu-abort
 --remote-debug
 --debug-collisions
 --debug-navigation
+--debug-stringnames
 --frame-delay
 --time-scale
 --disable-render-loop
@@ -74,7 +84,7 @@ _complete_godot_options() {
 --doctool
 --no-docbase
 --build-solutions
---gdnative-generate-json-api
+--dump-extension-api
 --test
 " -- "$1"))
 }
@@ -100,10 +110,10 @@ _complete_godot_bash() {
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -W "unsafe safe separate" -- "$cur"))
-  elif [[ $prev == "--video-driver" ]]; then
+  elif [[ $prev == "--rendering-driver" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "Vulkan GLES2" -- "$cur"))
+    COMPREPLY=($(compgen -W "vulkan opengl3 dummy" -- "$cur"))
   elif [[ $prev == "--path" || $prev == "--doctool" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207

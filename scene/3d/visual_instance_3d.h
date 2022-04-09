@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 
 class VisualInstance3D : public Node3D {
 	GDCLASS(VisualInstance3D, Node3D);
-	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID base;
 	RID instance;
@@ -49,6 +48,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(AABB, _get_aabb)
 public:
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry
@@ -58,8 +58,7 @@ public:
 	};
 
 	RID get_instance() const;
-	virtual AABB get_aabb() const = 0;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const = 0;
+	virtual AABB get_aabb() const;
 
 	virtual AABB get_transformed_aabb() const; // helper
 
@@ -89,7 +88,7 @@ public:
 
 	enum GIMode {
 		GI_MODE_DISABLED,
-		GI_MODE_BAKED,
+		GI_MODE_STATIC,
 		GI_MODE_DYNAMIC
 	};
 
@@ -110,6 +109,7 @@ public:
 private:
 	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
+	Ref<Material> material_overlay;
 
 	float visibility_range_begin = 0.0;
 	float visibility_range_end = 0.0;
@@ -136,7 +136,6 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -163,6 +162,9 @@ public:
 
 	void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
+
+	void set_material_overlay(const Ref<Material> &p_material);
+	Ref<Material> get_material_overlay() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;

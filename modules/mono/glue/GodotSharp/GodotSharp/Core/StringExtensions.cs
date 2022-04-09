@@ -266,7 +266,7 @@ namespace Godot
         /// <returns>The capitalized string.</returns>
         public static string Capitalize(this string instance)
         {
-            string aux = instance.Replace("_", " ").ToLower();
+            string aux = instance.CamelcaseToUnderscore(true).Replace("_", " ").Trim();
             string cap = string.Empty;
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
@@ -282,6 +282,51 @@ namespace Godot
             }
 
             return cap;
+        }
+
+        private static string CamelcaseToUnderscore(this string instance, bool lowerCase)
+        {
+            string newString = string.Empty;
+            int startIndex = 0;
+
+            for (int i = 1; i < instance.Length; i++)
+            {
+                bool isUpper = char.IsUpper(instance[i]);
+                bool isNumber = char.IsDigit(instance[i]);
+
+                bool areNext2Lower = false;
+                bool isNextLower = false;
+                bool isNextNumber = false;
+                bool wasPrecedentUpper = char.IsUpper(instance[i - 1]);
+                bool wasPrecedentNumber = char.IsDigit(instance[i - 1]);
+
+                if (i + 2 < instance.Length)
+                {
+                    areNext2Lower = char.IsLower(instance[i + 1]) && char.IsLower(instance[i + 2]);
+                }
+
+                if (i + 1 < instance.Length)
+                {
+                    isNextLower = char.IsLower(instance[i + 1]);
+                    isNextNumber = char.IsDigit(instance[i + 1]);
+                }
+
+                bool condA = isUpper && !wasPrecedentUpper && !wasPrecedentNumber;
+                bool condB = wasPrecedentUpper && isUpper && areNext2Lower;
+                bool condC = isNumber && !wasPrecedentNumber;
+                bool canBreakNumberLetter = isNumber && !wasPrecedentNumber && isNextLower;
+                bool canBreakLetterNumber = !isNumber && wasPrecedentNumber && (isNextLower || isNextNumber);
+
+                bool shouldSplit = condA || condB || condC || canBreakNumberLetter || canBreakLetterNumber;
+                if (shouldSplit)
+                {
+                    newString += instance.Substring(startIndex, i - startIndex) + "_";
+                    startIndex = i;
+                }
+            }
+
+            newString += instance.Substring(startIndex, instance.Length - startIndex);
+            return lowerCase ? newString.ToLower() : newString;
         }
 
         /// <summary>
@@ -415,6 +460,10 @@ namespace Godot
         /// <summary>
         /// Find the first occurrence of a substring. Optionally, the search starting position can be passed.
         /// </summary>
+        /// <seealso cref="Find(string, char, int, bool)"/>
+        /// <seealso cref="FindLast(string, string, bool)"/>
+        /// <seealso cref="FindLast(string, string, int, bool)"/>
+        /// <seealso cref="FindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to find.</param>
         /// <param name="from">The search starting position.</param>
@@ -690,7 +739,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the string is a path to a file or
-        /// directory and its startign point is explicitly defined. This includes
+        /// directory and its starting point is explicitly defined. This includes
         /// <c>res://</c>, <c>user://</c>, <c>C:\</c>, <c>/</c>, etc.
         /// </summary>
         /// <seealso cref="IsRelativePath(string)"/>
@@ -723,7 +772,7 @@ namespace Godot
         /// <summary>
         /// Check whether this string is a subsequence of the given string.
         /// </summary>
-        /// <seealso cref="IsSubsequenceOfI(string, string)"/>
+        /// <seealso cref="IsSubsequenceOfN(string, string)"/>
         /// <param name="instance">The subsequence to search.</param>
         /// <param name="text">The string that contains the subsequence.</param>
         /// <param name="caseSensitive">If <see langword="true"/>, the check is case sensitive.</param>
@@ -775,7 +824,7 @@ namespace Godot
         /// <param name="instance">The subsequence to search.</param>
         /// <param name="text">The string that contains the subsequence.</param>
         /// <returns>If the string is a subsequence of the given string.</returns>
-        public static bool IsSubsequenceOfI(this string instance, string text)
+        public static bool IsSubsequenceOfN(this string instance, string text)
         {
             return instance.IsSubsequenceOf(text, caseSensitive: false);
         }
@@ -1345,7 +1394,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_String_simplify_path(string str);
+        internal static extern string godot_icall_String_simplify_path(string str);
 
         /// <summary>
         /// Split the string by a divisor string, return an array of the substrings.

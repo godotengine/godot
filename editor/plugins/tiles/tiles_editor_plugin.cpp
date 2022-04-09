@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,7 @@ void TilesEditorPlugin::_pattern_preview_done() {
 }
 
 void TilesEditorPlugin::_thread_func(void *ud) {
-	TilesEditorPlugin *te = (TilesEditorPlugin *)ud;
+	TilesEditorPlugin *te = static_cast<TilesEditorPlugin *>(ud);
 	te->_thread();
 }
 
@@ -113,7 +113,7 @@ void TilesEditorPlugin::_thread() {
 				tile_map->set_scale(scale);
 				tile_map->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
 
-				// Add the viewport at the lasst moment to avoid rendering too early.
+				// Add the viewport at the last moment to avoid rendering too early.
 				EditorNode::get_singleton()->add_child(viewport);
 
 				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_preview_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
@@ -157,6 +157,15 @@ void TilesEditorPlugin::_update_editors() {
 
 	// Update the viewport.
 	CanvasItemEditor::get_singleton()->update_viewport();
+
+	// Update visibility of bottom panel buttons.
+	if (tileset_editor_button->is_pressed() && !tile_set.is_valid()) {
+		if (tile_map) {
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(tilemap_editor);
+		} else {
+			EditorNode::get_singleton()->hide_bottom_panel();
+		}
+	}
 }
 
 void TilesEditorPlugin::_notification(int p_what) {
@@ -181,15 +190,15 @@ void TilesEditorPlugin::make_visible(bool p_visible) {
 		tileset_editor_button->set_visible(tile_set.is_valid());
 		tilemap_editor_button->set_visible(tile_map);
 		if (tile_map) {
-			editor_node->make_bottom_panel_item_visible(tilemap_editor);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(tilemap_editor);
 		} else {
-			editor_node->make_bottom_panel_item_visible(tileset_editor);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(tileset_editor);
 		}
 
 	} else {
 		tileset_editor_button->hide();
 		tilemap_editor_button->hide();
-		editor_node->hide_bottom_panel();
+		EditorNode::get_singleton()->hide_bottom_panel();
 	}
 }
 
@@ -207,15 +216,29 @@ void TilesEditorPlugin::set_sources_lists_current(int p_current) {
 	atlas_sources_lists_current = p_current;
 }
 
-void TilesEditorPlugin::synchronize_sources_list(Object *p_current) {
-	ItemList *item_list = Object::cast_to<ItemList>(p_current);
+void TilesEditorPlugin::synchronize_sources_list(Object *p_current_list, Object *p_current_sort_button) {
+	ItemList *item_list = Object::cast_to<ItemList>(p_current_list);
+	MenuButton *sorting_button = Object::cast_to<MenuButton>(p_current_sort_button);
 	ERR_FAIL_COND(!item_list);
+	ERR_FAIL_COND(!sorting_button);
+
+	if (sorting_button->is_visible_in_tree()) {
+		for (int i = 0; i != SOURCE_SORT_MAX; i++) {
+			sorting_button->get_popup()->set_item_checked(i, (i == (int)source_sort));
+		}
+	}
 
 	if (item_list->is_visible_in_tree()) {
 		if (atlas_sources_lists_current < 0 || atlas_sources_lists_current >= item_list->get_item_count()) {
 			item_list->deselect_all();
 		} else {
+			// Make sure the selection is not overwritten after sorting.
+			int atlas_sources_lists_current_mem = atlas_sources_lists_current;
+			item_list->emit_signal(SNAME("sort_request"));
+			atlas_sources_lists_current = atlas_sources_lists_current_mem;
+
 			item_list->set_current(atlas_sources_lists_current);
+			item_list->ensure_current_is_visible();
 			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
 		}
 	}
@@ -235,6 +258,87 @@ void TilesEditorPlugin::synchronize_atlas_view(Object *p_current) {
 	}
 }
 
+void TilesEditorPlugin::set_sorting_option(int p_option) {
+	source_sort = p_option;
+}
+
+List<int> TilesEditorPlugin::get_sorted_sources(const Ref<TileSet> tile_set) const {
+	SourceNameComparator::tile_set = tile_set;
+	List<int> source_ids;
+
+	for (int i = 0; i < tile_set->get_source_count(); i++) {
+		source_ids.push_back(tile_set->get_source_id(i));
+	}
+
+	switch (source_sort) {
+		case SOURCE_SORT_ID_REVERSE:
+			// Already sorted.
+			source_ids.reverse();
+			break;
+		case SOURCE_SORT_NAME:
+			source_ids.sort_custom<SourceNameComparator>();
+			break;
+		case SOURCE_SORT_NAME_REVERSE:
+			source_ids.sort_custom<SourceNameComparator>();
+			source_ids.reverse();
+			break;
+		default: // SOURCE_SORT_ID
+			break;
+	}
+
+	SourceNameComparator::tile_set.unref();
+	return source_ids;
+}
+
+Ref<TileSet> TilesEditorPlugin::SourceNameComparator::tile_set;
+
+bool TilesEditorPlugin::SourceNameComparator::operator()(const int &p_a, const int &p_b) const {
+	String name_a;
+	String name_b;
+
+	{
+		TileSetSource *source = *tile_set->get_source(p_a);
+
+		if (!source->get_name().is_empty()) {
+			name_a = source->get_name();
+		}
+
+		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+		if (atlas_source) {
+			Ref<Texture2D> texture = atlas_source->get_texture();
+			if (name_a.is_empty() && texture.is_valid()) {
+				name_a = texture->get_path().get_file();
+			}
+		}
+
+		if (name_a.is_empty()) {
+			name_a = itos(p_a);
+		}
+	}
+
+	{
+		TileSetSource *source = *tile_set->get_source(p_b);
+
+		if (!source->get_name().is_empty()) {
+			name_b = source->get_name();
+		}
+
+		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+		if (atlas_source) {
+			Ref<Texture2D> texture = atlas_source->get_texture();
+			if (name_b.is_empty() && texture.is_valid()) {
+				name_b = texture->get_path().get_file();
+			}
+		}
+
+		if (name_b.is_empty()) {
+			name_b = itos(p_b);
+		}
+	}
+
+	return NaturalNoCaseComparator()(name_a, name_b);
+}
+
 void TilesEditorPlugin::edit(Object *p_object) {
 	// Disconnect to changes.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
@@ -249,7 +353,7 @@ void TilesEditorPlugin::edit(Object *p_object) {
 			tile_map_id = p_object->get_instance_id();
 			tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 			tile_set = tile_map->get_tileset();
-			editor_node->make_bottom_panel_item_visible(tilemap_editor);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(tilemap_editor);
 		} else if (p_object->is_class("TileSet")) {
 			tile_set = Ref<TileSet>(p_object);
 			if (tile_map) {
@@ -258,7 +362,7 @@ void TilesEditorPlugin::edit(Object *p_object) {
 					tile_map_id = ObjectID();
 				}
 			}
-			editor_node->make_bottom_panel_item_visible(tileset_editor);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(tileset_editor);
 		}
 	}
 
@@ -275,13 +379,11 @@ bool TilesEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("TileMap") || p_object->is_class("TileSet");
 }
 
-TilesEditorPlugin::TilesEditorPlugin(EditorNode *p_node) {
+TilesEditorPlugin::TilesEditorPlugin() {
 	set_process_internal(true);
 
 	// Update the singleton.
 	singleton = this;
-
-	editor_node = p_node;
 
 	// Tileset editor.
 	tileset_editor = memnew(TileSetEditor);
@@ -301,9 +403,9 @@ TilesEditorPlugin::TilesEditorPlugin(EditorNode *p_node) {
 	pattern_preview_thread.start(_thread_func, this);
 
 	// Bottom buttons.
-	tileset_editor_button = p_node->add_bottom_panel_item(TTR("TileSet"), tileset_editor);
+	tileset_editor_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileSet"), tileset_editor);
 	tileset_editor_button->hide();
-	tilemap_editor_button = p_node->add_bottom_panel_item(TTR("TileMap"), tilemap_editor);
+	tilemap_editor_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileMap"), tilemap_editor);
 	tilemap_editor_button->hide();
 
 	// Initialization.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef EDITORNETWORKPROFILER_H
 #define EDITORNETWORKPROFILER_H
 
-#include "core/debugger/debugger_marshalls.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -42,15 +42,15 @@ class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
 
 private:
-	Button *activate;
-	Button *clear_button;
-	Tree *counters_display;
-	LineEdit *incoming_bandwidth_text;
-	LineEdit *outgoing_bandwidth_text;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
+	Tree *counters_display = nullptr;
+	LineEdit *incoming_bandwidth_text = nullptr;
+	LineEdit *outgoing_bandwidth_text = nullptr;
 
-	Timer *frame_delay;
+	Timer *frame_delay = nullptr;
 
-	Map<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo> nodes_data;
+	Map<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
 
 	void _update_frame();
 
@@ -62,7 +62,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_node_frame_data(const DebuggerMarshalls::MultiplayerNodeInfo p_frame);
+	void add_node_frame_data(const SceneDebugger::RPCNodeInfo p_frame);
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class Line2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Line2DEditor, AbstractPolygon2DEditor);
 
-	Line2D *node;
+	Line2D *node = nullptr;
 
 protected:
 	virtual Node2D *_get_node() const override;
@@ -49,14 +49,14 @@ protected:
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) override;
 
 public:
-	Line2DEditor(EditorNode *p_editor);
+	Line2DEditor();
 };
 
 class Line2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(Line2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	Line2DEditorPlugin(EditorNode *p_node);
+	Line2DEditorPlugin();
 };
 
 #endif // LINE_2D_EDITOR_PLUGIN_H

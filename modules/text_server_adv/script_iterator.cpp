@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 	}
 
 	int paren_size = PAREN_STACK_DEPTH;
-	ParenStackEntry *paren_stack = (ParenStackEntry *)memalloc(paren_size * sizeof(ParenStackEntry));
+	ParenStackEntry *paren_stack = static_cast<ParenStackEntry *>(memalloc(paren_size * sizeof(ParenStackEntry)));
 
 	int script_start;
 	int script_end = p_start;
@@ -77,12 +77,12 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					if (unlikely(paren_sp >= paren_size)) {
 						// If the stack is full, allocate more space to handle deeply nested parentheses. This is unlikely to happen with any real text.
 						paren_size += PAREN_STACK_DEPTH;
-						paren_stack = (ParenStackEntry *)memrealloc(paren_stack, paren_size * sizeof(ParenStackEntry));
+						paren_stack = static_cast<ParenStackEntry *>(memrealloc(paren_stack, paren_size * sizeof(ParenStackEntry)));
 					}
 					paren_stack[paren_sp].pair_index = ch;
 					paren_stack[paren_sp].script_code = script_code;
 				} else if (paren_sp >= 0) {
-					// If it's a close character, find the matching open on the stack, and use that script code. Any non-matching open characters above it on the stack will be poped.
+					// If it's a close character, find the matching open on the stack, and use that script code. Any non-matching open characters above it on the stack will be popped.
 					UChar32 paired_ch = u_getBidiPairedBracket(ch);
 					while (paren_sp >= 0 && paren_stack[paren_sp].pair_index != paired_ch) {
 						paren_sp -= 1;

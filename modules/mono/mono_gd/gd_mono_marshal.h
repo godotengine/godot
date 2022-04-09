@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -196,14 +196,14 @@ PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array);
 #pragma pack(push, 1)
 
 struct M_Callable {
-	MonoObject *target;
-	MonoObject *method_string_name;
-	MonoDelegate *delegate;
+	MonoObject *target = nullptr;
+	MonoObject *method_string_name = nullptr;
+	MonoDelegate *delegate = nullptr;
 };
 
 struct M_SignalInfo {
-	MonoObject *owner;
-	MonoObject *name_string_name;
+	MonoObject *owner = nullptr;
+	MonoObject *name_string_name = nullptr;
 };
 
 #pragma pack(pop)

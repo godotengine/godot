@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ public:
 	float get_progress() const;
 
 protected:
-	void _notification(int p_notification);
+	void _notification(int p_what);
 
 	static void _bind_methods();
 
@@ -132,18 +132,18 @@ private:
 	void _on_replace_text_submitted(String text);
 
 	FindInFilesMode _mode;
-	LineEdit *_search_text_line_edit;
+	LineEdit *_search_text_line_edit = nullptr;
 
-	Label *_replace_label;
-	LineEdit *_replace_text_line_edit;
+	Label *_replace_label = nullptr;
+	LineEdit *_replace_text_line_edit = nullptr;
 
-	LineEdit *_folder_line_edit;
-	CheckBox *_match_case_checkbox;
-	CheckBox *_whole_words_checkbox;
-	Button *_find_button;
-	Button *_replace_button;
-	FileDialog *_folder_dialog;
-	HBoxContainer *_filters_container;
+	LineEdit *_folder_line_edit = nullptr;
+	CheckBox *_match_case_checkbox = nullptr;
+	CheckBox *_whole_words_checkbox = nullptr;
+	Button *_find_button = nullptr;
+	Button *_replace_button = nullptr;
+	FileDialog *_folder_dialog = nullptr;
+	HBoxContainer *_filters_container = nullptr;
 	HashMap<String, bool> _filters_preferences;
 };
 
@@ -201,20 +201,20 @@ private:
 	void set_progress_visible(bool visible);
 	void clear();
 
-	FindInFiles *_finder;
-	Label *_search_text_label;
-	Tree *_results_display;
-	Label *_status_label;
-	Button *_refresh_button;
-	Button *_cancel_button;
-	ProgressBar *_progress_bar;
+	FindInFiles *_finder = nullptr;
+	Label *_search_text_label = nullptr;
+	Tree *_results_display = nullptr;
+	Label *_status_label = nullptr;
+	Button *_refresh_button = nullptr;
+	Button *_cancel_button = nullptr;
+	ProgressBar *_progress_bar = nullptr;
 	Map<String, TreeItem *> _file_items;
 	Map<TreeItem *, Result> _result_items;
-	bool _with_replace;
+	bool _with_replace = false;
 
-	HBoxContainer *_replace_container;
-	LineEdit *_replace_line_edit;
-	Button *_replace_all_button;
+	HBoxContainer *_replace_container = nullptr;
+	LineEdit *_replace_line_edit = nullptr;
+	Button *_replace_all_button = nullptr;
 };
 
 #endif // FIND_IN_FILES_H

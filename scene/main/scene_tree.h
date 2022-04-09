@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,10 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
-#include "core/multiplayer/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
 
 #undef Window
 
@@ -46,8 +43,10 @@ class Node;
 class Window;
 class Material;
 class Mesh;
+class MultiplayerAPI;
 class SceneDebugger;
 class Tween;
+class Viewport;
 
 class SceneTreeTimer : public RefCounted {
 	GDCLASS(SceneTreeTimer, RefCounted);
@@ -116,7 +115,7 @@ private:
 	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
-	Node *edited_scene_root;
+	Node *edited_scene_root = nullptr;
 #endif
 	struct UGCall {
 		StringName group;
@@ -139,7 +138,7 @@ private:
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
-	Node *current_scene;
+	Node *current_scene = nullptr;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -176,8 +175,8 @@ private:
 	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
-	Variant _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
 	// Optimization.
@@ -205,6 +204,7 @@ private:
 
 	enum CallInputType {
 		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_SHORTCUT_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
 	};
@@ -230,13 +230,32 @@ public:
 
 	_FORCE_INLINE_ Window *get_root() const { return root; }
 
-	void call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
+	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
 	void set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value);
 
-	void call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
 	void notify_group(const StringName &p_group, int p_notification);
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
+
+	template <typename... VarArgs>
+	void call_group(const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_group_flagsp(0, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename... VarArgs>
+	void call_group_flags(uint32_t p_flags, const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_group_flagsp(p_flags, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
 
 	void flush_transform_notifications();
 

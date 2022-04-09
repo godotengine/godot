@@ -41,6 +41,7 @@ hb_ot_old_tag_from_script (hb_script_t script)
   switch ((hb_tag_t) script)
   {
     case HB_SCRIPT_INVALID:		return HB_OT_TAG_DEFAULT_SCRIPT;
+    case HB_SCRIPT_MATH:		return HB_OT_TAG_MATH_SCRIPT;
 
     /* KATAKANA and HIRAGANA both map to 'kana' */
     case HB_SCRIPT_HIRAGANA:		return HB_TAG('k','a','n','a');
@@ -63,6 +64,8 @@ hb_ot_old_tag_to_script (hb_tag_t tag)
 {
   if (unlikely (tag == HB_OT_TAG_DEFAULT_SCRIPT))
     return HB_SCRIPT_INVALID;
+  if (unlikely (tag == HB_OT_TAG_MATH_SCRIPT))
+    return HB_SCRIPT_MATH;
 
   /* This side of the conversion is fully algorithmic. */
 

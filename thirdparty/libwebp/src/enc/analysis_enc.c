@@ -126,16 +126,6 @@ static void InitHistogram(VP8Histogram* const histo) {
   histo->last_non_zero = 1;
 }
 
-static void MergeHistograms(const VP8Histogram* const in,
-                            VP8Histogram* const out) {
-  if (in->max_value > out->max_value) {
-    out->max_value = in->max_value;
-  }
-  if (in->last_non_zero > out->last_non_zero) {
-    out->last_non_zero = in->last_non_zero;
-  }
-}
-
 //------------------------------------------------------------------------------
 // Simplified k-Means, to assign Nb segments based on alpha-histogram
 
@@ -285,49 +275,6 @@ static int FastMBAnalyze(VP8EncIterator* const it) {
   return 0;
 }
 
-static int MBAnalyzeBestIntra4Mode(VP8EncIterator* const it,
-                                   int best_alpha) {
-  uint8_t modes[16];
-  const int max_mode = MAX_INTRA4_MODE;
-  int i4_alpha;
-  VP8Histogram total_histo;
-  int cur_histo = 0;
-  InitHistogram(&total_histo);
-
-  VP8IteratorStartI4(it);
-  do {
-    int mode;
-    int best_mode_alpha = DEFAULT_ALPHA;
-    VP8Histogram histos[2];
-    const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC + VP8Scan[it->i4_];
-
-    VP8MakeIntra4Preds(it);
-    for (mode = 0; mode < max_mode; ++mode) {
-      int alpha;
-
-      InitHistogram(&histos[cur_histo]);
-      VP8CollectHistogram(src, it->yuv_p_ + VP8I4ModeOffsets[mode],
-                          0, 1, &histos[cur_histo]);
-      alpha = GetAlpha(&histos[cur_histo]);
-      if (IS_BETTER_ALPHA(alpha, best_mode_alpha)) {
-        best_mode_alpha = alpha;
-        modes[it->i4_] = mode;
-        cur_histo ^= 1;   // keep track of best histo so far.
-      }
-    }
-    // accumulate best histogram
-    MergeHistograms(&histos[cur_histo ^ 1], &total_histo);
-    // Note: we reuse the original samples for predictors
-  } while (VP8IteratorRotateI4(it, it->yuv_in_ + Y_OFF_ENC));
-
-  i4_alpha = GetAlpha(&total_histo);
-  if (IS_BETTER_ALPHA(i4_alpha, best_alpha)) {
-    VP8SetIntra4Mode(it, modes);
-    best_alpha = i4_alpha;
-  }
-  return best_alpha;
-}
-
 static int MBAnalyzeBestUVMode(VP8EncIterator* const it) {
   int best_alpha = DEFAULT_ALPHA;
   int smallest_alpha = 0;
@@ -371,13 +318,6 @@ static void MBAnalyze(VP8EncIterator* const it,
     best_alpha = FastMBAnalyze(it);
   } else {
     best_alpha = MBAnalyzeBestIntra16Mode(it);
-    if (enc->method_ >= 5) {
-      // We go and make a fast decision for intra4/intra16.
-      // It's usually not a good and definitive pick, but helps seeding the
-      // stats about level bit-cost.
-      // TODO(skal): improve criterion.
-      best_alpha = MBAnalyzeBestIntra4Mode(it, best_alpha);
-    }
   }
   best_uv_alpha = MBAnalyzeBestUVMode(it);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -245,8 +245,9 @@ namespace godot {
 namespace details {
 inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
 	Vector<String> parts = p_qualified_name.split("::", false);
-	if (parts.size() <= 2)
+	if (parts.size() <= 2) {
 		return String(".").join(parts);
+	}
 	// Contains namespace. We only want the class and enum names.
 	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
 }
@@ -279,5 +280,39 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 }
 
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
+
+template <typename T>
+struct ZeroInitializer {
+	static void initialize(T &value) {} //no initialization by default
+};
+
+template <>
+struct ZeroInitializer<bool> {
+	static void initialize(bool &value) { value = false; }
+};
+
+template <typename T>
+struct ZeroInitializer<T *> {
+	static void initialize(T *&value) { value = nullptr; }
+};
+
+#define ZERO_INITIALIZER_NUMBER(m_type)                      \
+	template <>                                              \
+	struct ZeroInitializer<m_type> {                         \
+		static void initialize(m_type &value) { value = 0; } \
+	};
+
+ZERO_INITIALIZER_NUMBER(uint8_t)
+ZERO_INITIALIZER_NUMBER(int8_t)
+ZERO_INITIALIZER_NUMBER(uint16_t)
+ZERO_INITIALIZER_NUMBER(int16_t)
+ZERO_INITIALIZER_NUMBER(uint32_t)
+ZERO_INITIALIZER_NUMBER(int32_t)
+ZERO_INITIALIZER_NUMBER(uint64_t)
+ZERO_INITIALIZER_NUMBER(int64_t)
+ZERO_INITIALIZER_NUMBER(char16_t)
+ZERO_INITIALIZER_NUMBER(char32_t)
+ZERO_INITIALIZER_NUMBER(float)
+ZERO_INITIALIZER_NUMBER(double)
 
 #endif // TYPE_INFO_H

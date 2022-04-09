@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "parallax_background.h"
+
 #include "parallax_layer.h"
 
 void ParallaxBackground::_notification(int p_what) {
@@ -36,8 +37,8 @@ void ParallaxBackground::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			group_name = "__cameras_" + itos(get_viewport().get_id());
 			add_to_group(group_name);
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			remove_from_group(group_name);
 		} break;

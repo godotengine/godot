@@ -122,7 +122,7 @@ namespace Godot
         /// "/root/Level/Path2D"
         /// </code>
         /// </example>
-        /// <param name="path"></param>
+        /// <param name="path">A string that represents a path in a scene tree.</param>
         public NodePath(string path)
         {
             ptr = godot_icall_NodePath_Ctor(path);

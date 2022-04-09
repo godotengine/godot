@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define SCENE_TREE_EDITOR_H
 
 #include "core/object/undo_redo.h"
-#include "editor_data.h"
-#include "editor_settings.h"
+#include "editor/editor_data.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -41,7 +41,7 @@
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
 
-	EditorSelection *editor_selection;
+	EditorSelection *editor_selection = nullptr;
 
 	enum SceneTreeEditorButton {
 		BUTTON_SUBSCENE = 0,
@@ -55,18 +55,18 @@ class SceneTreeEditor : public Control {
 		BUTTON_PIN = 8,
 	};
 
-	Tree *tree;
-	Node *selected;
+	Tree *tree = nullptr;
+	Node *selected = nullptr;
 	ObjectID instance_node;
 
 	String filter;
 
-	AcceptDialog *error;
-	AcceptDialog *warning;
+	AcceptDialog *error = nullptr;
+	AcceptDialog *warning = nullptr;
 
 	bool auto_expand_selected = true;
-	bool connect_to_script_mode;
-	bool connecting_signal;
+	bool connect_to_script_mode = false;
+	bool connecting_signal = false;
 
 	int blocked;
 
@@ -92,18 +92,18 @@ class SceneTreeEditor : public Control {
 
 	bool can_rename;
 	bool can_open_instance;
-	bool updating_tree;
-	bool show_enabled_subscene;
+	bool updating_tree = false;
+	bool show_enabled_subscene = false;
 
 	void _renamed();
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	Set<Node *> marked;
-	bool marked_selectable;
-	bool marked_children_selectable;
-	bool display_foreign;
-	bool tree_dirty;
-	bool pending_test_update;
+	bool marked_selectable = false;
+	bool marked_children_selectable = false;
+	bool display_foreign = false;
+	bool tree_dirty = true;
+	bool pending_test_update = false;
 	static void _bind_methods();
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
@@ -125,7 +125,7 @@ class SceneTreeEditor : public Control {
 
 	void _warning_changed(Node *p_for_node);
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 
 	List<StringName> *script_types;
 	bool _is_script_type(const StringName &p_type) const;
@@ -166,14 +166,15 @@ public:
 class SceneTreeDialog : public ConfirmationDialog {
 	GDCLASS(SceneTreeDialog, ConfirmationDialog);
 
-	SceneTreeEditor *tree;
+	SceneTreeEditor *tree = nullptr;
 	//Button *select;
 	//Button *cancel;
-	LineEdit *filter;
+	LineEdit *filter = nullptr;
 
 	void _select();
 	void _cancel();
 	void _filter_changed(const String &p_filter);
+	void _update_theme();
 
 protected:
 	void _notification(int p_what);

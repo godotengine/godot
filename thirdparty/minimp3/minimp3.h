@@ -881,12 +881,22 @@ static void L3_midside_stereo(float *left, int n)
     int i = 0;
     float *right = left + 576;
 #if HAVE_SIMD
-    if (have_simd()) for (; i < n - 3; i += 4)
+    if (have_simd())
     {
-        f4 vl = VLD(left + i);
-        f4 vr = VLD(right + i);
-        VSTORE(left + i, VADD(vl, vr));
-        VSTORE(right + i, VSUB(vl, vr));
+        for (; i < n - 3; i += 4)
+        {
+            f4 vl = VLD(left + i);
+            f4 vr = VLD(right + i);
+            VSTORE(left + i, VADD(vl, vr));
+            VSTORE(right + i, VSUB(vl, vr));
+        }
+#ifdef __GNUC__
+        /* Workaround for spurious -Waggressive-loop-optimizations warning from gcc.
+         * For more info see: https://github.com/lieff/minimp3/issues/88
+         */
+        if (__builtin_constant_p(n % 4 == 0) && n % 4 == 0)
+            return;
+#endif
     }
 #endif /* HAVE_SIMD */
     for (; i < n; i++)
@@ -1353,7 +1363,7 @@ static void mp3d_DCT_II(float *grbuf, int n)
     } else
 #endif /* HAVE_SIMD */
 #ifdef MINIMP3_ONLY_SIMD
-    {}
+    {} /* for HAVE_SIMD=1, MINIMP3_ONLY_SIMD=1 case we do not need non-intrinsic "else" branch */
 #else /* MINIMP3_ONLY_SIMD */
     for (; k < n; k++)
     {
@@ -1583,7 +1593,7 @@ static void mp3d_synth(float *xl, mp3d_sample_t *dstl, int nch, float *lins)
     } else
 #endif /* HAVE_SIMD */
 #ifdef MINIMP3_ONLY_SIMD
-    {}
+    {} /* for HAVE_SIMD=1, MINIMP3_ONLY_SIMD=1 case we do not need non-intrinsic "else" branch */
 #else /* MINIMP3_ONLY_SIMD */
     for (i = 14; i >= 0; i--)
     {

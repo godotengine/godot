@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,10 +55,10 @@ protected:
 	static void _bind_methods();
 
 	void _set_polygons(const TypedArray<Vector<int32_t>> &p_array);
-	Array _get_polygons() const;
+	TypedArray<Vector<int32_t>> _get_polygons() const;
 
 	void _set_outlines(const TypedArray<Vector<Vector2>> &p_array);
-	Array _get_outlines() const;
+	TypedArray<Vector<Vector2>> _get_outlines() const;
 
 public:
 #ifdef TOOLS_ENABLED

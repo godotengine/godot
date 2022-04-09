@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@ class Range : public Control {
 		void emit_changed(const char *p_what = "");
 	};
 
-	Shared *shared;
+	Shared *shared = nullptr;
 
 	void _ref_shared(Shared *p_shared);
 	void _unref_shared();
@@ -59,13 +59,16 @@ class Range : public Control {
 
 	void _value_changed_notify();
 	void _changed_notify(const char *p_what = "");
+	void _validate_values();
 
 protected:
-	virtual void _value_changed(double) {}
+	virtual void _value_changed(double p_value);
 
 	static void _bind_methods();
 
 	bool _rounded_values = false;
+
+	GDVIRTUAL1(_value_changed, double)
 
 public:
 	void set_value(double p_val);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,19 +32,17 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	}
-
-	if (p_what == NOTIFICATION_READY) {
-		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -110,7 +108,7 @@ void ResourcePreloaderEditor::_item_edited() {
 			return;
 		}
 
-		if (new_name == "" || new_name.find("\\") != -1 || new_name.find("/") != -1 || preloader->has_resource(new_name)) {
+		if (new_name.is_empty() || new_name.contains("\\") || new_name.contains("/") || preloader->has_resource(new_name)) {
 			s->set_text(0, old_name);
 			return;
 		}
@@ -147,10 +145,10 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	}
 
 	String name = r->get_name();
-	if (name == "") {
+	if (name.is_empty()) {
 		name = r->get_path().get_file();
 	}
-	if (name == "") {
+	if (name.is_empty()) {
 		name = r->get_class();
 	}
 
@@ -300,7 +298,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 
 		if (r.is_valid()) {
 			String basename;
-			if (r->get_name() != "") {
+			if (!r->get_name().is_empty()) {
 				basename = r->get_name();
 			} else if (r->get_path().is_resource_file()) {
 				basename = r->get_path().get_basename();
@@ -402,11 +400,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		editor->make_bottom_panel_item_visible(preloader_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -414,12 +412,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();
 
 	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);

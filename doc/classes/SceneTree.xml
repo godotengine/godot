@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" version="4.0">
+<class name="SceneTree" inherits="MainLoop" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
@@ -9,12 +9,12 @@
 		[SceneTree] is the default [MainLoop] implementation used by scenes, and is thus in charge of the game loop.
 	</description>
 	<tutorials>
-		<link title="SceneTree">https://docs.godotengine.org/en/latest/tutorials/scripting/scene_tree.html</link>
-		<link title="Multiple resolutions">https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html</link>
+		<link title="SceneTree">$DOCS_URL/tutorials/scripting/scene_tree.html</link>
+		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="flags" type="int" />
 			<argument index="1" name="group" type="StringName" />
 			<argument index="2" name="method" type="StringName" />
@@ -232,13 +232,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="files_dropped">
-			<argument index="0" name="files" type="PackedStringArray" />
-			<argument index="1" name="screen" type="int" />
-			<description>
-				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
-			</description>
-		</signal>
 		<signal name="node_added">
 			<argument index="0" name="node" type="Node" />
 			<description>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,13 @@
 
 #include "dependency_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
@@ -75,7 +78,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 		String path = efsd->get_file_path(i);
 
 		for (KeyValue<String, String> &E : candidates[file]) {
-			if (E.value == String()) {
+			if (E.value.is_empty()) {
 				E.value = path;
 				continue;
 			}
@@ -135,7 +138,7 @@ void DependencyEditor::_fix_all() {
 
 	for (KeyValue<String, Map<String, String>> &E : candidates) {
 		for (const KeyValue<String, String> &F : E.value) {
-			if (F.value != String()) {
+			if (!F.value.is_empty()) {
 				remaps[F.key] = F.value;
 			}
 		}
@@ -171,7 +174,7 @@ void DependencyEditor::_update_list() {
 		String path;
 		String type;
 
-		if (n.find("::") != -1) {
+		if (n.contains("::")) {
 			path = n.get_slice("::", 0);
 			type = n.get_slice("::", 1);
 		} else {
@@ -270,12 +273,13 @@ DependencyEditor::DependencyEditor() {
 /////////////////////////////////////
 void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	file_options->clear();
-	file_options->set_size(Size2(1, 1));
+	file_options->reset_size();
 	if (p_item >= 0) {
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 	}
 
-	file_options->set_position(owners->get_global_position() + p_pos);
+	file_options->set_position(owners->get_screen_position() + p_pos);
+	file_options->reset_size();
 	file_options->popup();
 }
 
@@ -283,7 +287,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 	String fpath = owners->get_item_text(p_idx);
 
 	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		editor->open_request(fpath);
+		EditorNode::get_singleton()->open_request(fpath);
 		hide();
 		emit_signal(SNAME("confirmed"));
 	}
@@ -341,9 +345,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 	set_title(TTR("Owners Of:") + " " + p_path.get_file());
 }
 
-DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
-	editor = p_editor;
-
+DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
@@ -464,7 +466,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	if (removed_deps.is_empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove the selected files from the project? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
-		set_size(Size2());
+		reset_size();
 		popup_centered();
 	} else {
 		_build_removed_dependency_tree(removed_deps);
@@ -747,12 +749,11 @@ void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, List<String> &path
 }
 
 void OrphanResourcesDialog::_delete_confirm() {
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (const String &E : paths) {
 		da->remove(E);
 		EditorFileSystem::get_singleton()->update_file(E);
 	}
-	memdelete(da);
 	refresh();
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,6 +65,21 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(OSX_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
+// Random location for getentropy. Fitting.
+#include <sys/random.h>
+#define UNIX_GET_ENTROPY
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+// In <unistd.h>.
+// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
+// https://publications.opengroup.org/standards/unix/c211
+#define UNIX_GET_ENTROPY
+#endif
+
+#if !defined(UNIX_GET_ENTROPY) && !defined(NO_URANDOM)
+#include <fcntl.h>
+#endif
+
 /// Clock Setup function (used by get_ticks_usec)
 static uint64_t _clock_start = 0;
 #if defined(__APPLE__)
@@ -91,7 +106,7 @@ static void _setup_clock() {
 
 void OS_Unix::debug_break() {
 	assert(false);
-};
+}
 
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
@@ -150,6 +165,31 @@ String OS_Unix::get_stdin_string(bool p_block) {
 	return "";
 }
 
+Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
+#if defined(UNIX_GET_ENTROPY)
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+#elif !defined(NO_URANDOM)
+	int r = open("/dev/urandom", O_RDONLY);
+	ERR_FAIL_COND_V(r < 0, FAILED);
+	int left = p_bytes;
+	do {
+		ssize_t ret = read(r, r_buffer, p_bytes);
+		ERR_FAIL_COND_V(ret <= 0, FAILED);
+		left -= ret;
+	} while (left > 0);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+	return OK;
+}
+
 String OS_Unix::get_name() const {
 	return "Unix";
 }
@@ -158,7 +198,7 @@ double OS_Unix::get_unix_time() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, nullptr);
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
-};
+}
 
 OS::Date OS_Unix::get_date(bool p_utc) const {
 	time_t t = time(nullptr);
@@ -249,7 +289,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
@@ -318,7 +358,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #endif
 }
 
-Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
@@ -370,7 +410,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 
 int OS_Unix::get_process_id() const {
 	return getpid();
-};
+}
 
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
@@ -399,12 +439,12 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from within the executable path
+		// This code exists so GDExtension can load .so files from within the executable path.
 		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .so files from a standard unix location
+		// This code exists so GDExtension can load .so files from a standard unix location.
 		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
 	}
 
@@ -460,11 +500,11 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (appname != "") {
+	if (!appname.is_empty()) {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
-			if (custom_dir == "") {
+			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
 			return get_data_path().plus_file(custom_dir);
@@ -473,7 +513,7 @@ String OS_Unix::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Unix::get_executable_path() const {
@@ -486,7 +526,7 @@ String OS_Unix::get_executable_path() const {
 	if (len > 0) {
 		b.parse_utf8(buf, len);
 	}
-	if (b == "") {
+	if (b.is_empty()) {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();
 	}
@@ -515,8 +555,9 @@ String OS_Unix::get_executable_path() const {
 
 	char *resolved_path = new char[buff_size + 1];
 
-	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1) {
 		WARN_PRINT("MAXPATHLEN is too small");
+	}
 
 	String path(resolved_path);
 	delete[] resolved_path;

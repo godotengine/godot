@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,16 +63,16 @@ private:
 	static void _on_error(void *p_obj);
 
 public:
-	virtual ConnectionState get_connection_state() const;
+	virtual ConnectionState get_connection_state() const override;
 
-	virtual Error initialize(Dictionary configuration = Dictionary());
-	virtual Ref<WebRTCDataChannel> create_data_channel(String p_channel_name, Dictionary p_channel_config = Dictionary());
-	virtual Error create_offer();
-	virtual Error set_remote_description(String type, String sdp);
-	virtual Error set_local_description(String type, String sdp);
-	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName);
-	virtual Error poll();
-	virtual void close();
+	virtual Error initialize(Dictionary configuration = Dictionary()) override;
+	virtual Ref<WebRTCDataChannel> create_data_channel(String p_channel_name, Dictionary p_channel_config = Dictionary()) override;
+	virtual Error create_offer() override;
+	virtual Error set_remote_description(String type, String sdp) override;
+	virtual Error set_local_description(String type, String sdp) override;
+	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) override;
+	virtual Error poll() override;
+	virtual void close() override;
 
 	WebRTCPeerConnectionJS();
 	~WebRTCPeerConnectionJS();

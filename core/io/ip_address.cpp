@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,7 +71,7 @@ static void _parse_hex(const String &p_string, int p_start, uint8_t *p_dst) {
 
 		int n = 0;
 		char32_t c = p_string[i];
-		if (c >= '0' && c <= '9') {
+		if (is_digit(c)) {
 			n = c - '0';
 		} else if (c >= 'a' && c <= 'f') {
 			n = 10 + (c - 'a');
@@ -113,7 +113,7 @@ void IPAddress::_parse_ipv6(const String &p_string) {
 		} else if (c == '.') {
 			part_ipv4 = true;
 
-		} else if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+		} else if (is_hex_digit(c)) {
 			if (!part_found) {
 				parts[parts_idx++] = i;
 				part_found = true;

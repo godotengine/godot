@@ -52,7 +52,7 @@ layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
 #define SKY_MODE_COLOR 1
 #define SKY_MODE_SKY 2
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec3 grid_size;
 	uint max_cascades;
 

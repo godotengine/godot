@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -288,7 +288,7 @@ TEST_CASE("[Geometry3D] Is Point in Projected Triangle") {
 TEST_CASE("[Geometry3D] Does Ray Intersect Triangle") {
 	struct Case {
 		Vector3 from, direction, v_1, v_2, v_3;
-		Vector3 *result;
+		Vector3 *result = nullptr;
 		bool want;
 		Case(){};
 		Case(Vector3 p_from, Vector3 p_direction, Vector3 p_v_1, Vector3 p_v_2, Vector3 p_v_3, bool p_want) :
@@ -390,7 +390,7 @@ TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	struct Case {
 		Vector3 box_centre;
 		Vector3 box_half_size;
-		Vector3 *tri_verts;
+		Vector3 *tri_verts = nullptr;
 		bool want;
 		Case(){};
 		Case(Vector3 p_centre, Vector3 p_half_size, Vector3 *p_verts, bool p_want) :

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" version="4.0">
+<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A WebSocket client implementation.
 	</brief_description>
@@ -39,13 +39,13 @@
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String" />
 			<description>
-				Return the IP address of the currently connected host.
+				Returns the IP address of the currently connected host.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int" />
 			<description>
-				Return the IP port of the currently connected host.
+				Returns the IP port of the currently connected host.
 			</description>
 		</method>
 	</methods>

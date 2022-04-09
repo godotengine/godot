@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,13 +44,13 @@ class SkinReference : public RefCounted {
 	GDCLASS(SkinReference, RefCounted)
 	friend class Skeleton3D;
 
-	Skeleton3D *skeleton_node;
+	Skeleton3D *skeleton_node = nullptr;
 	RID skeleton;
 	Ref<Skin> skin;
 	uint32_t bind_count = 0;
 	uint64_t skeleton_version = 0;
 	Vector<uint32_t> skin_bone_indices;
-	uint32_t *skin_bone_indices_ptrs;
+	uint32_t *skin_bone_indices_ptrs = nullptr;
 	void _skin_changed();
 
 protected:

@@ -5,7 +5,7 @@
  *   Basic SFNT/TrueType type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1372,7 +1372,7 @@ FT_BEGIN_HEADER
    *
    *   num_locations ::
    *     The number of glyph locations in this TrueType file.  This should be
-   *     identical to the number of glyphs.  Ignored for Type 2 fonts.
+   *     one more than the number of glyphs.  Ignored for Type 2 fonts.
    *
    *   glyph_locations ::
    *     An array of longs.  These are offsets to glyph data within the
@@ -1598,7 +1598,7 @@ FT_BEGIN_HEADER
     FT_ULong              horz_metrics_size;
     FT_ULong              vert_metrics_size;
 
-    FT_ULong              num_locations; /* in broken TTF, gid > 0xFFFF */
+    FT_ULong              num_locations; /* up to 0xFFFF + 1 */
     FT_Byte*              glyph_locations;
 
     FT_Byte*              hdmx_table;
@@ -1734,7 +1734,7 @@ FT_BEGIN_HEADER
     FT_UInt          glyph_index;
 
     FT_Stream        stream;
-    FT_Int           byte_len;
+    FT_UInt          byte_len;
 
     FT_Short         n_contours;
     FT_BBox          bbox;

@@ -4,7 +4,7 @@
  *
  *   The FreeType internal cache interface (body).
  *
- * Copyright (C) 2000-2020 by
+ * Copyright (C) 2000-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -90,15 +90,14 @@
   ftc_get_top_node_for_hash( FTC_Cache  cache,
                              FT_Offset  hash )
   {
-    FTC_Node*  pnode;
     FT_Offset  idx;
 
 
     idx = hash & cache->mask;
     if ( idx < cache->p )
       idx = hash & ( 2 * cache->mask + 1 );
-    pnode = cache->buckets + idx;
-    return pnode;
+
+    return cache->buckets + idx;
   }
 
 #endif /* !FTC_INLINE */
@@ -119,7 +118,7 @@
       FT_UFast  count = mask + p + 1;    /* number of buckets */
 
 
-      /* do we need to shrink the buckets array? */
+      /* do we need to expand the buckets array? */
       if ( cache->slack < 0 )
       {
         FTC_Node  new_list = NULL;
@@ -172,7 +171,7 @@
           cache->p = p + 1;
       }
 
-      /* do we need to expand the buckets array? */
+      /* do we need to shrink the buckets array? */
       else if ( cache->slack > (FT_Long)count * FTC_HASH_SUB_LOAD )
       {
         FT_UFast   old_index = p + mask;
@@ -189,7 +188,7 @@
 
 
           /* if we can't shrink the array, leave immediately */
-          if ( FT_RENEW_ARRAY( cache->buckets,
+          if ( FT_QRENEW_ARRAY( cache->buckets,
                                ( mask + 1 ) * 2, mask + 1 ) )
             break;
 
@@ -341,7 +340,7 @@
     cache->mask  = FTC_HASH_INITIAL_SIZE - 1;
     cache->slack = FTC_HASH_INITIAL_SIZE * FTC_HASH_MAX_LOAD;
 
-    (void)FT_NEW_ARRAY( cache->buckets, FTC_HASH_INITIAL_SIZE * 2 );
+    FT_MEM_NEW_ARRAY( cache->buckets, FTC_HASH_INITIAL_SIZE * 2 );
     return error;
   }
 
@@ -360,7 +359,7 @@
 
       for ( i = 0; i < count; i++ )
       {
-        FTC_Node  *pnode = cache->buckets + i, next, node = *pnode;
+        FTC_Node  node = cache->buckets[i], next;
 
 
         while ( node )
@@ -417,7 +416,7 @@
                  FTC_Node   node )
   {
     node->hash        = hash;
-    node->cache_index = (FT_UInt16)cache->index;
+    node->cache_index = (FT_UShort)cache->index;
     node->ref_count   = 0;
 
     ftc_node_hash_link( node, cache );
@@ -459,7 +458,7 @@
     {
       error = cache->clazz.node_new( &node, query, cache );
     }
-    FTC_CACHE_TRYLOOP_END( NULL );
+    FTC_CACHE_TRYLOOP_END( NULL )
 
     if ( error )
       node = NULL;
@@ -528,7 +527,7 @@
           goto NewNode;
         }
         else
-          pnode = &((*pnode)->link);
+          pnode = &(*pnode)->link;
       }
     }
 
@@ -571,8 +570,7 @@
     count = cache->p + cache->mask + 1;
     for ( i = 0; i < count; i++ )
     {
-      FTC_Node*  bucket = cache->buckets + i;
-      FTC_Node*  pnode  = bucket;
+      FTC_Node*  pnode = cache->buckets + i;
 
 
       for (;;)

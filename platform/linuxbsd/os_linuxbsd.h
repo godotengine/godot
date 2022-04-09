@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,8 +39,6 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
 
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
@@ -65,7 +63,7 @@ class OS_LinuxBSD : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 protected:
 	virtual void initialize() override;
@@ -89,6 +87,7 @@ public:
 	virtual Error shell_open(String p_uri) override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,8 @@ private:
 	Color sky_horizon_color;
 	float sky_curve;
 	float sky_energy;
+	Ref<Texture2D> sky_cover;
+	Color sky_cover_modulate;
 
 	Color ground_bottom_color;
 	Color ground_horizon_color;
@@ -71,6 +73,12 @@ public:
 
 	void set_sky_energy(float p_energy);
 	float get_sky_energy() const;
+
+	void set_sky_cover(const Ref<Texture2D> &p_sky_cover);
+	Ref<Texture2D> get_sky_cover() const;
+
+	void set_sky_cover_modulate(const Color &p_sky_cover_modulate);
+	Color get_sky_cover_modulate() const;
 
 	void set_ground_bottom_color(const Color &p_ground_bottom);
 	Color get_ground_bottom_color() const;
@@ -110,9 +118,11 @@ private:
 	Ref<Texture2D> panorama;
 
 	static Mutex shader_mutex;
-	static RID shader;
+	static RID shader_cache[2];
 	static void _update_shader();
 	mutable bool shader_set = false;
+
+	bool filter = true;
 
 protected:
 	static void _bind_methods();
@@ -120,6 +130,9 @@ protected:
 public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
 	Ref<Texture2D> get_panorama() const;
+
+	void set_filtering_enabled(bool p_enabled);
+	bool is_filtering_enabled() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;

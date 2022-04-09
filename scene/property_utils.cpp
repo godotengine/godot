@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,11 @@
 
 #include "core/config/engine.h"
 #include "core/templates/local_vector.h"
-#include "editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif // TOOLS_ENABLED
 
 bool PropertyUtils::is_property_value_different(const Variant &p_a, const Variant &p_b) {
 	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
@@ -47,7 +50,7 @@ bool PropertyUtils::is_property_value_different(const Variant &p_a, const Varian
 	}
 }
 
-Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
+Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, bool *r_is_valid, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
 	// This function obeys the way property values are set when an object is instantiated,
 	// which is the following (the latter wins):
 	// 1. Default value from builtin class
@@ -56,6 +59,9 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 
 	if (r_is_class_default) {
 		*r_is_class_default = false;
+	}
+	if (r_is_valid) {
+		*r_is_valid = false;
 	}
 
 	Ref<Script> topmost_script;
@@ -68,6 +74,9 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			bool found = false;
 			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
 			if (found) {
+				if (r_is_valid) {
+					*r_is_valid = true;
+				}
 				return value_in_ancestor;
 			}
 			// Save script for later
@@ -94,15 +103,45 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		}
 		Variant default_value;
 		if (topmost_script->get_property_default_value(p_property, default_value)) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return default_value;
 		}
 	}
 
 	// Fall back to the default from the native class
-	if (r_is_class_default) {
-		*r_is_class_default = true;
+	{
+		if (r_is_class_default) {
+			*r_is_class_default = true;
+		}
+		bool valid = false;
+		Variant value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return value;
+		} else {
+			// Heuristically check if this is a synthetic property (whatever/0, whatever/1, etc.)
+			// because they are not in the class DB yet must have a default (null).
+			String prop_str = String(p_property);
+			int p = prop_str.rfind("/");
+			if (p != -1 && p < prop_str.length() - 1) {
+				bool all_digits = true;
+				for (int i = p + 1; i < prop_str.length(); i++) {
+					if (!is_digit(prop_str[i])) {
+						all_digits = false;
+						break;
+					}
+				}
+				if (r_is_valid) {
+					*r_is_valid = all_digits;
+				}
+			}
+			return Variant();
+		}
 	}
-	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
 }
 
 // Like SceneState::PackState, but using a raw pointer to avoid the cost of
@@ -161,7 +200,7 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 					}
 				}
 				break;
-			} else if (n->get_scene_file_path() != String()) {
+			} else if (!n->get_scene_file_path().is_empty()) {
 				const Ref<SceneState> &state = n->get_scene_instance_state();
 				_collect_inheritance_chain(state, n->get_path_to(p_node), states_stack);
 			}

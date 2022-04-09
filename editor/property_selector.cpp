@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
@@ -44,10 +44,10 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
 				search_box->accept_event();
 
@@ -181,11 +181,11 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && E.name.findn(search_text) == -1) {
+			if (!search_box->get_text().is_empty() && E.name.findn(search_text) == -1) {
 				continue;
 			}
 
-			if (type_filter.size() && type_filter.find(E.type) == -1) {
+			if (type_filter.size() && !type_filter.has(E.type)) {
 				continue;
 			}
 
@@ -194,7 +194,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, E.name);
 			item->set_icon(0, type_icons[E.type]);
 
-			if (!found && search_box->get_text() != String() && E.name.findn(search_text) != -1) {
+			if (!found && !search_box->get_text().is_empty() && E.name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -214,10 +214,13 @@ void PropertySelector::_update_search() {
 			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
-			Object *obj = ObjectDB::get_instance(script);
-			if (Object::cast_to<Script>(obj)) {
+			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			if (script_ref.is_valid()) {
 				methods.push_back(MethodInfo("*Script Methods"));
-				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+				if (script_ref->is_built_in()) {
+					script_ref->reload(true);
+				}
+				script_ref->get_script_method_list(&methods);
 			}
 
 			StringName base = base_type;
@@ -269,14 +272,14 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && name.findn(search_text) == -1) {
+			if (!search_box->get_text().is_empty() && name.findn(search_text) == -1) {
 				continue;
 			}
 
 			TreeItem *item = search_options->create_item(category ? category : root);
 
 			String desc;
-			if (mi.name.find(":") != -1) {
+			if (mi.name.contains(":")) {
 				desc = mi.name.get_slice(":", 1) + " ";
 				mi.name = mi.name.get_slice(":", 0);
 			} else if (mi.return_val.type != Variant::NIL) {
@@ -296,7 +299,7 @@ void PropertySelector::_update_search() {
 
 				if (mi.arguments[i].type == Variant::NIL) {
 					desc += ": Variant";
-				} else if (mi.arguments[i].name.find(":") != -1) {
+				} else if (mi.arguments[i].name.contains(":")) {
 					desc += vformat(": %s", mi.arguments[i].name.get_slice(":", 1));
 					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
 				} else {
@@ -318,7 +321,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
-			if (!found && search_box->get_text() != String() && name.findn(search_text) != -1) {
+			if (!found && !search_box->get_text().is_empty() && name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -353,7 +356,7 @@ void PropertySelector::_item_selected() {
 	String class_type;
 	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
-	} else if (base_type != String()) {
+	} else if (!base_type.is_empty()) {
 		class_type = base_type;
 	} else if (instance) {
 		class_type = instance->get_class();
@@ -362,7 +365,7 @@ void PropertySelector::_item_selected() {
 	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
 	if (properties) {
-		while (class_type != String()) {
+		while (!class_type.is_empty()) {
 			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().properties.size(); i++) {
@@ -373,7 +376,7 @@ void PropertySelector::_item_selected() {
 				}
 			}
 
-			if (text != String()) {
+			if (!text.is_empty()) {
 				break;
 			}
 
@@ -381,7 +384,7 @@ void PropertySelector::_item_selected() {
 			class_type = ClassDB::get_parent_class(class_type);
 		}
 	} else {
-		while (class_type != String()) {
+		while (!class_type.is_empty()) {
 			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->get().methods.size(); i++) {
@@ -392,7 +395,7 @@ void PropertySelector::_item_selected() {
 				}
 			}
 
-			if (text != String()) {
+			if (!text.is_empty()) {
 				break;
 			}
 
@@ -401,7 +404,7 @@ void PropertySelector::_item_selected() {
 		}
 	}
 
-	if (text != String()) {
+	if (!text.is_empty()) {
 		// Display both property name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
 		help_bit->set_text(vformat("[b]%s[/b]: %s", name, text));
@@ -418,10 +421,14 @@ void PropertySelector::_hide_requested() {
 }
 
 void PropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
 	}
 }
 
@@ -582,7 +589,6 @@ PropertySelector::PropertySelector() {
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
-	virtuals_only = false;
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);

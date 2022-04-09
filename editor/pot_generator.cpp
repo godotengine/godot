@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
-#include "editor_translation_parser.h"
+#include "editor/editor_translation_parser.h"
 #include "plugins/packed_scene_translation_parser_plugin.h"
 
 POTGenerator *POTGenerator::singleton = nullptr;
@@ -46,8 +46,8 @@ void POTGenerator::_print_all_translation_strings() {
 			print_line("msgid: " + E.key());
 			print_line("context: " + v_md[i].ctx);
 			print_line("msgid_plural: " + v_md[i].plural);
-			for (Set<String>::Element *E = v_md[i].locations.front(); E; E = E->next()) {
-				print_line("location: " + E->get());
+			for (Set<String>::Element *F = v_md[i].locations.front(); F; F = F->next()) {
+				print_line("location: " + F->get());
 			}
 		}
 	}

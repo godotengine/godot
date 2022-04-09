@@ -4,7 +4,7 @@
  *
  *   Type 42 font parser (specification).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,

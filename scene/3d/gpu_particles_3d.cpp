@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,6 @@
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
-}
-
-Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 void GPUParticles3D::set_emitting(bool p_emitting) {
@@ -277,7 +273,7 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
+		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
 	}
 
 	bool meshes_found = false;
@@ -304,17 +300,17 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	}
 
 	if (!meshes_found) {
-		warnings.push_back(TTR("Nothing is visible because meshes have not been assigned to draw passes."));
+		warnings.push_back(RTR("Nothing is visible because meshes have not been assigned to draw passes."));
 	}
 
 	if (process_material.is_null()) {
-		warnings.push_back(TTR("A material to process the particles is not assigned, so no behavior is imprinted."));
+		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param_max(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			warnings.push_back(TTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
+			warnings.push_back(RTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 		}
 	}
 
@@ -356,15 +352,15 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 		}
 
 		if (dp_count && skin.is_valid()) {
-			warnings.push_back(TTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
+			warnings.push_back(RTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
 		} else if (dp_count == 0 && skin.is_null()) {
-			warnings.push_back(TTR("Trails active, but neither Trail meshes or a Skin were found."));
+			warnings.push_back(RTR("Trails active, but neither Trail meshes or a Skin were found."));
 		} else if (dp_count > 1) {
-			warnings.push_back(TTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
+			warnings.push_back(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
 		if ((dp_count || !skin.is_null()) && (missing_trails || no_materials)) {
-			warnings.push_back(TTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
+			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 	}
 
@@ -423,38 +419,41 @@ NodePath GPUParticles3D::get_sub_emitter() const {
 }
 
 void GPUParticles3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
-		if (can_process()) {
-			RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
-		} else {
-			RS::get_singleton()->particles_set_speed_scale(particles, 0);
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_PAUSED:
+		case NOTIFICATION_UNPAUSED: {
+			if (can_process()) {
+				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+			} else {
+				RS::get_singleton()->particles_set_speed_scale(particles, 0);
+			}
+		} break;
 
-	// Use internal process when emitting and one_shot is on so that when
-	// the shot ends the editor can properly update
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (one_shot && !is_emitting()) {
-			notify_property_list_changed();
-			set_process_internal(false);
-		}
-	}
+		// Use internal process when emitting and one_shot is on so that when
+		// the shot ends the editor can properly update.
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (one_shot && !is_emitting()) {
+				notify_property_list_changed();
+				set_process_internal(false);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (sub_emitter != NodePath()) {
-			_attach_sub_emitter();
-		}
-	}
+		case NOTIFICATION_ENTER_TREE: {
+			if (sub_emitter != NodePath()) {
+				_attach_sub_emitter();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->particles_set_subemitter(particles, RID());
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->particles_set_subemitter(particles, RID());
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		// make sure particles are updated before rendering occurs if they were active before
-		if (is_visible_in_tree() && !RS::get_singleton()->particles_is_inactive(particles)) {
-			RS::get_singleton()->particles_request_process(particles);
-		}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			// Make sure particles are updated before rendering occurs if they were active before.
+			if (is_visible_in_tree() && !RS::get_singleton()->particles_is_inactive(particles)) {
+				RS::get_singleton()->particles_request_process(particles);
+			}
+		} break;
 	}
 }
 

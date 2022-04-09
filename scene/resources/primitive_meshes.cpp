@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,16 @@
 */
 void PrimitiveMesh::_update() const {
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	_create_mesh_array(arr);
+	if (GDVIRTUAL_CALL(_create_mesh_array, arr)) {
+		ERR_FAIL_COND_MSG(arr.size() != RS::ARRAY_MAX, "_create_mesh_array must return an array of Mesh.ARRAY_MAX elements.");
+	} else {
+		arr.resize(RS::ARRAY_MAX);
+		_create_mesh_array(arr);
+	}
 
 	Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
+
+	ERR_FAIL_COND_MSG(points.size() == 0, "_create_mesh_array must return at least a vertex array.");
 
 	aabb = AABB();
 
@@ -210,6 +216,8 @@ void PrimitiveMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+
+	GDVIRTUAL_BIND(_create_mesh_array);
 }
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
@@ -262,6 +270,10 @@ PrimitiveMesh::~PrimitiveMesh() {
 */
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, radius, height, radial_segments, rings);
+}
+
+void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float height, const int radial_segments, const int rings) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, w;
 	float onethird = 1.0 / 3.0;
@@ -473,6 +485,10 @@ CapsuleMesh::CapsuleMesh() {}
 */
 
 void BoxMesh::_create_mesh_array(Array &p_arr) const {
+	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d);
+}
+
+void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int subdivide_h, int subdivide_d) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
@@ -724,6 +740,10 @@ BoxMesh::BoxMesh() {}
 */
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings);
+}
+
+void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments, int rings) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
@@ -1423,6 +1443,10 @@ Vector3 QuadMesh::get_center_offset() const {
 */
 
 void SphereMesh::_create_mesh_array(Array &p_arr) const {
+	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere);
+}
+
+void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int radial_segments, int rings, bool is_hemisphere) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 

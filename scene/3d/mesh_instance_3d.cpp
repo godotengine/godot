@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -219,18 +219,6 @@ AABB MeshInstance3D::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
-	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING))) {
-		return Vector<Face3>();
-	}
-
-	if (mesh.is_null()) {
-		return Vector<Face3>();
-	}
-
-	return mesh->get_faces();
-}
-
 Node *MeshInstance3D::create_trimesh_collision_node() {
 	if (mesh.is_null()) {
 		return nullptr;
@@ -328,8 +316,10 @@ void MeshInstance3D::create_multiple_convex_collisions() {
 }
 
 void MeshInstance3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_resolve_skeleton_path();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_resolve_skeleton_path();
+		} break;
 	}
 }
 

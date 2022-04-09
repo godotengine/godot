@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCPeerConnection" inherits="RefCounted" version="4.0">
+<class name="WebRTCPeerConnection" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Interface to a WebRTC peer connection.
 	</brief_description>
@@ -33,8 +33,7 @@
 		<method name="create_data_channel">
 			<return type="WebRTCDataChannel" />
 			<argument index="0" name="label" type="String" />
-			<argument index="1" name="options" type="Dictionary" default="{
-}" />
+			<argument index="1" name="options" type="Dictionary" default="{}" />
 			<description>
 				Returns a new [WebRTCDataChannel] (or [code]null[/code] on failure) with given [code]label[/code] and optionally configured via the [code]options[/code] dictionary. This method can only be called when the connection is in state [constant STATE_NEW].
 				There are two ways to create a working data channel: either call [method create_data_channel] on only one of the peer and listen to [signal data_channel_received] on the other, or call [method create_data_channel] on both peers, with the same values, and the [code]negotiated[/code] option set to [code]true[/code].
@@ -70,8 +69,7 @@
 		</method>
 		<method name="initialize">
 			<return type="int" enum="Error" />
-			<argument index="0" name="configuration" type="Dictionary" default="{
-}" />
+			<argument index="0" name="configuration" type="Dictionary" default="{}" />
 			<description>
 				Re-initialize this peer connection, closing any previously active connection, and going back to state [constant STATE_NEW]. A dictionary of [code]options[/code] can be passed to configure the peer connection.
 				Valid [code]options[/code] are:
@@ -119,7 +117,7 @@
 	</methods>
 	<signals>
 		<signal name="data_channel_received">
-			<argument index="0" name="channel" type="Object" />
+			<argument index="0" name="channel" type="WebRTCDataChannel" />
 			<description>
 				Emitted when a new in-band channel is received, i.e. when the channel was created with [code]negotiated: false[/code] (default).
 				The object will be an instance of [WebRTCDataChannel]. You must keep a reference of it or it will be closed automatically. See [method create_data_channel].

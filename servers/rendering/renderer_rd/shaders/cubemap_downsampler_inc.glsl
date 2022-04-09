@@ -1,4 +1,4 @@
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint face_size;
 	uint face_id; // only used in raster shader
 }

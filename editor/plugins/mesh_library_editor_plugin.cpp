@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "mesh_library_editor_plugin.h"
 
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
@@ -61,7 +62,7 @@ void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
 	cd_update->hide();
 	apply_xforms = p_apply_xforms;
 	String existing = mesh_library->get_meta("_editor_source_scene");
-	ERR_FAIL_COND(existing == "");
+	ERR_FAIL_COND(existing.is_empty());
 	_import_scene_cbk(existing);
 }
 
@@ -136,9 +137,11 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-				//Transform3D shape_transform = sb->shape_owner_get_transform(E);
-
-				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+				Transform3D shape_transform;
+				if (p_apply_xforms) {
+					shape_transform = mi->get_transform();
+				}
+				shape_transform *= sb->get_transform() * sb->shape_owner_get_transform(E);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E); k++) {
 					Ref<Shape3D> collision = sb->shape_owner_get_shape(E, k);
@@ -147,7 +150,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
-					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E);
+					shape_data.local_transform = shape_transform;
 					collisions.push_back(shape_data);
 				}
 			}
@@ -226,7 +229,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			mesh_library->create_item(mesh_library->get_last_unused_item_id());
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
-			String p = editor->get_inspector()->get_selected_path();
+			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
 				to_erase = p.get_slice("/", 3).to_int();
 				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));
@@ -251,7 +254,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 void MeshLibraryEditor::_bind_methods() {
 }
 
-MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
+MeshLibraryEditor::MeshLibraryEditor() {
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
@@ -268,7 +271,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	menu = memnew(MenuButton);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
-	menu->set_text(TTR("Mesh Library"));
+	menu->set_text(TTR("MeshLibrary"));
 	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshLibrary"), SNAME("EditorIcons")));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
@@ -280,15 +283,14 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	menu->get_popup()->connect("id_pressed", callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 	menu->hide();
 
-	editor = p_editor;
 	cd_remove = memnew(ConfirmationDialog);
 	add_child(cd_remove);
 	cd_remove->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
-	cd_update->get_ok_button()->set_text("Apply without Transforms");
+	cd_update->get_ok_button()->set_text(TTR("Apply without Transforms"));
 	cd_update->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(false));
-	cd_update->add_button("Apply with Transforms")->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(true));
+	cd_update->add_button(TTR("Apply with Transforms"))->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(true));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {
@@ -314,14 +316,11 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
-	mesh_library_editor = memnew(MeshLibraryEditor(p_node));
+MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
+	mesh_library_editor = memnew(MeshLibraryEditor);
 
-	p_node->get_main_control()->add_child(mesh_library_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(mesh_library_editor);
 	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();
-
-	editor = nullptr;
 }

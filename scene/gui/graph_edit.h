@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,18 +36,17 @@
 #include "scene/gui/graph_node.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
 
 class GraphEdit;
+class ViewPanner;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);
 
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 	virtual bool has_point(const Point2 &p_point) const override;
 
 public:
@@ -59,7 +58,7 @@ class GraphEditMinimap : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditFilter;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 
 protected:
 public:
@@ -103,24 +102,36 @@ public:
 		float activity = 0.0;
 	};
 
+	// Should be in sync with ControlScheme in ViewPanner.
+	enum PanningScheme {
+		SCROLL_ZOOMS,
+		SCROLL_PANS,
+	};
+
 private:
-	Label *zoom_label;
-	Button *zoom_minus;
-	Button *zoom_reset;
-	Button *zoom_plus;
+	Label *zoom_label = nullptr;
+	Button *zoom_minus = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_plus = nullptr;
 
-	Button *snap_button;
-	SpinBox *snap_amount;
+	Button *snap_button = nullptr;
+	SpinBox *snap_amount = nullptr;
 
-	Button *minimap_button;
+	Button *minimap_button = nullptr;
 
-	Button *layout_button;
+	Button *layout_button = nullptr;
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	float port_grab_distance_horizontal = 0.0;
 	float port_grab_distance_vertical;
+
+	Ref<ViewPanner> panner;
+	bool warped_panning = true;
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	bool connecting = false;
 	String connecting_from;
@@ -136,6 +147,7 @@ private:
 	bool connecting_valid = false;
 	Vector2 click_pos;
 
+	PanningScheme panning_scheme = SCROLL_ZOOMS;
 	bool dragging = false;
 	bool just_selected = false;
 	bool moving_selection = false;
@@ -178,12 +190,14 @@ private:
 	void _scroll_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
-	Control *connections_layer;
-	GraphEditFilter *top_layer;
-	GraphEditMinimap *minimap;
+	Control *connections_layer = nullptr;
+	GraphEditFilter *top_layer = nullptr;
+	GraphEditMinimap *minimap = nullptr;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
+	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	bool is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	bool is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
@@ -217,7 +231,12 @@ private:
 	Set<int> valid_left_disconnect_types;
 	Set<int> valid_right_disconnect_types;
 
-	HBoxContainer *zoom_hb;
+	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
+	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
+	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
+	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
+
+	HBoxContainer *zoom_hb = nullptr;
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
@@ -254,18 +273,24 @@ protected:
 	void _notification(int p_what);
 
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
+	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
+	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
+	void force_connection_drag_end();
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
+
+	void set_panning_scheme(PanningScheme p_scheme);
+	PanningScheme get_panning_scheme() const;
 
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
@@ -322,10 +347,14 @@ public:
 	bool is_connection_lines_antialiased() const;
 
 	HBoxContainer *get_zoom_hbox();
+	Ref<ViewPanner> get_panner();
+	void set_warped_panning(bool p_warped);
 
 	void arrange_nodes();
 
 	GraphEdit();
 };
+
+VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 
 #endif // GRAPHEdit_H

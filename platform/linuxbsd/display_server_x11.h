@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,6 @@
 
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
-
-#include "drivers/gles3/rasterizer_platforms.h"
 
 #ifdef X11_ENABLED
 
@@ -110,7 +108,7 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 
 #if defined(DBUS_ENABLED)
-	FreeDesktopScreenSaver *screensaver;
+	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool keep_screen_on = false;
 #endif
 
@@ -135,7 +133,6 @@ class DisplayServerX11 : public DisplayServer {
 
 		ObjectID instance_id;
 
-		bool menu_type = false;
 		bool no_focus = false;
 
 		//better to guess on the fly, given WM can change it
@@ -145,13 +142,24 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
-		bool focused = false;
+		bool focused = true;
 		bool minimized = false;
+		bool is_popup = false;
+
+		Rect2i parent_safe_rect;
 
 		unsigned int focus_order = 0;
 	};
 
 	Map<WindowID, WindowData> windows;
+
+	unsigned int last_mouse_monitor_mask = 0;
+	Vector2i last_mouse_monitor_pos;
+	uint64_t time_since_popup = 0;
+
+	List<WindowID> popup_list;
+
+	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
@@ -160,7 +168,7 @@ class DisplayServerX11 : public DisplayServer {
 	String internal_clipboard_primary;
 	Window xdnd_source_window;
 	::Display *x11_display;
-	char *xmbstring;
+	char *xmbstring = nullptr;
 	int xmblen;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
@@ -173,8 +181,8 @@ class DisplayServerX11 : public DisplayServer {
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
-	int last_click_button_index;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_click_button_index = MouseButton::NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 
@@ -241,7 +249,7 @@ class DisplayServerX11 : public DisplayServer {
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
 	xrr_get_monitors_t xrr_get_monitors;
 	xrr_free_monitors_t xrr_free_monitors;
-	void *xrandr_handle;
+	void *xrandr_handle = nullptr;
 	Bool xrandr_ext_ok;
 
 	struct Property {
@@ -283,15 +291,18 @@ protected:
 	void _window_changed(XEvent *event);
 
 public:
+	void mouse_process_popups();
+	void popup_open(WindowID p_window);
+	void popup_close(WindowID p_window);
+
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to) override;
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -304,6 +315,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 #if defined(DBUS_ENABLED)
@@ -317,7 +329,13 @@ public:
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
+
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;

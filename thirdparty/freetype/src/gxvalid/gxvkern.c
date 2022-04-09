@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT kern table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -487,7 +487,7 @@
 
     if ( gxvalid->face->num_glyphs != glyphCount )
     {
-      GXV_TRACE(( "maxGID=%d, but glyphCount=%d\n",
+      GXV_TRACE(( "maxGID=%ld, but glyphCount=%d\n",
                   gxvalid->face->num_glyphs, glyphCount ));
       GXV_SET_ERR_IF_PARANOID( FT_INVALID_GLYPH_ID );
     }
@@ -745,7 +745,7 @@
 #ifdef GXV_LOAD_TRACE_VARS
     FT_UShort  version = 0;    /* MS only: subtable version, unused */
 #endif
-    FT_ULong   length;         /* MS: 16bit, Apple: 32bit*/
+    FT_ULong   length;         /* MS: 16bit, Apple: 32bit */
     FT_UShort  coverage;
 #ifdef GXV_LOAD_TRACE_VARS
     FT_UShort  tupleIndex = 0; /* Apple only */
@@ -772,7 +772,7 @@
       tupleIndex = 0;
 #endif
       GXV_TRACE(( "Subtable version = %d\n", version ));
-      GXV_TRACE(( "Subtable length = %d\n", length ));
+      GXV_TRACE(( "Subtable length = %lu\n", length ));
       break;
 
     case KERN_DIALECT_APPLE:
@@ -783,7 +783,7 @@
 #ifdef GXV_LOAD_TRACE_VARS
       tupleIndex = 0;
 #endif
-      GXV_TRACE(( "Subtable length = %d\n", length ));
+      GXV_TRACE(( "Subtable length = %lu\n", length ));
 
       if ( KERN_IS_NEW( gxvalid ) )
       {
@@ -800,7 +800,7 @@
     default:
       length = u16[1];
       GXV_TRACE(( "cannot detect subtable dialect, "
-                  "just skip %d byte\n", length ));
+                  "just skip %lu byte\n", length ));
       goto Exit;
     }
 
@@ -884,7 +884,7 @@
 
     for ( i = 0; i < nTables; i++ )
     {
-      GXV_TRACE(( "validating subtable %d/%d\n", i, nTables ));
+      GXV_TRACE(( "validating subtable %d/%lu\n", i, nTables ));
       /* p should be 32bit-aligned? */
       gxv_kern_subtable_validate( p, 0, gxvalid );
       p += gxvalid->subtable_length;

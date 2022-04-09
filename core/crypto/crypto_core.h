@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,24 @@
 
 class CryptoCore {
 public:
+	class RandomGenerator {
+	private:
+		void *entropy = nullptr;
+		void *ctx = nullptr;
+
+		static int _entropy_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len);
+
+	public:
+		RandomGenerator();
+		~RandomGenerator();
+
+		Error init();
+		Error get_random_bytes(uint8_t *r_buffer, size_t p_bytes);
+	};
+
 	class MD5Context {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		MD5Context();
@@ -50,7 +65,7 @@ public:
 
 	class SHA1Context {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		SHA1Context();
@@ -63,7 +78,7 @@ public:
 
 	class SHA256Context {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		SHA256Context();
@@ -76,7 +91,7 @@ public:
 
 	class AESContext {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		AESContext();

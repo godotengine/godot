@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,24 +33,19 @@
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-#include "line_edit.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
-#endif
+#include "scene/gui/line_edit.h"
 
 // AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
+	if (close_on_escape && key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
 		_cancel_pressed();
 	}
 }
 
 void AcceptDialog::_parent_focused() {
-	if (!is_exclusive()) {
+	if (close_on_escape && !is_exclusive()) {
 		_cancel_pressed();
 	}
 }
@@ -72,21 +67,25 @@ void AcceptDialog::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {
 				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
 				parent_visible = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_WM_SIZE_CHANGED: {
 			if (is_visible()) {
 				_update_child_rects();
 			}
 		} break;
+
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
 		} break;
@@ -94,6 +93,9 @@ void AcceptDialog::_notification(int p_what) {
 }
 
 void AcceptDialog::_text_submitted(const String &p_text) {
+	if (get_ok_button() && get_ok_button()->is_disabled()) {
+		return; // Do not allow submission if OK button is disabled.
+	}
 	_ok_pressed();
 }
 
@@ -141,6 +143,14 @@ void AcceptDialog::set_hide_on_ok(bool p_hide) {
 
 bool AcceptDialog::get_hide_on_ok() const {
 	return hide_on_ok;
+}
+
+void AcceptDialog::set_close_on_escape(bool p_hide) {
+	close_on_escape = p_hide;
+}
+
+bool AcceptDialog::get_close_on_escape() const {
+	return close_on_escape;
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
@@ -242,7 +252,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 		hbc->add_spacer(true);
 	}
 
-	if (p_action != "") {
+	if (!p_action.is_empty()) {
 		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
@@ -251,7 +261,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
-	if (p_cancel == "") {
+	if (p_cancel.is_empty()) {
 		c = TTRC("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
@@ -286,6 +296,8 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
+	ClassDB::bind_method(D_METHOD("set_close_on_escape", "enabled"), &AcceptDialog::set_close_on_escape);
+	ClassDB::bind_method(D_METHOD("get_close_on_escape"), &AcceptDialog::get_close_on_escape);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_cancel_button", "name"), &AcceptDialog::add_cancel_button);
 	ClassDB::bind_method(D_METHOD("remove_button", "button"), &AcceptDialog::remove_button);
@@ -302,6 +314,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 }
 

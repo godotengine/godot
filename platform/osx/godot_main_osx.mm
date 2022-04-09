@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,23 +35,34 @@
 #include <string.h>
 #include <unistd.h>
 
+#if defined(SANITIZERS_ENABLED)
+#include <sys/resource.h>
+#endif
+
 int main(int argc, char **argv) {
 #if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support
+	// MoltenVK - enable full component swizzling support.
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#endif
+
+#if defined(SANITIZERS_ENABLED)
+	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.
+	struct rlimit stack_lim = { 0x1E00000, 0x1E00000 };
+	setrlimit(RLIMIT_STACK, &stack_lim);
 #endif
 
 	int first_arg = 1;
 	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
 	printf("arguments\n");
 	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0)
+		if (strcmp(dbg_arg, argv[i]) == 0) {
 			first_arg = i + 2;
+		}
 		printf("%i: %s\n", i, argv[i]);
-	};
+	}
 
 #ifdef DEBUG_ENABLED
-	// lets report the path we made current after all that
+	// Lets report the path we made current after all that.
 	char cwd[4096];
 	getcwd(cwd, 4096);
 	printf("Current path: %s\n", cwd);
@@ -60,25 +71,27 @@ int main(int argc, char **argv) {
 	OS_OSX os;
 	Error err;
 
-	// We must override main when testing is enabled
+	// We must override main when testing is enabled.
 	TEST_MAIN_OVERRIDE
 
-	if (os.open_with_filename != "") {
-		char *argv_c = (char *)malloc(os.open_with_filename.utf8().size());
-		memcpy(argv_c, os.open_with_filename.utf8().get_data(), os.open_with_filename.utf8().size());
+	if (os.get_open_with_filename() != "") {
+		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
+		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
 		err = Main::setup(argv[0], 1, &argv_c);
 		free(argv_c);
 	} else {
 		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
 	}
 
-	if (err != OK)
+	if (err != OK) {
 		return 255;
+	}
 
-	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
+	if (Main::start()) {
+		os.run(); // It is actually the OS that decides how to run.
+	}
 
 	Main::cleanup();
 
 	return os.get_exit_code();
-};
+}

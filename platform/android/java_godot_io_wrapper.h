@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,8 @@ private:
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
+	jmethodID _get_scaled_density = 0;
+	jmethodID _get_screen_refresh_rate = 0;
 	jmethodID _screen_get_usable_rect = 0;
 	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
@@ -71,6 +73,8 @@ public:
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
+	float get_scaled_density();
+	float get_screen_refresh_rate(float fallback);
 	void screen_get_usable_rect(int (&p_rect_xywh)[4]);
 	String get_unique_id();
 	bool has_vk();

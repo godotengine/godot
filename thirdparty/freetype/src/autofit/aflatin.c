@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for latin writing system (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -22,11 +22,6 @@
 #include "afglobal.h"
 #include "aflatin.h"
 #include "aferrors.h"
-
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-#include "afwarp.h"
-#endif
 
 
   /**************************************************************************
@@ -63,11 +58,11 @@
     AF_GlyphHintsRec  hints[1];
 
 
-    FT_TRACE5(( "\n"
-                "latin standard widths computation (style `%s')\n"
-                "=====================================================\n"
-                "\n",
+    FT_TRACE5(( "\n" ));
+    FT_TRACE5(( "latin standard widths computation (style `%s')\n",
                 af_style_names[metrics->root.style_class->style] ));
+    FT_TRACE5(( "=====================================================\n" ));
+    FT_TRACE5(( "\n" ));
 
     af_glyph_hints_init( hints, face->memory );
 
@@ -350,9 +345,9 @@
     /* we walk over the blue character strings as specified in the */
     /* style's entry in the `af_blue_stringset' array              */
 
-    FT_TRACE5(( "latin blue zones computation\n"
-                "============================\n"
-                "\n" ));
+    FT_TRACE5(( "latin blue zones computation\n" ));
+    FT_TRACE5(( "============================\n" ));
+    FT_TRACE5(( "\n" ));
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     shaper_buf = af_shaper_buf_create( face );
@@ -976,9 +971,8 @@
       if ( AF_LATIN_IS_X_HEIGHT_BLUE( bs ) )
         blue->flags |= AF_LATIN_BLUE_ADJUSTMENT;
 
-      FT_TRACE5(( "    -> reference = %ld\n"
-                  "       overshoot = %ld\n",
-                  *blue_ref, *blue_shoot ));
+      FT_TRACE5(( "    -> reference = %ld\n", *blue_ref ));
+      FT_TRACE5(( "       overshoot = %ld\n", *blue_shoot ));
 
     } /* end for loop */
 
@@ -1275,29 +1269,28 @@
 
             if ( dist == 0 )
             {
-              FT_TRACE5((
-                "af_latin_metrics_scale_dim:"
-                " x height alignment (style `%s'):\n"
-                "                           "
-                " vertical scaling changed from %.5f to %.5f (by %ld%%)\n"
-                "\n",
-                af_style_names[metrics->root.style_class->style],
-                scale / 65536.0,
-                new_scale / 65536.0,
-                ( fitted - scaled ) * 100 / scaled ));
+              FT_TRACE5(( "af_latin_metrics_scale_dim:"
+                          " x height alignment (style `%s'):\n",
+                          af_style_names[metrics->root.style_class->style] ));
+              FT_TRACE5(( "                           "
+                          " vertical scaling changed"
+                          " from %.5f to %.5f (by %ld%%)\n",
+                          scale / 65536.0,
+                          new_scale / 65536.0,
+                          ( fitted - scaled ) * 100 / scaled ));
+              FT_TRACE5(( "\n" ));
 
               scale = new_scale;
             }
 #ifdef FT_DEBUG_LEVEL_TRACE
             else
             {
-              FT_TRACE5((
-                "af_latin_metrics_scale_dim:"
-                " x height alignment (style `%s'):\n"
-                "                           "
-                " excessive vertical scaling abandoned\n"
-                "\n",
-                af_style_names[metrics->root.style_class->style] ));
+              FT_TRACE5(( "af_latin_metrics_scale_dim:"
+                          " x height alignment (style `%s'):\n",
+                          af_style_names[metrics->root.style_class->style] ));
+              FT_TRACE5(( "                           "
+                          " excessive vertical scaling abandoned\n" ));
+              FT_TRACE5(( "\n" ));
             }
 #endif
           }
@@ -1346,9 +1339,11 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( axis->extra_light )
-      FT_TRACE5(( "`%s' style is extra light (at current resolution)\n"
-                  "\n",
+    {
+      FT_TRACE5(( "`%s' style is extra light (at current resolution)\n",
                   af_style_names[metrics->root.style_class->style] ));
+      FT_TRACE5(( "\n" ));
+    }
 #endif
 
     if ( dim == AF_DIMENSION_VERT )
@@ -1473,13 +1468,13 @@
         AF_LatinBlue  blue = &axis->blues[nn];
 
 
-        FT_TRACE5(( "  reference %d: %ld scaled to %.2f%s\n"
-                    "  overshoot %d: %ld scaled to %.2f%s\n",
+        FT_TRACE5(( "  reference %d: %ld scaled to %.2f%s\n",
                     nn,
                     blue->ref.org,
                     blue->ref.fit / 64.0,
                     ( blue->flags & AF_LATIN_BLUE_ACTIVE ) ? ""
-                                                           : " (inactive)",
+                                                           : " (inactive)" ));
+        FT_TRACE5(( "  overshoot %d: %ld scaled to %.2f%s\n",
                     nn,
                     blue->shoot.org,
                     blue->shoot.fit / 64.0,
@@ -1847,6 +1842,31 @@
              ( FT_ABS( point->out_dir ) == major_dir ||
                point == point->prev                  ) )
         {
+          /*
+           * For efficiency, we restrict the number of segments to 1000,
+           * which is a heuristic value: it is very unlikely that a glyph
+           * with so many segments can be hinted in a sensible way.
+           * Reasons:
+           *
+           * - The glyph has really 1000 segments; this implies that it has
+           *   at least 2000 outline points.  Assuming 'normal' fonts that
+           *   have superfluous points optimized away, viewing such a glyph
+           *   only makes sense at large magnifications where hinting
+           *   isn't applied anyway.
+           *
+           * - We have a broken glyph.  Hinting doesn't make sense in this
+           *   case either.
+           */
+          if ( axis->num_segments > 1000 )
+          {
+            FT_TRACE0(( "af_latin_hints_compute_segments:"
+                        " more than 1000 segments in this glyph;\n" ));
+            FT_TRACE0(( "                                "
+                        " hinting is suppressed\n" ));
+            axis->num_segments = 0;
+            return FT_Err_Ok;
+          }
+
           /* this is the start of a new segment! */
           segment_dir = (AF_Direction)point->out_dir;
 
@@ -2089,7 +2109,7 @@
       {
         if ( seg2->link != seg1 )
         {
-          seg1->link  = 0;
+          seg1->link  = NULL;
           seg1->serif = seg2->link;
         }
       }
@@ -2611,11 +2631,6 @@
     /* compute flags depending on render mode, etc. */
     mode = metrics->root.scaler.render_mode;
 
-#if 0 /* #ifdef AF_CONFIG_OPTION_USE_WARPER */
-    if ( mode == FT_RENDER_MODE_LCD || mode == FT_RENDER_MODE_LCD_V )
-      metrics->root.scaler.render_mode = mode = FT_RENDER_MODE_NORMAL;
-#endif
-
     scaler_flags = hints->scaler_flags;
     other_flags  = 0;
 
@@ -2652,12 +2667,6 @@
     if ( mode == FT_RENDER_MODE_LIGHT || mode == FT_RENDER_MODE_LCD ||
          ( face->style_flags & FT_STYLE_FLAG_ITALIC ) != 0          )
       scaler_flags |= AF_SCALER_FLAG_NO_HORIZONTAL;
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    /* get (global) warper flag */
-    if ( !metrics->root.globals->module->warping )
-      scaler_flags |= AF_SCALER_FLAG_NO_WARPER;
-#endif
 
     hints->scaler_flags = scaler_flags;
     hints->other_flags  = other_flags;
@@ -3575,24 +3584,6 @@
     /* grid-fit the outline */
     for ( dim = 0; dim < AF_DIMENSION_MAX; dim++ )
     {
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-      if ( dim == AF_DIMENSION_HORZ                                  &&
-           metrics->root.scaler.render_mode == FT_RENDER_MODE_NORMAL &&
-           AF_HINTS_DO_WARP( hints )                                 )
-      {
-        AF_WarperRec  warper;
-        FT_Fixed      scale;
-        FT_Pos        delta;
-
-
-        af_warper_compute( &warper, hints, (AF_Dimension)dim,
-                           &scale, &delta );
-        af_glyph_hints_scale_dim( hints, (AF_Dimension)dim,
-                                  scale, delta );
-        continue;
-      }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
-
       if ( ( dim == AF_DIMENSION_HORZ && AF_HINTS_DO_HORIZONTAL( hints ) ) ||
            ( dim == AF_DIMENSION_VERT && AF_HINTS_DO_VERTICAL( hints ) )   )
       {

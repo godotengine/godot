@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #include "editor_help_search.h"
 
 #include "core/os/keyboard.h"
-#include "editor_feature_profile.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_feature_profile.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
 	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -67,10 +67,10 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
 		switch (key->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				results_tree->gui_input(key);
 				search_box->accept_event();
 			} break;
@@ -111,9 +111,11 @@ void EditorHelpSearch::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
@@ -161,7 +163,7 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 		popup_centered_ratio(0.5F);
 	}
 
-	if (p_term == "") {
+	if (p_term.is_empty()) {
 		search_box->clear();
 	} else {
 		if (old_term == p_term) {
@@ -178,8 +180,6 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
-	old_search = false;
-
 	set_hide_on_ok(false);
 
 	set_title(TTR("Search Help"));
@@ -331,7 +331,10 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
-			match.name = term == "" || _match_string(term, class_doc.name);
+			// If the search term is empty, add any classes which are not script docs or which don't start with
+			// a double-quotation. This will ensure that only C++ classes and explictly named classes will
+			// be added.
+			match.name = (term.is_empty() && (!class_doc.is_script_doc || class_doc.name[0] != '\"')) || _match_string(term, class_doc.name);
 		}
 
 		// Match members if the term is long enough.
@@ -398,6 +401,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 				}
 			}
 		}
+		matches[class_doc.name] = match;
 	}
 
 	iterator_doc = iterator_doc->next();
@@ -513,7 +517,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 
 	// Ensure parent nodes are created first.
 	TreeItem *parent = root_item;
-	if (p_match.doc->inherits != "") {
+	if (!p_match.doc->inherits.is_empty()) {
 		if (class_items.has(p_match.doc->inherits)) {
 			parent = class_items[p_match.doc->inherits];
 		} else {
@@ -529,12 +533,12 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 	Ref<Texture2D> icon = empty_icon;
-	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
-		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
+	if (ui_service->has_theme_icon(p_doc->name, SNAME("EditorIcons"))) {
+		icon = ui_service->get_theme_icon(p_doc->name, SNAME("EditorIcons"));
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
 		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
-	String tooltip = p_doc->brief_description.strip_edges();
+	String tooltip = DTR(p_doc->brief_description.strip_edges());
 
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);
@@ -558,7 +562,7 @@ TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, cons
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
+		if (!arg.default_value.is_empty()) {
 			tooltip += " = " + arg.default_value;
 		}
 		if (i < p_doc->arguments.size() - 1) {
@@ -574,7 +578,7 @@ TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, cons
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
+		if (!arg.default_value.is_empty()) {
 			tooltip += " = " + arg.default_value;
 		}
 		if (i < p_doc->arguments.size() - 1) {
@@ -610,11 +614,6 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_text;
 	} else {
 		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
-		/*// In flat mode, show the class icon.
-if (ui_service->has_icon(p_class_name, "EditorIcons"))
-icon = ui_service->get_icon(p_class_name, "EditorIcons");
-else if (ClassDB::is_parent_class(p_class_name, "Object"))
-icon = ui_service->get_icon("Object", "EditorIcons");*/
 		text = p_class_name + "." + p_text;
 	}
 

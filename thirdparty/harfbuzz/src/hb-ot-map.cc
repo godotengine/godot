@@ -117,7 +117,8 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
 				  hb_mask_t     mask,
 				  bool          auto_zwnj,
 				  bool          auto_zwj,
-				  bool          random)
+				  bool          random,
+				  bool          per_syllable)
 {
   unsigned int lookup_indices[32];
   unsigned int offset, len;
@@ -145,6 +146,7 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t  &m,
       lookup->auto_zwnj = auto_zwnj;
       lookup->auto_zwj = auto_zwj;
       lookup->random = random;
+      lookup->per_syllable = per_syllable;
     }
 
     offset += len;
@@ -277,6 +279,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     map->auto_zwnj = !(info->flags & F_MANUAL_ZWNJ);
     map->auto_zwj = !(info->flags & F_MANUAL_ZWJ);
     map->random = !!(info->flags & F_RANDOM);
+    map->per_syllable = !!(info->flags & F_PER_SYLLABLE);
     if ((info->flags & F_GLOBAL) && info->max_value == 1) {
       /* Uses the global bit */
       map->shift = global_bit_shift;
@@ -319,7 +322,8 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
 		       m.features[i].mask,
 		       m.features[i].auto_zwnj,
 		       m.features[i].auto_zwj,
-		       m.features[i].random);
+		       m.features[i].random,
+		       m.features[i].per_syllable);
 
       /* Sort lookups and merge duplicates */
       if (last_num_lookups < m.lookups[table_index].length)

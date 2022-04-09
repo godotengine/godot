@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,8 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor_scale.h"
 #include "servers/display_server.h"
 
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
@@ -49,7 +49,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	if (!p_item->get_parent()) {
 		p_item->set_text(0, "res://");
 	} else {
-		if (!opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
+		if (!opened_paths.has(path) && (p_select_path.is_empty() || !p_select_path.begins_with(path))) {
 			p_item->set_collapsed(true);
 		}
 
@@ -79,29 +79,31 @@ void EditorDirDialog::reload(const String &p_path) {
 }
 
 void EditorDirDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
-		reload();
-
-		if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
-			tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
-		}
-
-		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
-			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
-		}
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible()) {
 			reload();
-		}
+
+			if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
+				tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
+			}
+
+			if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+				EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (must_reload && is_visible()) {
+				reload();
+			}
+		} break;
 	}
 }
 
@@ -156,8 +158,16 @@ void EditorDirDialog::_make_dir_confirm() {
 
 	DirAccessRef d = DirAccess::open(dir);
 	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + dir + "'.");
-	Error err = d->make_dir(makedirname->get_text());
 
+	const String stripped_dirname = makedirname->get_text().strip_edges();
+
+	if (d->dir_exists(stripped_dirname)) {
+		mkdirerr->set_text(TTR("Could not create folder. File with that name already exists."));
+		mkdirerr->popup_centered();
+		return;
+	}
+
+	Error err = d->make_dir(stripped_dirname);
 	if (err != OK) {
 		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
 	} else {
@@ -173,8 +183,6 @@ void EditorDirDialog::_bind_methods() {
 }
 
 EditorDirDialog::EditorDirDialog() {
-	updating = false;
-
 	set_title(TTR("Choose a Directory"));
 	set_hide_on_ok(false);
 
@@ -204,6 +212,4 @@ EditorDirDialog::EditorDirDialog() {
 	add_child(mkdirerr);
 
 	get_ok_button()->set_text(TTR("Choose"));
-
-	must_reload = false;
 }

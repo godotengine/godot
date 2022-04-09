@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,15 +54,12 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 	float tap_1_level_f = base->tap_1_active ? Math::db2linear(base->tap_1_level) : 0.0;
 	int tap_1_delay_frames = int((base->tap_1_delay_ms / 1000.0) * mix_rate);
-	;
 
 	float tap_2_level_f = base->tap_2_active ? Math::db2linear(base->tap_2_level) : 0.0;
 	int tap_2_delay_frames = int((base->tap_2_delay_ms / 1000.0) * mix_rate);
-	;
 
 	float feedback_level_f = base->feedback_active ? Math::db2linear(base->feedback_level) : 0.0;
 	unsigned int feedback_delay_frames = int((base->feedback_delay_ms / 1000.0) * mix_rate);
-	;
 
 	AudioFrame tap1_vol = AudioFrame(tap_1_level_f, tap_1_level_f);
 

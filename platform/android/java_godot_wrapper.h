@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include <android/log.h>
 #include <jni.h>
 
+#include "core/templates/list.h"
 #include "java_godot_view_wrapper.h"
 #include "string_android.h"
 
@@ -58,6 +59,7 @@ private:
 	jmethodID _get_GLES_version_code = 0;
 	jmethodID _get_clipboard = 0;
 	jmethodID _set_clipboard = 0;
+	jmethodID _has_clipboard = 0;
 	jmethodID _request_permission = 0;
 	jmethodID _request_permissions = 0;
 	jmethodID _get_granted_permissions = 0;
@@ -69,6 +71,7 @@ private:
 	jmethodID _on_godot_setup_completed = 0;
 	jmethodID _on_godot_main_loop_started = 0;
 	jmethodID _get_class_loader = 0;
+	jmethodID _create_new_godot_instance = 0;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -92,6 +95,8 @@ public:
 	String get_clipboard();
 	bool has_set_clipboard();
 	void set_clipboard(const String &p_text);
+	bool has_has_clipboard();
+	bool has_clipboard();
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
@@ -100,6 +105,7 @@ public:
 	bool is_activity_resumed();
 	void vibrate(int p_duration_ms);
 	String get_input_fallback_mapping();
+	void create_new_godot_instance(List<String> args);
 };
 
 #endif /* !JAVA_GODOT_WRAPPER_H */

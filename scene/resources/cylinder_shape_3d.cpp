@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "cylinder_shape_3d.h"
+
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
@@ -72,6 +73,7 @@ void CylinderShape3D::_update_shape() {
 }
 
 void CylinderShape3D::set_radius(float p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CylinderShape3D radius cannot be negative.");
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
@@ -82,6 +84,7 @@ float CylinderShape3D::get_radius() const {
 }
 
 void CylinderShape3D::set_height(float p_height) {
+	ERR_FAIL_COND_MSG(p_height < 0, "CylinderShape3D height cannot be negative.");
 	height = p_height;
 	_update_shape();
 	notify_change_to_owners();
@@ -97,8 +100,8 @@ void CylinderShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CylinderShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CylinderShape3D::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_radius", "get_radius");
 }
 
 CylinderShape3D::CylinderShape3D() :

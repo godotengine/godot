@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,55 +31,58 @@
 #ifndef PROJECT_SETTINGS_EDITOR_H
 #define PROJECT_SETTINGS_EDITOR_H
 
+#include "core/config/project_settings.h"
 #include "core/object/undo_redo.h"
 #include "editor/action_map_editor.h"
+#include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor/import_defaults_editor.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
-#include "editor_autoload_settings.h"
 #include "scene/gui/tab_container.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	static ProjectSettingsEditor *singleton;
-	ProjectSettings *ps;
-	Timer *timer;
+	ProjectSettings *ps = nullptr;
+	Timer *timer = nullptr;
 
-	TabContainer *tab_container;
-	SectionedInspector *inspector;
-	ActionMapEditor *action_map;
-	LocalizationEditor *localization_editor;
-	EditorAutoloadSettings *autoload_settings;
-	ShaderGlobalsEditor *shaders_global_variables_editor;
-	EditorPluginSettings *plugin_settings;
+	TabContainer *tab_container = nullptr;
+	SectionedInspector *general_settings_inspector = nullptr;
+	ActionMapEditor *action_map_editor = nullptr;
+	LocalizationEditor *localization_editor = nullptr;
+	EditorAutoloadSettings *autoload_settings = nullptr;
+	ShaderGlobalsEditor *shaders_global_variables_editor = nullptr;
+	EditorPluginSettings *plugin_settings = nullptr;
 
-	LineEdit *search_box;
-	CheckButton *advanced;
+	LineEdit *search_box = nullptr;
+	CheckButton *advanced = nullptr;
 
-	LineEdit *property_box;
-	OptionButton *feature_box;
-	OptionButton *type_box;
-	Button *add_button;
-	Button *del_button;
+	LineEdit *property_box = nullptr;
+	OptionButton *feature_box = nullptr;
+	OptionButton *type_box = nullptr;
+	Button *add_button = nullptr;
+	Button *del_button = nullptr;
 
-	Label *restart_label;
-	TextureRect *restart_icon;
-	PanelContainer *restart_container;
-	Button *restart_close_button;
+	Label *restart_label = nullptr;
+	TextureRect *restart_icon = nullptr;
+	PanelContainer *restart_container = nullptr;
+	Button *restart_close_button = nullptr;
 
-	ImportDefaultsEditor *import_defaults_editor;
-	EditorData *data;
-	UndoRedo *undo_redo;
+	ImportDefaultsEditor *import_defaults_editor = nullptr;
+	EditorData *data = nullptr;
+	UndoRedo *undo_redo = nullptr;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _property_box_changed(const String &p_text);
 	void _update_property_box();
 	void _feature_selected(int p_index);
 	void _select_type(Variant::Type p_type);
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);
@@ -99,6 +102,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_renamed(const String &p_old_name, const String &p_new_name);
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
+	void _update_theme();
 
 protected:
 	void _notification(int p_what);

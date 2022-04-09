@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define EDITOR_PROPERTIES_ARRAY_DICT_H
 
 #include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/filesystem_dock.h"
 #include "scene/gui/button.h"
@@ -79,19 +80,20 @@ public:
 class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
-	PopupMenu *change_type;
-	bool updating;
-	bool dropping;
+	PopupMenu *change_type = nullptr;
+	bool updating = false;
+	bool dropping = false;
 
 	Ref<EditorPropertyArrayObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
-	Button *edit;
-	VBoxContainer *vbox;
-	EditorSpinSlider *size_slider;
-	EditorSpinSlider *page_slider;
-	HBoxContainer *page_hbox;
+	Button *edit = nullptr;
+	VBoxContainer *vbox = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
@@ -103,8 +105,9 @@ class EditorPropertyArray : public EditorProperty {
 	HBoxContainer *reorder_selected_element_hbox = nullptr;
 	Button *reorder_selected_button = nullptr;
 
-	void _page_changed(double p_page);
+	void _page_changed(int p_page);
 	void _length_changed(double p_page);
+	void _add_element();
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
 	void _change_type(Object *p_button, int p_index);
@@ -135,20 +138,21 @@ public:
 class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
-	PopupMenu *change_type;
-	bool updating;
+	PopupMenu *change_type = nullptr;
+	bool updating = false;
 
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
-	Button *edit;
-	VBoxContainer *vbox;
-	EditorSpinSlider *size_slider;
-	EditorSpinSlider *page_slider;
-	HBoxContainer *page_hbox;
+	Button *edit = nullptr;
+	VBoxContainer *vbox = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 
-	void _page_changed(double p_page);
+	void _page_changed(int p_page);
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
 	void _change_type(Object *p_button, int p_index);
@@ -164,6 +168,41 @@ protected:
 public:
 	virtual void update_property() override;
 	EditorPropertyDictionary();
+};
+
+class EditorPropertyLocalizableString : public EditorProperty {
+	GDCLASS(EditorPropertyLocalizableString, EditorProperty);
+
+	EditorLocaleDialog *locale_select = nullptr;
+
+	bool updating;
+
+	Ref<EditorPropertyDictionaryObject> object;
+	int page_length = 20;
+	int page_index = 0;
+	Button *edit = nullptr;
+	VBoxContainer *vbox = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
+
+	void _page_changed(int p_page);
+	void _edit_pressed();
+	void _remove_item(Object *p_button, int p_index);
+	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+
+	void _add_locale_popup();
+	void _add_locale(const String &p_locale);
+	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	virtual void update_property() override;
+	EditorPropertyLocalizableString();
 };
 
 #endif // EDITOR_PROPERTIES_ARRAY_DICT_H

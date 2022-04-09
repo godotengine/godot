@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,11 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/margin_container.h"
@@ -126,7 +129,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		const int idx = _sheet_preview_position_to_frame_index(mb->get_position());
 
 		if (idx != -1) {
@@ -166,12 +169,12 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		frames_toggled_by_mouse_hover.clear();
 	}
 
 	const Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		// Select by holding down the mouse button on frames.
 		const int idx = _sheet_preview_position_to_frame_index(mm->get_position());
 
@@ -200,15 +203,22 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
-			_sheet_zoom_in();
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
+			_sheet_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
-			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
-			_sheet_zoom_out();
+			split_sheet_scroll->accept_event();
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
+			_sheet_zoom_on_position(1 / scale_ratio, mb->get_position());
 			// Don't scroll down after zooming out.
-			accept_event();
+			split_sheet_scroll->accept_event();
 		}
+	}
+
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
+		const Vector2 dragged = Input::get_singleton()->warp_mouse_motion(mm, split_sheet_scroll->get_global_rect());
+		split_sheet_scroll->set_h_scroll(split_sheet_scroll->get_h_scroll() - dragged.x);
+		split_sheet_scroll->set_v_scroll(split_sheet_scroll->get_v_scroll() - dragged.y);
 	}
 }
 
@@ -222,28 +232,14 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	Point2 src_origin;
-	Rect2 src_region(Point2(), texture_size);
-
-	AtlasTexture *src_atlas = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
-	if (src_atlas && src_atlas->get_atlas().is_valid()) {
-		src_origin = src_atlas->get_region().position - src_atlas->get_margin().position;
-		src_region = src_atlas->get_region();
-	}
-
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
 		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
 
-		Rect2 frame(frame_coords * frame_size + src_origin, frame_size);
-		Rect2 region = frame.intersection(src_region);
-		Rect2 margin(region == Rect2() ? Point2() : region.position - frame.position, frame.size - region.size);
-
 		Ref<AtlasTexture> at;
 		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
-		at->set_region(region);
-		at->set_margin(margin);
+		at->set_region(Rect2(frame_coords * frame_size, frame_size));
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
@@ -254,20 +250,25 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_sheet_zoom_on_position(float p_zoom, const Vector2 &p_position) {
+	const float old_zoom = sheet_zoom;
+	sheet_zoom = CLAMP(sheet_zoom * p_zoom, min_sheet_zoom, max_sheet_zoom);
+
+	const Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+
+	Vector2 offset = Vector2(split_sheet_scroll->get_h_scroll(), split_sheet_scroll->get_v_scroll());
+	offset = (offset + p_position) / old_zoom * sheet_zoom - p_position;
+	split_sheet_scroll->set_h_scroll(offset.x);
+	split_sheet_scroll->set_v_scroll(offset.y);
+}
+
 void SpriteFramesEditor::_sheet_zoom_in() {
-	if (sheet_zoom < max_sheet_zoom) {
-		sheet_zoom *= scale_ratio;
-		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
-	}
+	_sheet_zoom_on_position(scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_out() {
-	if (sheet_zoom > min_sheet_zoom) {
-		sheet_zoom /= scale_ratio;
-		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
-	}
+	_sheet_zoom_on_position(1 / scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
@@ -299,7 +300,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double) {
 }
 
 void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
-	Ref<Resource> texture = ResourceLoader::load(p_file);
+	Ref<Texture2D> texture = ResourceLoader::load(p_file);
 	if (!texture.is_valid()) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
@@ -321,7 +322,8 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 
 void SpriteFramesEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			load->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
@@ -339,11 +341,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			split_sheet_zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-			[[fallthrough]];
-		}
-		case NOTIFICATION_THEME_CHANGED: {
 			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;
@@ -746,11 +746,11 @@ void SpriteFramesEditor::_tree_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -835,19 +835,30 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
-		Ref<Texture2D> icon;
+		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
 
-		if (frames->get_frame(edited_anim, i).is_null()) {
+		if (frame.is_null()) {
 			name = itos(i) + ": " + TTR("(empty)");
-
 		} else {
-			name = itos(i) + ": " + frames->get_frame(edited_anim, i)->get_name();
-			icon = frames->get_frame(edited_anim, i);
+			name = itos(i) + ": " + frame->get_name();
 		}
 
-		tree->add_item(name, icon);
-		if (frames->get_frame(edited_anim, i).is_valid()) {
-			tree->set_item_tooltip(tree->get_item_count() - 1, frames->get_frame(edited_anim, i)->get_path());
+		tree->add_item(name, frame);
+		if (frame.is_valid()) {
+			String tooltip = frame->get_path();
+
+			// Frame is often saved as an AtlasTexture subresource within a scene/resource file,
+			// thus its path might be not what the user is looking for. So we're also showing
+			// subsequent source texture paths.
+			String prefix = String::utf8("┖╴");
+			Ref<AtlasTexture> at = frame;
+			while (at.is_valid() && at->get_atlas().is_valid()) {
+				tooltip += "\n" + prefix + at->get_atlas()->get_path();
+				prefix = "    " + prefix;
+				at = at->get_atlas();
+			}
+
+			tree->set_item_tooltip(-1, tooltip);
 		}
 		if (sel == i) {
 			tree->select(tree->get_item_count() - 1);
@@ -1006,7 +1017,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 			_prepare_sprite_sheet(files[0]);
 		} else {
 			_file_load_request(files, at_pos);
@@ -1232,14 +1243,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_vb->add_child(split_sheet_panel);
 
 	split_sheet_preview = memnew(TextureRect);
-	split_sheet_preview->set_expand(true);
+	split_sheet_preview->set_ignore_texture_size(true);
 	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
 	split_sheet_preview->connect("draw", callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
 	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
 
 	split_sheet_scroll = memnew(ScrollContainer);
-	split_sheet_scroll->set_enable_h_scroll(true);
-	split_sheet_scroll->set_enable_v_scroll(true);
 	split_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
 	split_sheet_panel->add_child(split_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);
@@ -1331,20 +1340,19 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(frames_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(frames_editor);
 	} else {
 		button->hide();
 		if (frames_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 	}
 }
 
-SpriteFramesEditorPlugin::SpriteFramesEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
 	button->hide();
 }
 

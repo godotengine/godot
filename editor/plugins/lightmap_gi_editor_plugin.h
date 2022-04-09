@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,23 +31,24 @@
 #ifndef BAKED_LIGHTMAP_EDITOR_PLUGIN_H
 #define BAKED_LIGHTMAP_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/resources/material.h"
 
+struct EditorProgress;
+class EditorFileDialog;
+
 class LightmapGIEditorPlugin : public EditorPlugin {
 	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);
 
-	LightmapGI *lightmap;
+	LightmapGI *lightmap = nullptr;
 
-	Button *bake;
-	EditorNode *editor;
+	Button *bake = nullptr;
 
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 	static EditorProgress *tmp_progress;
 	static bool bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh);
-	static void bake_func_end();
+	static void bake_func_end(uint64_t p_time_started);
 
 	void _bake_select_file(const String &p_file);
 	void _bake();
@@ -62,7 +63,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	LightmapGIEditorPlugin(EditorNode *p_node);
+	LightmapGIEditorPlugin();
 	~LightmapGIEditorPlugin();
 };
 

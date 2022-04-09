@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #ifndef EDITOR_TOASTER_H
 #define EDITOR_TOASTER_H
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/popup.h"
-
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
+#include "scene/gui/box_container.h"
+
+class Button;
+class PanelContainer;
 
 class EditorToaster : public HBoxContainer {
 	GDCLASS(EditorToaster, HBoxContainer);
@@ -61,11 +61,11 @@ private:
 	Ref<StyleBoxFlat> warning_panel_style_progress;
 	Ref<StyleBoxFlat> error_panel_style_progress;
 
-	Button *main_button;
-	PanelContainer *disable_notifications_panel;
-	Button *disable_notifications_button;
+	Button *main_button = nullptr;
+	PanelContainer *disable_notifications_panel = nullptr;
+	Button *disable_notifications_button = nullptr;
 
-	VBoxContainer *vbox_container;
+	VBoxContainer *vbox_container = nullptr;
 	const int max_temporary_count = 5;
 	struct Toast {
 		Severity severity = SEVERITY_INFO;
@@ -82,6 +82,8 @@ private:
 	};
 	Map<Control *, Toast> toasts;
 
+	bool is_processing_error = false; // Makes sure that we don't handle errors that are triggered within the EditorToaster error processing.
+
 	const double default_message_duration = 5.0;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
@@ -94,9 +96,12 @@ private:
 
 	void _set_notifications_enabled(bool p_enabled);
 	void _repop_old();
+	void _popup_str(String p_message, Severity p_severity, String p_tooltip);
+	void _close_button_theme_changed(Control *p_close_button);
 
 protected:
 	static EditorToaster *singleton;
+	static void _bind_methods();
 
 	void _notification(int p_what);
 

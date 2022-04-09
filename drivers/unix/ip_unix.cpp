@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,10 +72,10 @@ static IPAddress _sockaddr2ip(struct sockaddr *p_addr) {
 	} else if (p_addr->sa_family == AF_INET6) {
 		struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)p_addr;
 		ip.set_ipv6(addr6->sin6_addr.s6_addr);
-	};
+	}
 
 	return ip;
-};
+}
 
 void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type) const {
 	struct addrinfo hints;
@@ -90,14 +90,14 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 	} else {
 		hints.ai_family = AF_UNSPEC;
 		hints.ai_flags = AI_ADDRCONFIG;
-	};
+	}
 	hints.ai_flags &= ~AI_NUMERICHOST;
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), nullptr, &hints, &result);
 	if (s != 0) {
 		ERR_PRINT("getaddrinfo failed! Cannot resolve hostname.");
 		return;
-	};
+	}
 
 	if (result == nullptr || result->ai_addr == nullptr) {
 		ERR_PRINT("Invalid response from getaddrinfo");
@@ -105,7 +105,7 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 			freeaddrinfo(result);
 		}
 		return;
-	};
+	}
 
 	struct addrinfo *next = result;
 
@@ -115,7 +115,7 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 			continue;
 		}
 		IPAddress ip = _sockaddr2ip(next->ai_addr);
-		if (!r_addresses.find(ip)) {
+		if (ip.is_valid() && !r_addresses.find(ip)) {
 			r_addresses.push_back(ip);
 		}
 		next = next->ai_next;
@@ -138,8 +138,9 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 	for (int i = 0; i < hostnames->Size; i++) {
 		auto hostname = hostnames->GetAt(i);
 
-		if (hostname->Type != HostNameType::Ipv4 && hostname->Type != HostNameType::Ipv6)
+		if (hostname->Type != HostNameType::Ipv4 && hostname->Type != HostNameType::Ipv6) {
 			continue;
+		}
 
 		String name = hostname->RawName->Data();
 		Map<String, Interface_Info>::Element *E = r_interfaces->find(name);
@@ -171,14 +172,14 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 				nullptr, addrs, &buf_size);
 		if (err == NO_ERROR) {
 			break;
-		};
+		}
 		memfree(addrs);
 		if (err == ERROR_BUFFER_OVERFLOW) {
 			continue; // will go back and alloc the right size
-		};
+		}
 
 		ERR_FAIL_MSG("Call to GetAdaptersAddresses failed with error " + itos(err) + ".");
-	};
+	}
 
 	IP_ADAPTER_ADDRESSES *adapter = addrs;
 
@@ -191,19 +192,21 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 		IP_ADAPTER_UNICAST_ADDRESS *address = adapter->FirstUnicastAddress;
 		while (address != nullptr) {
 			int family = address->Address.lpSockaddr->sa_family;
-			if (family != AF_INET && family != AF_INET6)
+			if (family != AF_INET && family != AF_INET6) {
 				continue;
+			}
 			info.ip_addresses.push_front(_sockaddr2ip(address->Address.lpSockaddr));
 			address = address->Next;
 		}
 		adapter = adapter->Next;
 		// Only add interface if it has at least one IP
-		if (info.ip_addresses.size() > 0)
+		if (info.ip_addresses.size() > 0) {
 			r_interfaces->insert(info.name, info);
-	};
+		}
+	}
 
 	memfree(addrs);
-};
+}
 
 #endif
 

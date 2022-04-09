@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "ray_cast_2d.h"
 
 #include "collision_object_2d.h"
+#include "scene/resources/world_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -149,11 +150,11 @@ void RayCast2D::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
 			}
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -162,16 +163,13 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			}
 			_draw_debug_shape();
-
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;
 			}
-
 			_update_raycast_state();
-
 		} break;
 	}
 }
@@ -244,15 +242,13 @@ void RayCast2D::_draw_debug_shape() {
 	xf.rotate(target_position.angle());
 	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
-	Vector<Vector2> pts;
-	pts.push_back(xf.xform(Vector2(arrow_size, 0)));
-	pts.push_back(xf.xform(Vector2(0, 0.5 * arrow_size)));
-	pts.push_back(xf.xform(Vector2(0, -0.5 * arrow_size)));
+	Vector<Vector2> pts = {
+		xf.xform(Vector2(arrow_size, 0)),
+		xf.xform(Vector2(0, 0.5 * arrow_size)),
+		xf.xform(Vector2(0, -0.5 * arrow_size))
+	};
 
-	Vector<Color> cols;
-	for (int i = 0; i < 3; i++) {
-		cols.push_back(draw_col);
-	}
+	Vector<Color> cols = { draw_col, draw_col, draw_col };
 
 	draw_primitive(pts, cols, Vector<Vector2>());
 }
@@ -265,30 +261,29 @@ void RayCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast2D::add_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
-	add_exception_rid(co->get_rid());
+void RayCast2D::add_exception(const CollisionObject2D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+	add_exception_rid(p_node->get_rid());
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast2D::remove_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
-	remove_exception_rid(co->get_rid());
+void RayCast2D::remove_exception(const CollisionObject2D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+	remove_exception_rid(p_node->get_rid());
 }
 
 void RayCast2D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject2D *parent = Object::cast_to<CollisionObject2D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast2D::set_collide_with_areas(bool p_enabled) {

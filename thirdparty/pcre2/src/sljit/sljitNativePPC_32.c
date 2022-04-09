@@ -119,9 +119,10 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, ADDIC | D(dst) | A(src1) | compiler->imm);
 		}
+		SLJIT_ASSERT(!(flags & ALT_FORM4));
 		if (!(flags & ALT_SET_FLAGS))
 			return push_inst(compiler, ADD | D(dst) | A(src1) | B(src2));
-		if (flags & ALT_FORM4)
+		if (flags & ALT_FORM5)
 			return push_inst(compiler, ADDC | RC(ALT_SET_FLAGS) | D(dst) | A(src1) | B(src2));
 		return push_inst(compiler, ADD | RC(flags) | D(dst) | A(src1) | B(src2));
 
@@ -143,22 +144,27 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		}
 
 		if (flags & ALT_FORM2) {
+			if (flags & ALT_FORM3) {
+				FAIL_IF(push_inst(compiler, CMPI | CRD(0) | A(src1) | compiler->imm));
+				if (!(flags & ALT_FORM4))
+					return SLJIT_SUCCESS;
+				return push_inst(compiler, ADDI | D(dst) | A(src1) | (-compiler->imm & 0xffff));
+			}
+			FAIL_IF(push_inst(compiler, CMP | CRD(0) | A(src1) | B(src2)));
+			if (!(flags & ALT_FORM4))
+				return SLJIT_SUCCESS;
+			return push_inst(compiler, SUBF | D(dst) | A(src2) | B(src1));
+		}
+
+		if (flags & ALT_FORM3) {
 			/* Setting XER SO is not enough, CR SO is also needed. */
 			return push_inst(compiler, SUBF | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
 		}
 
-		if (flags & ALT_FORM3) {
+		if (flags & ALT_FORM4) {
 			/* Flags does not set: BIN_IMM_EXTS unnecessary. */
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, SUBFIC | D(dst) | A(src1) | compiler->imm);
-		}
-
-		if (flags & ALT_FORM4) {
-			if (flags & ALT_FORM5) {
-				SLJIT_ASSERT(src2 == TMP_REG2);
-				return push_inst(compiler, CMPI | CRD(0) | A(src1) | compiler->imm);
-			}
-			return push_inst(compiler, CMP | CRD(0) | A(src1) | B(src2));
 		}
 
 		if (!(flags & ALT_SET_FLAGS))

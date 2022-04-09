@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef MESH_INSTANCE_EDITOR_PLUGIN_H
 #define MESH_INSTANCE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/spin_box.h"
@@ -52,17 +51,17 @@ class MeshInstance3DEditor : public Control {
 		MENU_OPTION_DEBUG_UV2,
 	};
 
-	MeshInstance3D *node;
+	MeshInstance3D *node = nullptr;
 
-	MenuButton *options;
+	MenuButton *options = nullptr;
 
-	ConfirmationDialog *outline_dialog;
-	SpinBox *outline_size;
+	ConfirmationDialog *outline_dialog = nullptr;
+	SpinBox *outline_size = nullptr;
 
-	AcceptDialog *err_dialog;
+	AcceptDialog *err_dialog = nullptr;
 
-	AcceptDialog *debug_uv_dialog;
-	Control *debug_uv;
+	AcceptDialog *debug_uv_dialog = nullptr;
+	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 
 	void _menu_option(int p_option);
@@ -85,8 +84,7 @@ public:
 class MeshInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(MeshInstance3DEditorPlugin, EditorPlugin);
 
-	MeshInstance3DEditor *mesh_editor;
-	EditorNode *editor;
+	MeshInstance3DEditor *mesh_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "MeshInstance3D"; }
@@ -95,7 +93,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	MeshInstance3DEditorPlugin(EditorNode *p_node);
+	MeshInstance3DEditorPlugin();
 	~MeshInstance3DEditorPlugin();
 };
 

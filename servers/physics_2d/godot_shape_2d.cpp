@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ void GodotShape2D::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
 	configured = true;
 	for (const KeyValue<GodotShapeOwner2D *, int> &E : owners) {
-		GodotShapeOwner2D *co = (GodotShapeOwner2D *)E.key;
+		GodotShapeOwner2D *co = const_cast<GodotShapeOwner2D *>(E.key);
 		co->_shape_changed();
 	}
 }
@@ -544,12 +544,6 @@ bool GodotConvexPolygonShape2D::intersect_segment(const Vector2 &p_begin, const 
 	bool inters = false;
 
 	for (int i = 0; i < point_count; i++) {
-		//hmm.. no can do..
-		/*
-		if (d.dot(points[i].normal)>=0)
-			continue;
-		*/
-
 		Vector2 res;
 
 		if (!Geometry2D::segment_intersects_segment(p_begin, p_end, points[i].pos, points[(i + 1) % point_count].pos, &res)) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedColorArray" version="4.0">
+<class name="PackedColorArray" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A packed [Array] of [Color]s.
 	</brief_description>
@@ -95,7 +95,7 @@
 				Appends a value to the array.
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
 			<description>
@@ -126,20 +126,23 @@
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the size of the array.
+				Returns the number of elements in the array.
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="PackedColorArray" />
+			<argument index="0" name="begin" type="int" />
+			<argument index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [PackedColorArray], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [PackedColorArray].
+				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 			</description>
 		</method>
 		<method name="sort">
 			<return type="void" />
 			<description>
 				Sorts the elements of the array in ascending order.
-			</description>
-		</method>
-		<method name="subarray" qualifiers="const">
-			<return type="PackedColorArray" />
-			<argument index="0" name="from" type="int" />
-			<argument index="1" name="to" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="to_byte_array" qualifiers="const">
@@ -151,11 +154,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="PackedColorArray" />
 			<description>
 			</description>
@@ -163,11 +161,6 @@
 		<operator name="operator +">
 			<return type="PackedColorArray" />
 			<argument index="0" name="right" type="PackedColorArray" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>

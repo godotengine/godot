@@ -36,7 +36,7 @@ layout(set = 2, binding = 0, std430) buffer restrict readonly SkeletonData {
 }
 bone_transforms;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	bool has_normal;
 	bool has_tangent;
 	bool has_skeleton;

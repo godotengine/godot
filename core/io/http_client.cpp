@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,14 @@ HTTPClient *HTTPClient::create() {
 	return nullptr;
 }
 
+void HTTPClient::set_http_proxy(const String &p_host, int p_port) {
+	WARN_PRINT("HTTP proxy feature is not available");
+}
+
+void HTTPClient::set_https_proxy(const String &p_host, int p_port) {
+	WARN_PRINT("HTTPS proxy feature is not available");
+}
+
 Error HTTPClient::_request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
 	int size = p_body.size();
 	return request(p_method, p_url, p_headers, size > 0 ? p_body.ptr() : nullptr, size);
@@ -86,6 +94,17 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 		}
 	}
 	return query.substr(1);
+}
+
+Error HTTPClient::verify_headers(const Vector<String> &p_headers) {
+	for (int i = 0; i < p_headers.size(); i++) {
+		String sanitized = p_headers[i].strip_edges();
+		ERR_FAIL_COND_V_MSG(sanitized.is_empty(), ERR_INVALID_PARAMETER, "Invalid HTTP header at index " + itos(i) + ": empty.");
+		ERR_FAIL_COND_V_MSG(sanitized.find(":") < 1, ERR_INVALID_PARAMETER,
+				"Invalid HTTP header at index " + itos(i) + ": String must contain header-value pair, delimited by ':', but was: " + p_headers[i]);
+	}
+
+	return OK;
 }
 
 Dictionary HTTPClient::_get_response_headers_as_dictionary() {
@@ -141,6 +160,9 @@ void HTTPClient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_status"), &HTTPClient::get_status);
 	ClassDB::bind_method(D_METHOD("poll"), &HTTPClient::poll);
+
+	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPClient::set_http_proxy);
+	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPClient::set_https_proxy);
 
 	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,23 +66,25 @@ void SpriteBase3D::_propagate_color_changed() {
 }
 
 void SpriteBase3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!pending_update) {
-			_im_update();
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (!pending_update) {
+				_im_update();
+			}
 
-		parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
-		if (parent_sprite) {
-			pI = parent_sprite->children.push_back(this);
-		}
-	}
+			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
+			if (parent_sprite) {
+				pI = parent_sprite->children.push_back(this);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent_sprite) {
-			parent_sprite->children.erase(pI);
-			pI = nullptr;
-			parent_sprite = nullptr;
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (parent_sprite) {
+				parent_sprite->children.erase(pI);
+				pI = nullptr;
+				parent_sprite = nullptr;
+			}
+		} break;
 	}
 }
 
@@ -141,15 +143,6 @@ real_t SpriteBase3D::get_pixel_size() const {
 	return pixel_size;
 }
 
-void SpriteBase3D::set_opacity(float p_amount) {
-	opacity = p_amount;
-	_queue_update();
-}
-
-float SpriteBase3D::get_opacity() const {
-	return opacity;
-}
-
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	axis = p_axis;
@@ -182,10 +175,6 @@ void SpriteBase3D::_queue_update() {
 
 AABB SpriteBase3D::get_aabb() const {
 	return aabb;
-}
-
-Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
@@ -295,9 +284,6 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &SpriteBase3D::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &SpriteBase3D::get_modulate);
 
-	ClassDB::bind_method(D_METHOD("set_opacity", "opacity"), &SpriteBase3D::set_opacity);
-	ClassDB::bind_method(D_METHOD("get_opacity"), &SpriteBase3D::get_opacity);
-
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &SpriteBase3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &SpriteBase3D::get_pixel_size);
 
@@ -324,7 +310,6 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "opacity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_opacity", "get_opacity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
@@ -468,7 +453,6 @@ void Sprite3D::_draw() {
 	}
 
 	Color color = _get_color_accum();
-	color.a *= get_opacity();
 
 	real_t pixel_size = get_pixel_size();
 
@@ -625,6 +609,7 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
 	}
 	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
 Ref<Texture2D> Sprite3D::get_texture() const {
@@ -707,10 +692,6 @@ Rect2 Sprite3D::get_item_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
 	}
-	/*
-	if (texture.is_null())
-		return CanvasItem::get_item_rect();
-	*/
 
 	Size2 s;
 
@@ -780,6 +761,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("texture_changed"));
 }
 
 Sprite3D::Sprite3D() {
@@ -835,7 +817,6 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Color color = _get_color_accum();
-	color.a *= get_opacity();
 
 	real_t pixel_size = get_pixel_size();
 
@@ -996,13 +977,13 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E) {
+			if (animation == E->get()) {
 				current_found = true;
 			}
 		}
 
 		if (!current_found) {
-			if (property.hint_string == String()) {
+			if (property.hint_string.is_empty()) {
 				property.hint_string = String(animation);
 			} else {
 				property.hint_string = String(animation) + "," + property.hint_string;
@@ -1034,14 +1015,14 @@ void AnimatedSprite3D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation);
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			double remaining = get_process_delta_time();
 
 			while (remaining) {
+				double speed = frames->get_animation_speed(animation);
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
 				if (timeout <= 0) {
 					timeout = 1.0 / speed;
 
@@ -1101,8 +1082,9 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 
 	if (frames->has_animation(animation)) {
 		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit)
+		if (p_frame >= limit) {
 			p_frame = limit - 1;
+		}
 	}
 
 	if (p_frame < 0) {
@@ -1218,7 +1200,7 @@ StringName AnimatedSprite3D::get_animation() const {
 TypedArray<String> AnimatedSprite3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = SpriteBase3D::get_configuration_warnings();
 	if (frames.is_null()) {
-		warnings.push_back(TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
 	}
 
 	return warnings;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@
 #include "servers/rendering/renderer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/voxel_gi_debug.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -54,7 +55,7 @@ class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
 private:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	/* VOXEL_GI INSTANCE */
 
@@ -250,8 +251,6 @@ private:
 			float cos_spot_angle;
 			float inv_spot_attenuation;
 			float radius;
-
-			float shadow_color[4];
 		};
 
 		struct DirectLightPushConstant {
@@ -332,8 +331,8 @@ public:
 
 	struct VoxelGIInstance {
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		RID probe;
 		RID texture;
@@ -392,7 +391,7 @@ public:
 		return voxel_gi->texture;
 	};
 
-	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_HIGH;
+	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 
 	/* SDFGI */
 
@@ -456,8 +455,8 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -495,7 +494,7 @@ public:
 		float solid_cell_ratio = 0;
 		uint32_t solid_cell_count = 0;
 
-		RS::EnvironmentSDFGICascades cascade_mode;
+		int num_cascades = 6;
 		float min_cell_size = 0;
 		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
 
@@ -504,12 +503,12 @@ public:
 		RID cascades_ubo;
 
 		bool uses_occlusion = false;
-		float bounce_feedback = 0.0;
-		bool reads_sky = false;
+		float bounce_feedback = 0.5;
+		bool reads_sky = true;
 		float energy = 1.0;
 		float normal_bias = 1.1;
 		float probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_DISABLED;
+		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
 
 		float y_mult = 1.0;
 
@@ -536,7 +535,7 @@ public:
 	};
 
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_10_FRAMES;
+	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
 	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
 
 	float sdfgi_solid_cell_ratio = 0.25;
@@ -602,19 +601,15 @@ public:
 	};
 
 	struct VoxelGIData {
-		float xform[16];
-		float bounds[3];
-		float dynamic_range;
+		float xform[16]; // 64 - 64
 
-		float bias;
-		float normal_bias;
-		uint32_t blend_ambient;
-		uint32_t texture_slot;
+		float bounds[3]; // 12 - 76
+		float dynamic_range; // 4 - 80
 
-		uint32_t pad0;
-		uint32_t pad1;
-		uint32_t pad2;
-		uint32_t mipmaps;
+		float bias; // 4 - 84
+		float normal_bias; // 4 - 88
+		uint32_t blend_ambient; // 4 - 92
+		uint32_t mipmaps; // 4 - 96
 	};
 
 	struct PushConstant {

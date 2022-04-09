@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "navigation_obstacle_2d.h"
 
 #include "scene/2d/collision_shape_2d.h"
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
@@ -53,26 +54,30 @@ void NavigationObstacle2D::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			initialize_agent();
+		case NOTIFICATION_ENTER_TREE: {
 			parent_node2d = Object::cast_to<Node2D>(get_parent());
+			reevaluate_agent_radius();
 			if (parent_node2d != nullptr) {
 				// place agent on navigation map first or else the RVO agent callback creation fails silently later
 				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), parent_node2d->get_world_2d()->get_navigation_map());
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			parent_node2d = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_PARENTED: {
 			parent_node2d = Object::cast_to<Node2D>(get_parent());
 			reevaluate_agent_radius();
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			parent_node2d = nullptr;
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node2d) {
 				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_position());
@@ -83,6 +88,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 NavigationObstacle2D::NavigationObstacle2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
+	initialize_agent();
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
@@ -94,7 +100,7 @@ TypedArray<String> NavigationObstacle2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));
+		warnings.push_back(RTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));
 	}
 
 	return warnings;
@@ -110,7 +116,7 @@ void NavigationObstacle2D::initialize_agent() {
 void NavigationObstacle2D::reevaluate_agent_radius() {
 	if (!estimate_radius) {
 		NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_node2d) {
+	} else if (parent_node2d && parent_node2d->is_inside_tree()) {
 		NavigationServer2D::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
 	}
 }

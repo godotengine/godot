@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 #include "app_packager.h"
+
+#include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 	unsigned char hash[32];
@@ -298,7 +301,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	FileMeta meta;
 	meta.name = p_file_name;
 	meta.uncompressed_size = p_len;
-	meta.compressed_size = p_len;
 	meta.compressed = p_compress;
 	meta.zip_offset = package->get_position();
 

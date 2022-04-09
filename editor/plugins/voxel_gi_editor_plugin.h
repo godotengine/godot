@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,22 @@
 #ifndef VOXEL_GIEDITORPLUGIN_H
 #define VOXEL_GIEDITORPLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
 
+class EditorFileDialog;
+struct EditorProgress;
+
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);
 
-	VoxelGI *voxel_gi;
+	VoxelGI *voxel_gi = nullptr;
 
-	HBoxContainer *bake_hb;
-	Label *bake_info;
-	Button *bake;
-	EditorNode *editor;
+	HBoxContainer *bake_hb = nullptr;
+	Button *bake = nullptr;
 
-	EditorFileDialog *probe_file;
+	EditorFileDialog *probe_file = nullptr;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);
@@ -67,7 +67,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	VoxelGIEditorPlugin(EditorNode *p_node);
+	VoxelGIEditorPlugin();
 	~VoxelGIEditorPlugin();
 };
 

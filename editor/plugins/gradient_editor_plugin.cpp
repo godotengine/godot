@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "gradient_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "node_3d_editor_plugin.h"
 
@@ -90,13 +91,15 @@ GradientEditor::GradientEditor() {
 ///////////////////////
 
 void GradientReverseButton::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> icon = get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"));
-		if (is_pressed()) {
-			draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()), false, get_theme_color(SNAME("icon_pressed_color"), SNAME("Button")));
-		} else {
-			draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()));
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> icon = get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"));
+			if (is_pressed()) {
+				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()), false, get_theme_color(SNAME("icon_pressed_color"), SNAME("Button")));
+			} else {
+				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()));
+			}
+		} break;
 	}
 }
 
@@ -118,6 +121,9 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	editor->set_gradient(g);
 	add_custom_control(editor);
 
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	editor->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+
 	reverse_btn = memnew(GradientReverseButton);
 
 	gradient_tools_hbox = memnew(HBoxContainer);
@@ -133,7 +139,7 @@ void EditorInspectorPluginGradient::_reverse_button_pressed() {
 	editor->reverse_gradient();
 }
 
-GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
+GradientEditorPlugin::GradientEditorPlugin() {
 	Ref<EditorInspectorPluginGradient> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

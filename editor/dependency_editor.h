@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,21 @@
 #ifndef DEPENDENCY_EDITOR_H
 #define DEPENDENCY_EDITOR_H
 
-#include "editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
-class EditorNode;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
-	Tree *tree;
-	Button *fixdeps;
+	Tree *tree = nullptr;
+	Button *fixdeps = nullptr;
 
-	EditorFileDialog *search;
+	EditorFileDialog *search = nullptr;
 
 	String replacing;
 	String editing;
@@ -72,9 +71,8 @@ public:
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
-	ItemList *owners;
-	PopupMenu *file_options;
-	EditorNode *editor;
+	ItemList *owners = nullptr;
+	PopupMenu *file_options = nullptr;
 	String editing;
 
 	void _fill_owners(EditorFileSystemDirectory *efsd);
@@ -91,14 +89,14 @@ private:
 
 public:
 	void show(const String &p_path);
-	DependencyEditorOwners(EditorNode *p_editor);
+	DependencyEditorOwners();
 };
 
 class DependencyRemoveDialog : public ConfirmationDialog {
 	GDCLASS(DependencyRemoveDialog, ConfirmationDialog);
 
-	Label *text;
-	Tree *owners;
+	Label *text = nullptr;
+	Tree *owners = nullptr;
 
 	Map<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
@@ -144,9 +142,9 @@ public:
 private:
 	String for_file;
 	Mode mode;
-	Button *fdep;
-	Label *text;
-	Tree *files;
+	Button *fdep = nullptr;
+	Label *text = nullptr;
+	Tree *files = nullptr;
 	void ok_pressed() override;
 	void custom_action(const String &) override;
 
@@ -158,9 +156,9 @@ public:
 class OrphanResourcesDialog : public ConfirmationDialog {
 	GDCLASS(OrphanResourcesDialog, ConfirmationDialog);
 
-	DependencyEditor *dep_edit;
-	Tree *files;
-	ConfirmationDialog *delete_confirm;
+	DependencyEditor *dep_edit = nullptr;
+	Tree *files = nullptr;
+	ConfirmationDialog *delete_confirm = nullptr;
 	void ok_pressed() override;
 
 	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent);

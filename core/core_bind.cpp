@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 
 namespace core_bind {
 
@@ -138,7 +137,7 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
+Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
 	return ::ResourceSaver::save(p_path, p_resource, p_flags);
 }
@@ -157,9 +156,10 @@ Vector<String> ResourceSaver::get_recognized_extensions(const RES &p_resource) {
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 
+	BIND_ENUM_CONSTANT(FLAG_NONE);
 	BIND_ENUM_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_ENUM_CONSTANT(FLAG_BUNDLE_RESOURCES);
 	BIND_ENUM_CONSTANT(FLAG_CHANGE_PATH);
@@ -207,6 +207,10 @@ void OS::alert(const String &p_alert, const String &p_title) {
 	::OS::get_singleton()->alert(p_alert, p_title);
 }
 
+void OS::crash(const String &p_message) {
+	CRASH_NOW_MSG(p_message);
+}
+
 String OS::get_executable_path() const {
 	return ::OS::get_singleton()->get_executable_path();
 }
@@ -220,14 +224,14 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
-int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
+int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
 	int exitcode = 0;
-	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr);
+	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
 	r_output.push_back(pipe);
 	if (err != OK) {
 		return -1;
@@ -248,13 +252,13 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	return pid;
 }
 
-int OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
+int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	::OS::ProcessID pid = 0;
-	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid);
+	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
 	if (err != OK) {
 		return -1;
 	}
@@ -315,6 +319,10 @@ Error OS::set_thread_name(const String &p_name) {
 	return ::Thread::get_caller_id();
 };
 
+::Thread::ID OS::get_main_thread_id() const {
+	return ::Thread::get_main_id();
+};
+
 bool OS::has_feature(const String &p_feature) const {
 	return ::OS::get_singleton()->has_feature(p_feature);
 }
@@ -353,6 +361,10 @@ bool OS::is_userfs_persistent() const {
 
 int OS::get_processor_count() const {
 	return ::OS::get_singleton()->get_processor_count();
+}
+
+String OS::get_processor_name() const {
+	return ::OS::get_singleton()->get_processor_name();
 }
 
 bool OS::is_stdout_verbose() const {
@@ -502,15 +514,15 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ::OS::get_singleton()->get_system_dir(::OS::SystemDir(p_dir), p_shared_storage);
 }
 
-String OS::get_keycode_string(uint32_t p_code) const {
+String OS::get_keycode_string(Key p_code) const {
 	return ::keycode_get_string(p_code);
 }
 
-bool OS::is_keycode_unicode(uint32_t p_unicode) const {
-	return ::keycode_has_unicode(p_unicode);
+bool OS::is_keycode_unicode(char32_t p_unicode) const {
+	return ::keycode_has_unicode((Key)p_unicode);
 }
 
-int OS::find_keycode_from_string(const String &p_code) const {
+Key OS::find_keycode_from_string(const String &p_code) const {
 	return find_keycode(p_code);
 }
 
@@ -538,6 +550,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &OS::close_midi_inputs);
 
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &OS::alert, DEFVAL("Alert!"));
+	ClassDB::bind_method(D_METHOD("crash", "message"), &OS::crash);
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &OS::is_in_low_processor_usage_mode);
@@ -546,10 +559,11 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &OS::get_low_processor_usage_mode_sleep_usec);
 
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
+	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &OS::execute, DEFVAL(Array()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &OS::create_process);
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
@@ -601,6 +615,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &OS::set_thread_name);
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &OS::get_thread_caller_id);
+	ClassDB::bind_method(D_METHOD("get_main_thread_id"), &OS::get_main_thread_id);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &OS::has_feature);
 
@@ -613,7 +628,6 @@ void OS::_bind_methods() {
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
-	ADD_PROPERTY_DEFAULT("exit_code", 0);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 
@@ -688,10 +702,7 @@ Variant Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 
 Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
 	Vector2 r1, r2;
 	::Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
-	Vector<Vector2> r;
-	r.resize(2);
-	r.set(0, r1);
-	r.set(1, r2);
+	Vector<Vector2> r = { r1, r2 };
 	return r;
 }
 
@@ -913,10 +924,7 @@ Vector<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_height, i
 Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
 	Vector3 r1, r2;
 	::Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
-	Vector<Vector3> r;
-	r.resize(2);
-	r.set(0, r1);
-	r.set(1, r2);
+	Vector<Vector3> r = { r1, r2 };
 	return r;
 }
 
@@ -1326,7 +1334,7 @@ void File::store_buffer(const Vector<uint8_t> &p_buffer) {
 	f->store_buffer(&r[0], len);
 }
 
-bool File::file_exists(const String &p_name) const {
+bool File::file_exists(const String &p_name) {
 	return FileAccess::exists(p_name);
 }
 
@@ -1416,7 +1424,7 @@ void File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &File::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &File::get_pascal_string);
 
-	ClassDB::bind_method(D_METHOD("file_exists", "path"), &File::file_exists);
+	ClassDB::bind_static_method("File", D_METHOD("file_exists", "path"), &File::file_exists);
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &File::get_modified_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
@@ -1460,12 +1468,8 @@ bool Directory::is_open() const {
 	return d && dir_open;
 }
 
-Error Directory::list_dir_begin(bool p_show_navigational, bool p_show_hidden) {
+Error Directory::list_dir_begin() {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
-
-	_list_skip_navigational = !p_show_navigational;
-	_list_skip_hidden = !p_show_hidden;
-
 	return d->list_dir_begin();
 }
 
@@ -1473,7 +1477,7 @@ String Directory::get_next() {
 	ERR_FAIL_COND_V_MSG(!is_open(), "", "Directory must be opened before use.");
 
 	String next = d->get_next();
-	while (next != "" && ((_list_skip_navigational && (next == "." || next == "..")) || (_list_skip_hidden && d->current_is_hidden()))) {
+	while (!next.is_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && d->current_is_hidden()))) {
 		next = d->get_next();
 	}
 	return next;
@@ -1487,6 +1491,47 @@ bool Directory::current_is_dir() const {
 void Directory::list_dir_end() {
 	ERR_FAIL_COND_MSG(!is_open(), "Directory must be opened before use.");
 	d->list_dir_end();
+}
+
+PackedStringArray Directory::get_files() {
+	return _get_contents(false);
+}
+
+PackedStringArray Directory::get_directories() {
+	return _get_contents(true);
+}
+
+PackedStringArray Directory::_get_contents(bool p_directories) {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(!is_open(), ret, "Directory must be opened before use.");
+
+	list_dir_begin();
+	String s = get_next();
+	while (!s.is_empty()) {
+		if (current_is_dir() == p_directories) {
+			ret.append(s);
+		}
+		s = get_next();
+	}
+
+	ret.sort();
+	return ret;
+}
+
+void Directory::set_include_navigational(bool p_enable) {
+	include_navigational = p_enable;
+}
+
+bool Directory::get_include_navigational() const {
+	return include_navigational;
+}
+
+void Directory::set_include_hidden(bool p_enable) {
+	include_hidden = p_enable;
+}
+
+bool Directory::get_include_hidden() const {
+	return include_hidden;
 }
 
 int Directory::get_drive_count() {
@@ -1524,10 +1569,8 @@ String Directory::get_current_dir() {
 Error Directory::make_dir(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		Error err = d->make_dir(p_dir);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_dir);
+		return da->make_dir(p_dir);
 	}
 	return d->make_dir(p_dir);
 }
@@ -1535,10 +1578,8 @@ Error Directory::make_dir(String p_dir) {
 Error Directory::make_dir_recursive(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		Error err = d->make_dir_recursive(p_dir);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_dir);
+		return da->make_dir_recursive(p_dir);
 	}
 	return d->make_dir_recursive(p_dir);
 }
@@ -1548,19 +1589,14 @@ bool Directory::file_exists(String p_file) {
 	if (!p_file.is_relative_path()) {
 		return FileAccess::exists(p_file);
 	}
-
 	return d->file_exists(p_file);
 }
 
 bool Directory::dir_exists(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, false, "Directory is not configured properly.");
 	if (!p_dir.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_dir);
-		bool exists = d->dir_exists(p_dir);
-		memdelete(d);
-		return exists;
+		return DirAccess::exists(p_dir);
 	}
-
 	return d->dir_exists(p_dir);
 }
 
@@ -1579,11 +1615,9 @@ Error Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(p_from.is_empty() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
 
 	if (!p_from.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_from);
-		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
-		Error err = d->rename(p_from, p_to);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_from);
+		ERR_FAIL_COND_V_MSG(!da->file_exists(p_from) && !da->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
+		return da->rename(p_from, p_to);
 	}
 
 	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
@@ -1593,10 +1627,8 @@ Error Directory::rename(String p_from, String p_to) {
 Error Directory::remove(String p_name) {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_name.is_relative_path()) {
-		DirAccess *d = DirAccess::create_for_path(p_name);
-		Error err = d->remove(p_name);
-		memdelete(d);
-		return err;
+		DirAccessRef da = DirAccess::create_for_path(p_name);
+		return da->remove(p_name);
 	}
 
 	return d->remove(p_name);
@@ -1604,10 +1636,12 @@ Error Directory::remove(String p_name) {
 
 void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path"), &Directory::open);
-	ClassDB::bind_method(D_METHOD("list_dir_begin", "show_navigational", "show_hidden"), &Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_next"), &Directory::get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &Directory::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &Directory::list_dir_end);
+	ClassDB::bind_method(D_METHOD("get_files"), &Directory::get_files);
+	ClassDB::bind_method(D_METHOD("get_directories"), &Directory::get_directories);
 	ClassDB::bind_method(D_METHOD("get_drive_count"), &Directory::get_drive_count);
 	ClassDB::bind_method(D_METHOD("get_drive", "idx"), &Directory::get_drive);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &Directory::get_current_drive);
@@ -1617,11 +1651,18 @@ void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &Directory::make_dir_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &Directory::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &Directory::dir_exists);
-	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&Directory::get_modified_time);
 	ClassDB::bind_method(D_METHOD("get_space_left"), &Directory::get_space_left);
 	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &Directory::copy);
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &Directory::rename);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &Directory::remove);
+
+	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &Directory::set_include_navigational);
+	ClassDB::bind_method(D_METHOD("get_include_navigational"), &Directory::get_include_navigational);
+	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &Directory::set_include_hidden);
+	ClassDB::bind_method(D_METHOD("get_include_hidden"), &Directory::get_include_hidden);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
 }
 
 Directory::Directory() {
@@ -1655,7 +1696,7 @@ String Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
 	String ret = CryptoCore::b64_encode_str(&w[0], len);
-	ERR_FAIL_COND_V(ret == "", ret);
+	ERR_FAIL_COND_V(ret.is_empty(), ret);
 
 	return ret;
 }
@@ -1680,7 +1721,7 @@ Variant Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects) 
 
 String Marshalls::raw_to_base64(const Vector<uint8_t> &p_arr) {
 	String ret = CryptoCore::b64_encode_str(p_arr.ptr(), p_arr.size());
-	ERR_FAIL_COND_V(ret == "", ret);
+	ERR_FAIL_COND_V(ret.is_empty(), ret);
 	return ret;
 }
 
@@ -1704,7 +1745,7 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 String Marshalls::utf8_to_base64(const String &p_str) {
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
-	ERR_FAIL_COND_V(ret == "", ret);
+	ERR_FAIL_COND_V(ret.is_empty(), ret);
 	return ret;
 }
 
@@ -1837,7 +1878,7 @@ void Thread::_start_func(void *ud) {
 
 Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
-	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_callable.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
@@ -2052,10 +2093,6 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 	return c;
 }
 
-StringName ClassDB::get_category(const StringName &p_node) const {
-	return ::ClassDB::get_category(p_node);
-}
-
 bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::has_enum(p_class, p_name, p_no_inheritance);
 }
@@ -2127,7 +2164,6 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::get_integer_constant_enum, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_category", "class"), &ClassDB::get_category);
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }
 
@@ -2237,10 +2273,10 @@ void Engine::register_singleton(const StringName &p_name, Object *p_object) {
 	s.ptr = p_object;
 	s.user_created = true;
 	::Engine::get_singleton()->add_singleton(s);
-	;
 }
+
 void Engine::unregister_singleton(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregisteres singleton: " + String(p_name));
+	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregistered singleton: " + String(p_name));
 	ERR_FAIL_COND_MSG(!::Engine::get_singleton()->is_singleton_user_created(p_name), "Attempt to remove non-user created singleton: " + String(p_name));
 	::Engine::get_singleton()->remove_singleton(p_name);
 }
@@ -2253,6 +2289,18 @@ Vector<String> Engine::get_singleton_list() const {
 		ret.push_back(E->get().name);
 	}
 	return ret;
+}
+
+void Engine::register_script_language(ScriptLanguage *p_language) {
+	ScriptServer::register_language(p_language);
+}
+
+int Engine::get_script_language_count() {
+	return ScriptServer::get_language_count();
+}
+
+ScriptLanguage *Engine::get_script_language(int p_index) const {
+	return ScriptServer::get_language(p_index);
 }
 
 void Engine::set_editor_hint(bool p_enabled) {
@@ -2306,6 +2354,10 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_singleton", "name"), &Engine::unregister_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton_list"), &Engine::get_singleton_list);
 
+	ClassDB::bind_method(D_METHOD("register_script_language", "language"), &Engine::register_script_language);
+	ClassDB::bind_method(D_METHOD("get_script_language_count"), &Engine::get_script_language_count);
+	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
+
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
@@ -2326,21 +2378,18 @@ bool EngineDebugger::is_active() {
 	return ::EngineDebugger::is_active();
 }
 
-void EngineDebugger::register_profiler(const StringName &p_name, const Callable &p_toggle, const Callable &p_add, const Callable &p_tick) {
-	ERR_FAIL_COND_MSG(profilers.has(p_name) || has_profiler(p_name), "Profiler already registered: " + p_name);
-	profilers.insert(p_name, ProfilerCallable(p_toggle, p_add, p_tick));
-	ProfilerCallable &p = profilers[p_name];
-	::EngineDebugger::Profiler profiler(
-			&p,
-			&EngineDebugger::call_toggle,
-			&EngineDebugger::call_add,
-			&EngineDebugger::call_tick);
-	::EngineDebugger::register_profiler(p_name, profiler);
+void EngineDebugger::register_profiler(const StringName &p_name, Ref<EngineProfiler> p_profiler) {
+	ERR_FAIL_COND(p_profiler.is_null());
+	ERR_FAIL_COND_MSG(p_profiler->is_bound(), "Profiler already registered.");
+	ERR_FAIL_COND_MSG(profilers.has(p_name) || has_profiler(p_name), "Profiler name already in use: " + p_name);
+	Error err = p_profiler->bind(p_name);
+	ERR_FAIL_COND_MSG(err != OK, "Profiler failed to register with error: " + itos(err));
+	profilers.insert(p_name, p_profiler);
 }
 
 void EngineDebugger::unregister_profiler(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!profilers.has(p_name), "Profiler not registered: " + p_name);
-	::EngineDebugger::unregister_profiler(p_name);
+	profilers[p_name]->unbind();
 	profilers.erase(p_name);
 }
 
@@ -2385,45 +2434,6 @@ void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 	::EngineDebugger::get_singleton()->send_message(p_msg, p_data);
 }
 
-void EngineDebugger::call_toggle(void *p_user, bool p_enable, const Array &p_opts) {
-	Callable &toggle = ((ProfilerCallable *)p_user)->callable_toggle;
-	if (toggle.is_null()) {
-		return;
-	}
-	Variant enable = p_enable, opts = p_opts;
-	const Variant *args[2] = { &enable, &opts };
-	Variant retval;
-	Callable::CallError err;
-	toggle.call(args, 2, retval, err);
-	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'toggle' to callable: " + Variant::get_callable_error_text(toggle, args, 2, err));
-}
-
-void EngineDebugger::call_add(void *p_user, const Array &p_data) {
-	Callable &add = ((ProfilerCallable *)p_user)->callable_add;
-	if (add.is_null()) {
-		return;
-	}
-	Variant data = p_data;
-	const Variant *args[1] = { &data };
-	Variant retval;
-	Callable::CallError err;
-	add.call(args, 1, retval, err);
-	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'add' to callable: " + Variant::get_callable_error_text(add, args, 1, err));
-}
-
-void EngineDebugger::call_tick(void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-	Callable &tick = ((ProfilerCallable *)p_user)->callable_tick;
-	if (tick.is_null()) {
-		return;
-	}
-	Variant frame_time = p_frame_time, idle_time = p_idle_time, physics_time = p_physics_time, physics_frame_time = p_physics_frame_time;
-	const Variant *args[4] = { &frame_time, &idle_time, &physics_time, &physics_frame_time };
-	Variant retval;
-	Callable::CallError err;
-	tick.call(args, 4, retval, err);
-	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'tick' to callable: " + Variant::get_callable_error_text(tick, args, 4, err));
-}
-
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
 	if (capture.is_null()) {
@@ -2445,10 +2455,6 @@ EngineDebugger::~EngineDebugger() {
 		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
-	for (const KeyValue<StringName, ProfilerCallable> &E : profilers) {
-		::EngineDebugger::unregister_profiler(E.key);
-	}
-	profilers.clear();
 }
 
 EngineDebugger *EngineDebugger::singleton = nullptr;
@@ -2456,8 +2462,9 @@ EngineDebugger *EngineDebugger::singleton = nullptr;
 void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);
 
-	ClassDB::bind_method(D_METHOD("register_profiler", "name", "toggle", "add", "tick"), &EngineDebugger::register_profiler);
+	ClassDB::bind_method(D_METHOD("register_profiler", "name", "profiler"), &EngineDebugger::register_profiler);
 	ClassDB::bind_method(D_METHOD("unregister_profiler", "name"), &EngineDebugger::unregister_profiler);
+
 	ClassDB::bind_method(D_METHOD("is_profiling", "name"), &EngineDebugger::is_profiling);
 	ClassDB::bind_method(D_METHOD("has_profiler", "name"), &EngineDebugger::has_profiler);
 

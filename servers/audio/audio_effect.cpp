@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,37 @@
 /*************************************************************************/
 
 #include "audio_effect.h"
+
+void AudioEffectInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
+	if (GDVIRTUAL_REQUIRED_CALL(_process, p_src_frames, p_dst_frames, p_frame_count)) {
+		return;
+	}
+}
+bool AudioEffectInstance::process_silence() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_process_silence, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+void AudioEffectInstance::_bind_methods() {
+	GDVIRTUAL_BIND(_process, "src_buffer", "dst_buffer", "frame_count");
+	GDVIRTUAL_BIND(_process_silence);
+}
+
+////
+
+Ref<AudioEffectInstance> AudioEffect::instantiate() {
+	Ref<AudioEffectInstance> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_instantiate, ret)) {
+		return ret;
+	}
+	return Ref<AudioEffectInstance>();
+}
+void AudioEffect::_bind_methods() {
+	GDVIRTUAL_BIND(_instantiate);
+}
 
 AudioEffect::AudioEffect() {
 }

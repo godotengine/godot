@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,8 +85,8 @@ public:
 		int index;
 		StringName setter;
 		StringName getter;
-		MethodBind *_setptr;
-		MethodBind *_getptr;
+		MethodBind *_setptr = nullptr;
+		MethodBind *_getptr = nullptr;
 		Variant::Type type;
 	};
 
@@ -109,7 +109,6 @@ public:
 		Set<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
 		Map<StringName, MethodInfo> virtual_methods_map;
-		StringName category;
 		Map<StringName, Vector<Error>> method_error_values;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
@@ -118,6 +117,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool is_virtual = false;
 		Object *(*creation_func)() = nullptr;
 
 		ClassInfo() {}
@@ -143,6 +143,13 @@ public:
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static Set<StringName> default_values_cached;
 
+	// Native structs, used by binder
+	struct NativeStruct {
+		String ccode; // C code to create the native struct, fields separated by ; Arrays accepted (even containing other structs), also function pointers. All types must be Godot types.
+		uint64_t struct_size; // local size of struct, for comparison
+	};
+	static Map<StringName, NativeStruct> native_structs;
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
@@ -156,20 +163,21 @@ public:
 	}
 
 	template <class T>
-	static void register_class() {
+	static void register_class(bool p_virtual = false) {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
+		t->is_virtual = p_virtual;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
 	template <class T>
-	static void register_virtual_class() {
+	static void register_abstract_class() {
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -210,83 +218,35 @@ public:
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
+	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
-	static Object *construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension);
-	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance, Object *p_base);
+	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
 
 	static uint64_t get_api_hash(APIType p_api);
 
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method) {
+	template <class N, class M, typename... VarArgs>
+	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
 		MethodBind *bind = create_method_bind(p_method);
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, nullptr, 0); //use static function, much smaller binary usage
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[1] = { &p_def1 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 1);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[2] = { &p_def1, &p_def2 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 2);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[3] = { &p_def1, &p_def2, &p_def3 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 3);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[4] = { &p_def1, &p_def2, &p_def3, &p_def4 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 4);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[5] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 5);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[6] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 6);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[7] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 7);
-	}
-
-	template <class N, class M>
-	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7, const Variant &p_def8) {
-		MethodBind *bind = create_method_bind(p_method);
-		const Variant *ptr[8] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7, &p_def8 };
-
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 8);
+	template <class N, class M, typename... VarArgs>
+	static MethodBind *bind_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		MethodBind *bind = create_static_method_bind(p_method);
+		bind->set_instance_class(p_class);
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
 	template <class M>
@@ -329,8 +289,8 @@ public:
 	static bool get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal);
 	static void get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
 
-	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "");
-	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
+	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
 	static void add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage = PROPERTY_USAGE_DEFAULT);
 	static void add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix);
 	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
@@ -370,8 +330,6 @@ public:
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
 
-	static StringName get_category(const StringName &p_node);
-
 	static void set_class_enabled(const StringName &p_class, bool p_enable);
 	static bool is_class_enabled(const StringName &p_class);
 
@@ -388,6 +346,11 @@ public:
 	static APIType get_current_api();
 	static void cleanup_defaults();
 	static void cleanup();
+
+	static void register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size);
+	static void get_native_struct_list(List<StringName> *r_names);
+	static String get_native_struct_code(const StringName &p_name);
+	static uint64_t get_native_struct_size(const StringName &p_name); // Used for asserting
 };
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -437,10 +400,16 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
 		::ClassDB::register_class<m_class>();        \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)             \
-	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
-		::ClassDB::register_virtual_class<m_class>(); \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		::ClassDB::register_class<m_class>(true);    \
 	}
+#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {   \
+		::ClassDB::register_abstract_class<m_class>(); \
+	}
+
+#define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
 
 #include "core/disabled_classes.gen.h"
 

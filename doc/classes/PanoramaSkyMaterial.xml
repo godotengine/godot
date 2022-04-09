@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PanoramaSkyMaterial" inherits="Material" version="4.0">
+<class name="PanoramaSkyMaterial" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Material] used with [Sky] to draw a background texture.
 	</brief_description>
@@ -11,6 +11,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="filter" type="bool" setter="set_filtering_enabled" getter="is_filtering_enabled" default="true">
+			A boolean value to determine if the background texture should be filtered or not.
+		</member>
 		<member name="panorama" type="Texture2D" setter="set_panorama" getter="get_panorama">
 			[Texture2D] to be applied to the [PanoramaSkyMaterial].
 		</member>

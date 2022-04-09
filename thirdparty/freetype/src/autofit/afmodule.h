@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (specification).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -37,9 +37,6 @@ FT_BEGIN_HEADER
 
     FT_UInt       fallback_style;
     FT_UInt       default_script;
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    FT_Bool       warping;
-#endif
     FT_Bool       no_stem_darkening;
     FT_Int        darken_params[8];
 

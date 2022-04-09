@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,34 @@
 #include "core/math/bvh.h"
 
 class GodotBroadPhase3DBVH : public GodotBroadPhase3D {
-	BVH_Manager<GodotCollisionObject3D, true, 128> bvh;
+	template <class T>
+	class UserPairTestFunction {
+	public:
+		static bool user_pair_check(const T *p_a, const T *p_b) {
+			// return false if no collision, decided by masks etc
+			return p_a->interacts_with(p_b);
+		}
+	};
+
+	template <class T>
+	class UserCullTestFunction {
+	public:
+		static bool user_cull_check(const T *p_a, const T *p_b) {
+			return true;
+		}
+	};
+
+	enum Tree {
+		TREE_STATIC = 0,
+		TREE_DYNAMIC = 1,
+	};
+
+	enum TreeFlag {
+		TREE_FLAG_STATIC = 1 << TREE_STATIC,
+		TREE_FLAG_DYNAMIC = 1 << TREE_DYNAMIC,
+	};
+
+	BVH_Manager<GodotCollisionObject3D, 2, true, 128, UserPairTestFunction<GodotCollisionObject3D>, UserCullTestFunction<GodotCollisionObject3D>> bvh;
 
 	static void *_pair_callback(void *, uint32_t, GodotCollisionObject3D *, int, uint32_t, GodotCollisionObject3D *, int);
 	static void _unpair_callback(void *, uint32_t, GodotCollisionObject3D *, int, uint32_t, GodotCollisionObject3D *, int, void *);
@@ -48,23 +75,23 @@ class GodotBroadPhase3DBVH : public GodotBroadPhase3D {
 
 public:
 	// 0 is an invalid ID
-	virtual ID create(GodotCollisionObject3D *p_object, int p_subindex = 0, const AABB &p_aabb = AABB(), bool p_static = false);
-	virtual void move(ID p_id, const AABB &p_aabb);
-	virtual void set_static(ID p_id, bool p_static);
-	virtual void remove(ID p_id);
+	virtual ID create(GodotCollisionObject3D *p_object, int p_subindex = 0, const AABB &p_aabb = AABB(), bool p_static = false) override;
+	virtual void move(ID p_id, const AABB &p_aabb) override;
+	virtual void set_static(ID p_id, bool p_static) override;
+	virtual void remove(ID p_id) override;
 
-	virtual GodotCollisionObject3D *get_object(ID p_id) const;
-	virtual bool is_static(ID p_id) const;
-	virtual int get_subindex(ID p_id) const;
+	virtual GodotCollisionObject3D *get_object(ID p_id) const override;
+	virtual bool is_static(ID p_id) const override;
+	virtual int get_subindex(ID p_id) const override;
 
-	virtual int cull_point(const Vector3 &p_point, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices = nullptr);
-	virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices = nullptr);
-	virtual int cull_aabb(const AABB &p_aabb, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices = nullptr);
+	virtual int cull_point(const Vector3 &p_point, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices = nullptr) override;
+	virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices = nullptr) override;
+	virtual int cull_aabb(const AABB &p_aabb, GodotCollisionObject3D **p_results, int p_max_results, int *p_result_indices = nullptr) override;
 
-	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
-	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);
+	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata) override;
+	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) override;
 
-	virtual void update();
+	virtual void update() override;
 
 	static GodotBroadPhase3D *_create();
 	GodotBroadPhase3DBVH();

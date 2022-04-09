@@ -309,16 +309,43 @@ namespace Godot
             D = _normal.Dot(v1);
         }
 
+        /// <summary>
+        /// Returns the negative value of the <see cref="Plane"/>.
+        /// This is the same as writing <c>new Plane(-p.Normal, -p.D)</c>.
+        /// This operation flips the direction of the normal vector and
+        /// also flips the distance value, resulting in a Plane that is
+        /// in the same place, but facing the opposite direction.
+        /// </summary>
+        /// <param name="plane">The plane to negate/flip.</param>
+        /// <returns>The negated/flipped plane.</returns>
         public static Plane operator -(Plane plane)
         {
             return new Plane(-plane._normal, -plane.D);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the
+        /// <see cref="Plane"/>s are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left rect.</param>
+        /// <param name="right">The right rect.</param>
+        /// <returns>Whether or not the planes are exactly equal.</returns>
         public static bool operator ==(Plane left, Plane right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the
+        /// <see cref="Plane"/>s are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left rect.</param>
+        /// <param name="right">The right rect.</param>
+        /// <returns>Whether or not the planes are not equal.</returns>
         public static bool operator !=(Plane left, Plane right)
         {
             return !left.Equals(right);
@@ -328,7 +355,7 @@ namespace Godot
         /// Returns <see langword="true"/> if this plane and <paramref name="obj"/> are equal.
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the plane and the other object are equal.</returns>
+        /// <returns>Whether or not the plane and the other object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Plane)
@@ -343,7 +370,7 @@ namespace Godot
         /// Returns <see langword="true"/> if this plane and <paramref name="other"/> are equal.
         /// </summary>
         /// <param name="other">The other plane to compare.</param>
-        /// <returns>Whether or not the planes are equal.</returns>
+        /// <returns>Whether or not the planes are exactly equal.</returns>
         public bool Equals(Plane other)
         {
             return _normal == other._normal && D == other.D;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,9 @@ class PackedSceneEditorTranslationParserPlugin : public EditorTranslationParserP
 	GDCLASS(PackedSceneEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
 	// Scene Node's properties that contain translation strings.
-	Set<StringName> lookup_properties;
+	Set<String> lookup_properties;
 	// Properties from specific Nodes that should be ignored.
-	Map<StringName, Vector<StringName>> exception_list;
+	Map<String, Vector<String>> exception_list;
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;

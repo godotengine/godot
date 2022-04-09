@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,14 +40,14 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const 
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (level >= 0) { //already initialized up to some level
+	if (level >= 0) { // Already initialized up to some level.
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		//initialize up to current level
-		for (int32_t i = minimum_level; i < level; i++) {
-			extension->initialize_library(NativeExtension::InitializationLevel(level));
+		// Initialize up to current level.
+		for (int32_t i = minimum_level; i <= level; i++) {
+			extension->initialize_library(NativeExtension::InitializationLevel(i));
 		}
 	}
 	native_extension_map[p_path] = extension;
@@ -64,14 +64,14 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::unload_extension(cons
 
 	Ref<NativeExtension> extension = native_extension_map[p_path];
 
-	if (level >= 0) { //already initialized up to some level
+	if (level >= 0) { // Already initialized up to some level.
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		//initialize up to current level
+		// Deinitialize down to current level.
 		for (int32_t i = level; i >= minimum_level; i--) {
-			extension->deinitialize_library(NativeExtension::InitializationLevel(level));
+			extension->deinitialize_library(NativeExtension::InitializationLevel(i));
 		}
 	}
 	native_extension_map.erase(p_path);
@@ -115,7 +115,7 @@ void NativeExtensionManager::load_extensions() {
 	FileAccessRef f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
-		if (s != String()) {
+		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);
 			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
 		}

@@ -1,5 +1,21 @@
 /* clang-format off */
-[vertex]
+#[modes]
+
+mode_default =
+mode_cubemap = #define USE_CUBEMAP
+mode_panorama = #define USE_PANORAMA
+mode_copy_section = #define USE_COPY_SECTION
+mode_asym_pano = #define USE_ASYM_PANO
+mode_no_alpha = #define USE_NO_ALPHA
+mode_custom_alpha = #define USE_CUSTOM_ALPHA
+mode_multiplier = #define USE_MULTIPLIER
+mode_sep_cbcr_texture = #define USE_SEP_CBCR_TEXTURE
+mode_ycbcr_to_rgb = #define USE_YCBCR_TO_RGB
+
+#[specializations]
+
+
+#[vertex]
 
 #ifdef USE_GLES_OVER_GL
 #define lowp
@@ -10,16 +26,16 @@ precision highp float;
 precision highp int;
 #endif
 
-layout(location = 0) highp vec4 vertex_attrib;
+layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
-layout(location = 4) vec3 cube_in;
+layout(location = 4) in vec3 cube_in;
 #else
-layout(location = 4) vec2 uv_in;
+layout(location = 4) in vec2 uv_in;
 #endif
 
-layout(location = 5) vec2 uv2_in;
+layout(location = 5) in vec2 uv2_in;
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 out vec3 cube_interp;
@@ -27,11 +43,6 @@ out vec3 cube_interp;
 out vec2 uv_interp;
 #endif
 out vec2 uv2_interp;
-
-// These definitions are here because the shader-wrapper builder does
-// not understand `#elif defined()`
-#ifdef USE_DISPLAY_TRANSFORM
-#endif
 
 #ifdef USE_COPY_SECTION
 uniform highp vec4 copy_section;
@@ -60,7 +71,7 @@ void main() {
 }
 
 /* clang-format off */
-[fragment]
+#[fragment]
 
 #define M_PI 3.14159265359
 
@@ -96,7 +107,7 @@ uniform samplerCube source_cube; // texunit:0
 uniform sampler2D source; // texunit:0
 #endif
 
-#ifdef SEP_CBCR_TEXTURE
+#ifdef USE_SEP_CBCR_TEXTURE
 uniform sampler2D CbCr; //texunit:1
 #endif
 
@@ -156,8 +167,8 @@ void main() {
 	vec4 color = texturePanorama(source, normalize(cube_normal.xyz));
 
 #elif defined(USE_CUBEMAP)
-	vec4 color = textureCube(source_cube, normalize(cube_interp));
-#elif defined(SEP_CBCR_TEXTURE)
+	vec4 color = texture(source_cube, normalize(cube_interp));
+#elif defined(USE_SEP_CBCR_TEXTURE)
 	vec4 color;
 	color.r = texture(source, uv_interp).r;
 	color.gb = texture(CbCr, uv_interp).rg - vec2(0.5, 0.5);
@@ -166,7 +177,7 @@ void main() {
 	vec4 color = texture(source, uv_interp);
 #endif
 
-#ifdef YCBCR_TO_RGB
+#ifdef USE_YCBCR_TO_RGB
 	// YCbCr -> RGB conversion
 
 	// Using BT.601, which is the standard for SDTV is provided as a reference

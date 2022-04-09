@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -204,7 +204,7 @@ PropertyInfo VisualScriptFunction::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptFunction::get_caption() const {
-	return "Function";
+	return RTR("Function");
 }
 
 String VisualScriptFunction::get_text() const {
@@ -253,7 +253,7 @@ String VisualScriptFunction::get_argument_name(int p_argidx) const {
 void VisualScriptFunction::remove_argument(int p_argidx) {
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
-	arguments.remove(p_argidx);
+	arguments.remove_at(p_argidx);
 	ports_changed_notify();
 }
 
@@ -274,9 +274,9 @@ public:
 	VisualScriptFunction *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		int ac = node->get_argument_count();
 
 		for (int i = 0; i < ac; i++) {
@@ -623,7 +623,7 @@ void VisualScriptLists::remove_input_data_port(int p_argidx) {
 
 	ERR_FAIL_INDEX(p_argidx, inputports.size());
 
-	inputports.remove(p_argidx);
+	inputports.remove_at(p_argidx);
 
 	ports_changed_notify();
 	notify_property_list_changed();
@@ -679,7 +679,7 @@ void VisualScriptLists::remove_output_data_port(int p_argidx) {
 
 	ERR_FAIL_INDEX(p_argidx, outputports.size());
 
-	outputports.remove(p_argidx);
+	outputports.remove_at(p_argidx);
 
 	ports_changed_notify();
 	notify_property_list_changed();
@@ -767,7 +767,7 @@ PropertyInfo VisualScriptComposeArray::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptComposeArray::get_caption() const {
-	return "Compose Array";
+	return RTR("Compose Array");
 }
 
 String VisualScriptComposeArray::get_text() const {
@@ -777,9 +777,9 @@ String VisualScriptComposeArray::get_text() const {
 class VisualScriptComposeArrayNode : public VisualScriptNodeInstance {
 public:
 	int input_count = 0;
-	virtual int get_working_memory_size() const { return 0; }
+	virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (input_count > 0) {
 			Array arr;
 			for (int i = 0; i < input_count; i++) {
@@ -1100,9 +1100,9 @@ public:
 	bool unary;
 	Variant::Operator op;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool valid;
 		if (unary) {
 			Variant::evaluate(op, *p_inputs[0], Variant(), *p_outputs[0], valid);
@@ -1186,11 +1186,11 @@ PropertyInfo VisualScriptSelect::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSelect::get_caption() const {
-	return "Select";
+	return RTR("Select");
 }
 
 String VisualScriptSelect::get_text() const {
-	return "a if cond, else b";
+	return RTR("a if cond, else b");
 }
 
 void VisualScriptSelect::set_typed(Variant::Type p_op) {
@@ -1220,9 +1220,9 @@ void VisualScriptSelect::_bind_methods() {
 
 class VisualScriptNodeInstanceSelect : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool cond = *p_inputs[0];
 		if (cond) {
 			*p_outputs[0] = *p_inputs[1];
@@ -1284,7 +1284,7 @@ PropertyInfo VisualScriptVariableGet::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptVariableGet::get_caption() const {
-	return "Get " + variable;
+	return vformat(RTR("Get %s"), variable);
 }
 
 void VisualScriptVariableGet::set_variable(StringName p_variable) {
@@ -1307,7 +1307,7 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
 
 		String vhint;
 		for (const StringName &E : vars) {
-			if (vhint != String()) {
+			if (!vhint.is_empty()) {
 				vhint += ",";
 			}
 
@@ -1332,7 +1332,7 @@ public:
 	VisualScriptInstance *instance;
 	StringName variable;
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!instance->get_variable(variable, p_outputs[0])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
@@ -1394,7 +1394,7 @@ PropertyInfo VisualScriptVariableSet::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptVariableSet::get_caption() const {
-	return "Set " + variable;
+	return vformat(RTR("Set %s"), variable);
 }
 
 void VisualScriptVariableSet::set_variable(StringName p_variable) {
@@ -1417,7 +1417,7 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
 
 		String vhint;
 		for (const StringName &E : vars) {
-			if (vhint != String()) {
+			if (!vhint.is_empty()) {
 				vhint += ",";
 			}
 
@@ -1442,9 +1442,9 @@ public:
 	VisualScriptInstance *instance;
 	StringName variable;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!instance->set_variable(variable, *p_inputs[0])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableSet not found in script: ") + "'" + String(variable) + "'";
@@ -1501,7 +1501,7 @@ PropertyInfo VisualScriptConstant::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptConstant::get_caption() const {
-	return "Constant";
+	return RTR("Constant");
 }
 
 void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
@@ -1561,9 +1561,9 @@ void VisualScriptConstant::_bind_methods() {
 class VisualScriptNodeInstanceConstant : public VisualScriptNodeInstance {
 public:
 	Variant constant;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = constant;
 		return 0;
 	}
@@ -1615,7 +1615,7 @@ PropertyInfo VisualScriptPreload::get_output_value_port_info(int p_idx) const {
 		pinfo.hint_string = preload->get_class();
 		if (preload->get_path().is_resource_file()) {
 			pinfo.name = preload->get_path();
-		} else if (preload->get_name() != String()) {
+		} else if (!preload->get_name().is_empty()) {
 			pinfo.name = preload->get_name();
 		} else {
 			pinfo.name = preload->get_class();
@@ -1628,7 +1628,7 @@ PropertyInfo VisualScriptPreload::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptPreload::get_caption() const {
-	return "Preload";
+	return RTR("Preload");
 }
 
 void VisualScriptPreload::set_preload(const Ref<Resource> &p_preload) {
@@ -1654,9 +1654,9 @@ void VisualScriptPreload::_bind_methods() {
 class VisualScriptNodeInstancePreload : public VisualScriptNodeInstance {
 public:
 	Ref<Resource> preload;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = preload;
 		return 0;
 	}
@@ -1708,14 +1708,14 @@ PropertyInfo VisualScriptIndexGet::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptIndexGet::get_caption() const {
-	return "Get Index";
+	return RTR("Get Index");
 }
 
 class VisualScriptNodeInstanceIndexGet : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool valid;
 		*p_outputs[0] = p_inputs[0]->get(*p_inputs[1], &valid);
 
@@ -1775,19 +1775,16 @@ PropertyInfo VisualScriptIndexSet::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptIndexSet::get_caption() const {
-	return "Set Index";
+	return RTR("Set Index");
 }
 
 class VisualScriptNodeInstanceIndexSet : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool valid;
-		// *p_output[0] points to the same place as *p_inputs[2] so we need a temp to store the value before the change in the next line
-		Variant temp = *p_inputs[2];
-		*p_outputs[0] = *p_inputs[0];
-		p_outputs[0]->set(*p_inputs[1], temp, &valid);
+		((Variant *)p_inputs[0])->set(*p_inputs[1], *p_inputs[2], &valid);
 
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1839,7 +1836,7 @@ PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) c
 }
 
 String VisualScriptGlobalConstant::get_caption() const {
-	return "Global Constant";
+	return RTR("Global Constant");
 }
 
 void VisualScriptGlobalConstant::set_global_constant(int p_which) {
@@ -1855,9 +1852,9 @@ int VisualScriptGlobalConstant::get_global_constant() {
 class VisualScriptNodeInstanceGlobalConstant : public VisualScriptNodeInstance {
 public:
 	int index;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = CoreConstants::get_global_constant_value(index);
 		return 0;
 	}
@@ -1925,7 +1922,7 @@ PropertyInfo VisualScriptClassConstant::get_output_value_port_info(int p_idx) co
 }
 
 String VisualScriptClassConstant::get_caption() const {
-	return "Class Constant";
+	return RTR("Class Constant");
 }
 
 void VisualScriptClassConstant::set_class_constant(const StringName &p_which) {
@@ -1968,9 +1965,9 @@ class VisualScriptNodeInstanceClassConstant : public VisualScriptNodeInstance {
 public:
 	int value;
 	bool valid;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
 			r_error_str = "Invalid constant name, pick a valid class constant.";
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1994,7 +1991,7 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const
 
 		property.hint_string = "";
 		for (const String &E : constants) {
-			if (property.hint_string != String()) {
+			if (!property.hint_string.is_empty()) {
 				property.hint_string += ",";
 			}
 			property.hint_string += E;
@@ -2050,7 +2047,7 @@ PropertyInfo VisualScriptBasicTypeConstant::get_output_value_port_info(int p_idx
 }
 
 String VisualScriptBasicTypeConstant::get_caption() const {
-	return "Basic Constant";
+	return RTR("Basic Constant");
 }
 
 String VisualScriptBasicTypeConstant::get_text() const {
@@ -2102,9 +2099,9 @@ class VisualScriptNodeInstanceBasicTypeConstant : public VisualScriptNodeInstanc
 public:
 	Variant value;
 	bool valid;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
 			r_error_str = "Invalid constant name, pick a valid basic type constant.";
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2132,7 +2129,7 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) c
 		}
 		property.hint_string = "";
 		for (const StringName &E : constants) {
-			if (property.hint_string != String()) {
+			if (!property.hint_string.is_empty()) {
 				property.hint_string += ",";
 			}
 			property.hint_string += String(E);
@@ -2215,7 +2212,7 @@ PropertyInfo VisualScriptMathConstant::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptMathConstant::get_caption() const {
-	return "Math Constant";
+	return RTR("Math Constant");
 }
 
 void VisualScriptMathConstant::set_math_constant(MathConstant p_which) {
@@ -2231,9 +2228,9 @@ VisualScriptMathConstant::MathConstant VisualScriptMathConstant::get_math_consta
 class VisualScriptNodeInstanceMathConstant : public VisualScriptNodeInstance {
 public:
 	float value;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = value;
 		return 0;
 	}
@@ -2307,7 +2304,7 @@ PropertyInfo VisualScriptEngineSingleton::get_output_value_port_info(int p_idx) 
 }
 
 String VisualScriptEngineSingleton::get_caption() const {
-	return "Get Engine Singleton";
+	return RTR("Get Engine Singleton");
 }
 
 void VisualScriptEngineSingleton::set_singleton(const String &p_string) {
@@ -2325,9 +2322,9 @@ class VisualScriptNodeInstanceEngineSingleton : public VisualScriptNodeInstance 
 public:
 	Object *singleton;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = singleton;
 		return 0;
 	}
@@ -2363,7 +2360,7 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 			continue; //skip these, too simple named
 		}
 
-		if (cc != String()) {
+		if (!cc.is_empty()) {
 			cc += ",";
 		}
 		cc += E.name;
@@ -2417,7 +2414,7 @@ PropertyInfo VisualScriptSceneNode::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptSceneNode::get_caption() const {
-	return "Get Scene Node";
+	return RTR("Get Scene Node");
 }
 
 void VisualScriptSceneNode::set_node_path(const NodePath &p_path) {
@@ -2436,9 +2433,9 @@ public:
 	VisualScriptInstance *instance;
 	NodePath path;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 		if (!node) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2495,7 +2492,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	VisualScriptSceneNode::TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	tg.gdclass = "Node";
+	tg.gdclass = SNAME("Node");
 
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
@@ -2608,7 +2605,7 @@ PropertyInfo VisualScriptSceneTree::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptSceneTree::get_caption() const {
-	return "Get Scene Tree";
+	return RTR("Get Scene Tree");
 }
 
 class VisualScriptNodeInstanceSceneTree : public VisualScriptNodeInstance {
@@ -2616,9 +2613,9 @@ public:
 	VisualScriptSceneTree *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 		if (!node) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2649,7 +2646,7 @@ VisualScriptNodeInstance *VisualScriptSceneTree::instantiate(VisualScriptInstanc
 VisualScriptSceneTree::TypeGuess VisualScriptSceneTree::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	tg.gdclass = "SceneTree";
+	tg.gdclass = SNAME("SceneTree");
 	return tg;
 }
 
@@ -2695,7 +2692,7 @@ PropertyInfo VisualScriptResourcePath::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptResourcePath::get_caption() const {
-	return "Resource Path";
+	return RTR("Resource Path");
 }
 
 void VisualScriptResourcePath::set_resource_path(const String &p_path) {
@@ -2712,9 +2709,9 @@ class VisualScriptNodeInstanceResourcePath : public VisualScriptNodeInstance {
 public:
 	String path;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = path;
 		return 0;
 	}
@@ -2766,27 +2763,27 @@ PropertyInfo VisualScriptSelf::get_input_value_port_info(int p_idx) const {
 }
 
 PropertyInfo VisualScriptSelf::get_output_value_port_info(int p_idx) const {
-	String type_name;
+	StringName type_name;
 	if (get_visual_script().is_valid()) {
 		type_name = get_visual_script()->get_instance_base_type();
 	} else {
-		type_name = "instance";
+		type_name = SNAME("instance");
 	}
 
 	return PropertyInfo(Variant::OBJECT, type_name);
 }
 
 String VisualScriptSelf::get_caption() const {
-	return "Get Self";
+	return RTR("Get Self");
 }
 
 class VisualScriptNodeInstanceSelf : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = instance->get_owner_ptr();
 		return 0;
 	}
@@ -2801,7 +2798,7 @@ VisualScriptNodeInstance *VisualScriptSelf::instantiate(VisualScriptInstance *p_
 VisualScriptSelf::TypeGuess VisualScriptSelf::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	VisualScriptSceneNode::TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	tg.gdclass = "Object";
+	tg.gdclass = SNAME("Object");
 
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid()) {
@@ -2947,7 +2944,7 @@ String VisualScriptCustomNode::get_caption() const {
 	if (GDVIRTUAL_CALL(_get_caption, ret)) {
 		return ret;
 	}
-	return "CustomNode";
+	return RTR("CustomNode");
 }
 
 String VisualScriptCustomNode::get_text() const {
@@ -2974,8 +2971,8 @@ public:
 	int out_count;
 	int work_mem_size;
 
-	virtual int get_working_memory_size() const { return work_mem_size; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int get_working_memory_size() const override { return work_mem_size; }
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(node, _step)) {
 			Array in_values;
 			Array out_values;
@@ -3141,13 +3138,13 @@ PropertyInfo VisualScriptSubCall::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSubCall::get_caption() const {
-	return "SubCall";
+	return RTR("SubCall");
 }
 
 String VisualScriptSubCall::get_text() const {
 	Ref<Script> script = get_script();
 	if (script.is_valid()) {
-		if (script->get_name() != String()) {
+		if (!script->get_name().is_empty()) {
 			return script->get_name();
 		}
 		if (script->get_path().is_resource_file()) {
@@ -3169,15 +3166,15 @@ public:
 	int input_args;
 	bool valid;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
 			r_error_str = "Node requires a script with a _subcall(<args>) method to work.";
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return 0;
 		}
-		*p_outputs[0] = subcall->call(VisualScriptLanguage::singleton->_subcall, p_inputs, input_args, r_error);
+		*p_outputs[0] = subcall->callp(VisualScriptLanguage::singleton->_subcall, p_inputs, input_args, r_error);
 		return 0;
 	}
 };
@@ -3286,9 +3283,9 @@ class VisualScriptNodeInstanceComment : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		return 0;
 	}
 };
@@ -3352,7 +3349,7 @@ PropertyInfo VisualScriptConstructor::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptConstructor::get_caption() const {
-	return "Construct " + Variant::get_type_name(type);
+	return vformat(RTR("Construct %s"), Variant::get_type_name(type));
 }
 
 String VisualScriptConstructor::get_category() const {
@@ -3387,9 +3384,9 @@ public:
 	Variant::Type type;
 	int argcount;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Callable::CallError ce;
 		Variant::construct(type, *p_outputs[0], p_inputs, argcount, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
@@ -3469,7 +3466,7 @@ PropertyInfo VisualScriptLocalVar::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptLocalVar::get_caption() const {
-	return "Get Local Var";
+	return RTR("Get Local Var");
 }
 
 String VisualScriptLocalVar::get_category() const {
@@ -3503,8 +3500,8 @@ public:
 	VisualScriptInstance *instance;
 	StringName name;
 
-	virtual int get_working_memory_size() const { return 1; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int get_working_memory_size() const override { return 1; }
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = *p_working_mem;
 		return 0;
 	}
@@ -3572,7 +3569,7 @@ PropertyInfo VisualScriptLocalVarSet::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptLocalVarSet::get_caption() const {
-	return "Set Local Var";
+	return RTR("Set Local Var");
 }
 
 String VisualScriptLocalVarSet::get_text() const {
@@ -3610,8 +3607,8 @@ public:
 	VisualScriptInstance *instance;
 	StringName name;
 
-	virtual int get_working_memory_size() const { return 1; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int get_working_memory_size() const override { return 1; }
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_working_mem = *p_inputs[0];
 		*p_outputs[0] = *p_working_mem;
 		return 0;
@@ -3696,7 +3693,7 @@ PropertyInfo VisualScriptInputAction::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptInputAction::get_caption() const {
-	return "Action " + name;
+	return vformat(RTR("Action %s"), name);
 }
 
 String VisualScriptInputAction::get_category() const {
@@ -3735,7 +3732,7 @@ public:
 	StringName action;
 	VisualScriptInputAction::Mode mode;
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		switch (mode) {
 			case VisualScriptInputAction::MODE_PRESSED: {
 				*p_outputs[0] = Input::get_singleton()->is_action_pressed(action);
@@ -3786,7 +3783,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 		al.sort();
 
 		for (int i = 0; i < al.size(); i++) {
-			if (actions != String()) {
+			if (!actions.is_empty()) {
 				actions += ",";
 			}
 			actions += al[i];
@@ -3850,7 +3847,7 @@ PropertyInfo VisualScriptDeconstruct::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptDeconstruct::get_caption() const {
-	return "Deconstruct " + Variant::get_type_name(type);
+	return vformat(RTR("Deconstruct %s"), Variant::get_type_name(type));
 }
 
 String VisualScriptDeconstruct::get_category() const {
@@ -3912,9 +3909,9 @@ public:
 	VisualScriptInstance *instance;
 	Vector<StringName> outputs;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Variant in = *p_inputs[0];
 
 		for (int i = 0; i < outputs.size(); i++) {

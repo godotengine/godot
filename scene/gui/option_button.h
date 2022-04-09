@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);
 
-	PopupMenu *popup;
+	PopupMenu *popup = nullptr;
 	int current = -1;
 
 	void _focused(int p_which);
@@ -45,14 +45,15 @@ class OptionButton : public Button {
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	virtual void pressed() override;
 
 protected:
 	Size2 get_minimum_size() const override;
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
 public:
@@ -68,6 +69,7 @@ public:
 	void set_item_id(int p_idx, int p_id);
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	void set_item_disabled(int p_idx, bool p_disabled);
+	void set_item_tooltip(int p_idx, const String &p_tooltip);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -75,7 +77,9 @@ public:
 	int get_item_index(int p_id) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
+	String get_item_tooltip(int p_idx) const;
 
+	void set_item_count(int p_count);
 	int get_item_count() const;
 
 	void add_separator();
@@ -93,7 +97,7 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
-	OptionButton();
+	OptionButton(const String &p_text = String());
 	~OptionButton();
 };
 

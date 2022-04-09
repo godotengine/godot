@@ -152,7 +152,7 @@ def configure(env):
         abi_subpath = "i686-linux-android"
         arch_subpath = "x86"
         env["x86_libtheora_opt_gcc"] = True
-    if env["android_arch"] == "x86_64":
+    elif env["android_arch"] == "x86_64":
         if get_platform(env["ndk_platform"]) < 21:
             print(
                 "WARNING: android_arch=x86_64 is not supported by ndk_platform lower than android-21; setting"

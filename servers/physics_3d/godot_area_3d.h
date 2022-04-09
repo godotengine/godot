@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,7 @@ class GodotArea3D : public GodotCollisionObject3D {
 
 	Set<GodotConstraint3D *> constraints;
 
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
 
 	void _set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode &r_mode, PhysicsServer3D::AreaSpaceOverrideMode p_new_mode);
@@ -172,7 +172,7 @@ public:
 
 	void set_transform(const Transform3D &p_transform);
 
-	void set_space(GodotSpace3D *p_space);
+	void set_space(GodotSpace3D *p_space) override;
 
 	void call_queries();
 

@@ -7,13 +7,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -26,40 +20,19 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 #ifndef MBEDTLS_PKCS11_H
 #define MBEDTLS_PKCS11_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
 #if defined(MBEDTLS_PKCS11_C)
 
-#include "x509_crt.h"
+#include "mbedtls/x509_crt.h"
 
 #include <pkcs11-helper-1.0/pkcs11h-certificate.h>
 
@@ -72,6 +45,8 @@
 extern "C" {
 #endif
 
+#if defined(MBEDTLS_DEPRECATED_REMOVED)
+
 /**
  * Context for PKCS #11 private keys.
  */
@@ -81,46 +56,70 @@ typedef struct mbedtls_pkcs11_context
         int len;
 } mbedtls_pkcs11_context;
 
+#if defined(MBEDTLS_DEPRECATED_WARNING)
+#define MBEDTLS_DEPRECATED      __attribute__((deprecated))
+#else
+#define MBEDTLS_DEPRECATED
+#endif
+
 /**
  * Initialize a mbedtls_pkcs11_context.
  * (Just making memory references valid.)
+ *
+ * \deprecated          This function is deprecated and will be removed in a
+ *                      future version of the library.
  */
-void mbedtls_pkcs11_init( mbedtls_pkcs11_context *ctx );
+MBEDTLS_DEPRECATED void mbedtls_pkcs11_init( mbedtls_pkcs11_context *ctx );
 
 /**
  * Fill in a mbed TLS certificate, based on the given PKCS11 helper certificate.
+ *
+ * \deprecated          This function is deprecated and will be removed in a
+ *                      future version of the library.
  *
  * \param cert          X.509 certificate to fill
  * \param pkcs11h_cert  PKCS #11 helper certificate
  *
  * \return              0 on success.
  */
-int mbedtls_pkcs11_x509_cert_bind( mbedtls_x509_crt *cert, pkcs11h_certificate_t pkcs11h_cert );
+MBEDTLS_DEPRECATED int mbedtls_pkcs11_x509_cert_bind( mbedtls_x509_crt *cert,
+                                        pkcs11h_certificate_t pkcs11h_cert );
 
 /**
  * Set up a mbedtls_pkcs11_context storing the given certificate. Note that the
  * mbedtls_pkcs11_context will take over control of the certificate, freeing it when
  * done.
  *
+ * \deprecated          This function is deprecated and will be removed in a
+ *                      future version of the library.
+ *
  * \param priv_key      Private key structure to fill.
  * \param pkcs11_cert   PKCS #11 helper certificate
  *
  * \return              0 on success
  */
-int mbedtls_pkcs11_priv_key_bind( mbedtls_pkcs11_context *priv_key,
-        pkcs11h_certificate_t pkcs11_cert );
+MBEDTLS_DEPRECATED int mbedtls_pkcs11_priv_key_bind(
+                                        mbedtls_pkcs11_context *priv_key,
+                                        pkcs11h_certificate_t pkcs11_cert );
 
 /**
  * Free the contents of the given private key context. Note that the structure
  * itself is not freed.
  *
+ * \deprecated          This function is deprecated and will be removed in a
+ *                      future version of the library.
+ *
  * \param priv_key      Private key structure to cleanup
  */
-void mbedtls_pkcs11_priv_key_free( mbedtls_pkcs11_context *priv_key );
+MBEDTLS_DEPRECATED void mbedtls_pkcs11_priv_key_free(
+                                            mbedtls_pkcs11_context *priv_key );
 
 /**
  * \brief          Do an RSA private key decrypt, then remove the message
  *                 padding
+ *
+ * \deprecated     This function is deprecated and will be removed in a future
+ *                 version of the library.
  *
  * \param ctx      PKCS #11 context
  * \param mode     must be MBEDTLS_RSA_PRIVATE, for compatibility with rsa.c's signature
@@ -135,14 +134,17 @@ void mbedtls_pkcs11_priv_key_free( mbedtls_pkcs11_context *priv_key );
  *                 of ctx->N (eg. 128 bytes if RSA-1024 is used) otherwise
  *                 an error is thrown.
  */
-int mbedtls_pkcs11_decrypt( mbedtls_pkcs11_context *ctx,
-                       int mode, size_t *olen,
-                       const unsigned char *input,
-                       unsigned char *output,
-                       size_t output_max_len );
+MBEDTLS_DEPRECATED int mbedtls_pkcs11_decrypt( mbedtls_pkcs11_context *ctx,
+                                               int mode, size_t *olen,
+                                               const unsigned char *input,
+                                               unsigned char *output,
+                                               size_t output_max_len );
 
 /**
  * \brief          Do a private RSA to sign a message digest
+ *
+ * \deprecated     This function is deprecated and will be removed in a future
+ *                 version of the library.
  *
  * \param ctx      PKCS #11 context
  * \param mode     must be MBEDTLS_RSA_PRIVATE, for compatibility with rsa.c's signature
@@ -157,28 +159,58 @@ int mbedtls_pkcs11_decrypt( mbedtls_pkcs11_context *ctx,
  * \note           The "sig" buffer must be as large as the size
  *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
  */
-int mbedtls_pkcs11_sign( mbedtls_pkcs11_context *ctx,
-                    int mode,
-                    mbedtls_md_type_t md_alg,
-                    unsigned int hashlen,
-                    const unsigned char *hash,
-                    unsigned char *sig );
+MBEDTLS_DEPRECATED int mbedtls_pkcs11_sign( mbedtls_pkcs11_context *ctx,
+                                            int mode,
+                                            mbedtls_md_type_t md_alg,
+                                            unsigned int hashlen,
+                                            const unsigned char *hash,
+                                            unsigned char *sig );
 
 /**
  * SSL/TLS wrappers for PKCS#11 functions
+ *
+ * \deprecated     This function is deprecated and will be removed in a future
+ *                 version of the library.
  */
-static inline int mbedtls_ssl_pkcs11_decrypt( void *ctx, int mode, size_t *olen,
-                        const unsigned char *input, unsigned char *output,
-                        size_t output_max_len )
+MBEDTLS_DEPRECATED static inline int mbedtls_ssl_pkcs11_decrypt( void *ctx,
+                            int mode, size_t *olen,
+                            const unsigned char *input, unsigned char *output,
+                            size_t output_max_len )
 {
     return mbedtls_pkcs11_decrypt( (mbedtls_pkcs11_context *) ctx, mode, olen, input, output,
                            output_max_len );
 }
 
-static inline int mbedtls_ssl_pkcs11_sign( void *ctx,
-                     int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-                     int mode, mbedtls_md_type_t md_alg, unsigned int hashlen,
-                     const unsigned char *hash, unsigned char *sig )
+/**
+ * \brief          This function signs a message digest using RSA.
+ *
+ * \deprecated     This function is deprecated and will be removed in a future
+ *                 version of the library.
+ *
+ * \param ctx      The PKCS #11 context.
+ * \param f_rng    The RNG function. This parameter is unused.
+ * \param p_rng    The RNG context. This parameter is unused.
+ * \param mode     The operation to run. This must be set to
+ *                 MBEDTLS_RSA_PRIVATE, for compatibility with rsa.c's
+ *                 signature.
+ * \param md_alg   The message digest algorithm. One of the MBEDTLS_MD_XXX
+ *                 must be passed to this function and MBEDTLS_MD_NONE can be
+ *                 used for signing raw data.
+ * \param hashlen  The message digest length (for MBEDTLS_MD_NONE only).
+ * \param hash     The buffer holding the message digest.
+ * \param sig      The buffer that will hold the ciphertext.
+ *
+ * \return         \c 0 if the signing operation was successful.
+ * \return         A non-zero error code on failure.
+ *
+ * \note           The \p sig buffer must be as large as the size of
+ *                 <code>ctx->N</code>. For example, 128 bytes if RSA-1024 is
+ *                 used.
+ */
+MBEDTLS_DEPRECATED static inline int mbedtls_ssl_pkcs11_sign( void *ctx,
+                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                    int mode, mbedtls_md_type_t md_alg, unsigned int hashlen,
+                    const unsigned char *hash, unsigned char *sig )
 {
     ((void) f_rng);
     ((void) p_rng);
@@ -186,10 +218,24 @@ static inline int mbedtls_ssl_pkcs11_sign( void *ctx,
                         hashlen, hash, sig );
 }
 
-static inline size_t mbedtls_ssl_pkcs11_key_len( void *ctx )
+/**
+ * This function gets the length of the private key.
+ *
+ * \deprecated     This function is deprecated and will be removed in a future
+ *                 version of the library.
+ *
+ * \param ctx      The PKCS #11 context.
+ *
+ * \return         The length of the private key.
+ */
+MBEDTLS_DEPRECATED static inline size_t mbedtls_ssl_pkcs11_key_len( void *ctx )
 {
     return ( (mbedtls_pkcs11_context *) ctx )->len;
 }
+
+#undef MBEDTLS_DEPRECATED
+
+#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 #ifdef __cplusplus
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +56,9 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mix)
+	if (mix) {
 		mutex.unlock();
+	}
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -74,7 +75,7 @@ void AudioDriverOpenSL::_buffer_callback(
 void AudioDriverOpenSL::_buffer_callbacks(
 		SLAndroidSimpleBufferQueueItf queueItf,
 		void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_buffer_callback(queueItf);
 }
@@ -207,7 +208,7 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 }
 
 void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf queueItf, void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_record_buffer_callback(queueItf);
 }
@@ -312,13 +313,15 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 }
 
 void AudioDriverOpenSL::lock() {
-	if (active)
+	if (active) {
 		mutex.lock();
+	}
 }
 
 void AudioDriverOpenSL::unlock() {
-	if (active)
+	if (active) {
 		mutex.unlock();
+	}
 }
 
 void AudioDriverOpenSL::finish() {

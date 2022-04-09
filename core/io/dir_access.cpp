@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ static Error _erase_recursive(DirAccess *da) {
 
 	da->list_dir_begin();
 	String n = da->get_next();
-	while (n != String()) {
+	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (da->current_is_dir()) {
 				dirs.push_back(n);
@@ -145,17 +145,21 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	full_dir = full_dir.replace("\\", "/");
 
-	//int slices = full_dir.get_slice_count("/");
-
 	String base;
 
 	if (full_dir.begins_with("res://")) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+	} else if (full_dir.is_network_share_path()) {
+		int pos = full_dir.find("/", 2);
+		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
+		pos = full_dir.find("/", pos + 1);
+		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
+		base = full_dir.substr(0, pos + 1);
 	} else if (full_dir.begins_with("/")) {
 		base = "/";
-	} else if (full_dir.find(":/") != -1) {
+	} else if (full_dir.contains(":/")) {
 		base = full_dir.substr(0, full_dir.find(":/") + 2);
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -183,7 +187,7 @@ String DirAccess::fix_path(String p_path) const {
 			if (ProjectSettings::get_singleton()) {
 				if (p_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (resource_path != "") {
+					if (!resource_path.is_empty()) {
 						return p_path.replace_first("res:/", resource_path);
 					}
 					return p_path.replace_first("res://", "");
@@ -194,7 +198,7 @@ String DirAccess::fix_path(String p_path) const {
 		case ACCESS_USERDATA: {
 			if (p_path.begins_with("user://")) {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (data_dir != "") {
+				if (!data_dir.is_empty()) {
 					return p_path.replace_first("user:/", data_dir);
 				}
 				return p_path.replace_first("user://", "");
@@ -246,6 +250,14 @@ DirAccess *DirAccess::create(AccessType p_access) {
 	DirAccess *da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da) {
 		da->_access_type = p_access;
+
+		// for ACCESS_RESOURCES and ACCESS_FILESYSTEM, current_dir already defaults to where game was started
+		// in case current directory is force changed elsewhere for ACCESS_RESOURCES
+		if (p_access == ACCESS_RESOURCES) {
+			da->change_dir("res://");
+		} else if (p_access == ACCESS_USERDATA) {
+			da->change_dir("user://");
+		}
 	}
 
 	return da;
@@ -337,7 +349,7 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 	String curdir = get_current_dir();
 	list_dir_begin();
 	String n = get_next();
-	while (n != String()) {
+	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().plus_file(n))) {
 				create_link(read_link(get_current_dir().plus_file(n)), p_to + n);
@@ -410,8 +422,6 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_
 }
 
 bool DirAccess::exists(String p_dir) {
-	DirAccess *da = DirAccess::create_for_path(p_dir);
-	bool valid = da->change_dir(p_dir) == OK;
-	memdelete(da);
-	return valid;
+	DirAccessRef da = DirAccess::create_for_path(p_dir);
+	return da->change_dir(p_dir) == OK;
 }

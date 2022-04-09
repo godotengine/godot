@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -563,6 +563,28 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += ")";
 
 				incr += 5 + argc;
+			} break;
+			case OPCODE_CALL_NATIVE_STATIC: {
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
+				int argc = _code_ptr[ip + 2 + instr_var_args];
+
+				text += "call native method static ";
+				text += DADDR(1 + argc);
+				text += " = ";
+				text += method->get_instance_class();
+				text += ".";
+				text += method->get_name();
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr += 4 + argc;
 			} break;
 			case OPCODE_CALL_PTRCALL_NO_RETURN: {
 				text += "call-ptrcall (no return) ";

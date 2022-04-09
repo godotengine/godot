@@ -2,13 +2,7 @@
  *  HKDF implementation -- RFC 5869
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,46 +15,22 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_HKDF_C)
 
 #include <string.h>
 #include "mbedtls/hkdf.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
 
 int mbedtls_hkdf( const mbedtls_md_info_t *md, const unsigned char *salt,
                   size_t salt_len, const unsigned char *ikm, size_t ikm_len,
                   const unsigned char *info, size_t info_len,
                   unsigned char *okm, size_t okm_len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char prk[MBEDTLS_MD_MAX_SIZE];
 
     ret = mbedtls_hkdf_extract( md, salt, salt_len, ikm, ikm_len, prk );
@@ -139,7 +109,7 @@ int mbedtls_hkdf_expand( const mbedtls_md_info_t *md, const unsigned char *prk,
 
     n = okm_len / hash_len;
 
-    if( (okm_len % hash_len) != 0 )
+    if( okm_len % hash_len != 0 )
     {
         n++;
     }
@@ -155,10 +125,12 @@ int mbedtls_hkdf_expand( const mbedtls_md_info_t *md, const unsigned char *prk,
 
     mbedtls_md_init( &ctx );
 
-    if( (ret = mbedtls_md_setup( &ctx, md, 1) ) != 0 )
+    if( ( ret = mbedtls_md_setup( &ctx, md, 1 ) ) != 0 )
     {
         goto exit;
     }
+
+    memset( t, 0, hash_len );
 
     /*
      * Compute T = T(1) | T(2) | T(3) | ... | T(N)

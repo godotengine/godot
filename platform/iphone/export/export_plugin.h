@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include "core/templates/safe_refcount.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
 #include "platform/iphone/logo.gen.h"
@@ -130,7 +129,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 		for (int i = 0; i < pname.length(); i++) {
 			char32_t c = pname[i];
-			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '.')) {
+			if (!(is_ascii_alphanumeric_char(c) || c == '-' || c == '.')) {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
 				}
@@ -142,7 +141,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	}
 
 	static void _check_for_changes_poll_thread(void *ud) {
-		EditorExportPlatformIOS *ea = (EditorExportPlatformIOS *)ud;
+		EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
 
 		while (!ea->quit_request.is_set()) {
 			// Nothing to do if we already know the plugins have changed.

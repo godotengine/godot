@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,6 +130,7 @@ void Tween::stop() {
 	started = false;
 	running = false;
 	dead = false;
+	total_time = 0;
 }
 
 void Tween::pause() {
@@ -249,8 +250,6 @@ bool Tween::custom_step(float p_delta) {
 }
 
 bool Tween::step(float p_delta) {
-	ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
-
 	if (dead) {
 		return false;
 	}
@@ -260,10 +259,8 @@ bool Tween::step(float p_delta) {
 	}
 
 	if (is_bound) {
-		Object *bound_instance = ObjectDB::get_instance(bound_node);
-		if (bound_instance) {
-			Node *bound_node = Object::cast_to<Node>(bound_instance);
-			// This can't by anything else than Node, so we can omit checking if casting succeeded.
+		Node *bound_node = get_bound_node();
+		if (bound_node) {
 			if (!bound_node->is_inside_tree()) {
 				return true;
 			}
@@ -273,18 +270,25 @@ bool Tween::step(float p_delta) {
 	}
 
 	if (!started) {
+		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
+		total_time = 0;
 		start_tweeners();
 		started = true;
 	}
 
 	float rem_delta = p_delta * speed_scale;
 	bool step_active = false;
+	total_time += rem_delta;
 
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
 		step_active = false;
+
+#ifdef DEBUG_ENABLED
+		float prev_delta = rem_delta;
+#endif
 
 		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 			// Modified inside Tweener.step().
@@ -315,21 +319,38 @@ bool Tween::step(float p_delta) {
 				start_tweeners();
 			}
 		}
+
+#ifdef DEBUG_ENABLED
+		if (Math::is_equal_approx(rem_delta, prev_delta) && running && loops <= 0) {
+			ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+		}
+#endif
 	}
 
 	return true;
 }
 
-bool Tween::should_pause() {
+bool Tween::can_process(bool p_tree_paused) const {
 	if (is_bound && pause_mode == TWEEN_PAUSE_BOUND) {
-		Object *bound_instance = ObjectDB::get_instance(bound_node);
-		if (bound_instance) {
-			Node *bound_node = Object::cast_to<Node>(bound_instance);
-			return !bound_node->can_process();
+		Node *bound_node = get_bound_node();
+		if (bound_node) {
+			return bound_node->can_process();
 		}
 	}
 
-	return pause_mode != TWEEN_PAUSE_PROCESS;
+	return !p_tree_paused || pause_mode == TWEEN_PAUSE_PROCESS;
+}
+
+Node *Tween::get_bound_node() const {
+	if (is_bound) {
+		return Object::cast_to<Node>(ObjectDB::get_instance(bound_node));
+	} else {
+		return nullptr;
+	}
+}
+
+float Tween::get_total_time() const {
+	return total_time;
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
@@ -610,6 +631,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
+	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
@@ -727,12 +749,12 @@ bool PropertyTweener::step(float &r_delta) {
 	}
 
 	float time = MIN(elapsed_time - delay, duration);
-	target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
-
 	if (time < duration) {
+		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
 		r_delta = 0;
 		return true;
 	} else {
+		target_instance->set_indexed(property, final_val);
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
 		emit_signal(SNAME("finished"));
@@ -881,8 +903,13 @@ bool MethodTweener::step(float &r_delta) {
 		return true;
 	}
 
+	Variant current_val;
 	float time = MIN(elapsed_time - delay, duration);
-	Variant current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	if (time < duration) {
+		current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	} else {
+		current_val = final_val;
+	}
 	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *));
 	argptr[0] = &current_val;
 
@@ -924,6 +951,7 @@ MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, 
 	callback = p_callback;
 	initial_val = p_from;
 	delta_val = tween->calculate_delta_value(p_from, p_to);
+	final_val = p_to;
 	duration = p_duration;
 }
 

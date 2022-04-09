@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "java_godot_io_wrapper.h"
+
 #include "core/error/error_list.h"
 
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
@@ -53,6 +54,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
+		_get_scaled_density = p_env->GetMethodID(cls, "getScaledDensity", "()F");
+		_get_screen_refresh_rate = p_env->GetMethodID(cls, "getScreenRefreshRate", "(D)D");
 		_screen_get_usable_rect = p_env->GetMethodID(cls, "screenGetUsableRect", "()[I"),
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;ZIII)V");
@@ -134,6 +137,29 @@ int GodotIOJavaWrapper::get_screen_dpi() {
 	} else {
 		return 160;
 	}
+}
+
+float GodotIOJavaWrapper::get_scaled_density() {
+	if (_get_scaled_density) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, 1.0f);
+		return env->CallFloatMethod(godot_io_instance, _get_scaled_density);
+	} else {
+		return 1.0f;
+	}
+}
+
+float GodotIOJavaWrapper::get_screen_refresh_rate(float fallback) {
+	if (_get_screen_refresh_rate) {
+		JNIEnv *env = get_jni_env();
+		if (env == nullptr) {
+			ERR_PRINT("An error occurred while trying to get screen refresh rate.");
+			return fallback;
+		}
+		return (float)env->CallDoubleMethod(godot_io_instance, _get_screen_refresh_rate, (double)fallback);
+	}
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+	return fallback;
 }
 
 void GodotIOJavaWrapper::screen_get_usable_rect(int (&p_rect_xywh)[4]) {

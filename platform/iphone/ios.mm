@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "ios.h"
+
 #import "app_delegate.h"
 #import "view_controller.h"
 #import <UIKit/UIKit.h>
@@ -36,7 +37,7 @@
 
 void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
-};
+}
 
 void iOS::alert(const char *p_alert, const char *p_title) {
 	NSString *title = [NSString stringWithUTF8String:p_title];
@@ -65,7 +66,7 @@ String iOS::get_model() const {
 	NSString *platform = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
 	free(model);
 	const char *str = [platform UTF8String];
-	return String(str != nullptr ? str : "");
+	return String::utf8(str != nullptr ? str : "");
 }
 
 String iOS::get_rate_url(int p_app_id) const {
@@ -75,6 +76,6 @@ String iOS::get_rate_url(int p_app_id) const {
 
 	printf("returning rate url %s\n", ret.utf8().get_data());
 	return ret;
-};
+}
 
 iOS::iOS() {}

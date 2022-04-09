@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,12 +42,11 @@
 #endif
 
 DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
-	return (DisplayServerAndroid *)DisplayServer::get_singleton();
+	return static_cast<DisplayServerAndroid *>(DisplayServer::get_singleton());
 }
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_GLOBAL_MENU:
@@ -96,6 +95,17 @@ String DisplayServerAndroid::clipboard_get() const {
 	}
 }
 
+bool DisplayServerAndroid::clipboard_has() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_COND_V(!godot_java, false);
+
+	if (godot_java->has_has_clipboard()) {
+		return godot_java->has_clipboard();
+	} else {
+		return DisplayServer::clipboard_has();
+	}
+}
+
 void DisplayServerAndroid::screen_set_keep_on(bool p_enable) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_COND(!godot_java);
@@ -119,7 +129,9 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_COND_V(!godot_io_java, SCREEN_LANDSCAPE);
 
-	return (ScreenOrientation)godot_io_java->get_screen_orientation();
+	const int orientation = godot_io_java->get_screen_orientation();
+	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
+	return (ScreenOrientation)orientation;
 }
 
 int DisplayServerAndroid::get_screen_count() const {
@@ -147,6 +159,23 @@ int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
 	ERR_FAIL_COND_V(!godot_io_java, 0);
 
 	return godot_io_java->get_screen_dpi();
+}
+
+float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_COND_V(!godot_io_java, 1.0f);
+
+	return godot_io_java->get_scaled_density();
+}
+
+float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	if (!godot_io_java) {
+		ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+		return SCREEN_REFRESH_RATE_FALLBACK;
+	}
+
+	return godot_io_java->get_screen_refresh_rate(SCREEN_REFRESH_RATE_FALLBACK);
 }
 
 bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
@@ -239,6 +268,24 @@ Vector<DisplayServer::WindowID> DisplayServerAndroid::get_window_list() const {
 
 DisplayServer::WindowID DisplayServerAndroid::get_window_at_screen_position(const Point2i &p_position) const {
 	return MAIN_WINDOW_ID;
+}
+
+int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return reinterpret_cast<int64_t>(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
+		}
+		case WINDOW_VIEW: {
+			return 0; // Not supported.
+		}
+		default: {
+			return 0;
+		}
+	}
 }
 
 void DisplayServerAndroid::window_attach_instance_id(ObjectID p_instance, DisplayServer::WindowID p_window) {

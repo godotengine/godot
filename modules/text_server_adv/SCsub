@@ -37,7 +37,7 @@ def make_icu_data(target, source, env):
 
 thirdparty_obj = []
 freetype_enabled = env.module_check_dependencies("text_server_adv", ["freetype"], True)
-msdngen_enabled = env.module_check_dependencies("text_server_adv", ["msdfgen"], True)
+msdfgen_enabled = env.module_check_dependencies("text_server_adv", ["msdfgen"], True)
 
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
@@ -49,6 +49,7 @@ if env["builtin_harfbuzz"]:
         "src/hb-aat-map.cc",
         "src/hb-blob.cc",
         "src/hb-buffer-serialize.cc",
+        "src/hb-buffer-verify.cc",
         "src/hb-buffer.cc",
         "src/hb-common.cc",
         #'src/hb-coretext.cc',
@@ -62,7 +63,6 @@ if env["builtin_harfbuzz"]:
         #'src/hb-gobject-structs.cc',
         "src/hb-icu.cc",
         "src/hb-map.cc",
-        "src/hb-ms-feature-ranges.cc",
         "src/hb-number.cc",
         "src/hb-ot-cff1-table.cc",
         "src/hb-ot-cff2-table.cc",
@@ -103,6 +103,7 @@ if env["builtin_harfbuzz"]:
         "src/hb-subset-cff2.cc",
         "src/hb-subset-input.cc",
         "src/hb-subset-plan.cc",
+        "src/hb-subset-repacker.cc",
         "src/hb-subset.cc",
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
@@ -116,20 +117,25 @@ if env["builtin_harfbuzz"]:
         ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_harfbuzz.Append(
-        CPPPATH=[
-            "#thirdparty/harfbuzz/src",
-            "#thirdparty/icu4c/common/",
-        ]
-    )
+    env_harfbuzz.Append(CPPPATH=["#thirdparty/harfbuzz/src"])
+
+    env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
+    if env["builtin_icu"]:
+        env_harfbuzz.Append(CPPPATH=["#thirdparty/icu4c/common/"])
+        env_harfbuzz.Append(CCFLAGS=["-DU_HAVE_LIB_SUFFIX=1", "-DU_LIB_SUFFIX_C_NAME=_godot", "-DHAVE_ICU_BUILTIN"])
 
     if freetype_enabled:
         env_harfbuzz.Append(
-            CPPPATH=[
-                "#thirdparty/freetype/include",
-                "#thirdparty/graphite/include",
+            CCFLAGS=[
+                "-DHAVE_FREETYPE",
+                "-DHAVE_GRAPHITE2",
             ]
         )
+        if env["builtin_freetype"]:
+            env_harfbuzz.Append(CPPPATH=["#thirdparty/freetype/include"])
+        if env["builtin_graphite"]:
+            env_harfbuzz.Append(CPPPATH=["#thirdparty/graphite/include"])
+            env_harfbuzz.Append(CCFLAGS=["-DGRAPHITE2_STATIC"])
 
     if env["platform"] == "android" or env["platform"] == "linuxbsd":
         env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
@@ -140,21 +146,7 @@ if env["builtin_harfbuzz"]:
         else:
             env_harfbuzz.Append(CCFLAGS=["-DHB_NO_MT"])
 
-    env_harfbuzz.Append(
-        CCFLAGS=[
-            "-DHAVE_ICU_BUILTIN",
-            "-DHAVE_ICU",
-        ]
-    )
-
-    if freetype_enabled:
-        env_harfbuzz.Append(
-            CCFLAGS=[
-                "-DHAVE_FREETYPE",
-                "-DHAVE_GRAPHITE2",
-                "-DGRAPHITE2_STATIC",
-            ]
-        )
+    env_text_server_adv.Append(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -455,6 +447,7 @@ if env["builtin_icu"]:
     if env_icu["tools"]:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
         env_icu.Command("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name, make_icu_data)
+        env_text_server_adv.Append(CPPPATH=["#thirdparty/icu4c/"])
     else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
 
@@ -471,14 +464,23 @@ if env["builtin_icu"]:
             "-DUCONFIG_NO_FILE_IO",
             "-DUCONFIG_NO_TRANSLITERATION",
             "-DPKGDATA_MODE=static",
+            "-DU_ENABLE_DYLOAD=0",
+            "-DU_HAVE_LIB_SUFFIX=1",
+            "-DU_LIB_SUFFIX_C_NAME=_godot",
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
     env_text_server_adv.Append(
         CXXFLAGS=[
+            "-DU_HAVE_LIB_SUFFIX=1",
+            "-DU_LIB_SUFFIX_C_NAME=_godot",
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
+    if env_text_server_adv["tools"]:
+        env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+
+    env_text_server_adv.Append(CPPPATH=["#thirdparty/icu4c/common/"])
 
     lib = env_icu.add_library("icu_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -501,30 +503,14 @@ if env["builtin_icu"]:
 
 module_obj = []
 
-if env_text_server_adv["tools"]:
-    env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+if env["builtin_msdfgen"] and msdfgen_enabled:
+    env_text_server_adv.Append(CPPPATH=["#thirdparty/msdfgen"])
 
-env_text_server_adv.Append(
-    CPPPATH=[
-        "#thirdparty/harfbuzz/src",
-        "#thirdparty/icu4c/common/",
-    ]
-)
+if env["builtin_freetype"] and freetype_enabled:
+    env_text_server_adv.Append(CPPPATH=["#thirdparty/freetype/include"])
 
-if msdngen_enabled:
-    env_text_server_adv.Append(
-        CPPPATH=[
-            "#thirdparty/msdfgen",
-        ]
-    )
-
-if freetype_enabled:
-    env_text_server_adv.Append(
-        CPPPATH=[
-            "#thirdparty/freetype/include",
-            "#thirdparty/graphite/include",
-        ]
-    )
+if env["builtin_graphite"] and freetype_enabled:
+    env_text_server_adv.Append(CPPPATH=["#thirdparty/graphite/include"])
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj

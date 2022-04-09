@@ -102,7 +102,7 @@ dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
-	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbours
+	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbours
 	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
 	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
 	//total neighbours: 26
@@ -135,7 +135,7 @@ dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
-	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbours
+	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbours
 	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
 	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
 	//total neighbours: 26
@@ -155,7 +155,7 @@ layout(r16ui, set = 0, binding = 2) uniform restrict readonly uimage3D src_occlu
 
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 scroll;
 
 	int grid_size;

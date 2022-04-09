@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,7 +127,7 @@ String FileAccess::fix_path(const String &p_path) const {
 			if (ProjectSettings::get_singleton()) {
 				if (r_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (resource_path != "") {
+					if (!resource_path.is_empty()) {
 						return r_path.replace("res:/", resource_path);
 					}
 					return r_path.replace("res://", "");
@@ -138,7 +138,7 @@ String FileAccess::fix_path(const String &p_path) const {
 		case ACCESS_USERDATA: {
 			if (r_path.begins_with("user://")) {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (data_dir != "") {
+				if (!data_dir.is_empty()) {
 					return r_path.replace("user:/", data_dir);
 				}
 				return r_path.replace("user://", "");
@@ -538,7 +538,7 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 	for (int i = 0; i < size; ++i) {
 		String value = p_values[i];
 
-		if (value.find("\"") != -1 || value.find(p_delim) != -1 || value.find("\n") != -1) {
+		if (value.contains("\"") || value.contains(p_delim) || value.contains("\n")) {
 			value = "\"" + value.replace("\"", "\"\"") + "\"";
 		}
 		if (i < size - 1) {

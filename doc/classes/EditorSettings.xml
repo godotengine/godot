@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSettings" inherits="Resource" version="4.0">
+<class name="EditorSettings" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Object that holds the project-independent editor settings.
 	</brief_description>
@@ -70,11 +70,24 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="check_changed_settings_in_group" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="setting_prefix" type="String" />
+			<description>
+				Checks if any settings with the prefix [code]setting_prefix[/code] exist in the set of changed settings. See also [method get_changed_settings].
+			</description>
+		</method>
 		<method name="erase">
 			<return type="void" />
 			<argument index="0" name="property" type="String" />
 			<description>
 				Erases the setting whose name is specified by [code]property[/code].
+			</description>
+		</method>
+		<method name="get_changed_settings" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [constant NOTIFICATION_EDITOR_SETTINGS_CHANGED]
 			</description>
 		</method>
 		<method name="get_favorites" qualifiers="const">
@@ -116,6 +129,13 @@
 			<argument index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if the setting specified by [code]name[/code] exists, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="mark_setting_changed">
+			<return type="void" />
+			<argument index="0" name="setting" type="String" />
+			<description>
+				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
 			</description>
 		</method>
 		<method name="property_can_revert">

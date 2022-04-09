@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,15 +110,15 @@ TypedArray<String> PhysicalBone2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!parent_skeleton) {
-		warnings.push_back(TTR("A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a parent node!"));
+		warnings.push_back(RTR("A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a parent node!"));
 	}
 	if (parent_skeleton && bone2d_index <= -1) {
-		warnings.push_back(TTR("A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! Please set a Bone2D node in the inspector."));
+		warnings.push_back(RTR("A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! Please set a Bone2D node in the inspector."));
 	}
 	if (!child_joint) {
 		PhysicalBone2D *parent_bone = Object::cast_to<PhysicalBone2D>(get_parent());
 		if (parent_bone) {
-			warnings.push_back(TTR("A PhysicalBone2D node should have a Joint2D-based child node to keep bones connected! Please add a Joint2D-based node as a child to this node!"));
+			warnings.push_back(RTR("A PhysicalBone2D node should have a Joint2D-based child node to keep bones connected! Please add a Joint2D-based node as a child to this node!"));
 		}
 	}
 

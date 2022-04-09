@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -137,7 +137,7 @@ TEST_CASE("[Expression] Scientific notation") {
 			expression.parse("2e5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(double(expression.execute()), 25),
+			Math::is_equal_approx(double(expression.execute()), 2e5),
 			"The expression should return the expected result.");
 
 	CHECK_MESSAGE(

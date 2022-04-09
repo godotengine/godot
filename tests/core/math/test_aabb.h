@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -349,14 +349,27 @@ TEST_CASE("[AABB] Has point") {
 			aabb.has_point(Vector3(2, 3, 0)),
 			"has_point() with contained point should return the expected value.");
 	CHECK_MESSAGE(
-			aabb.has_point(Vector3(-1.5, 3, 0)),
-			"has_point() with contained point on negative edge should return the expected value.");
-	CHECK_MESSAGE(
-			aabb.has_point(Vector3(2.5, 3, 0)),
-			"has_point() with contained point on positive edge should return the expected value.");
-	CHECK_MESSAGE(
 			!aabb.has_point(Vector3(-20, 0, 0)),
 			"has_point() with non-contained point should return the expected value.");
+
+	CHECK_MESSAGE(
+			aabb.has_point(Vector3(-1.5, 3, 0)),
+			"has_point() with positive size should include point on near face (X axis).");
+	CHECK_MESSAGE(
+			aabb.has_point(Vector3(2.5, 3, 0)),
+			"has_point() with positive size should include point on far face (X axis).");
+	CHECK_MESSAGE(
+			aabb.has_point(Vector3(0, 2, 0)),
+			"has_point() with positive size should include point on near face (Y axis).");
+	CHECK_MESSAGE(
+			aabb.has_point(Vector3(0, 7, 0)),
+			"has_point() with positive size should include point on far face (Y axis).");
+	CHECK_MESSAGE(
+			aabb.has_point(Vector3(0, 3, -2.5)),
+			"has_point() with positive size should include point on near face (Z axis).");
+	CHECK_MESSAGE(
+			aabb.has_point(Vector3(0, 3, 3.5)),
+			"has_point() with positive size should include point on far face (Z axis).");
 }
 
 TEST_CASE("[AABB] Expanding") {

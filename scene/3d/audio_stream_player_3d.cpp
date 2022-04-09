@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -239,80 +239,82 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 }
 
 void AudioStreamPlayer3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		velocity_tracker->reset(get_global_transform().origin);
-		AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
-		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-			play();
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			velocity_tracker->reset(get_global_transform().origin);
+			AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
+			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
+				play();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		stop();
-		AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			stop();
+			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
+		} break;
 
-	if (p_what == NOTIFICATION_PAUSED) {
-		if (!can_process()) {
-			// Node can't process so we start fading out to silence
-			set_stream_paused(true);
-		}
-	}
+		case NOTIFICATION_PAUSED: {
+			if (!can_process()) {
+				// Node can't process so we start fading out to silence.
+				set_stream_paused(true);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_UNPAUSED) {
-		set_stream_paused(false);
-	}
+		case NOTIFICATION_UNPAUSED: {
+			set_stream_paused(false);
+		} break;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
-			velocity_tracker->update_position(get_global_transform().origin);
-		}
-	}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+				velocity_tracker->update_position(get_global_transform().origin);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		//update anything related to position first, if possible of course
-		Vector<AudioFrame> volume_vector;
-		if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
-			volume_vector = _update_panning();
-		}
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// Update anything related to position first, if possible of course.
+			Vector<AudioFrame> volume_vector;
+			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+				volume_vector = _update_panning();
+			}
 
-		if (setplay.get() >= 0 && stream.is_valid()) {
-			active.set();
-			Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
-			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-			Map<StringName, Vector<AudioFrame>> bus_map;
-			bus_map[_get_actual_bus()] = volume_vector;
-			AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
-			stream_playbacks.push_back(new_playback);
-			setplay.set(-1);
-		}
+			if (setplay.get() >= 0 && stream.is_valid()) {
+				active.set();
+				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
+				Map<StringName, Vector<AudioFrame>> bus_map;
+				bus_map[_get_actual_bus()] = volume_vector;
+				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
+				stream_playbacks.push_back(new_playback);
+				setplay.set(-1);
+			}
 
-		if (!stream_playbacks.is_empty() && active.is_set()) {
-			// Stop playing if no longer active.
-			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
-			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-					playbacks_to_remove.push_back(playback);
+			if (!stream_playbacks.is_empty() && active.is_set()) {
+				// Stop playing if no longer active.
+				Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+				for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+					if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+						playbacks_to_remove.push_back(playback);
+					}
+				}
+				// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+				for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+					stream_playbacks.erase(playback);
+				}
+				if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+					// This node is no longer actively playing audio.
+					active.clear();
+					set_physics_process_internal(false);
+				}
+				if (!playbacks_to_remove.is_empty()) {
+					emit_signal(SNAME("finished"));
 				}
 			}
-			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
-			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
-				stream_playbacks.erase(playback);
-			}
-			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
-				// This node is no longer actively playing audio.
-				active.clear();
-				set_physics_process_internal(false);
-			}
-			if (!playbacks_to_remove.is_empty()) {
-				emit_signal(SNAME("finished"));
-			}
-		}
 
-		while (stream_playbacks.size() > max_polyphony) {
-			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-			stream_playbacks.remove(0);
-		}
+			while (stream_playbacks.size() > max_polyphony) {
+				AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
+				stream_playbacks.remove_at(0);
+			}
+		} break;
 	}
 }
 
@@ -391,7 +393,13 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
 	for (Camera3D *camera : cameras) {
+		if (!camera) {
+			continue;
+		}
 		Viewport *vp = camera->get_viewport();
+		if (!vp) {
+			continue;
+		}
 		if (!vp->is_audio_listener_3d()) {
 			continue;
 		}

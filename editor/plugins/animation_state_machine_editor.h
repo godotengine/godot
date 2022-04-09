@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef ANIMATION_STATE_MACHINE_EDITOR_H
 #define ANIMATION_STATE_MACHINE_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
@@ -41,41 +40,43 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
+class EditorFileDialog;
+
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
-	Button *tool_select;
-	Button *tool_create;
-	Button *tool_connect;
-	Popup *name_edit_popup;
-	LineEdit *name_edit;
+	Button *tool_select = nullptr;
+	Button *tool_create = nullptr;
+	Button *tool_connect = nullptr;
+	Popup *name_edit_popup = nullptr;
+	LineEdit *name_edit = nullptr;
 
-	HBoxContainer *tool_erase_hb;
-	Button *tool_erase;
-	Button *tool_autoplay;
-	Button *tool_end;
+	HBoxContainer *tool_erase_hb = nullptr;
+	Button *tool_erase = nullptr;
+	Button *tool_autoplay = nullptr;
+	Button *tool_end = nullptr;
 
-	OptionButton *transition_mode;
-	OptionButton *play_mode;
+	OptionButton *transition_mode = nullptr;
+	OptionButton *play_mode = nullptr;
 
-	PanelContainer *panel;
+	PanelContainer *panel = nullptr;
 
 	StringName selected_node;
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
-	Control *state_machine_draw;
-	Control *state_machine_play_pos;
+	Control *state_machine_draw = nullptr;
+	Control *state_machine_play_pos = nullptr;
 
-	PanelContainer *error_panel;
-	Label *error_label;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
 	bool updating;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	static AnimationNodeStateMachineEditor *singleton;
 
@@ -86,8 +87,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _update_graph();
 
-	PopupMenu *menu;
-	PopupMenu *animations_menu;
+	PopupMenu *menu = nullptr;
+	PopupMenu *animations_menu = nullptr;
 	Vector<String> animations_to_add;
 
 	Vector2 add_node_pos;
@@ -137,7 +138,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName selected_transition_from;
 	StringName selected_transition_to;
 
-	bool over_text;
 	StringName over_node;
 	int over_node_what;
 
@@ -166,7 +166,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	float error_time;
 	String error_text;
 
-	EditorFileDialog *open_file;
+	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
@@ -184,6 +184,7 @@ public:
 	static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	AnimationNodeStateMachineEditor();
 };
 

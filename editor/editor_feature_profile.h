@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,7 @@
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "editor/editor_file_dialog.h"
-#include "editor_help.h"
+#include "editor/editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
@@ -118,25 +117,25 @@ class EditorFeatureProfileManager : public AcceptDialog {
 		CLASS_OPTION_DISABLE_EDITOR
 	};
 
-	ConfirmationDialog *erase_profile_dialog;
-	ConfirmationDialog *new_profile_dialog;
-	LineEdit *new_profile_name;
+	ConfirmationDialog *erase_profile_dialog = nullptr;
+	ConfirmationDialog *new_profile_dialog = nullptr;
+	LineEdit *new_profile_name = nullptr;
 
-	LineEdit *current_profile_name;
-	OptionButton *profile_list;
+	LineEdit *current_profile_name = nullptr;
+	OptionButton *profile_list = nullptr;
 	Button *profile_actions[PROFILE_MAX];
 
-	HSplitContainer *h_split;
+	HSplitContainer *h_split = nullptr;
 
-	VBoxContainer *class_list_vbc;
-	Tree *class_list;
-	VBoxContainer *property_list_vbc;
-	Tree *property_list;
-	EditorHelpBit *description_bit;
-	Label *no_profile_selected_help;
+	VBoxContainer *class_list_vbc = nullptr;
+	Tree *class_list = nullptr;
+	VBoxContainer *property_list_vbc = nullptr;
+	Tree *property_list = nullptr;
+	EditorHelpBit *description_bit = nullptr;
+	Label *no_profile_selected_help = nullptr;
 
-	EditorFileDialog *import_profiles;
-	EditorFileDialog *export_profile;
+	EditorFileDialog *import_profiles = nullptr;
+	EditorFileDialog *export_profile = nullptr;
 
 	void _profile_action(int p_action);
 	void _profile_selected(int p_what);
@@ -156,7 +155,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _import_profiles(const Vector<String> &p_paths);
 	void _export_profile(const String &p_path);
 
-	bool updating_features;
+	bool updating_features = false;
 
 	void _class_list_item_selected();
 	void _class_list_item_edited();
@@ -164,7 +163,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _property_item_edited();
 	void _save_and_update();
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 	void _emit_current_profile_changed();
 
 	static EditorFeatureProfileManager *singleton;

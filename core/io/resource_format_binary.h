@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,7 +127,7 @@ class ResourceFormatSaverBinaryInstance {
 	bool skip_editor;
 	bool big_endian;
 	bool takeover_paths;
-	FileAccess *f;
+	FileAccess *f = nullptr;
 	String magic;
 	Set<RES> resource_set;
 
@@ -164,6 +164,8 @@ public:
 	enum {
 		FORMAT_FLAG_NAMED_SCENE_IDS = 1,
 		FORMAT_FLAG_UIDS = 2,
+		FORMAT_FLAG_REAL_T_IS_DOUBLE = 4,
+
 		// Amount of reserved 32-bit fields in resource header
 		RESERVED_FIELDS = 11
 	};

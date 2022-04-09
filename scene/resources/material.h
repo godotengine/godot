@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
-#include "servers/rendering/shader_language.h"
 #include "servers/rendering_server.h"
 
 class Material : public Resource {
@@ -52,11 +51,15 @@ class Material : public Resource {
 protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const { return false; }
-	virtual bool _can_use_render_priority() const { return false; }
+	virtual bool _can_do_next_pass() const;
+	virtual bool _can_use_render_priority() const;
 
 	void _validate_property(PropertyInfo &property) const override;
 
+	GDVIRTUAL0RC(RID, _get_shader_rid)
+	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
+	GDVIRTUAL0RC(bool, _can_do_next_pass)
+	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
 	enum {
 		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
@@ -69,9 +72,8 @@ public:
 	int get_render_priority() const;
 
 	virtual RID get_rid() const override;
-	virtual RID get_shader_rid() const = 0;
-
-	virtual Shader::Mode get_shader_mode() const = 0;
+	virtual RID get_shader_rid() const;
+	virtual Shader::Mode get_shader_mode() const;
 	Material();
 	virtual ~Material();
 };
@@ -253,8 +255,6 @@ public:
 
 	enum SpecularMode {
 		SPECULAR_SCHLICK_GGX,
-		SPECULAR_BLINN,
-		SPECULAR_PHONG,
 		SPECULAR_TOON,
 		SPECULAR_DISABLED,
 		SPECULAR_MAX
@@ -388,7 +388,7 @@ private:
 		StringName rim;
 		StringName rim_tint;
 		StringName clearcoat;
-		StringName clearcoat_gloss;
+		StringName clearcoat_roughness;
 		StringName anisotropy;
 		StringName heightmap_scale;
 		StringName subsurface_scattering_strength;
@@ -455,7 +455,7 @@ private:
 	float rim;
 	float rim_tint;
 	float clearcoat;
-	float clearcoat_gloss;
+	float clearcoat_roughness;
 	float anisotropy;
 	float heightmap_scale;
 	float subsurface_scattering_strength;
@@ -573,8 +573,8 @@ public:
 	void set_clearcoat(float p_clearcoat);
 	float get_clearcoat() const;
 
-	void set_clearcoat_gloss(float p_clearcoat_gloss);
-	float get_clearcoat_gloss() const;
+	void set_clearcoat_roughness(float p_clearcoat_roughness);
+	float get_clearcoat_roughness() const;
 
 	void set_anisotropy(float p_anisotropy);
 	float get_anisotropy() const;

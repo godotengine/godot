@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@ class Popup : public Window {
 
 	LocalVector<Window *> visible_parents;
 	bool popped_up = false;
-	bool close_on_parent_focus = true;
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
 
@@ -59,11 +58,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_as_minsize();
-
-	void set_close_on_parent_focus(bool p_close);
-	bool get_close_on_parent_focus();
-
 	Popup();
 	~Popup();
 };
@@ -71,7 +65,7 @@ public:
 class PopupPanel : public Popup {
 	GDCLASS(PopupPanel, Popup);
 
-	Panel *panel;
+	Panel *panel = nullptr;
 
 protected:
 	void _update_child_rects();

@@ -65,7 +65,7 @@ FT_BEGIN_HEADER
 
   FT_LOCAL( void )
   cf2_interpT2CharString( CF2_Font              font,
-                          CF2_Buffer            charstring,
+                          const CF2_Buffer      buf,
                           CF2_OutlineCallbacks  callbacks,
                           const FT_Vector*      translation,
                           FT_Bool               doingSeac,

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
 class ShaderGlobalsEditorInterface;
@@ -44,12 +43,12 @@ class ShaderGlobalsEditorInterface;
 class ShaderGlobalsEditor : public VBoxContainer {
 	GDCLASS(ShaderGlobalsEditor, VBoxContainer)
 
-	ShaderGlobalsEditorInterface *interface;
-	EditorInspector *inspector;
+	ShaderGlobalsEditorInterface *interface = nullptr;
+	EditorInspector *inspector = nullptr;
 
-	LineEdit *variable_name;
-	OptionButton *variable_type;
-	Button *variable_add;
+	LineEdit *variable_name = nullptr;
+	OptionButton *variable_type = nullptr;
+	Button *variable_add = nullptr;
 
 	void _variable_added();
 	void _variable_deleted(const String &p_variable);

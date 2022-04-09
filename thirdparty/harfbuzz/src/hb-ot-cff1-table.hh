@@ -1144,8 +1144,8 @@ struct cff1
     {
       sc.end_processing ();
       topDict.fini ();
-      fontDicts.fini_deep ();
-      privateDicts.fini_deep ();
+      fontDicts.fini ();
+      privateDicts.fini ();
       hb_blob_destroy (blob);
       blob = nullptr;
     }
@@ -1245,32 +1245,32 @@ struct cff1
     }
 
     protected:
-    hb_blob_t	           *blob;
+    hb_blob_t	           *blob = nullptr;
     hb_sanitize_context_t   sc;
 
     public:
-    const Encoding	    *encoding;
-    const Charset	    *charset;
-    const CFF1NameIndex     *nameIndex;
-    const CFF1TopDictIndex  *topDictIndex;
-    const CFF1StringIndex   *stringIndex;
-    const CFF1Subrs	    *globalSubrs;
-    const CFF1CharStrings   *charStrings;
-    const CFF1FDArray       *fdArray;
-    const CFF1FDSelect      *fdSelect;
-    unsigned int	     fdCount;
+    const Encoding	    *encoding = nullptr;
+    const Charset	    *charset = nullptr;
+    const CFF1NameIndex     *nameIndex = nullptr;
+    const CFF1TopDictIndex  *topDictIndex = nullptr;
+    const CFF1StringIndex   *stringIndex = nullptr;
+    const CFF1Subrs	    *globalSubrs = nullptr;
+    const CFF1CharStrings   *charStrings = nullptr;
+    const CFF1FDArray       *fdArray = nullptr;
+    const CFF1FDSelect      *fdSelect = nullptr;
+    unsigned int	     fdCount = 0;
 
     cff1_top_dict_values_t   topDict;
     hb_vector_t<cff1_font_dict_values_t>
 			     fontDicts;
     hb_vector_t<PRIVDICTVAL> privateDicts;
 
-    unsigned int	     num_glyphs;
+    unsigned int	     num_glyphs = 0;
   };
 
   struct accelerator_t : accelerator_templ_t<cff1_private_dict_opset_t, cff1_private_dict_values_t>
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       SUPER::init (face);
 
@@ -1295,8 +1295,7 @@ struct cff1
       }
       glyph_names.qsort ();
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
       glyph_names.fini ();
 
@@ -1348,9 +1347,7 @@ struct cff1
 
     HB_INTERNAL bool get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const;
     HB_INTERNAL bool get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const;
-#ifdef HB_EXPERIMENTAL_API
-    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, draw_helper_t &draw_helper) const;
-#endif
+    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
 
     private:
     struct gname_t
@@ -1398,7 +1395,10 @@ struct cff1
   DEFINE_SIZE_STATIC (4);
 };
 
-struct cff1_accelerator_t : cff1::accelerator_t {};
+struct cff1_accelerator_t : cff1::accelerator_t {
+  cff1_accelerator_t (hb_face_t *face) : cff1::accelerator_t (face) {}
+};
+
 } /* namespace OT */
 
 #endif /* HB_OT_CFF1_TABLE_HH */

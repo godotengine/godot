@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include "core/string/translation.h"
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
+#include "core/version_generated.gen.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,33 +54,13 @@
 
 static const int MAX_DECIMALS = 32;
 
-static _FORCE_INLINE_ bool is_digit(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static _FORCE_INLINE_ bool is_hex_digit(char32_t c) {
-	return (is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
-	return (c >= 'A' && c <= 'Z');
-}
-
-static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
-	return (c >= 'a' && c <= 'z');
-}
-
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
-	return (is_upper_case(c) ? (c + ('a' - 'A')) : c);
+	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
 
 const char CharString::_null = 0;
 const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
-
-bool is_symbol(char32_t c) {
-	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
-}
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
@@ -122,16 +103,18 @@ bool Char16String::operator<(const Char16String &p_right) const {
 }
 
 Char16String &Char16String::operator+=(char16_t p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char16_t *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
 
-Char16String &Char16String::operator=(const char16_t *p_cstr) {
+void Char16String::operator=(const char16_t *p_cstr) {
 	copy_from(p_cstr);
-	return *this;
 }
 
 const char16_t *Char16String::get_data() const {
@@ -178,16 +161,18 @@ bool CharString::operator<(const CharString &p_right) const {
 }
 
 CharString &CharString::operator+=(char p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
 
-CharString &CharString::operator=(const char *p_cstr) {
+void CharString::operator=(const char *p_cstr) {
 	copy_from(p_cstr);
-	return *this;
 }
 
 const char *CharString::get_data() const {
@@ -325,11 +310,7 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const size_t len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -340,7 +321,7 @@ void String::copy_from(const char *p_cstr) {
 
 	char32_t *dst = this->ptrw();
 
-	for (int i = 0; i < len + 1; i++) {
+	for (size_t i = 0; i <= len; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
@@ -395,13 +376,14 @@ void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
 
 void String::copy_from(const char32_t &p_char) {
 	resize(2);
+	char32_t *dst = ptrw();
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
-		set(0, 0xfffd);
+		dst[0] = 0xfffd;
 	} else {
-		set(0, p_char);
+		dst[0] = p_char;
 	}
-	set(1, 0);
+	dst[1] = 0;
 }
 
 void String::copy_from(const char32_t *p_cstr) {
@@ -450,9 +432,8 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
-	set(p_length, 0);
-
 	char32_t *dst = ptrw();
+	dst[p_length] = 0;
 
 	for (int i = 0; i < p_length; i++) {
 		if ((p_char[i] >= 0xd800 && p_char[i] <= 0xdfff) || (p_char[i] > 0x10ffff)) {
@@ -482,6 +463,12 @@ String String::operator+(const String &p_str) const {
 	return res;
 }
 
+String String::operator+(char32_t p_char) const {
+	String res = *this;
+	res += p_char;
+	return res;
+}
+
 String operator+(const char *p_chr, const String &p_str) {
 	String tmp = p_chr;
 	tmp += p_str;
@@ -505,27 +492,23 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (is_empty()) {
+	const int lhs_len = length();
+	if (lhs_len == 0) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.is_empty()) {
+	const int rhs_len = p_str.length();
+	if (rhs_len == 0) {
 		return *this;
 	}
 
-	int from = length();
-
-	resize(length() + p_str.size());
+	resize(lhs_len + rhs_len + 1);
 
 	const char32_t *src = p_str.get_data();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + lhs_len;
 
-	set(length(), 0);
-
-	for (int i = 0; i < p_str.length(); i++) {
-		dst[from + i] = src[i];
-	}
+	memcpy(dst, src, (rhs_len + 1) * sizeof(char32_t));
 
 	return *this;
 }
@@ -535,22 +518,15 @@ String &String::operator+=(const char *p_str) {
 		return *this;
 	}
 
-	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
-	}
+	const int lhs_len = length();
+	const size_t rhs_len = strlen(p_str);
 
-	int from = length();
+	resize(lhs_len + rhs_len + 1);
 
-	resize(from + src_len + 1);
+	char32_t *dst = ptrw() + lhs_len;
 
-	char32_t *dst = ptrw();
-
-	set(length(), 0);
-
-	for (int i = 0; i < src_len; i++) {
-		dst[from + i] = p_str[i];
+	for (size_t i = 0; i <= rhs_len; i++) {
+		dst[i] = p_str[i];
 	}
 
 	return *this;
@@ -573,14 +549,16 @@ String &String::operator+=(const char32_t *p_str) {
 }
 
 String &String::operator+=(char32_t p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+	char32_t *dst = ptrw();
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
-		set(length() - 1, 0xfffd);
+		dst[lhs_len] = 0xfffd;
 	} else {
-		set(length() - 1, p_char);
+		dst[lhs_len] = p_char;
 	}
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -975,21 +953,21 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	int start_index = 0;
 
 	for (int i = 1; i < this->size(); i++) {
-		bool is_upper = is_upper_case(cstr[i]);
+		bool is_upper = is_ascii_upper_case(cstr[i]);
 		bool is_number = is_digit(cstr[i]);
 
 		bool are_next_2_lower = false;
 		bool is_next_lower = false;
 		bool is_next_number = false;
-		bool was_precedent_upper = is_upper_case(cstr[i - 1]);
+		bool was_precedent_upper = is_ascii_upper_case(cstr[i - 1]);
 		bool was_precedent_number = is_digit(cstr[i - 1]);
 
 		if (i + 2 < this->size()) {
-			are_next_2_lower = is_lower_case(cstr[i + 1]) && is_lower_case(cstr[i + 2]);
+			are_next_2_lower = is_ascii_lower_case(cstr[i + 1]) && is_ascii_lower_case(cstr[i + 2]);
 		}
 
 		if (i + 1 < this->size()) {
-			is_next_lower = is_lower_case(cstr[i + 1]);
+			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
 			is_next_number = is_digit(cstr[i + 1]);
 		}
 
@@ -1528,115 +1506,24 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 }
 
 String String::num_real(double p_num, bool p_trailing) {
-	if (Math::is_nan(p_num)) {
-		return "nan";
-	}
-
-	if (Math::is_inf(p_num)) {
-		if (signbit(p_num)) {
-			return "-inf";
+	if (p_num == (double)(int64_t)p_num) {
+		if (p_trailing) {
+			return num_int64((int64_t)p_num) + ".0";
 		} else {
-			return "inf";
+			return num_int64((int64_t)p_num);
 		}
 	}
-
-	String s;
-	String sd;
-
-	// Integer part.
-
-	bool neg = p_num < 0;
-	p_num = ABS(p_num);
-	int64_t intn = (int64_t)p_num;
-
-	// Decimal part.
-
-	if (intn != p_num) {
-		double dec = p_num - (double)intn;
-
-		int digit = 0;
-
 #ifdef REAL_T_IS_DOUBLE
-		int decimals = 14;
-		double tolerance = 1e-14;
+	int decimals = 14;
 #else
-		int decimals = 6;
-		double tolerance = 1e-6;
+	int decimals = 6;
 #endif
-		// We want to align the digits to the above sane default, so we only
-		// need to subtract log10 for numbers with a positive power of ten.
-		if (p_num > 10) {
-			decimals -= (int)floor(log10(p_num));
-		}
-
-		if (decimals > MAX_DECIMALS) {
-			decimals = MAX_DECIMALS;
-		}
-
-		// In case the value ends up ending in "99999", we want to add a
-		// tiny bit to the value we're checking when deciding when to stop,
-		// so we multiply by slightly above 1 (1 + 1e-7 or 1e-15).
-		double check_multiplier = 1 + tolerance / 10;
-
-		int64_t dec_int = 0;
-		int64_t dec_max = 0;
-
-		while (true) {
-			dec *= 10.0;
-			dec_int = dec_int * 10 + (int64_t)dec % 10;
-			dec_max = dec_max * 10 + 9;
-			digit++;
-
-			if ((dec - (double)(int64_t)(dec * check_multiplier)) < tolerance) {
-				break;
-			}
-
-			if (digit == decimals) {
-				break;
-			}
-		}
-
-		dec *= 10;
-		int last = (int64_t)dec % 10;
-
-		if (last > 5) {
-			if (dec_int == dec_max) {
-				dec_int = 0;
-				intn++;
-			} else {
-				dec_int++;
-			}
-		}
-
-		String decimal;
-		for (int i = 0; i < digit; i++) {
-			char num[2] = { 0, 0 };
-			num[0] = '0' + dec_int % 10;
-			decimal = num + decimal;
-			dec_int /= 10;
-		}
-		sd = '.' + decimal;
-	} else if (p_trailing) {
-		sd = ".0";
-	} else {
-		sd = "";
+	// We want to align the digits to the above sane default, so we only
+	// need to subtract log10 for numbers with a positive power of ten.
+	if (p_num > 10) {
+		decimals -= (int)floor(log10(p_num));
 	}
-
-	if (intn == 0) {
-		s = "0";
-	} else {
-		while (intn) {
-			char32_t num = '0' + (intn % 10);
-			intn /= 10;
-			s = num + s;
-		}
-	}
-
-	s = s + sd;
-	if (neg) {
-		s = "-" + s;
-	}
-	return s;
+	return num(p_num, decimals);
 }
 
 String String::num_scientific(double p_num) {
@@ -1724,7 +1611,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 }
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
 
 	if (!p_utf8) {
 		return true;
@@ -1765,12 +1652,12 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				} else if ((c & 0xf8) == 0xf0) {
 					skip = 3;
 				} else {
-					_UNICERROR("invalid skip at " + num_int64(cstr_size));
+					UNICERROR("invalid skip at " + num_int64(cstr_size));
 					return true; //invalid utf8
 				}
 
 				if (skip == 1 && (c & 0x1e) == 0) {
-					_UNICERROR("overlong rejected at " + num_int64(cstr_size));
+					UNICERROR("overlong rejected at " + num_int64(cstr_size));
 					return true; //reject overlong
 				}
 
@@ -1785,7 +1672,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 	}
@@ -1812,17 +1699,17 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		} else if ((*p_utf8 & 0xf8) == 0xf0) {
 			len = 4;
 		} else {
-			_UNICERROR("invalid len");
+			UNICERROR("invalid len");
 			return true; //invalid UTF8
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //reject overlong
 		}
 
@@ -1837,18 +1724,18 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 			for (int i = 1; i < len; i++) {
 				if ((p_utf8[i] & 0xc0) != 0x80) {
-					_UNICERROR("invalid utf8");
+					UNICERROR("invalid utf8");
 					return true; //invalid utf8
 				}
 				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7f) >> (7 - len)) == 0) {
-					_UNICERROR("invalid utf8 overlong");
+					UNICERROR("invalid utf8 overlong");
 					return true; //no overlong
 				}
 				unichar = (unichar << 6) | (p_utf8[i] & 0x3f);
 			}
 		}
 		if (unichar >= 0xd800 && unichar <= 0xdfff) {
-			_UNICERROR("invalid code point");
+			UNICERROR("invalid code point");
 			return CharString();
 		}
 
@@ -1858,7 +1745,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 CharString String::utf8() const {
@@ -1932,7 +1819,7 @@ String String::utf16(const char16_t *p_utf16, int p_len) {
 }
 
 bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
 
 	if (!p_utf16) {
 		return true;
@@ -1972,7 +1859,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xd800) {
 					skip = 1; // lead surrogate
 				} else if ((c & 0xfffffc00) == 0xdc00) {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				} else {
 					skip = 0;
@@ -1982,7 +1869,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
 					--skip;
 				} else {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				}
 			}
@@ -1992,7 +1879,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; // not enough space
 		}
 	}
@@ -2017,7 +1904,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
@@ -2035,7 +1922,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 Char16String String::utf16() const {
@@ -2304,7 +2191,7 @@ bool String::is_numeric() const {
 				return false;
 			}
 			dot = true;
-		} else if (c < '0' || c > '9') {
+		} else if (!is_digit(c)) {
 			return false;
 		}
 	}
@@ -3172,7 +3059,7 @@ bool String::is_subsequence_of(const String &p_string) const {
 	return _base_is_subsequence_of(p_string, false);
 }
 
-bool String::is_subsequence_ofi(const String &p_string) const {
+bool String::is_subsequence_ofn(const String &p_string) const {
 	return _base_is_subsequence_of(p_string, true);
 }
 
@@ -3508,6 +3395,27 @@ char32_t String::unicode_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
+String String::indent(const String &p_prefix) const {
+	String new_string;
+	int line_start = 0;
+
+	for (int i = 0; i < length(); i++) {
+		const char32_t c = operator[](i);
+		if (c == '\n') {
+			if (i == line_start) {
+				new_string += c; // Leave empty lines empty.
+			} else {
+				new_string += p_prefix + substr(line_start, i - line_start + 1);
+			}
+			line_start = i + 1;
+		}
+	}
+	if (line_start != length()) {
+		new_string += p_prefix + substr(line_start);
+	}
+	return new_string;
+}
+
 String String::dedent() const {
 	String new_string;
 	String indent;
@@ -3629,6 +3537,10 @@ String String::rstrip(const String &p_chars) const {
 	return substr(0, end + 1);
 }
 
+bool String::is_network_share_path() const {
+	return begins_with("//") || begins_with("\\\\");
+}
+
 String String::simplify_path() const {
 	String s = *this;
 	String drive;
@@ -3641,6 +3553,9 @@ String String::simplify_path() const {
 	} else if (s.begins_with("user://")) {
 		drive = "user://";
 		s = s.substr(7, s.length());
+	} else if (is_network_share_path()) {
+		drive = s.substr(0, 2);
+		s = s.substr(2, s.length() - 2);
 	} else if (s.begins_with("/") || s.begins_with("\\")) {
 		drive = s.substr(0, 1);
 		s = s.substr(1, s.length() - 1);
@@ -3669,15 +3584,15 @@ String String::simplify_path() const {
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
 		if (d == ".") {
-			dirs.remove(i);
+			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
 			if (i == 0) {
-				dirs.remove(i);
+				dirs.remove_at(i);
 				i--;
 			} else {
-				dirs.remove(i);
-				dirs.remove(i - 1);
+				dirs.remove_at(i);
+				dirs.remove_at(i - 1);
 				i -= 2;
 			}
 		}
@@ -3755,7 +3670,7 @@ bool String::is_valid_identifier() const {
 			}
 		}
 
-		bool valid_char = is_digit(str[i]) || is_lower_case(str[i]) || is_upper_case(str[i]) || str[i] == '_';
+		bool valid_char = is_ascii_identifier_char(str[i]);
 
 		if (!valid_char) {
 			return false;
@@ -3780,7 +3695,7 @@ String String::uri_encode() const {
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
 		char ord = temp[i];
-		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' || is_lower_case(ord) || is_upper_case(ord) || is_digit(ord)) {
+		if (ord == '.' || ord == '-' || ord == '~' || is_ascii_identifier_char(ord)) {
 			res += ord;
 		} else {
 			char h_Val[3];
@@ -3802,9 +3717,9 @@ String String::uri_decode() const {
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
-			if (is_digit(ord1) || is_upper_case(ord1)) {
+			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
 				char ord2 = src[i + 2];
-				if (is_digit(ord2) || is_upper_case(ord2)) {
+				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
@@ -3931,7 +3846,7 @@ static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, ch
 					for (int i = 2; i < p_src_len; i++) {
 						eat = i + 1;
 						char32_t ct = p_src[i];
-						if (ct == ';' || ct < '0' || ct > '9') {
+						if (ct == ';' || !is_digit(ct)) {
 							break;
 						}
 					}
@@ -4061,7 +3976,7 @@ String String::pad_zeros(int p_digits) const {
 
 	int begin = 0;
 
-	while (begin < end && (s[begin] < '0' || s[begin] > '9')) {
+	while (begin < end && !is_digit(s[begin])) {
 		begin++;
 	}
 
@@ -4106,7 +4021,7 @@ bool String::is_valid_int() const {
 	}
 
 	for (int i = from; i < len; i++) {
-		if (operator[](i) < '0' || operator[](i) > '9') {
+		if (!is_digit(operator[](i))) {
 			return false; // no start with number plz
 		}
 	}
@@ -4284,7 +4199,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	if (stripped == String()) {
+	if (stripped.is_empty()) {
 		return false;
 	}
 
@@ -4342,13 +4257,13 @@ bool String::is_relative_path() const {
 String String::get_base_dir() const {
 	int end = 0;
 
-	// url scheme style base
+	// URL scheme style base.
 	int basepos = find("://");
 	if (basepos != -1) {
 		end = basepos + 3;
 	}
 
-	// windows top level directory base
+	// Windows top level directory base.
 	if (end == 0) {
 		basepos = find(":/");
 		if (basepos == -1) {
@@ -4359,7 +4274,24 @@ String String::get_base_dir() const {
 		}
 	}
 
-	// unix root directory base
+	// Windows UNC network share path.
+	if (end == 0) {
+		if (is_network_share_path()) {
+			basepos = find("/", 2);
+			if (basepos == -1) {
+				basepos = find("\\", 2);
+			}
+			int servpos = find("/", basepos + 1);
+			if (servpos == -1) {
+				servpos = find("\\", basepos + 1);
+			}
+			if (servpos != -1) {
+				end = servpos + 1;
+			}
+		}
+	}
+
+	// Unix root directory base.
 	if (end == 0) {
 		if (begins_with("/")) {
 			end = 1;
@@ -4868,15 +4800,20 @@ String TTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	return p_text_plural;
 }
 
+/* DTR and DTRN are used for the documentation, handling descriptions extracted
+ * from the XML.
+ * They also replace `$DOCS_URL` with the actual URL to the documentation's branch,
+ * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
+ */
 String DTR(const String &p_text, const String &p_context) {
 	// Comes straight from the XML, so remove indentation and any trailing whitespace.
 	const String text = p_text.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate(text, p_context);
+		return String(TranslationServer::get_singleton()->doc_translate(text, p_context)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
-	return text;
+	return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 
 String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
@@ -4884,21 +4821,21 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	const String text_plural = p_text_plural.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context);
+		return String(TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
 	if (p_n == 1) {
-		return text;
+		return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
-	return text_plural;
+	return text_plural.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 #endif
 
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
-		if (rtr == String() || rtr == p_text) {
+		if (rtr.is_empty() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
 		} else {
 			return rtr;
@@ -4911,7 +4848,7 @@ String RTR(const String &p_text, const String &p_context) {
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
-		if (rtr == String() || rtr == p_text || rtr == p_text_plural) {
+		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
 		} else {
 			return rtr;

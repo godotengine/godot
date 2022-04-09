@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,20 +67,20 @@ public:
 	};
 
 private:
-	Button *activate;
-	Button *clear_button;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
 
-	TextureRect *graph;
+	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
-	Tree *variables;
-	HSplitContainer *h_split;
-	CheckBox *frame_relative;
-	CheckBox *linked;
+	Tree *variables = nullptr;
+	HSplitContainer *h_split = nullptr;
+	CheckBox *frame_relative = nullptr;
+	CheckBox *linked = nullptr;
 
-	OptionButton *display_mode;
+	OptionButton *display_mode = nullptr;
 
-	SpinBox *cursor_metric_edit;
+	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
 	int last_metric;
@@ -99,8 +99,8 @@ private:
 
 	bool seeking;
 
-	Timer *frame_delay;
-	Timer *plot_delay;
+	Timer *frame_delay = nullptr;
+	Timer *plot_delay = nullptr;
 
 	void _update_frame(bool p_focus_selected = false);
 

@@ -399,7 +399,7 @@ struct gvar
 				  get_offset (glyphCount) - get_offset (0)));
   }
 
-  /* GlyphVariationData not sanitized here; must be checked while accessing each glyph varation data */
+  /* GlyphVariationData not sanitized here; must be checked while accessing each glyph variation data */
   bool sanitize (hb_sanitize_context_t *c) const
   { return sanitize_shallow (c); }
 
@@ -498,9 +498,9 @@ struct gvar
   public:
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     { table = hb_sanitize_context_t ().reference_table<gvar> (face); }
-    void fini () { table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     private:
     struct x_getter { static float get (const contour_point_t &p) { return p.x; } };
@@ -577,10 +577,11 @@ struct gvar
 
 	hb_bytes_t bytes ((const char *) p, length);
 	hb_vector_t<unsigned int> private_indices;
-	if (iterator.current_tuple->has_private_points () &&
+	bool has_private_points = iterator.current_tuple->has_private_points ();
+	if (has_private_points &&
 	    !GlyphVariationData::unpack_points (p, private_indices, bytes))
 	  return false;
-	const hb_array_t<unsigned int> &indices = private_indices.length ? private_indices : shared_indices;
+	const hb_array_t<unsigned int> &indices = has_private_points ? private_indices : shared_indices;
 
 	bool apply_to_all = (indices.length == 0);
 	unsigned int num_deltas = apply_to_all ? points.length : indices.length;
@@ -698,7 +699,9 @@ no_more_gaps:
   DEFINE_SIZE_MIN (20);
 };
 
-struct gvar_accelerator_t : gvar::accelerator_t {};
+struct gvar_accelerator_t : gvar::accelerator_t {
+  gvar_accelerator_t (hb_face_t *face) : gvar::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

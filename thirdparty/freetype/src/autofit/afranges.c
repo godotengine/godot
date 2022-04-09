@@ -4,7 +4,7 @@
  *
  *   Auto-fitter Unicode script ranges (body).
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

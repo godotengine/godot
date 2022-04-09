@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -181,6 +181,7 @@ void MobileVRInterface::set_position_from_sensors() {
 		orientation = rotate * orientation;
 
 		tracking_state = XRInterface::XR_NORMAL_TRACKING;
+		tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH;
 	};
 
 	///@TODO improve this, the magnetometer is very fidgety sometimes flipping the axis for no apparent reason (probably a bug on my part)
@@ -193,6 +194,7 @@ void MobileVRInterface::set_position_from_sensors() {
 		orientation = Basis(transform_quat);
 
 		tracking_state = XRInterface::XR_NORMAL_TRACKING;
+		tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH;
 	} else if (has_grav) {
 		// use gravity vector to make sure down is down...
 		// transform gravity into our world space
@@ -461,7 +463,7 @@ CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, double 
 	return eye;
 };
 
-Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<BlitToScreen> blit_to_screen;
@@ -512,7 +514,7 @@ void MobileVRInterface::process() {
 
 		if (head.is_valid()) {
 			// Set our head position, note in real space, reference frame and world scale is applied later
-			head->set_pose("default", head_transform, Vector3(), Vector3());
+			head->set_pose("default", head_transform, Vector3(), Vector3(), tracking_confidence);
 		}
 	};
 };

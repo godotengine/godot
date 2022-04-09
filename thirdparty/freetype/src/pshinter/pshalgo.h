@@ -4,7 +4,7 @@
  *
  *   PostScript hinting algorithm (specification).
  *
- * Copyright (C) 2001-2020 by
+ * Copyright (C) 2001-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -93,21 +93,17 @@ FT_BEGIN_HEADER
   typedef struct PSH_PointRec_*    PSH_Point;
   typedef struct PSH_ContourRec_*  PSH_Contour;
 
-  enum
+  typedef enum PSH_Dir_
   {
-    PSH_DIR_NONE  =  4,
-    PSH_DIR_UP    = -1,
-    PSH_DIR_DOWN  =  1,
-    PSH_DIR_LEFT  = -2,
-    PSH_DIR_RIGHT =  2
-  };
+    PSH_DIR_NONE       = 0,
+    PSH_DIR_UP         = 1,
+    PSH_DIR_DOWN       = 2,
+    PSH_DIR_VERTICAL   = 1 | 2,
+    PSH_DIR_LEFT       = 4,
+    PSH_DIR_RIGHT      = 8,
+    PSH_DIR_HORIZONTAL = 4 | 8
 
-#define PSH_DIR_HORIZONTAL  2
-#define PSH_DIR_VERTICAL    1
-
-#define PSH_DIR_COMPARE( d1, d2 )   ( (d1) == (d2) || (d1) == -(d2) )
-#define PSH_DIR_IS_HORIZONTAL( d )  PSH_DIR_COMPARE( d, PSH_DIR_HORIZONTAL )
-#define PSH_DIR_IS_VERTICAL( d )    PSH_DIR_COMPARE( d, PSH_DIR_VERTICAL )
+  } PSH_Dir;
 
 
   /* the following bit-flags are computed once by the glyph */
@@ -160,8 +156,8 @@ FT_BEGIN_HEADER
     PSH_Contour  contour;
     FT_UInt      flags;
     FT_UInt      flags2;
-    FT_Char      dir_in;
-    FT_Char      dir_out;
+    PSH_Dir      dir_in;
+    PSH_Dir      dir_out;
     PSH_Hint     hint;
     FT_Pos       org_u;
     FT_Pos       org_v;
@@ -198,10 +194,6 @@ FT_BEGIN_HEADER
     FT_Outline*        outline;
     PSH_Globals        globals;
     PSH_Hint_TableRec  hint_tables[2];
-
-    FT_Bool            vertical;
-    FT_Int             major_dir;
-    FT_Int             minor_dir;
 
     FT_Bool            do_horz_hints;
     FT_Bool            do_vert_hints;

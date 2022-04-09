@@ -416,20 +416,24 @@ TIntermTyped* TIntermediate::addUnaryMath(TOperator op, TIntermTyped* child,
     // TODO: but, did this bypass constant folding?
     //
     switch (op) {
-    case EOpConstructInt8:
-    case EOpConstructUint8:
-    case EOpConstructInt16:
-    case EOpConstructUint16:
-    case EOpConstructInt:
-    case EOpConstructUint:
-    case EOpConstructInt64:
-    case EOpConstructUint64:
-    case EOpConstructBool:
-    case EOpConstructFloat:
-    case EOpConstructDouble:
-    case EOpConstructFloat16:
-        return child;
-    default: break; // some compilers want this
+        case EOpConstructInt8:
+        case EOpConstructUint8:
+        case EOpConstructInt16:
+        case EOpConstructUint16:
+        case EOpConstructInt:
+        case EOpConstructUint:
+        case EOpConstructInt64:
+        case EOpConstructUint64:
+        case EOpConstructBool:
+        case EOpConstructFloat:
+        case EOpConstructDouble:
+        case EOpConstructFloat16: {
+            TIntermUnary* unary_node = child->getAsUnaryNode();
+            if (unary_node != nullptr)
+                unary_node->updatePrecision();
+            return child;
+        }
+        default: break; // some compilers want this
     }
 
     //
@@ -3778,6 +3782,28 @@ bool TIntermediate::promoteAggregate(TIntermAggregate& node)
 
 // Propagate precision qualifiers *up* from children to parent, and then
 // back *down* again to the children's subtrees.
+void TIntermAggregate::updatePrecision()
+{
+    if (getBasicType() == EbtInt || getBasicType() == EbtUint ||
+        getBasicType() == EbtFloat || getBasicType() == EbtFloat16) {
+        TPrecisionQualifier maxPrecision = EpqNone;
+        TIntermSequence operands = getSequence();
+        for (unsigned int i = 0; i < operands.size(); ++i) {
+            TIntermTyped* typedNode = operands[i]->getAsTyped();
+            assert(typedNode);
+            maxPrecision = std::max(maxPrecision, typedNode->getQualifier().precision);
+        }
+        getQualifier().precision = maxPrecision;
+        for (unsigned int i = 0; i < operands.size(); ++i) {
+          TIntermTyped* typedNode = operands[i]->getAsTyped();
+          assert(typedNode);
+          typedNode->propagatePrecision(maxPrecision);
+        }
+    }
+}
+
+// Propagate precision qualifiers *up* from children to parent, and then
+// back *down* again to the children's subtrees.
 void TIntermBinary::updatePrecision()
 {
      if (getBasicType() == EbtInt || getBasicType() == EbtUint ||
@@ -3876,7 +3902,7 @@ TIntermTyped* TIntermediate::promoteConstantUnion(TBasicType promoteTo, TIntermC
         case EbtFloat16: PROMOTE(setDConst, double, Get); break; \
         case EbtFloat: PROMOTE(setDConst, double, Get); break; \
         case EbtDouble: PROMOTE(setDConst, double, Get); break; \
-        case EbtInt8: PROMOTE(setI8Const, char, Get); break; \
+        case EbtInt8: PROMOTE(setI8Const, signed char, Get); break; \
         case EbtInt16: PROMOTE(setI16Const, short, Get); break; \
         case EbtInt: PROMOTE(setIConst, int, Get); break; \
         case EbtInt64: PROMOTE(setI64Const, long long, Get); break; \

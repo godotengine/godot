@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,18 @@
 #ifndef ABSTRACT_POLYGON_2D_EDITOR_H
 #define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/gui/box_container.h"
 
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-	Button *button_create;
-	Button *button_edit;
-	Button *button_delete;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
 
 	struct Vertex {
 		Vertex() {}
@@ -85,10 +85,9 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 	bool _polygon_editing_enabled;
 
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
-	ConfirmationDialog *create_resource;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	Panel *panel = nullptr;
+	ConfirmationDialog *create_resource = nullptr;
 
 protected:
 	enum {
@@ -100,7 +99,7 @@ protected:
 
 	int mode;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
@@ -144,14 +143,13 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_polygon);
-	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
+	AbstractPolygon2DEditor(bool p_wip_destructive = true);
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
-	AbstractPolygon2DEditor *polygon_editor;
-	EditorNode *editor;
+	AbstractPolygon2DEditor *polygon_editor = nullptr;
 	String klass;
 
 public:
@@ -164,7 +162,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
+	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class);
 	~AbstractPolygon2DEditorPlugin();
 };
 

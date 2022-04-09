@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
@@ -42,24 +41,25 @@
 #include "scene/gui/tree.h"
 
 class ProgressBar;
+class EditorFileDialog;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendTree> blend_tree;
-	GraphEdit *graph;
-	MenuButton *add_node;
-	Vector2 popup_menu_position;
-	bool use_popup_menu_position;
+	GraphEdit *graph = nullptr;
+	MenuButton *add_node = nullptr;
+	Vector2 position_from_popup_menu;
+	bool use_position_from_popup_menu;
 
-	PanelContainer *error_panel;
-	Label *error_label;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
-	AcceptDialog *filter_dialog;
-	Tree *filters;
-	CheckBox *filter_enabled;
+	AcceptDialog *filter_dialog = nullptr;
+	Tree *filters = nullptr;
+	CheckBox *filter_enabled = nullptr;
 
 	Map<StringName, ProgressBar *> animations;
 	Vector<EditorProperty *> visible_properties;
@@ -75,7 +75,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 		String type;
 		Ref<Script> script;
 		int input_port_count;
-		AddOption(const String &p_name = String(), const String &p_type = String(), bool p_input_port_count = 0) :
+		AddOption(const String &p_name = String(), const String &p_type = String(), int p_input_port_count = 0) :
 				name(p_name),
 				type(p_type),
 				input_port_count(p_input_port_count) {
@@ -119,7 +119,10 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _removed_from_graph();
 
-	EditorFileDialog *open_file;
+	void _update_editor_settings();
+	void _update_theme();
+
+	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScript" inherits="Script" version="4.0">
+<class name="VisualScript" inherits="Script" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A script implemented in the Visual Script programming environment.
 	</brief_description>
@@ -9,7 +9,7 @@
 		You are most likely to use this class via the Visual Script editor or when writing plugins for it.
 	</description>
 	<tutorials>
-		<link title="VisualScript documentation index">https://docs.godotengine.org/en/latest/tutorials/scripting/visual_script/index.html</link>
+		<link title="VisualScript documentation index">$DOCS_URL/tutorials/scripting/visual_script/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_signal">

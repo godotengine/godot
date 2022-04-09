@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define EDITORPLUGINSETTINGS_H
 
 #include "core/object/undo_redo.h"
+#include "editor/editor_data.h"
 #include "editor/plugin_config_dialog.h"
-#include "editor_data.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"
 
@@ -44,11 +44,11 @@ class EditorPluginSettings : public VBoxContainer {
 		BUTTON_PLUGIN_EDIT
 	};
 
-	PluginConfigDialog *plugin_config_dialog;
-	Button *create_plugin;
-	Button *update_list;
-	Tree *plugin_list;
-	bool updating;
+	PluginConfigDialog *plugin_config_dialog = nullptr;
+	Button *create_plugin = nullptr;
+	Button *update_list = nullptr;
+	Tree *plugin_list = nullptr;
+	bool updating = false;
 
 	void _plugin_activity_changed();
 	void _create_clicked();

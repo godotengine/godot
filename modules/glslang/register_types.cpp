@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,11 @@
 
 #include "servers/rendering/rendering_device.h"
 
-#include <SPIRV/GlslangToSpv.h>
-#include <StandAlone/ResourceLimits.h>
+#include "glslang_resource_limits.h"
+
 #include <glslang/Include/Types.h>
 #include <glslang/Public/ShaderLang.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
 
 static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error, const RenderingDevice::Capabilities *p_capabilities) {
 	Vector<uint8_t> ret;
@@ -120,7 +121,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		preamble += "#define has_VK_KHR_multiview 1\n";
 	}
 
-	if (preamble != "") {
+	if (!preamble.empty()) {
 		shader.setPreamble(preamble.c_str());
 	}
 
@@ -129,7 +130,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	std::string pre_processed_code;
 
 	//preprocess
-	if (!shader.preprocess(&glslang::DefaultTBuiltInResource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
+	if (!shader.preprocess(&DefaultTBuiltInResource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
 		if (r_error) {
 			(*r_error) = "Failed pre-process:\n";
 			(*r_error) += shader.getInfoLog();
@@ -144,7 +145,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	shader.setStrings(&cs_strings, 1);
 
 	//parse
-	if (!shader.parse(&glslang::DefaultTBuiltInResource, DefaultVersion, false, messages)) {
+	if (!shader.parse(&DefaultTBuiltInResource, DefaultVersion, false, messages)) {
 		if (r_error) {
 			(*r_error) = "Failed parse:\n";
 			(*r_error) += shader.getInfoLog();
@@ -190,8 +191,8 @@ static String _get_cache_key_function_glsl(const RenderingDevice::Capabilities *
 }
 
 void preregister_glslang_types() {
-	// initialize in case it's not initialized. This is done once per thread
-	// and it's safe to call multiple times
+	// Initialize in case it's not initialized. This is done once per thread
+	// and it's safe to call multiple times.
 	glslang::InitializeProcess();
 	RenderingDevice::shader_set_compile_to_spirv_function(_compile_shader_glsl);
 	RenderingDevice::shader_set_get_cache_key_function(_get_cache_key_function_glsl);

@@ -4,7 +4,7 @@
  *
  *   WOFF format management (base).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,6 +21,9 @@
 #include <freetype/internal/ftdebug.h>
 #include <freetype/internal/ftstream.h>
 #include <freetype/ftgzip.h>
+
+
+#ifdef FT_CONFIG_OPTION_USE_ZLIB
 
 
   /**************************************************************************
@@ -66,7 +69,7 @@
   }
 
 
-  FT_CALLBACK_DEF( int )
+  FT_COMPARE_DEF( int )
   compare_offsets( const void*  a,
                    const void*  b )
   {
@@ -109,7 +112,7 @@
     FT_ULong        sfnt_offset;
 
     FT_Int          nn;
-    FT_ULong        old_tag = 0;
+    FT_Tag          old_tag = 0;
 
     static const FT_Frame_Field  woff_header_fields[] =
     {
@@ -160,8 +163,8 @@
     }
 
     /* Don't trust `totalSfntSize' before thorough checks. */
-    if ( FT_ALLOC( sfnt, 12 + woff.num_tables * 16UL ) ||
-         FT_NEW( sfnt_stream )                         )
+    if ( FT_QALLOC( sfnt, 12 + woff.num_tables * 16UL ) ||
+         FT_NEW( sfnt_stream )                          )
       goto Exit;
 
     sfnt_header = sfnt;
@@ -198,9 +201,9 @@
          FT_NEW_ARRAY( indices, woff.num_tables ) )
       goto Exit;
 
-    FT_TRACE2(( "\n"
-                "  tag    offset    compLen  origLen  checksum\n"
-                "  -------------------------------------------\n" ));
+    FT_TRACE2(( "\n" ));
+    FT_TRACE2(( "  tag    offset    compLen  origLen  checksum\n" ));
+    FT_TRACE2(( "  -------------------------------------------\n" ));
 
     if ( FT_FRAME_ENTER( 20L * woff.num_tables ) )
       goto Exit;
@@ -360,8 +363,6 @@
       }
       else
       {
-#ifdef FT_CONFIG_OPTION_USE_ZLIB
-
         /* Uncompress with zlib. */
         FT_ULong  output_len = table->OrigLength;
 
@@ -377,13 +378,6 @@
           error = FT_THROW( Invalid_Table );
           goto Exit1;
         }
-
-#else /* !FT_CONFIG_OPTION_USE_ZLIB */
-
-        error = FT_THROW( Unimplemented_Feature );
-        goto Exit1;
-
-#endif /* !FT_CONFIG_OPTION_USE_ZLIB */
       }
 
       FT_FRAME_EXIT();
@@ -432,6 +426,13 @@
 
 #undef WRITE_USHORT
 #undef WRITE_ULONG
+
+#else /* !FT_CONFIG_OPTION_USE_ZLIB */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _sfwoff_dummy;
+
+#endif /* !FT_CONFIG_OPTION_USE_ZLIB */
 
 
 /* END */

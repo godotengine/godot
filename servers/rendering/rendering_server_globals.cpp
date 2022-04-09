@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,11 @@
 
 bool RenderingServerGlobals::threaded = false;
 
+RendererCanvasTextureStorage *RenderingServerGlobals::canvas_texture_storage = nullptr;
+RendererDecalAtlasStorage *RenderingServerGlobals::decal_atlas_storage = nullptr;
+RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
+RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
+RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
 RendererStorage *RenderingServerGlobals::storage = nullptr;
 RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
 RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;

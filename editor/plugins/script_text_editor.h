@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,9 @@ class ScriptTextEditor : public ScriptEditorBase {
 	bool editor_enabled = false;
 
 	Vector<String> functions;
+	List<ScriptLanguage::Warning> warnings;
+	List<ScriptLanguage::ScriptError> errors;
+	Set<int> safe_lines;
 
 	List<Connection> missing_connections;
 
@@ -154,11 +157,13 @@ protected:
 	void _breakpoint_toggled(int p_row);
 
 	void _validate_script(); // No longer virtual.
+	void _update_warnings();
+	void _update_errors();
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force);
-	void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force);
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
+	void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 
 	void _load_theme_settings();
 	void _set_theme_for_script();
@@ -233,7 +238,7 @@ public:
 
 	virtual bool show_members_overview() override;
 
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
+	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) override;
 
 	virtual void set_debugger_active(bool p_active) override;
 
@@ -249,6 +254,53 @@ public:
 
 	ScriptTextEditor();
 	~ScriptTextEditor();
+};
+
+const int KIND_COUNT = 10;
+// The order in which to sort code completion options.
+const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
+	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
+	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
+	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
+	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
+	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
+	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
+	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
+	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
+	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
+	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
+};
+
+// The custom comparer which will sort completion options.
+struct CodeCompletionOptionCompare {
+	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
+		if (l.location == r.location) {
+			// If locations are same, sort on kind
+			if (l.kind == r.kind) {
+				// If kinds are same, sort alphanumeric
+				return l.display < r.display;
+			}
+
+			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
+			int l_index = -1;
+			int r_index = -1;
+			for (int i = 0; i < KIND_COUNT; i++) {
+				const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
+				l_index = kind == l.kind ? i : l_index;
+				r_index = kind == r.kind ? i : r_index;
+
+				if (l_index != -1 && r_index != -1) {
+					return l_index < r_index;
+				}
+			}
+
+			// This return should never be hit unless something goes wrong.
+			// l and r should always have a Kind which is in the sort order array.
+			return l.display < r.display;
+		}
+
+		return l.location < r.location;
+	}
 };
 
 #endif // SCRIPT_TEXT_EDITOR_H

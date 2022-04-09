@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,7 +98,7 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	Error err = get_partial_data(&w[0], p_bytes, received);
 
 	if (err != OK) {
-		data.resize(0);
+		data.clear();
 	} else if (received != data.size()) {
 		data.resize(received);
 	}
@@ -563,7 +563,7 @@ Vector<uint8_t> StreamPeerBuffer::get_data_array() const {
 }
 
 void StreamPeerBuffer::clear() {
-	data.resize(0);
+	data.clear();
 	pointer = 0;
 }
 

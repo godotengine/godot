@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,27 +31,32 @@
 #include "canvas_modulate.h"
 
 void CanvasModulate::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_CANVAS) {
-		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
-			add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			if (is_visible_in_tree()) {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+				add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			}
+		} break;
 
-	} else if (p_what == NOTIFICATION_EXIT_CANVAS) {
-		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
-			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		}
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
-			add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		} else {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
-			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		}
+		case NOTIFICATION_EXIT_CANVAS: {
+			if (is_visible_in_tree()) {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+				remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			}
+		} break;
 
-		update_configuration_warnings();
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+				add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			} else {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+				remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			}
+
+			update_configuration_warnings();
+		} break;
 	}
 }
 
@@ -81,7 +86,7 @@ TypedArray<String> CanvasModulate::get_configuration_warnings() const {
 		get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
 
 		if (nodes.size() > 1) {
-			warnings.push_back(TTR("Only one visible CanvasModulate is allowed per scene (or set of instantiated scenes). The first created one will work, while the rest will be ignored."));
+			warnings.push_back(RTR("Only one visible CanvasModulate is allowed per scene (or set of instantiated scenes). The first created one will work, while the rest will be ignored."));
 		}
 	}
 

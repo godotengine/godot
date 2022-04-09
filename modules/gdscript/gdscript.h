@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,7 @@ public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
 	Variant _new();
 	Object *instantiate();
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	GDScriptNativeClass(const StringName &p_name);
 };
 
@@ -166,7 +167,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	static void _bind_methods();
 
@@ -212,7 +213,7 @@ public:
 	virtual void update_exports() override;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		return docs;
 	}
 #endif // TOOLS_ENABLED
@@ -265,7 +266,7 @@ class GDScriptInstance : public ScriptInstance {
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
-	Object *owner;
+	Object *owner = nullptr;
 	Ref<GDScript> script;
 #ifdef DEBUG_ENABLED
 	Map<StringName, int> member_indices_cache; //used only for hot script reloading
@@ -285,7 +286,7 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
@@ -311,17 +312,17 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
 
-	Variant *_global_array;
+	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	Map<StringName, int> globals;
 	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
-		Variant *stack;
-		GDScriptFunction *function;
-		GDScriptInstance *instance;
-		int *ip;
-		int *line;
+		Variant *stack = nullptr;
+		GDScriptFunction *function = nullptr;
+		GDScriptInstance *instance = nullptr;
+		int *ip = nullptr;
+		int *line = nullptr;
 	};
 
 	int _debug_parse_err_line;
@@ -329,7 +330,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	String _debug_error;
 	int _debug_call_stack_pos;
 	int _debug_max_call_stack;
-	CallLevel *_call_stack;
+	CallLevel *_call_stack = nullptr;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 
@@ -396,7 +397,7 @@ public:
 		_debug_call_stack_pos--;
 	}
 
-	virtual Vector<StackInfo> debug_get_current_stack_info() {
+	virtual Vector<StackInfo> debug_get_current_stack_info() override {
 		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return Vector<StackInfo>();
 		}
@@ -430,77 +431,76 @@ public:
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	/* LANGUAGE FUNCTIONS */
-	virtual void init();
-	virtual String get_type() const;
-	virtual String get_extension() const;
-	virtual Error execute_file(const String &p_path);
-	virtual void finish();
+	virtual void init() override;
+	virtual String get_type() const override;
+	virtual String get_extension() const override;
+	virtual Error execute_file(const String &p_path) override;
+	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
-	virtual void get_reserved_words(List<String> *p_words) const;
-	virtual bool is_control_flow_keyword(String p_keywords) const;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const;
-	virtual String _get_processed_template(const String &p_template, const String &p_base_class_name) const;
-	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
-	virtual bool is_using_templates();
-	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
-	virtual Script *create_script() const;
-	virtual bool has_named_classes() const;
-	virtual bool supports_builtin_mode() const;
-	virtual bool supports_documentation() const;
-	virtual bool can_inherit_from_file() const { return true; }
-	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint);
+	virtual void get_reserved_words(List<String> *p_words) const override;
+	virtual bool is_control_flow_keyword(String p_keywords) const override;
+	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
+	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
+	virtual bool is_using_templates() override;
+	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override;
+	virtual Script *create_script() const override;
+	virtual bool has_named_classes() const override;
+	virtual bool supports_builtin_mode() const override;
+	virtual bool supports_documentation() const override;
+	virtual bool can_inherit_from_file() const override { return true; }
+	virtual int find_function(const String &p_function, const String &p_code) const override;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
 #ifdef TOOLS_ENABLED
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result);
+	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 #endif
 	virtual String _get_indentation() const;
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
-	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
-	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value);
-	virtual void remove_named_global_constant(const StringName &p_name);
+	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override;
+	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
+	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
+	virtual void remove_named_global_constant(const StringName &p_name) override;
 
 	/* DEBUGGER FUNCTIONS */
 
-	virtual String debug_get_error() const;
-	virtual int debug_get_stack_level_count() const;
-	virtual int debug_get_stack_level_line(int p_level) const;
-	virtual String debug_get_stack_level_function(int p_level) const;
-	virtual String debug_get_stack_level_source(int p_level) const;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
-	virtual ScriptInstance *debug_get_stack_level_instance(int p_level);
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
-	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1);
+	virtual String debug_get_error() const override;
+	virtual int debug_get_stack_level_count() const override;
+	virtual int debug_get_stack_level_line(int p_level) const override;
+	virtual String debug_get_stack_level_function(int p_level) const override;
+	virtual String debug_get_stack_level_source(int p_level) const override;
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override;
+	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
 
-	virtual void reload_all_scripts();
-	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);
+	virtual void reload_all_scripts() override;
+	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
-	virtual void frame();
+	virtual void frame() override;
 
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
+	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
 
-	virtual void profiling_start();
-	virtual void profiling_stop();
+	virtual void profiling_start() override;
+	virtual void profiling_stop() override;
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max);
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max);
+	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
+	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 
 	/* GLOBAL CLASSES */
 
-	virtual bool handles_global_class_type(const String &p_type) const;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const;
+	virtual bool handles_global_class_type(const String &p_type) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
 
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);

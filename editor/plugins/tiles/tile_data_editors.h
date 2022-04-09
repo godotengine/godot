@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,7 @@
 
 #include "tile_atlas_view.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -94,7 +92,8 @@ private:
 	LocalVector<Vector<Point2>> polygons;
 	bool multiple_polygon_mode = false;
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	bool use_undo_redo = true;
+	UndoRedo *editor_undo_redo = nullptr;
 
 	// UI
 	int hovered_polygon_index = -1;
@@ -108,26 +107,26 @@ private:
 		DRAG_TYPE_CREATE_POINT,
 		DRAG_TYPE_PAN,
 	};
-	DragType drag_type;
+	DragType drag_type = DRAG_TYPE_NONE;
 	int drag_polygon_index;
 	int drag_point_index;
 	Vector2 drag_last_pos;
 	PackedVector2Array drag_old_polygon;
 
-	HBoxContainer *toolbar;
+	HBoxContainer *toolbar = nullptr;
 	Ref<ButtonGroup> tools_button_group;
-	Button *button_create;
-	Button *button_edit;
-	Button *button_delete;
-	Button *button_pixel_snap;
-	MenuButton *button_advanced_menu;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
+	Button *button_pixel_snap = nullptr;
+	MenuButton *button_advanced_menu = nullptr;
 
 	Vector<Point2> in_creation_polygon;
 
-	Panel *panel;
-	Control *base_control;
-	EditorZoomWidget *editor_zoom_widget;
-	Button *button_center_view;
+	Panel *panel = nullptr;
+	Control *base_control = nullptr;
+	EditorZoomWidget *editor_zoom_widget = nullptr;
+	Button *button_center_view = nullptr;
 	Vector2 panning;
 
 	Ref<Texture2D> background_texture;
@@ -143,6 +142,10 @@ private:
 	enum AdvancedMenuOption {
 		RESET_TO_DEFAULT_TILE,
 		CLEAR_TILE,
+		ROTATE_RIGHT,
+		ROTATE_LEFT,
+		FLIP_HORIZONTALLY,
+		FLIP_VERTICALLY,
 	};
 
 	void _base_control_draw();
@@ -161,6 +164,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_use_undo_redo(bool p_use_undo_redo);
+
 	void set_tile_set(Ref<TileSet> p_tile_set);
 	void set_background(Ref<Texture2D> p_texture, Rect2 p_region = Rect2(), Vector2 p_offset = Vector2(), bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, Color p_modulate = Color(1.0, 1.0, 1.0, 0.0));
 
@@ -183,12 +188,12 @@ class TileDataDefaultEditor : public TileDataEditor {
 private:
 	// Toolbar
 	HBoxContainer *toolbar = memnew(HBoxContainer);
-	Button *picker_button;
+	Button *picker_button = nullptr;
 
 	// UI
 	Ref<Texture2D> tile_bool_checked;
 	Ref<Texture2D> tile_bool_unchecked;
-	Label *label;
+	Label *label = nullptr;
 
 	EditorProperty *property_editor = nullptr;
 
@@ -209,7 +214,7 @@ private:
 protected:
 	DummyObject *dummy_object = memnew(DummyObject);
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	StringName type;
 	String property;
@@ -263,7 +268,7 @@ private:
 	int occlusion_layer = -1;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor;
+	GenericTilePolygonEditor *polygon_editor = nullptr;
 
 	void _polygon_changed(PackedVector2Array p_polygon);
 
@@ -274,7 +279,7 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _tile_set_changed() override;
 
@@ -294,11 +299,12 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	int physics_layer = -1;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor;
+	GenericTilePolygonEditor *polygon_editor = nullptr;
 	DummyObject *dummy_object = memnew(DummyObject);
 	Map<StringName, EditorProperty *> property_editors;
 
 	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
+	void _property_selected(StringName p_path, int p_focusable);
 	void _polygons_changed();
 
 	virtual Variant _get_painted_value() override;
@@ -308,7 +314,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _tile_set_changed() override;
 
@@ -329,7 +335,7 @@ class TileDataTerrainsEditor : public TileDataEditor {
 private:
 	// Toolbar
 	HBoxContainer *toolbar = memnew(HBoxContainer);
-	Button *picker_button;
+	Button *picker_button = nullptr;
 
 	// Painting state.
 	enum DragType {
@@ -346,7 +352,7 @@ private:
 	Variant drag_painted_value;
 
 	// UI
-	Label *label;
+	Label *label = nullptr;
 	DummyObject *dummy_object = memnew(DummyObject);
 	EditorPropertyEnum *terrain_set_property_editor = nullptr;
 	EditorPropertyEnum *terrain_property_editor = nullptr;
@@ -360,7 +366,7 @@ protected:
 
 	void _notification(int p_what);
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 public:
 	virtual Control *get_toolbar() override { return toolbar; };
@@ -382,7 +388,7 @@ private:
 	PackedVector2Array navigation_polygon;
 
 	// UI
-	GenericTilePolygonEditor *polygon_editor;
+	GenericTilePolygonEditor *polygon_editor = nullptr;
 
 	void _polygon_changed(PackedVector2Array p_polygon);
 
@@ -393,7 +399,7 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void _tile_set_changed() override;
 

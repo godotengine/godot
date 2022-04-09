@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,31 +43,32 @@
 class GroupDialog : public AcceptDialog {
 	GDCLASS(GroupDialog, AcceptDialog);
 
-	ConfirmationDialog *error;
+	ConfirmationDialog *error = nullptr;
 
-	SceneTree *scene_tree;
-	TreeItem *groups_root;
+	SceneTree *scene_tree = nullptr;
+	TreeItem *groups_root = nullptr;
 
-	LineEdit *add_group_text;
+	LineEdit *add_group_text = nullptr;
+	Button *add_group_button = nullptr;
 
-	Tree *groups;
+	Tree *groups = nullptr;
 
-	Tree *nodes_to_add;
-	TreeItem *add_node_root;
-	LineEdit *add_filter;
+	Tree *nodes_to_add = nullptr;
+	TreeItem *add_node_root = nullptr;
+	LineEdit *add_filter = nullptr;
 
-	Tree *nodes_to_remove;
-	TreeItem *remove_node_root;
-	LineEdit *remove_filter;
+	Tree *nodes_to_remove = nullptr;
+	TreeItem *remove_node_root = nullptr;
+	LineEdit *remove_filter = nullptr;
 
-	Label *group_empty;
+	Label *group_empty = nullptr;
 
-	Button *add_button;
-	Button *remove_button;
+	Button *add_button = nullptr;
+	Button *remove_button = nullptr;
 
 	String selected_group;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void _group_selected();
 
@@ -77,6 +78,7 @@ class GroupDialog : public AcceptDialog {
 	void _add_pressed();
 	void _removed_pressed();
 	void _add_group_pressed(const String &p_name);
+	void _add_group_text_changed(const String &p_new_text);
 
 	void _group_renamed();
 	void _rename_group_item(const String &p_old_name, const String &p_new_name);
@@ -109,19 +111,20 @@ public:
 class GroupsEditor : public VBoxContainer {
 	GDCLASS(GroupsEditor, VBoxContainer);
 
-	Node *node;
+	Node *node = nullptr;
 
-	GroupDialog *group_dialog;
+	GroupDialog *group_dialog = nullptr;
 
-	LineEdit *group_name;
-	Button *add;
-	Tree *tree;
+	LineEdit *group_name = nullptr;
+	Button *add = nullptr;
+	Tree *tree = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void update_tree();
 	void _add_group(const String &p_group = "");
 	void _modify_group(Object *p_item, int p_column, int p_id);
+	void _group_name_changed(const String &p_new_text);
 
 	void _show_group_dialog();
 

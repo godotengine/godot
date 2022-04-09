@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -185,6 +185,9 @@ void GodotBody2D::set_param(PhysicsServer2D::BodyParameter p_param, const Varian
 			_update_transform_dependent();
 		} break;
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
+			if (Math::is_zero_approx(gravity_scale)) {
+				wakeup();
+			}
 			gravity_scale = p_value;
 		} break;
 		case PhysicsServer2D::BODY_PARAM_LINEAR_DAMP_MODE: {
@@ -546,6 +549,9 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 
 	gravity *= gravity_scale;
 
+	prev_linear_velocity = linear_velocity;
+	prev_angular_velocity = angular_velocity;
+
 	Vector2 motion;
 	bool do_motion = false;
 
@@ -563,9 +569,8 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		if (!omit_force_integration) {
 			//overridden by direct state query
 
-			Vector2 force = gravity * mass;
-			force += applied_force;
-			real_t torque = applied_torque;
+			Vector2 force = gravity * mass + applied_force + constant_force;
+			real_t torque = applied_torque + constant_torque;
 
 			real_t damp = 1.0 - p_step * total_linear_damp;
 
@@ -592,7 +597,10 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		}
 	}
 
-	biased_angular_velocity = 0;
+	applied_force = Vector2();
+	applied_torque = 0.0;
+
+	biased_angular_velocity = 0.0;
 	biased_linear_velocity = Vector2();
 
 	if (do_motion) { //shapes temporarily extend for raycast

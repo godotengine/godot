@@ -532,13 +532,21 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_put_label(struct sljit_put_label *put_la
 		put_label->label = label;
 }
 
+#define SLJIT_CURRENT_FLAGS_ALL \
+	(SLJIT_CURRENT_FLAGS_I32_OP | SLJIT_CURRENT_FLAGS_ADD_SUB | SLJIT_CURRENT_FLAGS_COMPARE)
+
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_current_flags(struct sljit_compiler *compiler, sljit_s32 current_flags)
 {
 	SLJIT_UNUSED_ARG(compiler);
 	SLJIT_UNUSED_ARG(current_flags);
 
+#if (defined SLJIT_HAS_STATUS_FLAGS_STATE && SLJIT_HAS_STATUS_FLAGS_STATE)
+	compiler->status_flags_state = current_flags;
+#endif
+
 #if (defined SLJIT_ARGUMENT_CHECKS && SLJIT_ARGUMENT_CHECKS)
-	if ((current_flags & ~(VARIABLE_FLAG_MASK | SLJIT_I32_OP | SLJIT_SET_Z)) == 0) {
+	compiler->last_flags = 0;
+	if ((current_flags & ~(VARIABLE_FLAG_MASK | SLJIT_SET_Z | SLJIT_CURRENT_FLAGS_ALL)) == 0) {
 		compiler->last_flags = GET_FLAG_TYPE(current_flags) | (current_flags & (SLJIT_I32_OP | SLJIT_SET_Z));
 	}
 #endif
@@ -968,7 +976,7 @@ static const char* fop2_names[] = {
 };
 
 #define JUMP_POSTFIX(type) \
-	((type & 0xff) <= SLJIT_MUL_NOT_OVERFLOW ? ((type & SLJIT_I32_OP) ? "32" : "") \
+	((type & 0xff) <= SLJIT_NOT_OVERFLOW ? ((type & SLJIT_I32_OP) ? "32" : "") \
 	: ((type & 0xff) <= SLJIT_ORDERED_F64 ? ((type & SLJIT_F32_OP) ? ".f32" : ".f64") : ""))
 
 static char* jump_names[] = {
@@ -978,7 +986,6 @@ static char* jump_names[] = {
 	(char*)"sig_less", (char*)"sig_greater_equal",
 	(char*)"sig_greater", (char*)"sig_less_equal",
 	(char*)"overflow", (char*)"not_overflow",
-	(char*)"mul_overflow", (char*)"mul_not_overflow",
 	(char*)"carry", (char*)"",
 	(char*)"equal", (char*)"not_equal",
 	(char*)"less", (char*)"greater_equal",
@@ -1278,7 +1285,7 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_op2(struct sljit_compiler
 	case SLJIT_MUL:
 		CHECK_ARGUMENT(!(op & SLJIT_SET_Z));
 		CHECK_ARGUMENT(!(op & VARIABLE_FLAG_MASK)
-			|| GET_FLAG_TYPE(op) == SLJIT_MUL_OVERFLOW);
+			|| GET_FLAG_TYPE(op) == SLJIT_OVERFLOW);
 		break;
 	case SLJIT_ADD:
 		CHECK_ARGUMENT(!(op & VARIABLE_FLAG_MASK)
@@ -1601,9 +1608,7 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_jump(struct sljit_compile
 			CHECK_ARGUMENT(compiler->last_flags & SLJIT_SET_Z);
 		else
 			CHECK_ARGUMENT((type & 0xff) == (compiler->last_flags & 0xff)
-				|| ((type & 0xff) == SLJIT_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_OVERFLOW)
-				|| ((type & 0xff) == SLJIT_MUL_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_MUL_OVERFLOW));
-		CHECK_ARGUMENT((type & SLJIT_I32_OP) == (compiler->last_flags & SLJIT_I32_OP));
+				|| ((type & 0xff) == SLJIT_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_OVERFLOW));
 	}
 #endif
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
@@ -1818,8 +1823,7 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_op_flags(struct sljit_com
 		CHECK_ARGUMENT(compiler->last_flags & SLJIT_SET_Z);
 	else
 		CHECK_ARGUMENT((type & 0xff) == (compiler->last_flags & 0xff)
-			|| ((type & 0xff) == SLJIT_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_OVERFLOW)
-			|| ((type & 0xff) == SLJIT_MUL_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_MUL_OVERFLOW));
+			|| ((type & 0xff) == SLJIT_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_OVERFLOW));
 
 	FUNCTION_CHECK_DST(dst, dstw, 0);
 
@@ -1858,8 +1862,7 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_cmov(struct sljit_compile
 		CHECK_ARGUMENT(compiler->last_flags & SLJIT_SET_Z);
 	else
 		CHECK_ARGUMENT((type & 0xff) == (compiler->last_flags & 0xff)
-			|| ((type & 0xff) == SLJIT_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_OVERFLOW)
-			|| ((type & 0xff) == SLJIT_MUL_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_MUL_OVERFLOW));
+			|| ((type & 0xff) == SLJIT_NOT_OVERFLOW && (compiler->last_flags & 0xff) == SLJIT_OVERFLOW));
 #endif
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	if (SLJIT_UNLIKELY(!!compiler->verbose)) {

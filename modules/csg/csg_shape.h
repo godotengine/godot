@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,13 +52,14 @@ public:
 
 private:
 	Operation operation = OPERATION_UNION;
-	CSGShape3D *parent = nullptr;
+	CSGShape3D *parent_shape = nullptr;
 
 	CSGBrush *brush = nullptr;
 
 	AABB node_aabb;
 
 	bool dirty = false;
+	bool last_visible = false;
 	float snap = 0.001;
 
 	bool use_collision = false;
@@ -104,11 +105,12 @@ private:
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _update_shape();
+	void _update_collision_faces();
 
 protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
-	void _make_dirty();
+	void _make_dirty(bool p_parent_removing = false);
 
 	static void _bind_methods();
 
@@ -126,7 +128,6 @@ public:
 	virtual Vector<Vector3> get_brush_faces();
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
@@ -239,7 +240,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
-	Vector3 size = Vector3(2, 2, 2);
+	Vector3 size = Vector3(1, 1, 1);
 
 protected:
 	static void _bind_methods();
@@ -367,7 +368,7 @@ private:
 	PathRotation path_rotation;
 	bool path_local;
 
-	Path3D *path;
+	Path3D *path = nullptr;
 
 	bool smooth_faces;
 	bool path_continuous_u;

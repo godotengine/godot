@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +66,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_GLES_version_code = p_env->GetMethodID(godot_class, "getGLESVersionCode", "()I");
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
+	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
@@ -76,6 +77,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
+	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)V");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
@@ -91,8 +93,9 @@ jobject GodotJavaWrapper::get_activity() {
 
 jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_class, JNIEnv *p_env) {
 	if (godot_class) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 
 		ERR_FAIL_COND_V(p_env == nullptr, nullptr);
 
@@ -128,8 +131,9 @@ GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
 
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _on_video_init);
@@ -157,8 +161,9 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	if (_restart) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _restart);
@@ -167,8 +172,9 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 
 void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
 	if (_finish) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _finish);
@@ -245,6 +251,21 @@ void GodotJavaWrapper::set_clipboard(const String &p_text) {
 
 		jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _set_clipboard, jStr);
+	}
+}
+
+bool GodotJavaWrapper::has_has_clipboard() {
+	return _has_clipboard != 0;
+}
+
+bool GodotJavaWrapper::has_clipboard() {
+	if (_has_clipboard) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+
+		return env->CallBooleanMethod(godot_instance, _has_clipboard);
+	} else {
+		return false;
 	}
 }
 
@@ -329,5 +350,18 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 		ERR_FAIL_COND(env == nullptr);
 
 		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
+	}
+}
+
+void GodotJavaWrapper::create_new_godot_instance(List<String> args) {
+	if (_create_new_godot_instance) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+
+		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+		for (int i = 0; i < args.size(); i++) {
+			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
+		}
+		env->CallVoidMethod(godot_instance, _create_new_godot_instance, jargs);
 	}
 }

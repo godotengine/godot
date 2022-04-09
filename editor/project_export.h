@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "editor/editor_export.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_properties.h"
@@ -53,53 +52,52 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-class EditorNode;
+class EditorFileDialog;
 
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
 private:
-	TabContainer *sections;
+	TabContainer *sections = nullptr;
 
-	MenuButton *add_preset;
-	Button *duplicate_preset;
-	Button *delete_preset;
-	ItemList *presets;
+	MenuButton *add_preset = nullptr;
+	Button *duplicate_preset = nullptr;
+	Button *delete_preset = nullptr;
+	ItemList *presets = nullptr;
 
-	LineEdit *name;
-	EditorPropertyPath *export_path;
-	EditorInspector *parameters;
-	CheckButton *runnable;
+	LineEdit *name = nullptr;
+	EditorPropertyPath *export_path = nullptr;
+	EditorInspector *parameters = nullptr;
+	CheckButton *runnable = nullptr;
 
-	Button *button_export;
-	bool updating;
+	Button *button_export = nullptr;
+	bool updating = false;
 
-	AcceptDialog *error_dialog;
-	ConfirmationDialog *delete_confirm;
+	AcceptDialog *error_dialog = nullptr;
+	ConfirmationDialog *delete_confirm = nullptr;
 
-	OptionButton *export_filter;
-	LineEdit *include_filters;
-	LineEdit *exclude_filters;
-	Tree *include_files;
+	OptionButton *export_filter = nullptr;
+	LineEdit *include_filters = nullptr;
+	LineEdit *exclude_filters = nullptr;
+	Tree *include_files = nullptr;
 
-	Label *include_label;
-	MarginContainer *include_margin;
+	Label *include_label = nullptr;
+	MarginContainer *include_margin = nullptr;
 
-	StringName editor_icons;
+	Button *export_button = nullptr;
+	Button *export_all_button = nullptr;
+	AcceptDialog *export_all_dialog = nullptr;
 
-	Button *export_button;
-	Button *export_all_button;
-	AcceptDialog *export_all_dialog;
+	LineEdit *custom_features = nullptr;
+	RichTextLabel *custom_feature_display = nullptr;
 
-	LineEdit *custom_features;
-	RichTextLabel *custom_feature_display;
+	OptionButton *script_mode = nullptr;
+	LineEdit *script_key = nullptr;
+	Label *script_key_error = nullptr;
 
-	OptionButton *script_mode;
-	LineEdit *script_key;
-	Label *script_key_error;
-
-	Label *export_error;
-	HBoxContainer *export_templates_error;
+	Label *export_error = nullptr;
+	Label *export_warning = nullptr;
+	HBoxContainer *export_templates_error = nullptr;
 
 	String default_filename;
 
@@ -123,22 +121,21 @@ private:
 	void _fill_resource_tree();
 	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes);
 	void _tree_changed();
-	void _check_dir_recursive(TreeItem *p_dir, bool p_checked);
-	void _refresh_parent_checks(TreeItem *p_item);
+	void _check_propagated_to_item(Object *p_obj, int column);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	EditorFileDialog *export_pck_zip;
-	EditorFileDialog *export_project;
-	CheckBox *export_debug;
-	CheckBox *export_pck_zip_debug;
+	EditorFileDialog *export_pck_zip = nullptr;
+	EditorFileDialog *export_project = nullptr;
+	CheckBox *export_debug = nullptr;
+	CheckBox *export_pck_zip_debug = nullptr;
 
-	CheckButton *enc_pck;
-	CheckButton *enc_directory;
-	LineEdit *enc_in_filters;
-	LineEdit *enc_ex_filters;
+	CheckButton *enc_pck = nullptr;
+	CheckButton *enc_directory = nullptr;
+	LineEdit *enc_in_filters = nullptr;
+	LineEdit *enc_ex_filters = nullptr;
 
 	void _open_export_template_manager();
 
@@ -155,8 +152,8 @@ private:
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);
 
-	bool updating_script_key;
-	bool updating_enc_filters;
+	bool updating_script_key = false;
+	bool updating_enc_filters = false;
 	void _enc_pck_changed(bool p_pressed);
 	void _enc_directory_changed(bool p_pressed);
 	void _enc_filters_changed(const String &p_text);

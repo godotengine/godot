@@ -335,7 +335,7 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
     io->scaled_width = io->width;
     io->scaled_height = io->height;
 
-    io->mb_w = io->width;   // sanity check
+    io->mb_w = io->width;   // for soundness
     io->mb_h = io->height;  // ditto
 
     VP8ResetProba(&dec->proba_);
@@ -403,7 +403,7 @@ static const uint8_t kZigzag[16] = {
   0, 1, 4, 8,  5, 2, 3, 6,  9, 12, 13, 10,  7, 11, 14, 15
 };
 
-// See section 13-2: http://tools.ietf.org/html/rfc6386#section-13.2
+// See section 13-2: https://datatracker.ietf.org/doc/html/rfc6386#section-13.2
 static int GetLargeValue(VP8BitReader* const br, const uint8_t* const p) {
   int v;
   if (!VP8GetBit(br, p[3], "coeffs")) {
@@ -494,13 +494,11 @@ static int GetCoeffsAlt(VP8BitReader* const br,
   return 16;
 }
 
-static WEBP_TSAN_IGNORE_FUNCTION void InitGetCoeffs(void) {
-  if (GetCoeffs == NULL) {
-    if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
-      GetCoeffs = GetCoeffsAlt;
-    } else {
-      GetCoeffs = GetCoeffsFast;
-    }
+WEBP_DSP_INIT_FUNC(InitGetCoeffs) {
+  if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
+    GetCoeffs = GetCoeffsAlt;
+  } else {
+    GetCoeffs = GetCoeffsFast;
   }
 }
 

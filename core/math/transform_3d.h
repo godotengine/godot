@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRANSFORM_H
-#define TRANSFORM_H
+#ifndef TRANSFORM_3D_H
+#define TRANSFORM_3D_H
 
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/plane.h"
 
-class Transform3D {
-public:
+struct _NO_DISCARD_ Transform3D {
 	Basis basis;
 	Vector3 origin;
 
@@ -69,6 +68,8 @@ public:
 
 	void orthonormalize();
 	Transform3D orthonormalized() const;
+	void orthogonalize();
+	Transform3D orthogonalized() const;
 	bool is_equal_approx(const Transform3D &p_transform) const;
 
 	bool operator==(const Transform3D &p_transform) const;
@@ -99,6 +100,7 @@ public:
 	void operator*=(const real_t p_val);
 	Transform3D operator*(const real_t p_val) const;
 
+	Transform3D sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {
@@ -262,4 +264,4 @@ _FORCE_INLINE_ Plane Transform3D::xform_inv_fast(const Plane &p_plane, const Tra
 	return Plane(normal, d);
 }
 
-#endif // TRANSFORM_H
+#endif // TRANSFORM_3D_H

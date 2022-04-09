@@ -4,7 +4,7 @@
  *
  *   FreeType sbits manager (body).
  *
- * Copyright (C) 2000-2020 by
+ * Copyright (C) 2000-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -52,10 +52,8 @@
       pitch = -pitch;
 
     size = (FT_ULong)pitch * bitmap->rows;
-    if ( !size )
-      return FT_Err_Ok;
 
-    if ( !FT_ALLOC( sbit->buffer, size ) )
+    if ( !FT_QALLOC( sbit->buffer, size ) )
       FT_MEM_COPY( sbit->buffer, bitmap->buffer, size );
 
     return error;
@@ -108,13 +106,12 @@
     FT_Error          error;
     FTC_GNode         gnode  = FTC_GNODE( snode );
     FTC_Family        family = gnode->family;
-    FT_Memory         memory = manager->memory;
     FT_Face           face;
     FTC_SBit          sbit;
     FTC_SFamilyClass  clazz;
 
 
-    if ( (FT_UInt)(gindex - gnode->gindex) >= snode->count )
+    if ( gindex - gnode->gindex >= snode->count )
     {
       FT_ERROR(( "ftc_snode_load: invalid glyph index" ));
       return FT_THROW( Invalid_Argument );
@@ -122,8 +119,6 @@
 
     sbit  = snode->sbits + ( gindex - gnode->gindex );
     clazz = (FTC_SFamilyClass)family->clazz;
-
-    sbit->buffer = 0;
 
     error = clazz->family_load_glyph( family, gindex, manager, &face );
     if ( error )
@@ -143,12 +138,13 @@
         goto BadGlyph;
       }
 
-      /* Check whether our values fit into 8-bit containers!    */
+      /* Check whether our values fit into 8/16-bit containers! */
       /* If this is not the case, our bitmap is too large       */
       /* and we will leave it as `missing' with sbit.buffer = 0 */
 
 #define CHECK_CHAR( d )  ( temp = (FT_Char)d, (FT_Int) temp == (FT_Int) d )
 #define CHECK_BYTE( d )  ( temp = (FT_Byte)d, (FT_UInt)temp == (FT_UInt)d )
+#define CHECK_SHRT( d )  ( temp = (FT_Short)d, (FT_Int)temp == (FT_Int) d )
 
       /* horizontal advance in pixels */
       xadvance = ( slot->advance.x + 32 ) >> 6;
@@ -156,7 +152,7 @@
 
       if ( !CHECK_BYTE( bitmap->rows  )     ||
            !CHECK_BYTE( bitmap->width )     ||
-           !CHECK_CHAR( bitmap->pitch )     ||
+           !CHECK_SHRT( bitmap->pitch )     ||
            !CHECK_CHAR( slot->bitmap_left ) ||
            !CHECK_CHAR( slot->bitmap_top  ) ||
            !CHECK_CHAR( xadvance )          ||
@@ -169,7 +165,7 @@
 
       sbit->width     = (FT_Byte)bitmap->width;
       sbit->height    = (FT_Byte)bitmap->rows;
-      sbit->pitch     = (FT_Char)bitmap->pitch;
+      sbit->pitch     = (FT_Short)bitmap->pitch;
       sbit->left      = (FT_Char)slot->bitmap_left;
       sbit->top       = (FT_Char)slot->bitmap_top;
       sbit->xadvance  = (FT_Char)xadvance;
@@ -177,8 +173,17 @@
       sbit->format    = (FT_Byte)bitmap->pixel_mode;
       sbit->max_grays = (FT_Byte)(bitmap->num_grays - 1);
 
-      /* copy the bitmap into a new buffer -- ignore error */
-      error = ftc_sbit_copy_bitmap( sbit, bitmap, memory );
+      if ( slot->internal->flags & FT_GLYPH_OWN_BITMAP )
+      {
+        /* take the bitmap ownership */
+        sbit->buffer = bitmap->buffer;
+        slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
+      }
+      else
+      {
+        /* copy the bitmap into a new buffer -- ignore error */
+        error = ftc_sbit_copy_bitmap( sbit, bitmap, manager->memory );
+      }
 
       /* now, compute size */
       if ( asize )
@@ -337,8 +342,8 @@
 
     if (list_changed)
       *list_changed = FALSE;
-    result = FT_BOOL( gnode->family == gquery->family                    &&
-                      (FT_UInt)( gindex - gnode->gindex ) < snode->count );
+    result = FT_BOOL( gnode->family == gquery->family       &&
+                      gindex - gnode->gindex < snode->count );
     if ( result )
     {
       /* check if we need to load the glyph bitmap now */
@@ -390,7 +395,7 @@
         {
           error = ftc_snode_load( snode, cache->manager, gindex, &size );
         }
-        FTC_CACHE_TRYLOOP_END( list_changed );
+        FTC_CACHE_TRYLOOP_END( list_changed )
 
         ftcsnode->ref_count--;  /* unlock the node */
 

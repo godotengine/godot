@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
@@ -95,8 +94,8 @@ Dictionary Engine::get_version_info() const {
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
 
-	String hash = VERSION_HASH;
-	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
+	String hash = String(VERSION_HASH);
+	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -184,6 +183,10 @@ String Engine::get_license_text() const {
 
 bool Engine::is_abort_on_gpu_errors_enabled() const {
 	return abort_on_gpu_errors;
+}
+
+int32_t Engine::get_gpu_index() const {
+	return gpu_idx;
 }
 
 bool Engine::is_validation_layers_enabled() const {

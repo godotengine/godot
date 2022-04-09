@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationAgent3D" inherits="Node" version="4.0">
+<class name="NavigationAgent3D" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		3D Agent used in navigation for collision avoidance.
 	</brief_description>
@@ -95,6 +95,9 @@
 		</member>
 		<member name="max_speed" type="float" setter="set_max_speed" getter="get_max_speed" default="10.0">
 			The maximum speed that an agent can move.
+		</member>
+		<member name="navigable_layers" type="int" setter="set_navigable_layers" getter="get_navigable_layers" default="1">
+			A bitfield determining what layers of navigation regions this agent will use to calculate path. Changing it runtime will clear current navigation path and generate new one, according to new layers.
 		</member>
 		<member name="neighbor_dist" type="float" setter="set_neighbor_dist" getter="get_neighbor_dist" default="50.0">
 			The distance to search for other agents.

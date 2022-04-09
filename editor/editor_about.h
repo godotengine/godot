@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef EDITOR_ABOUT_H
 #define EDITOR_ABOUT_H
 
-#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
@@ -43,7 +42,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.
@@ -57,11 +56,11 @@ private:
 	void _version_button_pressed();
 	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column = 0);
 
-	LinkButton *version_btn;
-	Tree *_tpl_tree;
-	RichTextLabel *_license_text;
-	RichTextLabel *_tpl_text;
-	TextureRect *_logo;
+	LinkButton *version_btn = nullptr;
+	Tree *_tpl_tree = nullptr;
+	RichTextLabel *_license_text = nullptr;
+	RichTextLabel *_tpl_text = nullptr;
+	TextureRect *_logo = nullptr;
 
 	void _theme_changed();
 

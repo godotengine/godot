@@ -25,21 +25,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __CVTT_CONVECTION_KERNELS__
 #define __CVTT_CONVECTION_KERNELS__
 
+#include <stddef.h>
 #include <stdint.h>
 
 namespace cvtt
 {
     namespace Flags
     {
-        // Enable partitioned modes in BC7 encoding (slower, better quality)
-        const uint32_t BC7_EnablePartitioning   = 0x001;
-
-        // Enable 3-partition modes in BC7 encoding (slower, better quality, requires BC7_EnablePartitioning)
-        const uint32_t BC7_Enable3Subsets       = 0x002;
-
-        // Enable dual-plane modes in BC7 encoding (slower, better quality)
-        const uint32_t BC7_EnableDualPlane      = 0x004;
-
         // Use fast indexing in BC7 encoding (about 2x faster, slightly worse quality)
         const uint32_t BC7_FastIndexing         = 0x008;
 
@@ -61,13 +53,19 @@ namespace cvtt
         // Uniform color channel importance
         const uint32_t Uniform                  = 0x200;
 
+        // Use fake BT.709 color space for etc2comp compatibility (slower)
+        const uint32_t ETC_UseFakeBT709         = 0x400;
+
+        // Use accurate quantization functions when quantizing fake BT.709 (much slower, marginal improvement on specific blocks)
+        const uint32_t ETC_FakeBT709Accurate    = 0x800;
+
         // Misc useful default flag combinations
-        const uint32_t Fastest = (BC6H_FastIndexing | S3TC_Paranoid);
-        const uint32_t Faster = (BC7_EnableDualPlane | BC6H_FastIndexing | S3TC_Paranoid);
-        const uint32_t Fast = (BC7_EnablePartitioning | BC7_EnableDualPlane | BC7_FastIndexing | S3TC_Paranoid);
-        const uint32_t Default = (BC7_EnablePartitioning | BC7_EnableDualPlane | BC7_Enable3Subsets | BC7_FastIndexing | S3TC_Paranoid);
-        const uint32_t Better = (BC7_EnablePartitioning | BC7_EnableDualPlane | BC7_Enable3Subsets | S3TC_Paranoid | S3TC_Exhaustive);
-        const uint32_t Ultra = (BC7_EnablePartitioning | BC7_EnableDualPlane | BC7_Enable3Subsets | BC7_TrySingleColor | S3TC_Paranoid | S3TC_Exhaustive);
+        const uint32_t Fastest = (BC6H_FastIndexing | BC7_FastIndexing | S3TC_Paranoid);
+        const uint32_t Faster = (BC6H_FastIndexing | BC7_FastIndexing | S3TC_Paranoid);
+        const uint32_t Fast = (BC7_FastIndexing | S3TC_Paranoid);
+        const uint32_t Default = (BC7_FastIndexing | S3TC_Paranoid);
+        const uint32_t Better = (S3TC_Paranoid | S3TC_Exhaustive);
+        const uint32_t Ultra = (BC7_TrySingleColor | S3TC_Paranoid | S3TC_Exhaustive | ETC_FakeBT709Accurate);
     }
 
     const unsigned int NumParallelBlocks = 8;
@@ -81,7 +79,7 @@ namespace cvtt
         float blueWeight;       // Blue channel importance
         float alphaWeight;      // Alpha channel importance
 
-        int refineRoundsBC7;    // Number of refine rounds for BC7
+        int refineRoundsBC7;   // Number of refine rounds for BC7
         int refineRoundsBC6H;   // Number of refine rounds for BC6H (max 3)
         int refineRoundsIIC;    // Number of refine rounds for independent interpolated channels (BC3 alpha, BC4, BC5)
         int refineRoundsS3TC;   // Number of refine rounds for S3TC RGB
@@ -104,6 +102,102 @@ namespace cvtt
         }
     };
 
+    struct BC7FineTuningParams
+    {
+        // Seed point counts for each mode+configuration combination
+        uint8_t mode0SP[16];
+        uint8_t mode1SP[64];
+        uint8_t mode2SP[64];
+        uint8_t mode3SP[64];
+        uint8_t mode4SP[4][2];
+        uint8_t mode5SP[4];
+        uint8_t mode6SP;
+        uint8_t mode7SP[64];
+
+        BC7FineTuningParams()
+        {
+            for (int i = 0; i < 16; i++)
+                this->mode0SP[i] = 4;
+
+            for (int i = 0; i < 64; i++)
+            {
+                this->mode1SP[i] = 4;
+                this->mode2SP[i] = 4;
+                this->mode3SP[i] = 4;
+                this->mode7SP[i] = 4;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                    this->mode4SP[i][j] = 4;
+
+                this->mode5SP[i] = 4;
+            }
+
+            this->mode6SP = 4;
+        }
+    };
+
+    struct BC7EncodingPlan
+    {
+        static const int kNumRGBAShapes = 129;
+        static const int kNumRGBShapes = 243;
+
+        uint64_t mode1PartitionEnabled;
+        uint64_t mode2PartitionEnabled;
+        uint64_t mode3PartitionEnabled;
+        uint16_t mode0PartitionEnabled;
+        uint64_t mode7RGBAPartitionEnabled;
+        uint64_t mode7RGBPartitionEnabled;
+        uint8_t mode4SP[4][2];
+        uint8_t mode5SP[4];
+        bool mode6Enabled;
+
+        uint8_t seedPointsForShapeRGB[kNumRGBShapes];
+        uint8_t seedPointsForShapeRGBA[kNumRGBAShapes];
+
+        uint8_t rgbaShapeList[kNumRGBAShapes];
+        uint8_t rgbaNumShapesToEvaluate;
+
+        uint8_t rgbShapeList[kNumRGBShapes];
+        uint8_t rgbNumShapesToEvaluate;
+
+        BC7EncodingPlan()
+        {
+            for (int i = 0; i < kNumRGBShapes; i++)
+            {
+                this->rgbShapeList[i] = i;
+                this->seedPointsForShapeRGB[i] = 4;
+            }
+            this->rgbNumShapesToEvaluate = kNumRGBShapes;
+
+            for (int i = 0; i < kNumRGBAShapes; i++)
+            {
+                this->rgbaShapeList[i] = i;
+                this->seedPointsForShapeRGBA[i] = 4;
+            }
+            this->rgbaNumShapesToEvaluate = kNumRGBAShapes;
+
+
+            this->mode0PartitionEnabled = 0xffff;
+            this->mode1PartitionEnabled = 0xffffffffffffffffULL;
+            this->mode2PartitionEnabled = 0xffffffffffffffffULL;
+            this->mode3PartitionEnabled = 0xffffffffffffffffULL;
+            this->mode6Enabled = true;
+            this->mode7RGBPartitionEnabled = 0xffffffffffffffffULL;
+            this->mode7RGBAPartitionEnabled = 0xffffffffffffffffULL;
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                    this->mode4SP[i][j] = 4;
+
+                this->mode5SP[i] = 4;
+            }
+        }
+    };
+
     // RGBA input block for unsigned 8-bit formats
     struct PixelBlockU8
     {
@@ -116,14 +210,34 @@ namespace cvtt
         int8_t m_pixels[16][4];
     };
 
+    struct PixelBlockScalarS16
+    {
+        int16_t m_pixels[16];
+    };
+
     // RGBA input block for half-precision float formats (bit-cast to int16_t)
     struct PixelBlockF16
     {
         int16_t m_pixels[16][4];
     };
 
+    class ETC2CompressionData
+    {
+    protected:
+        ETC2CompressionData() {}
+    };
+
+    class ETC1CompressionData
+    {
+    protected:
+        ETC1CompressionData() {}
+    };
+
     namespace Kernels
     {
+        typedef void* allocFunc_t(void *context, size_t size);
+        typedef void freeFunc_t(void *context, void* ptr, size_t size);
+
         // NOTE: All functions accept and output NumParallelBlocks blocks at once
         void EncodeBC1(uint8_t *pBC, const PixelBlockU8 *pBlocks, const Options &options);
         void EncodeBC2(uint8_t *pBC, const PixelBlockU8 *pBlocks, const Options &options);
@@ -134,7 +248,28 @@ namespace cvtt
         void EncodeBC5S(uint8_t *pBC, const PixelBlockS8 *pBlocks, const Options &options);
         void EncodeBC6HU(uint8_t *pBC, const PixelBlockF16 *pBlocks, const Options &options);
         void EncodeBC6HS(uint8_t *pBC, const PixelBlockF16 *pBlocks, const Options &options);
-        void EncodeBC7(uint8_t *pBC, const PixelBlockU8 *pBlocks, const Options &options);
+        void EncodeBC7(uint8_t *pBC, const PixelBlockU8 *pBlocks, const Options &options, const BC7EncodingPlan &encodingPlan);
+        void EncodeETC1(uint8_t *pBC, const PixelBlockU8 *pBlocks, const Options &options, ETC1CompressionData *compressionData);
+        void EncodeETC2(uint8_t *pBC, const PixelBlockU8 *pBlocks, const Options &options, ETC2CompressionData *compressionData);
+        void EncodeETC2RGBA(uint8_t *pBC, const PixelBlockU8 *pBlocks, const cvtt::Options &options, cvtt::ETC2CompressionData *compressionData);
+        void EncodeETC2PunchthroughAlpha(uint8_t *pBC, const PixelBlockU8 *pBlocks, const cvtt::Options &options, cvtt::ETC2CompressionData *compressionData);
+
+        void EncodeETC2Alpha(uint8_t *pBC, const PixelBlockU8 *pBlocks, const cvtt::Options &options);
+        void EncodeETC2Alpha11(uint8_t *pBC, const PixelBlockScalarS16 *pBlocks, bool isSigned, const cvtt::Options &options);
+
+        // Generates a BC7 encoding plan from a quality parameter that ranges from 1 (fastest) to 100 (best)
+        void ConfigureBC7EncodingPlanFromQuality(BC7EncodingPlan &encodingPlan, int quality);
+
+        // Generates a BC7 encoding plan from fine-tuning parameters.
+        bool ConfigureBC7EncodingPlanFromFineTuningParams(BC7EncodingPlan &encodingPlan, const BC7FineTuningParams &params);
+
+        // ETC compression requires temporary storage that normally consumes a large amount of stack space.
+        // To allocate and release it, use one of these functions.
+        ETC2CompressionData *AllocETC2Data(allocFunc_t allocFunc, void *context, const cvtt::Options &options);
+        void ReleaseETC2Data(ETC2CompressionData *compressionData, freeFunc_t freeFunc);
+
+        ETC1CompressionData *AllocETC1Data(allocFunc_t allocFunc, void *context);
+        void ReleaseETC1Data(ETC1CompressionData *compressionData, freeFunc_t freeFunc);
 
         void DecodeBC6HU(PixelBlockF16 *pBlocks, const uint8_t *pBC);
         void DecodeBC6HS(PixelBlockF16 *pBlocks, const uint8_t *pBC);

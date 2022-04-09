@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,11 +45,12 @@ class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
 	Window *parent_visible = nullptr;
-	Panel *bg;
-	HBoxContainer *hbc;
-	Label *label;
-	Button *ok;
+	Panel *bg = nullptr;
+	HBoxContainer *hbc = nullptr;
+	Label *label = nullptr;
+	Button *ok = nullptr;
 	bool hide_on_ok = true;
+	bool close_on_escape = true;
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
@@ -87,6 +88,9 @@ public:
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
 
+	void set_close_on_escape(bool p_enable);
+	bool get_close_on_escape() const;
+
 	void set_text(String p_text);
 	String get_text() const;
 
@@ -99,7 +103,7 @@ public:
 
 class ConfirmationDialog : public AcceptDialog {
 	GDCLASS(ConfirmationDialog, AcceptDialog);
-	Button *cancel;
+	Button *cancel = nullptr;
 
 protected:
 	static void _bind_methods();

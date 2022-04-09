@@ -20,6 +20,9 @@ env_tinyexr.Prepend(CPPPATH=[thirdparty_dir])
 
 # Enable threaded loading with C++11.
 env_tinyexr.Append(CPPDEFINES=["TINYEXR_USE_THREAD"])
+# miniz is an external dependency, we could add it but we can instead rely
+# on our existing bundled zlib.
+env_tinyexr.Append(CPPDEFINES=[("TINYEXR_USE_MINIZ", 0)])
 
 env_thirdparty = env_tinyexr.Clone()
 env_thirdparty.disable_warnings()

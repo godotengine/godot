@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 
 #include "atlas_merging_dialog.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 #include "scene/gui/control.h"
@@ -81,7 +83,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					}
 
 					// Copy the properties.
-					TileData *original_tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+					TileData *original_tile_data = atlas_source->get_tile_data(tile_id, alternative_id);
 					List<PropertyInfo> properties;
 					original_tile_data->get_property_list(&properties);
 					for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
@@ -239,7 +241,7 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 			if (texture.is_valid()) {
 				String item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
 				atlas_merging_atlases_list->add_item(item_text, texture);
-				atlas_merging_atlases_list->set_item_metadata(atlas_merging_atlases_list->get_item_count() - 1, source_id);
+				atlas_merging_atlases_list->set_item_metadata(-1, source_id);
 			}
 		}
 	}
@@ -251,6 +253,8 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 }
 
 AtlasMergingDialog::AtlasMergingDialog() {
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
 	// Atlas merging window.
 	set_title(TTR("Atlas Merging"));
 	set_hide_on_ok(false);
@@ -301,7 +305,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	preview = memnew(TextureRect);
 	preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	preview->set_expand(true);
+	preview->set_ignore_texture_size(true);
 	preview->hide();
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	atlas_merging_right_panel->add_child(preview);
@@ -309,8 +313,8 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	select_2_atlases_label = memnew(Label);
 	select_2_atlases_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	select_2_atlases_label->set_align(Label::ALIGN_CENTER);
-	select_2_atlases_label->set_valign(Label::VALIGN_CENTER);
+	select_2_atlases_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_2_atlases_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_2_atlases_label->set_text(TTR("Please select two atlases or more."));
 	atlas_merging_right_panel->add_child(select_2_atlases_label);
 

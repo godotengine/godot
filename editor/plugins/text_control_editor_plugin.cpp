@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,12 @@
 
 #include "text_control_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/multi_node_edit.h"
 
-void TextControlEditor::_notification(int p_notification) {
-	switch (p_notification) {
+void TextControlEditor::_notification(int p_what) {
+	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts))) {
 				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts), make_binds(""));
@@ -43,14 +45,17 @@ void TextControlEditor::_notification(int p_notification) {
 		case NOTIFICATION_THEME_CHANGED: {
 			clear_formatting->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts))) {
 				EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts));
 			}
 		} break;
-		default:
-			break;
 	}
+}
+
+void TextControlEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_update_control"), &TextControlEditor::_update_control);
 }
 
 void TextControlEditor::_find_resources(EditorFileSystemDirectory *p_dir) {
@@ -105,7 +110,7 @@ void TextControlEditor::_update_styles_menu() {
 		for (Map<String, String>::Element *E = fonts[name].front(); E; E = E->next()) {
 			font_style_list->add_item(E->key());
 		}
-	} else {
+	} else if (font_list->get_selected() >= 0) {
 		font_style_list->add_item("Default");
 	}
 
@@ -117,73 +122,152 @@ void TextControlEditor::_update_styles_menu() {
 }
 
 void TextControlEditor::_update_control() {
-	if (edited_control) {
-		// Get override names.
-		if (edited_control->is_class("RichTextLabel")) {
-			edited_color = "default_color";
-			edited_font = "normal_font";
-			edited_font_size = "normal_font_size";
-		} else {
-			edited_color = "font_color";
-			edited_font = "font";
-			edited_font_size = "font_size";
-		}
+	if (!edited_controls.is_empty()) {
+		String font_selected;
+		bool same_font = true;
+		String style_selected;
+		bool same_style = true;
+		int font_size = 0;
+		bool same_font_size = true;
+		int outline_size = 0;
+		bool same_outline_size = true;
+		Color font_color = Color{ 1.0f, 1.0f, 1.0f };
+		bool same_font_color = true;
+		Color outline_color = Color{ 1.0f, 1.0f, 1.0f };
+		bool same_outline_color = true;
 
-		// Get font override.
-		Ref<Font> font;
-		if (edited_control->has_theme_font_override(edited_font)) {
-			font = edited_control->get_theme_font(edited_font);
-		}
-		if (font.is_valid()) {
-			if (font->get_data_count() != 1) {
-				// Composite font, save it to "custom_font" to allow undoing font change.
-				custom_font = font;
-				_update_fonts_menu();
-				font_list->select(FONT_INFO_USER_CUSTOM);
-				_update_styles_menu();
-				font_style_list->select(0);
+		int count = edited_controls.size();
+		for (int i = 0; i < count; ++i) {
+			Control *edited_control = edited_controls[i];
+
+			StringName edited_color;
+			StringName edited_font;
+			StringName edited_font_size;
+
+			// Get override names.
+			if (Object::cast_to<RichTextLabel>(edited_control)) {
+				edited_color = SNAME("default_color");
+				edited_font = SNAME("normal_font");
+				edited_font_size = SNAME("normal_font_size");
 			} else {
-				// Single face font, search for the font with matching name and style.
-				String name = font->get_data(0)->get_font_name();
-				String style = font->get_data(0)->get_font_style_name();
-				if (fonts.has(name) && fonts[name].has(style)) {
-					_update_fonts_menu();
-					for (int i = 0; i < font_list->get_item_count(); i++) {
-						if (font_list->get_item_text(i) == name) {
-							font_list->select(i);
-							break;
-						}
+				edited_color = SNAME("font_color");
+				edited_font = SNAME("font");
+				edited_font_size = SNAME("font_size");
+			}
+
+			// Get font override.
+			Ref<Font> font;
+			if (edited_control->has_theme_font_override(edited_font)) {
+				font = edited_control->get_theme_font(edited_font);
+			}
+
+			if (font.is_valid()) {
+				if (font->get_data_count() != 1) {
+					if (i > 0) {
+						same_font = same_font && (custom_font == font);
 					}
-					_update_styles_menu();
-					for (int i = 0; i < font_style_list->get_item_count(); i++) {
-						if (font_style_list->get_item_text(i) == style) {
-							font_style_list->select(i);
-							break;
-						}
-					}
-				} else {
-					// Unknown font, save it to "custom_font" to allow undoing font change.
 					custom_font = font;
-					_update_fonts_menu();
-					font_list->select(FONT_INFO_USER_CUSTOM);
-					_update_styles_menu();
-					font_style_list->select(0);
+
+					font_selected = TTR("[Custom Font]");
+					same_style = false;
+				} else {
+					String name = font->get_data(0)->get_font_name();
+					String style = font->get_data(0)->get_font_style_name();
+					if (fonts.has(name) && fonts[name].has(style)) {
+						if (i > 0) {
+							same_font = same_font && (name == font_selected);
+							same_style = same_style && (style == style_selected);
+						}
+						font_selected = name;
+						style_selected = style;
+					} else {
+						if (i > 0) {
+							same_font = same_font && (custom_font == font);
+						}
+						custom_font = font;
+
+						font_selected = TTR("[Custom Font]");
+						same_style = false;
+					}
+				}
+			} else {
+				if (i > 0) {
+					same_font = same_font && (font_selected == TTR("[Theme Default]"));
+				}
+
+				font_selected = TTR("[Theme Default]");
+				same_style = false;
+			}
+
+			int current_font_size = edited_control->get_theme_font_size(edited_font_size);
+			int current_outline_size = edited_control->get_theme_constant(SNAME("outline_size"));
+			Color current_font_color = edited_control->get_theme_color(edited_color);
+			Color current_outline_color = edited_control->get_theme_color(SNAME("font_outline_color"));
+			if (i > 0) {
+				same_font_size = same_font_size && (font_size == current_font_size);
+				same_outline_size = same_outline_size && (outline_size == current_outline_size);
+				same_font_color = same_font_color && (font_color == current_font_color);
+				same_outline_color = same_outline_color && (outline_color == current_outline_color);
+			}
+
+			font_size = current_font_size;
+			outline_size = current_outline_size;
+			font_color = current_font_color;
+			outline_color = current_outline_color;
+		}
+		_update_fonts_menu();
+		if (same_font) {
+			for (int j = 0; j < font_list->get_item_count(); j++) {
+				if (font_list->get_item_text(j) == font_selected) {
+					font_list->select(j);
+					break;
 				}
 			}
 		} else {
-			// No font override, select "Theme Default".
-			_update_fonts_menu();
-			font_list->select(FONT_INFO_THEME_DEFAULT);
-			_update_styles_menu();
-			font_style_list->select(0);
+			custom_font = Ref<Font>();
+			font_list->select(-1);
+		}
+
+		_update_styles_menu();
+		if (same_style) {
+			for (int j = 0; j < font_style_list->get_item_count(); j++) {
+				if (font_style_list->get_item_text(j) == style_selected) {
+					font_style_list->select(j);
+					break;
+				}
+			}
+		} else {
+			font_style_list->select(-1);
 		}
 
 		// Get other theme overrides.
-		font_size_list->set_value(edited_control->get_theme_font_size(edited_font_size));
-		outline_size_list->set_value(edited_control->get_theme_constant("outline_size"));
+		font_size_list->set_block_signals(true);
+		if (same_font_size) {
+			font_size_list->get_line_edit()->set_text(String::num_uint64(font_size));
+			font_size_list->set_value(font_size);
+		} else {
+			font_size_list->get_line_edit()->set_text("");
+		}
+		font_size_list->set_block_signals(false);
 
-		font_color_picker->set_pick_color(edited_control->get_theme_color(edited_color));
-		outline_color_picker->set_pick_color(edited_control->get_theme_color("font_outline_color"));
+		outline_size_list->set_block_signals(true);
+		if (same_outline_size) {
+			outline_size_list->get_line_edit()->set_text(String::num_uint64(outline_size));
+			outline_size_list->set_value(outline_size);
+		} else {
+			outline_size_list->get_line_edit()->set_text("");
+		}
+		outline_size_list->set_block_signals(false);
+
+		if (!same_font_color) {
+			font_color = Color{ 1.0f, 1.0f, 1.0f };
+		}
+		font_color_picker->set_pick_color(font_color);
+
+		if (!same_outline_color) {
+			outline_color = Color{ 1.0f, 1.0f, 1.0f };
+		}
+		outline_color_picker->set_pick_color(outline_color);
 	}
 }
 
@@ -197,91 +281,293 @@ void TextControlEditor::_font_style_selected(int p_id) {
 }
 
 void TextControlEditor::_set_font() {
-	if (edited_control) {
+	if (edited_controls.is_empty()) {
+		return;
+	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Set Font"));
+
+	int count = edited_controls.size();
+	for (int i = 0; i < count; ++i) {
+		Control *edited_control = edited_controls[i];
+
+		StringName edited_font;
+		if (Object::cast_to<RichTextLabel>(edited_control)) {
+			edited_font = SNAME("normal_font");
+		} else {
+			edited_font = SNAME("font");
+		}
+
 		if (font_list->get_selected_id() == FONT_INFO_THEME_DEFAULT) {
 			// Remove font override.
-			edited_control->remove_theme_font_override(edited_font);
-			return;
+			ur->add_do_method(edited_control, "remove_theme_font_override", edited_font);
 		} else if (font_list->get_selected_id() == FONT_INFO_USER_CUSTOM) {
 			// Restore "custom_font".
-			edited_control->add_theme_font_override(edited_font, custom_font);
-			return;
-		} else {
+			ur->add_do_method(edited_control, "add_theme_font_override", edited_font, custom_font);
+		} else if (font_list->get_selected() >= 0) {
 			// Load new font resource using selected name and style.
 			String name = font_list->get_item_text(font_list->get_selected());
-			String sty = font_style_list->get_item_text(font_style_list->get_selected());
-			if (sty.is_empty()) {
-				sty = "Default";
+			String style = font_style_list->get_item_text(font_style_list->get_selected());
+			if (style.is_empty()) {
+				style = "Default";
 			}
 			if (fonts.has(name)) {
-				Ref<FontData> fd = ResourceLoader::load(fonts[name][sty]);
+				Ref<FontData> fd = ResourceLoader::load(fonts[name][style]);
 				if (fd.is_valid()) {
-					Ref<Font> f;
-					f.instantiate();
-					f->add_data(fd);
-					edited_control->add_theme_font_override(edited_font, f);
+					Ref<Font> font;
+					font.instantiate();
+					font->add_data(fd);
+					ur->add_do_method(edited_control, "add_theme_font_override", edited_font, font);
 				}
 			}
 		}
+
+		if (edited_control->has_theme_font_override(edited_font)) {
+			ur->add_undo_method(edited_control, "add_theme_font_override", edited_font, edited_control->get_theme_font(edited_font));
+		} else {
+			ur->add_undo_method(edited_control, "remove_theme_font_override", edited_font);
+		}
 	}
+
+	ur->add_do_method(this, "_update_control");
+	ur->add_undo_method(this, "_update_control");
+
+	ur->commit_action();
 }
 
 void TextControlEditor::_font_size_selected(double p_size) {
-	if (edited_control) {
-		edited_control->add_theme_font_size_override(edited_font_size, p_size);
+	if (edited_controls.is_empty()) {
+		return;
 	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Set Font Size"));
+
+	int count = edited_controls.size();
+	for (int i = 0; i < count; ++i) {
+		Control *edited_control = edited_controls[i];
+
+		StringName edited_font_size;
+		if (Object::cast_to<RichTextLabel>(edited_control)) {
+			edited_font_size = SNAME("normal_font_size");
+		} else {
+			edited_font_size = SNAME("font_size");
+		}
+
+		ur->add_do_method(edited_control, "add_theme_font_size_override", edited_font_size, p_size);
+		if (edited_control->has_theme_font_size_override(edited_font_size)) {
+			ur->add_undo_method(edited_control, "add_theme_font_size_override", edited_font_size, edited_control->get_theme_font_size(edited_font_size));
+		} else {
+			ur->add_undo_method(edited_control, "remove_theme_font_size_override", edited_font_size);
+		}
+	}
+
+	ur->add_do_method(this, "_update_control");
+	ur->add_undo_method(this, "_update_control");
+
+	ur->commit_action();
 }
 
 void TextControlEditor::_outline_size_selected(double p_size) {
-	if (edited_control) {
-		edited_control->add_theme_constant_override("outline_size", p_size);
+	if (edited_controls.is_empty()) {
+		return;
 	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Set Font Outline Size"));
+
+	int count = edited_controls.size();
+	for (int i = 0; i < count; ++i) {
+		Control *edited_control = edited_controls[i];
+
+		ur->add_do_method(edited_control, "add_theme_constant_override", "outline_size", p_size);
+		if (edited_control->has_theme_constant_override("outline_size")) {
+			ur->add_undo_method(edited_control, "add_theme_constant_override", "outline_size", edited_control->get_theme_constant(SNAME("outline_size")));
+		} else {
+			ur->add_undo_method(edited_control, "remove_theme_constant_override", "outline_size");
+		}
+	}
+
+	ur->add_do_method(this, "_update_control");
+	ur->add_undo_method(this, "_update_control");
+
+	ur->commit_action();
 }
 
 void TextControlEditor::_font_color_changed(const Color &p_color) {
-	if (edited_control) {
-		edited_control->add_theme_color_override(edited_color, p_color);
+	if (edited_controls.is_empty()) {
+		return;
 	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Set Font Color"), UndoRedo::MERGE_ENDS);
+
+	int count = edited_controls.size();
+	for (int i = 0; i < count; ++i) {
+		Control *edited_control = edited_controls[i];
+
+		StringName edited_color;
+		if (Object::cast_to<RichTextLabel>(edited_control)) {
+			edited_color = SNAME("default_color");
+		} else {
+			edited_color = SNAME("font_color");
+		}
+
+		ur->add_do_method(edited_control, "add_theme_color_override", edited_color, p_color);
+		if (edited_control->has_theme_color_override(edited_color)) {
+			ur->add_undo_method(edited_control, "add_theme_color_override", edited_color, edited_control->get_theme_color(edited_color));
+		} else {
+			ur->add_undo_method(edited_control, "remove_theme_color_override", edited_color);
+		}
+	}
+
+	ur->add_do_method(this, "_update_control");
+	ur->add_undo_method(this, "_update_control");
+
+	ur->commit_action();
 }
 
 void TextControlEditor::_outline_color_changed(const Color &p_color) {
-	if (edited_control) {
-		edited_control->add_theme_color_override("font_outline_color", p_color);
+	if (edited_controls.is_empty()) {
+		return;
 	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Set Font Outline Color"), UndoRedo::MERGE_ENDS);
+
+	int count = edited_controls.size();
+	for (int i = 0; i < count; ++i) {
+		Control *edited_control = edited_controls[i];
+
+		ur->add_do_method(edited_control, "add_theme_color_override", "font_outline_color", p_color);
+		if (edited_control->has_theme_color_override("font_outline_color")) {
+			ur->add_undo_method(edited_control, "add_theme_color_override", "font_outline_color", edited_control->get_theme_color(SNAME("font_outline_color")));
+		} else {
+			ur->add_undo_method(edited_control, "remove_theme_color_override", "font_outline_color");
+		}
+	}
+
+	ur->add_do_method(this, "_update_control");
+	ur->add_undo_method(this, "_update_control");
+
+	ur->commit_action();
 }
 
 void TextControlEditor::_clear_formatting() {
-	if (edited_control) {
-		edited_control->begin_bulk_theme_override();
-		edited_control->remove_theme_font_override(edited_font);
-		edited_control->remove_theme_font_size_override(edited_font_size);
-		edited_control->remove_theme_color_override(edited_color);
-		edited_control->remove_theme_color_override("font_outline_color");
-		edited_control->remove_theme_constant_override("outline_size");
-		edited_control->end_bulk_theme_override();
-		_update_control();
+	if (edited_controls.is_empty()) {
+		return;
 	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Clear Control Formatting"));
+
+	int count = edited_controls.size();
+	for (int i = 0; i < count; ++i) {
+		Control *edited_control = edited_controls[i];
+
+		StringName edited_color;
+		StringName edited_font;
+		StringName edited_font_size;
+
+		// Get override names.
+		if (Object::cast_to<RichTextLabel>(edited_control)) {
+			edited_color = SNAME("default_color");
+			edited_font = SNAME("normal_font");
+			edited_font_size = SNAME("normal_font_size");
+		} else {
+			edited_color = SNAME("font_color");
+			edited_font = SNAME("font");
+			edited_font_size = SNAME("font_size");
+		}
+
+		ur->add_do_method(edited_control, "begin_bulk_theme_override");
+		ur->add_undo_method(edited_control, "begin_bulk_theme_override");
+
+		ur->add_do_method(edited_control, "remove_theme_font_override", edited_font);
+		if (edited_control->has_theme_font_override(edited_font)) {
+			ur->add_undo_method(edited_control, "add_theme_font_override", edited_font, edited_control->get_theme_font(edited_font));
+		}
+
+		ur->add_do_method(edited_control, "remove_theme_font_size_override", edited_font_size);
+		if (edited_control->has_theme_font_size_override(edited_font_size)) {
+			ur->add_undo_method(edited_control, "add_theme_font_size_override", edited_font_size, edited_control->get_theme_font_size(edited_font_size));
+		}
+
+		ur->add_do_method(edited_control, "remove_theme_color_override", edited_color);
+		if (edited_control->has_theme_color_override(edited_color)) {
+			ur->add_undo_method(edited_control, "add_theme_color_override", edited_color, edited_control->get_theme_color(edited_color));
+		}
+
+		ur->add_do_method(edited_control, "remove_theme_color_override", "font_outline_color");
+		if (edited_control->has_theme_color_override("font_outline_color")) {
+			ur->add_undo_method(edited_control, "add_theme_color_override", "font_outline_color", edited_control->get_theme_color(SNAME("font_outline_color")));
+		}
+
+		ur->add_do_method(edited_control, "remove_theme_constant_override", "outline_size");
+		if (edited_control->has_theme_constant_override("outline_size")) {
+			ur->add_undo_method(edited_control, "add_theme_constant_override", "outline_size", edited_control->get_theme_constant(SNAME("outline_size")));
+		}
+
+		ur->add_do_method(edited_control, "end_bulk_theme_override");
+		ur->add_undo_method(edited_control, "end_bulk_theme_override");
+	}
+
+	ur->add_do_method(this, "_update_control");
+	ur->add_undo_method(this, "_update_control");
+
+	ur->commit_action();
 }
 
 void TextControlEditor::edit(Object *p_object) {
 	Control *ctrl = Object::cast_to<Control>(p_object);
-	if (!ctrl) {
-		edited_control = nullptr;
-		custom_font = Ref<Font>();
-	} else {
-		edited_control = ctrl;
-		custom_font = Ref<Font>();
+	MultiNodeEdit *multi_node = Object::cast_to<MultiNodeEdit>(p_object);
+
+	edited_controls.clear();
+	custom_font = Ref<Font>();
+	if (ctrl) {
+		edited_controls.append(ctrl);
+		_update_control();
+	} else if (multi_node && handles(multi_node)) {
+		int count = multi_node->get_node_count();
+		Node *scene = EditorNode::get_singleton()->get_edited_scene();
+
+		for (int i = 0; i < count; ++i) {
+			Control *child = Object::cast_to<Control>(scene->get_node(multi_node->get_node(i)));
+			edited_controls.append(child);
+		}
 		_update_control();
 	}
 }
 
 bool TextControlEditor::handles(Object *p_object) const {
 	Control *ctrl = Object::cast_to<Control>(p_object);
-	if (!ctrl) {
+	MultiNodeEdit *multi_node = Object::cast_to<MultiNodeEdit>(p_object);
+
+	if (!ctrl && !multi_node) {
 		return false;
-	} else {
+	} else if (ctrl) {
 		bool valid = false;
 		ctrl->get("text", &valid);
+		return valid;
+	} else {
+		bool valid = true;
+		int count = multi_node->get_node_count();
+		Node *scene = EditorNode::get_singleton()->get_edited_scene();
+
+		for (int i = 0; i < count; ++i) {
+			bool temp_valid = false;
+			Control *child = Object::cast_to<Control>(scene->get_node(multi_node->get_node(i)));
+			if (child) {
+				child->get("text", &temp_valid);
+			}
+			valid = valid && temp_valid;
+
+			if (!valid) {
+				break;
+			}
+		}
+
 		return valid;
 	}
 }
@@ -366,8 +652,7 @@ void TextControlEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-TextControlEditorPlugin::TextControlEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+TextControlEditorPlugin::TextControlEditorPlugin() {
 	text_ctl_editor = memnew(TextControlEditor);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(text_ctl_editor);
 

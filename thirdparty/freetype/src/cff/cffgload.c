@@ -4,7 +4,7 @@
  *
  *   OpenType Glyph Loader (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -59,7 +59,7 @@
 
 
       *pointer = (FT_Byte*)data.pointer;
-      *length  = (FT_ULong)data.length;
+      *length  = data.length;
 
       return error;
     }
@@ -94,7 +94,7 @@
 
 
       data.pointer = *pointer;
-      data.length  = (FT_Int)length;
+      data.length  = (FT_UInt)length;
 
       face->root.internal->incremental_interface->funcs->free_glyph_data(
         face->root.internal->incremental_interface->object, &data );

@@ -18,9 +18,9 @@
 
 //------------------------------------------------------------------------------
 
-static int DispatchAlpha_SSE2(const uint8_t* alpha, int alpha_stride,
-                              int width, int height,
-                              uint8_t* dst, int dst_stride) {
+static int DispatchAlpha_SSE2(const uint8_t* WEBP_RESTRICT alpha,
+                              int alpha_stride, int width, int height,
+                              uint8_t* WEBP_RESTRICT dst, int dst_stride) {
   // alpha_and stores an 'and' operation of all the alpha[] values. The final
   // value is not 0xff if any of the alpha[] is not equal to 0xff.
   uint32_t alpha_and = 0xff;
@@ -72,9 +72,10 @@ static int DispatchAlpha_SSE2(const uint8_t* alpha, int alpha_stride,
   return (alpha_and != 0xff);
 }
 
-static void DispatchAlphaToGreen_SSE2(const uint8_t* alpha, int alpha_stride,
-                                      int width, int height,
-                                      uint32_t* dst, int dst_stride) {
+static void DispatchAlphaToGreen_SSE2(const uint8_t* WEBP_RESTRICT alpha,
+                                      int alpha_stride, int width, int height,
+                                      uint32_t* WEBP_RESTRICT dst,
+                                      int dst_stride) {
   int i, j;
   const __m128i zero = _mm_setzero_si128();
   const int limit = width & ~15;
@@ -98,9 +99,9 @@ static void DispatchAlphaToGreen_SSE2(const uint8_t* alpha, int alpha_stride,
   }
 }
 
-static int ExtractAlpha_SSE2(const uint8_t* argb, int argb_stride,
+static int ExtractAlpha_SSE2(const uint8_t* WEBP_RESTRICT argb, int argb_stride,
                              int width, int height,
-                             uint8_t* alpha, int alpha_stride) {
+                             uint8_t* WEBP_RESTRICT alpha, int alpha_stride) {
   // alpha_and stores an 'and' operation of all the alpha[] values. The final
   // value is not 0xff if any of the alpha[] is not equal to 0xff.
   uint32_t alpha_and = 0xff;
@@ -265,6 +266,27 @@ static int HasAlpha32b_SSE2(const uint8_t* src, int length) {
   return 0;
 }
 
+static void AlphaReplace_SSE2(uint32_t* src, int length, uint32_t color) {
+  const __m128i m_color = _mm_set1_epi32(color);
+  const __m128i zero = _mm_setzero_si128();
+  int i = 0;
+  for (; i + 8 <= length; i += 8) {
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)(src + i + 0));
+    const __m128i a1 = _mm_loadu_si128((const __m128i*)(src + i + 4));
+    const __m128i b0 = _mm_srai_epi32(a0, 24);
+    const __m128i b1 = _mm_srai_epi32(a1, 24);
+    const __m128i c0 = _mm_cmpeq_epi32(b0, zero);
+    const __m128i c1 = _mm_cmpeq_epi32(b1, zero);
+    const __m128i d0 = _mm_and_si128(c0, m_color);
+    const __m128i d1 = _mm_and_si128(c1, m_color);
+    const __m128i e0 = _mm_andnot_si128(c0, a0);
+    const __m128i e1 = _mm_andnot_si128(c1, a1);
+    _mm_storeu_si128((__m128i*)(src + i + 0), _mm_or_si128(d0, e0));
+    _mm_storeu_si128((__m128i*)(src + i + 4), _mm_or_si128(d1, e1));
+  }
+  for (; i < length; ++i) if ((src[i] >> 24) == 0) src[i] = color;
+}
+
 // -----------------------------------------------------------------------------
 // Apply alpha value to rows
 
@@ -296,7 +318,8 @@ static void MultARGBRow_SSE2(uint32_t* const ptr, int width, int inverse) {
   if (width > 0) WebPMultARGBRow_C(ptr + x, width, inverse);
 }
 
-static void MultRow_SSE2(uint8_t* const ptr, const uint8_t* const alpha,
+static void MultRow_SSE2(uint8_t* WEBP_RESTRICT const ptr,
+                         const uint8_t* WEBP_RESTRICT const alpha,
                          int width, int inverse) {
   int x = 0;
   if (!inverse) {
@@ -334,6 +357,7 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessingSSE2(void) {
 
   WebPHasAlpha8b = HasAlpha8b_SSE2;
   WebPHasAlpha32b = HasAlpha32b_SSE2;
+  WebPAlphaReplace = AlphaReplace_SSE2;
 }
 
 #else  // !WEBP_USE_SSE2

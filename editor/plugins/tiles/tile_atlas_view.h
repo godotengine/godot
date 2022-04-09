@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,16 +37,16 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set.h"
+
+class ViewPanner;
 
 class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
 private:
-	TileSet *tile_set;
-	TileSetAtlasSource *tile_set_atlas_source;
+	TileSet *tile_set = nullptr;
+	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int source_id = TileSet::INVALID_SOURCE;
 
 	enum DragType {
@@ -55,53 +55,58 @@ private:
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
 	float previous_zoom = 1.0;
-	EditorZoomWidget *zoom_widget;
-	Button *button_center_view;
-	CenterContainer *center_container;
+	EditorZoomWidget *zoom_widget = nullptr;
+	Button *button_center_view = nullptr;
+	CenterContainer *center_container = nullptr;
 	Vector2 panning;
 	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false);
 	void _zoom_widget_changed();
 	void _center_view();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();
 
-	MarginContainer *margin_container;
+	MarginContainer *margin_container = nullptr;
 	int margin_container_paddings[4] = { 0, 0, 0, 0 };
-	HBoxContainer *hbox;
-	Label *missing_source_label;
+	HBoxContainer *hbox = nullptr;
+	Label *missing_source_label = nullptr;
 
 	// Background
-	Control *background_left;
+	Control *background_left = nullptr;
 	void _draw_background_left();
-	Control *background_right;
+	Control *background_right = nullptr;
 	void _draw_background_right();
 
 	// Left side.
-	Control *base_tiles_root_control;
+	Control *base_tiles_root_control = nullptr;
 	void _base_tiles_root_control_gui_input(const Ref<InputEvent> &p_event);
 
-	Control *base_tiles_drawing_root;
+	Control *base_tiles_drawing_root = nullptr;
 
-	Control *base_tiles_draw;
+	Control *base_tiles_draw = nullptr;
 	void _draw_base_tiles();
 
-	Control *base_tiles_texture_grid;
+	Control *base_tiles_texture_grid = nullptr;
 	void _draw_base_tiles_texture_grid();
 
-	Control *base_tiles_shape_grid;
+	Control *base_tiles_shape_grid = nullptr;
 	void _draw_base_tiles_shape_grid();
 
 	Size2i _compute_base_tiles_control_size();
 
 	// Right side.
-	Control *alternative_tiles_root_control;
+	Control *alternative_tiles_root_control = nullptr;
 	void _alternative_tiles_root_control_gui_input(const Ref<InputEvent> &p_event);
 
-	Control *alternative_tiles_drawing_root;
+	Control *alternative_tiles_drawing_root = nullptr;
 
-	Control *alternatives_draw;
+	Control *alternatives_draw = nullptr;
 	void _draw_alternatives();
 
 	Size2i _compute_alternative_tiles_control_size();

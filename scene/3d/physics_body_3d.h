@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,11 +50,11 @@ protected:
 
 	uint16_t locked_axis = 0;
 
-	Ref<KinematicCollision3D> _move(const Vector3 &p_linear_velocity, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
+	Ref<KinematicCollision3D> _move(const Vector3 &p_distance, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
 
 public:
 	bool move_and_collide(const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult &r_result, bool p_test_only = false, bool p_cancel_sliding = true);
-	bool test_move(const Transform3D &p_from, const Vector3 &p_linear_velocity, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
+	bool test_move(const Transform3D &p_from, const Vector3 &p_distance, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
@@ -306,13 +306,23 @@ public:
 
 	Array get_colliding_bodies() const;
 
-	void add_central_force(const Vector3 &p_force);
-	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
-	void add_torque(const Vector3 &p_torque);
-
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
+
+	void apply_central_force(const Vector3 &p_force);
+	void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void apply_torque(const Vector3 &p_torque);
+
+	void add_constant_central_force(const Vector3 &p_force);
+	void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void add_constant_torque(const Vector3 &p_torque);
+
+	void set_constant_force(const Vector3 &p_force);
+	Vector3 get_constant_force() const;
+
+	void set_constant_torque(const Vector3 &p_torque);
+	Vector3 get_constant_torque() const;
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
@@ -335,7 +345,7 @@ class CharacterBody3D : public PhysicsBody3D {
 public:
 	enum MotionMode {
 		MOTION_MODE_GROUNDED,
-		MOTION_MODE_FREE,
+		MOTION_MODE_FLOATING,
 	};
 	enum MovingPlatformApplyVelocityOnLeave {
 		PLATFORM_VEL_ON_LEAVE_ALWAYS,
@@ -344,8 +354,8 @@ public:
 	};
 	bool move_and_slide();
 
-	const Vector3 &get_motion_velocity() const;
-	void set_motion_velocity(const Vector3 &p_velocity);
+	const Vector3 &get_velocity() const;
+	void set_velocity(const Vector3 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_floor_only() const;
@@ -406,7 +416,7 @@ private:
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
-	Vector3 motion_velocity;
+	Vector3 velocity;
 	Vector3 floor_normal;
 	Vector3 wall_normal;
 	Vector3 ceiling_normal;
@@ -458,7 +468,7 @@ private:
 	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
 	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
-	void _move_and_slide_free(double p_delta);
+	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
 
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
@@ -652,8 +662,12 @@ private:
 	real_t bounce = 0.0;
 	real_t mass = 1.0;
 	real_t friction = 1.0;
+	Vector3 linear_velocity;
+	Vector3 angular_velocity;
 	real_t gravity_scale = 1.0;
 	bool can_sleep = true;
+
+	bool custom_integrator = false;
 
 	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
 	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
@@ -666,6 +680,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
@@ -680,6 +695,15 @@ private:
 
 public:
 	void _on_bone_parent_changed();
+
+	void set_linear_velocity(const Vector3 &p_velocity);
+	Vector3 get_linear_velocity() const override;
+
+	void set_angular_velocity(const Vector3 &p_velocity);
+	Vector3 get_angular_velocity() const override;
+
+	void set_use_custom_integrator(bool p_enable);
+	bool is_using_custom_integrator();
 
 #ifdef TOOLS_ENABLED
 	void _set_gizmo_move_joint(bool p_move_joint);

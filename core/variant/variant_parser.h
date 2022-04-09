@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,9 +51,9 @@ public:
 	struct StreamFile : public Stream {
 		FileAccess *f = nullptr;
 
-		virtual char32_t get_char();
-		virtual bool is_utf8() const;
-		virtual bool is_eof() const;
+		virtual char32_t get_char() override;
+		virtual bool is_utf8() const override;
+		virtual bool is_eof() const override;
 
 		StreamFile() {}
 	};
@@ -62,9 +62,9 @@ public:
 		String s;
 		int pos = 0;
 
-		virtual char32_t get_char();
-		virtual bool is_utf8() const;
-		virtual bool is_eof() const;
+		virtual char32_t get_char() override;
+		virtual bool is_utf8() const override;
+		virtual bool is_eof() const override;
 
 		StreamString() {}
 	};

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,23 +31,23 @@
 #include "editor_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_event.h"
 #include "core/input/input_map.h"
+#include "core/input/shortcut.h"
 #include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
-#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/translation_loader_po.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/translation.h"
 #include "core/version.h"
-#include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_translations.gen.h"
+#include "editor/editor_paths.h"
+#include "editor/editor_translation.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -63,6 +63,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed) {
+		changed_settings.insert(p_name);
 		emit_signal(SNAME("settings_changed"));
 	}
 	return true;
@@ -146,7 +147,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 			if (builtin_list.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
-				// If the builtin is overriden, it will be saved in the "builtin_action_overrides" section below.
+				// If the builtin is overridden, it will be saved in the "builtin_action_overrides" section below.
 				continue;
 			}
 
@@ -343,7 +344,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
-		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Skip locales if Text server lack required features.
 		Vector<String> locales_to_skip;
@@ -369,34 +369,28 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		String best;
-		EditorTranslationList *etl = _editor_translations;
-
-		while (etl->data) {
-			const String &locale = etl->lang;
-
+		int best_score = 0;
+		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
-			if (locales_to_skip.find(lang_code) != -1) {
-				etl++;
+			if (locales_to_skip.has(lang_code)) {
 				continue;
 			}
 
 			lang_hint += ",";
 			lang_hint += locale;
 
-			if (host_lang == locale) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > 0 && score >= best_score) {
 				best = locale;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
-
-			if (best == String() && host_lang.begins_with(locale)) {
-				best = locale;
-			}
-
-			etl++;
 		}
-
-		if (best == String()) {
+		if (best_score == 0) {
 			best = "en";
 		}
 
@@ -410,12 +404,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	const String display_scale_hint_string = vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(get_auto_display_scale() * 100));
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
-	_initial_set("interface/editor/enable_debugging_pseudolocalization", false);
-	set_restart_if_changed("interface/editor/enable_debugging_pseudolocalization", true);
+	_initial_set("interface/editor/debug/enable_pseudolocalization", false);
+	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);
 	// Use pseudolocalization in editor.
 
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/code_font_size", 14, "8,48,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/code_font_contextual_ligatures", 0, "Default,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
@@ -426,9 +420,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #else
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
 #endif
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_subpixel_positioning", 1, "Disabled,Auto,One half of a pixel,One quarter of a pixel")
+
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/low_processor_mode_sleep_usec", 6900, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	// Default unfocused usec sleep is for 10 FPS. Allow an unfocused FPS limit
 	// as low as 1 FPS for those who really need low power usage (but don't need
@@ -439,10 +435,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto,Enabled,Disabled")
+#ifdef DEV_ENABLED
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
+#endif
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
@@ -461,9 +460,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/theme/custom_theme", "", "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Scene tabs
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
-	_initial_set("interface/scene_tabs/resize_if_many_tabs", true);
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/minimum_width", 50, "50,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/maximum_width", 350, "0,9999,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("interface/scene_tabs/show_script_button", false);
 
 	/* Filesystem */
@@ -536,14 +535,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Appearance: Whitespace
 	_initial_set("text_editor/appearance/whitespace/draw_tabs", true);
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false);
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 6, "0,50,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
 
 	// Behavior
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
-	_initial_set("text_editor/behavior/navigation/v_scroll_speed", 80);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -555,6 +554,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);
 	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
+	_initial_set("text_editor/behavior/files/auto_reload_scripts_on_external_change", false);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true);
@@ -587,6 +587,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Use a similar color to the 2D editor selection.
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_box_color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	_initial_set("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
+	_initial_set("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1));
+	_initial_set("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -651,10 +654,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_outline_size", 2);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
 	_initial_set("editors/2d/constrain_editor_view", true);
-	_initial_set("editors/2d/warped_mouse_panning", true);
-	_initial_set("editors/2d/simple_panning", false);
-	_initial_set("editors/2d/scroll_to_pan", false);
-	_initial_set("editors/2d/pan_speed", 20);
+
+	// Panning
+	// Enum should be in sync with ControlScheme in ViewPanner.
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/2d_editor_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/sub_editors_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/animation_editors_panning_scheme", 1, "Scroll Zooms,Scroll Pans");
+	_initial_set("editors/panning/simple_panning", false);
+	_initial_set("editors/panning/warped_mouse_panning", true);
+	_initial_set("editors/panning/2d_editor_pan_speed", 20);
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
@@ -703,7 +711,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/debug/remote_port", 6007, "1,65535,1")
 
 	// SSL
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem")
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+
+	// Profiler
+	_initial_set("debugger/profiler_frame_history_size", 600);
+
+	// HTTP Proxy
+	_initial_set("network/http_proxy/host", "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
 
 	/* Extra config */
 
@@ -744,7 +759,7 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
 	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
 	_initial_set("text_editor/theme/highlighting/completion_existing_color", Color(0.87, 0.87, 0.87, 0.13));
-	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1));
+	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1, 0.29));
 	_initial_set("text_editor/theme/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/text_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
@@ -792,43 +807,6 @@ bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
 	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
-static Dictionary _get_builtin_script_templates() {
-	Dictionary templates;
-
-	// No Comments
-	templates["no_comments.gd"] =
-			"extends %BASE%\n"
-			"\n"
-			"\n"
-			"func _ready()%VOID_RETURN%:\n"
-			"%TS%pass\n";
-
-	// Empty
-	templates["empty.gd"] =
-			"extends %BASE%"
-			"\n"
-			"\n";
-
-	return templates;
-}
-
-static void _create_script_templates(const String &p_path) {
-	Dictionary templates = _get_builtin_script_templates();
-	List<Variant> keys;
-	templates.get_key_list(&keys);
-	FileAccessRef file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	dir->change_dir(p_path);
-	for (int i = 0; i < keys.size(); i++) {
-		if (!dir->file_exists(keys[i])) {
-			Error err = file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
-			ERR_FAIL_COND(err != OK);
-			file->store_string(templates[keys[i]]);
-			file->close();
-		}
-	}
-}
-
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
@@ -863,10 +841,7 @@ void EditorSettings::create() {
 	}
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
-		_create_script_templates(EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates"));
-
 		// Validate editor config file.
-
 		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
@@ -888,7 +863,7 @@ void EditorSettings::create() {
 
 		singleton->setup_language();
 		singleton->setup_network();
-		singleton->load_favorites();
+		singleton->load_favorites_and_recent_dirs();
 		singleton->list_text_editor_themes();
 
 		return;
@@ -916,56 +891,16 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/enable_debugging_pseudolocalization"));
+	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/debug/enable_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
 	}
 	// Load editor translation for configured/detected locale.
-	EditorTranslationList *etl = _editor_translations;
-	while (etl->data) {
-		if (etl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
-				break;
-			}
-		}
-
-		etl++;
-	}
+	load_editor_translations(lang);
 
 	// Load class reference translation.
-	DocTranslationList *dtl = _doc_translations;
-	while (dtl->data) {
-		if (dtl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(dtl->uncomp_size);
-			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(dtl->lang);
-				TranslationServer::get_singleton()->set_doc_translation(tr);
-				break;
-			}
-		}
-
-		dtl++;
-	}
+	load_doc_translations(lang);
 }
 
 void EditorSettings::setup_network() {
@@ -989,7 +924,7 @@ void EditorSettings::setup_network() {
 		if (ip == current) {
 			selected = ip;
 		}
-		if (hint != "") {
+		if (!hint.is_empty()) {
 			hint += ",";
 		}
 		hint += ip;
@@ -1008,7 +943,7 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path == "") {
+	if (singleton->config_file_path.is_empty()) {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
 		return;
 	}
@@ -1018,8 +953,32 @@ void EditorSettings::save() {
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
 	} else {
+		singleton->changed_settings.clear();
 		print_verbose("EditorSettings: Save OK!");
 	}
+}
+
+Array EditorSettings::get_changed_settings() const {
+	Array arr;
+	for (const String &setting : changed_settings) {
+		arr.push_back(setting);
+	}
+
+	return arr;
+}
+
+bool EditorSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
+	for (const String &setting : changed_settings) {
+		if (setting.begins_with(p_setting_prefix)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void EditorSettings::mark_setting_changed(const String &p_setting) {
+	changed_settings.insert(p_setting);
 }
 
 void EditorSettings::destroy() {
@@ -1186,7 +1145,13 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	favorites = p_favorites;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
+	String favorites_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
+	} else {
+		favorites_file = get_project_settings_dir().plus_file("favorites");
+	}
+	FileAccess *f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
@@ -1201,7 +1166,13 @@ Vector<String> EditorSettings::get_favorites() const {
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	recent_dirs = p_recent_dirs;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
+	String recent_dirs_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
+	} else {
+		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+	}
+	FileAccess *f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
@@ -1214,21 +1185,30 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 	return recent_dirs;
 }
 
-void EditorSettings::load_favorites() {
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
+void EditorSettings::load_favorites_and_recent_dirs() {
+	String favorites_file;
+	String recent_dirs_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
+		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
+	} else {
+		favorites_file = get_project_settings_dir().plus_file("favorites");
+		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+	}
+	FileAccess *f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
 		memdelete(f);
 	}
 
-	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
+	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1241,25 +1221,24 @@ bool EditorSettings::is_dark_theme() {
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 
-	DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
+	DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
 	if (d) {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == "tet" && !_is_default_text_editor_theme(file.get_basename().to_lower())) {
 				custom_themes.push_back(file.get_basename());
 			}
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 
 		custom_themes.sort();
 		for (const String &E : custom_themes) {
@@ -1314,10 +1293,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
+		DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
 		if (d) {
 			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
-			memdelete(d);
 			return true;
 		}
 	}
@@ -1367,18 +1345,17 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
-	DirAccess *d = DirAccess::open(template_dir);
+	DirAccessRef d = DirAccess::open(template_dir);
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == p_extension) {
 				templates.push_back(file.get_basename());
 			}
 			file = d->get_next();
 		}
 		d->list_dir_end();
-		memdelete(d);
 	}
 	return templates;
 }
@@ -1388,7 +1365,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#ifdef OSX_ENABLED
+#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -1412,7 +1389,7 @@ float EditorSettings::get_auto_display_scale() const {
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
+void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 
@@ -1482,7 +1459,7 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
 
 	PackedInt32Array arr;
-	arr.push_back(p_keycode);
+	arr.push_back((int32_t)p_keycode);
 
 	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr);
 }
@@ -1503,13 +1480,12 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 #ifdef OSX_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == KEY_DELETE) {
-			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
 		}
 #endif
-
 		Ref<InputEventKey> ie;
-		if (keycode) {
+		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
 			events.push_back(ie);
 		}
@@ -1522,7 +1498,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
 	PackedInt32Array arr;
-	arr.push_back(p_keycode);
+	arr.push_back((int32_t)p_keycode);
 	return ED_SHORTCUT_ARRAY(p_path, p_name, arr);
 }
 
@@ -1534,13 +1510,13 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 
 #ifdef OSX_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == KEY_DELETE) {
-			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
 		}
 #endif
 
 		Ref<InputEventKey> ie;
-		if (keycode) {
+		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
 			events.push_back(ie);
 		}
@@ -1678,6 +1654,10 @@ void EditorSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_builtin_action_override", "name", "actions_list"), &EditorSettings::set_builtin_action_override);
 
+	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &EditorSettings::check_changed_settings_in_group);
+	ClassDB::bind_method(D_METHOD("get_changed_settings"), &EditorSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("mark_setting_changed", "setting"), &EditorSettings::mark_setting_changed);
+
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
@@ -1685,8 +1665,6 @@ void EditorSettings::_bind_methods() {
 
 EditorSettings::EditorSettings() {
 	last_order = 0;
-	optimize_save = true;
-	save_changed_setting = true;
 
 	_load_defaults();
 }

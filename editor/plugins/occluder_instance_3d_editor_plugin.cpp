@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,22 +30,25 @@
 
 #include "occluder_instance_3d_editor_plugin.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+
 void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 	if (occluder_instance) {
 		OccluderInstance3D::BakeError err;
 		if (get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root() == occluder_instance) {
-			err = occluder_instance->bake(occluder_instance, p_file);
+			err = occluder_instance->bake_scene(occluder_instance, p_file);
 		} else {
-			err = occluder_instance->bake(occluder_instance->get_parent(), p_file);
+			err = occluder_instance->bake_scene(occluder_instance->get_parent(), p_file);
 		}
 
 		switch (err) {
 			case OccluderInstance3D::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = occluder_instance->get_scene_file_path();
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					scene_path = occluder_instance->get_owner()->get_scene_file_path();
 				}
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't determine a save path for the occluder.\nSave your scene and try again."));
 					break;
 				}
@@ -57,6 +60,10 @@ void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 			} break;
 			case OccluderInstance3D::BAKE_ERROR_NO_MESHES: {
 				EditorNode::get_singleton()->show_warning(TTR("No meshes to bake.\nMake sure there is at least one MeshInstance3D node in the scene whose visual layers are part of the OccluderInstance3D's Bake Mask property."));
+				break;
+			}
+			case OccluderInstance3D::BAKE_ERROR_CANT_SAVE: {
+				EditorNode::get_singleton()->show_warning(TTR("Could not save the new occluder at the specified path: ") + p_file);
 				break;
 			}
 			default: {
@@ -94,11 +101,10 @@ void OccluderInstance3DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method("_bake", &OccluderInstance3DEditorPlugin::_bake);
 }
 
-OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin() {
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake Occluders"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

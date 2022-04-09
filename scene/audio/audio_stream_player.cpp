@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,49 +35,51 @@
 #include "servers/audio_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-			play();
-		}
-	}
-
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-			if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-				playbacks_to_remove.push_back(playback);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
+				play();
 			}
-		}
-		// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
-		for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
-			stream_playbacks.erase(playback);
-		}
-		if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
-			// This node is no longer actively playing audio.
-			active.clear();
-			set_process_internal(false);
-		}
-		if (!playbacks_to_remove.is_empty()) {
-			emit_signal(SNAME("finished"));
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-			AudioServer::get_singleton()->stop_playback_stream(playback);
-		}
-		stream_playbacks.clear();
-	}
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+					playbacks_to_remove.push_back(playback);
+				}
+			}
+			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+				stream_playbacks.erase(playback);
+			}
+			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+				// This node is no longer actively playing audio.
+				active.clear();
+				set_process_internal(false);
+			}
+			if (!playbacks_to_remove.is_empty()) {
+				emit_signal(SNAME("finished"));
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_PAUSED) {
-		if (!can_process()) {
-			// Node can't process so we start fading out to silence
-			set_stream_paused(true);
-		}
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+				AudioServer::get_singleton()->stop_playback_stream(playback);
+			}
+			stream_playbacks.clear();
+		} break;
 
-	if (p_what == NOTIFICATION_UNPAUSED) {
-		set_stream_paused(false);
+		case NOTIFICATION_PAUSED: {
+			if (!can_process()) {
+				// Node can't process so we start fading out to silence
+				set_stream_paused(true);
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			set_stream_paused(false);
+		} break;
 	}
 }
 
@@ -143,7 +145,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	set_process_internal(true);
 	while (stream_playbacks.size() > max_polyphony) {
 		AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-		stream_playbacks.remove(0);
+		stream_playbacks.remove_at(0);
 	}
 }
 

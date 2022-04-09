@@ -97,9 +97,13 @@ namespace Godot.SourceGenerators
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            string uniqueName = hasNamespace ?
-                classNs + "." + className + "_ScriptPath_Generated" :
-                className + "_ScriptPath_Generated";
+            var uniqueName = new StringBuilder();
+            if (hasNamespace)
+                uniqueName.Append($"{classNs}.");
+            uniqueName.Append(className);
+            if (symbol.IsGenericType)
+                uniqueName.Append($"Of{string.Join(string.Empty, symbol.TypeParameters)}");
+            uniqueName.Append("_ScriptPath_Generated");
 
             var source = new StringBuilder();
 
@@ -121,6 +125,8 @@ namespace Godot.SourceGenerators
             source.Append(attributes);
             source.Append("\n    partial class ");
             source.Append(className);
+            if (symbol.IsGenericType)
+                source.Append($"<{string.Join(", ", symbol.TypeParameters)}>");
             source.Append("\n{\n}\n");
 
             if (hasNamespace)
@@ -128,7 +134,7 @@ namespace Godot.SourceGenerators
                 source.Append("\n}\n");
             }
 
-            context.AddSource(uniqueName, SourceText.From(source.ToString(), Encoding.UTF8));
+            context.AddSource(uniqueName.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
         private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,
@@ -145,12 +151,15 @@ namespace Godot.SourceGenerators
             foreach (var godotClass in godotClasses)
             {
                 var qualifiedName = godotClass.Key.ToDisplayString(
-                    NullableFlowState.NotNull, SymbolDisplayFormat.FullyQualifiedFormat);
+                    NullableFlowState.NotNull, SymbolDisplayFormat.FullyQualifiedFormat
+                        .WithGenericsOptions(SymbolDisplayGenericsOptions.None));
                 if (!first)
                     sourceBuilder.Append(", ");
                 first = false;
                 sourceBuilder.Append("typeof(");
                 sourceBuilder.Append(qualifiedName);
+                if (godotClass.Key.IsGenericType)
+                    sourceBuilder.Append($"<{new string(',', godotClass.Key.TypeParameters.Count() - 1)}>");
                 sourceBuilder.Append(")");
             }
 

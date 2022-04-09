@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,10 +66,10 @@ struct joypad {
 	int id = 0;
 	bool offset_hat = false;
 
-	io_service_t ffservice = 0; /* Interface for force feedback, 0 = no ff */
+	io_service_t ffservice = 0; // Interface for force feedback, 0 = no ff.
 	FFCONSTANTFORCE ff_constant_force;
-	FFDeviceObjectReference ff_device;
-	FFEffectObjectReference ff_object;
+	FFDeviceObjectReference ff_device = nullptr;
+	FFEffectObjectReference ff_object = nullptr;
 	uint64_t ff_timestamp = 0;
 	LONG *ff_directions = nullptr;
 	FFEFFECT ff_effect;
@@ -94,7 +94,7 @@ class JoypadOSX {
 	};
 
 private:
-	Input *input;
+	Input *input = nullptr;
 	IOHIDManagerRef hid_manager;
 
 	Vector<joypad> device_list;

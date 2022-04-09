@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,9 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_max_distance", "max_speed"), &NavigationAgent3D::set_path_max_distance);
 	ClassDB::bind_method(D_METHOD("get_path_max_distance"), &NavigationAgent3D::get_path_max_distance);
 
+	ClassDB::bind_method(D_METHOD("set_navigable_layers", "navigable_layers"), &NavigationAgent3D::set_navigable_layers);
+	ClassDB::bind_method(D_METHOD("get_navigable_layers"), &NavigationAgent3D::get_navigable_layers);
+
 	ClassDB::bind_method(D_METHOD("set_target_location", "location"), &NavigationAgent3D::set_target_location);
 	ClassDB::bind_method(D_METHOD("get_target_location"), &NavigationAgent3D::get_target_location);
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent3D::get_next_location);
@@ -85,6 +88,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01"), "set_max_speed", "get_max_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_y"), "set_ignore_y", "get_ignore_y");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigable_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigable_layers", "get_navigable_layers");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -103,10 +107,12 @@ void NavigationAgent3D::_notification(int p_what) {
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
@@ -129,6 +135,18 @@ NavigationAgent3D::NavigationAgent3D() {
 NavigationAgent3D::~NavigationAgent3D() {
 	NavigationServer3D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
+}
+
+void NavigationAgent3D::set_navigable_layers(uint32_t p_layers) {
+	bool layers_changed = navigable_layers != p_layers;
+	navigable_layers = p_layers;
+	if (layers_changed) {
+		_request_repath();
+	}
+}
+
+uint32_t NavigationAgent3D::get_navigable_layers() const {
+	return navigable_layers;
 }
 
 void NavigationAgent3D::set_target_desired_distance(real_t p_dd) {
@@ -179,10 +197,7 @@ real_t NavigationAgent3D::get_path_max_distance() {
 
 void NavigationAgent3D::set_target_location(Vector3 p_location) {
 	target_location = p_location;
-	navigation_path.clear();
-	target_reached = false;
-	navigation_finished = false;
-	update_frame_id = 0;
+	_request_repath();
 }
 
 Vector3 NavigationAgent3D::get_target_location() const {
@@ -248,7 +263,7 @@ TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationAgent3D can be used only under a spatial node."));
+		warnings.push_back(RTR("The NavigationAgent3D can be used only under a spatial node."));
 	}
 
 	return warnings;
@@ -292,7 +307,7 @@ void NavigationAgent3D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true);
+		navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true, navigable_layers);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal(SNAME("path_changed"));
@@ -316,6 +331,13 @@ void NavigationAgent3D::update_navigation() {
 			}
 		}
 	}
+}
+
+void NavigationAgent3D::_request_repath() {
+	navigation_path.clear();
+	target_reached = false;
+	navigation_finished = false;
+	update_frame_id = 0;
 }
 
 void NavigationAgent3D::_check_distance_to_target() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,12 +121,10 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 
 	ERR_FAIL_COND(da->list_dir_begin() != OK);
 
-	String current;
-	while ((current = da->get_next()).length()) {
-		if (da->current_is_dir()) {
-			continue;
-		}
-		if (!current.ends_with(".txt")) {
+	String current = da->get_next();
+	while (!current.is_empty()) {
+		if (da->current_is_dir() || !current.ends_with(".txt")) {
+			current = da->get_next();
 			continue;
 		}
 
@@ -135,6 +133,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 		if (OS::get_singleton()->get_unix_time() - modified_time > MAX_SECS) {
 			da->remove(current);
 		}
+		current = da->get_next();
 	}
 
 	da->list_dir_end();

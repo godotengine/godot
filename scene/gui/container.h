@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,9 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_horizontal)
+	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_vertical)
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -56,6 +59,9 @@ public:
 	};
 
 	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const;
+	virtual Vector<int> get_allowed_size_flags_vertical() const;
 
 	TypedArray<String> get_configuration_warnings() const override;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,6 +135,11 @@ class BindingsGenerator {
 		 * Determines if the method has a variable number of arguments (VarArg)
 		 */
 		bool is_vararg = false;
+
+		/**
+		 * Determines if the method is static.
+		 */
+		bool is_static = false;
 
 		/**
 		 * Virtual methods ("virtual" as defined by the Godot API) are methods that by default do nothing,
@@ -366,6 +371,16 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
+		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
+			for (const MethodInterface &E : methods) {
+				if (E.proxy_name == p_proxy_name) {
+					return &E;
+				}
+			}
+
+			return nullptr;
+		}
+
 		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
 			for (const PropertyInterface &E : properties) {
 				if (E.cname == p_cname) {
@@ -386,8 +401,18 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
-		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
-			for (const MethodInterface &E : methods) {
+		const SignalInterface *find_signal_by_name(const StringName &p_cname) const {
+			for (const SignalInterface &E : signals_) {
+				if (E.cname == p_cname) {
+					return &E;
+				}
+			}
+
+			return nullptr;
+		}
+
+		const SignalInterface *find_signal_by_proxy_name(const String &p_proxy_name) const {
+			for (const SignalInterface &E : signals_) {
 				if (E.proxy_name == p_proxy_name) {
 					return &E;
 				}
@@ -598,7 +623,7 @@ class BindingsGenerator {
 
 	private:
 		NameCache(const NameCache &);
-		NameCache &operator=(const NameCache &);
+		void operator=(const NameCache &);
 	};
 
 	NameCache name_cache;
@@ -637,6 +662,14 @@ class BindingsGenerator {
 	}
 
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype);
+
+	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
+	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);

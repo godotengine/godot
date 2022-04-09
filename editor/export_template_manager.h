@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,42 +51,42 @@ class ExportTemplateManager : public AcceptDialog {
 	bool is_downloading_templates = false;
 	float update_countdown = 0;
 
-	Label *current_value;
-	Label *current_missing_label;
-	Label *current_installed_label;
+	Label *current_value = nullptr;
+	Label *current_missing_label = nullptr;
+	Label *current_installed_label = nullptr;
 
-	HBoxContainer *current_installed_hb;
-	LineEdit *current_installed_path;
-	Button *current_open_button;
-	Button *current_uninstall_button;
+	HBoxContainer *current_installed_hb = nullptr;
+	LineEdit *current_installed_path = nullptr;
+	Button *current_open_button = nullptr;
+	Button *current_uninstall_button = nullptr;
 
-	VBoxContainer *install_options_vb;
-	OptionButton *mirrors_list;
+	VBoxContainer *install_options_vb = nullptr;
+	OptionButton *mirrors_list = nullptr;
 
 	enum MirrorAction {
 		VISIT_WEB_MIRROR,
 		COPY_MIRROR_URL,
 	};
 
-	MenuButton *mirror_options_button;
-	HBoxContainer *download_progress_hb;
-	ProgressBar *download_progress_bar;
-	Label *download_progress_label;
-	HTTPRequest *download_templates;
-	Button *install_file_button;
-	HTTPRequest *request_mirrors;
+	MenuButton *mirror_options_button = nullptr;
+	HBoxContainer *download_progress_hb = nullptr;
+	ProgressBar *download_progress_bar = nullptr;
+	Label *download_progress_label = nullptr;
+	HTTPRequest *download_templates = nullptr;
+	Button *install_file_button = nullptr;
+	HTTPRequest *request_mirrors = nullptr;
 
 	enum TemplatesAction {
 		OPEN_TEMPLATE_FOLDER,
 		UNINSTALL_TEMPLATE,
 	};
 
-	Tree *installed_table;
+	Tree *installed_table = nullptr;
 
-	ConfirmationDialog *uninstall_confirm;
+	ConfirmationDialog *uninstall_confirm = nullptr;
 	String uninstall_version;
-	FileDialog *install_file_dialog;
-	AcceptDialog *hide_dialog_accept;
+	FileDialog *install_file_dialog = nullptr;
+	AcceptDialog *hide_dialog_accept = nullptr;
 
 	void _update_template_status();
 

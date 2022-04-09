@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ class Engine {
 public:
 	struct Singleton {
 		StringName name;
-		Object *ptr;
+		Object *ptr = nullptr;
 		StringName class_name; //used for binding generation hinting
 		bool user_created = false;
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
@@ -63,6 +63,7 @@ private:
 	double _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
+	int32_t gpu_idx = -1;
 
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
@@ -71,6 +72,7 @@ private:
 	Map<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint = false;
+	bool project_manager_hint = false;
 
 	static Engine *singleton;
 
@@ -118,9 +120,15 @@ public:
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
+
+	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
+	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
+
+	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;
@@ -135,6 +143,7 @@ public:
 
 	bool is_abort_on_gpu_errors_enabled() const;
 	bool is_validation_layers_enabled() const;
+	int32_t get_gpu_index() const;
 
 	Engine();
 	virtual ~Engine() {}

@@ -28,11 +28,11 @@ if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
 
 for lib in sys_env["JS_LIBS"]:
-    sys_env.Append(LINKFLAGS=["--js-library", lib])
+    sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
 for js in env["JS_PRE"]:
-    sys_env.Append(LINKFLAGS=["--pre-js", env.File(js).path])
+    sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
 for ext in env["JS_EXTERNS"]:
-    sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.path
+    sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.abspath
 
 build = []
 if env["gdnative_enabled"]:

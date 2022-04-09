@@ -109,6 +109,7 @@ struct hb_sparseset_t
   typedef bool value_t;
   value_t operator [] (hb_codepoint_t k) const { return get (k); }
   bool has (hb_codepoint_t k) const { return (*this)[k] != SENTINEL; }
+
   /* Predicate. */
   bool operator () (hb_codepoint_t k) const { return has (k); }
 
@@ -138,6 +139,8 @@ struct hb_sparseset_t
   { return s.next_range (first, last); }
   bool previous_range (hb_codepoint_t *first, hb_codepoint_t *last) const
   { return s.previous_range (first, last); }
+  unsigned int next_many (hb_codepoint_t codepoint, hb_codepoint_t *out, unsigned int size) const
+  { return s.next_many (codepoint, out, size); }
 
   unsigned int get_population () const { return s.get_population (); }
   hb_codepoint_t get_min () const { return s.get_min (); }
@@ -157,9 +160,9 @@ struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
 {
   hb_set_t () = default;
   ~hb_set_t () = default;
-  hb_set_t (hb_set_t& o) = default;
-  hb_set_t& operator= (const hb_set_t& other) = default;
-  hb_set_t& operator= (hb_set_t&& other) = default;
+  hb_set_t (hb_set_t&) = default;
+  hb_set_t& operator= (const hb_set_t&) = default;
+  hb_set_t& operator= (hb_set_t&&) = default;
   hb_set_t (std::initializer_list<hb_codepoint_t> lst) : hb_sparseset_t<hb_bit_set_invertible_t> (lst) {}
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>

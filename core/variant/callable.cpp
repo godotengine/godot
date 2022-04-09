@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callable(*this, p_arguments, p_argcount);
+	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
 }
 
 void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
@@ -59,7 +59,7 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 			return;
 		}
 #endif
-		r_return_value = obj->call(method, p_arguments, p_argcount, r_call_error);
+		r_return_value = obj->callp(method, p_arguments, p_argcount, r_call_error);
 	}
 }
 
@@ -114,8 +114,9 @@ ObjectID Callable::get_object_id() const {
 }
 
 StringName Callable::get_method() const {
-	ERR_FAIL_COND_V_MSG(is_custom(), StringName(),
-			vformat("Can't get method on CallableCustom \"%s\".", operator String()));
+	if (is_custom()) {
+		return get_custom()->get_method();
+	}
 	return method;
 }
 
@@ -310,6 +311,10 @@ Callable::~Callable() {
 	}
 }
 
+StringName CallableCustom::get_method() const {
+	ERR_FAIL_V_MSG(StringName(), vformat("Can't get method on CallableCustom \"%s\".", get_as_text()));
+}
+
 void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	r_call_error.argument = 0;
@@ -374,7 +379,7 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 		return ERR_INVALID_DATA;
 	}
 
-	return obj->emit_signal(name, p_arguments, p_argcount);
+	return obj->emit_signalp(name, p_arguments, p_argcount);
 }
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
@@ -423,4 +428,14 @@ Signal::Signal(const Object *p_object, const StringName &p_name) {
 Signal::Signal(ObjectID p_object, const StringName &p_name) {
 	object = p_object;
 	name = p_name;
+}
+
+bool CallableComparator::operator()(const Variant &p_l, const Variant &p_r) const {
+	const Variant *args[2] = { &p_l, &p_r };
+	Callable::CallError err;
+	Variant res;
+	func.call(args, 2, res, err);
+	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 1, err));
+	return res;
 }

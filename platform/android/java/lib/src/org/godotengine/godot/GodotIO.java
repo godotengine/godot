@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -222,8 +222,20 @@ public class GodotIO {
 	}
 
 	public int getScreenDPI() {
-		DisplayMetrics metrics = activity.getApplicationContext().getResources().getDisplayMetrics();
+		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
 		return (int)(metrics.density * 160f);
+	}
+
+	public float getScaledDensity() {
+		return activity.getResources().getDisplayMetrics().scaledDensity;
+	}
+
+	public double getScreenRefreshRate(double fallback) {
+		Display display = activity.getWindowManager().getDefaultDisplay();
+		if (display != null) {
+			return display.getRefreshRate();
+		}
+		return fallback;
 	}
 
 	public int[] screenGetUsableRect() {
@@ -288,7 +300,34 @@ public class GodotIO {
 	}
 
 	public int getScreenOrientation() {
-		return activity.getRequestedOrientation();
+		int orientation = activity.getRequestedOrientation();
+		switch (orientation) {
+			case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+				return SCREEN_LANDSCAPE;
+			case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+				return SCREEN_PORTRAIT;
+			case ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
+				return SCREEN_REVERSE_LANDSCAPE;
+			case ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT:
+				return SCREEN_REVERSE_PORTRAIT;
+			case ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:
+			case ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE:
+				return SCREEN_SENSOR_LANDSCAPE;
+			case ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT:
+			case ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT:
+				return SCREEN_SENSOR_PORTRAIT;
+			case ActivityInfo.SCREEN_ORIENTATION_SENSOR:
+			case ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR:
+			case ActivityInfo.SCREEN_ORIENTATION_FULL_USER:
+				return SCREEN_SENSOR;
+			case ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED:
+			case ActivityInfo.SCREEN_ORIENTATION_USER:
+			case ActivityInfo.SCREEN_ORIENTATION_BEHIND:
+			case ActivityInfo.SCREEN_ORIENTATION_NOSENSOR:
+			case ActivityInfo.SCREEN_ORIENTATION_LOCKED:
+			default:
+				return -1;
+		}
 	}
 
 	public void setEdit(GodotEditText _edit) {

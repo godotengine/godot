@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
-	if (path_cache != "") {
+	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();
@@ -82,7 +82,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	}
 	path_cache = p_path;
 
-	if (path_cache != "") {
+	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
 		ResourceCache::lock.write_unlock();
@@ -290,6 +290,21 @@ void Resource::_take_over_path(const String &p_path) {
 }
 
 RID Resource::get_rid() const {
+	if (get_script_instance()) {
+		Callable::CallError ce;
+		RID ret = get_script_instance()->callp(SNAME("_get_rid"), nullptr, 0, ce);
+		if (ce.error == Callable::CallError::CALL_OK && ret.is_valid()) {
+			return ret;
+		}
+	}
+	if (_get_extension() && _get_extension()->get_rid) {
+		RID ret;
+		ret.from_uint64(_get_extension()->get_rid(_get_extension_instance()));
+		if (ret.is_valid()) {
+			return ret;
+		}
+	}
+
 	return RID();
 }
 
@@ -383,7 +398,7 @@ bool Resource::is_translation_remapped() const {
 #ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
-	if (p_id == "") {
+	if (p_id.is_empty()) {
 		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
 		ResourceCache::path_cache_lock.write_unlock();
@@ -428,13 +443,18 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
+
+	MethodInfo get_rid_bind("_get_rid");
+	get_rid_bind.return_val.type = Variant::RID;
+
+	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
 }
 
 Resource::Resource() :
 		remapped_list(this) {}
 
 Resource::~Resource() {
-	if (path_cache != "") {
+	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();
@@ -520,8 +540,8 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 
 	FileAccess *f = nullptr;
 	if (p_file) {
-		f = FileAccess::open(p_file, FileAccess::WRITE);
-		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String(p_file) + "'.");
+		f = FileAccess::open(String::utf8(p_file), FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String::utf8(p_file) + "'.");
 	}
 
 	const String *K = nullptr;

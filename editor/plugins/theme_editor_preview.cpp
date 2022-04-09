@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,17 @@
 
 #include "theme_editor_preview.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"
 
-#include "editor/editor_scale.h"
+constexpr double REFRESH_TIMER = 1.5;
 
 void ThemeEditorPreview::set_preview_theme(const Ref<Theme> &p_theme) {
 	preview_content->set_theme(p_theme);
@@ -47,7 +53,7 @@ void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 
 void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 	p_at->notification(NOTIFICATION_THEME_CHANGED);
-	p_at->minimum_size_changed();
+	p_at->update_minimum_size();
 	p_at->update();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Control *a = Object::cast_to<Control>(p_at->get_child(i));
@@ -66,11 +72,14 @@ void ThemeEditorPreview::_refresh_interval() {
 }
 
 void ThemeEditorPreview::_preview_visibility_changed() {
-	set_process(is_visible());
+	set_process(is_visible_in_tree());
 }
 
 void ThemeEditorPreview::_picker_button_cbk() {
 	picker_overlay->set_visible(picker_button->is_pressed());
+	if (picker_button->is_pressed()) {
+		_reset_picker_overlay();
+	}
 }
 
 Control *ThemeEditorPreview::_find_hovered_control(Control *p_parent, Vector2 p_mouse_position) {
@@ -133,7 +142,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		Point2 label_pos = highlight_label_rect.position;
 		label_pos.y += highlight_label_rect.size.y - margin_bottom;
 		label_pos.x += margin_left;
-		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name, HALIGN_LEFT, -1, theme_cache.font_size);
+		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size);
 	}
 }
 
@@ -144,7 +153,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (hovered_control) {
 			StringName theme_type = hovered_control->get_theme_type_variation();
 			if (theme_type == StringName()) {
@@ -154,6 +163,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 			emit_signal(SNAME("control_picked"), theme_type);
 			picker_button->set_pressed(false);
 			picker_overlay->set_visible(false);
+			return;
 		}
 	}
 
@@ -164,6 +174,9 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 		hovered_control = _find_hovered_control(preview_content, mp);
 		picker_overlay->update();
 	}
+
+	// Forward input to the scroll container underneath to allow scrolling.
+	preview_container->gui_input(p_event);
 }
 
 void ThemeEditorPreview::_reset_picker_overlay() {
@@ -190,10 +203,11 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("EditorFonts"));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			time_left -= get_process_delta_time();
 			if (time_left < 0) {
-				time_left = 1.5;
+				time_left = REFRESH_TIMER;
 				_refresh_interval();
 			}
 		} break;
@@ -220,9 +234,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_body->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(preview_body);
 
-	ScrollContainer *preview_container = memnew(ScrollContainer);
-	preview_container->set_enable_v_scroll(true);
-	preview_container->set_enable_h_scroll(true);
+	preview_container = memnew(ScrollContainer);
 	preview_body->add_child(preview_container);
 
 	MarginContainer *preview_root = memnew(MarginContainer);
@@ -360,7 +372,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	vhb->add_child(memnew(VSeparator));
 	VBoxContainer *hvb = memnew(VBoxContainer);
 	vhb->add_child(hvb);
-	hvb->set_alignment(BoxContainer::ALIGN_CENTER);
+	hvb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hvb->set_h_size_flags(SIZE_EXPAND_FILL);
 	hvb->add_child(memnew(HSlider));
 	HScrollBar *hsb = memnew(HScrollBar);

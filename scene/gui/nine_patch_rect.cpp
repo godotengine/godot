@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,18 +34,20 @@
 #include "servers/rendering_server.h"
 
 void NinePatchRect::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		if (texture.is_null()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			if (texture.is_null()) {
+				return;
+			}
 
-		Rect2 rect = Rect2(Point2(), get_size());
-		Rect2 src_rect = region_rect;
+			Rect2 rect = Rect2(Point2(), get_size());
+			Rect2 src_rect = region_rect;
 
-		texture->get_rect_region(rect, src_rect, rect, src_rect);
+			texture->get_rect_region(rect, src_rect, rect, src_rect);
 
-		RID ci = get_canvas_item();
-		RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+			RID ci = get_canvas_item();
+			RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+		} break;
 	}
 }
 
@@ -93,11 +95,7 @@ void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 	texture = p_tex;
 	update();
-	/*
-	if (texture.is_valid())
-		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
-	*/
-	minimum_size_changed();
+	update_minimum_size();
 	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
@@ -109,7 +107,7 @@ void NinePatchRect::set_patch_margin(Side p_side, int p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	margin[p_side] = p_size;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 int NinePatchRect::get_patch_margin(Side p_side) const {

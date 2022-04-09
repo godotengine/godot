@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,29 +31,23 @@
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
 
+#include "editor/create_dialog.h"
+#include "editor/dependency_editor.h"
+#include "editor/editor_dir_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-#include "scene/main/timer.h"
 
-#include "core/io/dir_access.h"
-#include "core/os/thread.h"
-
-#include "create_dialog.h"
-
-#include "dependency_editor.h"
-#include "editor_dir_dialog.h"
-#include "editor_file_system.h"
-#include "script_create_dialog.h"
-
-class EditorNode;
+class ShaderCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
@@ -108,59 +102,59 @@ private:
 
 	FileSortOption file_sort = FILE_SORT_NAME;
 
-	VBoxContainer *scanning_vb;
-	ProgressBar *scanning_progress;
-	VSplitContainer *split_box;
-	VBoxContainer *file_list_vb;
+	VBoxContainer *scanning_vb = nullptr;
+	ProgressBar *scanning_progress = nullptr;
+	VSplitContainer *split_box = nullptr;
+	VBoxContainer *file_list_vb = nullptr;
 
-	EditorNode *editor;
 	Set<String> favorites;
 
-	Button *button_toggle_display_mode;
-	Button *button_reload;
-	Button *button_file_list_display_mode;
-	Button *button_hist_next;
-	Button *button_hist_prev;
-	LineEdit *current_path;
+	Button *button_toggle_display_mode = nullptr;
+	Button *button_reload = nullptr;
+	Button *button_file_list_display_mode = nullptr;
+	Button *button_hist_next = nullptr;
+	Button *button_hist_prev = nullptr;
+	LineEdit *current_path = nullptr;
 
-	HBoxContainer *toolbar2_hbc;
-	LineEdit *tree_search_box;
-	MenuButton *tree_button_sort;
+	HBoxContainer *toolbar2_hbc = nullptr;
+	LineEdit *tree_search_box = nullptr;
+	MenuButton *tree_button_sort = nullptr;
 
-	LineEdit *file_list_search_box;
-	MenuButton *file_list_button_sort;
+	LineEdit *file_list_search_box = nullptr;
+	MenuButton *file_list_button_sort = nullptr;
 
 	String searched_string;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon;
-	HBoxContainer *path_hb;
+	TextureRect *search_icon = nullptr;
+	HBoxContainer *path_hb = nullptr;
 
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
 	DisplayMode old_display_mode;
 
-	PopupMenu *file_list_popup;
-	PopupMenu *tree_popup;
+	PopupMenu *file_list_popup = nullptr;
+	PopupMenu *tree_popup = nullptr;
 
-	DependencyEditor *deps_editor;
-	DependencyEditorOwners *owners_editor;
-	DependencyRemoveDialog *remove_dialog;
+	DependencyEditor *deps_editor = nullptr;
+	DependencyEditorOwners *owners_editor = nullptr;
+	DependencyRemoveDialog *remove_dialog = nullptr;
 
-	EditorDirDialog *move_dialog;
-	ConfirmationDialog *rename_dialog;
-	LineEdit *rename_dialog_text;
-	ConfirmationDialog *duplicate_dialog;
-	LineEdit *duplicate_dialog_text;
-	ConfirmationDialog *make_dir_dialog;
-	LineEdit *make_dir_dialog_text;
-	ConfirmationDialog *make_scene_dialog;
-	LineEdit *make_scene_dialog_text;
-	ConfirmationDialog *overwrite_dialog;
-	ScriptCreateDialog *make_script_dialog;
-	CreateDialog *new_resource_dialog;
+	EditorDirDialog *move_dialog = nullptr;
+	ConfirmationDialog *rename_dialog = nullptr;
+	LineEdit *rename_dialog_text = nullptr;
+	ConfirmationDialog *duplicate_dialog = nullptr;
+	LineEdit *duplicate_dialog_text = nullptr;
+	ConfirmationDialog *make_dir_dialog = nullptr;
+	LineEdit *make_dir_dialog_text = nullptr;
+	ConfirmationDialog *make_scene_dialog = nullptr;
+	LineEdit *make_scene_dialog_text = nullptr;
+	ConfirmationDialog *overwrite_dialog = nullptr;
+	ScriptCreateDialog *make_script_dialog = nullptr;
+	ShaderCreateDialog *make_shader_dialog = nullptr;
+	CreateDialog *new_resource_dialog = nullptr;
 
-	bool always_show_folders;
+	bool always_show_folders = false;
 
 	class FileOrFolder {
 	public:
@@ -183,13 +177,20 @@ private:
 
 	String path;
 
-	bool initialized;
+	bool initialized = false;
 
-	bool updating_tree;
+	bool updating_tree = false;
 	int tree_update_id;
-	Tree *tree;
-	ItemList *files;
-	bool import_dock_needs_update;
+	Tree *tree = nullptr;
+	ItemList *files = nullptr;
+	bool import_dock_needs_update = false;
+
+	bool holding_branch = false;
+	Vector<TreeItem *> tree_items_selected_on_drag_begin;
+	PackedInt32Array list_items_selected_on_drag_begin;
+
+	void _tree_mouse_exited();
+	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
@@ -302,6 +303,12 @@ private:
 	void _feature_profile_changed();
 	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
+private:
+	static FileSystemDock *singleton;
+
+public:
+	static FileSystemDock *get_singleton() { return singleton; }
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -312,6 +319,8 @@ public:
 	String get_current_path() const;
 	void navigate_to_path(const String &p_path);
 	void focus_on_filter();
+
+	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
 
@@ -328,7 +337,7 @@ public:
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
-	FileSystemDock(EditorNode *p_editor);
+	FileSystemDock();
 	~FileSystemDock();
 };
 

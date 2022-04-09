@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,10 +151,10 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		switch (x.get_type()) {
 			case Variant::INT: {
-				return SGN(VariantInternalAccessor<int64_t>::get(&x));
+				return SIGN(VariantInternalAccessor<int64_t>::get(&x));
 			} break;
 			case Variant::FLOAT: {
-				return SGN(VariantInternalAccessor<double>::get(&x));
+				return SIGN(VariantInternalAccessor<double>::get(&x));
 			} break;
 			case Variant::VECTOR2: {
 				return VariantInternalAccessor<Vector2>::get(&x).sign();
@@ -176,11 +176,11 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline double signf(double x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline int64_t signi(int64_t x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline double pow(double x, double y) {
@@ -219,16 +219,16 @@ struct VariantUtilityFunctions {
 		return Math::step_decimals(step);
 	}
 
-	static inline int range_step_decimals(float step) {
-		return Math::range_step_decimals(step);
-	}
-
 	static inline double snapped(double value, double step) {
 		return Math::snapped(value, step);
 	}
 
 	static inline double lerp(double from, double to, double weight) {
 		return Math::lerp(from, to, weight);
+	}
+
+	static inline double cubic_interpolate(double from, double to, double pre, double post, double weight) {
+		return Math::cubic_interpolate(from, to, pre, post, weight);
 	}
 
 	static inline double lerp_angle(double from, double to, double weight) {
@@ -403,6 +403,10 @@ struct VariantUtilityFunctions {
 		return Math::randf();
 	}
 
+	static inline double randfn(double mean, double deviation) {
+		return Math::randfn(mean, deviation);
+	}
+
 	static inline int64_t randi_range(int64_t from, int64_t to) {
 		return Math::random((int32_t)from, (int32_t)to);
 	}
@@ -429,7 +433,7 @@ struct VariantUtilityFunctions {
 	static inline Variant weakref(const Variant &obj, Callable::CallError &r_error) {
 		if (obj.get_type() == Variant::OBJECT) {
 			r_error.error = Callable::CallError::CALL_OK;
-			if (obj.is_ref()) {
+			if (obj.is_ref_counted()) {
 				Ref<WeakRef> wref = memnew(WeakRef);
 				REF r = obj;
 				if (r.is_valid()) {
@@ -466,20 +470,20 @@ struct VariantUtilityFunctions {
 			r_error.argument = 1;
 			return String();
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
 		r_error.error = Callable::CallError::CALL_OK;
 
-		return str;
+		return s;
 	}
 
 	static inline String error_string(Error error) {
@@ -491,98 +495,98 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			String str;
+			String s;
 			for (int i = 0; i < p_arg_count; i++) {
 				String os = p_args[i]->operator String();
 
 				if (i == 0) {
-					str = os;
+					s = os;
 				} else {
-					str += os;
+					s += os;
 				}
 			}
 
 			// No need to use `print_verbose()` as this call already only happens
 			// when verbose mode is enabled. This avoids performing string argument concatenation
 			// when not needed.
-			print_line(str);
+			print_line(s);
 		}
 
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		print_error(str);
+		print_error(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
-				str += "\t";
+				s += "\t";
 			}
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
-				str += " ";
+				s += " ";
 			}
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		OS::get_singleton()->print("%s", str.utf8().get_data());
+		OS::get_singleton()->print("%s", s.utf8().get_data());
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -591,18 +595,18 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		ERR_PRINT(str);
+		ERR_PRINT(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -611,18 +615,18 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		WARN_PRINT(str);
+		WARN_PRINT(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -1196,10 +1200,10 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cubic_interpolate, sarray("from", "to", "pre", "post", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1239,6 +1243,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(randf, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randi_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randf_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randfn, sarray("mean", "deviation"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 

@@ -1038,12 +1038,12 @@ struct Chain
 	goto skip;
 
       if (reverse)
-	c->buffer->reverse ();
+	_hb_ot_layout_reverse_graphemes (c->buffer);
 
       subtable->apply (c);
 
       if (reverse)
-	c->buffer->reverse ();
+	_hb_ot_layout_reverse_graphemes (c->buffer);
 
       (void) c->buffer->message (c->font, "end chainsubtable %d", c->lookup_index);
 

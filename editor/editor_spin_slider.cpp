@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,15 +33,14 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
 #ifdef OSX_ENABLED
-		const int key = KEY_META;
+		Key key = Key::META;
 #else
-		const int key = KEY_CTRL;
+		Key key = Key::CTRL;
 #endif
 		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers. Hold Shift for more precise changes."), find_keycode_name(key));
 	}
@@ -61,7 +60,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
 					//there is an updown, so use it.
@@ -82,7 +81,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				if (grabbing_spinner_attempt) {
 					if (grabbing_spinner) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 						update();
 					} else {
 						_focus_entered();
@@ -92,7 +91,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_attempt = false;
 				}
 			}
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP || mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (grabber->is_visible()) {
 				call_deferred(SNAME("update"));
 			}
@@ -154,17 +153,17 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (grabbing_grabber) {
 		if (mb.is_valid()) {
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
-			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				set_value(get_value() - get_step());
 				mousewheel_over_grabber = true;
 			}
 		}
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			grabbing_grabber = true;
 			if (!mousewheel_over_grabber) {
@@ -212,9 +211,9 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			step *= 0.1;
 		}
 
-		uint32_t code = k->get_keycode();
+		Key code = k->get_keycode();
 		switch (code) {
-			case KEY_UP: {
+			case Key::UP: {
 				_evaluate_input_text();
 
 				double last_value = get_value();
@@ -228,7 +227,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_dirty = true;
 				set_process_internal(true);
 			} break;
-			case KEY_DOWN: {
+			case Key::DOWN: {
 				_evaluate_input_text();
 
 				double last_value = get_value();
@@ -242,6 +241,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_dirty = true;
 				set_process_internal(true);
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -260,9 +261,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// The margin values below were determined by empirical testing.
 	if (is_layout_rtl()) {
 		stylebox->set_default_margin(SIDE_LEFT, 0);
-		stylebox->set_default_margin(SIDE_RIGHT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 	} else {
-		stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 		stylebox->set_default_margin(SIDE_RIGHT, 0);
 	}
 
@@ -299,14 +300,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
-	Color lc;
-	if (use_custom_label_color) {
-		lc = custom_label_color;
-	} else {
-		lc = fc;
-	}
+	Color lc = get_theme_color(is_read_only() ? SNAME("read_only_label_color") : SNAME("label_color"));
 
-	if (flat && label != String()) {
+	if (flat && !label.is_empty()) {
 		Color label_bg_color = get_theme_color(SNAME("dark_color_3"), SNAME("Editor"));
 		if (rtl) {
 			draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
@@ -321,9 +317,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 
 	if (rtl) {
-		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HALIGN_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	} else {
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	}
 
 	int suffix_start = numstr.length();
@@ -350,7 +346,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			text_ofs.x += glyphs[i].advance;
 		}
 	}
-	TS->free(num_rid);
+	TS->free_rid(num_rid);
 
 	if (get_step() == 1) {
 		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
@@ -369,17 +365,24 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->hide();
 		}
 	} else if (!hide_slider) {
-		int grabber_w = 4 * EDSCALE;
-		int width = size.width - sb->get_minimum_size().width - grabber_w;
-		int ofs = sb->get_offset().x;
-		int svofs = (size.height + vofs) / 2 - 1;
+		const int grabber_w = 4 * EDSCALE;
+		const int width = size.width - sb->get_minimum_size().width - grabber_w;
+		const int ofs = sb->get_offset().x;
+		const int svofs = (size.height + vofs) / 2 - 1;
 		Color c = fc;
-		c.a = 0.2;
 
+		// Draw the horizontal slider's background.
+		c.a = 0.2;
 		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-		int gofs = get_as_ratio() * width;
+
+		// Draw the horizontal slider's filled part on the left.
+		const int gofs = get_as_ratio() * width;
+		c.a = 0.45;
+		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+
+		// Draw the horizontal slider's grabber.
 		c.a = 0.9;
-		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
 		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
@@ -407,11 +410,11 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			Vector2 scale = get_global_transform_with_canvas().get_scale();
 			grabber->set_scale(scale);
-			grabber->set_size(Size2(0, 0));
+			grabber->reset_size();
 			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 			if (mousewheel_over_grabber) {
-				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+				Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
 			}
 
 			grabber_range = width;
@@ -422,47 +425,50 @@ void EditorSpinSlider::_draw_spin_slider() {
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
-			break;
+		} break;
 
-		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (value_input_dirty) {
 				value_input_dirty = false;
 				value_input->set_text(get_text_value());
 			}
 			set_process_internal(false);
-			break;
+		} break;
 
-		case NOTIFICATION_DRAW:
+		case NOTIFICATION_DRAW: {
 			_draw_spin_slider();
-			break;
+		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT:
-		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_WM_CLOSE_REQUEST:
+		case NOTIFICATION_EXIT_TREE: {
 			if (grabbing_spinner) {
 				grabber->hide();
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
 			}
-			break;
+		} break;
 
-		case NOTIFICATION_MOUSE_ENTER:
+		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_over_spin = true;
 			update();
-			break;
-		case NOTIFICATION_MOUSE_EXIT:
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_over_spin = false;
 			update();
-			break;
-		case NOTIFICATION_FOCUS_ENTER:
+		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
 			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
 				_focus_entered();
 			}
 			value_input_just_closed = false;
-			break;
+		} break;
 	}
 }
 
@@ -595,11 +601,6 @@ bool EditorSpinSlider::is_flat() const {
 	return flat;
 }
 
-void EditorSpinSlider::set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color) {
-	use_custom_label_color = p_use_custom_label_color;
-	custom_label_color = p_custom_label_color;
-}
-
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
 	Rect2 gr = get_screen_rect();
@@ -655,14 +656,10 @@ void EditorSpinSlider::_ensure_input_popup() {
 }
 
 EditorSpinSlider::EditorSpinSlider() {
-	flat = false;
-	grabbing_spinner_attempt = false;
-	grabbing_spinner = false;
 	grabbing_spinner_dist_cache = 0;
 	pre_grab_value = 0;
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
-	hover_updown = false;
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
@@ -671,13 +668,5 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber->connect("mouse_entered", callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect("mouse_exited", callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));
 	grabber->connect("gui_input", callable_mp(this, &EditorSpinSlider::_grabber_gui_input));
-	mouse_over_spin = false;
-	mouse_over_grabber = false;
-	mousewheel_over_grabber = false;
-	grabbing_grabber = false;
 	grabber_range = 1;
-	value_input_just_closed = false;
-	hide_slider = false;
-	read_only = false;
-	use_custom_label_color = false;
 }

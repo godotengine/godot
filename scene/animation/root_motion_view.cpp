@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "root_motion_view.h"
+
 #include "scene/animation/animation_tree.h"
 #include "scene/resources/material.h"
+
 void RootMotionView::set_animation_path(const NodePath &p_path) {
 	path = p_path;
 	first = true;
@@ -76,93 +78,92 @@ bool RootMotionView::get_zero_y() const {
 }
 
 void RootMotionView::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		immediate_material = StandardMaterial3D::get_material_for_2d(false, true, false, false, false);
-		first = true;
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			immediate_material = StandardMaterial3D::get_material_for_2d(false, true, false, false, false);
+			first = true;
+		} break;
 
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		Transform3D transform;
+		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			Transform3D transform;
 
-		if (has_node(path)) {
-			Node *node = get_node(path);
+			if (has_node(path)) {
+				Node *node = get_node(path);
 
-			AnimationTree *tree = Object::cast_to<AnimationTree>(node);
-			if (tree && tree->is_active() && tree->get_root_motion_track() != NodePath()) {
-				if (is_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
-					set_process_internal(false);
-					set_physics_process_internal(true);
+				AnimationTree *tree = Object::cast_to<AnimationTree>(node);
+				if (tree && tree->is_active() && tree->get_root_motion_track() != NodePath()) {
+					if (is_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_PHYSICS) {
+						set_process_internal(false);
+						set_physics_process_internal(true);
+					}
+
+					if (is_physics_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_IDLE) {
+						set_process_internal(true);
+						set_physics_process_internal(false);
+					}
+
+					transform = tree->get_root_motion_transform();
 				}
+			}
 
-				if (is_physics_processing_internal() && tree->get_process_callback() == AnimationTree::ANIMATION_PROCESS_IDLE) {
-					set_process_internal(true);
-					set_physics_process_internal(false);
+			if (!first && transform == Transform3D()) {
+				return;
+			}
+
+			first = false;
+
+			transform.orthonormalize(); //don't want scale, too imprecise
+			transform.affine_invert();
+
+			accumulated = transform * accumulated;
+			accumulated.origin.x = Math::fposmod(accumulated.origin.x, cell_size);
+			if (zero_y) {
+				accumulated.origin.y = 0;
+			}
+			accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
+
+			immediate->clear_surfaces();
+
+			int cells_in_radius = int((radius / cell_size) + 1.0);
+
+			immediate->surface_begin(Mesh::PRIMITIVE_LINES, immediate_material);
+
+			for (int i = -cells_in_radius; i < cells_in_radius; i++) {
+				for (int j = -cells_in_radius; j < cells_in_radius; j++) {
+					Vector3 from(i * cell_size, 0, j * cell_size);
+					Vector3 from_i((i + 1) * cell_size, 0, j * cell_size);
+					Vector3 from_j(i * cell_size, 0, (j + 1) * cell_size);
+					from = accumulated.xform(from);
+					from_i = accumulated.xform(from_i);
+					from_j = accumulated.xform(from_j);
+
+					Color c = color, c_i = color, c_j = color;
+					c.a *= MAX(0, 1.0 - from.length() / radius);
+					c_i.a *= MAX(0, 1.0 - from_i.length() / radius);
+					c_j.a *= MAX(0, 1.0 - from_j.length() / radius);
+
+					immediate->surface_set_color(c);
+					immediate->surface_add_vertex(from);
+
+					immediate->surface_set_color(c_i);
+					immediate->surface_add_vertex(from_i);
+
+					immediate->surface_set_color(c);
+					immediate->surface_add_vertex(from);
+
+					immediate->surface_set_color(c_j);
+					immediate->surface_add_vertex(from_j);
 				}
-
-				transform = tree->get_root_motion_transform();
 			}
-		}
 
-		if (!first && transform == Transform3D()) {
-			return;
-		}
-
-		first = false;
-
-		transform.orthonormalize(); //don't want scale, too imprecise
-		transform.affine_invert();
-
-		accumulated = transform * accumulated;
-		accumulated.origin.x = Math::fposmod(accumulated.origin.x, cell_size);
-		if (zero_y) {
-			accumulated.origin.y = 0;
-		}
-		accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
-
-		immediate->clear_surfaces();
-
-		int cells_in_radius = int((radius / cell_size) + 1.0);
-
-		immediate->surface_begin(Mesh::PRIMITIVE_LINES, immediate_material);
-
-		for (int i = -cells_in_radius; i < cells_in_radius; i++) {
-			for (int j = -cells_in_radius; j < cells_in_radius; j++) {
-				Vector3 from(i * cell_size, 0, j * cell_size);
-				Vector3 from_i((i + 1) * cell_size, 0, j * cell_size);
-				Vector3 from_j(i * cell_size, 0, (j + 1) * cell_size);
-				from = accumulated.xform(from);
-				from_i = accumulated.xform(from_i);
-				from_j = accumulated.xform(from_j);
-
-				Color c = color, c_i = color, c_j = color;
-				c.a *= MAX(0, 1.0 - from.length() / radius);
-				c_i.a *= MAX(0, 1.0 - from_i.length() / radius);
-				c_j.a *= MAX(0, 1.0 - from_j.length() / radius);
-
-				immediate->surface_set_color(c);
-				immediate->surface_add_vertex(from);
-
-				immediate->surface_set_color(c_i);
-				immediate->surface_add_vertex(from_i);
-
-				immediate->surface_set_color(c);
-				immediate->surface_add_vertex(from);
-
-				immediate->surface_set_color(c_j);
-				immediate->surface_add_vertex(from_j);
-			}
-		}
-
-		immediate->surface_end();
+			immediate->surface_end();
+		} break;
 	}
 }
 
 AABB RootMotionView::get_aabb() const {
 	return AABB(Vector3(-radius, 0, -radius), Vector3(radius * 2, 0.001, radius * 2));
-}
-
-Vector<Face3> RootMotionView::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 void RootMotionView::_bind_methods() {

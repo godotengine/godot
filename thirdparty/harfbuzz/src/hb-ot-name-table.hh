@@ -256,7 +256,7 @@ struct name
     })
     ;
 
-    name_prime->serialize (c->serializer, it, hb_addressof (this + stringOffset));
+    name_prime->serialize (c->serializer, it, std::addressof (this + stringOffset));
     return_trace (name_prime->count);
   }
 
@@ -279,7 +279,7 @@ struct name
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<name> (face);
       assert (this->table.get_length () >= this->table->stringOffset);
@@ -288,7 +288,6 @@ struct name
       const hb_array_t<const NameRecord> all_names (this->table->nameRecordZ.arrayZ,
 						    this->table->count);
 
-      this->names.init ();
       this->names.alloc (all_names.length);
 
       for (unsigned int i = 0; i < all_names.length; i++)
@@ -318,10 +317,8 @@ struct name
       }
       this->names.resize (j);
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
-      this->names.fini ();
       this->table.destroy ();
     }
 
@@ -373,7 +370,9 @@ struct name
 #undef entry_index
 #undef entry_score
 
-struct name_accelerator_t : name::accelerator_t {};
+struct name_accelerator_t : name::accelerator_t {
+  name_accelerator_t (hb_face_t *face) : name::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

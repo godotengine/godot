@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
@@ -40,7 +40,7 @@
 class StyleBoxPreview : public VBoxContainer {
 	GDCLASS(StyleBoxPreview, VBoxContainer);
 
-	Control *preview;
+	Control *preview = nullptr;
 	Ref<StyleBox> stylebox;
 
 	void _sb_changed();
@@ -69,7 +69,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "StyleBox"; }
 
-	StyleBoxEditorPlugin(EditorNode *p_node);
+	StyleBoxEditorPlugin();
 };
 
 #endif // STYLE_BOX_EDITOR_PLUGIN_H

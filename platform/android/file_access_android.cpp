@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,10 @@
 /*************************************************************************/
 
 #include "file_access_android.h"
+
 #include "core/string/print_string.h"
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
-
-/*void FileAccessAndroid::make_default() {
-	create_func=create_android;
-}*/
 
 FileAccess *FileAccessAndroid::create_android() {
 	return memnew(FileAccessAndroid);
@@ -43,16 +40,17 @@ FileAccess *FileAccessAndroid::create_android() {
 
 Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	String path = fix_path(p_path).simplify_path();
-	if (path.begins_with("/"))
+	if (path.begins_with("/")) {
 		path = path.substr(1, path.length());
-	else if (path.begins_with("res://"))
+	} else if (path.begins_with("res://")) {
 		path = path.substr(6, path.length());
+	}
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, ERR_UNAVAILABLE); //can't write on android..
 	a = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
-	if (!a)
+	if (!a) {
 		return ERR_CANT_OPEN;
-	//ERR_FAIL_COND_V(!a,ERR_FILE_NOT_FOUND);
+	}
 	len = AAsset_getLength(a);
 	pos = 0;
 	eof = false;
@@ -61,8 +59,9 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessAndroid::close() {
-	if (!a)
+	if (!a) {
 		return;
+	}
 	AAsset_close(a);
 	a = nullptr;
 }
@@ -146,15 +145,17 @@ void FileAccessAndroid::store_8(uint8_t p_dest) {
 
 bool FileAccessAndroid::file_exists(const String &p_path) {
 	String path = fix_path(p_path).simplify_path();
-	if (path.begins_with("/"))
+	if (path.begins_with("/")) {
 		path = path.substr(1, path.length());
-	else if (path.begins_with("res://"))
+	} else if (path.begins_with("res://")) {
 		path = path.substr(6, path.length());
+	}
 
 	AAsset *at = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
-	if (!at)
+	if (!at) {
 		return false;
+	}
 
 	AAsset_close(at);
 	return true;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve2D" inherits="Resource" version="4.0">
+<class name="Curve2D" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Describes a Bézier curve in 2D space.
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="2" name="out" type="Vector2" default="Vector2(0, 0)" />
 			<argument index="3" name="at_position" type="int" default="-1" />
 			<description>
-				Adds a point to a curve at [code]position[/code], with control points [code]in[/code] and [code]out[/code].
+				Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s position, with control points [code]in[/code] and [code]out[/code].
 				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt;0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
 			</description>
 		</method>

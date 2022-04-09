@@ -291,7 +291,13 @@ enum {
   ucp_Chorasmian,
   ucp_Dives_Akuru,
   ucp_Khitan_Small_Script,
-  ucp_Yezidi
+  ucp_Yezidi,
+  /* New for Unicode 14.0.0 */
+  ucp_Cypro_Minoan,
+  ucp_Old_Uyghur,
+  ucp_Tangsa,
+  ucp_Toto,
+  ucp_Vithkuqi
 };
 
 #endif  /* PCRE2_UCP_H_IDEMPOTENT_GUARD */

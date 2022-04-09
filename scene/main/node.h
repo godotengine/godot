@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,6 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "core/config/project_settings.h"
-#include "core/object/class_db.h"
-#include "core/object/script_language.h"
 #include "core/string/node_path.h"
 #include "core/templates/map.h"
 #include "core/variant/typed_array.h"
@@ -46,7 +43,6 @@ class PropertyTweener;
 
 class Node : public Object {
 	GDCLASS(Node, Object);
-	OBJ_CATEGORY("Nodes");
 
 public:
 	enum ProcessMode {
@@ -140,6 +136,7 @@ private:
 		bool process_internal = false;
 
 		bool input = false;
+		bool shortcut_input = false;
 		bool unhandled_input = false;
 		bool unhandled_key_input = false;
 
@@ -172,8 +169,7 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
-	void _propagate_validate_owner();
-	void _print_stray_nodes();
+	void _print_orphan_nodes();
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	Array _get_node_and_resource(const NodePath &p_path);
 
@@ -183,8 +179,8 @@ private:
 	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	Array _get_groups() const;
 
-	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
 	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
@@ -213,7 +209,6 @@ protected:
 	static String _get_name_num_separator();
 
 	friend class SceneState;
-	friend class MultiplayerReplicator;
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);
@@ -221,11 +216,13 @@ protected:
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);
+	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
 protected:
 	virtual void input(const Ref<InputEvent> &p_event);
+	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
 
@@ -237,6 +234,7 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
+	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
@@ -256,7 +254,7 @@ public:
 		NOTIFICATION_INSTANCED = 20,
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
-		NOTIFICATION_PATH_CHANGED = 23,
+		NOTIFICATION_PATH_RENAMED = 23,
 		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
@@ -273,6 +271,8 @@ public:
 		NOTIFICATION_WM_GO_BACK_REQUEST = 1007,
 		NOTIFICATION_WM_SIZE_CHANGED = 1008,
 		NOTIFICATION_WM_DPI_CHANGE = 1009,
+		NOTIFICATION_VP_MOUSE_ENTER = 1010,
+		NOTIFICATION_VP_MOUSE_EXIT = 1011,
 
 		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
 		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
@@ -304,7 +304,7 @@ public:
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
-	Node *find_node(const String &p_mask, bool p_recursive = true, bool p_owned = true) const;
+	TypedArray<Node> find_nodes(const String &p_mask, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
@@ -399,6 +399,9 @@ public:
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
 
+	void set_process_shortcut_input(bool p_enable);
+	bool is_processing_shortcut_input() const;
+
 	void set_process_unhandled_input(bool p_enable);
 	bool is_processing_unhandled_input() const;
 
@@ -423,7 +426,11 @@ public:
 	void set_scene_instance_load_placeholder(bool p_enable);
 	bool get_scene_instance_load_placeholder() const;
 
-	static Vector<Variant> make_binds(VARIANT_ARG_LIST);
+	template <typename... VarArgs>
+	Vector<Variant> make_binds(VarArgs... p_args) {
+		Vector<Variant> binds = { p_args... };
+		return binds;
+	}
 
 	void replace_by(Node *p_node, bool p_keep_data = false);
 
@@ -435,7 +442,7 @@ public:
 
 	void request_ready();
 
-	static void print_stray_nodes();
+	static void print_orphan_nodes();
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
@@ -468,15 +475,33 @@ public:
 	bool is_displayed_folded() const;
 	/* NETWORK */
 
-	void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
+	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
 	int get_multiplayer_authority() const;
 	bool is_multiplayer_authority() const;
 
 	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local = false, Multiplayer::TransferMode p_transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0); // config a local method for RPC
 	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;
 
-	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel
-	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); // RPC to specific peer(s), honors RPCMode, TransferMode, channel
+	template <typename... VarArgs>
+	void rpc(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		rpcp(0, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename... VarArgs>
+	void rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
 	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;

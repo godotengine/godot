@@ -22,12 +22,37 @@ env.CommandNoCache(
     ),
 )
 
-# Header to be included in `tests/test_main.cpp` to run module-specific tests.
+
+vs_sources = []
+test_headers = []
+# libmodule_<name>.a for each active module.
+for name, path in env.module_list.items():
+    env.modules_sources = []
+
+    # Name for built-in modules, (absolute) path for custom ones.
+    base_path = path if os.path.isabs(path) else name
+    SConscript(base_path + "/SCsub")
+
+    lib = env_modules.add_library("module_%s" % name, env.modules_sources)
+    env.Prepend(LIBS=[lib])
+    if env["vsproj"]:
+        vs_sources += env.modules_sources
+
+    if env["tests"]:
+        # Lookup potential headers in `tests` subfolder.
+        import glob
+
+        module_tests = sorted(glob.glob(os.path.join(base_path, "tests", "*.h")))
+        if module_tests != []:
+            test_headers += module_tests
+
+
+# Generate header to be included in `tests/test_main.cpp` to run module-specific tests.
 if env["tests"]:
-    env.Depends("modules_tests.gen.h", Value(env.module_list))
+    env.Depends("modules_tests.gen.h", test_headers)
     env.CommandNoCache(
         "modules_tests.gen.h",
-        Value(env.module_list),
+        test_headers,
         env.Run(
             modules_builders.generate_modules_tests,
             "Generating modules tests header.",
@@ -35,22 +60,6 @@ if env["tests"]:
             subprocess=False,
         ),
     )
-    env.AlwaysBuild("modules_tests.gen.h")
-
-vs_sources = []
-# libmodule_<name>.a for each active module.
-for name, path in env.module_list.items():
-    env.modules_sources = []
-
-    if not os.path.isabs(path):
-        SConscript(name + "/SCsub")  # Built-in.
-    else:
-        SConscript(path + "/SCsub")  # Custom.
-
-    lib = env_modules.add_library("module_%s" % name, env.modules_sources)
-    env.Prepend(LIBS=[lib])
-    if env["vsproj"]:
-        vs_sources += env.modules_sources
 
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side

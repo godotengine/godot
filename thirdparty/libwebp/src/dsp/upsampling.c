@@ -233,12 +233,12 @@ WEBP_DSP_INIT_FUNC(WebPInitYUV444Converters) {
   WebPYUV444Converters[MODE_rgbA_4444] = WebPYuv444ToRgba4444_C;
 
   if (VP8GetCPUInfo != NULL) {
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       WebPInitYUV444ConvertersSSE2();
     }
 #endif
-#if defined(WEBP_USE_SSE41)
+#if defined(WEBP_HAVE_SSE41)
     if (VP8GetCPUInfo(kSSE4_1)) {
       WebPInitYUV444ConvertersSSE41();
     }
@@ -278,12 +278,12 @@ WEBP_DSP_INIT_FUNC(WebPInitUpsamplers) {
 
   // If defined, use CPUInfo() to overwrite some pointers with faster versions.
   if (VP8GetCPUInfo != NULL) {
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       WebPInitUpsamplersSSE2();
     }
 #endif
-#if defined(WEBP_USE_SSE41)
+#if defined(WEBP_HAVE_SSE41)
     if (VP8GetCPUInfo(kSSE4_1)) {
       WebPInitUpsamplersSSE41();
     }
@@ -300,7 +300,7 @@ WEBP_DSP_INIT_FUNC(WebPInitUpsamplers) {
 #endif
   }
 
-#if defined(WEBP_USE_NEON)
+#if defined(WEBP_HAVE_NEON)
   if (WEBP_NEON_OMIT_C_CODE ||
       (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kNEON))) {
     WebPInitUpsamplersNEON();

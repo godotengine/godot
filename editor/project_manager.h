@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,46 +50,51 @@ enum FilterOption {
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
-	TabContainer *tabs;
+	Map<String, Ref<Texture2D>> icon_type_cache;
+	void _build_icon_type_cache(Ref<Theme> p_theme);
 
-	ProjectList *_project_list;
+	static ProjectManager *singleton;
 
-	LineEdit *search_box;
-	Label *loading_label;
-	OptionButton *filter_option;
+	TabContainer *tabs = nullptr;
 
-	Button *run_btn;
-	Button *open_btn;
-	Button *rename_btn;
-	Button *erase_btn;
-	Button *erase_missing_btn;
-	Button *about_btn;
+	ProjectList *_project_list = nullptr;
 
-	EditorAssetLibrary *asset_library;
+	LineEdit *search_box = nullptr;
+	Label *loading_label = nullptr;
+	OptionButton *filter_option = nullptr;
 
-	FileDialog *scan_dir;
-	ConfirmationDialog *language_restart_ask;
+	Button *run_btn = nullptr;
+	Button *open_btn = nullptr;
+	Button *rename_btn = nullptr;
+	Button *erase_btn = nullptr;
+	Button *erase_missing_btn = nullptr;
+	Button *about_btn = nullptr;
 
-	ConfirmationDialog *erase_ask;
-	Label *erase_ask_label;
-	CheckBox *delete_project_contents;
+	EditorAssetLibrary *asset_library = nullptr;
 
-	ConfirmationDialog *erase_missing_ask;
-	ConfirmationDialog *multi_open_ask;
-	ConfirmationDialog *multi_run_ask;
-	ConfirmationDialog *multi_scan_ask;
-	ConfirmationDialog *ask_update_settings;
-	ConfirmationDialog *open_templates;
-	EditorAbout *about;
+	EditorFileDialog *scan_dir = nullptr;
+	ConfirmationDialog *language_restart_ask = nullptr;
 
-	HBoxContainer *settings_hb;
+	ConfirmationDialog *erase_ask = nullptr;
+	Label *erase_ask_label = nullptr;
+	CheckBox *delete_project_contents = nullptr;
 
-	AcceptDialog *run_error_diag;
-	AcceptDialog *dialog_error;
-	ProjectDialog *npdialog;
+	ConfirmationDialog *erase_missing_ask = nullptr;
+	ConfirmationDialog *multi_open_ask = nullptr;
+	ConfirmationDialog *multi_run_ask = nullptr;
+	ConfirmationDialog *multi_scan_ask = nullptr;
+	ConfirmationDialog *ask_update_settings = nullptr;
+	ConfirmationDialog *open_templates = nullptr;
+	EditorAbout *about = nullptr;
 
-	OptionButton *language_btn;
-	LinkButton *version_btn;
+	HBoxContainer *settings_hb = nullptr;
+
+	AcceptDialog *run_error_diag = nullptr;
+	AcceptDialog *dialog_error = nullptr;
+	ProjectDialog *npdialog = nullptr;
+
+	OptionButton *language_btn = nullptr;
+	LinkButton *version_btn = nullptr;
 
 	void _open_asset_library();
 	void _scan_projects();
@@ -121,7 +126,7 @@ class ProjectManager : public Control {
 	void _install_project(const String &p_zip_path, const String &p_title);
 
 	void _dim_window();
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_ev) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 	void _files_dropped(PackedStringArray p_files, int p_screen);
 
 	void _version_button_pressed();
@@ -129,11 +134,15 @@ class ProjectManager : public Control {
 	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
 
+	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	static ProjectManager *get_singleton() { return singleton; }
+
 	ProjectManager();
 	~ProjectManager();
 };

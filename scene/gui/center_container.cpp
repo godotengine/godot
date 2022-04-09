@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ void CenterContainer::set_use_top_left(bool p_enable) {
 
 	use_top_left = p_enable;
 
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 
@@ -69,22 +69,32 @@ bool CenterContainer::is_using_top_left() const {
 	return use_top_left;
 }
 
-void CenterContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Size2 size = get_size();
-		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c) {
-				continue;
-			}
-			if (c->is_set_as_top_level()) {
-				continue;
-			}
+Vector<int> CenterContainer::get_allowed_size_flags_horizontal() const {
+	return Vector<int>();
+}
 
-			Size2 minsize = c->get_combined_minimum_size();
-			Point2 ofs = use_top_left ? (-minsize * 0.5).floor() : ((size - minsize) / 2.0).floor();
-			fit_child_in_rect(c, Rect2(ofs, minsize));
-		}
+Vector<int> CenterContainer::get_allowed_size_flags_vertical() const {
+	return Vector<int>();
+}
+
+void CenterContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_SORT_CHILDREN: {
+			Size2 size = get_size();
+			for (int i = 0; i < get_child_count(); i++) {
+				Control *c = Object::cast_to<Control>(get_child(i));
+				if (!c) {
+					continue;
+				}
+				if (c->is_set_as_top_level()) {
+					continue;
+				}
+
+				Size2 minsize = c->get_combined_minimum_size();
+				Point2 ofs = use_top_left ? (-minsize * 0.5).floor() : ((size - minsize) / 2.0).floor();
+				fit_child_in_rect(c, Rect2(ofs, minsize));
+			}
+		} break;
 	}
 }
 

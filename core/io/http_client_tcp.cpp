@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,9 +70,21 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 
 	connection = tcp_connection;
 
-	if (conn_host.is_valid_ip_address()) {
-		// Host contains valid IP
-		Error err = tcp_connection->connect_to_host(IPAddress(conn_host), p_port);
+	if (ssl && https_proxy_port != -1) {
+		proxy_client.instantiate(); // Needs proxy negotiation.
+		server_host = https_proxy_host;
+		server_port = https_proxy_port;
+	} else if (!ssl && http_proxy_port != -1) {
+		server_host = http_proxy_host;
+		server_port = http_proxy_port;
+	} else {
+		server_host = conn_host;
+		server_port = conn_port;
+	}
+
+	if (server_host.is_valid_ip_address()) {
+		// Host contains valid IP.
+		Error err = tcp_connection->connect_to_host(IPAddress(server_host), server_port);
 		if (err) {
 			status = STATUS_CANT_CONNECT;
 			return err;
@@ -80,8 +92,8 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 
 		status = STATUS_CONNECTING;
 	} else {
-		// Host contains hostname and needs to be resolved to IP
-		resolving = IP::get_singleton()->resolve_hostname_queue_item(conn_host);
+		// Host contains hostname and needs to be resolved to IP.
+		resolving = IP::get_singleton()->resolve_hostname_queue_item(server_host);
 		status = STATUS_RESOLVING;
 	}
 
@@ -112,7 +124,7 @@ Ref<StreamPeer> HTTPClientTCP::get_connection() const {
 static bool _check_request_url(HTTPClientTCP::Method p_method, const String &p_url) {
 	switch (p_method) {
 		case HTTPClientTCP::METHOD_CONNECT: {
-			// Authority in host:port format, as in RFC7231
+			// Authority in host:port format, as in RFC7231.
 			int pos = p_url.find_char(':');
 			return 0 < pos && pos < p_url.length() - 1;
 		}
@@ -123,7 +135,7 @@ static bool _check_request_url(HTTPClientTCP::Method p_method, const String &p_u
 			[[fallthrough]];
 		}
 		default:
-			// Absolute path or absolute URL
+			// Absolute path or absolute URL.
 			return p_url.begins_with("/") || p_url.begins_with("http://") || p_url.begins_with("https://");
 	}
 }
@@ -134,7 +146,17 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
-	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
+	Error err = verify_headers(p_headers);
+	if (err) {
+		return err;
+	}
+
+	String uri = p_url;
+	if (!ssl && http_proxy_port != -1) {
+		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
+	}
+
+	String request = String(_methods[p_method]) + " " + uri + " HTTP/1.1\r\n";
 	bool add_host = true;
 	bool add_clen = p_body_size > 0;
 	bool add_uagent = true;
@@ -156,7 +178,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	}
 	if (add_host) {
 		if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
-			// Don't append the standard ports
+			// Don't append the standard ports.
 			request += "Host: " + conn_host + "\r\n";
 		} else {
 			request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
@@ -175,21 +197,12 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	request += "\r\n";
 	CharString cs = request.utf8();
 
-	Vector<uint8_t> data;
-	data.resize(cs.length() + p_body_size);
-	memcpy(data.ptrw(), cs.get_data(), cs.length());
+	request_buffer->clear();
+	request_buffer->put_data((const uint8_t *)cs.get_data(), cs.length());
 	if (p_body_size > 0) {
-		memcpy(data.ptrw() + cs.length(), p_body, p_body_size);
+		request_buffer->put_data(p_body, p_body_size);
 	}
-
-	// TODO Implement non-blocking requests.
-	Error err = connection->put_data(data.ptr(), data.size());
-
-	if (err) {
-		close();
-		status = STATUS_CONNECTION_ERROR;
-		return err;
-	}
+	request_buffer->seek(0);
 
 	status = STATUS_REQUESTING;
 	head_request = p_method == METHOD_HEAD;
@@ -229,6 +242,7 @@ void HTTPClientTCP::close() {
 	}
 
 	connection.unref();
+	proxy_client.unref();
 	status = STATUS_DISCONNECTED;
 	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
@@ -239,6 +253,7 @@ void HTTPClientTCP::close() {
 	ip_candidates.clear();
 	response_headers.clear();
 	response_str.clear();
+	request_buffer->clear();
 	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
@@ -256,7 +271,7 @@ Error HTTPClientTCP::poll() {
 			IP::ResolverStatus rstatus = IP::get_singleton()->get_resolve_item_status(resolving);
 			switch (rstatus) {
 				case IP::RESOLVER_STATUS_WAITING:
-					return OK; // Still resolving
+					return OK; // Still resolving.
 
 				case IP::RESOLVER_STATUS_DONE: {
 					ip_candidates = IP::get_singleton()->get_resolve_item_addresses(resolving);
@@ -265,7 +280,7 @@ Error HTTPClientTCP::poll() {
 
 					Error err = ERR_BUG; // Should be at least one entry.
 					while (ip_candidates.size() > 0) {
-						err = tcp_connection->connect_to_host(ip_candidates.front(), conn_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
 						if (err == OK) {
 							break;
 						}
@@ -294,10 +309,51 @@ Error HTTPClientTCP::poll() {
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
-					if (ssl) {
+					if (ssl && proxy_client.is_valid()) {
+						Error err = proxy_client->poll();
+						if (err == ERR_UNCONFIGURED) {
+							proxy_client->set_connection(tcp_connection);
+							const Vector<String> headers;
+							err = proxy_client->request(METHOD_CONNECT, vformat("%s:%d", conn_host, conn_port), headers, nullptr, 0);
+							if (err != OK) {
+								status = STATUS_CANT_CONNECT;
+								return err;
+							}
+						} else if (err != OK) {
+							status = STATUS_CANT_CONNECT;
+							return err;
+						}
+						switch (proxy_client->get_status()) {
+							case STATUS_REQUESTING: {
+								return OK;
+							} break;
+							case STATUS_BODY: {
+								proxy_client->read_response_body_chunk();
+								return OK;
+							} break;
+							case STATUS_CONNECTED: {
+								if (proxy_client->get_response_code() != RESPONSE_OK) {
+									status = STATUS_CANT_CONNECT;
+									return ERR_CANT_CONNECT;
+								}
+								proxy_client.unref();
+								return OK;
+							}
+							case STATUS_DISCONNECTED:
+							case STATUS_RESOLVING:
+							case STATUS_CONNECTING: {
+								status = STATUS_CANT_CONNECT;
+								ERR_FAIL_V(ERR_BUG);
+							} break;
+							default: {
+								status = STATUS_CANT_CONNECT;
+								return ERR_CANT_CONNECT;
+							} break;
+						}
+					} else if (ssl) {
 						Ref<StreamPeerSSL> ssl;
 						if (!handshaking) {
-							// Connect the StreamPeerSSL and start handshaking
+							// Connect the StreamPeerSSL and start handshaking.
 							ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
 							ssl->set_blocking_handshake_enabled(false);
 							Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
@@ -309,7 +365,7 @@ Error HTTPClientTCP::poll() {
 							connection = ssl;
 							handshaking = true;
 						} else {
-							// We are already handshaking, which means we can use your already active SSL connection
+							// We are already handshaking, which means we can use your already active SSL connection.
 							ssl = static_cast<Ref<StreamPeerSSL>>(connection);
 							if (ssl.is_null()) {
 								close();
@@ -317,22 +373,22 @@ Error HTTPClientTCP::poll() {
 								return ERR_CANT_CONNECT;
 							}
 
-							ssl->poll(); // Try to finish the handshake
+							ssl->poll(); // Try to finish the handshake.
 						}
 
 						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
-							// Handshake has been successful
+							// Handshake has been successful.
 							handshaking = false;
 							ip_candidates.clear();
 							status = STATUS_CONNECTED;
 							return OK;
 						} else if (ssl->get_status() != StreamPeerSSL::STATUS_HANDSHAKING) {
-							// Handshake has failed
+							// Handshake has failed.
 							close();
 							status = STATUS_SSL_HANDSHAKE_ERROR;
 							return ERR_CANT_CONNECT;
 						}
-						// ... we will need to poll more for handshake to finish
+						// ... we will need to poll more for handshake to finish.
 					} else {
 						ip_candidates.clear();
 						status = STATUS_CONNECTED;
@@ -344,7 +400,7 @@ Error HTTPClientTCP::poll() {
 					Error err = ERR_CANT_CONNECT;
 					while (ip_candidates.size() > 0) {
 						tcp_connection->disconnect_from_host();
-						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), conn_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), server_port);
 						if (err == OK) {
 							return OK;
 						}
@@ -357,7 +413,7 @@ Error HTTPClientTCP::poll() {
 		} break;
 		case STATUS_BODY:
 		case STATUS_CONNECTED: {
-			// Check if we are still connected
+			// Check if we are still connected.
 			if (ssl) {
 				Ref<StreamPeerSSL> tmp = connection;
 				tmp->poll();
@@ -369,10 +425,34 @@ Error HTTPClientTCP::poll() {
 				status = STATUS_CONNECTION_ERROR;
 				return ERR_CONNECTION_ERROR;
 			}
-			// Connection established, requests can now be made
+			// Connection established, requests can now be made.
 			return OK;
 		} break;
 		case STATUS_REQUESTING: {
+			if (request_buffer->get_available_bytes()) {
+				int avail = request_buffer->get_available_bytes();
+				int pos = request_buffer->get_position();
+				const Vector<uint8_t> data = request_buffer->get_data_array();
+				int wrote = 0;
+				Error err;
+				if (blocking) {
+					err = connection->put_data(data.ptr() + pos, avail);
+					wrote += avail;
+				} else {
+					err = connection->put_partial_data(data.ptr() + pos, avail, wrote);
+				}
+				if (err != OK) {
+					close();
+					status = STATUS_CONNECTION_ERROR;
+					return ERR_CONNECTION_ERROR;
+				}
+				pos += wrote;
+				request_buffer->seek(pos);
+				if (avail - wrote > 0) {
+					return OK;
+				}
+				request_buffer->clear();
+			}
 			while (true) {
 				uint8_t byte;
 				int rec = 0;
@@ -475,7 +555,7 @@ Error HTTPClientTCP::poll() {
 	return OK;
 }
 
-int HTTPClientTCP::get_response_body_length() const {
+int64_t HTTPClientTCP::get_response_body_length() const {
 	return body_size;
 }
 
@@ -488,7 +568,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 	if (chunked) {
 		while (true) {
 			if (chunk_trailer_part) {
-				// We need to consume the trailer part too or keep-alive will break
+				// We need to consume the trailer part too or keep-alive will break.
 				uint8_t b;
 				int rec = 0;
 				err = _get_http_data(&b, 1, rec);
@@ -501,18 +581,18 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 				int cs = chunk.size();
 				if ((cs >= 2 && chunk[cs - 2] == '\r' && chunk[cs - 1] == '\n')) {
 					if (cs == 2) {
-						// Finally over
+						// Finally over.
 						chunk_trailer_part = false;
 						status = STATUS_CONNECTED;
 						chunk.clear();
 						break;
 					} else {
-						// We do not process nor return the trailer data
+						// We do not process nor return the trailer data.
 						chunk.clear();
 					}
 				}
 			} else if (chunk_left == 0) {
-				// Reading length
+				// Reading length.
 				uint8_t b;
 				int rec = 0;
 				err = _get_http_data(&b, 1, rec);
@@ -534,7 +614,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 					for (int i = 0; i < chunk.size() - 2; i++) {
 						char c = chunk[i];
 						int v = 0;
-						if (c >= '0' && c <= '9') {
+						if (is_digit(c)) {
 							v = c - '0';
 						} else if (c >= 'a' && c <= 'f') {
 							v = c - 'a' + 10;
@@ -599,7 +679,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 				uint8_t *w = ret.ptrw();
 				err = _get_http_data(w + _offset, to_read, rec);
 			}
-			if (rec <= 0) { // Ended up reading less
+			if (rec <= 0) { // Ended up reading less.
 				ret.resize(_offset);
 				break;
 			} else {
@@ -620,7 +700,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 		close();
 
 		if (err == ERR_FILE_EOF) {
-			status = STATUS_DISCONNECTED; // Server disconnected
+			status = STATUS_DISCONNECTED; // Server disconnected.
 		} else {
 			status = STATUS_CONNECTION_ERROR;
 		}
@@ -678,8 +758,29 @@ int HTTPClientTCP::get_read_chunk_size() const {
 	return read_chunk_size;
 }
 
+void HTTPClientTCP::set_http_proxy(const String &p_host, int p_port) {
+	if (p_host.is_empty() || p_port == -1) {
+		http_proxy_host = "";
+		http_proxy_port = -1;
+	} else {
+		http_proxy_host = p_host;
+		http_proxy_port = p_port;
+	}
+}
+
+void HTTPClientTCP::set_https_proxy(const String &p_host, int p_port) {
+	if (p_host.is_empty() || p_port == -1) {
+		https_proxy_host = "";
+		https_proxy_port = -1;
+	} else {
+		https_proxy_host = p_host;
+		https_proxy_port = p_port;
+	}
+}
+
 HTTPClientTCP::HTTPClientTCP() {
 	tcp_connection.instantiate();
+	request_buffer.instantiate();
 }
 
 HTTPClient *(*HTTPClient::_create)() = HTTPClientTCP::_create_func;

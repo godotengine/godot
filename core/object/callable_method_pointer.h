@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 #include "core/variant/callable.h"
 
 class CallableCustomMethodPointerBase : public CallableCustom {
-	uint32_t *comp_ptr;
+	uint32_t *comp_ptr = nullptr;
 	uint32_t comp_size;
 	uint32_t h;
 #ifdef DEBUG_METHODS_ENABLED
@@ -51,6 +51,14 @@ protected:
 	void _setup(uint32_t *p_base_ptr, uint32_t p_ptr_size);
 
 public:
+	virtual StringName get_method() const {
+#ifdef DEBUG_METHODS_ENABLED
+		return StringName(text);
+#else
+		return StringName();
+#endif
+	}
+
 #ifdef DEBUG_METHODS_ENABLED
 	void set_text(const char *p_text) {
 		text = p_text;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShaderMaterial" inherits="Material" version="4.0">
+<class name="ShaderMaterial" inherits="Material" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A material that uses a custom [Shader] program.
 	</brief_description>
@@ -7,7 +7,7 @@
 		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
 	</description>
 	<tutorials>
-		<link title="Shaders documentation index">https://docs.godotengine.org/en/latest/tutorials/shaders/index.html</link>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_shader_param" qualifiers="const">

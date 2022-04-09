@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,11 +45,11 @@ class KeyMappingX11 {
 
 public:
 	static Key get_keycode(KeySym p_keysym);
-	static unsigned int get_xlibcode(unsigned int p_keysym);
-	static unsigned int get_scancode(unsigned int p_code);
+	static unsigned int get_xlibcode(Key p_keysym);
+	static Key get_scancode(unsigned int p_code);
 	static KeySym get_keysym(Key p_code);
 	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
 	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
 };
 
-#endif
+#endif // KEY_MAPPING_X11_H

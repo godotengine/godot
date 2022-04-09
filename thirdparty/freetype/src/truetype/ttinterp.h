@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -144,37 +144,41 @@ FT_BEGIN_HEADER
    *
    * The main structure for the interpreter which collects all necessary
    * variables and states.
+   *
+   * Members that are initialized by `TT_Load_Context` are marked with '!'.
+   * Members that are initialized by `TT_Run_Context` are marked with '@'.
    */
   typedef struct  TT_ExecContextRec_
   {
-    TT_Face            face;
-    TT_Size            size;
+    TT_Face            face;       /* ! */
+    TT_Size            size;       /* ! */
     FT_Memory          memory;
 
     /* instructions state */
 
     FT_Error           error;      /* last execution error */
 
-    FT_Long            top;        /* top of exec. stack   */
+    FT_Long            top;        /* @ top of exec. stack */
 
-    FT_Long            stackSize;  /* size of exec. stack  */
-    FT_Long*           stack;      /* current exec. stack  */
+    FT_Long            stackSize;  /* ! size of exec. stack */
+    FT_Long*           stack;      /* ! current exec. stack */
 
     FT_Long            args;
-    FT_Long            new_top;    /* new top after exec.  */
+    FT_Long            new_top;    /* new top after exec. */
 
-    TT_GlyphZoneRec    zp0,        /* zone records */
-                       zp1,
-                       zp2,
-                       pts,
-                       twilight;
+    TT_GlyphZoneRec    zp0,        /* @! zone records */
+                       zp1,        /* @!              */
+                       zp2,        /* @!              */
+                       pts,        /*  !              */
+                       twilight;   /*  !              */
 
-    FT_Long            pointSize;  /* in 26.6 format */
-    FT_Size_Metrics    metrics;
-    TT_Size_Metrics    tt_metrics; /* size metrics */
+    FT_Long            pointSize;  /* ! in 26.6 format */
+    FT_Size_Metrics    metrics;    /* !                */
+    TT_Size_Metrics    tt_metrics; /* ! size metrics   */
 
-    TT_GraphicsState   GS;         /* current graphics state */
+    TT_GraphicsState   GS;         /* !@ current graphics state */
 
+    FT_Int             iniRange;  /* initial code range number   */
     FT_Int             curRange;  /* current code range number   */
     FT_Byte*           code;      /* current code range          */
     FT_Long            IP;        /* current instruction pointer */
@@ -185,43 +189,49 @@ FT_BEGIN_HEADER
 
     FT_Bool            step_ins;  /* true if the interpreter must */
                                   /* increment IP after ins. exec */
-    FT_ULong           cvtSize;
-    FT_Long*           cvt;
+    FT_ULong           cvtSize;   /* ! */
+    FT_Long*           cvt;       /* ! */
+    FT_ULong           glyfCvtSize;
+    FT_Long*           glyfCvt;   /* cvt working copy for glyph */
+    FT_Long*           origCvt;
 
-    FT_UInt            glyphSize; /* glyph instructions buffer size */
-    FT_Byte*           glyphIns;  /* glyph instructions buffer */
+    FT_UInt            glyphSize; /* ! glyph instructions buffer size */
+    FT_Byte*           glyphIns;  /* ! glyph instructions buffer      */
 
-    FT_UInt            numFDefs;  /* number of function defs         */
-    FT_UInt            maxFDefs;  /* maximum number of function defs */
-    TT_DefArray        FDefs;     /* table of FDefs entries          */
+    FT_UInt            numFDefs;  /* ! number of function defs         */
+    FT_UInt            maxFDefs;  /* ! maximum number of function defs */
+    TT_DefArray        FDefs;     /*   table of FDefs entries          */
 
-    FT_UInt            numIDefs;  /* number of instruction defs */
-    FT_UInt            maxIDefs;  /* maximum number of ins defs */
-    TT_DefArray        IDefs;     /* table of IDefs entries     */
+    FT_UInt            numIDefs;  /* ! number of instruction defs */
+    FT_UInt            maxIDefs;  /* ! maximum number of ins defs */
+    TT_DefArray        IDefs;     /*   table of IDefs entries     */
 
-    FT_UInt            maxFunc;   /* maximum function index     */
-    FT_UInt            maxIns;    /* maximum instruction index  */
+    FT_UInt            maxFunc;   /* ! maximum function index    */
+    FT_UInt            maxIns;    /* ! maximum instruction index */
 
-    FT_Int             callTop,    /* top of call stack during execution */
-                       callSize;   /* size of call stack */
-    TT_CallStack       callStack;  /* call stack */
+    FT_Int             callTop,    /* @ top of call stack during execution */
+                       callSize;   /*   size of call stack                 */
+    TT_CallStack       callStack;  /*   call stack                         */
 
     FT_UShort          maxPoints;    /* capacity of this context's `pts' */
     FT_Short           maxContours;  /* record, expressed in points and  */
                                      /* contours.                        */
 
-    TT_CodeRangeTable  codeRangeTable;  /* table of valid code ranges */
-                                        /* useful for the debugger   */
+    TT_CodeRangeTable  codeRangeTable;  /* ! table of valid code ranges */
+                                        /*   useful for the debugger    */
 
-    FT_UShort          storeSize;  /* size of current storage */
-    FT_Long*           storage;    /* storage area            */
+    FT_UShort          storeSize;    /* ! size of current storage */
+    FT_Long*           storage;      /* ! storage area            */
+    FT_UShort          glyfStoreSize;
+    FT_Long*           glyfStorage;  /* storage working copy for glyph */
+    FT_Long*           origStorage;
 
     FT_F26Dot6         period;     /* values used for the */
     FT_F26Dot6         phase;      /* `SuperRounding'     */
     FT_F26Dot6         threshold;
 
-    FT_Bool            instruction_trap; /* If `True', the interpreter will */
-                                         /* exit after each instruction     */
+    FT_Bool            instruction_trap; /* ! If `True', the interpreter   */
+                                         /*   exits after each instruction */
 
     TT_GraphicsState   default_GS;       /* graphics state resulting from   */
                                          /* the prep program                */
@@ -238,7 +248,7 @@ FT_BEGIN_HEADER
                        func_dualproj,  /* current dual proj. function */
                        func_freeProj;  /* current freedom proj. func  */
 
-    TT_Move_Func       func_move;      /* current point move function */
+    TT_Move_Func       func_move;      /* current point move function     */
     TT_Move_Func       func_move_orig; /* move original position function */
 
     TT_Cur_Ppem_Func   func_cur_ppem;  /* get current proj. ppem value  */
@@ -469,16 +479,15 @@ FT_BEGIN_HEADER
    *   TT_New_Context
    *
    * @Description:
-   *   Queries the face context for a given font.  Note that there is
-   *   now a _single_ execution context in the TrueType driver which is
-   *   shared among faces.
+   *   Create a `TT_ExecContext`.  Note that there is now an execution
+   *   context per `TT_Size` that is not shared among faces.
    *
    * @Input:
-   *   face ::
-   *     A handle to the source face object.
+   *   driver ::
+   *     A handle to the driver, used for memory allocation.
    *
    * @Return:
-   *   A handle to the execution context.  Initialized for `face'.
+   *   A handle to a new empty execution context.
    *
    * @Note:
    *   Only the glyph loader and debugger should call this function.

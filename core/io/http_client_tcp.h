@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,14 @@ private:
 	Status status = STATUS_DISCONNECTED;
 	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;
 	Array ip_candidates;
-	int conn_port = -1;
+	int conn_port = -1; // Server to make requests to.
 	String conn_host;
+	int server_port = -1; // Server to connect to (might be a proxy server).
+	String server_host;
+	int http_proxy_port = -1; // Proxy server for http requests.
+	String http_proxy_host;
+	int https_proxy_port = -1; // Proxy server for https requests.
+	String https_proxy_host;
 	bool ssl = false;
 	bool ssl_verify_host = false;
 	bool blocking = false;
@@ -52,12 +58,14 @@ private:
 	Vector<uint8_t> chunk;
 	int chunk_left = 0;
 	bool chunk_trailer_part = false;
-	int body_size = -1;
-	int body_left = 0;
+	int64_t body_size = -1;
+	int64_t body_left = 0;
 	bool read_until_eof = false;
 
+	Ref<StreamPeerBuffer> request_buffer;
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;
+	Ref<HTTPClientTCP> proxy_client; // Negotiate with proxy server.
 
 	int response_num = 0;
 	Vector<String> response_headers;
@@ -80,13 +88,15 @@ public:
 	bool is_response_chunked() const override;
 	int get_response_code() const override;
 	Error get_response_headers(List<String> *r_response) override;
-	int get_response_body_length() const override;
+	int64_t get_response_body_length() const override;
 	PackedByteArray read_response_body_chunk() override;
 	void set_blocking_mode(bool p_enable) override;
 	bool is_blocking_mode_enabled() const override;
 	void set_read_chunk_size(int p_size) override;
 	int get_read_chunk_size() const override;
 	Error poll() override;
+	void set_http_proxy(const String &p_host, int p_port) override;
+	void set_https_proxy(const String &p_host, int p_port) override;
 	HTTPClientTCP();
 };
 

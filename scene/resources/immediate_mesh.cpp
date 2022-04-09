@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,6 +144,7 @@ void ImmediateMesh::surface_add_vertex_2d(const Vector2 &p_vertex) {
 
 	active_surface_data.vertex_2d = true;
 }
+
 void ImmediateMesh::surface_end() {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	ERR_FAIL_COND_MSG(!vertices.size(), "No vertices were added, surface can't be created.");
@@ -185,7 +186,7 @@ void ImmediateMesh::surface_end() {
 					vtx[2] = vertices[i].z;
 				}
 				if (i == 0) {
-					aabb.position = vertices[i];
+					aabb = AABB(vertices[i], SMALL_VEC3); // Must have a bit of size.
 				} else {
 					aabb.expand_to(vertices[i]);
 				}
@@ -381,7 +382,7 @@ AABB ImmediateMesh::get_aabb() const {
 		if (i == 0) {
 			aabb = surfaces[i].aabb;
 		} else {
-			aabb.merge(surfaces[i].aabb);
+			aabb = aabb.merge(surfaces[i].aabb);
 		}
 	}
 	return aabb;

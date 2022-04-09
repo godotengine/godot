@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionPolygon3D" inherits="Node3D" version="4.0">
+<class name="CollisionPolygon3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Editor-only class for defining a collision polygon in 3D space.
+		Editor-only node for defining a collision polygon in 3D space.
 	</brief_description>
 	<description>
-		Allows editing a collision polygon's vertices on a selected plane. Can also set a depth perpendicular to that plane. This class is only available in the editor. It will not appear in the scene tree at run-time. Creates a [Shape3D] for gameplay. Properties modified during gameplay will have no effect.
+		Allows editing a concave or convex collision polygon's vertices on a selected plane. Can also set a depth perpendicular to that plane. This class is only available in the editor. It will not appear in the scene tree at run-time. Creates several [ConvexPolygonShape3D]s at run-time to represent the original polygon using convex decomposition.
+		[b]Note:[/b] Since this is an editor-only helper, properties modified during gameplay will have no effect.
 	</description>
 	<tutorials>
 	</tutorials>

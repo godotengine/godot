@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef SKELETON_2D_EDITOR_PLUGIN_H
 #define SKELETON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/spin_box.h"
@@ -40,14 +39,14 @@ class Skeleton2DEditor : public Control {
 	GDCLASS(Skeleton2DEditor, Control);
 
 	enum Menu {
-		MENU_OPTION_MAKE_REST,
 		MENU_OPTION_SET_REST,
+		MENU_OPTION_MAKE_REST,
 	};
 
-	Skeleton2D *node;
+	Skeleton2D *node = nullptr;
 
-	MenuButton *options;
-	AcceptDialog *err_dialog;
+	MenuButton *options = nullptr;
+	AcceptDialog *err_dialog = nullptr;
 
 	void _menu_option(int p_option);
 
@@ -66,8 +65,7 @@ public:
 class Skeleton2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton2DEditorPlugin, EditorPlugin);
 
-	Skeleton2DEditor *sprite_editor;
-	EditorNode *editor;
+	Skeleton2DEditor *sprite_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "Skeleton2D"; }
@@ -76,7 +74,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	Skeleton2DEditorPlugin(EditorNode *p_node);
+	Skeleton2DEditorPlugin();
 	~Skeleton2DEditorPlugin();
 };
 

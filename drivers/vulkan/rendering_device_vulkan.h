@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -175,7 +175,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// These are temporary buffers on CPU memory that hold
 	// the information until the CPU fetches it and places it
 	// either on GPU buffers, or images (textures). It ensures
-	// updates are properly synchronized with whathever the
+	// updates are properly synchronized with whatever the
 	// GPU is doing.
 	//
 	// The logic here is as follows, only 3 of these
@@ -219,7 +219,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		}
 	};
 
-	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mapping);
+	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mem_usage, VmaAllocationCreateFlags p_mem_flags);
 	Error _buffer_free(Buffer *p_buffer);
 	Error _buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer = false, uint32_t p_required_align = 32);
 
@@ -1016,6 +1016,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _free_pending_resources(int p_frame);
 
 	VmaAllocator allocator = nullptr;
+	Map<uint32_t, VmaPool> small_allocs_pools;
+	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
 	VulkanContext *context = nullptr;
 
@@ -1036,8 +1038,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
+	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
@@ -1200,7 +1203,7 @@ public:
 	/**** Limits ****/
 	/****************/
 
-	virtual int limit_get(Limit p_limit);
+	virtual uint64_t limit_get(Limit p_limit);
 
 	virtual void prepare_screen_for_drawing();
 	void initialize(VulkanContext *p_context, bool p_local_device = false);
@@ -1225,6 +1228,7 @@ public:
 
 	virtual String get_device_vendor_name() const;
 	virtual String get_device_name() const;
+	virtual RenderingDevice::DeviceType get_device_type() const;
 	virtual String get_device_pipeline_cache_uuid() const;
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);

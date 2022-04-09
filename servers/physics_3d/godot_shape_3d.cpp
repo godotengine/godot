@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,17 +52,17 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
-#define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.9998
+constexpr double edge_support_threshold = 0.0002;
+constexpr double face_support_threshold = 0.9998;
 
-#define _CYLINDER_EDGE_IS_VALID_SUPPORT_THRESHOLD 0.002
-#define _CYLINDER_FACE_IS_VALID_SUPPORT_THRESHOLD 0.999
+constexpr double cylinder_edge_support_threshold = 0.002;
+constexpr double cylinder_face_support_threshold = 0.999;
 
 void GodotShape3D::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
 	configured = true;
 	for (const KeyValue<GodotShapeOwner3D *, int> &E : owners) {
-		GodotShapeOwner3D *co = (GodotShapeOwner3D *)E.key;
+		GodotShapeOwner3D *co = const_cast<GodotShapeOwner3D *>(E.key);
 		co->_shape_changed();
 	}
 }
@@ -184,7 +184,7 @@ Vector3 GodotSeparationRayShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotSeparationRayShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
-	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(p_normal.z) < edge_support_threshold) {
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = Vector3(0, 0, 0);
@@ -335,7 +335,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 		real_t dot = p_normal.dot(axis);
-		if (Math::abs(dot) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+		if (Math::abs(dot) > face_support_threshold) {
 			//Vector3 axis_b;
 
 			bool neg = dot < 0;
@@ -376,7 +376,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 
-		if (Math::abs(p_normal.dot(axis)) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+		if (Math::abs(p_normal.dot(axis)) < edge_support_threshold) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 
@@ -430,7 +430,7 @@ Vector3 GodotBoxShape3D::get_closest_point_to(const Vector3 &p_point) const {
 			if (outside == 1) {
 				//use plane if only one side matches
 				Vector3 n;
-				n[i] = SGN(p_point[i]);
+				n[i] = SIGN(p_point[i]);
 
 				Plane p(n, half_extents[i]);
 				min_point = p.project(p_point);
@@ -522,7 +522,7 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 
 	real_t d = n.y;
 
-	if (Math::abs(d) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(d) < edge_support_threshold) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -703,7 +703,7 @@ Vector3 GodotCylinderShape3D::get_support(const Vector3 &p_normal) const {
 
 void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	real_t d = p_normal.y;
-	if (Math::abs(d) > _CYLINDER_FACE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(d) > cylinder_face_support_threshold) {
 		real_t h = (d > 0) ? height : -height;
 
 		Vector3 n = p_normal;
@@ -718,7 +718,7 @@ void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vect
 		r_supports[1].x += radius;
 		r_supports[2] = n;
 		r_supports[2].z += radius;
-	} else if (Math::abs(d) < _CYLINDER_EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+	} else if (Math::abs(d) < cylinder_edge_support_threshold) {
 		// make it flat
 		Vector3 n = p_normal;
 		n.y = 0.0;
@@ -911,7 +911,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	}
 
 	for (int i = 0; i < fc; i++) {
-		if (faces[i].plane.normal.dot(p_normal) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+		if (faces[i].plane.normal.dot(p_normal) > face_support_threshold) {
 			int ic = faces[i].indices.size();
 			const int *ind = faces[i].indices.ptr();
 
@@ -940,7 +940,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	for (int i = 0; i < ec; i++) {
 		real_t dot = (vertices[edges[i].a] - vertices[edges[i].b]).normalized().dot(p_normal);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD && (edges[i].a == vtx || edges[i].b == vtx)) {
+		if (dot < edge_support_threshold && (edges[i].a == vtx || edges[i].b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 			r_supports[0] = vertices[edges[i].a];
@@ -1140,7 +1140,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (Math::abs(normal.dot(n)) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(normal.dot(n)) > face_support_threshold) {
 		r_amount = 3;
 		r_type = FEATURE_FACE;
 		for (int i = 0; i < 3; i++) {
@@ -1174,7 +1174,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+		if (dot < edge_support_threshold) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 			r_supports[0] = vertex[i];
@@ -1284,12 +1284,6 @@ Vector3 GodotConcavePolygonShape3D::get_support(const Vector3 &p_normal) const {
 void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
-	/*
-	if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
-		return; //test against whole AABB, which isn't very costly
-	*/
-
-	//printf("addr: %p\n",bvh);
 	if (!bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
 		return;
 	}
@@ -1401,7 +1395,7 @@ bool GodotConcavePolygonShape3D::_cull(int p_idx, _CullParams *p_params) const {
 	return false;
 }
 
-void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
+void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
 	// make matrix local to concave
 	if (faces.size() == 0) {
 		return;
@@ -1416,6 +1410,7 @@ void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_
 
 	GodotFaceShape3D face; // use this to send in the callback
 	face.backface_collision = backface_collision;
+	face.invert_backface_collision = p_invert_backface_collision;
 
 	_CullParams params;
 	params.aabb = local_aabb;
@@ -1961,7 +1956,7 @@ void GodotHeightMapShape3D::_get_cell(const Vector3 &p_point, int &r_x, int &r_y
 	r_z = (clamped_point.z < 0.0) ? (clamped_point.z - 0.5) : (clamped_point.z + 0.5);
 }
 
-void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
+void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
 	if (heights.is_empty()) {
 		return;
 	}
@@ -1988,7 +1983,8 @@ void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callb
 	int end_z = MIN(depth - 1, aabb_max[2]);
 
 	GodotFaceShape3D face;
-	face.backface_collision = true;
+	face.backface_collision = !p_invert_backface_collision;
+	face.invert_backface_collision = p_invert_backface_collision;
 
 	for (int z = start_z; z < end_z; z++) {
 		for (int x = start_x; x < end_x; x++) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,12 +79,12 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 
 void EditorQuickOpen::_update_search() {
 	const String search_text = search_box->get_text();
-	const bool empty_search = search_text == "";
+	const bool empty_search = search_text.is_empty();
 
 	// Filter possible candidates.
 	Vector<Entry> entries;
 	for (int i = 0; i < files.size(); i++) {
-		if (empty_search || search_text.is_subsequence_ofi(files[i])) {
+		if (empty_search || search_text.is_subsequence_ofn(files[i])) {
 			Entry r;
 			r.path = files[i];
 			r.score = empty_search ? 0 : _score_path(search_text, files[i].to_lower());
@@ -167,10 +167,10 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
 				search_box->accept_event();
 
@@ -229,6 +229,7 @@ void EditorQuickOpen::_notification(int p_what) {
 
 			search_box->set_clear_button_enabled(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
@@ -244,8 +245,6 @@ void EditorQuickOpen::_bind_methods() {
 }
 
 EditorQuickOpen::EditorQuickOpen() {
-	allow_multi_select = false;
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 	add_child(vbc);

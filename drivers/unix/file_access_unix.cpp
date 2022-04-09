@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,7 +160,7 @@ void FileAccessUnix::close() {
 		close_notification_func(path, flags);
 	}
 
-	if (save_path != "") {
+	if (!save_path.is_empty()) {
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -246,7 +246,7 @@ uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
-};
+}
 
 Error FileAccessUnix::get_error() const {
 	return last_error;
@@ -285,8 +285,9 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 		return false;
 	}
 #else
-	if (_access(filename.utf8().get_data(), 4) == -1)
+	if (_access(filename.utf8().get_data(), 4) == -1) {
 		return false;
+	}
 #endif
 
 	// See if this is a regular file
@@ -307,8 +308,9 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return flags.st_mtime;
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + p_file + ".");
-	};
+		print_verbose("Failed to get modified time for: " + p_file + "");
+		return 0;
+	}
 }
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
@@ -320,7 +322,7 @@ uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 		return flags.st_mode & 0x7FF; //only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
-	};
+	}
 }
 
 Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {

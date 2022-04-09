@@ -1,6 +1,13 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+ext {
+    PUBLISH_VERSION = getGodotPublishVersion()
+    PUBLISH_ARTIFACT_ID = 'godot'
+}
+
+apply from: "../scripts/publish-module.gradle"
+
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.androidxFragment
@@ -11,19 +18,32 @@ def pathToRootDir = "../../../../"
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-
     ndkVersion versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
 
-        manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersion()]
+        manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersionName()]
     }
+
+    namespace = "org.godotengine.godot"
 
     compileOptions {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
+    }
+
+    buildTypes {
+        dev {
+            initWith debug
+        }
+    }
+
+    flavorDimensions "products"
+    productFlavors {
+        editor {}
+        template {}
     }
 
     lintOptions {
@@ -49,24 +69,50 @@ android {
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
         }
+
         debug.jniLibs.srcDirs = ['libs/debug']
+        dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
+
+        // Editor jni library
+        editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
+        editorDev.jniLibs.srcDirs = ['libs/tools/dev']
+    }
+
+    // Disable 'editorRelease'.
+    // The editor can't be used with target=release as debugging tools are then not
+    // included, and it would crash on errors instead of reporting them.
+    variantFilter { variant ->
+        if (variant.name == "editorRelease") {
+            setIgnore(true)
+        }
     }
 
     libraryVariants.all { variant ->
+        def flavorName = variant.getFlavorName()
+        if (flavorName == null || flavorName == "") {
+            throw new GradleException("Invalid product flavor: $flavorName")
+        }
+
+        boolean toolsFlag = flavorName == "editor"
+
+        def buildType = variant.buildType.name
+        if (buildType == null || buildType == "" || !supportedTargetsMap.containsKey(buildType)) {
+            throw new GradleException("Invalid build type: $buildType")
+        }
+
+        def sconsTarget = supportedTargetsMap[buildType]
+        if (sconsTarget == null || sconsTarget == "") {
+            throw new GradleException("Invalid scons target: $sconsTarget")
+        }
+
+        // Update the name of the generated library
+        def outputSuffix = "${buildType}.aar"
+        if (toolsFlag) {
+            outputSuffix = "tools.$outputSuffix"
+        }
         variant.outputs.all { output ->
-            output.outputFileName = "godot-lib.${variant.name}.aar"
-        }
-
-        def buildType = variant.buildType.name.capitalize()
-
-        def releaseTarget = buildType.toLowerCase()
-        if (releaseTarget == null || releaseTarget == "") {
-            throw new GradleException("Invalid build type: " + buildType)
-        }
-
-        if (!supportedAbis.contains(defaultAbi)) {
-            throw new GradleException("Invalid default abi: " + defaultAbi)
+            output.outputFileName = "godot-lib.${outputSuffix}"
         }
 
         // Find scons' executable path
@@ -79,13 +125,11 @@ android {
         for (ext in sconsExts) {
             String sconsNameExt = sconsName + ext
             logger.lifecycle("Checking $sconsNameExt")
-
             sconsExecutableFile = org.gradle.internal.os.OperatingSystem.current().findInPath(sconsNameExt)
             if (sconsExecutableFile != null) {
                 // We're done!
                 break
             }
-
             // Check all the options in path
             List<File> allOptions = org.gradle.internal.os.OperatingSystem.current().findAllInPath(sconsNameExt)
             if (!allOptions.isEmpty()) {
@@ -94,21 +138,34 @@ android {
                 break
             }
         }
-
         if (sconsExecutableFile == null) {
             throw new GradleException("Unable to find executable path for the '$sconsName' command.")
         } else {
             logger.lifecycle("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
         }
 
-        // Creating gradle task to generate the native libraries for the default abi.
-        def taskName = getSconsTaskName(buildType)
-        tasks.create(name: taskName, type: Exec) {
-            executable sconsExecutableFile.absolutePath
-            args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${defaultAbi}", "-j" + Runtime.runtime.availableProcessors()
-        }
+        for (String selectedAbi : selectedAbis) {
+            if (!supportedAbis.contains(selectedAbi)) {
+                throw new GradleException("Invalid selected abi: $selectedAbi")
+            }
 
-        // Schedule the tasks so the generated libs are present before the aar file is packaged.
-        tasks["merge${buildType}JniLibFolders"].dependsOn taskName
+            // Creating gradle task to generate the native libraries for the selected abi.
+            def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
+            tasks.create(name: taskName, type: Exec) {
+                executable sconsExecutableFile.absolutePath
+                args "--directory=${pathToRootDir}", "platform=android", "tools=${toolsFlag}", "target=${sconsTarget}", "android_arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+            }
+
+            // Schedule the tasks so the generated libs are present before the aar file is packaged.
+            tasks["merge${flavorName.capitalize()}${buildType.capitalize()}JniLibFolders"].dependsOn taskName
+        }
     }
+
+    // TODO: Enable when issues with AGP 7.1+ are resolved (https://github.com/GodotVR/godot_openxr/issues/187).
+//    publishing {
+//        singleVariant("templateRelease") {
+//            withSourcesJar()
+//            withJavadocJar()
+//        }
+//    }
 }

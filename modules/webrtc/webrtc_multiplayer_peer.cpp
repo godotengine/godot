@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,10 @@ void WebRTCMultiplayerPeer::_find_next_peer() {
 	}
 	// After last.
 	while (E) {
+		if (!E->get()->connected) {
+			E = E->next();
+			continue;
+		}
 		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			if (F->get_available_packet_count()) {
 				next_packet_peer = E->key();
@@ -157,6 +161,10 @@ void WebRTCMultiplayerPeer::_find_next_peer() {
 	E = peer_map.front();
 	// Before last
 	while (E) {
+		if (!E->get()->connected) {
+			E = E->next();
+			continue;
+		}
 		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			if (F->get_available_packet_count()) {
 				next_packet_peer = E->key();
@@ -345,10 +353,8 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 		ch += CH_RESERVED_MAX - 1;
 	}
 
-	Map<int, Ref<ConnectedPeer>>::Element *E = nullptr;
-
 	if (target_peer > 0) {
-		E = peer_map.find(target_peer);
+		Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(target_peer);
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
 		ERR_FAIL_COND_V_MSG(E->value()->channels.size() <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value()->channels.size()));
@@ -364,7 +370,7 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 				continue;
 			}
 
-			ERR_CONTINUE_MSG(F.value->channels.size() <= ch, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value()->channels.size()));
+			ERR_CONTINUE_MSG(F.value->channels.size() <= ch, vformat("Unable to send packet on channel %d, max channels: %d", ch, F.value->channels.size()));
 			ERR_CONTINUE(F.value->channels[ch].is_null());
 			F.value->channels[ch]->put_packet(p_buffer, p_buffer_size);
 		}
@@ -378,6 +384,9 @@ int WebRTCMultiplayerPeer::get_available_packet_count() const {
 	}
 	int size = 0;
 	for (const KeyValue<int, Ref<ConnectedPeer>> &E : peer_map) {
+		if (!E.value->connected) {
+			continue;
+		}
 		for (const Ref<WebRTCDataChannel> &F : E.value->channels) {
 			size += F->get_available_packet_count();
 		}

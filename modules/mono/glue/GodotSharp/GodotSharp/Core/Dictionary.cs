@@ -314,13 +314,16 @@ namespace Godot.Collections
         internal static extern int godot_icall_Dictionary_Count(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Dictionary_KeyValuePairs(IntPtr ptr, out IntPtr keys, out IntPtr values);
+        internal static extern int godot_icall_Dictionary_KeyValuePairs(IntPtr ptr, out IntPtr keys, out IntPtr values);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_KeyValuePairAt(IntPtr ptr, int index, out object key, out object value);
+        internal static extern void godot_icall_Dictionary_KeyValuePairAt(IntPtr ptr, int index, out object key, out object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
+        internal static extern void godot_icall_Dictionary_KeyValuePairAt_Generic(IntPtr ptr, int index, out object key, out object value, int valueTypeEncoding, IntPtr valueTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void godot_icall_Dictionary_Clear(IntPtr ptr);
@@ -485,7 +488,7 @@ namespace Godot.Collections
 
         private KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
         {
-            Dictionary.godot_icall_Dictionary_KeyValuePairAt(GetPtr(), index, out object key, out object value);
+            Dictionary.godot_icall_Dictionary_KeyValuePairAt_Generic(GetPtr(), index, out object key, out object value, valTypeEncoding, valTypeClass);
             return new KeyValuePair<TKey, TValue>((TKey)key, (TValue)value);
         }
 

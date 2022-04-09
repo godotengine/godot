@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ class ThreadWorkPool {
 		C *instance;
 		M method;
 		U userdata;
-		virtual void work() {
+		virtual void work() override {
 			while (true) {
 				uint32_t work_index = index->fetch_add(1, std::memory_order_relaxed);
 				if (work_index >= max_elements) {
@@ -68,7 +68,7 @@ class ThreadWorkPool {
 		Semaphore start;
 		Semaphore completed;
 		std::atomic<bool> exit;
-		BaseWork *work;
+		BaseWork *work = nullptr;
 	};
 
 	ThreadData *threads = nullptr;

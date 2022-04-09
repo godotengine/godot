@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,15 +75,16 @@ Rect2 VisibleOnScreenNotifier2D::get_rect() const {
 void VisibleOnScreenNotifier2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			//get_world_2d()->
 			on_screen = false;
 			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				draw_rect(rect, Color(1, 0.5, 1, 0.2));
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			on_screen = false;
 			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), false, Rect2(), Callable(), Callable());
@@ -169,21 +170,23 @@ void VisibleOnScreenEnabler2D::_update_enable_mode(bool p_enable) {
 	}
 }
 void VisibleOnScreenEnabler2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
 
-		node_id = ObjectID();
-		Node *node = get_node(enable_node_path);
-		if (node) {
-			node_id = node->get_instance_id();
-			node->set_process_mode(PROCESS_MODE_DISABLED);
-		}
-	}
+			node_id = ObjectID();
+			Node *node = get_node(enable_node_path);
+			if (node) {
+				node_id = node->get_instance_id();
+				node->set_process_mode(PROCESS_MODE_DISABLED);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		node_id = ObjectID();
+		case NOTIFICATION_EXIT_TREE: {
+			node_id = ObjectID();
+		} break;
 	}
 }
 

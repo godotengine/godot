@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,10 @@
 /*************************************************************************/
 
 #include "servers/navigation_server_2d.h"
+
 #include "core/math/transform_2d.h"
 #include "core/math/transform_3d.h"
 #include "servers/navigation_server_3d.h"
-
-/**
-	@author AndreaCatania
-*/
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 
@@ -204,7 +201,7 @@ void NavigationServer2D::_bind_methods() {
 NavigationServer2D::NavigationServer2D() {
 	singleton = this;
 	ERR_FAIL_COND_MSG(!NavigationServer3D::get_singleton(), "The Navigation3D singleton should be initialized before the 2D one.");
-	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
+	NavigationServer3D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
 }
 
 NavigationServer2D::~NavigationServer2D() {

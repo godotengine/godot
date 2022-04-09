@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -328,7 +328,7 @@ private:
 	void _insert_rb_fix(Element *p_new_node) {
 		Element *node = p_new_node;
 		Element *nparent = node->parent;
-		Element *ngrand_parent;
+		Element *ngrand_parent = nullptr;
 
 		while (nparent->color == RED) {
 			ngrand_parent = nparent->parent;
@@ -482,7 +482,7 @@ private:
 		Element *rp = ((p_node->left == _data._nil) || (p_node->right == _data._nil)) ? p_node : p_node->_next;
 		Element *node = (rp->left == _data._nil) ? rp->right : rp->left;
 
-		Element *sibling;
+		Element *sibling = nullptr;
 		if (rp == rp->parent->left) {
 			rp->parent->left = node;
 			sibling = rp->parent->right;
@@ -582,6 +582,9 @@ public:
 	}
 
 	Element *lower_bound(const T &p_value) const {
+		if (!_data._root) {
+			return nullptr;
+		}
 		return _lower_bound(p_value);
 	}
 

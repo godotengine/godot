@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorVCSInterface" inherits="Object" version="4.0">
+<class name="EditorVCSInterface" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Version Control System (VCS) interface which reads and writes to the local VCS in use.
 	</brief_description>
 	<description>
-		Used by the editor to display VCS extracted information in the editor. The implementation of this API is included in VCS addons, which are essentially GDNative plugins that need to be put into the project folder. These VCS addons are scripts which are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the functions listed below, instead of performing the task themselves, they call the internally defined functions in the VCS addons to provide a plug-n-play experience.
+		Used by the editor to display VCS extracted information in the editor. The implementation of this API is included in VCS addons, which are essentially GDExtension plugins that need to be put into the project folder. These VCS addons are scripts which are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the functions listed below, instead of performing the task themselves, they call the internally defined functions in the VCS addons to provide a plug-n-play experience.
 	</description>
 	<tutorials>
 	</tutorials>

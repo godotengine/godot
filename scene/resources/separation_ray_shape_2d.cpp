@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,15 +59,13 @@ void SeparationRayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	xf.rotate(target_position.angle());
 	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
-	Vector<Vector2> pts;
-	pts.push_back(xf.xform(Vector2(arrow_size, 0)));
-	pts.push_back(xf.xform(Vector2(0, 0.5 * arrow_size)));
-	pts.push_back(xf.xform(Vector2(0, -0.5 * arrow_size)));
+	Vector<Vector2> pts = {
+		xf.xform(Vector2(arrow_size, 0)),
+		xf.xform(Vector2(0, 0.5 * arrow_size)),
+		xf.xform(Vector2(0, -0.5 * arrow_size))
+	};
 
-	Vector<Color> cols;
-	for (int i = 0; i < 3; i++) {
-		cols.push_back(p_color);
-	}
+	Vector<Color> cols = { p_color, p_color, p_color };
 
 	RS::get_singleton()->canvas_item_add_primitive(p_to_rid, pts, cols, Vector<Point2>(), RID());
 }
@@ -91,7 +89,7 @@ void SeparationRayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &SeparationRayShape2D::set_slide_on_slope);
 	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &SeparationRayShape2D::get_slide_on_slope);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
 }
 

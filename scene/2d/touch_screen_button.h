@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	Ref<Texture2D> texture;
+	Ref<Texture2D> texture_normal;
 	Ref<Texture2D> texture_pressed;
 	Ref<BitMap> bitmask;
 	Ref<Shape2D> shape;
@@ -78,8 +78,8 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif
 
-	void set_texture(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_texture() const;
+	void set_texture_normal(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture_normal() const;
 
 	void set_texture_pressed(const Ref<Texture2D> &p_texture_pressed);
 	Ref<Texture2D> get_texture_pressed() const;

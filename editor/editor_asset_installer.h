@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,16 +36,15 @@
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
 
-	Tree *tree;
-	Label *asset_contents;
+	Tree *tree = nullptr;
+	Label *asset_contents = nullptr;
 	String package_path;
 	String asset_name;
-	AcceptDialog *error;
+	AcceptDialog *error = nullptr;
 	Map<String, TreeItem *> status_map;
-	bool updating;
-	void _update_subitems(TreeItem *p_item, bool p_check, bool p_first = false);
-	void _uncheck_parent(TreeItem *p_item);
+	bool updating = false;
 	void _item_edited();
+	void _check_propagated_to_item(Object *p_obj, int column);
 	virtual void ok_pressed() override;
 
 protected:

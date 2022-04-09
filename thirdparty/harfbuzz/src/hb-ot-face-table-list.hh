@@ -32,6 +32,11 @@
 #define HB_OT_FACE_TABLE_LIST_HH
 #endif /* HB_OT_FACE_TABLE_LIST_HH */ /* Dummy header guards */
 
+#ifndef HB_OT_CORE_TABLE
+#define HB_OT_CORE_TABLE(Namespace, Type) HB_OT_TABLE (Namespace, Type)
+#define _HB_OT_CORE_TABLE_UNDEF
+#endif
+
 #ifndef HB_OT_ACCELERATOR
 #define HB_OT_ACCELERATOR(Namespace, Type) HB_OT_TABLE (Namespace, Type)
 #define _HB_OT_ACCELERATOR_UNDEF
@@ -46,7 +51,8 @@
 
 
 /* OpenType fundamentals. */
-HB_OT_TABLE (OT, head)
+HB_OT_CORE_TABLE (OT, head)
+HB_OT_CORE_TABLE (OT, maxp)
 #if !defined(HB_NO_FACE_COLLECT_UNICODES) || !defined(HB_NO_OT_FONT)
 HB_OT_ACCELERATOR (OT, cmap)
 #endif
@@ -67,17 +73,20 @@ HB_OT_ACCELERATOR (OT, meta)
 #endif
 
 /* Vertical layout. */
+#ifndef HB_NO_VERTICAL
 HB_OT_TABLE (OT, vhea)
 HB_OT_ACCELERATOR (OT, vmtx)
+HB_OT_TABLE (OT, VORG)
+#endif
 
 /* TrueType outlines. */
+HB_OT_CORE_TABLE (OT, loca) // Also used to determine number of glyphs
 HB_OT_ACCELERATOR (OT, glyf)
 
 /* CFF outlines. */
 #ifndef HB_NO_CFF
 HB_OT_ACCELERATOR (OT, cff1)
 HB_OT_ACCELERATOR (OT, cff2)
-HB_OT_TABLE (OT, VORG)
 #endif
 
 /* OpenType variations. */
@@ -135,4 +144,8 @@ HB_OT_TABLE (OT, MATH)
 
 #ifdef _HB_OT_ACCELERATOR_UNDEF
 #undef HB_OT_ACCELERATOR
+#endif
+
+#ifdef _HB_OT_CORE_TABLE_UNDEF
+#undef HB_OT_CORE_TABLE
 #endif

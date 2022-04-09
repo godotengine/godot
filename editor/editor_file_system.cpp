@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,9 +38,9 @@
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
-#include "editor_node.h"
-#include "editor_resource_preview.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_resource_preview.h"
+#include "editor/editor_settings.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
@@ -194,7 +194,6 @@ void EditorFileSystemDirectory::_bind_methods() {
 EditorFileSystemDirectory::EditorFileSystemDirectory() {
 	modified_time = 0;
 	parent = nullptr;
-	verified = false;
 }
 
 EditorFileSystemDirectory::~EditorFileSystemDirectory() {
@@ -241,7 +240,7 @@ void EditorFileSystem::_scan_filesystem() {
 				first = false;
 				continue;
 			}
-			if (l == String()) {
+			if (l.is_empty()) {
 				continue;
 			}
 
@@ -295,7 +294,7 @@ void EditorFileSystem::_scan_filesystem() {
 		{
 			FileAccessRef f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
-			while (l != String()) {
+			while (!l.is_empty()) {
 				file_cache.erase(l); //erase cache for this, so it gets updated
 				l = f2->get_line().strip_edges();
 			}
@@ -405,7 +404,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
 		}
 
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			if (assign.begins_with("path")) {
 				to_check.push_back(value);
 			} else if (assign == "files") {
@@ -476,7 +475,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			memdelete(md5s);
 			return false; // parse error
 		}
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			if (!p_only_imported_files) {
 				if (assign == "source_md5") {
 					source_md5 = value;
@@ -497,11 +496,11 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	//check source md5 matching
 	if (!p_only_imported_files) {
-		if (source_file != String() && source_file != p_path) {
+		if (!source_file.is_empty() && source_file != p_path) {
 			return true; //file was moved, reimport
 		}
 
-		if (source_md5 == String()) {
+		if (source_md5.is_empty()) {
 			return true; //lacks md5, so just reimport
 		}
 
@@ -510,7 +509,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return true;
 		}
 
-		if (dest_files.size() && dest_md5 != String()) {
+		if (dest_files.size() && !dest_md5.is_empty()) {
 			md5 = FileAccess::get_multiple_md5(dest_files);
 			if (md5 != dest_md5) {
 				return true;
@@ -519,6 +518,45 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	return false; //nothing changed
+}
+
+bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
+	if (import_support_queries.size() == 0) {
+		return false;
+	}
+	Map<String, int> import_support_test;
+	Vector<bool> import_support_tested;
+	import_support_tested.resize(import_support_queries.size());
+	for (int i = 0; i < import_support_queries.size(); i++) {
+		import_support_tested.write[i] = false;
+		if (import_support_queries[i]->is_active()) {
+			Vector<String> extensions = import_support_queries[i]->get_file_extensions();
+			for (int j = 0; j < extensions.size(); j++) {
+				import_support_test.insert(extensions[j], i);
+			}
+		}
+	}
+
+	if (import_support_test.size() == 0) {
+		return false; //well nothing to do
+	}
+
+	for (int i = 0; i < reimports.size(); i++) {
+		Map<String, int>::Element *E = import_support_test.find(reimports[i].get_extension());
+		if (E) {
+			import_support_tested.write[E->get()] = true;
+		}
+	}
+
+	for (int i = 0; i < import_support_tested.size(); i++) {
+		if (import_support_tested[i]) {
+			if (import_support_queries.write[i]->query()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 bool EditorFileSystem::_update_scan_actions() {
@@ -577,7 +615,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				ERR_CONTINUE(idx == -1);
 				_delete_internal_files(ia.dir->files[idx]->file);
 				memdelete(ia.dir->files[idx]);
-				ia.dir->files.remove(idx);
+				ia.dir->files.remove_at(idx);
 
 				fs_changed = true;
 
@@ -613,7 +651,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	if (_scan_extensions()) {
 		//needs editor restart
 		//extensions also may provide filetypes to be imported, so they must run before importing
-		if (EditorNode::immediate_confirmation_dialog(TTR("Some extensions need the editor to restart to take effect."), first_scan ? TTR("Restart") : TTR("Save&Restart"), TTR("Continue"))) {
+		if (EditorNode::immediate_confirmation_dialog(TTR("Some extensions need the editor to restart to take effect."), first_scan ? TTR("Restart") : TTR("Save & Restart"), TTR("Continue"))) {
 			if (!first_scan) {
 				EditorNode::get_singleton()->save_all_scenes();
 			}
@@ -622,7 +660,12 @@ bool EditorFileSystem::_update_scan_actions() {
 			return true;
 		}
 	}
+
 	if (reimports.size()) {
+		if (_scan_import_support(reimports)) {
+			return true;
+		}
+
 		reimport_files(reimports);
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
@@ -710,7 +753,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 	da->list_dir_begin();
 	while (true) {
 		String f = da->get_next();
-		if (f == "") {
+		if (f.is_empty()) {
 			break;
 		}
 
@@ -820,7 +863,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 					scan_actions.push_back(ia);
 				}
 
-				if (fc->type == String()) {
+				if (fc->type.is_empty()) {
 					fi->type = ResourceLoader::get_resource_type(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 					//there is also the chance that file type changed due to reimport, must probably check this somehow here (or kind of note it for next time in another file?)
@@ -889,7 +932,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				if (script == nullptr) {
 					continue;
 				}
-				const Vector<DocData::ClassDoc> &docs = script->get_documentation();
+				Vector<DocData::ClassDoc> docs = script->get_documentation();
 				for (int j = 0; j < docs.size(); j++) {
 					EditorHelp::get_doc_data()->add_doc(docs[j]);
 				}
@@ -932,7 +975,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		da->list_dir_begin();
 		while (true) {
 			String f = da->get_next();
-			if (f == "") {
+			if (f.is_empty()) {
 				break;
 			}
 
@@ -1094,12 +1137,11 @@ void EditorFileSystem::_delete_internal_files(String p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (const String &E : paths) {
 			da->remove(E);
 		}
 		da->remove(p_file + ".import");
-		memdelete(da);
 	}
 }
 
@@ -1163,6 +1205,7 @@ void EditorFileSystem::_notification(int p_what) {
 			call_deferred(SNAME("scan")); //this should happen after every editor node entered the tree
 
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			Thread &active_thread = thread.is_started() ? thread : thread_sources;
 			if (use_threads && active_thread.is_started()) {
@@ -1184,8 +1227,8 @@ void EditorFileSystem::_notification(int p_what) {
 			}
 			filesystem = nullptr;
 			new_filesystem = nullptr;
-
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (use_threads) {
 				if (scanning_changes) {
@@ -1246,7 +1289,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
-		if (p_dir->files[i]->import_group_file != String()) {
+		if (!p_dir->files[i]->import_group_file.is_empty()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
 		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
@@ -1386,7 +1429,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
-	if (f == String()) {
+	if (f.is_empty()) {
 		return filesystem;
 	}
 
@@ -1465,7 +1508,7 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 	int filecount = p_dir->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = p_dir->files.ptr();
 	for (int i = 0; i < filecount; i++) {
-		if (files[i]->script_class_name == String()) {
+		if (files[i]->script_class_name.is_empty()) {
 			continue;
 		}
 
@@ -1536,7 +1579,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 				}
 			}
 			memdelete(fs->files[cpos]);
-			fs->files.remove(cpos);
+			fs->files.remove_at(cpos);
 		}
 
 		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
@@ -1545,7 +1588,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	String type = ResourceLoader::get_resource_type(p_file);
-	if (type == "" && textfile_extensions.has(p_file.get_extension())) {
+	if (type.is_empty() && textfile_extensions.has(p_file.get_extension())) {
 		type = "TextFile";
 	}
 	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
@@ -1604,6 +1647,10 @@ void EditorFileSystem::update_file(const String &p_file) {
 	_queue_update_script_classes();
 }
 
+Set<String> EditorFileSystem::get_valid_extensions() const {
+	return valid_extensions;
+}
+
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
 	String importer_name;
 
@@ -1616,9 +1663,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		ERR_CONTINUE(err != OK);
 		ERR_CONTINUE(!config->has_section_key("remap", "importer"));
 		String file_importer_name = config->get_value("remap", "importer");
-		ERR_CONTINUE(file_importer_name == String());
+		ERR_CONTINUE(file_importer_name.is_empty());
 
-		if (importer_name != String() && importer_name != file_importer_name) {
+		if (!importer_name.is_empty() && importer_name != file_importer_name) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("There are multiple importers for different types pointing to file %s, import aborted"), p_group_file));
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
@@ -1633,7 +1680,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 		ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_CORRUPT);
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options(p_files[i], &options);
 		//set default values
 		for (const ResourceImporter::ImportOption &E : options) {
 			source_file_options[p_files[i]][E.option.name] = E.default_value;
@@ -1644,7 +1691,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			config->get_section_keys("params", &sk);
 			for (const String &param : sk) {
 				Variant value = config->get_value("params", param);
-				//override with whathever is in file
+				//override with whatever is in file
 				source_file_options[p_files[i]][param] = value;
 			}
 		}
@@ -1656,7 +1703,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		return OK; // (do nothing)
 	}
 
-	ERR_FAIL_COND_V(importer_name == String(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(importer_name.is_empty(), ERR_UNCONFIGURED);
 
 	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 
@@ -1677,7 +1724,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		if (version > 0) {
 			f->store_line("importer_version=" + itos(version));
 		}
-		if (importer->get_resource_type() != "") {
+		if (!importer->get_resource_type().is_empty()) {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
 		}
 
@@ -1714,7 +1761,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options(file, &options);
 		//set default values
 		for (const ResourceImporter::ImportOption &F : options) {
 			String base = F.option.name;
@@ -1759,7 +1806,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		if (ResourceCache::has(file)) {
 			Resource *r = ResourceCache::get(file);
 
-			if (r->get_import_path() != String()) {
+			if (!r->get_import_path().is_empty()) {
 				String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(file);
 				r->set_import_path(dst_path);
 				r->set_import_last_modified_time(0);
@@ -1783,7 +1830,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	Map<StringName, Variant> params;
 	String importer_name; //empty by default though
 
-	if (p_custom_importer != String()) {
+	if (!p_custom_importer.is_empty()) {
 		importer_name = p_custom_importer;
 	}
 	if (p_custom_options != nullptr) {
@@ -1808,7 +1855,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 				}
 
 				if (cf->has_section("remap")) {
-					if (p_custom_importer == String()) {
+					if (p_custom_importer.is_empty()) {
 						importer_name = cf->get_value("remap", "importer");
 					}
 
@@ -1834,7 +1881,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	Ref<ResourceImporter> importer;
 	bool load_default = false;
 	//find the importer
-	if (importer_name != "") {
+	if (!importer_name.is_empty()) {
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 	}
 
@@ -1851,7 +1898,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	//mix with default params, in case a parameter is missing
 
 	List<ResourceImporter::ImportOption> opts;
-	importer->get_import_options(&opts);
+	importer->get_import_options(p_file, &opts);
 	for (const ResourceImporter::ImportOption &E : opts) {
 		if (!params.has(E.option.name)) { //this one is not present
 			params[E.option.name] = E.default_value;
@@ -1894,7 +1941,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	if (version > 0) {
 		f->store_line("importer_version=" + itos(version));
 	}
-	if (importer->get_resource_type() != "") {
+	if (!importer->get_resource_type().is_empty()) {
 		f->store_line("type=\"" + importer->get_resource_type() + "\"");
 	}
 
@@ -1907,7 +1954,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	Vector<String> dest_paths;
 
 	if (err == OK) {
-		if (importer->get_save_extension() == "") {
+		if (importer->get_save_extension().is_empty()) {
 			//no path
 		} else if (import_variants.size()) {
 			//import with variants
@@ -2003,7 +2050,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	if (ResourceCache::has(p_file)) {
 		Resource *r = ResourceCache::get(p_file);
 
-		if (r->get_import_path() != String()) {
+		if (!r->get_import_path().is_empty()) {
 			String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_file);
 			r->set_import_path(dst_path);
 			r->set_import_last_modified_time(0);
@@ -2062,7 +2109,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			groups_to_reimport.insert(file);
 			//groups do not belong to grups
 			group_file = String();
-		} else if (group_file != String()) {
+		} else if (!group_file.is_empty()) {
 			//it's a group file, add group to import and skip this file
 			groups_to_reimport.insert(group_file);
 		} else {
@@ -2271,6 +2318,7 @@ static void _scan_extensions_dir(EditorFileSystemDirectory *d, Set<String> &exte
 bool EditorFileSystem::_scan_extensions() {
 	EditorFileSystemDirectory *d = get_filesystem();
 	Set<String> extensions;
+
 	_scan_extensions_dir(d, extensions);
 
 	//verify against loaded extensions
@@ -2371,6 +2419,14 @@ void EditorFileSystem::_update_extensions() {
 	}
 }
 
+void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
+	ERR_FAIL_COND(import_support_queries.find(p_query) != -1);
+	import_support_queries.push_back(p_query);
+}
+void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
+	import_support_queries.erase(p_query);
+}
+
 EditorFileSystem::EditorFileSystem() {
 	ResourceLoader::import = _resource_import;
 	reimport_on_missing_imported_files = GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
@@ -2379,14 +2435,7 @@ EditorFileSystem::EditorFileSystem() {
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = nullptr;
 
-	scanning = false;
-	importing = false;
-	use_threads = true;
 	new_filesystem = nullptr;
-
-	abort_scan = false;
-	scanning_changes = false;
-	scanning_changes_done = false;
 
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -2394,9 +2443,6 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	update_script_classes_queued.clear();
-	first_scan = true;
-	scan_changes_pending = false;
-	revalidate_import_files = false;
 	import_threads.init();
 	ResourceUID::get_singleton()->clear(); //will be updated on scan
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);

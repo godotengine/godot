@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 namespace TestAStar {
 
-class ABCX : public AStar {
+class ABCX : public AStar3D {
 public:
 	enum {
 		A,
@@ -66,7 +66,7 @@ public:
 	}
 };
 
-TEST_CASE("[AStar] ABC path") {
+TEST_CASE("[AStar3D] ABC path") {
 	ABCX abcx;
 	Vector<int> path = abcx.get_id_path(ABCX::A, ABCX::C);
 	REQUIRE(path.size() == 3);
@@ -75,7 +75,7 @@ TEST_CASE("[AStar] ABC path") {
 	CHECK(path[2] == ABCX::C);
 }
 
-TEST_CASE("[AStar] ABCX path") {
+TEST_CASE("[AStar3D] ABCX path") {
 	ABCX abcx;
 	Vector<int> path = abcx.get_id_path(ABCX::X, ABCX::C);
 	REQUIRE(path.size() == 4);
@@ -85,8 +85,8 @@ TEST_CASE("[AStar] ABCX path") {
 	CHECK(path[3] == ABCX::C);
 }
 
-TEST_CASE("[AStar] Add/Remove") {
-	AStar a;
+TEST_CASE("[AStar3D] Add/Remove") {
+	AStar3D a;
 
 	// Manual tests.
 	a.add_point(1, Vector3(0, 0, 0));
@@ -213,13 +213,13 @@ TEST_CASE("[AStar] Add/Remove") {
 	// It's been great work, cheers. \(^ ^)/
 }
 
-TEST_CASE("[Stress][AStar] Find paths") {
+TEST_CASE("[Stress][AStar3D] Find paths") {
 	// Random stress tests with Floyd-Warshall.
 	const int N = 30;
 	Math::seed(0);
 
 	for (int test = 0; test < 1000; test++) {
-		AStar a;
+		AStar3D a;
 		Vector3 p[N];
 		bool adj[N][N] = { { false } };
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,9 @@
 #include "gpu_particles_3d_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/particles_material.h"
 
@@ -164,20 +166,20 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sel);
-	if (!vi) {
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(sel);
+	if (!mi || mi->get_mesh().is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain geometry."), sel->get_name()));
 		return;
 	}
 
-	geometry = vi->get_faces(VisualInstance3D::FACES_SOLID);
+	geometry = mi->get_mesh()->get_faces();
 
 	if (geometry.size() == 0) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
 
-	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
+	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * mi->get_global_transform();
 
 	int gc = geometry.size();
 	Face3 *w = geometry.ptrw();
@@ -229,9 +231,11 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 }
 
 void GPUParticles3DEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
-		get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
+		} break;
 	}
 }
 
@@ -269,9 +273,9 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
-			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, cpu_particles, true, false);
+			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, node, false, false);
+			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, node, false, false);
 			ur->add_undo_reference(node);
 			ur->commit_action();
 
@@ -455,10 +459,9 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
 	particles_editor = memnew(GPUParticles3DEditor);
-	editor->get_main_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

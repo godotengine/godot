@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef ANIMATION_BLEND_SPACE_2D_EDITOR_H
 #define ANIMATION_BLEND_SPACE_2D_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
@@ -46,43 +45,43 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
 	Ref<AnimationNodeBlendSpace2D> blend_space;
 
-	PanelContainer *panel;
-	Button *tool_blend;
-	Button *tool_select;
-	Button *tool_create;
-	Button *tool_triangle;
-	VSeparator *tool_erase_sep;
-	Button *tool_erase;
-	Button *snap;
-	SpinBox *snap_x;
-	SpinBox *snap_y;
-	OptionButton *interpolation;
+	PanelContainer *panel = nullptr;
+	Button *tool_blend = nullptr;
+	Button *tool_select = nullptr;
+	Button *tool_create = nullptr;
+	Button *tool_triangle = nullptr;
+	VSeparator *tool_erase_sep = nullptr;
+	Button *tool_erase = nullptr;
+	Button *snap = nullptr;
+	SpinBox *snap_x = nullptr;
+	SpinBox *snap_y = nullptr;
+	OptionButton *interpolation = nullptr;
 
-	Button *auto_triangles;
+	Button *auto_triangles = nullptr;
 
-	LineEdit *label_x;
-	LineEdit *label_y;
-	SpinBox *max_x_value;
-	SpinBox *min_x_value;
-	SpinBox *max_y_value;
-	SpinBox *min_y_value;
+	LineEdit *label_x = nullptr;
+	LineEdit *label_y = nullptr;
+	SpinBox *max_x_value = nullptr;
+	SpinBox *min_x_value = nullptr;
+	SpinBox *max_y_value = nullptr;
+	SpinBox *min_y_value = nullptr;
 
-	HBoxContainer *edit_hb;
-	SpinBox *edit_x;
-	SpinBox *edit_y;
-	Button *open_editor;
+	HBoxContainer *edit_hb = nullptr;
+	SpinBox *edit_x = nullptr;
+	SpinBox *edit_y = nullptr;
+	Button *open_editor = nullptr;
 
 	int selected_point;
 	int selected_triangle;
 
-	Control *blend_space_draw;
+	Control *blend_space_draw = nullptr;
 
-	PanelContainer *error_panel;
-	Label *error_label;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
 	bool updating;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	static AnimationNodeBlendSpace2DEditor *singleton;
 
@@ -95,8 +94,8 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	void _labels_changed(String);
 	void _snap_toggled();
 
-	PopupMenu *menu;
-	PopupMenu *animations_menu;
+	PopupMenu *menu = nullptr;
+	PopupMenu *animations_menu = nullptr;
 	Vector<String> animations_to_add;
 	Vector2 add_point_pos;
 	Vector<Vector2> points;
@@ -124,7 +123,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
 	StringName get_blend_position_path() const;
 
-	EditorFileDialog *open_file;
+	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 

@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2020 by
+ * Copyright (C) 2017-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -53,10 +53,10 @@ FT_BEGIN_HEADER
    *   reasons.
    *
    *   Available properties are @increase-x-height, @no-stem-darkening
-   *   (experimental), @darkening-parameters (experimental), @warping
-   *   (experimental), @glyph-to-script-map (experimental), @fallback-script
-   *   (experimental), and @default-script (experimental), as documented in
-   *   the @properties section.
+   *   (experimental), @darkening-parameters (experimental),
+   *   @glyph-to-script-map (experimental), @fallback-script (experimental),
+   *   and @default-script (experimental), as documented in the @properties
+   *   section.
    *
    */
 
@@ -84,15 +84,15 @@ FT_BEGIN_HEADER
    *   @properties section.
    *
    *
-   *   **Hinting and antialiasing principles of the new engine**
+   *   **Hinting and anti-aliasing principles of the new engine**
    *
    *   The rasterizer is positioning horizontal features (e.g., ascender
    *   height & x-height, or crossbars) on the pixel grid and minimizing the
-   *   amount of antialiasing applied to them, while placing vertical
+   *   amount of anti-aliasing applied to them, while placing vertical
    *   features (vertical stems) on the pixel grid without hinting, thus
    *   representing the stem position and weight accurately.  Sometimes the
    *   vertical stems may be only partially black.  In this context,
-   *   'antialiasing' means that stems are not positioned exactly on pixel
+   *   'anti-aliasing' means that stems are not positioned exactly on pixel
    *   borders, causing a fuzzy appearance.
    *
    *   There are two principles behind this approach.
@@ -108,7 +108,7 @@ FT_BEGIN_HEADER
    *   sizes are comparable to kerning values and thus would be noticeable
    *   (and distracting) while reading if hinting were applied.
    *
-   *   One of the reasons to not hint horizontally is antialiasing for LCD
+   *   One of the reasons to not hint horizontally is anti-aliasing for LCD
    *   screens: The pixel geometry of modern displays supplies three vertical
    *   subpixels as the eye moves horizontally across each visible pixel.  On
    *   devices where we can be certain this characteristic is present a
@@ -116,7 +116,7 @@ FT_BEGIN_HEADER
    *   weight.  In Western writing systems this turns out to be the more
    *   critical direction anyway; the weights and spacing of vertical stems
    *   (see above) are central to Armenian, Cyrillic, Greek, and Latin type
-   *   designs.  Even when the rasterizer uses greyscale antialiasing instead
+   *   designs.  Even when the rasterizer uses greyscale anti-aliasing instead
    *   of color (a necessary compromise when one doesn't know the screen
    *   characteristics), the unhinted vertical features preserve the design's
    *   weight and spacing much better than aliased type would.
@@ -362,12 +362,8 @@ FT_BEGIN_HEADER
    *   The same holds for the Type~1 and CID modules if compiled with
    *   `T1_CONFIG_OPTION_OLD_ENGINE`.
    *
-   *   For the 'cff' module, the default engine is 'freetype' if
-   *   `CFF_CONFIG_OPTION_OLD_ENGINE` is defined, and 'adobe' otherwise.
-   *
-   *   For both the 'type1' and 't1cid' modules, the default engine is
-   *   'freetype' if `T1_CONFIG_OPTION_OLD_ENGINE` is defined, and 'adobe'
-   *   otherwise.
+   *   For the 'cff' module, the default engine is 'adobe'.  For both the
+   *   'type1' and 't1cid' modules, the default engine is 'adobe', too.
    *
    * @note:
    *   This property can be used with @FT_Property_Get also.
@@ -1166,48 +1162,18 @@ FT_BEGIN_HEADER
    *   warping
    *
    * @description:
-   *   **Experimental only**
+   *   **Obsolete**
    *
-   *   If FreeType gets compiled with option `AF_CONFIG_OPTION_USE_WARPER` to
-   *   activate the warp hinting code in the auto-hinter, this property
-   *   switches warping on and off.
+   *   This property was always experimental and probably never worked
+   *   correctly.  It was entirely removed from the FreeType~2 sources.  This
+   *   entry is only here for historical reference.
    *
-   *   Warping only works in 'normal' auto-hinting mode replacing it.  The
-   *   idea of the code is to slightly scale and shift a glyph along the
+   *   Warping only worked in 'normal' auto-hinting mode replacing it.  The
+   *   idea of the code was to slightly scale and shift a glyph along the
    *   non-hinted dimension (which is usually the horizontal axis) so that as
-   *   much of its segments are aligned (more or less) to the grid.  To find
+   *   much of its segments were aligned (more or less) to the grid.  To find
    *   out a glyph's optimal scaling and shifting value, various parameter
-   *   combinations are tried and scored.
-   *
-   *   By default, warping is off.
-   *
-   * @note:
-   *   This property can be used with @FT_Property_Get also.
-   *
-   *   This property can be set via the `FREETYPE_PROPERTIES` environment
-   *   variable (using values 1 and 0 for 'on' and 'off', respectively).
-   *
-   *   The warping code can also change advance widths.  Have a look at the
-   *   `lsb_delta` and `rsb_delta` fields in the @FT_GlyphSlotRec structure
-   *   for details on improving inter-glyph distances while rendering.
-   *
-   *   Since warping is a global property of the auto-hinter it is best to
-   *   change its value before rendering any face.  Otherwise, you should
-   *   reload all faces that get auto-hinted in 'normal' hinting mode.
-   *
-   * @example:
-   *   This example shows how to switch on warping (omitting the error
-   *   handling).
-   *
-   *   ```
-   *     FT_Library  library;
-   *     FT_Bool     warping = 1;
-   *
-   *
-   *     FT_Init_FreeType( &library );
-   *
-   *     FT_Property_Set( library, "autofitter", "warping", &warping );
-   *   ```
+   *   combinations were tried and scored.
    *
    * @since:
    *   2.6

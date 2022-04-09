@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDFramebufferPass" inherits="RefCounted" version="4.0">
+<class name="RDFramebufferPass" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Framebuffer pass attachment description.
 	</brief_description>
 	<description>
 		This class contains the list of attachment descriptions for a framebuffer pass. Each points with an index to a previously supplied list of texture attachments.
-	Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
+		Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
 	</description>
 	<tutorials>
 	</tutorials>

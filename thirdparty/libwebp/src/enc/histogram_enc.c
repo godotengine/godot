@@ -208,6 +208,7 @@ void VP8LHistogramAddSinglePixOrCopy(VP8LHistogram* const histo,
   } else if (PixOrCopyIsCacheIdx(v)) {
     const int literal_ix =
         NUM_LITERAL_CODES + NUM_LENGTH_CODES + PixOrCopyCacheIdx(v);
+    assert(histo->palette_code_bits_ != 0);
     ++histo->literal_[literal_ix];
   } else {
     int code, extra_bits;
@@ -1170,13 +1171,15 @@ static void RemoveEmptyHistograms(VP8LHistogramSet* const image_histo) {
 int VP8LGetHistoImageSymbols(int xsize, int ysize,
                              const VP8LBackwardRefs* const refs,
                              int quality, int low_effort,
-                             int histo_bits, int cache_bits,
+                             int histogram_bits, int cache_bits,
                              VP8LHistogramSet* const image_histo,
                              VP8LHistogram* const tmp_histo,
                              uint16_t* const histogram_symbols) {
   int ok = 0;
-  const int histo_xsize = histo_bits ? VP8LSubSampleSize(xsize, histo_bits) : 1;
-  const int histo_ysize = histo_bits ? VP8LSubSampleSize(ysize, histo_bits) : 1;
+  const int histo_xsize =
+      histogram_bits ? VP8LSubSampleSize(xsize, histogram_bits) : 1;
+  const int histo_ysize =
+      histogram_bits ? VP8LSubSampleSize(ysize, histogram_bits) : 1;
   const int image_histo_raw_size = histo_xsize * histo_ysize;
   VP8LHistogramSet* const orig_histo =
       VP8LAllocateHistogramSet(image_histo_raw_size, cache_bits);
@@ -1192,7 +1195,7 @@ int VP8LGetHistoImageSymbols(int xsize, int ysize,
   if (orig_histo == NULL || map_tmp == NULL) goto Error;
 
   // Construct the histograms from backward references.
-  HistogramBuild(xsize, histo_bits, refs, orig_histo);
+  HistogramBuild(xsize, histogram_bits, refs, orig_histo);
   // Copies the histograms and computes its bit_cost.
   // histogram_symbols is optimized
   HistogramCopyAndAnalyze(orig_histo, image_histo, &num_used,

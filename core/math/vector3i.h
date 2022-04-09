@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,13 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
-#include "core/string/ustring.h"
-#include "core/typedefs.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
 
-struct Vector3i {
+class String;
+struct Vector3;
+
+struct _NO_DISCARD_ Vector3i {
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -52,18 +55,23 @@ struct Vector3i {
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ int32_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	void set_axis(const int p_axis, const int32_t p_value);
 	int32_t get_axis(const int p_axis) const;
 
-	int min_axis() const;
-	int max_axis() const;
+	Vector3i::Axis min_axis_index() const;
+	Vector3i::Axis max_axis_index() const;
+
+	_FORCE_INLINE_ int64_t length_squared() const;
+	_FORCE_INLINE_ double length() const;
 
 	_FORCE_INLINE_ void zero();
 
@@ -101,6 +109,7 @@ struct Vector3i {
 	_FORCE_INLINE_ bool operator>=(const Vector3i &p_v) const;
 
 	operator String() const;
+	operator Vector3() const;
 
 	_FORCE_INLINE_ Vector3i() {}
 	_FORCE_INLINE_ Vector3i(const int32_t p_x, const int32_t p_y, const int32_t p_z) {
@@ -110,12 +119,20 @@ struct Vector3i {
 	}
 };
 
+int64_t Vector3i::length_squared() const {
+	return x * (int64_t)x + y * (int64_t)y + z * (int64_t)z;
+}
+
+double Vector3i::length() const {
+	return Math::sqrt((double)length_squared());
+}
+
 Vector3i Vector3i::abs() const {
 	return Vector3i(ABS(x), ABS(y), ABS(z));
 }
 
 Vector3i Vector3i::sign() const {
-	return Vector3i(SGN(x), SGN(y), SGN(z));
+	return Vector3i(SIGN(x), SIGN(y), SIGN(z));
 }
 
 /* Operators */
@@ -182,6 +199,12 @@ Vector3i &Vector3i::operator*=(const int32_t p_scalar) {
 	return *this;
 }
 
+Vector3i Vector3i::operator*(const int32_t p_scalar) const {
+	return Vector3i(x * p_scalar, y * p_scalar, z * p_scalar);
+}
+
+// Multiplication operators required to workaround issues with LLVM using implicit conversion.
+
 _FORCE_INLINE_ Vector3i operator*(const int32_t p_scalar, const Vector3i &p_vector) {
 	return p_vector * p_scalar;
 }
@@ -196,10 +219,6 @@ _FORCE_INLINE_ Vector3i operator*(const float p_scalar, const Vector3i &p_vector
 
 _FORCE_INLINE_ Vector3i operator*(const double p_scalar, const Vector3i &p_vector) {
 	return p_vector * p_scalar;
-}
-
-Vector3i Vector3i::operator*(const int32_t p_scalar) const {
-	return Vector3i(x * p_scalar, y * p_scalar, z * p_scalar);
 }
 
 Vector3i &Vector3i::operator/=(const int32_t p_scalar) {

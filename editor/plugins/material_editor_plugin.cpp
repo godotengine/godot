@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "material_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/fog_material.h"
@@ -37,31 +38,33 @@
 #include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			//get_scene()->connect("node_removed",this,"_node_removed");
 
-		if (first_enter) {
-			//it's in propertyeditor so.. could be moved around
+			if (first_enter) {
+				//it's in propertyeditor so.. could be moved around
 
-			light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
-			light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
-			light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
-			light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
+				light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
+				light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
+				light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
+				light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
 
-			sphere_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewSphereOff"), SNAME("EditorIcons")));
-			sphere_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons")));
-			box_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewCubeOff"), SNAME("EditorIcons")));
-			box_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons")));
+				sphere_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewSphereOff"), SNAME("EditorIcons")));
+				sphere_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons")));
+				box_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewCubeOff"), SNAME("EditorIcons")));
+				box_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons")));
 
-			first_enter = false;
-		}
-	}
+				first_enter = false;
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-		Size2 size = get_size();
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			Size2 size = get_size();
 
-		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+		} break;
 	}
 }
 
@@ -69,8 +72,24 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 	material = p_material;
 	camera->set_environment(p_env);
 	if (!material.is_null()) {
-		sphere_instance->set_material_override(material);
-		box_instance->set_material_override(material);
+		Shader::Mode mode = p_material->get_shader_mode();
+		switch (mode) {
+			case Shader::MODE_CANVAS_ITEM:
+				layout_3d->hide();
+				layout_2d->show();
+				vc->hide();
+				rect_instance->set_material(material);
+				break;
+			case Shader::MODE_SPATIAL:
+				layout_2d->hide();
+				layout_3d->show();
+				vc->show();
+				sphere_instance->set_material_override(material);
+				box_instance->set_material_override(material);
+				break;
+			default:
+				break;
+		}
 	} else {
 		hide();
 	}
@@ -106,6 +125,21 @@ void MaterialEditor::_bind_methods() {
 }
 
 MaterialEditor::MaterialEditor() {
+	// canvas item
+
+	layout_2d = memnew(HBoxContainer);
+	layout_2d->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	add_child(layout_2d);
+	layout_2d->set_anchors_and_offsets_preset(PRESET_WIDE);
+
+	rect_instance = memnew(ColorRect);
+	layout_2d->add_child(rect_instance);
+	rect_instance->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
+
+	layout_2d->set_visible(false);
+
+	// spatial
+
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
@@ -154,12 +188,12 @@ MaterialEditor::MaterialEditor() {
 
 	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
 
-	HBoxContainer *hb = memnew(HBoxContainer);
-	add_child(hb);
-	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	layout_3d = memnew(HBoxContainer);
+	add_child(layout_3d);
+	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
-	hb->add_child(vb_shape);
+	layout_3d->add_child(vb_shape);
 
 	sphere_switch = memnew(TextureButton);
 	sphere_switch->set_toggle_mode(true);
@@ -173,10 +207,10 @@ MaterialEditor::MaterialEditor() {
 	vb_shape->add_child(box_switch);
 	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(box_switch));
 
-	hb->add_spacer();
+	layout_3d->add_spacer();
 
 	VBoxContainer *vb_light = memnew(VBoxContainer);
-	hb->add_child(vb_light);
+	layout_3d->add_child(vb_light);
 
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
@@ -207,8 +241,8 @@ bool EditorInspectorPluginMaterial::can_handle(Object *p_object) {
 	if (!material) {
 		return false;
 	}
-
-	return material->get_shader_mode() == Shader::MODE_SPATIAL;
+	Shader::Mode mode = material->get_shader_mode();
+	return mode == Shader::MODE_SPATIAL || mode == Shader::MODE_CANVAS_ITEM;
 }
 
 void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
@@ -223,6 +257,43 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
+void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
+	if (!undo_redo) {
+		return;
+	}
+
+	// For BaseMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
+	// set the respective metallic or roughness factor to 1.0 as a convenience feature
+	BaseMaterial3D *base_material = Object::cast_to<StandardMaterial3D>(p_edited);
+	if (base_material) {
+		Texture2D *texture = Object::cast_to<Texture2D>(p_new_value);
+		if (texture) {
+			if (p_property == "roughness_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_ROUGHNESS).is_null()) {
+					undo_redo->add_do_property(p_edited, "roughness", 1.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("roughness", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "roughness", value);
+					}
+				}
+			} else if (p_property == "metallic_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_METALLIC).is_null()) {
+					undo_redo->add_do_property(p_edited, "metallic", 1.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("metallic", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "metallic", value);
+					}
+				}
+			}
+		}
+	}
+}
+
 EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env.instantiate();
 	Ref<Sky> sky = memnew(Sky());
@@ -230,9 +301,11 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env->set_background(Environment::BG_COLOR);
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+
+	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &EditorInspectorPluginMaterial::_undo_redo_inspector_callback));
 }
 
-MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
+MaterialEditorPlugin::MaterialEditorPlugin() {
 	Ref<EditorInspectorPluginMaterial> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

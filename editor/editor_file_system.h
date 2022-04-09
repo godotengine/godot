@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,9 +47,9 @@ class EditorFileSystemDirectory : public Object {
 
 	String name;
 	uint64_t modified_time;
-	bool verified; //used for checking changes
+	bool verified = false; //used for checking changes
 
-	EditorFileSystemDirectory *parent;
+	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
 
 	struct FileInfo {
@@ -109,6 +109,37 @@ public:
 	~EditorFileSystemDirectory();
 };
 
+class EditorFileSystemImportFormatSupportQuery : public RefCounted {
+	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted);
+
+protected:
+	GDVIRTUAL0RC(bool, _is_active)
+	GDVIRTUAL0RC(Vector<String>, _get_file_extensions)
+	GDVIRTUAL0RC(bool, _query)
+	static void _bind_methods() {
+		GDVIRTUAL_BIND(_is_active);
+		GDVIRTUAL_BIND(_get_file_extensions);
+		GDVIRTUAL_BIND(_query);
+	}
+
+public:
+	virtual bool is_active() const {
+		bool ret = false;
+		GDVIRTUAL_REQUIRED_CALL(_is_active, ret);
+		return ret;
+	}
+	virtual Vector<String> get_file_extensions() const {
+		Vector<String> ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_file_extensions, ret);
+		return ret;
+	}
+	virtual bool query() {
+		bool ret = false;
+		GDVIRTUAL_REQUIRED_CALL(_query, ret);
+		return ret;
+	}
+};
+
 class EditorFileSystem : public Node {
 	GDCLASS(EditorFileSystem, Node);
 
@@ -132,20 +163,20 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads;
+	bool use_threads = true;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
-	EditorFileSystemDirectory *new_filesystem;
+	EditorFileSystemDirectory *new_filesystem = nullptr;
 
-	bool abort_scan;
-	bool scanning;
-	bool importing;
-	bool first_scan;
-	bool scan_changes_pending;
+	bool abort_scan = false;
+	bool scanning = false;
+	bool importing = false;
+	bool first_scan = true;
+	bool scan_changes_pending = false;
 	float scan_total;
 	String filesystem_settings_version_for_import;
-	bool revalidate_import_files;
+	bool revalidate_import_files = false;
 
 	void _scan_filesystem();
 
@@ -153,7 +184,7 @@ class EditorFileSystem : public Node {
 
 	void _save_late_updated_files();
 
-	EditorFileSystemDirectory *filesystem;
+	EditorFileSystemDirectory *filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
 
@@ -197,8 +228,8 @@ class EditorFileSystem : public Node {
 	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
-	bool scanning_changes;
-	bool scanning_changes_done;
+	bool scanning_changes = false;
+	bool scanning_changes_done = false;
 
 	static void _thread_func_sources(void *_userdata);
 
@@ -257,6 +288,9 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
+	bool _scan_import_support(Vector<String> reimports);
+
+	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
 protected:
 	void _notification(int p_what);
@@ -272,6 +306,7 @@ public:
 	void scan();
 	void scan_changes();
 	void update_file(const String &p_file);
+	Set<String> get_valid_extensions() const;
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
@@ -288,6 +323,8 @@ public:
 
 	static bool _should_skip_directory(const String &p_path);
 
+	void add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
+	void remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	EditorFileSystem();
 	~EditorFileSystem();
 };

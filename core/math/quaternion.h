@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,7 @@
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
-class Quaternion {
-public:
+struct _NO_DISCARD_ Quaternion {
 	union {
 		struct {
 			real_t x;
@@ -61,6 +60,8 @@ public:
 	Quaternion normalized() const;
 	bool is_normalized() const;
 	Quaternion inverse() const;
+	Quaternion log() const;
+	Quaternion exp() const;
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
 	real_t angle_to(const Quaternion &p_to) const;
 
@@ -134,12 +135,11 @@ public:
 			w(p_q.w) {
 	}
 
-	Quaternion &operator=(const Quaternion &p_q) {
+	void operator=(const Quaternion &p_q) {
 		x = p_q.x;
 		y = p_q.y;
 		z = p_q.z;
 		w = p_q.w;
-		return *this;
 	}
 
 	Quaternion(const Vector3 &v0, const Vector3 &v1) // shortest arc
@@ -147,19 +147,19 @@ public:
 		Vector3 c = v0.cross(v1);
 		real_t d = v0.dot(v1);
 
-		if (d < -1.0 + CMP_EPSILON) {
+		if (d < -1.0f + (real_t)CMP_EPSILON) {
 			x = 0;
 			y = 1;
 			z = 0;
 			w = 0;
 		} else {
-			real_t s = Math::sqrt((1.0 + d) * 2.0);
-			real_t rs = 1.0 / s;
+			real_t s = Math::sqrt((1.0f + d) * 2.0f);
+			real_t rs = 1.0f / s;
 
 			x = c.x * rs;
 			y = c.y * rs;
 			z = c.z * rs;
-			w = s * 0.5;
+			w = s * 0.5f;
 		}
 	}
 };
@@ -194,7 +194,7 @@ void Quaternion::operator*=(const real_t &s) {
 }
 
 void Quaternion::operator/=(const real_t &s) {
-	*this *= 1.0 / s;
+	*this *= 1.0f / s;
 }
 
 Quaternion Quaternion::operator+(const Quaternion &q2) const {
@@ -217,7 +217,7 @@ Quaternion Quaternion::operator*(const real_t &s) const {
 }
 
 Quaternion Quaternion::operator/(const real_t &s) const {
-	return *this * (1.0 / s);
+	return *this * (1.0f / s);
 }
 
 bool Quaternion::operator==(const Quaternion &p_quaternion) const {

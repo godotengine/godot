@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,8 @@
 #include "core/math/geometry_3d.h"
 
 #define fallback_collision_solver gjk_epa_calculate_penetration
+
+#define _BACKFACE_NORMAL_THRESHOLD -0.0002
 
 // Cylinder SAT analytic methods and face-circle contact points for cylinder-trimesh and cylinder-box collision are based on ODE colliders.
 
@@ -343,10 +345,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 
 	for (int i = 0; i < clipbuf_len; i++) {
 		real_t d = plane_B.distance_to(clipbuf_src[i]);
-		/*
-		if (d>CMP_EPSILON)
-			continue;
-		*/
 
 		Vector3 closest_B = clipbuf_src[i] - plane_B.normal * d;
 
@@ -612,13 +610,14 @@ class SeparatorAxisTest {
 	const Transform3D *transform_A = nullptr;
 	const Transform3D *transform_B = nullptr;
 	real_t best_depth = 1e15;
-	Vector3 best_axis;
 	_CollectorCallback *callback = nullptr;
 	real_t margin_A = 0.0;
 	real_t margin_B = 0.0;
 	Vector3 separator_axis;
 
 public:
+	Vector3 best_axis;
+
 	_FORCE_INLINE_ bool test_previous_axis() {
 		if (callback && callback->prev_axis && *callback->prev_axis != Vector3()) {
 			return test_axis(*callback->prev_axis);
@@ -627,7 +626,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ bool test_axis(const Vector3 &p_axis, bool p_directional = false) {
+	_FORCE_INLINE_ bool test_axis(const Vector3 &p_axis) {
 		Vector3 axis = p_axis;
 
 		if (axis.is_equal_approx(Vector3())) {
@@ -661,12 +660,7 @@ public:
 		//use the smallest depth
 
 		if (min_B < 0.0) { // could be +0.0, we don't want it to become -0.0
-			if (p_directional) {
-				min_B = max_B;
-				axis = -axis;
-			} else {
-				min_B = -min_B;
-			}
+			min_B = -min_B;
 		}
 
 		if (max_B < min_B) {
@@ -1014,7 +1008,7 @@ static void _collision_sphere_face(const GodotShape3D *p_a, const Transform3D &p
 
 	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
 
-	if (!separator.test_axis(normal, !face_B->backface_collision)) {
+	if (!separator.test_axis(normal)) {
 		return;
 	}
 
@@ -1038,6 +1032,17 @@ static void _collision_sphere_face(const GodotShape3D *p_a, const Transform3D &p
 
 		if (!separator.test_axis(axis)) {
 			return;
+		}
+	}
+
+	if (!face_B->backface_collision) {
+		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
+			if (face_B->invert_backface_collision) {
+				separator.best_axis = separator.best_axis.bounce(normal);
+			} else {
+				// Just ignore backface collision.
+				return;
+			}
 		}
 	}
 
@@ -1486,7 +1491,7 @@ static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_tr
 
 	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
 
-	if (!separator.test_axis(normal, !face_B->backface_collision)) {
+	if (!separator.test_axis(normal)) {
 		return;
 	}
 
@@ -1587,6 +1592,17 @@ static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_tr
 						}
 					}
 				}
+			}
+		}
+	}
+
+	if (!face_B->backface_collision) {
+		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
+			if (face_B->invert_backface_collision) {
+				separator.best_axis = separator.best_axis.bounce(normal);
+			} else {
+				// Just ignore backface collision.
+				return;
 			}
 		}
 	}
@@ -1802,7 +1818,7 @@ static void _collision_capsule_face(const GodotShape3D *p_a, const Transform3D &
 
 	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
 
-	if (!separator.test_axis(normal, !face_B->backface_collision)) {
+	if (!separator.test_axis(normal)) {
 		return;
 	}
 
@@ -1853,6 +1869,17 @@ static void _collision_capsule_face(const GodotShape3D *p_a, const Transform3D &
 			}
 
 			if (!separator.test_axis(axis.normalized())) {
+				return;
+			}
+		}
+	}
+
+	if (!face_B->backface_collision) {
+		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
+			if (face_B->invert_backface_collision) {
+				separator.best_axis = separator.best_axis.bounce(normal);
+			} else {
+				// Just ignore backface collision.
 				return;
 			}
 		}
@@ -1952,7 +1979,7 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
 
 	// Face B normal.
-	if (!separator.test_axis(normal, !face_B->backface_collision)) {
+	if (!separator.test_axis(normal)) {
 		return;
 	}
 
@@ -2029,6 +2056,17 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 			}
 
 			if (!separator.test_axis(axis.normalized())) {
+				return;
+			}
+		}
+	}
+
+	if (!face_B->backface_collision) {
+		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
+			if (face_B->invert_backface_collision) {
+				separator.best_axis = separator.best_axis.bounce(normal);
+			} else {
+				// Just ignore backface collision.
 				return;
 			}
 		}
@@ -2174,7 +2212,7 @@ static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transf
 
 	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
 
-	if (!separator.test_axis(normal, !face_B->backface_collision)) {
+	if (!separator.test_axis(normal)) {
 		return;
 	}
 
@@ -2262,6 +2300,17 @@ static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transf
 				if (!separator.test_axis(axis)) {
 					return;
 				}
+			}
+		}
+	}
+
+	if (!face_B->backface_collision) {
+		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
+			if (face_B->invert_backface_collision) {
+				separator.best_axis = separator.best_axis.bounce(normal);
+			} else {
+				// Just ignore backface collision.
+				return;
 			}
 		}
 	}

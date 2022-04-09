@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualInstance3D" inherits="Node3D" version="4.0">
+<class name="VisualInstance3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Parent of all visual 3D nodes.
 	</brief_description>
@@ -9,6 +9,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_aabb" qualifiers="virtual const">
+			<return type="AABB" />
+			<description>
+			</description>
+		</method>
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB" />
 			<description>
@@ -58,7 +63,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask" default="1">
+		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask">
 			The render layer(s) this [VisualInstance3D] is drawn on.
 			This object will only be visible for [Camera3D]s whose cull mask includes the render object this [VisualInstance3D] is set to.
 		</member>

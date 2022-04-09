@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,16 +45,17 @@
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
 #include "editor/bindings_generator.h"
+#include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/node_dock.h"
+#include "editor/script_templates/templates.gen.h"
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED
 #include "class_db_api_json.h"
 #endif
 
-#include "editor/editor_internal_calls.h"
 #include "godotsharp_dirs.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
@@ -351,57 +352,35 @@ static String get_base_class_name(const String &p_base_class_name, const String 
 	return base_class;
 }
 
-Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	String script_template = "using " BINDINGS_NAMESPACE ";\n"
-							 "using System;\n"
-							 "\n"
-							 "public partial class %CLASS% : %BASE%\n"
-							 "{\n"
-							 "    // Declare member variables here. Examples:\n"
-							 "    // private int a = 2;\n"
-							 "    // private string b = \"text\";\n"
-							 "\n"
-							 "    // Called when the node enters the scene tree for the first time.\n"
-							 "    public override void _Ready()\n"
-							 "    {\n"
-							 "        \n"
-							 "    }\n"
-							 "\n"
-							 "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-							 "//  public override void _Process(float delta)\n"
-							 "//  {\n"
-							 "//      \n"
-							 "//  }\n"
-							 "}\n";
-
-	// Replaces all spaces in p_class_name with underscores to prevent
-	// invalid C# Script templates from being generated when the object name
-	// has spaces in it.
-	String class_name_no_spaces = p_class_name.replace(" ", "_");
-	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
-	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", class_name_no_spaces);
-
-	Ref<CSharpScript> script;
-	script.instantiate();
-	script->set_source_code(script_template);
-	script->set_name(class_name_no_spaces);
-
-	return script;
-}
-
 bool CSharpLanguage::is_using_templates() {
 	return true;
 }
 
-void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String src = p_script->get_source_code();
+Ref<Script> CSharpLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+	Ref<CSharpScript> script;
+	script.instantiate();
+
 	String class_name_no_spaces = p_class_name.replace(" ", "_");
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
-	src = src.replace("%BASE%", base_class_name)
-				  .replace("%CLASS%", class_name_no_spaces)
-				  .replace("%TS%", _get_indentation());
-	p_script->set_source_code(src);
+	String processed_template = p_template;
+	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
+								 .replace("_BASE_", base_class_name)
+								 .replace("_CLASS_", class_name_no_spaces)
+								 .replace("_TS_", _get_indentation());
+	script->set_source_code(processed_template);
+	return script;
+}
+
+Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(StringName p_object) {
+	Vector<ScriptLanguage::ScriptTemplate> templates;
+#ifdef TOOLS_ENABLED
+	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
+		if (TEMPLATES[i].inherit == p_object) {
+			templates.append(TEMPLATES[i]);
+		}
+	}
+#endif
+	return templates;
 }
 
 String CSharpLanguage::validate_path(const String &p_path) const {
@@ -409,7 +388,7 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	List<String> keywords;
 	get_reserved_words(&keywords);
 	if (keywords.find(class_name)) {
-		return TTR("Class name can't be a reserved keyword");
+		return RTR("Class name can't be a reserved keyword");
 	}
 	return "";
 }
@@ -550,10 +529,10 @@ String CSharpLanguage::make_function(const String &, const String &, const Packe
 String CSharpLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/behavior/indent/type", 0);
+		bool use_space_indentation = EDITOR_GET("text_editor/behavior/indent/type");
 
 		if (use_space_indentation) {
-			int indent_size = EDITOR_DEF("text_editor/behavior/indent/size", 4);
+			int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
 
 			String space_indent = "";
 			for (int i = 0; i < indent_size; i++) {
@@ -788,11 +767,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.is_empty()) {
-		appname_safe = "UnnamedProject";
-	}
+	String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
 
 	appname_safe += ".dll";
 
@@ -1195,8 +1170,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #ifdef TOOLS_ENABLED
 	// FIXME: Hack to refresh editor in order to display new properties and signals. See if there is a better alternative.
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::get_singleton()->get_inspector()->update_tree();
-		NodeDock::singleton->update_lists();
+		InspectorDock::get_inspector_singleton()->update_tree();
+		NodeDock::get_singleton()->update_lists();
 	}
 #endif
 }
@@ -1355,7 +1330,7 @@ void CSharpLanguage::_editor_init_callback() {
 
 	// Enable it as a plugin
 	EditorNode::add_editor_plugin(godotsharp_editor);
-	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KEY_MASK_ALT | KEY_B);
+	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KeyModifierMask::ALT | Key::B);
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;
@@ -1766,7 +1741,16 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 
 		ManagedType managedType;
 
-		GDMonoField *field = script->script_class->get_field(state_pair.first);
+		GDMonoField *field = nullptr;
+		GDMonoClass *top = script->script_class;
+		while (top && top != script->native) {
+			field = top->get_field(state_pair.first);
+			if (field) {
+				break;
+			}
+
+			top = top->get_parent_class();
+		}
 		if (!field) {
 			continue; // Properties ignored. We get the property baking fields instead.
 		}
@@ -1911,7 +1895,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 	return false;
 }
 
-Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
@@ -2926,7 +2910,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 }
 #endif
 
-Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (unlikely(GDMono::get_singleton() == nullptr)) {
 		// Probably not the best error but eh.
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -2954,7 +2938,7 @@ Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, i
 	}
 
 	// No static method found. Try regular instance calls
-	return Script::call(p_method, p_args, p_argcount, r_error);
+	return Script::callp(p_method, p_args, p_argcount, r_error);
 }
 
 void CSharpScript::_resource_path_changed() {
@@ -3013,6 +2997,7 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 	CRASH_COND(p_script->native == nullptr);
 
 	p_script->valid = true;
+	p_script->reload_invalidated = false;
 
 	update_script_class_info(p_script);
 
@@ -3262,6 +3247,8 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 	CRASH_COND(!valid);
 #endif
 
+	GD_MONO_SCOPE_THREAD_ATTACH;
+
 	if (native) {
 		StringName native_name = NATIVE_GDMONOCLASS_NAME(native);
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
@@ -3273,8 +3260,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	Callable::CallError unchecked_error;
 	return _create_instance(nullptr, 0, p_this, Object::cast_to<RefCounted>(p_this) != nullptr, unchecked_error);
@@ -3369,13 +3354,13 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
-	bool has_instances;
-	{
-		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		has_instances = instances.size();
+	if (!reload_invalidated) {
+		return OK;
 	}
 
-	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
+	// In the case of C#, reload doesn't really do any script reloading.
+	// That's done separately via domain reloading.
+	reload_invalidated = false;
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3562,6 +3547,7 @@ void CSharpScript::_update_name() {
 void CSharpScript::_clear() {
 	tool = false;
 	valid = false;
+	reload_invalidated = true;
 
 	base = nullptr;
 	native = nullptr;

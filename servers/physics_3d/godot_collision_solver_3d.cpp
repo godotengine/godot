@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,7 +141,7 @@ struct _SoftBodyContactCollisionInfo {
 };
 
 void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-	_SoftBodyContactCollisionInfo &cinfo = *(_SoftBodyContactCollisionInfo *)(p_userdata);
+	_SoftBodyContactCollisionInfo &cinfo = *(static_cast<_SoftBodyContactCollisionInfo *>(p_userdata));
 
 	++cinfo.contact_count;
 
@@ -170,7 +170,7 @@ struct _SoftBodyQueryInfo {
 };
 
 bool GodotCollisionSolver3D::soft_body_query_callback(uint32_t p_node_index, void *p_userdata) {
-	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
+	_SoftBodyQueryInfo &query_cinfo = *(static_cast<_SoftBodyQueryInfo *>(p_userdata));
 
 	Vector3 node_position = query_cinfo.soft_body->get_node_position(p_node_index);
 
@@ -189,7 +189,7 @@ bool GodotCollisionSolver3D::soft_body_query_callback(uint32_t p_node_index, voi
 }
 
 bool GodotCollisionSolver3D::soft_body_concave_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
+	_SoftBodyQueryInfo &query_cinfo = *(static_cast<_SoftBodyQueryInfo *>(p_userdata));
 
 	query_cinfo.shape_A = p_convex;
 
@@ -264,7 +264,7 @@ bool GodotCollisionSolver3D::solve_soft_body(const GodotShape3D *p_shape_A, cons
 			local_aabb.size[i] = smax - smin;
 		}
 
-		concave_shape_A->cull(local_aabb, soft_body_concave_callback, &query_cinfo);
+		concave_shape_A->cull(local_aabb, soft_body_concave_callback, &query_cinfo, true);
 	} else {
 		AABB shape_aabb = p_transform_A.xform(p_shape_A->get_aabb());
 		shape_aabb.grow_by(collision_margin);
@@ -292,7 +292,7 @@ struct _ConcaveCollisionInfo {
 };
 
 bool GodotCollisionSolver3D::concave_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
+	_ConcaveCollisionInfo &cinfo = *(static_cast<_ConcaveCollisionInfo *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, nullptr, cinfo.margin_A, cinfo.margin_B);
@@ -346,7 +346,7 @@ bool GodotCollisionSolver3D::solve_concave(const GodotShape3D *p_shape_A, const 
 		local_aabb.size[i] = smax - smin;
 	}
 
-	concave_B->cull(local_aabb, concave_callback, &cinfo);
+	concave_B->cull(local_aabb, concave_callback, &cinfo, false);
 
 	return cinfo.collided;
 }
@@ -422,7 +422,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 }
 
 bool GodotCollisionSolver3D::concave_distance_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
+	_ConcaveCollisionInfo &cinfo = *(static_cast<_ConcaveCollisionInfo *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	Vector3 close_A, close_B;
@@ -559,7 +559,7 @@ bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const
 			local_aabb.size[i] = smax - smin;
 		}
 
-		concave_B->cull(local_aabb, concave_distance_callback, &cinfo);
+		concave_B->cull(local_aabb, concave_distance_callback, &cinfo, false);
 		if (!cinfo.collided) {
 			r_point_A = cinfo.close_A;
 			r_point_B = cinfo.close_B;

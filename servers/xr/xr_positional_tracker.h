@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,6 @@
 #include "servers/xr_server.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The positional tracker object as an object that represents the position and orientation of a tracked object like a controller or headset.
 	An AR/VR Interface will registered the trackers it manages with our AR/VR server and update its position and orientation.
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
@@ -58,15 +56,12 @@ public:
 private:
 	XRServer::TrackerType type; // type of tracker
 	StringName name; // (unique) name of the tracker
-	String description; // description of the tracker, this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
+	String description; // description of the tracker
+	String profile; // this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
 	TrackerHand hand; // if known, the hand this tracker is held in
 
 	Map<StringName, Ref<XRPose>> poses;
 	Map<StringName, Variant> inputs;
-
-	int joy_id; // if we also have a related joystick entity, the id of the joystick
-	Ref<Mesh> mesh; // when available, a mesh that can be used to render this tracker
-	real_t rumble; // rumble strength, 0.0 is off, 1.0 is maximum, note that we only record here, xr_interface is responsible for execution
 
 protected:
 	static void _bind_methods();
@@ -78,20 +73,18 @@ public:
 	StringName get_tracker_name() const;
 	void set_tracker_desc(const String &p_desc);
 	String get_tracker_desc() const;
+	void set_tracker_profile(const String &p_profile);
+	String get_tracker_profile() const;
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
 	void set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand);
 
 	bool has_pose(const StringName &p_action_name) const;
 	Ref<XRPose> get_pose(const StringName &p_action_name) const;
 	void invalidate_pose(const StringName &p_action_name);
-	void set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity);
+	void set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity, const XRPose::TrackingConfidence p_tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH);
 
 	Variant get_input(const StringName &p_action_name) const;
 	void set_input(const StringName &p_action_name, const Variant &p_value);
-
-	// TODO replace by new implementation
-	real_t get_rumble() const;
-	void set_rumble(real_t p_rumble);
 
 	XRPositionalTracker();
 	~XRPositionalTracker() {}
@@ -99,4 +92,4 @@ public:
 
 VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);
 
-#endif
+#endif // XR_POSITIONAL_TRACKER_H

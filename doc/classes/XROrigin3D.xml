@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XROrigin3D" inherits="Node3D" version="4.0">
+<class name="XROrigin3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		The origin point in AR/VR.
 	</brief_description>
@@ -10,7 +10,7 @@
 		For example, if your character is driving a car, the XROrigin3D node should be a child node of this car. Or, if you're implementing a teleport system to move your character, you should change the position of this node.
 	</description>
 	<tutorials>
-		<link title="VR documentation index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="VR documentation index">$DOCS_URL/tutorials/vr/index.html</link>
 	</tutorials>
 	<members>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">

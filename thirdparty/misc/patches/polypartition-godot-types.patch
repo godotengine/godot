@@ -1,19 +1,16 @@
 diff --git a/thirdparty/misc/polypartition.cpp b/thirdparty/misc/polypartition.cpp
-index 3a8a6efa83..5e94793b79 100644
+index 3a8a6efa83..8c5409bf24 100644
 --- a/thirdparty/misc/polypartition.cpp
 +++ b/thirdparty/misc/polypartition.cpp
-@@ -23,10 +23,7 @@
- 
- #include "polypartition.h"
- 
--#include <math.h>
--#include <string.h>
+@@ -26,7 +26,6 @@
+ #include <math.h>
+ #include <string.h>
  #include <algorithm>
 -#include <vector>
  
  TPPLPoly::TPPLPoly() {
    hole = false;
-@@ -186,7 +183,7 @@ int TPPLPartition::Intersects(TPPLPoint &p11, TPPLPoint &p12, TPPLPoint &p21, TP
+@@ -186,7 +185,7 @@ int TPPLPartition::Intersects(TPPLPoint &p11, TPPLPoint &p12, TPPLPoint &p21, TP
  // Removes holes from inpolys by merging them with non-holes.
  int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
    TPPLPolyList polys;
@@ -22,7 +19,7 @@ index 3a8a6efa83..5e94793b79 100644
    long i, i2, holepointindex, polypointindex;
    TPPLPoint holepoint, polypoint, bestpolypoint;
    TPPLPoint linep1, linep2;
-@@ -198,15 +195,15 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -198,15 +197,15 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
  
    // Check for the trivial case of no holes.
    hasholes = false;
@@ -42,7 +39,7 @@ index 3a8a6efa83..5e94793b79 100644
      }
      return 1;
    }
-@@ -216,8 +213,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -216,8 +215,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
    while (1) {
      // Find the hole point with the largest x.
      hasholes = false;
@@ -53,7 +50,7 @@ index 3a8a6efa83..5e94793b79 100644
          continue;
        }
  
-@@ -227,8 +224,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -227,8 +226,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
          holepointindex = 0;
        }
  
@@ -64,7 +61,7 @@ index 3a8a6efa83..5e94793b79 100644
            holeiter = iter;
            holepointindex = i;
          }
-@@ -237,24 +234,24 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -237,24 +236,24 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
      if (!hasholes) {
        break;
      }
@@ -98,13 +95,13 @@ index 3a8a6efa83..5e94793b79 100644
          if (pointfound) {
            v1 = Normalize(polypoint - holepoint);
            v2 = Normalize(bestpolypoint - holepoint);
-@@ -263,13 +260,13 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -263,13 +262,13 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
            }
          }
          pointvisible = true;
 -        for (iter2 = polys.begin(); iter2 != polys.end(); iter2++) {
 -          if (iter2->IsHole()) {
-+        for (iter2 = polys.front(); iter2; iter2->next()) {
++        for (iter2 = polys.front(); iter2; iter2 = iter2->next()) {
 +          if (iter2->get().IsHole()) {
              continue;
            }
@@ -117,7 +114,7 @@ index 3a8a6efa83..5e94793b79 100644
              if (Intersects(holepoint, polypoint, linep1, linep2)) {
                pointvisible = false;
                break;
-@@ -292,18 +289,18 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -292,18 +291,18 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
        return 0;
      }
  
@@ -142,7 +139,7 @@ index 3a8a6efa83..5e94793b79 100644
        i2++;
      }
  
-@@ -312,8 +309,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
+@@ -312,8 +311,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
      polys.push_back(newpoly);
    }
  
@@ -153,7 +150,7 @@ index 3a8a6efa83..5e94793b79 100644
    }
  
    return 1;
-@@ -524,13 +521,13 @@ int TPPLPartition::Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles) {
+@@ -524,13 +523,13 @@ int TPPLPartition::Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles) {
  
  int TPPLPartition::Triangulate_EC(TPPLPolyList *inpolys, TPPLPolyList *triangles) {
    TPPLPolyList outpolys;
@@ -170,7 +167,7 @@ index 3a8a6efa83..5e94793b79 100644
        return 0;
      }
    }
-@@ -543,7 +540,7 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -543,7 +542,7 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
    }
  
    TPPLPolyList triangles;
@@ -179,7 +176,7 @@ index 3a8a6efa83..5e94793b79 100644
    TPPLPoly *poly1 = NULL, *poly2 = NULL;
    TPPLPoly newpoly;
    TPPLPoint d1, d2, p1, p2, p3;
-@@ -578,19 +575,19 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -578,19 +577,19 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
      return 0;
    }
  
@@ -203,7 +200,7 @@ index 3a8a6efa83..5e94793b79 100644
  
          for (i21 = 0; i21 < poly2->GetNumPoints(); i21++) {
            if ((d2.x != poly2->GetPoint(i21).x) || (d2.y != poly2->GetPoint(i21).y)) {
-@@ -660,16 +657,16 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -660,16 +659,16 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
        }
  
        triangles.erase(iter2);
@@ -224,7 +221,7 @@ index 3a8a6efa83..5e94793b79 100644
    }
  
    return 1;
-@@ -677,13 +674,13 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -677,13 +676,13 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
  
  int TPPLPartition::ConvexPartition_HM(TPPLPolyList *inpolys, TPPLPolyList *parts) {
    TPPLPolyList outpolys;
@@ -241,7 +238,7 @@ index 3a8a6efa83..5e94793b79 100644
        return 0;
      }
    }
-@@ -824,8 +821,8 @@ int TPPLPartition::Triangulate_OPT(TPPLPoly *poly, TPPLPolyList *triangles) {
+@@ -824,8 +823,8 @@ int TPPLPartition::Triangulate_OPT(TPPLPoly *poly, TPPLPolyList *triangles) {
    newdiagonal.index1 = 0;
    newdiagonal.index2 = n - 1;
    diagonals.push_back(newdiagonal);
@@ -252,7 +249,7 @@ index 3a8a6efa83..5e94793b79 100644
      diagonals.pop_front();
      bestvertex = dpstates[diagonal.index2][diagonal.index1].bestvertex;
      if (bestvertex == -1) {
-@@ -873,10 +870,10 @@ void TPPLPartition::UpdateState(long a, long b, long w, long i, long j, DPState2
+@@ -873,10 +872,10 @@ void TPPLPartition::UpdateState(long a, long b, long w, long i, long j, DPState2
      pairs->push_front(newdiagonal);
      dpstates[a][b].weight = w;
    } else {
@@ -265,7 +262,7 @@ index 3a8a6efa83..5e94793b79 100644
        pairs->pop_front();
      }
      pairs->push_front(newdiagonal);
-@@ -885,7 +882,7 @@ void TPPLPartition::UpdateState(long a, long b, long w, long i, long j, DPState2
+@@ -885,7 +884,7 @@ void TPPLPartition::UpdateState(long a, long b, long w, long i, long j, DPState2
  
  void TPPLPartition::TypeA(long i, long j, long k, PartitionVertex *vertices, DPState2 **dpstates) {
    DiagonalList *pairs = NULL;
@@ -274,7 +271,7 @@ index 3a8a6efa83..5e94793b79 100644
    long top;
    long w;
  
-@@ -902,23 +899,23 @@ void TPPLPartition::TypeA(long i, long j, long k, PartitionVertex *vertices, DPS
+@@ -902,23 +901,23 @@ void TPPLPartition::TypeA(long i, long j, long k, PartitionVertex *vertices, DPS
    }
    if (j - i > 1) {
      pairs = &(dpstates[i][j].pairs);
@@ -305,7 +302,7 @@ index 3a8a6efa83..5e94793b79 100644
        }
      }
    }
-@@ -927,7 +924,7 @@ void TPPLPartition::TypeA(long i, long j, long k, PartitionVertex *vertices, DPS
+@@ -927,7 +926,7 @@ void TPPLPartition::TypeA(long i, long j, long k, PartitionVertex *vertices, DPS
  
  void TPPLPartition::TypeB(long i, long j, long k, PartitionVertex *vertices, DPState2 **dpstates) {
    DiagonalList *pairs = NULL;
@@ -314,7 +311,7 @@ index 3a8a6efa83..5e94793b79 100644
    long top;
    long w;
  
-@@ -946,21 +943,21 @@ void TPPLPartition::TypeB(long i, long j, long k, PartitionVertex *vertices, DPS
+@@ -946,21 +945,21 @@ void TPPLPartition::TypeB(long i, long j, long k, PartitionVertex *vertices, DPS
    if (k - j > 1) {
      pairs = &(dpstates[j][k].pairs);
  
@@ -343,7 +340,7 @@ index 3a8a6efa83..5e94793b79 100644
        }
      } else {
        w++;
-@@ -981,11 +978,11 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -981,11 +980,11 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
    DiagonalList diagonals, diagonals2;
    Diagonal diagonal, newdiagonal;
    DiagonalList *pairs = NULL, *pairs2 = NULL;
@@ -358,7 +355,7 @@ index 3a8a6efa83..5e94793b79 100644
    bool ijreal, jkreal;
  
    n = poly->GetNumPoints();
-@@ -1110,35 +1107,35 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1110,35 +1109,35 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
    newdiagonal.index1 = 0;
    newdiagonal.index2 = n - 1;
    diagonals.push_front(newdiagonal);
@@ -403,7 +400,7 @@ index 3a8a6efa83..5e94793b79 100644
                pairs2->pop_back();
              } else {
                break;
-@@ -1153,21 +1150,21 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1153,21 +1152,21 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
          diagonals.push_front(newdiagonal);
        }
      } else {
@@ -431,7 +428,7 @@ index 3a8a6efa83..5e94793b79 100644
                pairs2->pop_front();
              } else {
                break;
-@@ -1197,8 +1194,8 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1197,8 +1196,8 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
    newdiagonal.index1 = 0;
    newdiagonal.index2 = n - 1;
    diagonals.push_front(newdiagonal);
@@ -442,7 +439,7 @@ index 3a8a6efa83..5e94793b79 100644
      diagonals.pop_front();
      if ((diagonal.index2 - diagonal.index1) <= 1) {
        continue;
-@@ -1210,8 +1207,8 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1210,8 +1209,8 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
      indices.push_back(diagonal.index2);
      diagonals2.push_front(diagonal);
  
@@ -453,7 +450,7 @@ index 3a8a6efa83..5e94793b79 100644
        diagonals2.pop_front();
        if ((diagonal.index2 - diagonal.index1) <= 1) {
          continue;
-@@ -1220,16 +1217,16 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1220,16 +1219,16 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
        jkreal = true;
        pairs = &(dpstates[diagonal.index1][diagonal.index2].pairs);
        if (!vertices[diagonal.index1].isConvex) {
@@ -476,7 +473,7 @@ index 3a8a6efa83..5e94793b79 100644
            jkreal = false;
          }
        }
-@@ -1253,11 +1250,12 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1253,11 +1252,12 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
        indices.push_back(j);
      }
  
@@ -492,7 +489,7 @@ index 3a8a6efa83..5e94793b79 100644
        k++;
      }
      parts->push_back(newpoly);
-@@ -1281,7 +1279,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
+@@ -1281,7 +1281,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
  // "Computational Geometry: Algorithms and Applications"
  // by Mark de Berg, Otfried Cheong, Marc van Kreveld, and Mark Overmars.
  int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monotonePolys) {
@@ -501,7 +498,7 @@ index 3a8a6efa83..5e94793b79 100644
    MonotoneVertex *vertices = NULL;
    long i, numvertices, vindex, vindex2, newnumvertices, maxnumvertices;
    long polystartindex, polyendindex;
-@@ -1291,11 +1289,8 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1291,11 +1291,8 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
    bool error = false;
  
    numvertices = 0;
@@ -515,7 +512,7 @@ index 3a8a6efa83..5e94793b79 100644
    }
  
    maxnumvertices = numvertices * 3;
-@@ -1303,8 +1298,8 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1303,8 +1300,8 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
    newnumvertices = numvertices;
  
    polystartindex = 0;
@@ -526,7 +523,7 @@ index 3a8a6efa83..5e94793b79 100644
      polyendindex = polystartindex + poly->GetNumPoints() - 1;
      for (i = 0; i < poly->GetNumPoints(); i++) {
        vertices[i + polystartindex].p = poly->GetPoint(i);
-@@ -1360,14 +1355,14 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1360,14 +1357,14 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
    // Note that while set doesn't actually have to be implemented as
    // a tree, complexity requirements for operations are the same as
    // for the balanced binary search tree.
@@ -546,7 +543,7 @@ index 3a8a6efa83..5e94793b79 100644
    }
  
    // For each vertex.
-@@ -1387,13 +1382,14 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1387,13 +1384,14 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
          newedge.p1 = v->p;
          newedge.p2 = vertices[v->next].p;
          newedge.index = vindex;
@@ -564,7 +561,7 @@ index 3a8a6efa83..5e94793b79 100644
            error = true;
            break;
          }
-@@ -1412,29 +1408,30 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1412,29 +1410,30 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
          newedge.p1 = v->p;
          newedge.p2 = v->p;
          edgeIter = edgeTree.lower_bound(newedge);
@@ -601,7 +598,7 @@ index 3a8a6efa83..5e94793b79 100644
            error = true;
            break;
          }
-@@ -1452,25 +1449,25 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1452,25 +1451,25 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
          newedge.p1 = v->p;
          newedge.p2 = v->p;
          edgeIter = edgeTree.lower_bound(newedge);
@@ -632,7 +629,7 @@ index 3a8a6efa83..5e94793b79 100644
              error = true;
              break;
            }
-@@ -1488,27 +1485,28 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1488,27 +1487,28 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
            newedge.p1 = v2->p;
            newedge.p2 = vertices[v2->next].p;
            newedge.index = vindex2;
@@ -668,7 +665,7 @@ index 3a8a6efa83..5e94793b79 100644
          }
          break;
      }
-@@ -1569,8 +1567,8 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
+@@ -1569,8 +1569,8 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
  
  // Adds a diagonal to the doubly-connected list of vertices.
  void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
@@ -679,7 +676,7 @@ index 3a8a6efa83..5e94793b79 100644
    long newindex1, newindex2;
  
    newindex1 = *numvertices;
-@@ -1597,14 +1595,14 @@ void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, lon
+@@ -1597,14 +1597,14 @@ void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, lon
    vertextypes[newindex1] = vertextypes[index1];
    edgeTreeIterators[newindex1] = edgeTreeIterators[index1];
    helpers[newindex1] = helpers[index1];
@@ -698,7 +695,7 @@ index 3a8a6efa83..5e94793b79 100644
    }
  }
  
-@@ -1830,13 +1828,13 @@ int TPPLPartition::TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles
+@@ -1830,13 +1830,13 @@ int TPPLPartition::TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles
  
  int TPPLPartition::Triangulate_MONO(TPPLPolyList *inpolys, TPPLPolyList *triangles) {
    TPPLPolyList monotone;

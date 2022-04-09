@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef ATLAS_MERGING_DIALOG_H
 #define ATLAS_MERGING_DIALOG_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set.h"
+
+class EditorFileDialog;
 
 class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);
@@ -49,19 +49,19 @@ private:
 	LocalVector<Map<Vector2i, Vector2i>> merged_mapping;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	// Settings.
 	int next_line_after_column = 30;
 
 	// GUI.
-	ItemList *atlas_merging_atlases_list;
-	EditorPropertyVector2i *texture_region_size_editor_property;
-	EditorPropertyInteger *columns_editor_property;
-	TextureRect *preview;
-	Label *select_2_atlases_label;
-	EditorFileDialog *editor_file_dialog;
-	Button *merge_button;
+	ItemList *atlas_merging_atlases_list = nullptr;
+	EditorPropertyVector2i *texture_region_size_editor_property = nullptr;
+	EditorPropertyInteger *columns_editor_property = nullptr;
+	TextureRect *preview = nullptr;
+	Label *select_2_atlases_label = nullptr;
+	EditorFileDialog *editor_file_dialog = nullptr;
+	Button *merge_button = nullptr;
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 

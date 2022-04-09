@@ -741,6 +741,16 @@ public:
         }
     }
 
+    bool isUniform() const
+    {
+        switch (storage) {
+        case EvqUniform:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     bool isIo() const
     {
         switch (storage) {
@@ -1855,10 +1865,12 @@ public:
     bool isAtomic() const { return false; }
     bool isCoopMat() const { return false; }
     bool isReference() const { return false; }
+    bool isSpirvType() const { return false; }
 #else
     bool isAtomic() const { return basicType == EbtAtomicUint; }
     bool isCoopMat() const { return coopmat; }
     bool isReference() const { return getBasicType() == EbtReference; }
+    bool isSpirvType() const { return getBasicType() == EbtSpirvType; }
 #endif
 
     // return true if this type contains any subtype which satisfies the given predicate.
@@ -2434,10 +2446,14 @@ public:
     //
     bool sameStructType(const TType& right) const
     {
+        // TODO: Why return true when neither types are structures?
         // Most commonly, they are both nullptr, or the same pointer to the same actual structure
         if ((!isStruct() && !right.isStruct()) ||
             (isStruct() && right.isStruct() && structure == right.structure))
             return true;
+
+        if (!isStruct() || !right.isStruct())
+            return false;
 
         // Structure names have to match
         if (*typeName != *right.typeName)
@@ -2448,8 +2464,7 @@ public:
         bool isGLPerVertex = *typeName == "gl_PerVertex";
 
         // Both being nullptr was caught above, now they both have to be structures of the same number of elements
-        if (!isStruct() || !right.isStruct() ||
-            (structure->size() != right.structure->size() && !isGLPerVertex))
+        if (structure->size() != right.structure->size() && !isGLPerVertex)
             return false;
 
         // Compare the names and types of all the members, which have to match
@@ -2459,6 +2474,14 @@ public:
                     if (*(*structure)[li].type != *(*right.structure)[ri].type)
                         return false;
                 } else {
+                    // Skip hidden members
+                    if ((*structure)[li].type->hiddenMember()) {
+                        ri--;
+                        continue;
+                    } else if ((*right.structure)[ri].type->hiddenMember()) {
+                        li--;
+                        continue;
+                    }
                     // If one of the members is something that's inconsistently declared, skip over it
                     // for now.
                     if (isGLPerVertex) {
@@ -2475,10 +2498,10 @@ public:
                 }
             // If we get here, then there should only be inconsistently declared members left
             } else if (li < structure->size()) {
-                if (!isInconsistentGLPerVertexMember((*structure)[li].type->getFieldName()))
+                if (!(*structure)[li].type->hiddenMember() && !isInconsistentGLPerVertexMember((*structure)[li].type->getFieldName()))
                     return false;
             } else {
-                if (!isInconsistentGLPerVertexMember((*right.structure)[ri].type->getFieldName()))
+                if (!(*right.structure)[ri].type->hiddenMember() && !isInconsistentGLPerVertexMember((*right.structure)[ri].type->getFieldName()))
                     return false;
             }
         }

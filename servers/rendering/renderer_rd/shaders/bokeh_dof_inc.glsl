@@ -1,4 +1,4 @@
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 size;
 	float z_far;
 	float z_near;

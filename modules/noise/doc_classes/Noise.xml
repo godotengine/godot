@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Noise" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Abstract base class for noise generators.
+	</brief_description>
+	<description>
+		This class defines the interface for noise generation libraries to inherit from.
+		A default get_seamless_noise() implementation is provided for libraries that do not provide seamless noise. This function requests a larger image from get_image(), reverses the quadrants of the image, then uses the strips of extra width to blend over the seams.
+		Inheriting noise classes can optionally override this function to provide a more optimal algorithm.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_image">
+			<return type="Image" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="invert" type="bool" default="false" />
+			<description>
+				Returns a 2D [Image] noise image.
+			</description>
+		</method>
+		<method name="get_noise_1d">
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<description>
+				Returns the 1D noise value at the given (x) coordinate.
+			</description>
+		</method>
+		<method name="get_noise_2d">
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
+			<description>
+				Returns the 2D noise value at the given position.
+			</description>
+		</method>
+		<method name="get_noise_2dv">
+			<return type="float" />
+			<argument index="0" name="v" type="Vector2" />
+			<description>
+				Returns the 2D noise value at the given position.
+			</description>
+		</method>
+		<method name="get_noise_3d">
+			<return type="float" />
+			<argument index="0" name="x" type="float" />
+			<argument index="1" name="y" type="float" />
+			<argument index="2" name="z" type="float" />
+			<description>
+				Returns the 3D noise value at the given position.
+			</description>
+		</method>
+		<method name="get_noise_3dv">
+			<return type="float" />
+			<argument index="0" name="v" type="Vector3" />
+			<description>
+				Returns the 3D noise value at the given position.
+			</description>
+		</method>
+		<method name="get_seamless_image">
+			<return type="Image" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="invert" type="bool" default="false" />
+			<argument index="3" name="skirt" type="float" default="0.1" />
+			<description>
+				Returns a seamless 2D [Image] noise image.
+			</description>
+		</method>
+	</methods>
+</class>

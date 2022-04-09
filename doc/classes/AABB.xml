@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AABB" version="4.0">
+<class name="AABB" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Axis-Aligned Bounding Box.
 	</brief_description>
 	<description>
 		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2].
+		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get an AABB with a positive size.
 		[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
-		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<constructors>
 		<constructor name="AABB">
@@ -54,7 +55,22 @@
 			<return type="AABB" />
 			<argument index="0" name="to_point" type="Vector3" />
 			<description>
-				Returns this [AABB] expanded to include a given point.
+				Returns a copy of this [AABB] expanded to include a given point.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				# position (-3, 2, 0), size (1, 1, 1)
+				var box = AABB(Vector3(-3, 2, 0), Vector3(1, 1, 1))
+				# position (-3, -1, 0), size (3, 4, 2), so we fit both the original AABB and Vector3(0, -1, 2)
+				var box2 = box.expand(Vector3(0, -1, 2))
+				[/gdscript]
+				[csharp]
+				// position (-3, 2, 0), size (1, 1, 1)
+				var box = new AABB(new Vector3(-3, 2, 0), new Vector3(1, 1, 1));
+				// position (-3, -1, 0), size (3, 4, 2), so we fit both the original AABB and Vector3(0, -1, 2)
+				var box2 = box.Expand(new Vector3(0, -1, 2));
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_center" qualifiers="const">
@@ -142,14 +158,15 @@
 			<return type="bool" />
 			<argument index="0" name="point" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if the [AABB] contains a point.
+				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
+				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="AABB" />
 			<argument index="0" name="with" type="AABB" />
 			<description>
-				Returns the intersection between two [AABB]. An empty AABB (size 0,0,0) is returned on failure.
+				Returns the intersection between two [AABB]. An empty AABB (size [code](0, 0, 0)[/code]) is returned on failure.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
@@ -211,30 +228,25 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="AABB" />
 			<description>
+				Returns [code]true[/code] if the vectors are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="AABB" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
+				Inversely transforms (multiplies) the [AABB] by the given [Transform3D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<argument index="0" name="right" type="AABB" />
 			<description>
+				Returns [code]true[/code] if the AABBs are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 	</operators>

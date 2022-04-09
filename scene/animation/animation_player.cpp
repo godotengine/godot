@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -202,15 +202,16 @@ void AnimationPlayer::_notification(int p_what) {
 				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
-			//_set_process(false);
 			clear_caches();
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
 				_animation_process(0);
 			}
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (process_callback == ANIMATION_PROCESS_PHYSICS) {
 				break;
@@ -220,6 +221,7 @@ void AnimationPlayer::_notification(int p_what) {
 				_animation_process(get_process_delta_time());
 			}
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (process_callback == ANIMATION_PROCESS_IDLE) {
 				break;
@@ -229,6 +231,7 @@ void AnimationPlayer::_notification(int p_what) {
 				_animation_process(get_physics_process_delta_time());
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			clear_caches();
 		} break;
@@ -395,6 +398,22 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		}
 
 		node_cache->last_setup_pass = setup_pass;
+	}
+}
+
+static void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
+	// Separate function to use alloca() more efficiently
+	const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * p_params.size());
+	const Variant *args = p_params.ptr();
+	uint32_t argcount = p_params.size();
+	for (uint32_t i = 0; i < argcount; i++) {
+		argptrs[i] = &args[i];
+	}
+	if (p_deferred) {
+		MessageQueue::get_singleton()->push_callp(p_object, p_method, argptrs, argcount);
+	} else {
+		Callable::CallError ce;
+		p_object->callp(p_method, argptrs, argcount, ce);
 	}
 }
 
@@ -592,18 +611,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				}
 
 				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE || (p_delta == 0 && update_mode == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
-
 					Variant value = a->value_track_interpolate(i, p_time);
 
 					if (value == Variant()) {
 						continue;
 					}
 
-					//thanks to trigger mode, this should be solved now..
-					/*
-					if (p_delta==0 && value.get_type()==Variant::STRING)
-						continue; // doing this with strings is messy, should find another way
-					*/
 					if (pa->accum_pass != accum_pass) {
 						ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
 						cache_update_prop[cache_update_prop_size++] = pa;
@@ -625,7 +638,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 								pa->object->set_indexed(pa->subpath, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
-									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
+									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if the property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -680,41 +693,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					StringName method = a->method_track_get_name(i, E);
 					Vector<Variant> params = a->method_track_get_params(i, E);
 
-					int s = params.size();
-
-					ERR_CONTINUE(s > VARIANT_ARG_MAX);
 #ifdef DEBUG_ENABLED
 					if (!nc->node->has_method(method)) {
 						ERR_PRINT("Invalid method call '" + method + "'. '" + a->get_name() + "' at node '" + get_path() + "'.");
 					}
 #endif
 
-					static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 					if (can_call) {
-						if (method_call_mode == ANIMATION_METHOD_CALL_DEFERRED) {
-							MessageQueue::get_singleton()->push_call(
-									nc->node,
-									method,
-									s >= 1 ? params[0] : Variant(),
-									s >= 2 ? params[1] : Variant(),
-									s >= 3 ? params[2] : Variant(),
-									s >= 4 ? params[3] : Variant(),
-									s >= 5 ? params[4] : Variant(),
-									s >= 6 ? params[5] : Variant(),
-									s >= 7 ? params[6] : Variant(),
-									s >= 8 ? params[7] : Variant());
-						} else {
-							nc->node->call(
-									method,
-									s >= 1 ? params[0] : Variant(),
-									s >= 2 ? params[1] : Variant(),
-									s >= 3 ? params[2] : Variant(),
-									s >= 4 ? params[3] : Variant(),
-									s >= 5 ? params[4] : Variant(),
-									s >= 6 ? params[5] : Variant(),
-									s >= 7 ? params[6] : Variant(),
-									s >= 8 ? params[7] : Variant());
-						}
+						_call_object(nc->node, method, params, method_call_mode == ANIMATION_METHOD_CALL_DEFERRED);
 					}
 				}
 
@@ -736,7 +722,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					ba->bezier_accum = bezier;
 					ba->accum_pass = accum_pass;
 				} else {
-					ba->bezier_accum = Math::lerp(ba->bezier_accum, bezier, p_interp);
+					ba->bezier_accum = Math::lerp(ba->bezier_accum, (float)bezier, p_interp);
 				}
 
 			} break;
@@ -757,7 +743,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 					if (!stream.is_valid()) {
-						nc->node->call("stop");
+						nc->node->call(SNAME("stop"));
 						nc->audio_playing = false;
 						playing_caches.erase(nc);
 					} else {
@@ -767,14 +753,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						float len = stream->get_length();
 
 						if (start_ofs > len - end_ofs) {
-							nc->node->call("stop");
+							nc->node->call(SNAME("stop"));
 							nc->audio_playing = false;
 							playing_caches.erase(nc);
 							continue;
 						}
 
-						nc->node->call("set_stream", stream);
-						nc->node->call("play", start_ofs);
+						nc->node->call(SNAME("set_stream"), stream);
+						nc->node->call(SNAME("play"), start_ofs);
 
 						nc->audio_playing = true;
 						playing_caches.insert(nc);
@@ -796,7 +782,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 						Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 						if (!stream.is_valid()) {
-							nc->node->call("stop");
+							nc->node->call(SNAME("stop"));
 							nc->audio_playing = false;
 							playing_caches.erase(nc);
 						} else {
@@ -804,8 +790,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 							float end_ofs = a->audio_track_get_key_end_offset(i, idx);
 							float len = stream->get_length();
 
-							nc->node->call("set_stream", stream);
-							nc->node->call("play", start_ofs);
+							nc->node->call(SNAME("set_stream"), stream);
+							nc->node->call(SNAME("play"), start_ofs);
 
 							nc->audio_playing = true;
 							playing_caches.insert(nc);
@@ -836,7 +822,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 						if (stop) {
 							//time to stop
-							nc->node->call("stop");
+							nc->node->call(SNAME("stop"));
 							nc->audio_playing = false;
 							playing_caches.erase(nc);
 						}
@@ -1070,8 +1056,24 @@ void AnimationPlayer::_animation_update_transforms() {
 				bool valid;
 				pa->object->set_indexed(pa->subpath, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
+
 				if (!valid) {
-					ERR_PRINT("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
+					// Get subpath as string for printing the error
+					// Cannot use `String::join(Vector<String>)` because this is a vector of StringName
+					String key_debug;
+					if (pa->subpath.size() > 0) {
+						key_debug = pa->subpath[0];
+						for (int subpath_index = 1; subpath_index < pa->subpath.size(); ++subpath_index) {
+							key_debug += ".";
+							key_debug += pa->subpath[subpath_index];
+						}
+					}
+					ERR_PRINT("Failed setting key '" + key_debug +
+							"' at time " + rtos(playback.current.pos) +
+							" in Animation '" + get_current_animation() +
+							"' at Node '" + get_path() +
+							"', Track '" + String(pa->owner->path) +
+							"'. Check if the property exists or the type of key is right for the property.");
 				}
 #endif
 
@@ -1155,7 +1157,7 @@ void AnimationPlayer::_animation_process(double p_delta) {
 
 Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(String(p_name).find("/") != -1 || String(p_name).find(":") != -1 || String(p_name).find(",") != -1 || String(p_name).find("[") != -1, ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
+	ERR_FAIL_COND_V_MSG(String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("["), ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
 #endif
 
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
@@ -1197,7 +1199,7 @@ void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
 
 void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {
 	ERR_FAIL_COND(!animation_set.has(p_name));
-	ERR_FAIL_COND(String(p_new_name).find("/") != -1 || String(p_new_name).find(":") != -1);
+	ERR_FAIL_COND(String(p_new_name).contains("/") || String(p_new_name).contains(":"));
 	ERR_FAIL_COND(animation_set.has(p_new_name));
 
 	stop();
@@ -1416,7 +1418,7 @@ bool AnimationPlayer::is_playing() const {
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {
-	if (p_anim == "[stop]" || p_anim == "") {
+	if (p_anim == "[stop]" || p_anim.is_empty()) {
 		stop();
 	} else if (!is_playing() || playback.assigned != p_anim) {
 		play(p_anim);
@@ -1531,7 +1533,7 @@ void AnimationPlayer::_animation_changed() {
 void AnimationPlayer::_stop_playing_caches() {
 	for (Set<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
 		if (E->get()->node && E->get()->audio_playing) {
-			E->get()->node->call("stop");
+			E->get()->node->call(SNAME("stop"));
 		}
 		if (E->get()->node && E->get()->animation_playing) {
 			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->get()->node);
@@ -1754,7 +1756,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
 
-	Ref<Animation> reset_anim = animation_set["RESET"].animation;
+	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
 	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
 
 	Node *root_node = get_node_or_null(root);
@@ -1762,8 +1764,8 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
 	EditorNode::get_singleton()->add_child(aux_player);
-	aux_player->add_animation("RESET", reset_anim);
-	aux_player->set_assigned_animation("RESET");
+	aux_player->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Node *root = get_node(get_root());
 	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
@@ -1785,9 +1787,9 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 }
 
 bool AnimationPlayer::can_apply_reset() const {
-	return has_animation("RESET") && playback.assigned != StringName("RESET");
+	return has_animation(SceneStringNames::get_singleton()->RESET) && playback.assigned != SceneStringNames::get_singleton()->RESET;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);

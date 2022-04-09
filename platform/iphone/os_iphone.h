@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,11 +52,11 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
-	iOS *ios;
+	iOS *ios = nullptr;
 
-	JoypadIPhone *joypad_iphone;
+	JoypadIPhone *joypad_iphone = nullptr;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -109,6 +109,7 @@ public:
 	virtual String get_locale() const override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual void vibrate_handheld(int p_duration_ms = 500) override;
 

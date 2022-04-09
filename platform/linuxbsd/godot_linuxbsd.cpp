@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#if defined(SANITIZERS_ENABLED)
+#include <sys/resource.h>
+#endif
+
 #include "main/main.h"
 #include "os_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
+#if defined(SANITIZERS_ENABLED)
+	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.
+	struct rlimit stack_lim = { 0x1E00000, 0x1E00000 };
+	setrlimit(RLIMIT_STACK, &stack_lim);
+#endif
+
 	OS_LinuxBSD os;
 
 	setlocale(LC_CTYPE, "");

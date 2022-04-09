@@ -107,7 +107,7 @@ namespace GodotTools.Export
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
                     // The Godot exporter expects us to pass the abi in the tags parameter
-                    exporter.AddSharedObject(soFilePath, tags: new[] { abi });
+                    exporter.AddSharedObject(soFilePath, tags: new[] { abi }, "");
                 }
             }
         }
@@ -134,7 +134,7 @@ namespace GodotTools.Export
 
                 if (platform == OS.Platforms.MacOS)
                 {
-                    exporter.AddSharedObject(tempOutputFilePath, tags: null);
+                    exporter.AddSharedObject(tempOutputFilePath, tags: null, "");
                 }
                 else
                 {
@@ -537,7 +537,6 @@ MONO_AOT_MODE_LAST = 1000,
         {
             var iosArchs = new[]
             {
-                "armv7",
                 "arm64"
             };
 

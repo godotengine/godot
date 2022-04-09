@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,12 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-	@author AndreaCatania
-*/
-
-#ifndef NAVIGATION_SERVER_H
-#define NAVIGATION_SERVER_H
+#ifndef NAVIGATION_SERVER_3D_H
+#define NAVIGATION_SERVER_3D_H
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
@@ -55,7 +51,7 @@ protected:
 
 public:
 	/// Thread safe, can be used across many threads.
-	static NavigationServer3D *get_singleton();
+	static const NavigationServer3D *get_singleton();
 
 	/// MUST be used in single thread!
 	static NavigationServer3D *get_singleton_mut();
@@ -205,4 +201,4 @@ public:
 	static NavigationServer3D *new_default_server();
 };
 
-#endif
+#endif // NAVIGATION_SERVER_3D_H

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Range" inherits="Control" version="4.0">
+<class name="Range" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for range-based controls.
 	</brief_description>
@@ -9,49 +9,56 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_value_changed" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="new_value" type="float" />
+			<description>
+				Called when the [Range]'s value is changed (following the same conditions as [signal value_changed]).
+			</description>
+		</method>
 		<method name="share">
 			<return type="void" />
 			<argument index="0" name="with" type="Node" />
 			<description>
-				Binds two ranges together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
+				Binds two [Range]s together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
 			<return type="void" />
 			<description>
-				Stops range from sharing its member variables with any other.
+				Stops the [Range] from sharing its member variables with any other.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="allow_greater" type="bool" setter="set_allow_greater" getter="is_greater_allowed" default="false">
+		<member name="allow_greater" type="bool" setter="set_allow_greater" getter="is_greater_allowed">
 			If [code]true[/code], [member value] may be greater than [member max_value].
 		</member>
-		<member name="allow_lesser" type="bool" setter="set_allow_lesser" getter="is_lesser_allowed" default="false">
+		<member name="allow_lesser" type="bool" setter="set_allow_lesser" getter="is_lesser_allowed">
 			If [code]true[/code], [member value] may be less than [member min_value].
 		</member>
-		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp" default="false">
+		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp">
 			If [code]true[/code], and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
 		</member>
-		<member name="max_value" type="float" setter="set_max" getter="get_max" default="100.0">
+		<member name="max_value" type="float" setter="set_max" getter="get_max">
 			Maximum value. Range is clamped if [code]value[/code] is greater than [code]max_value[/code].
 		</member>
-		<member name="min_value" type="float" setter="set_min" getter="get_min" default="0.0">
+		<member name="min_value" type="float" setter="set_min" getter="get_min">
 			Minimum value. Range is clamped if [code]value[/code] is less than [code]min_value[/code].
 		</member>
-		<member name="page" type="float" setter="set_page" getter="get_page" default="0.0">
+		<member name="page" type="float" setter="set_page" getter="get_page">
 			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [code]page[/code] over the difference between [code]min_value[/code] and [code]max_value[/code].
 		</member>
 		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio">
 			The value mapped between 0 and 1.
 		</member>
-		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values" default="false">
+		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values">
 			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer.
 		</member>
-		<member name="step" type="float" setter="set_step" getter="get_step" default="1.0">
+		<member name="step" type="float" setter="set_step" getter="get_step">
 			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.
 		</member>
-		<member name="value" type="float" setter="set_value" getter="get_value" default="0.0">
+		<member name="value" type="float" setter="set_value" getter="get_value">
 			Range's current value.
 		</member>
 	</members>
@@ -64,7 +71,8 @@
 		<signal name="value_changed">
 			<argument index="0" name="value" type="float" />
 			<description>
-				Emitted when [member value] changes.
+				Emitted when [member value] changes. When used on a [Slider], this is called continuously while dragging (potentially every frame). If you are performing an expensive operation in a function connected to [signal value_changed], consider using a [i]debouncing[/i] [Timer] to call the function less often.
+				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [code]value[/code] is set directly via code.
 			</description>
 		</signal>
 	</signals>

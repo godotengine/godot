@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		String p = p_path.replace_first("res://", "");
 		PackedDir *cd = root;
 
-		if (p.find("/") != -1) { //in a subdir
+		if (p.contains("/")) { //in a subdir
 
 			Vector<String> ds = p.get_base_dir().split("/");
 
@@ -459,7 +459,7 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 
 	nd = nd.simplify_path();
 
-	if (nd == "") {
+	if (nd.is_empty()) {
 		nd = ".";
 	}
 

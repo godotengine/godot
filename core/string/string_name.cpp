@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,23 +73,38 @@ void StringName::cleanup() {
 				d = d->next;
 			}
 		}
-		print_line("\nStringName Reference Ranking:\n");
+
+		print_line("\nStringName reference ranking (from most to least referenced):\n");
+
 		data.sort_custom<DebugSortReferences>();
-		for (int i = 0; i < MIN(100, data.size()); i++) {
+		int unreferenced_stringnames = 0;
+		int rarely_referenced_stringnames = 0;
+		for (int i = 0; i < data.size(); i++) {
 			print_line(itos(i + 1) + ": " + data[i]->get_name() + " - " + itos(data[i]->debug_references));
+			if (data[i]->debug_references == 0) {
+				unreferenced_stringnames += 1;
+			} else if (data[i]->debug_references < 5) {
+				rarely_referenced_stringnames += 1;
+			}
 		}
+
+		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data.size(), unreferenced_stringnames, unreferenced_stringnames / float(data.size()) * 100));
+		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data.size(), rarely_referenced_stringnames, rarely_referenced_stringnames / float(data.size()) * 100));
 	}
 #endif
 	int lost_strings = 0;
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
 		while (_table[i]) {
 			_Data *d = _table[i];
-			lost_strings++;
-			if (d->static_count.get() != d->refcount.get() && OS::get_singleton()->is_stdout_verbose()) {
-				if (d->cname) {
-					print_line("Orphan StringName: " + String(d->cname));
-				} else {
-					print_line("Orphan StringName: " + String(d->name));
+			if (d->static_count.get() != d->refcount.get()) {
+				lost_strings++;
+
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					if (d->cname) {
+						print_line("Orphan StringName: " + String(d->cname));
+					} else {
+						print_line("Orphan StringName: " + String(d->name));
+					}
 				}
 			}
 
@@ -310,7 +325,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name == String()) {
+	if (p_name.is_empty()) {
 		return;
 	}
 
@@ -434,7 +449,7 @@ StringName StringName::search(const char32_t *p_name) {
 }
 
 StringName StringName::search(const String &p_name) {
-	ERR_FAIL_COND_V(p_name == "", StringName());
+	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
 
 	MutexLock lock(mutex);
 

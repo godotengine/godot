@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -190,8 +190,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
-	if (p_to_file != "") {
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
@@ -202,7 +202,7 @@ void OS::print_all_resources(String p_to_file) {
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (p_to_file != "") {
+	if (!p_to_file.is_empty()) {
 		if (_OSPRF) {
 			memdelete(_OSPRF);
 		}
@@ -328,17 +328,13 @@ void OS::yield() {
 
 void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
-	DirAccess *da = DirAccess::open(dd);
-	if (da) {
-		memdelete(da);
+	if (DirAccess::exists(dd)) {
 		return;
 	}
 
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
 	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
-
-	memdelete(da);
 }
 
 String OS::get_model_name() const {
@@ -346,7 +342,7 @@ String OS::get_model_name() const {
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
-	_execpath = p_execpath;
+	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
 }
 
@@ -356,6 +352,10 @@ String OS::get_unique_id() const {
 
 int OS::get_processor_count() const {
 	return 1;
+}
+
+String OS::get_processor_name() const {
+	return "";
 }
 
 bool OS::can_use_threads() const {
@@ -387,16 +387,18 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 #else
-	if (p_feature == "release")
+	if (p_feature == "release") {
 		return true;
+	}
 #endif
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone")
+	if (p_feature == "standalone") {
 		return true;
+	}
 #endif
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
