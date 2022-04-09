@@ -1105,7 +1105,7 @@ Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *
 	set_drag_preview(vb);
 
 	Dictionary drag_data;
-	drag_data["type"] = "nodes";
+	drag_data["type"] = "input_map";
 
 	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 
@@ -1114,7 +1114,7 @@ Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *
 
 bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary d = p_data;
-	if (!d.has("type") || d["type"] != "nodes") {
+	if (!d.has("type") || d["type"] != "input_map") {
 		return false;
 	}
 
