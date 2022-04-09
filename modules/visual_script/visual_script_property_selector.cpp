@@ -92,39 +92,40 @@ void VisualScriptPropertySelector::_update_search() {
 		base = ClassDB::get_parent_class_nocheck(base);
 	}
 
+	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+		Control::get_icon("Variant", "EditorIcons"),
+		Control::get_icon("bool", "EditorIcons"),
+		Control::get_icon("int", "EditorIcons"),
+		Control::get_icon("float", "EditorIcons"),
+		Control::get_icon("String", "EditorIcons"),
+		Control::get_icon("Vector2", "EditorIcons"),
+		Control::get_icon("Rect2", "EditorIcons"),
+		Control::get_icon("Vector3", "EditorIcons"),
+		Control::get_icon("Transform2D", "EditorIcons"),
+		Control::get_icon("Plane", "EditorIcons"),
+		Control::get_icon("Quat", "EditorIcons"),
+		Control::get_icon("AABB", "EditorIcons"),
+		Control::get_icon("Basis", "EditorIcons"),
+		Control::get_icon("Transform", "EditorIcons"),
+		Control::get_icon("Color", "EditorIcons"),
+		Control::get_icon("Path", "EditorIcons"),
+		Control::get_icon("RID", "EditorIcons"),
+		Control::get_icon("Object", "EditorIcons"),
+		Control::get_icon("Dictionary", "EditorIcons"),
+		Control::get_icon("Array", "EditorIcons"),
+		Control::get_icon("PoolByteArray", "EditorIcons"),
+		Control::get_icon("PoolIntArray", "EditorIcons"),
+		Control::get_icon("PoolRealArray", "EditorIcons"),
+		Control::get_icon("PoolStringArray", "EditorIcons"),
+		Control::get_icon("PoolVector2Array", "EditorIcons"),
+		Control::get_icon("PoolVector3Array", "EditorIcons"),
+		Control::get_icon("PoolColorArray", "EditorIcons")
+	};
+
 	for (List<StringName>::Element *E = base_list.front(); E; E = E->next()) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
 		TreeItem *category = nullptr;
-		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
-			Control::get_icon("Variant", "EditorIcons"),
-			Control::get_icon("bool", "EditorIcons"),
-			Control::get_icon("int", "EditorIcons"),
-			Control::get_icon("float", "EditorIcons"),
-			Control::get_icon("String", "EditorIcons"),
-			Control::get_icon("Vector2", "EditorIcons"),
-			Control::get_icon("Rect2", "EditorIcons"),
-			Control::get_icon("Vector3", "EditorIcons"),
-			Control::get_icon("Transform2D", "EditorIcons"),
-			Control::get_icon("Plane", "EditorIcons"),
-			Control::get_icon("Quat", "EditorIcons"),
-			Control::get_icon("AABB", "EditorIcons"),
-			Control::get_icon("Basis", "EditorIcons"),
-			Control::get_icon("Transform", "EditorIcons"),
-			Control::get_icon("Color", "EditorIcons"),
-			Control::get_icon("Path", "EditorIcons"),
-			Control::get_icon("RID", "EditorIcons"),
-			Control::get_icon("Object", "EditorIcons"),
-			Control::get_icon("Dictionary", "EditorIcons"),
-			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PoolByteArray", "EditorIcons"),
-			Control::get_icon("PoolIntArray", "EditorIcons"),
-			Control::get_icon("PoolRealArray", "EditorIcons"),
-			Control::get_icon("PoolStringArray", "EditorIcons"),
-			Control::get_icon("PoolVector2Array", "EditorIcons"),
-			Control::get_icon("PoolVector3Array", "EditorIcons"),
-			Control::get_icon("PoolColorArray", "EditorIcons")
-		};
 		{
 			String b = String(E->get());
 			category = search_options->create_item(root);
@@ -304,6 +305,7 @@ void VisualScriptPropertySelector::_update_search() {
 	TreeItem *selected_item = search_options->search_item_text(search_box->get_text());
 	if (!found && selected_item != nullptr) {
 		selected_item->select(0);
+		search_options->scroll_to_item(selected_item);
 		found = true;
 	}
 
