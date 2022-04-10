@@ -76,7 +76,7 @@
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Vector3i[]" />
 			<description>
-				Returns an array of [Vector3] with the non-empty cell coordinates in the grid map.
+				Returns an array of [Vector3i] with the non-empty cell coordinates in the grid map.
 			</description>
 		</method>
 		<method name="get_used_cells_by_item" qualifiers="const">
