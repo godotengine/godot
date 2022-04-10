@@ -2050,7 +2050,11 @@ LineEdit::LineEdit() {
 	cursor_pos = 0;
 	scroll_offset = 0;
 	window_has_focus = true;
-	max_length = 0;
+	if (&Engine::is_editor_hint) {
+		max_length = 10000;
+	} else {
+		max_length = 0;
+	}
 	pass = false;
 	secret_character = "*";
 	text_changed_dirty = false;
