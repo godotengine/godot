@@ -100,7 +100,7 @@ private:
 
 	int caret_column = 0;
 	int scroll_offset = 0;
-	int max_length = 0; // 0 for no maximum.
+	int max_length = 10000; // 10,000 so it's not too big by default
 
 	Dictionary opentype_features;
 	String language;
