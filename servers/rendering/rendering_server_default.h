@@ -696,7 +696,9 @@ public:
 	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	FUNC1(shadows_quality_set, ShadowQuality);
+	FUNC1(shadows_set_use_pcss, bool);
 	FUNC1(directional_shadow_quality_set, ShadowQuality);
+	FUNC1(directional_shadow_set_use_pcss, bool);
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 

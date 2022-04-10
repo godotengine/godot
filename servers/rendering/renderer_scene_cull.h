@@ -1148,7 +1148,9 @@ public:
 	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	PASS1(shadows_quality_set, RS::ShadowQuality)
+	PASS1(shadows_set_use_pcss, bool)
 	PASS1(directional_shadow_quality_set, RS::ShadowQuality)
+	PASS1(directional_shadow_set_use_pcss, bool)
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 

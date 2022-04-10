@@ -514,8 +514,12 @@ void EditorNode::_update_from_settings() {
 
 	RS::ShadowQuality shadows_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/shadows/soft_shadow_quality")));
 	RS::get_singleton()->shadows_quality_set(shadows_quality);
+	bool shadows_use_pcss = bool(GLOBAL_GET("rendering/shadows/shadows/use_pcss"));
+	RS::get_singleton()->shadows_set_use_pcss(shadows_use_pcss);
 	RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/directional_shadow/soft_shadow_quality")));
 	RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
+	bool directional_shadow_use_pcss = bool(GLOBAL_GET("rendering/shadows/directional_shadow/use_pcss"));
+	RS::get_singleton()->directional_shadow_set_use_pcss(directional_shadow_use_pcss);
 	float probe_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
 	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
 	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));

@@ -303,7 +303,13 @@ void RasterizerSceneGLES3::camera_effects_set_custom_exposure(RID p_camera_effec
 void RasterizerSceneGLES3::shadows_quality_set(RS::ShadowQuality p_quality) {
 }
 
+void RasterizerSceneGLES3::shadows_set_use_pcss(bool p_enable) {
+}
+
 void RasterizerSceneGLES3::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
+}
+
+void RasterizerSceneGLES3::directional_shadow_set_use_pcss(bool p_enable) {
 }
 
 RID RasterizerSceneGLES3::light_instance_create(RID p_light) {

@@ -492,7 +492,9 @@ public:
 	};
 
 	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
+	virtual void shadows_set_use_pcss(bool p_enable) = 0;
 	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
+	virtual void directional_shadow_set_use_pcss(bool p_enable) = 0;
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,

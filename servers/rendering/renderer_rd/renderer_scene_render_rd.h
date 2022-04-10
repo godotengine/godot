@@ -313,6 +313,8 @@ private:
 	RS::ShadowQuality directional_shadow_quality = RS::SHADOW_QUALITY_MAX;
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
+	bool shadows_use_pcss = true;
+	bool directional_shadow_use_pcss = true;
 
 	float *directional_penumbra_shadow_kernel = nullptr;
 	float *directional_soft_shadow_kernel = nullptr;
@@ -1432,7 +1434,9 @@ public:
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
 
 	virtual void shadows_quality_set(RS::ShadowQuality p_quality) override;
+	virtual void shadows_set_use_pcss(bool p_enable) override;
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) override;
+	virtual void directional_shadow_set_use_pcss(bool p_enable) override;
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;

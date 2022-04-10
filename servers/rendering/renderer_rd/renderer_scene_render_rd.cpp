@@ -3112,6 +3112,13 @@ void RendererSceneRenderRD::shadows_quality_set(RS::ShadowQuality p_quality) {
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::shadows_set_use_pcss(bool p_enable) {
+	if (shadows_use_pcss != p_enable) {
+		shadows_use_pcss = p_enable;
+		_update_shader_quality_settings();
+	}
+}
+
 void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
 	ERR_FAIL_INDEX_MSG(p_quality, RS::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
 
@@ -3157,6 +3164,13 @@ void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_q
 	}
 
 	_update_shader_quality_settings();
+}
+
+void RendererSceneRenderRD::directional_shadow_set_use_pcss(bool p_enable) {
+	if (directional_shadow_use_pcss != p_enable) {
+		directional_shadow_use_pcss = p_enable;
+		_update_shader_quality_settings();
+	}
 }
 
 void RendererSceneRenderRD::decals_set_filter(RenderingServer::DecalFilter p_filter) {
@@ -3330,7 +3344,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				light_data.shadow_enabled = p_using_shadows && storage->light_has_shadow(base);
 
-				float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				float angular_diameter = directional_shadow_use_pcss ? storage->light_get_param(base, RS::LIGHT_PARAM_SIZE) : 0.0;
 				if (angular_diameter > 0.0) {
 					// I know tan(0) is 0, but let's not risk it with numerical precision.
 					// technically this will keep expanding until reaching the sun, but all we care
@@ -3615,7 +3629,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				RendererStorageRD::store_transform(proj, light_data.shadow_matrix);
 
-				if (size > 0.0) {
+				if (shadows_use_pcss && size > 0.0) {
 					light_data.soft_shadow_size = size;
 				} else {
 					light_data.soft_shadow_size = 0.0;
@@ -3632,7 +3646,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				CameraMatrix shadow_mtx = bias * li->shadow_transform[0].camera * modelview;
 				RendererStorageRD::store_camera(shadow_mtx, light_data.shadow_matrix);
 
-				if (size > 0.0) {
+				if (shadows_use_pcss && size > 0.0) {
 					CameraMatrix cm = li->shadow_transform[0].camera;
 					float half_np = cm.get_z_near() * Math::tan(Math::deg2rad(spot_angle));
 					light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
@@ -5819,7 +5833,9 @@ void fog() {
 	penumbra_shadow_kernel = memnew_arr(float, 128);
 	soft_shadow_kernel = memnew_arr(float, 128);
 	shadows_quality_set(RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/shadows/soft_shadow_quality"))));
+	shadows_set_use_pcss(bool(GLOBAL_GET("rendering/shadows/shadows/use_pcss")));
 	directional_shadow_quality_set(RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/directional_shadow/soft_shadow_quality"))));
+	directional_shadow_set_use_pcss(bool(GLOBAL_GET("rendering/shadows/directional_shadow/use_pcss")));
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
