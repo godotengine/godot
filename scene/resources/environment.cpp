@@ -189,6 +189,7 @@ void Environment::_update_ambient_light() {
 void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
 	tone_mapper = p_tone_mapper;
 	_update_tonemap();
+	notify_property_list_changed();
 }
 
 Environment::ToneMapper Environment::get_tonemapper() const {
@@ -1049,6 +1050,10 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		}
 	}
 
+	if (property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	}
+
 	if (property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
@@ -1081,6 +1086,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"auto_exposure_",
 		"ssr_",
 		"ssao_",
+		"ssil_",
 		"sdfgi_",
 		"glow_",
 		"adjustment_",
