@@ -1909,6 +1909,10 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				vscroll->set_value(vscroll->get_max());
 				handled = true;
 			}
+			if (k->is_action("ui_text_select_all")) {
+				select_all();
+				handled = true;
+			}
 			if (k->is_action("ui_copy")) {
 				selection_copy();
 				handled = true;
@@ -4196,6 +4200,44 @@ void RichTextLabel::selection_copy() {
 	}
 }
 
+void RichTextLabel::select_all() {
+	if (!selection.enabled) {
+		return;
+	}
+
+	Item *it = main;
+	Item *from_item = nullptr;
+	Item *to_item = nullptr;
+
+	while (it) {
+		if (it->type != ITEM_FRAME) {
+			if (from_item == nullptr) {
+				from_item = it;
+			} else {
+				to_item = it;
+			}
+		}
+		it = _get_next_item(it, true);
+	}
+
+	ItemFrame *from_frame = nullptr;
+	int from_line = 0;
+	_find_frame(from_item, &from_frame, &from_line);
+	ItemFrame *to_frame = nullptr;
+	int to_line = 0;
+	_find_frame(to_item, &to_frame, &to_line);
+	selection.from_line = from_line;
+	selection.from_frame = from_frame;
+	selection.from_char = 0;
+	selection.from_item = from_item;
+	selection.to_line = to_line;
+	selection.to_frame = to_frame;
+	selection.to_char = to_frame->lines[to_line].char_count;
+	selection.to_item = to_item;
+	selection.active = true;
+	update();
+}
+
 bool RichTextLabel::is_selection_enabled() const {
 	return selection.enabled;
 }
@@ -4491,6 +4533,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selection_from"), &RichTextLabel::get_selection_from);
 	ClassDB::bind_method(D_METHOD("get_selection_to"), &RichTextLabel::get_selection_to);
 
+	ClassDB::bind_method(D_METHOD("select_all"), &RichTextLabel::select_all);
 	ClassDB::bind_method(D_METHOD("get_selected_text"), &RichTextLabel::get_selected_text);
 	ClassDB::bind_method(D_METHOD("deselect"), &RichTextLabel::deselect);
 
