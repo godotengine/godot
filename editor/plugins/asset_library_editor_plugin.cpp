@@ -577,7 +577,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
-			error_label->raise();
+			error_label->move_to_front();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE:

@@ -176,7 +176,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	} else {
 		cancel_hb->hide();
 	}
-	cancel_hb->raise();
+	cancel_hb->move_to_front();
 	cancelled = false;
 	_popup();
 	if (p_can_cancel) {

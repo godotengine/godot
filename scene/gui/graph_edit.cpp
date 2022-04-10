@@ -351,7 +351,7 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	if (gn->is_comment()) {
 		move_child(gn, 0);
 	} else {
-		gn->raise();
+		gn->move_to_front();
 	}
 }
 
