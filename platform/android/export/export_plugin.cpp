@@ -2096,7 +2096,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 
 	if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (!dk.is_empty() || !dk_user.is_empty() || !dk_password.is_empty())) {
 		valid = false;
-		err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
+		err += TTR("Either Debug Keystore, Debug User AND Debug Keystore Password settings must be configured OR none of them.") + "\n";
 	}
 
 	if (!FileAccess::exists(dk)) {
@@ -2114,7 +2114,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 
 	if ((rk.is_empty() || rk_user.is_empty() || rk_password.is_empty()) && (!rk.is_empty() || !rk_user.is_empty() || !rk_password.is_empty())) {
 		valid = false;
-		err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
+		err += TTR("Either Release Keystore, Release User AND Release Keystore Password settings must be configured OR none of them.") + "\n";
 	}
 
 	if (!rk.is_empty() && !FileAccess::exists(rk)) {
