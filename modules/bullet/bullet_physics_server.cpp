@@ -253,7 +253,12 @@ void BulletPhysicsServer::area_set_space(RID p_area, RID p_space) {
 
 RID BulletPhysicsServer::area_get_space(RID p_area) const {
 	AreaBullet *area = area_owner.get(p_area);
-	return area->get_space()->get_self();
+	ERR_FAIL_COND_V(!area, RID());
+	SpaceBullet *space = area->get_space();
+	if (!space) {
+		return RID();
+	}
+	return space->get_self();
 }
 
 void BulletPhysicsServer::area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) {
