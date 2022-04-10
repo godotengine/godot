@@ -5478,7 +5478,7 @@ void EditorNode::_global_menu_new_window(const Variant &p_tag) {
 	}
 }
 
-void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
+void EditorNode::_dropped_files(const Vector<String> &p_files) {
 	String to_path = ProjectSettings::get_singleton()->globalize_path(FileSystemDock::get_singleton()->get_selected_path());
 
 	_add_dropped_files_recursive(p_files, to_path);

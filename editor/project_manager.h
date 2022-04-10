@@ -127,7 +127,7 @@ class ProjectManager : public Control {
 
 	void _dim_window();
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
-	void _files_dropped(PackedStringArray p_files, int p_screen);
+	void _files_dropped(PackedStringArray p_files);
 
 	void _version_button_pressed();
 	void _on_order_option_changed(int p_idx);
