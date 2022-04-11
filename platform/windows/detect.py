@@ -44,7 +44,7 @@ def can_build():
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable, EnumVariable
+    from SCons.Variables import BoolVariable, EnumVariable, PathVariable
 
     mingw32 = ""
     mingw64 = ""
@@ -73,6 +73,7 @@ def get_opts():
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
+        PathVariable("livepp", "Path to the Live++ installation", "", PathVariable.PathAccept),
     ]
 
 
@@ -308,6 +309,17 @@ def configure_msvc(env, manual_msvc_config):
     env["BUILDERS"]["Program"] = methods.precious_program
 
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
+
+    # Check if LIVEPP_PATH is set and add #define. Perform
+    # some sanity checks.
+    if env.get("livepp"):
+        if env["target"] == "release_debug" or env["target"] == "debug":
+            print("Found Live++ at %s" % env.get("livepp"))
+            env.AppendUnique(CPPDEFINES=["LIVEPP_PATH=%s" % env.get("livepp")])
+            env.AppendUnique(CPPPATH=[env.get("livepp")])
+            env.AppendUnique(LINKFLAGS=["/FUNCTIONPADMIN"])
+        else:
+            print("Live++ can only be used with targets 'debug' and 'release_debug'")
 
 
 def configure_mingw(env):
