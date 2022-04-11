@@ -376,6 +376,13 @@
 				Scrolls the window's top line to match first line of the [code]paragraph[/code].
 			</description>
 		</method>
+		<method name="select_all">
+			<return type="void" />
+			<description>
+				Select all the text.
+				If [member selection_enabled] is [code]false[/code], no selection will occur.
+			</description>
+		</method>
 		<method name="set_cell_border_color">
 			<return type="void" />
 			<argument index="0" name="color" type="Color" />

@@ -584,6 +584,7 @@ public:
 	int get_selection_from() const;
 	int get_selection_to() const;
 	String get_selected_text() const;
+	void select_all();
 	void selection_copy();
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
