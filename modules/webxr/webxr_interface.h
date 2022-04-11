@@ -68,6 +68,8 @@ public:
 	virtual TargetRayMode get_controller_target_ray_mode(int p_controller_id) const = 0;
 	virtual String get_visibility_state() const = 0;
 	virtual PoolVector3Array get_bounds_geometry() const = 0;
+	virtual void set_xr_standard_mapping(bool p_xr_standard_mapping) = 0;
+	virtual bool get_xr_standard_mapping() const = 0;
 };
 
 VARIANT_ENUM_CAST(WebXRInterface::TargetRayMode);
