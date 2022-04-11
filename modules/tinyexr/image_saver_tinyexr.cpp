@@ -275,8 +275,8 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 		print_error(String("Saving EXR failed. Error: {0}").format(varray(err)));
 		return ERR_FILE_CANT_WRITE;
 	} else {
-		FileAccessRef ref = FileAccess::open(p_path, FileAccess::WRITE);
-		ERR_FAIL_COND_V(!ref, ERR_FILE_CANT_WRITE);
+		Ref<FileAccess> ref = FileAccess::open(p_path, FileAccess::WRITE);
+		ERR_FAIL_COND_V(ref.is_null(), ERR_FILE_CANT_WRITE);
 		ref->store_buffer(mem, bytes);
 		free(mem);
 	}

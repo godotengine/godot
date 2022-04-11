@@ -60,7 +60,7 @@ void FileAccessMemory::cleanup() {
 	memdelete(files);
 }
 
-FileAccess *FileAccessMemory::create() {
+Ref<FileAccess> FileAccessMemory::create() {
 	return memnew(FileAccessMemory);
 }
 

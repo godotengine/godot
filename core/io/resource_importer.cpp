@@ -40,9 +40,9 @@ bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceIm
 
 Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid) const {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (!f) {
+	if (f.is_null()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
@@ -70,11 +70,9 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
-			memdelete(f);
 			return OK;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
-			memdelete(f);
 			return err;
 		}
 
@@ -109,8 +107,6 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			break;
 		}
 	}
-
-	memdelete(f);
 
 	if (r_path_and_type.path.is_empty() || r_path_and_type.type.is_empty()) {
 		return ERR_FILE_CORRUPT;
@@ -270,9 +266,9 @@ String ResourceFormatImporter::get_internal_resource_path(const String &p_path) 
 
 void ResourceFormatImporter::get_internal_resource_path_list(const String &p_path, List<String> *r_paths) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (!f) {
+	if (f.is_null()) {
 		return;
 	}
 
@@ -292,11 +288,9 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
-			memdelete(f);
 			return;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
-			memdelete(f);
 			return;
 		}
 
@@ -310,7 +304,6 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			break;
 		}
 	}
-	memdelete(f);
 }
 
 String ResourceFormatImporter::get_import_group_file(const String &p_path) const {

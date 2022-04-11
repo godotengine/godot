@@ -153,8 +153,8 @@ public:
 		}
 		const String ctype = mimes[req_ext];
 
-		FileAccess *f = FileAccess::open(filepath, FileAccess::READ);
-		ERR_FAIL_COND(!f);
+		Ref<FileAccess> f = FileAccess::open(filepath, FileAccess::READ);
+		ERR_FAIL_COND(f.is_null());
 		String s = "HTTP/1.1 200 OK\r\n";
 		s += "Connection: Close\r\n";
 		s += "Content-Type: " + ctype + "\r\n";
@@ -166,7 +166,6 @@ public:
 		CharString cs = s.utf8();
 		Error err = peer->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
 		if (err != OK) {
-			memdelete(f);
 			ERR_FAIL();
 		}
 
@@ -178,11 +177,9 @@ public:
 			}
 			err = peer->put_data(bytes, read);
 			if (err != OK) {
-				memdelete(f);
 				ERR_FAIL();
 			}
 		}
-		memdelete(f);
 	}
 
 	void poll() {

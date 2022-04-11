@@ -126,8 +126,8 @@ PackedData::~PackedData() {
 //////////////////////////////////////////////////////////////////
 
 bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		return false;
 	}
 
@@ -137,19 +137,13 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 	if (magic != PACK_HEADER_MAGIC) {
 		// loading with offset feature not supported for self contained exe files
-		if (p_offset != 0) {
-			f->close();
-			memdelete(f);
-			ERR_FAIL_V_MSG(false, "Loading self-contained executable with offset not supported.");
-		}
+		ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Loading self-contained executable with offset not supported.");
 
 		//maybe at the end.... self contained exe
 		f->seek_end();
 		f->seek(f->get_position() - 4);
 		magic = f->get_32();
 		if (magic != PACK_HEADER_MAGIC) {
-			f->close();
-			memdelete(f);
 			return false;
 		}
 		f->seek(f->get_position() - 12);
@@ -159,8 +153,6 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		magic = f->get_32();
 		if (magic != PACK_HEADER_MAGIC) {
-			f->close();
-			memdelete(f);
 			return false;
 		}
 	}
@@ -170,16 +162,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint32_t ver_minor = f->get_32();
 	f->get_32(); // patch number, not used for validation.
 
-	if (version != PACK_FORMAT_VERSION) {
-		f->close();
-		memdelete(f);
-		ERR_FAIL_V_MSG(false, "Pack version unsupported: " + itos(version) + ".");
-	}
-	if (ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR)) {
-		f->close();
-		memdelete(f);
-		ERR_FAIL_V_MSG(false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
-	}
+	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, "Pack version unsupported: " + itos(version) + ".");
+	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
 
 	uint32_t pack_flags = f->get_32();
 	uint64_t file_base = f->get_64();
@@ -194,12 +178,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	int file_count = f->get_32();
 
 	if (enc_directory) {
-		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
-		if (!fae) {
-			f->close();
-			memdelete(f);
-			ERR_FAIL_V_MSG(false, "Can't open encrypted pack directory.");
-		}
+		Ref<FileAccessEncrypted> fae;
+		fae.instantiate();
+		ERR_FAIL_COND_V_MSG(fae.is_null(), false, "Can't open encrypted pack directory.");
 
 		Vector<uint8_t> key;
 		key.resize(32);
@@ -208,12 +189,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		if (err) {
-			f->close();
-			memdelete(f);
-			memdelete(fae);
-			ERR_FAIL_V_MSG(false, "Can't open encrypted pack directory.");
-		}
+		ERR_FAIL_COND_V_MSG(err, false, "Can't open encrypted pack directory.");
 		f = fae;
 	}
 
@@ -236,12 +212,10 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
 	}
 
-	f->close();
-	memdelete(f);
 	return true;
 }
 
-FileAccess *PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessPack(p_path, *p_file));
 }
 
@@ -351,16 +325,15 @@ bool FileAccessPack::file_exists(const String &p_name) {
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
-	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file '" + String(pf.pack) + "'.");
+	ERR_FAIL_COND_MSG(f.is_null(), "Can't open pack-referenced file '" + String(pf.pack) + "'.");
 
 	f->seek(pf.offset);
 	off = pf.offset;
 
 	if (pf.encrypted) {
-		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
-		if (!fae) {
-			ERR_FAIL_MSG("Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
-		}
+		Ref<FileAccessEncrypted> fae;
+		fae.instantiate();
+		ERR_FAIL_COND_MSG(fae.is_null(), "Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
 
 		Vector<uint8_t> key;
 		key.resize(32);
@@ -369,22 +342,12 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		if (err) {
-			memdelete(fae);
-			ERR_FAIL_MSG("Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
-		}
+		ERR_FAIL_COND_MSG(err, "Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
 		f = fae;
 		off = 0;
 	}
 	pos = 0;
 	eof = false;
-}
-
-FileAccessPack::~FileAccessPack() {
-	if (f) {
-		f->close();
-		memdelete(f);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -507,7 +470,7 @@ Error DirAccessPack::change_dir(String p_dir) {
 	}
 }
 
-String DirAccessPack::get_current_dir(bool p_include_drive) {
+String DirAccessPack::get_current_dir(bool p_include_drive) const {
 	PackedData::PackedDir *pd = current;
 	String p = current->name;
 

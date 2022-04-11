@@ -738,11 +738,7 @@ void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
 
 ResourceLoaderText::ResourceLoaderText() {}
 
-ResourceLoaderText::~ResourceLoaderText() {
-	memdelete(f);
-}
-
-void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types) {
+void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
 	open(p_f);
 	ignore_resource_parsing = true;
 	ERR_FAIL_COND(error != OK);
@@ -798,13 +794,13 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 	}
 }
 
-Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_path, const Map<String, String> &p_map) {
+Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const Map<String, String> &p_map) {
 	open(p_f, true);
 	ERR_FAIL_COND_V(error != OK, error);
 	ignore_resource_parsing = true;
 	//FileAccess
 
-	FileAccess *fw = nullptr;
+	Ref<FileAccess> fw;
 
 	String base_path = local_path.get_base_dir();
 
@@ -814,23 +810,20 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
 
 		if (err != OK) {
-			if (fw) {
-				memdelete(fw);
-			}
 			error = ERR_FILE_CORRUPT;
 			ERR_FAIL_V(error);
 		}
 
 		if (next_tag.name != "ext_resource") {
 			//nothing was done
-			if (!fw) {
+			if (fw.is_null()) {
 				return OK;
 			}
 
 			break;
 
 		} else {
-			if (!fw) {
+			if (fw.is_null()) {
 				fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 				if (is_scene) {
 					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
@@ -840,7 +833,6 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 			}
 
 			if (!next_tag.fields.has("path") || !next_tag.fields.has("id") || !next_tag.fields.has("type")) {
-				memdelete(fw);
 				error = ERR_FILE_CORRUPT;
 				ERR_FAIL_V(error);
 			}
@@ -898,24 +890,22 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 		fw->store_8(c);
 		c = f->get_8();
 	}
-	f->close();
+	f = Ref<FileAccess>();
 
 	bool all_ok = fw->get_error() == OK;
-
-	memdelete(fw);
 
 	if (!all_ok) {
 		return ERR_CANT_CREATE;
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	da->remove(p_path);
 	da->rename(p_path + ".depren", p_path);
 
 	return OK;
 }
 
-void ResourceLoaderText::open(FileAccess *p_f, bool p_skip_first_tag) {
+void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	error = OK;
 
 	lines = 1;
@@ -992,23 +982,23 @@ void ResourceLoaderText::open(FileAccess *p_f, bool p_skip_first_tag) {
 	rp.userdata = this;
 }
 
-static void bs_save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len = false) {
+static void bs_save_unicode_string(Ref<FileAccess> p_f, const String &p_string, bool p_bit_on_len = false) {
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32((utf8.length() + 1) | 0x80000000);
+		p_f->store_32((utf8.length() + 1) | 0x80000000);
 	} else {
-		f->store_32(utf8.length() + 1);
+		p_f->store_32(utf8.length() + 1);
 	}
-	f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	p_f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
 }
 
-Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) {
+Error ResourceLoaderText::save_as_binary(Ref<FileAccess> p_f, const String &p_path) {
 	if (error) {
 		return error;
 	}
 
-	FileAccessRef wf = FileAccess::open(p_path, FileAccess::WRITE);
-	if (!wf) {
+	Ref<FileAccess> wf = FileAccess::open(p_path, FileAccess::WRITE);
+	if (wf.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -1023,7 +1013,7 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 	static const int save_format_version = 3; //use format version 3 for saving
 	wf->store_32(save_format_version);
 
-	bs_save_unicode_string(wf.f, is_scene ? "PackedScene" : resource_type);
+	bs_save_unicode_string(wf, is_scene ? "PackedScene" : resource_type);
 	wf->store_64(0); //offset to import metadata, this is no longer used
 
 	wf->store_32(ResourceFormatSaverBinaryInstance::FORMAT_FLAG_NAMED_SCENE_IDS | ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS);
@@ -1078,8 +1068,8 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 			uid = ResourceUID::get_singleton()->text_to_id(uidt);
 		}
 
-		bs_save_unicode_string(wf.f, type);
-		bs_save_unicode_string(wf.f, path);
+		bs_save_unicode_string(wf, type);
+		bs_save_unicode_string(wf, path);
 		wf->store_64(uid);
 
 		int lindex = dummy_read.external_resources.size();
@@ -1108,8 +1098,8 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 	wf->store_32(0); //zero sub resources, still parsing them
 
 	String temp_file = p_path + ".temp";
-	FileAccessRef wf2 = FileAccess::open(temp_file, FileAccess::WRITE);
-	if (!wf2) {
+	Ref<FileAccess> wf2 = FileAccess::open(temp_file, FileAccess::WRITE);
+	if (wf2.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -1246,8 +1236,6 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 		wf2->seek_end();
 	}
 
-	wf2->close();
-
 	uint64_t offset_from = wf->get_position();
 	wf->seek(sub_res_count_pos); //plus one because the saved one
 	wf->store_32(local_offsets.size());
@@ -1262,18 +1250,16 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 	Vector<uint8_t> data = FileAccess::get_file_as_array(temp_file);
 	wf->store_buffer(data.ptr(), data.size());
 	{
-		DirAccessRef dar = DirAccess::open(temp_file.get_base_dir());
+		Ref<DirAccess> dar = DirAccess::open(temp_file.get_base_dir());
 		dar->remove(temp_file);
 	}
 
 	wf->store_buffer((const uint8_t *)"RSRC", 4); //magic at end
 
-	wf->close();
-
 	return OK;
 }
 
-String ResourceLoaderText::recognize(FileAccess *p_f) {
+String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	error = OK;
 
 	lines = 1;
@@ -1317,7 +1303,7 @@ String ResourceLoaderText::recognize(FileAccess *p_f) {
 	return tag.fields["type"];
 }
 
-ResourceUID::ID ResourceLoaderText::get_uid(FileAccess *p_f) {
+ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	error = OK;
 
 	lines = 1;
@@ -1352,7 +1338,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 
 	Error err;
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
 
@@ -1407,8 +1393,8 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 
 	// ...for anything else must test...
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		return ""; //could not read
 	}
 
@@ -1426,8 +1412,8 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 		return ResourceUID::INVALID_ID;
 	}
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		return ResourceUID::INVALID_ID; //could not read
 	}
 
@@ -1438,8 +1424,8 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 }
 
 void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		ERR_FAIL();
 	}
 
@@ -1450,8 +1436,8 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 }
 
 Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
@@ -1465,7 +1451,7 @@ ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = nullptr;
 
 Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path, const String &p_dst_path) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_src_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_src_path, FileAccess::READ, &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_OPEN, "Cannot open file '" + p_src_path + "'.");
 
@@ -1603,9 +1589,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	Error err;
-	f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_OPEN, "Cannot save file '" + p_path + "'.");
-	FileAccessRef _fref(f);
+	Ref<FileAccess> _fref(f);
 
 	local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
@@ -1942,11 +1928,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
-		f->close();
 		return ERR_CANT_CREATE;
 	}
-
-	f->close();
 
 	return OK;
 }

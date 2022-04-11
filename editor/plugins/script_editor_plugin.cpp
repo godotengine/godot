@@ -1091,13 +1091,11 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 	switch (file_dialog_option) {
 		case FILE_NEW_TEXTFILE: {
 			Error err;
-			FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 			if (err) {
 				EditorNode::get_singleton()->show_warning(TTR("Error writing TextFile:") + "\n" + p_file, TTR("Error!"));
 				break;
 			}
-			file->close();
-			memdelete(file);
 
 			if (EditorFileSystem::get_singleton()) {
 				if (textfile_extensions.has(p_file.get_extension())) {
@@ -2211,17 +2209,14 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	String source = sqscr->get_text();
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		memdelete(file);
 		return ERR_CANT_CREATE;
 	}
-	file->close();
-	memdelete(file);
 
 	if (ResourceSaver::get_timestamp_on_save()) {
 		p_text_file->set_last_modified_time(FileAccess::get_modified_time(p_path));

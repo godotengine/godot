@@ -229,7 +229,7 @@ bool GDScriptTestRunner::generate_outputs() {
 
 bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 	Error err = OK;
-	DirAccessRef dir(DirAccess::open(p_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open(p_dir, &err));
 
 	if (err != OK) {
 		return false;
@@ -254,7 +254,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;
-				FileAccessRef script_file(FileAccess::open(current_dir.plus_file(next), FileAccess::READ, &open_err));
+				Ref<FileAccess> script_file(FileAccess::open(current_dir.plus_file(next), FileAccess::READ, &open_err));
 				if (open_err != OK) {
 					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
 					next = dir->get_next();
@@ -286,7 +286,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 
 bool GDScriptTestRunner::make_tests() {
 	Error err = OK;
-	DirAccessRef dir(DirAccess::open(source_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
@@ -611,7 +611,7 @@ bool GDScriptTest::generate_output() {
 	}
 
 	Error err = OK;
-	FileAccessRef out_file = FileAccess::open(output_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> out_file = FileAccess::open(output_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 		return false;
 	}
@@ -620,7 +620,6 @@ bool GDScriptTest::generate_output() {
 	output += "\n"; // Make sure to insert newline for CI static checks.
 
 	out_file->store_string(output);
-	out_file->close();
 
 	return true;
 }

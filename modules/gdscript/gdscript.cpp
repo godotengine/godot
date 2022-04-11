@@ -1030,7 +1030,7 @@ Error GDScript::load_byte_code(const String &p_path) {
 Error GDScript::load_source_code(const String &p_path) {
 	Vector<uint8_t> sourcef;
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
 		ERR_FAIL_COND_V(err, err);
 	}
@@ -1039,8 +1039,6 @@ Error GDScript::load_source_code(const String &p_path) {
 	sourcef.resize(len + 1);
 	uint8_t *w = sourcef.ptrw();
 	uint64_t r = f->get_buffer(w, len);
-	f->close();
-	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
 	w[len] = 0;
 
@@ -2099,7 +2097,7 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
 	Vector<uint8_t> sourcef;
 	Error err;
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
 		return String();
 	}
@@ -2133,8 +2131,8 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 						} else {
 							Vector<StringName> extend_classes = subclass->extends;
 
-							FileAccessRef subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
-							if (!subfile) {
+							Ref<FileAccess> subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
+							if (subfile.is_null()) {
 								break;
 							}
 							String subsource = subfile->get_as_utf8_string();
@@ -2331,8 +2329,8 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 }
 
 void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
-	FileAccessRef file = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!file, "Cannot open file '" + p_path + "'.");
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_path + "'.");
 
 	String source = file->get_as_utf8_string();
 	if (source.is_empty()) {
@@ -2356,17 +2354,14 @@ Error ResourceFormatSaverGDScript::save(const String &p_path, const RES &p_resou
 	String source = sqscr->get_source_code();
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		memdelete(file);
 		return ERR_CANT_CREATE;
 	}
-	file->close();
-	memdelete(file);
 
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
 		GDScriptLanguage::get_singleton()->reload_tool_script(p_resource, false);

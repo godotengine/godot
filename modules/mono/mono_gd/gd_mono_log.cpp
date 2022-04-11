@@ -77,7 +77,7 @@ static String make_text(const char *log_domain, const char *log_level, const cha
 }
 
 void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
-	FileAccess *f = GDMonoLog::get_singleton()->log_file;
+	Ref<FileAccess> f = GDMonoLog::get_singleton()->log_file;
 
 	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
 		String text = make_text(log_domain, log_level, message);
@@ -93,7 +93,6 @@ void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level,
 		// Make sure to flush before aborting
 		f->flush();
 		f->close();
-		memdelete(f);
 
 		abort();
 	}
@@ -101,8 +100,8 @@ void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level,
 
 bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 	if (!DirAccess::exists(p_logs_dir)) {
-		DirAccessRef diraccess = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		ERR_FAIL_COND_V(!diraccess, false);
+		Ref<DirAccess> diraccess = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V(diraccess.is_null(), false);
 		Error logs_mkdir_err = diraccess->make_dir_recursive(p_logs_dir);
 		ERR_FAIL_COND_V_MSG(logs_mkdir_err != OK, false, "Failed to create mono logs directory.");
 	}
@@ -113,8 +112,8 @@ bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 	static const uint64_t MAX_SECS = 5 * 86400; // 5 days
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND(!da);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND(da.is_null());
 
 	Error err = da->change_dir(p_logs_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Cannot change directory to '" + p_logs_dir + "'.");
@@ -170,7 +169,7 @@ void GDMonoLog::initialize() {
 		log_file_path = logs_dir.plus_file(log_file_name);
 
 		log_file = FileAccess::open(log_file_path, FileAccess::WRITE);
-		if (!log_file) {
+		if (log_file.is_null()) {
 			ERR_PRINT("Mono: Cannot create log file at: " + log_file_path);
 		}
 	}
@@ -178,7 +177,7 @@ void GDMonoLog::initialize() {
 	mono_trace_set_level_string(log_level.get_data());
 	log_level_id = get_log_level_id(log_level.get_data());
 
-	if (log_file) {
+	if (log_file.is_valid()) {
 		OS::get_singleton()->print("Mono: Log file is: '%s'\n", log_file_path.utf8().get_data());
 		mono_trace_set_log_handler(mono_log_callback, this);
 	} else {
@@ -192,11 +191,6 @@ GDMonoLog::GDMonoLog() {
 
 GDMonoLog::~GDMonoLog() {
 	singleton = nullptr;
-
-	if (log_file) {
-		log_file->close();
-		memdelete(log_file);
-	}
 }
 
 #else

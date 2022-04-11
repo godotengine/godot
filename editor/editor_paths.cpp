@@ -97,7 +97,7 @@ EditorPaths::EditorPaths() {
 		exe_path = exe_path.plus_file("../../..").simplify_path();
 	}
 	{
-		DirAccessRef d = DirAccess::create_for_path(exe_path);
+		Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
 
 		if (d->file_exists(exe_path + "/._sc_")) {
 			self_contained = true;
@@ -141,7 +141,7 @@ EditorPaths::EditorPaths() {
 
 	// Validate or create each dir and its relevant subdirectories.
 
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	// Data dir.
 	{
@@ -197,7 +197,7 @@ EditorPaths::EditorPaths() {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);
 	} else {
-		DirAccessRef dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (dir_res->change_dir(project_data_dir) != OK) {
 			dir_res->make_dir_recursive(project_data_dir);
 			if (dir_res->change_dir(project_data_dir) != OK) {
@@ -210,10 +210,9 @@ EditorPaths::EditorPaths() {
 		String project_data_gdignore_file_path = project_data_dir.plus_file(".gdignore");
 		if (!FileAccess::exists(project_data_gdignore_file_path)) {
 			// Add an empty .gdignore file to avoid scan.
-			FileAccessRef f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
-			if (f) {
+			Ref<FileAccess> f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
+			if (f.is_valid()) {
 				f->store_line("");
-				f->close();
 			} else {
 				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path);
 			}

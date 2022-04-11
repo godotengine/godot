@@ -87,7 +87,7 @@ class AppxPackager {
 	};
 
 	String progress_task;
-	FileAccess *package = nullptr;
+	Ref<FileAccess> package;
 
 	Set<String> mime_types;
 
@@ -138,7 +138,7 @@ class AppxPackager {
 
 public:
 	void set_progress_task(String p_task) { progress_task = p_task; }
-	void init(FileAccess *p_fa);
+	void init(Ref<FileAccess> p_fa);
 	Error add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
 	void finish();
 

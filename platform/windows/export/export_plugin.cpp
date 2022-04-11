@@ -42,8 +42,8 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 }
 
 Error EditorExportPlatformWindows::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
 
 	f->store_line("@echo off");
 	f->store_line("title \"" + p_app_name + "\"");
@@ -359,7 +359,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 
 #ifndef WINDOWS_ENABLED
-	DirAccessRef tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
+	Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
 
 	err = tmp_dir->remove(p_path);
 	ERR_FAIL_COND_V(err != OK, err);
@@ -417,8 +417,8 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
 	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ_WRITE);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (f.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -430,7 +430,6 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
 		if (magic != 0x00004550) {
-			f->close();
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -479,8 +478,6 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 			break;
 		}
 	}
-
-	f->close();
 
 	return found ? OK : ERR_FILE_CORRUPT;
 }

@@ -3642,18 +3642,14 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 #endif
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save C# script file '" + p_path + "'.");
 
 	file->store_string(source);
 
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		memdelete(file);
 		return ERR_CANT_CREATE;
 	}
-
-	file->close();
-	memdelete(file);
 
 #ifdef TOOLS_ENABLED
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {

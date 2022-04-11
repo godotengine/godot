@@ -935,7 +935,7 @@ void EditorNode::_fs_changed() {
 		}
 
 		if (export_preset.is_null()) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			if (da->file_exists("res://export_presets.cfg")) {
 				export_error = vformat(
 						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
@@ -1058,7 +1058,7 @@ void EditorNode::_scan_external_changes() {
 	// Check if any edited scene has changed.
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
 			continue;
 		}
@@ -5487,7 +5487,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 }
 
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	for (int i = 0; i < p_files.size(); i++) {
 		String from = p_files[i];
@@ -5496,7 +5496,7 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 		if (dir->dir_exists(from)) {
 			Vector<String> sub_files;
 
-			DirAccessRef sub_dir = DirAccess::open(from);
+			Ref<DirAccess> sub_dir = DirAccess::open(from);
 			sub_dir->list_dir_begin();
 
 			String next_file = sub_dir->get_next();

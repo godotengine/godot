@@ -197,10 +197,7 @@ void HTTPRequest::cancel_request() {
 		thread.wait_to_finish();
 	}
 
-	if (file) {
-		memdelete(file);
-		file = nullptr;
-	}
+	file = Ref<FileAccess>();
 	client->close();
 	body.clear();
 	got_response = false;
@@ -365,7 +362,7 @@ bool HTTPRequest::_update_connection() {
 
 				if (!download_to_file.is_empty()) {
 					file = FileAccess::open(download_to_file, FileAccess::WRITE);
-					if (!file) {
+					if (file.is_null()) {
 						call_deferred(SNAME("_request_done"), RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PackedByteArray());
 						return true;
 					}
@@ -381,7 +378,7 @@ bool HTTPRequest::_update_connection() {
 
 			if (chunk.size()) {
 				downloaded.add(chunk.size());
-				if (file) {
+				if (file.is_valid()) {
 					const uint8_t *r = chunk.ptr();
 					file->store_buffer(r, chunk.size());
 					if (file->get_error() != OK) {
@@ -641,10 +638,4 @@ HTTPRequest::HTTPRequest() {
 	timer->set_one_shot(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
-}
-
-HTTPRequest::~HTTPRequest() {
-	if (file) {
-		memdelete(file);
-	}
 }

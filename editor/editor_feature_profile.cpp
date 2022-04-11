@@ -198,13 +198,12 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 
 	data["disabled_features"] = dis_features;
 
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	JSON json;
 	String text = json.stringify(data, "\t");
 	f->store_string(text);
-	f->close();
 	return OK;
 }
 
@@ -350,8 +349,8 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	}
 
 	Vector<String> profiles;
-	DirAccessRef d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+	Ref<DirAccess> d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
+	ERR_FAIL_COND_MSG(d.is_null(), "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
 
 	d->list_dir_begin();
 	while (true) {
@@ -453,8 +452,8 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 void EditorFeatureProfileManager::_erase_selected_profile() {
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected.is_empty());
-	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND_MSG(!da, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+	Ref<DirAccess> da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
+	ERR_FAIL_COND_MSG(da.is_null(), "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
 
 	da->remove(selected + ".profile");
 	if (selected == current_profile) {

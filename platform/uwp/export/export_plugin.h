@@ -346,7 +346,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			ERR_FAIL_V_MSG(data, err_string);
 		}
 
-		FileAccess *f = FileAccess::open(tmp_path, FileAccess::READ, &err);
+		Ref<FileAccess> f = FileAccess::open(tmp_path, FileAccess::READ, &err);
 
 		if (err != OK) {
 			String err_string = "Couldn't open temp logo file.";
@@ -359,8 +359,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		data.resize(f->get_length());
 		f->get_buffer(data.ptrw(), data.size());
 
-		f->close();
-		memdelete(f);
 		DirAccess::remove_file_or_error(tmp_path);
 
 		return data;
