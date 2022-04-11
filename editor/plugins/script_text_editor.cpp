@@ -751,8 +751,8 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
 }
 
-void ScriptTextEditor::lookup_symbol_under_cursor() {
-	TextEdit *tx = code_editor->get_text_edit();
+void ScriptTextEditor::lookup_symbol_under_caret() {
+	CodeEdit *tx = code_editor->get_text_editor();
 
 	String text = tx->get_word_under_caret();
 	if (text.is_empty()) {
@@ -1293,7 +1293,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
-			lookup_symbol_under_cursor();
+			lookup_symbol_under_caret();
 		} break;
 	}
 }
