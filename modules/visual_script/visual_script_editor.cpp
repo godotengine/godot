@@ -1253,8 +1253,32 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->create_action(TTR("Rename Variable"));
 		undo_redo->add_do_method(script.ptr(), "rename_variable", name, new_name);
 		undo_redo->add_undo_method(script.ptr(), "rename_variable", new_name, name);
+
+		// also fix all variable setter & getter calls
+		List<StringName> vlst;
+		script->get_variable_list(&vlst);
+		for (List<StringName>::Element *E = vlst.front(); E; E = E->next()) {
+			List<int> lst;
+			script->get_node_list(E->get(), &lst);
+			for (List<int>::Element *F = lst.front(); F; F = F->next()) {
+				Ref<VisualScriptVariableGet> vget = script->get_node(E->get(), F->get());
+				if (vget.is_valid() && vget->get_variable() == name) {
+					undo_redo->add_do_method(vget.ptr(), "set_variable", new_name);
+					undo_redo->add_undo_method(vget.ptr(), "set_variable", name);
+				}
+
+				Ref<VisualScriptVariableSet> vset = script->get_node(E->get(), F->get());
+				if (vset.is_valid() && vset->get_variable() == name) {
+					undo_redo->add_do_method(vset.ptr(), "set_variable", new_name);
+					undo_redo->add_undo_method(vset.ptr(), "set_variable", name);
+				}
+			}
+		}
+
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
 		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->commit_action();
