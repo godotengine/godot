@@ -183,6 +183,7 @@
 			<argument index="2" name="to" type="Vector2" />
 			<argument index="3" name="color" type="Color" />
 			<argument index="4" name="width" type="float" default="1.0" />
+			<argument index="5" name="antialiased" type="bool" default="false" />
 			<description>
 			</description>
 		</method>

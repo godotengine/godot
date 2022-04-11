@@ -552,26 +552,187 @@ void RendererCanvasCull::canvas_item_set_update_when_visible(RID p_item, bool p_
 	canvas_item->update_when_visible = p_update;
 }
 
-void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width) {
+void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
+
+	Vector2 diff = (p_from - p_to);
+	Vector2 dir = diff.orthogonal().normalized();
+	Vector2 t = dir * p_width * 0.5;
+
+	Vector2 begin_left;
+	Vector2 begin_right;
+	Vector2 end_left;
+	Vector2 end_right;
+
 	if (p_width > 1.001) {
-		Vector2 t = (p_from - p_to).orthogonal().normalized() * p_width * 0.5;
-		line->points[0] = p_from + t;
-		line->points[1] = p_from - t;
-		line->points[2] = p_to - t;
-		line->points[3] = p_to + t;
+		begin_left = p_from + t;
+		begin_right = p_from - t;
+		end_left = p_to + t;
+		end_right = p_to - t;
+
+		line->points[0] = begin_left;
+		line->points[1] = begin_right;
+		line->points[2] = end_right;
+		line->points[3] = end_left;
 		line->point_count = 4;
 	} else {
-		line->point_count = 2;
+		begin_left = p_from;
+		begin_right = p_from;
+		end_left = p_to;
+		end_right = p_to;
+
 		line->points[0] = p_from;
 		line->points[1] = p_to;
+		line->point_count = 2;
 	}
 	for (uint32_t i = 0; i < line->point_count; i++) {
 		line->colors[i] = p_color;
+	}
+
+	if (p_antialiased) {
+		float border_size = 2.0;
+		if (p_width < border_size) {
+			border_size = p_width;
+		}
+		Vector2 dir2 = diff.normalized();
+
+		Vector2 border = dir * border_size;
+		Vector2 border2 = dir2 * border_size;
+
+		Color transparent = Color(p_color.r, p_color.g, p_color.b, 0.0);
+
+		{
+			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!left_border);
+
+			left_border->points[0] = begin_left;
+			left_border->points[1] = begin_left + border;
+			left_border->points[2] = end_left + border;
+			left_border->points[3] = end_left;
+
+			left_border->colors[0] = p_color;
+			left_border->colors[1] = transparent;
+			left_border->colors[2] = transparent;
+			left_border->colors[3] = p_color;
+
+			left_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *right_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!right_border);
+
+			right_border->points[0] = begin_right;
+			right_border->points[1] = begin_right - border;
+			right_border->points[2] = end_right - border;
+			right_border->points[3] = end_right;
+
+			right_border->colors[0] = p_color;
+			right_border->colors[1] = transparent;
+			right_border->colors[2] = transparent;
+			right_border->colors[3] = p_color;
+
+			right_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_border);
+
+			top_border->points[0] = begin_left;
+			top_border->points[1] = begin_left + border2;
+			top_border->points[2] = begin_right + border2;
+			top_border->points[3] = begin_right;
+
+			top_border->colors[0] = p_color;
+			top_border->colors[1] = transparent;
+			top_border->colors[2] = transparent;
+			top_border->colors[3] = p_color;
+
+			top_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_border);
+
+			bottom_border->points[0] = end_left;
+			bottom_border->points[1] = end_left - border2;
+			bottom_border->points[2] = end_right - border2;
+			bottom_border->points[3] = end_right;
+
+			bottom_border->colors[0] = p_color;
+			bottom_border->colors[1] = transparent;
+			bottom_border->colors[2] = transparent;
+			bottom_border->colors[3] = p_color;
+
+			bottom_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_left_corner);
+
+			top_left_corner->points[0] = begin_left;
+			top_left_corner->points[1] = begin_left + border2;
+			top_left_corner->points[2] = begin_left + border + border2;
+			top_left_corner->points[3] = begin_left + border;
+
+			top_left_corner->colors[0] = p_color;
+			top_left_corner->colors[1] = transparent;
+			top_left_corner->colors[2] = transparent;
+			top_left_corner->colors[3] = transparent;
+
+			top_left_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_right_corner);
+
+			top_right_corner->points[0] = begin_right;
+			top_right_corner->points[1] = begin_right + border2;
+			top_right_corner->points[2] = begin_right - border + border2;
+			top_right_corner->points[3] = begin_right - border;
+
+			top_right_corner->colors[0] = p_color;
+			top_right_corner->colors[1] = transparent;
+			top_right_corner->colors[2] = transparent;
+			top_right_corner->colors[3] = transparent;
+
+			top_right_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_left_corner);
+
+			bottom_left_corner->points[0] = end_left;
+			bottom_left_corner->points[1] = end_left - border2;
+			bottom_left_corner->points[2] = end_left + border - border2;
+			bottom_left_corner->points[3] = end_left + border;
+
+			bottom_left_corner->colors[0] = p_color;
+			bottom_left_corner->colors[1] = transparent;
+			bottom_left_corner->colors[2] = transparent;
+			bottom_left_corner->colors[3] = transparent;
+
+			bottom_left_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_right_corner);
+
+			bottom_right_corner->points[0] = end_right;
+			bottom_right_corner->points[1] = end_right - border2;
+			bottom_right_corner->points[2] = end_right - border - border2;
+			bottom_right_corner->points[3] = end_right - border;
+
+			bottom_right_corner->colors[0] = p_color;
+			bottom_right_corner->colors[1] = transparent;
+			bottom_right_corner->colors[2] = transparent;
+			bottom_right_corner->colors[3] = transparent;
+
+			bottom_right_corner->point_count = 4;
+		}
 	}
 }
 
