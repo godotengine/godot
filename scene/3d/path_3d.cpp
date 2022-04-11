@@ -157,10 +157,14 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		// for a discussion about why not Frenet frame.
 
 		t.origin = pos;
-
-		if (p_update_xyz_rot && delta_offset != 0) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
-			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
-			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
+		if (p_update_xyz_rot && prev_offset != offset) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
+			real_t sample_distance = bi * 0.01;
+			Vector3 t_prev_pos_a = c->interpolate_baked(prev_offset - sample_distance, cubic);
+			Vector3 t_prev_pos_b = c->interpolate_baked(prev_offset + sample_distance, cubic);
+			Vector3 t_cur_pos_a = c->interpolate_baked(offset - sample_distance, cubic);
+			Vector3 t_cur_pos_b = c->interpolate_baked(offset + sample_distance, cubic);
+			Vector3 t_prev = (t_prev_pos_a - t_prev_pos_b).normalized();
+			Vector3 t_cur = (t_cur_pos_a - t_cur_pos_b).normalized();
 
 			Vector3 axis = t_prev.cross(t_cur);
 			real_t dot = t_prev.dot(t_cur);
@@ -303,7 +307,7 @@ void PathFollow3D::_bind_methods() {
 }
 
 void PathFollow3D::set_offset(real_t p_offset) {
-	delta_offset = p_offset - offset;
+	prev_offset = offset;
 	offset = p_offset;
 
 	if (path) {
