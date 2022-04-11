@@ -427,6 +427,8 @@ Error Main::test_setup() {
 
 	register_scene_types();
 	register_driver_types();
+	register_platform_apis();
+	register_module_types();
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -434,9 +436,6 @@ Error Main::test_setup() {
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
-	register_platform_apis();
-
-	register_module_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -1930,6 +1929,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_driver_types();
 
+	MAIN_PRINT("Main: Load Platform APIs");
+
+	register_platform_apis();
+
+	MAIN_PRINT("Main: Load Modules");
+
+	register_module_types();
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
@@ -1937,12 +1944,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
 #endif
-
-	MAIN_PRINT("Main: Load Modules");
-
-	register_platform_apis();
-	register_module_types();
-
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
 
