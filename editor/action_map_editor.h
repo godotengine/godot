@@ -97,7 +97,7 @@ private:
 
 	CheckBox *physical_key_checkbox = nullptr;
 
-	void _set_event(const Ref<InputEvent> &p_event);
+	void _set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection = true);
 
 	void _tab_selected(int p_tab);
 	void _listen_window_input(const Ref<InputEvent> &p_event);
@@ -110,9 +110,10 @@ private:
 	void _store_command_toggled(bool p_checked);
 	void _physical_keycode_toggled(bool p_checked);
 
-	void _set_current_device(int i_device);
+	void _device_selection_changed(int p_option_button_index);
+	void _set_current_device(int p_device);
 	int _get_current_device() const;
-	String _get_device_string(int i_device) const;
+	String _get_device_string(int p_device) const;
 
 protected:
 	void _notification(int p_what);
@@ -121,7 +122,7 @@ public:
 	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.
 	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>());
 	Ref<InputEvent> get_event() const;
-	String get_event_text(const Ref<InputEvent> &p_event);
+	String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) const;
 
 	void set_allowed_input_types(int p_type_masks);
 
