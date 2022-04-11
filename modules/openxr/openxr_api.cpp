@@ -172,10 +172,17 @@ bool OpenXRAPI::load_supported_extensions() {
 
 bool OpenXRAPI::is_extension_supported(const char *p_extension) const {
 	for (uint32_t i = 0; i < num_supported_extensions; i++) {
-		if (strcmp(supported_extensions[i].extensionName, p_extension)) {
+		if (strcmp(supported_extensions[i].extensionName, p_extension) == 0) {
+#ifdef DEBUG
+			print_line("OpenXR: requested extension", p_extension, "is supported");
+#endif
 			return true;
 		}
 	}
+
+#ifdef DEBUG
+	print_line("OpenXR: requested extension", p_extension, "is not supported");
+#endif
 
 	return false;
 }
@@ -206,6 +213,14 @@ bool OpenXRAPI::create_instance() {
 			requested_extensions[requested_extension.key] = requested_extension.value;
 		}
 	}
+
+	// Add optional extensions for controllers that may be supported.
+	// Overkill to create extension classes for this.
+	requested_extensions[XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME] = &ext_hp_mixed_reality_available;
+	requested_extensions[XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME] = &ext_samsung_odyssey_available;
+	requested_extensions[XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_vive_cosmos_available;
+	requested_extensions[XR_HTC_VIVE_FOCUS3_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_vive_focus3_available;
+	requested_extensions[XR_HUAWEI_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_huawei_controller_available;
 
 	// Check which extensions are supported
 	enabled_extensions.clear();

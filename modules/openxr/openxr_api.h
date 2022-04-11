@@ -75,6 +75,12 @@ private:
 	Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
 	Vector<const char *> enabled_extensions;
 
+	bool ext_hp_mixed_reality_available = false;
+	bool ext_samsung_odyssey_available = false;
+	bool ext_vive_cosmos_available = false;
+	bool ext_vive_focus3_available = false;
+	bool ext_huawei_controller_available = false;
+
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
 
