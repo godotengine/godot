@@ -38,6 +38,7 @@
 class Main {
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
+	static uint32_t hide_print_fps_attempts;
 	static uint32_t frames;
 	static uint32_t frame;
 	static bool force_redraw_requested;
