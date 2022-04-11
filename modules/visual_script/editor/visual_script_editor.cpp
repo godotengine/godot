@@ -5144,6 +5144,8 @@ VisualScriptEditor::VisualScriptEditor() {
 		clipboard = memnew(Clipboard);
 	}
 
+	inside_module = false;
+
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
@@ -5201,6 +5203,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(function_name_edit);
 
 	///          Modules             ///
+
 	VBoxContainer *modules_section = memnew(VBoxContainer);
 	modules_section->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -5212,7 +5215,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	modules_panel_search_box = memnew(LineEdit);
 	modules_panel_search_box->set_placeholder(TTR("Search Module Name"));
-	modules_panel_search_box->connect("text_entered", callable_mp(this, &VisualScriptEditor::_search_module_list));
+	modules_panel_search_box->connect("text_changed", callable_mp(this, &VisualScriptEditor::_search_module_list));
 	modules_section->add_child(modules_panel_search_box);
 
 	modules_panel = memnew(Tree);
@@ -5227,7 +5230,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	modules_panel->set_drag_forwarding(this);
 
 	modules_section->add_child(modules_panel);
-	members_section->add_margin_child(TTR("Modules:"), modules_section, true);
+	members_section->add_margin_child("Modules:", modules_section, true);
 
 	///       Actual Graph          ///
 
@@ -5449,7 +5452,7 @@ static void register_editor_callback() {
 	ED_SHORTCUT("visual_script_editor/create_function", TTR("Make Function"), KeyModifierMask::CMD + Key::G);
 	ED_SHORTCUT("visual_script_editor/refresh_nodes", TTR("Refresh Graph"), KeyModifierMask::CMD + Key::R);
 	ED_SHORTCUT("visual_script_editor/edit_member", TTR("Edit Member"), KeyModifierMask::CMD + Key::E);
-	ED_SHORTCUT("visual_script_editor/exit_module", TTR("Exit Module"), Key::TAB);
+	ED_SHORTCUT("visual_script_editor/exit_modules", TTR("Exit Module"), Key::TAB);
 }
 
 void VisualScriptEditor::register_editor() {

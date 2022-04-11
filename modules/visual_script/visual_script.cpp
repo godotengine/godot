@@ -277,9 +277,9 @@ void VisualScriptModule::remove_node(int p_id) {
 	{
 		List<VisualScript::SequenceConnection> to_remove;
 
-		for (Set<VisualScript::SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id || E->get().to_node == p_id) {
-				to_remove.push_back(E->get());
+		for (auto &E : sequence_connections) {
+			if (E.from_node == p_id || E.to_node == p_id) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -292,9 +292,9 @@ void VisualScriptModule::remove_node(int p_id) {
 	{
 		List<VisualScript::DataConnection> to_remove;
 
-		for (Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id || E->get().to_node == p_id) {
-				to_remove.push_back(E->get());
+		for (auto &E : data_connections) {
+			if (E.from_node == p_id || E.to_node == p_id) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -337,9 +337,9 @@ Set<int> VisualScriptModule::get_output_sequence_ports_connected(int from_node) 
 	List<VisualScript::SequenceConnection> *sc = memnew(List<VisualScript::SequenceConnection>);
 	get_sequence_connection_list(sc);
 	Set<int> connected;
-	for (List<VisualScript::SequenceConnection>::Element *E = sc->front(); E; E = E->next()) {
-		if (E->get().from_node == from_node) {
-			connected.insert(E->get().from_output);
+	for (auto &E : *sc) {
+		if (E.from_node == from_node) {
+			connected.insert(E.from_output);
 		}
 	}
 	memdelete(sc);
@@ -375,8 +375,8 @@ bool VisualScriptModule::has_sequence_connection(int p_from_node, int p_from_out
 }
 
 void VisualScriptModule::get_sequence_connection_list(List<VisualScript::SequenceConnection> *r_connection) const {
-	for (const Set<VisualScript::SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-		r_connection->push_back(E->get());
+	for (const auto &E : sequence_connections) {
+		r_connection->push_back(E);
 	}
 }
 
@@ -413,14 +413,14 @@ bool VisualScriptModule::has_data_connection(int p_from_node, int p_from_port, i
 }
 
 void VisualScriptModule::get_data_connection_list(List<VisualScript::DataConnection> *r_connection) const {
-	for (const Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-		r_connection->push_back(E->get());
+	for (const auto &E : data_connections) {
+		r_connection->push_back(E);
 	}
 }
 
 bool VisualScriptModule::is_input_value_port_connected(int p_node, int p_port) const {
-	for (const Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-		if (E->get().to_node == p_node && E->get().to_port == p_port) {
+	for (const auto &E : data_connections) {
+		if (E.to_node == p_node && E.to_port == p_port) {
 			return true;
 		}
 	}
@@ -428,10 +428,10 @@ bool VisualScriptModule::is_input_value_port_connected(int p_node, int p_port) c
 }
 
 bool VisualScriptModule::get_input_value_port_connection_source(int p_node, int p_port, int *r_node, int *r_port) const {
-	for (const Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-		if (E->get().to_node == p_node && E->get().to_port == p_port) {
-			*r_node = E->get().from_node;
-			*r_port = E->get().from_port;
+	for (const auto &E : data_connections) {
+		if (E.to_node == p_node && E.to_port == p_port) {
+			*r_node = E.from_node;
+			*r_port = E.from_port;
 			return true;
 		}
 	}
@@ -459,12 +459,12 @@ void VisualScriptModule::_node_ports_changed(int p_id) {
 	{
 		List<VisualScript::SequenceConnection> to_remove;
 
-		for (Set<VisualScript::SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id && E->get().from_output >= vsn->get_output_sequence_port_count()) {
-				to_remove.push_back(E->get());
+		for (auto &E : sequence_connections) {
+			if (E.from_node == p_id && E.from_output >= vsn->get_output_sequence_port_count()) {
+				to_remove.push_back(E);
 			}
-			if (E->get().to_node == p_id && !vsn->has_input_sequence_port()) {
-				to_remove.push_back(E->get());
+			if (E.to_node == p_id && !vsn->has_input_sequence_port()) {
+				to_remove.push_back(E);
 			}
 		}
 
@@ -477,12 +477,12 @@ void VisualScriptModule::_node_ports_changed(int p_id) {
 	{
 		List<VisualScript::DataConnection> to_remove;
 
-		for (Set<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id && E->get().from_port >= vsn->get_output_value_port_count()) {
-				to_remove.push_back(E->get());
+		for (auto &E : data_connections) {
+			if (E.from_node == p_id && E.from_port >= vsn->get_output_value_port_count()) {
+				to_remove.push_back(E);
 			}
-			if (E->get().to_node == p_id && E->get().to_port >= vsn->get_input_value_port_count()) {
-				to_remove.push_back(E->get());
+			if (E.to_node == p_id && E.to_port >= vsn->get_input_value_port_count()) {
+				to_remove.push_back(E);
 			}
 		}
 
