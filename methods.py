@@ -292,6 +292,7 @@ def write_modules(modules):
 /* THIS FILE IS GENERATED DO NOT EDIT */
 #include "register_module_types.h"
 
+#include "core/extension/native_extension_manager.h"
 #include "modules/modules_enabled.gen.h"
 
 %s
@@ -302,9 +303,12 @@ void preregister_module_types() {
 
 void register_module_types() {
 %s
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_MODULES);
 }
 
 void unregister_module_types() {
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_MODULES);
+
 %s
 }
 """ % (
