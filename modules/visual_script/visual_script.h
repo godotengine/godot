@@ -228,6 +228,7 @@ private:
 	};
 
 	struct Variable {
+		Map<int, Ref<VisualScriptNode>> nodes;
 		PropertyInfo info;
 		Variant default_value;
 		bool _export;

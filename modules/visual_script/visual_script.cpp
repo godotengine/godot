@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
+#include "visual_script_func_nodes.h"
 #include "visual_script_nodes.h"
 
 //used by editor, this is not really saved
@@ -291,80 +292,113 @@ void VisualScript::_node_ports_changed(int p_id) {
 #endif
 }
 
-void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos) {
+void VisualScript::add_node(const StringName &p_name, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos) {
 	ERR_FAIL_COND(instances.size());
-	ERR_FAIL_COND(!functions.has(p_func));
 	ERR_FAIL_COND(p_node.is_null());
 
-	for (Map<StringName, Function>::Element *E = functions.front(); E; E = E->next()) {
-		ERR_FAIL_COND(E->get().nodes.has(p_id)); //id can exist only one in script, even for different functions
+	StringName var_name;
+	if (Object::cast_to<VisualScriptVariableGet>(*p_node)) {
+		Ref<VisualScriptVariableGet> vget = p_node;
+		var_name = vget->get_variable();
+	} else if (Object::cast_to<VisualScriptVariableSet>(*p_node)) {
+		Ref<VisualScriptVariableSet> vset = p_node;
+		var_name = vset->get_variable();
+	}
+	if (variables.has(var_name)) {
+		for (Map<StringName, Variable>::Element *E = variables.front(); E; E = E->next()) {
+			ERR_FAIL_COND(E->get().nodes.has(p_id)); // Only unique ids can exist in a script, even for different functions
+		}
+
+		Variable &var = variables[var_name];
+		var.nodes[p_id] = p_node;
 	}
 
-	Function &func = functions[p_func];
+	if (functions.has(p_name)) {
+		for (Map<StringName, Function>::Element *E = functions.front(); E; E = E->next()) {
+			ERR_FAIL_COND(E->get().nodes.has(p_id)); // Only unique id can exist in a script, even for different functions
+		}
 
-	if (Object::cast_to<VisualScriptFunction>(*p_node)) {
-		//the function indeed
-		ERR_FAIL_COND_MSG(func.function_id >= 0, "A function node has already been set here.");
+		Function &func = functions[p_name];
+		if (Object::cast_to<VisualScriptFunction>(*p_node)) {
+			// The function indeed
+			ERR_FAIL_COND_MSG(func.function_id >= 0, "A function node has already been set here.");
 
-		func.function_id = p_id;
+			func.function_id = p_id;
+		}
+
+		Function::NodeData nd;
+		nd.node = p_node;
+		nd.pos = p_pos;
+		func.nodes[p_id] = nd;
 	}
-
-	Function::NodeData nd;
-	nd.node = p_node;
-	nd.pos = p_pos;
 
 	Ref<VisualScriptNode> vsn = p_node;
 	vsn->connect("ports_changed", this, "_node_ports_changed", varray(p_id));
 	vsn->scripts_used.insert(this);
 	vsn->validate_input_default_values(); // Validate when fully loaded
-
-	func.nodes[p_id] = nd;
 }
 
-void VisualScript::remove_node(const StringName &p_func, int p_id) {
+void VisualScript::remove_node(const StringName &p_name, int p_id) {
 	ERR_FAIL_COND(instances.size());
-	ERR_FAIL_COND(!functions.has(p_func));
-	Function &func = functions[p_func];
 
-	ERR_FAIL_COND(!func.nodes.has(p_id));
-	{
-		List<SequenceConnection> to_remove;
+	if (functions.has(p_name)) {
+		Function &func = functions[p_name];
+		if (func.nodes.has(p_id)) {
+			{
+				List<SequenceConnection> to_remove;
 
-		for (Set<SequenceConnection>::Element *E = func.sequence_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id || E->get().to_node == p_id) {
-				to_remove.push_back(E->get());
+				for (Set<SequenceConnection>::Element *E = func.sequence_connections.front(); E; E = E->next()) {
+					if (E->get().from_node == p_id || E->get().to_node == p_id) {
+						to_remove.push_back(E->get());
+					}
+				}
+
+				while (to_remove.size()) {
+					func.sequence_connections.erase(to_remove.front()->get());
+					to_remove.pop_front();
+				}
 			}
-		}
 
-		while (to_remove.size()) {
-			func.sequence_connections.erase(to_remove.front()->get());
-			to_remove.pop_front();
-		}
-	}
+			{
+				List<DataConnection> to_remove;
 
-	{
-		List<DataConnection> to_remove;
+				for (Set<DataConnection>::Element *E = func.data_connections.front(); E; E = E->next()) {
+					if (E->get().from_node == p_id || E->get().to_node == p_id) {
+						to_remove.push_back(E->get());
+					}
+				}
 
-		for (Set<DataConnection>::Element *E = func.data_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id || E->get().to_node == p_id) {
-				to_remove.push_back(E->get());
+				while (to_remove.size()) {
+					func.data_connections.erase(to_remove.front()->get());
+					to_remove.pop_front();
+				}
 			}
-		}
 
-		while (to_remove.size()) {
-			func.data_connections.erase(to_remove.front()->get());
-			to_remove.pop_front();
+			if (Object::cast_to<VisualScriptFunction>(func.nodes[p_id].node.ptr())) {
+				func.function_id = -1; // Revert to invalid
+			}
+
+			{
+				StringName var_name;
+				if (Object::cast_to<VisualScriptVariableGet>(*func.nodes[p_id].node)) {
+					Ref<VisualScriptVariableGet> vget = func.nodes[p_id].node;
+					var_name = vget->get_variable();
+				} else if (Object::cast_to<VisualScriptVariableSet>(*func.nodes[p_id].node)) {
+					Ref<VisualScriptVariableSet> vset = func.nodes[p_id].node;
+					var_name = vset->get_variable();
+				}
+
+				if (variables.has(var_name)) {
+					variables[var_name].nodes.erase(p_id);
+				}
+			}
+
+			func.nodes[p_id].node->disconnect("ports_changed", this, "_node_ports_changed");
+			func.nodes[p_id].node->scripts_used.erase(this);
+
+			func.nodes.erase(p_id);
 		}
 	}
-
-	if (Object::cast_to<VisualScriptFunction>(func.nodes[p_id].node.ptr())) {
-		func.function_id = -1; //revert to invalid
-	}
-
-	func.nodes[p_id].node->disconnect("ports_changed", this, "_node_ports_changed");
-	func.nodes[p_id].node->scripts_used.erase(this);
-
-	func.nodes.erase(p_id);
 }
 
 bool VisualScript::has_node(const StringName &p_func, int p_id) const {
@@ -374,13 +408,22 @@ bool VisualScript::has_node(const StringName &p_func, int p_id) const {
 	return func.nodes.has(p_id);
 }
 
-Ref<VisualScriptNode> VisualScript::get_node(const StringName &p_func, int p_id) const {
-	ERR_FAIL_COND_V(!functions.has(p_func), Ref<VisualScriptNode>());
-	const Function &func = functions[p_func];
+Ref<VisualScriptNode> VisualScript::get_node(const StringName &p_name, int p_id) const {
+	if (functions.has(p_name)) {
+		const Function &func = functions[p_name];
+		if (func.nodes.has(p_id)) {
+			return func.nodes[p_id].node;
+		}
+	}
 
-	ERR_FAIL_COND_V(!func.nodes.has(p_id), Ref<VisualScriptNode>());
+	if (variables.has(p_name)) {
+		const Variable &var = variables[p_name];
+		if (var.nodes.has(p_id)) {
+			return var.nodes[p_id];
+		}
+	}
 
-	return func.nodes[p_id].node;
+	return Ref<VisualScriptNode>();
 }
 
 void VisualScript::set_node_position(const StringName &p_func, int p_id, const Point2 &p_pos) {
@@ -401,11 +444,18 @@ Point2 VisualScript::get_node_position(const StringName &p_func, int p_id) const
 }
 
 void VisualScript::get_node_list(const StringName &p_func, List<int> *r_nodes) const {
-	ERR_FAIL_COND(!functions.has(p_func));
-	const Function &func = functions[p_func];
+	if (functions.has(p_func)) {
+		const Function &func = functions[p_func];
+		for (const Map<int, Function::NodeData>::Element *E = func.nodes.front(); E; E = E->next()) {
+			r_nodes->push_back(E->key());
+		}
+	}
 
-	for (const Map<int, Function::NodeData>::Element *E = func.nodes.front(); E; E = E->next()) {
-		r_nodes->push_back(E->key());
+	if (variables.has(p_func)) {
+		const Variable &var = variables[p_func];
+		for (const Map<int, Ref<VisualScriptNode>>::Element *E = var.nodes.front(); E; E = E->next()) {
+			r_nodes->push_back(E->key());
+		}
 	}
 }
 
