@@ -124,6 +124,26 @@ TextureStorage::TextureStorage() {
 			default_rd_textures[DEFAULT_RD_TEXTURE_ANISO] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_D16_UNORM;
+			tf.width = 4;
+			tf.height = 4;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			tf.texture_type = RD::TEXTURE_TYPE_2D;
+
+			Vector<uint8_t> sv;
+			sv.resize(16 * 2);
+			uint16_t *ptr = (uint16_t *)sv.ptrw();
+			for (int i = 0; i < 16; i++) {
+				ptr[i] = Math::make_half_float(1.0f);
+			}
+
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(sv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH] = RD::get_singleton()->texture_create(tf, RD::TextureView(), vpv);
+		}
+
 		for (int i = 0; i < 16; i++) {
 			pv.set(i * 4 + 0, 0);
 			pv.set(i * 4 + 1, 0);
