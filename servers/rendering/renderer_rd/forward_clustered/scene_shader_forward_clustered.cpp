@@ -824,6 +824,9 @@ void SceneShaderForwardClustered::set_default_specialization_constants(const Vec
 				for (int k = 0; k < SHADER_VERSION_MAX; k++) {
 					E->self()->pipelines[i][j][k].update_specialization_constants(default_specialization_constants);
 				}
+				for (int k = 0; k < PIPELINE_COLOR_PASS_FLAG_COUNT; k++) {
+					E->self()->color_pipelines[i][j][k].update_specialization_constants(default_specialization_constants);
+				}
 			}
 		}
 	}
