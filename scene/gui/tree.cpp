@@ -101,6 +101,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 
 		if (tree->popup_edited_item == this) {
 			tree->popup_edited_item = nullptr;
+			tree->popup_pressing_edited_item = nullptr;
 			tree->pressing_for_editor = false;
 		}
 
@@ -2670,8 +2671,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		}
 
 		click_handled = true;
-		popup_edited_item = p_item;
-		popup_edited_item_col = col;
+		popup_pressing_edited_item = p_item;
+		popup_pressing_edited_item_column = col;
 
 		pressing_item_rect = Rect2(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs) - cache.offset, Size2(col_width, item_h));
 		pressing_for_editor_text = editor_text;
@@ -3206,10 +3207,16 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 		}
 
-		if (pressing_for_editor && popup_edited_item && (popup_edited_item->get_cell_mode(popup_edited_item_col) == TreeItem::CELL_MODE_RANGE)) {
-			//range drag
+		if (pressing_for_editor && popup_pressing_edited_item && (popup_pressing_edited_item->get_cell_mode(popup_pressing_edited_item_column) == TreeItem::CELL_MODE_RANGE)) {
+			/* This needs to happen now, because the popup can be closed when pressing another item, and must remain the popup edited item until it actually closes */
+			popup_edited_item = popup_pressing_edited_item;
+			popup_edited_item_col = popup_pressing_edited_item_column;
+
+			popup_pressing_edited_item = nullptr;
+			popup_pressing_edited_item_column = -1;
 
 			if (!range_drag_enabled) {
+				//range drag
 				Vector2 cpos = mm->get_position();
 				if (rtl) {
 					cpos.x = get_size().width - cpos.x;
@@ -3994,6 +4001,7 @@ void Tree::clear() {
 	selected_item = nullptr;
 	edited_item = nullptr;
 	popup_edited_item = nullptr;
+	popup_pressing_edited_item = nullptr;
 
 	update();
 };
@@ -4309,11 +4317,15 @@ int Tree::get_pressed_button() const {
 	return pressed_button;
 }
 
-Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column) const {
+Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 	ERR_FAIL_NULL_V(p_item, Rect2());
 	ERR_FAIL_COND_V(p_item->tree != this, Rect2());
 	if (p_column != -1) {
 		ERR_FAIL_INDEX_V(p_column, columns.size(), Rect2());
+	}
+	if (p_button != -1) {
+		ERR_FAIL_COND_V(p_column == -1, Rect2()); // pass a column if you want to pass a button
+		ERR_FAIL_INDEX_V(p_button, p_item->cells[p_column].buttons.size(), Rect2());
 	}
 
 	int ofs = get_item_offset(p_item);
@@ -4332,6 +4344,19 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column) const {
 		}
 		r.position.x = accum;
 		r.size.x = get_column_width(p_column);
+		if (p_button != -1) {
+			const TreeItem::Cell &c = p_item->cells[p_column];
+			Vector2 ofst = Vector2(r.position.x + r.size.x, r.position.y);
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
+				ofst.x -= size.x;
+
+				if (j == p_button) {
+					return Rect2(ofst, size);
+				}
+			}
+		}
 	}
 
 	return r;
@@ -4870,7 +4895,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
 	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
-	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::get_item_rect, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column", "button_index"), &Tree::get_item_rect, DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
 	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
 	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);

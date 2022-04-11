@@ -179,8 +179,9 @@
 			<return type="Rect2" />
 			<argument index="0" name="item" type="TreeItem" />
 			<argument index="1" name="column" type="int" default="-1" />
+			<argument index="2" name="button_index" type="int" default="-1" />
 			<description>
-				Returns the rectangle area for the specified [TreeItem]. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+				Returns the rectangle area for the specified [TreeItem]. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns. If a button index is specified, the rectangle of that button will be returned.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">

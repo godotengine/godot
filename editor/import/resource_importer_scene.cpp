@@ -473,7 +473,9 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 				if (_teststr(animname, loop_strings[i])) {
 					anim->set_loop_mode(Animation::LoopMode::LOOP_LINEAR);
 					animname = _fixstr(animname, loop_strings[i]);
-					ap->rename_animation(E, animname);
+
+					Ref<AnimationLibrary> library = ap->get_animation_library(ap->find_animation_library(anim));
+					library->rename_animation(E, animname);
 				}
 			}
 		}
@@ -1019,7 +1021,8 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 					Ref<Animation> saved_anim = _save_animation_to_file(anim, save, path, keep_custom);
 
 					if (saved_anim != anim) {
-						ap->add_animation(name, saved_anim); //replace
+						Ref<AnimationLibrary> al = ap->get_animation_library(ap->find_animation_library(anim));
+						al->add_animation(name, saved_anim); //replace
 					}
 				}
 			}
@@ -1109,6 +1112,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 	}
 
 	Ref<Animation> default_anim = anim->get_animation("default");
+	Ref<AnimationLibrary> al = anim->get_animation_library(anim->find_animation(default_anim));
 
 	for (int i = 0; i < p_clips.size(); i += 7) {
 		String name = p_clips[i];
@@ -1246,15 +1250,16 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 
 		new_anim->set_loop_mode(loop_mode);
 		new_anim->set_length(to - from);
-		anim->add_animation(name, new_anim);
+
+		al->add_animation(name, new_anim);
 
 		Ref<Animation> saved_anim = _save_animation_to_file(new_anim, save_to_file, save_to_path, keep_current);
 		if (saved_anim != new_anim) {
-			anim->add_animation(name, saved_anim);
+			al->add_animation(name, saved_anim);
 		}
 	}
 
-	anim->remove_animation("default"); //remove default (no longer needed)
+	al->remove_animation("default"); // Remove default (no longer needed).
 }
 
 void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_lin_error, float p_max_ang_error, float p_max_angle) {

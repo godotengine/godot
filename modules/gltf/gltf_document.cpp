@@ -6095,7 +6095,14 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 	animation->set_length(length);
 
-	ap->add_animation(name, animation);
+	Ref<AnimationLibrary> library;
+	if (!ap->has_animation_library("")) {
+		library.instantiate();
+		ap->add_animation_library("", library);
+	} else {
+		library = ap->get_animation_library("");
+	}
+	library->add_animation(name, animation);
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {

@@ -203,16 +203,18 @@ void OptionButton::pressed() {
 }
 
 void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
+	bool first_selectable = !has_selectable_items();
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
-	if (popup->get_item_count() == 1) {
-		select(0);
+	if (first_selectable) {
+		select(get_item_count() - 1);
 	}
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
+	bool first_selectable = !has_selectable_items();
 	popup->add_radio_check_item(p_label, p_id);
-	if (popup->get_item_count() == 1) {
-		select(0);
+	if (first_selectable) {
+		select(get_item_count() - 1);
 	}
 }
 
@@ -280,6 +282,9 @@ bool OptionButton::is_item_disabled(int p_idx) const {
 	return popup->is_item_disabled(p_idx);
 }
 
+bool OptionButton::is_item_separator(int p_idx) const {
+	return popup->is_item_separator(p_idx);
+}
 void OptionButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
 
@@ -299,12 +304,37 @@ void OptionButton::set_item_count(int p_count) {
 	notify_property_list_changed();
 }
 
+bool OptionButton::has_selectable_items() const {
+	for (int i = 0; i < get_item_count(); i++) {
+		if (!is_item_disabled(i) && !is_item_separator(i)) {
+			return true;
+		}
+	}
+	return false;
+}
+int OptionButton::get_selectable_item(bool p_from_last) const {
+	if (!p_from_last) {
+		for (int i = 0; i < get_item_count(); i++) {
+			if (!is_item_disabled(i) && !is_item_separator(i)) {
+				return i;
+			}
+		}
+	} else {
+		for (int i = get_item_count() - 1; i >= 0; i++) {
+			if (!is_item_disabled(i) && !is_item_separator(i)) {
+				return i;
+			}
+		}
+	}
+	return -1;
+}
+
 int OptionButton::get_item_count() const {
 	return popup->get_item_count();
 }
 
-void OptionButton::add_separator() {
-	popup->add_separator();
+void OptionButton::add_separator(const String &p_text) {
+	popup->add_separator(p_text);
 }
 
 void OptionButton::clear() {
@@ -407,7 +437,8 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
-	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
+	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
+	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
 	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
@@ -420,6 +451,8 @@ void OptionButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &OptionButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
+	ClassDB::bind_method(D_METHOD("has_selectable_items"), &OptionButton::has_selectable_items);
+	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &OptionButton::get_selectable_item, DEFVAL(false));
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
