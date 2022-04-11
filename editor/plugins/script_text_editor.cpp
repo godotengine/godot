@@ -751,6 +751,18 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
 }
 
+void ScriptTextEditor::lookup_symbol_under_cursor() {
+	TextEdit *tx = code_editor->get_text_edit();
+
+	String text = tx->get_word_under_caret();
+	if (text.is_empty()) {
+		text = tx->get_selected_text();
+	}
+	if (!text.is_empty()) {
+		_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
+	}
+}
+
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1281,13 +1293,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
-			String text = tx->get_word_under_caret();
-			if (text.is_empty()) {
-				text = tx->get_selected_text();
-			}
-			if (!text.is_empty()) {
-				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
-			}
+			lookup_symbol_under_cursor();
 		} break;
 	}
 }
