@@ -448,7 +448,7 @@ int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
 Vector3 GridMap::map_to_world(const Vector3i &p_pos) const {
 	Vector3 ret = p_pos;
 
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON || cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
+	if (cell_shape == GridMap::CELL_SHAPE_ISOMETRIC || cell_shape == GridMap::CELL_SHAPE_HALF_OFFSET_SQUARE || cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
 		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
@@ -546,7 +546,7 @@ Vector3i GridMap::world_to_map(const Vector3 &p_pos) const {
 	}
 
 	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the world position accordingly.
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON || cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
+	if (cell_shape == GridMap::CELL_SHAPE_HALF_OFFSET_SQUARE || cell_shape == GridMap::CELL_SHAPE_HEXAGON || cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
 		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
@@ -1158,7 +1158,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
 	ADD_GROUP("Cell", "cell_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Hexagon"), "set_cell_shape", "get_cell_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_cell_shape", "get_cell_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_cell_layout", "get_cell_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_cell_offset_axis", "get_cell_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");
@@ -1176,6 +1176,7 @@ void GridMap::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CELL_SHAPE_SQUARE);
 	BIND_ENUM_CONSTANT(CELL_SHAPE_ISOMETRIC);
+	BIND_ENUM_CONSTANT(CELL_SHAPE_HALF_OFFSET_SQUARE);
 	BIND_ENUM_CONSTANT(CELL_SHAPE_HEXAGON);
 
 	BIND_ENUM_CONSTANT(CELL_LAYOUT_STACKED);

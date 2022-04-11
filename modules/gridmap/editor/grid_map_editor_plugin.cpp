@@ -957,6 +957,9 @@ void GridMapEditor::_draw_floor_grid(RID mesh_id, int floor) {
 			case GridMap::CELL_SHAPE_ISOMETRIC:
 				overlap = 0.5;
 				break;
+			case GridMap::CELL_SHAPE_HALF_OFFSET_SQUARE:
+				overlap = 0.0;
+				break;
 			case GridMap::CELL_SHAPE_HEXAGON:
 				overlap = 0.25;
 				break;

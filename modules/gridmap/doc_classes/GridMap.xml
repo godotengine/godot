@@ -207,7 +207,10 @@
 		<constant name="CELL_SHAPE_ISOMETRIC" value="1" enum="CellShape">
 			Diamond cell shape.
 		</constant>
-		<constant name="CELL_SHAPE_HEXAGON" value="2" enum="CellShape">
+		<constant name="CELL_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="CellShape">
+			Half-offset square shape.
+		</constant>
+		<constant name="CELL_SHAPE_HEXAGON" value="3" enum="CellShape">
 			Hexagonal cell shape.
 		</constant>
 		<constant name="CELL_LAYOUT_STACKED" value="0" enum="CellLayout">
