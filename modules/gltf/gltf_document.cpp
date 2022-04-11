@@ -58,7 +58,6 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
-#include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -78,6 +77,9 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
+
+// FIXME: Hardcoded to avoid editor dependency.
+#define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -254,8 +256,8 @@ Error GLTFDocument::_serialize_scenes(Ref<GLTFState> state) {
 
 Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	Error err;
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (f.is_null()) {
 		return err;
 	}
 
@@ -276,7 +278,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	return OK;
 }
 
-Error GLTFDocument::_parse_glb(FileAccess *f, Ref<GLTFState> state) {
+Error GLTFDocument::_parse_glb(Ref<FileAccess> f, Ref<GLTFState> state) {
 	ERR_FAIL_NULL_V(f, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(f->get_position() != 0, ERR_FILE_CANT_READ);
@@ -694,8 +696,8 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> state, const String &p_pat
 		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
 		String path = p_path.get_base_dir() + "/" + filename;
 		Error err;
-		FileAccessRef f = FileAccess::open(path, FileAccess::WRITE, &err);
-		if (!f) {
+		Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &err);
+		if (f.is_null()) {
 			return err;
 		}
 		if (buffer_data.size() == 0) {
@@ -703,7 +705,6 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> state, const String &p_pat
 		}
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_buffer(buffer_data.ptr(), buffer_data.size());
-		f->close();
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
@@ -727,8 +728,8 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> state, const String &p_pa
 		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
 		String path = p_path.get_base_dir() + "/" + filename;
 		Error err;
-		FileAccessRef f = FileAccess::open(path, FileAccess::WRITE, &err);
-		if (!f) {
+		Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &err);
+		if (f.is_null()) {
 			return err;
 		}
 		if (buffer_data.size() == 0) {
@@ -736,7 +737,6 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> state, const String &p_pa
 		}
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_buffer(buffer_data.ptr(), buffer_data.size());
-		f->close();
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
@@ -2907,6 +2907,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					}
 					array_copy = blend_surface_tool->commit_to_arrays();
 
+					// Enforce blend shape mask array format
+					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
+						if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << l))) {
+							array_copy[l] = Variant();
+						}
+					}
+
 					morphs.push_back(array_copy);
 				}
 			}
@@ -3012,7 +3019,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			String texture_dir = "textures";
 			String path = p_path.get_base_dir();
 			String new_texture_dir = path + "/" + texture_dir;
-			DirAccessRef da = DirAccess::open(path);
+			Ref<DirAccess> da = DirAccess::open(path);
 			if (!da->dir_exists(new_texture_dir)) {
 				da->make_dir(new_texture_dir);
 			}
@@ -5741,7 +5748,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 }
 
 template <class T>
-struct EditorSceneFormatImporterGLTFInterpolate {
+struct SceneFormatImporterGLTFInterpolate {
 	T lerp(const T &a, const T &b, float c) const {
 		return a + (b - a) * c;
 	}
@@ -5767,7 +5774,7 @@ struct EditorSceneFormatImporterGLTFInterpolate {
 
 // thank you for existing, partial specialization
 template <>
-struct EditorSceneFormatImporterGLTFInterpolate<Quaternion> {
+struct SceneFormatImporterGLTFInterpolate<Quaternion> {
 	Quaternion lerp(const Quaternion &a, const Quaternion &b, const float c) const {
 		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quaternion(), "The quaternion \"a\" must be normalized.");
 		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quaternion(), "The quaternion \"b\" must be normalized.");
@@ -5806,7 +5813,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 		idx++;
 	}
 
-	EditorSceneFormatImporterGLTFInterpolate<T> interp;
+	SceneFormatImporterGLTFInterpolate<T> interp;
 
 	switch (p_interp) {
 		case GLTFAnimation::INTERP_LINEAR: {
@@ -6088,7 +6095,14 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 	animation->set_length(length);
 
-	ap->add_animation(name, animation);
+	Ref<AnimationLibrary> library;
+	if (!ap->has_animation_library("")) {
+		library.instantiate();
+		ap->add_animation_library("", library);
+	} else {
+		library = ap->get_animation_library("");
+	}
+	library->add_animation(name, animation);
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
@@ -6579,9 +6593,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 	}
 }
 
-Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, FileAccess *f, int p_bake_fps) {
+Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps) {
 	Error err;
-	if (!f) {
+	if (f.is_null()) {
 		return FAILED;
 	}
 	f->seek(0);
@@ -6605,7 +6619,6 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, FileAccess *f, i
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 		state->json = json.get_data();
 	}
-	f->close();
 
 	if (!state->json.has("asset")) {
 		return ERR_PARSE_ERROR;
@@ -6694,8 +6707,8 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 	if (p_path.to_lower().ends_with("glb")) {
 		err = _encode_buffer_glb(state, p_path);
 		ERR_FAIL_COND_V(err != OK, err);
-		FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(!f, FAILED);
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+		ERR_FAIL_COND_V(f.is_null(), FAILED);
 
 		String json = Variant(state->json).to_json_string();
 
@@ -6732,25 +6745,22 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
 			f->store_8(0);
 		}
-
-		f->close();
 	} else {
 		err = _encode_buffer_bins(state, p_path);
 		ERR_FAIL_COND_V(err != OK, err);
-		FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(!f, FAILED);
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+		ERR_FAIL_COND_V(f.is_null(), FAILED);
 
 		f->create(FileAccess::ACCESS_RESOURCES);
 		String json = Variant(state->json).to_json_string();
 		f->store_string(json);
-		f->close();
 	}
 	return err;
 }
 
 void GLTFDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "bake_fps"),
-			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(30));
+	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "bake_fps", "base_path"),
+			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(30), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags", "bake_fps"),
 			&GLTFDocument::append_from_buffer, DEFVAL(0), DEFVAL(30));
 	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags", "bake_fps"),
@@ -6899,7 +6909,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	state->use_named_skin_binds =
-			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 
 	_convert_scene_node(state, p_node, -1, -1);
 	if (!state->buffers.size()) {
@@ -6918,9 +6928,10 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
-	state->use_named_skin_binds =
-			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
-	FileAccessMemory *file_access = memnew(FileAccessMemory);
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+
+	Ref<FileAccessMemory> file_access;
+	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	err = _parse(state, p_base_path.get_base_dir(), file_access, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, FAILED);
@@ -7015,20 +7026,22 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 	return OK;
 }
 
-Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, int32_t p_bake_fps) {
+Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, int32_t p_bake_fps, String p_base_path) {
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	if (r_state == Ref<GLTFState>()) {
 		r_state.instantiate();
 	}
 	r_state->filename = p_path.get_file().get_basename();
-	r_state->use_named_skin_binds =
-			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 	ERR_FAIL_NULL_V(f, ERR_FILE_CANT_OPEN);
-
-	err = _parse(r_state, p_path.get_base_dir(), f, p_bake_fps);
+	String base_path = p_base_path;
+	if (base_path.is_empty()) {
+		base_path = p_path.get_base_dir();
+	}
+	err = _parse(r_state, base_path, f, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 	return err;
 }

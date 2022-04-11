@@ -62,26 +62,26 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	Node *scene = nullptr;
 
-	HSplitContainer *tree_split;
-	HSplitContainer *property_split;
-	TabContainer *data_mode;
-	Tree *scene_tree;
-	Tree *mesh_tree;
-	Tree *material_tree;
+	HSplitContainer *tree_split = nullptr;
+	HSplitContainer *property_split = nullptr;
+	TabContainer *data_mode = nullptr;
+	Tree *scene_tree = nullptr;
+	Tree *mesh_tree = nullptr;
+	Tree *material_tree = nullptr;
 
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 
-	SubViewport *base_viewport;
+	SubViewport *base_viewport = nullptr;
 
-	Camera3D *camera;
+	Camera3D *camera = nullptr;
 	bool first_aabb = false;
 	AABB contents_aabb;
 
-	DirectionalLight3D *light;
+	DirectionalLight3D *light = nullptr;
 	Ref<ArrayMesh> selection_mesh;
-	MeshInstance3D *node_selected;
+	MeshInstance3D *node_selected = nullptr;
 
-	MeshInstance3D *mesh_preview;
+	MeshInstance3D *mesh_preview = nullptr;
 	Ref<SphereMesh> material_preview;
 
 	Ref<StandardMaterial3D> collider_mat;
@@ -95,9 +95,9 @@ class SceneImportSettings : public ConfirmationDialog {
 	struct MaterialData {
 		bool has_import_id;
 		Ref<Material> material;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
-		TreeItem *material_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
+		TreeItem *material_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
@@ -110,8 +110,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	struct MeshData {
 		bool has_import_id;
 		Ref<Mesh> mesh;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
@@ -122,14 +122,14 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	struct AnimationData {
 		Ref<Animation> animation;
-		TreeItem *scene_node;
+		TreeItem *scene_node = nullptr;
 		Map<StringName, Variant> settings;
 	};
 	Map<String, AnimationData> animation_map;
 
 	struct NodeData {
-		Node *node;
-		TreeItem *scene_node;
+		Node *node = nullptr;
+		TreeItem *scene_node = nullptr;
 		Map<StringName, Variant> settings;
 	};
 	Map<String, NodeData> node_map;
@@ -158,20 +158,20 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	Map<StringName, Variant> defaults;
 
-	SceneImportSettingsData *scene_import_settings_data;
+	SceneImportSettingsData *scene_import_settings_data = nullptr;
 
 	void _re_import();
 
 	String base_path;
 
-	MenuButton *action_menu;
+	MenuButton *action_menu = nullptr;
 
-	ConfirmationDialog *external_paths;
-	Tree *external_path_tree;
-	EditorFileDialog *save_path;
-	OptionButton *external_extension_type;
+	ConfirmationDialog *external_paths = nullptr;
+	Tree *external_path_tree = nullptr;
+	EditorFileDialog *save_path = nullptr;
+	OptionButton *external_extension_type = nullptr;
 
-	EditorFileDialog *item_save_path;
+	EditorFileDialog *item_save_path = nullptr;
 
 	void _menu_callback(int p_id);
 	void _save_dir_callback(const String &p_path);

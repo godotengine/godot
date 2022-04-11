@@ -327,6 +327,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_PASTE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (edited_resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
+					edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
+				// Automatically make resource unique if it belongs to another scene.
+				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+				return;
+			}
+
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;

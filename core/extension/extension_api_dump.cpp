@@ -666,6 +666,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 						Dictionary d2;
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
+						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
@@ -708,6 +709,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 						d2["is_const"] = method->is_const();
 						d2["is_vararg"] = method->is_vararg();
+						d2["is_static"] = method->is_static();
 						d2["is_virtual"] = false;
 						d2["hash"] = method->get_hash();
 
@@ -867,9 +869,8 @@ void NativeExtensionAPIDump::generate_extension_json_file(const String &p_path) 
 	json.instantiate();
 
 	String text = json->stringify(api, "\t", false);
-	FileAccessRef fa = FileAccess::open(p_path, FileAccess::WRITE);
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	CharString cs = text.ascii();
 	fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
-	fa->close();
 }
 #endif

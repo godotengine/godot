@@ -198,13 +198,12 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 
 	data["disabled_features"] = dis_features;
 
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	JSON json;
 	String text = json.stringify(data, "\t");
 	f->store_string(text);
-	f->close();
 	return OK;
 }
 
@@ -350,8 +349,8 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	}
 
 	Vector<String> profiles;
-	DirAccessRef d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+	Ref<DirAccess> d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
+	ERR_FAIL_COND_MSG(d.is_null(), "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
 
 	d->list_dir_begin();
 	while (true) {
@@ -453,8 +452,8 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 void EditorFeatureProfileManager::_erase_selected_profile() {
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected.is_empty());
-	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND_MSG(!da, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+	Ref<DirAccess> da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
+	ERR_FAIL_COND_MSG(da.is_null(), "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
 
 	da->remove(selected + ".profile");
 	if (selected == current_profile) {
@@ -608,18 +607,24 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 
+		const EditorPropertyNameProcessor::Style text_style = EditorPropertyNameProcessor::get_settings_style();
+		const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(text_style);
+
 		for (const PropertyInfo &E : props) {
 			String name = E.name;
 			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
+			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style);
+
 			TreeItem *property = property_list->create_item(properties);
 			property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			property->set_editable(0, true);
 			property->set_selectable(0, true);
 			property->set_checked(0, !edited->is_class_property_disabled(class_name, name));
-			property->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(name));
-			property->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(name));
+			property->set_text(0, text);
+			property->set_tooltip(0, tooltip);
 			property->set_metadata(0, name);
 			String icon_type = Variant::get_type_name(E.type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));

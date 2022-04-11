@@ -92,7 +92,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 	double time;
 	double time_step = 0;
 
@@ -314,10 +314,10 @@ private:
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
 
-	float *directional_penumbra_shadow_kernel;
-	float *directional_soft_shadow_kernel;
-	float *penumbra_shadow_kernel;
-	float *soft_shadow_kernel;
+	float *directional_penumbra_shadow_kernel = nullptr;
+	float *directional_soft_shadow_kernel = nullptr;
+	float *penumbra_shadow_kernel = nullptr;
+	float *soft_shadow_kernel = nullptr;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -705,27 +705,27 @@ private:
 		template <class T>
 		struct InstanceSort {
 			float depth;
-			T *instance;
+			T *instance = nullptr;
 			bool operator<(const InstanceSort &p_sort) const {
 				return depth < p_sort.depth;
 			}
 		};
 
-		ReflectionData *reflections;
+		ReflectionData *reflections = nullptr;
 		InstanceSort<ReflectionProbeInstance> *reflection_sort;
 		uint32_t max_reflections;
 		RID reflection_buffer;
 		uint32_t max_reflection_probes_per_instance;
 		uint32_t reflection_count = 0;
 
-		DecalData *decals;
+		DecalData *decals = nullptr;
 		InstanceSort<DecalInstance> *decal_sort;
 		uint32_t max_decals;
 		RID decal_buffer;
 		uint32_t decal_count;
 
-		LightData *omni_lights;
-		LightData *spot_lights;
+		LightData *omni_lights = nullptr;
+		LightData *spot_lights = nullptr;
 
 		InstanceSort<LightInstance> *omni_light_sort;
 		InstanceSort<LightInstance> *spot_light_sort;
@@ -735,7 +735,7 @@ private:
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
 		uint32_t max_directional_lights;
 		RID directional_light_buffer;
 
@@ -907,7 +907,7 @@ private:
 	void _volumetric_fog_erase(RenderBuffers *rb);
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
-	struct FogShaderData : public RendererStorageRD::ShaderData {
+	struct FogShaderData : public RendererRD::ShaderData {
 		bool valid;
 		RID version;
 
@@ -927,7 +927,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -937,8 +937,8 @@ private:
 		virtual ~FogShaderData();
 	};
 
-	struct FogMaterialData : public RendererStorageRD::MaterialData {
-		FogShaderData *shader_data;
+	struct FogMaterialData : public RendererRD::MaterialData {
+		FogShaderData *shader_data = nullptr;
 		RID uniform_set;
 		bool uniform_set_updated;
 
@@ -948,11 +948,11 @@ private:
 		virtual ~FogMaterialData();
 	};
 
-	RendererStorageRD::ShaderData *_create_fog_shader_func();
-	static RendererStorageRD::ShaderData *_create_fog_shader_funcs();
+	RendererRD::ShaderData *_create_fog_shader_func();
+	static RendererRD::ShaderData *_create_fog_shader_funcs();
 
-	RendererStorageRD::MaterialData *_create_fog_material_func(FogShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_fog_material_funcs(RendererStorageRD::ShaderData *p_shader);
+	RendererRD::MaterialData *_create_fog_material_func(FogShaderData *p_shader);
+	static RendererRD::MaterialData *_create_fog_material_funcs(RendererRD::ShaderData *p_shader);
 
 	RID shadow_sampler;
 

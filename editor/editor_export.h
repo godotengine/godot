@@ -184,7 +184,7 @@ private:
 	};
 
 	struct PackData {
-		FileAccess *f = nullptr;
+		Ref<FileAccess> f;
 		Vector<SavedData> file_ofs;
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
@@ -207,7 +207,7 @@ private:
 	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
-	void _edit_files_with_filter(DirAccess *da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude);
+	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude);
 	void _edit_filter_list(Set<String> &r_list, const String &p_filter, bool exclude);
 
 	static Error _add_shared_object(void *p_userdata, const SharedObject &p_so);
@@ -380,7 +380,7 @@ class EditorExport : public Node {
 
 	StringName _export_presets_updated;
 
-	Timer *save_timer;
+	Timer *save_timer = nullptr;
 	bool block_save = false;
 
 	static EditorExport *singleton;
@@ -421,23 +421,12 @@ public:
 class EditorExportPlatformPC : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);
 
-public:
-	typedef Error (*FixUpEmbeddedPckFunc)(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
-
 private:
 	Ref<ImageTexture> logo;
 	String name;
 	String os_name;
-	Map<String, String> extensions;
 
-	String release_file_32;
-	String release_file_64;
-	String debug_file_32;
-	String debug_file_64;
-
-	int chmod_flags;
-
-	FixUpEmbeddedPckFunc fixup_embedded_pck_func;
+	int chmod_flags = -1;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
@@ -449,20 +438,14 @@ public:
 	virtual Ref<Texture2D> get_logo() const override;
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
+	virtual String get_template_file_name(const String &p_target, const String &p_arch) const = 0;
 
-	void set_extension(const String &p_extension, const String &p_feature_key = "default");
 	void set_name(const String &p_name);
 	void set_os_name(const String &p_name);
 
 	void set_logo(const Ref<Texture2D> &p_logo);
-
-	void set_release_64(const String &p_file);
-	void set_release_32(const String &p_file);
-	void set_debug_64(const String &p_file);
-	void set_debug_32(const String &p_file);
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features) override;
@@ -471,10 +454,9 @@ public:
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);
 
-	FixUpEmbeddedPckFunc get_fixup_embedded_pck_func() const;
-	void set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_fixup_embedded_pck_func);
-
-	EditorExportPlatformPC();
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
+		return Error::OK;
+	}
 };
 
 class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {

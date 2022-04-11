@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
-void MenuButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!_is_focus_owner_in_shortcut_context()) {
@@ -232,7 +232,7 @@ MenuButton::MenuButton(const String &p_text) :
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 

@@ -44,7 +44,6 @@ class Panel;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
-	OBJ_CATEGORY("GUI Nodes");
 
 public:
 	enum Anchor {
@@ -548,7 +547,7 @@ public:
 
 	void grab_click_focus();
 
-	void warp_mouse(const Point2 &p_to_pos);
+	void warp_mouse(const Point2 &p_position);
 
 	virtual bool is_text_field() const;
 

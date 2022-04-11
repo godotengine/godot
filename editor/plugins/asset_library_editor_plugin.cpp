@@ -640,7 +640,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	}
 }
 
-void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> key = p_event;
@@ -729,9 +729,8 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		if (use_cache) {
 			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
-			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
-
-			if (file) {
+			Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
+			if (file.is_valid()) {
 				PackedByteArray cached_data;
 				int len = file->get_32();
 				cached_data.resize(len);
@@ -740,8 +739,6 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 				file->get_buffer(w, len);
 
 				image_data = cached_data;
-				file->close();
-				memdelete(file);
 			}
 		}
 
@@ -808,23 +805,17 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 				if (headers[i].findn("ETag:") == 0) { // Save etag
 					String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
-					FileAccess *file;
-
-					file = FileAccess::open(cache_filename_base + ".etag", FileAccess::WRITE);
-					if (file) {
+					Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".etag", FileAccess::WRITE);
+					if (file.is_valid()) {
 						file->store_line(new_etag);
-						file->close();
-						memdelete(file);
 					}
 
 					int len = p_data.size();
 					const uint8_t *r = p_data.ptr();
 					file = FileAccess::open(cache_filename_base + ".data", FileAccess::WRITE);
-					if (file) {
+					if (file.is_valid()) {
 						file->store_32(len);
 						file->store_buffer(r, len);
-						file->close();
-						memdelete(file);
 					}
 
 					break;
@@ -858,11 +849,9 @@ void EditorAssetLibrary::_update_image_queue() {
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {
-				FileAccess *file = FileAccess::open(cache_filename_base + ".etag", FileAccess::READ);
-				if (file) {
+				Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".etag", FileAccess::READ);
+				if (file.is_valid()) {
 					headers.push_back("If-None-Match: " + file->get_line());
-					file->close();
-					memdelete(file);
 				}
 			}
 
@@ -997,7 +986,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
-	first->set_text(TTR("First"));
+	first->set_text(TTR("First", "Pagination"));
 	if (p_page != 0) {
 		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(0));
 	} else {
@@ -1007,7 +996,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(first);
 
 	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous"));
+	prev->set_text(TTR("Previous", "Pagination"));
 	if (p_page > 0) {
 		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page - 1));
 	} else {
@@ -1037,7 +1026,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	}
 
 	Button *next = memnew(Button);
-	next->set_text(TTR("Next"));
+	next->set_text(TTR("Next", "Pagination"));
 	if (p_page < p_page_count - 1) {
 		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page + 1));
 	} else {
@@ -1048,7 +1037,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(next);
 
 	Button *last = memnew(Button);
-	last->set_text(TTR("Last"));
+	last->set_text(TTR("Last", "Pagination"));
 	if (p_page != p_page_count - 1) {
 		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page_count - 1));
 	} else {
@@ -1541,7 +1530,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = nullptr;
 
 	set_process(true);
-	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
+	set_process_shortcut_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);

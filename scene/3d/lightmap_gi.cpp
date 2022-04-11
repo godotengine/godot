@@ -635,7 +635,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	bsud.to_percent = 0.8;
 
 	if (p_bake_step) {
-		p_bake_step(0.0, TTR("Finding meshes, lights and probes"), p_bake_userdata, true);
+		p_bake_step(0.0, RTR("Finding meshes, lights and probes"), p_bake_userdata, true);
 	}
 	/* STEP 1, FIND MESHES, LIGHTS AND PROBES */
 	Vector<Lightmapper::MeshData> mesh_data;
@@ -655,7 +655,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
-				p_bake_step(p * 0.1, vformat(TTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
+				p_bake_step(p * 0.1, vformat(RTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
 			}
 
 			MeshesFound &mf = meshes_found.write[m_i];
@@ -790,7 +790,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	/* STEP 2, CREATE PROBES */
 
 	if (p_bake_step) {
-		p_bake_step(0.3, TTR("Creating probes"), p_bake_userdata, true);
+		p_bake_step(0.3, RTR("Creating probes"), p_bake_userdata, true);
 	}
 
 	//bounds need to include the user probes
@@ -832,7 +832,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		for (int i = 0; i < mesh_data.size(); i++) {
 			if (p_bake_step) {
 				float p = (float)(i) / mesh_data.size();
-				p_bake_step(0.3 + p * 0.1, vformat(TTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
+				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
 			}
 
 			for (int j = 0; j < mesh_data[i].points.size(); j += 3) {
@@ -873,7 +873,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	// Add everything to lightmapper
 	if (p_bake_step) {
-		p_bake_step(0.4, TTR("Preparing Lightmapper"), p_bake_userdata, true);
+		p_bake_step(0.4, RTR("Preparing Lightmapper"), p_bake_userdata, true);
 	}
 
 	{
@@ -907,7 +907,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	// Add everything to lightmapper
 	if (environment_mode != ENVIRONMENT_MODE_DISABLED) {
 		if (p_bake_step) {
-			p_bake_step(4.1, TTR("Preparing Environment"), p_bake_userdata, true);
+			p_bake_step(4.1, RTR("Preparing Environment"), p_bake_userdata, true);
 		}
 
 		environment_transform = get_global_transform().basis;
@@ -1046,7 +1046,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		//Obtain solved simplices
 
 		if (p_bake_step) {
-			p_bake_step(0.8, TTR("Generating Probe Volumes"), p_bake_userdata, true);
+			p_bake_step(0.8, RTR("Generating Probe Volumes"), p_bake_userdata, true);
 		}
 		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(points);
 
@@ -1101,7 +1101,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 //#define DEBUG_SIMPLICES_AS_OBJ_FILE
 #ifdef DEBUG_SIMPLICES_AS_OBJ_FILE
 		{
-			FileAccessRef f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
 			for (uint32_t i = 0; i < bsp_simplices.size(); i++) {
 				f->store_line("o Simplex" + itos(i));
 				for (int j = 0; j < 4; j++) {
@@ -1118,7 +1118,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					f->store_line(vformat("f %d %d %d", 4 * i + face_order[j][0], 4 * i + face_order[j][1], 4 * i + face_order[j][2]));
 				}
 			}
-			f->close();
 		}
 #endif
 
@@ -1130,7 +1129,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 
 		if (p_bake_step) {
-			p_bake_step(0.9, TTR("Generating Probe Acceleration Structures"), p_bake_userdata, true);
+			p_bake_step(0.9, RTR("Generating Probe Acceleration Structures"), p_bake_userdata, true);
 		}
 
 		_compute_bsp_tree(points, bsp_planes, planes_tested, bsp_simplices, bsp_simplex_indices, bsp_nodes);
@@ -1150,7 +1149,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 //#define DEBUG_BSP_TREE
 #ifdef DEBUG_BSP_TREE
-			FileAccessRef f = FileAccess::open("res://bsp.txt", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open("res://bsp.txt", FileAccess::WRITE);
 			for (uint32_t i = 0; i < bsp_nodes.size(); i++) {
 				f->store_line(itos(i) + " - plane: " + bsp_nodes[i].plane + " over: " + itos(bsp_nodes[i].over) + " under: " + itos(bsp_nodes[i].under));
 			}

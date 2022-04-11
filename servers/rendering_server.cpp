@@ -979,7 +979,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Invalid array format for surface.");
 
 	Vector<uint8_t> blend_shape_data;
-	uint32_t blend_shape_count = 0;
 
 	if (p_blend_shapes.size()) {
 		uint32_t bs_format = format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK;
@@ -996,7 +995,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			ERR_FAIL_COND_V_MSG(err2 != OK, ERR_INVALID_DATA, "Invalid blend shape array format for surface.");
 
 			blend_shape_data.append_array(vertex_array_shape);
-			blend_shape_count++;
 		}
 	}
 	Vector<SurfaceData::LOD> lods;
@@ -1891,7 +1889,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("light_directional_set_shadow_mode", "light", "mode"), &RenderingServer::light_directional_set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("light_directional_set_blend_splits", "light", "enable"), &RenderingServer::light_directional_set_blend_splits);
-	ClassDB::bind_method(D_METHOD("light_directional_set_sky_only", "light", "enable"), &RenderingServer::light_directional_set_sky_only);
+	ClassDB::bind_method(D_METHOD("light_directional_set_sky_mode", "light", "mode"), &RenderingServer::light_directional_set_sky_mode);
 
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
 
@@ -1936,6 +1934,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS);
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS);
+
+	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
+	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY);
+	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY);
 
 	ClassDB::bind_method(D_METHOD("shadows_quality_set", "quality"), &RenderingServer::shadows_quality_set);
 	ClassDB::bind_method(D_METHOD("directional_shadow_quality_set", "quality"), &RenderingServer::directional_shadow_quality_set);
@@ -2895,8 +2897,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/environment/ssao/quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/quality", PropertyInfo(Variant::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
-	GLOBAL_DEF("rendering/environment/ssao/half_size", false);
-	GLOBAL_DEF("rendering/environment/ssao/half_size.mobile", true);
+	GLOBAL_DEF("rendering/environment/ssao/half_size", true);
 	GLOBAL_DEF("rendering/environment/ssao/adaptive_target", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
 	GLOBAL_DEF("rendering/environment/ssao/blur_passes", 2);

@@ -2,11 +2,6 @@
 
 Import("env")
 
-import make_wrappers
-from platform_methods import run_in_subprocess
-
-env.CommandNoCache(["ext_wrappers.gen.inc"], "make_wrappers.py", run_in_subprocess(make_wrappers.run))
-
 env_object = env.Clone()
 
 env_object.add_source_files(env.servers_sources, "*.cpp")

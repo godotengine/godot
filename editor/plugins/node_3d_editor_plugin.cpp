@@ -205,7 +205,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			orbiting = false;
 			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-				Input::get_singleton()->warp_mouse_position(orbiting_mouse_start);
+				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
 			}
 		}
 	}
@@ -369,7 +369,7 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
@@ -2467,7 +2467,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			_update_camera(delta);
 
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
@@ -2564,7 +2564,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 				text += "\n";
 				text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
-				text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
+				text += vformat(TTR("Primitive Indices: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
 				text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
 
 				info_label->set_text(text);
@@ -5935,9 +5935,9 @@ void fragment() {
 	float angle_fade = abs(dot(dir, NORMAL));
 	angle_fade = smoothstep(0.05, 0.2, angle_fade);
 
-	vec3 world_pos = (CAMERA_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vec3 world_normal = (CAMERA_MATRIX * vec4(NORMAL, 0.0)).xyz;
-	vec3 camera_world_pos = CAMERA_MATRIX[3].xyz;
+	vec3 world_pos = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	vec3 world_normal = (INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
+	vec3 camera_world_pos = INV_VIEW_MATRIX[3].xyz;
 	vec3 camera_world_pos_on_plane = camera_world_pos * (1.0 - world_normal);
 	float dist_fade = 1.0 - (distance(world_pos, camera_world_pos_on_plane) / grid_size);
 	dist_fade = smoothstep(0.02, 0.3, dist_fade);
@@ -6848,7 +6848,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 	}
 }
 
-void Node3DEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree()) {
@@ -7893,7 +7893,7 @@ Node3DEditor::Node3DEditor() {
 
 	selected = nullptr;
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 	add_to_group("_spatial_editor_group");
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);

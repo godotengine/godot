@@ -70,7 +70,7 @@ class StringName {
 	_Data *_data = nullptr;
 
 	union _HashUnion {
-		_Data *ptr;
+		_Data *ptr = nullptr;
 		uint32_t hash;
 	};
 

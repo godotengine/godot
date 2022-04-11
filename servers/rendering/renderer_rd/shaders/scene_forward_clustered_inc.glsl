@@ -174,8 +174,8 @@ sdfgi;
 layout(set = 1, binding = 0, std140) uniform SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
-	mat4 camera_matrix;
-	mat4 inv_camera_matrix;
+	mat4 inv_view_matrix;
+	mat4 view_matrix;
 
 	// only used for multiview
 	mat4 projection_matrix_view[MAX_VIEWS];

@@ -475,7 +475,7 @@ real_t CanvasItemEditor::snap_angle(real_t p_target, real_t p_start) const {
 	}
 }
 
-void CanvasItemEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
+void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
@@ -860,7 +860,7 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 }
 
 void CanvasItemEditor::_snap_changed() {
-	((SnapDialog *)snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 	grid_step_multiplier = 0;
 	viewport->update();
 }
@@ -1504,7 +1504,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					DragType dragger[] = {
+					const DragType dragger[] = {
 						DRAG_ANCHOR_TOP_LEFT,
 						DRAG_ANCHOR_TOP_RIGHT,
 						DRAG_ANCHOR_BOTTOM_RIGHT,
@@ -1635,14 +1635,14 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 					Rect2 rect = canvas_item->_edit_get_rect();
 					Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
 
-					Vector2 endpoints[4] = {
+					const Vector2 endpoints[4] = {
 						xform.xform(rect.position),
 						xform.xform(rect.position + Vector2(rect.size.x, 0)),
 						xform.xform(rect.position + rect.size),
 						xform.xform(rect.position + Vector2(0, rect.size.y))
 					};
 
-					DragType dragger[] = {
+					const DragType dragger[] = {
 						DRAG_TOP_LEFT,
 						DRAG_TOP,
 						DRAG_TOP_RIGHT,
@@ -2318,7 +2318,6 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 			Vector<_SelectResult> selection = Vector<_SelectResult>();
 			// Retrieve the canvas items
-			selection = Vector<_SelectResult>();
 			_get_canvas_items_at_pos(click, selection);
 			if (!selection.is_empty()) {
 				canvas_item = selection[0].item;
@@ -2572,7 +2571,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 void CanvasItemEditor::_update_cursor() {
 	// Compute an eventual rotation of the cursor
-	CursorShape rotation_array[4] = { CURSOR_HSIZE, CURSOR_BDIAGSIZE, CURSOR_VSIZE, CURSOR_FDIAGSIZE };
+	const CursorShape rotation_array[4] = { CURSOR_HSIZE, CURSOR_BDIAGSIZE, CURSOR_VSIZE, CURSOR_FDIAGSIZE };
 	int rotation_array_index = 0;
 
 	List<CanvasItem *> selection = _get_edited_canvas_items();
@@ -3150,7 +3149,6 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 
 		if (dragged_anchor >= 0) {
 			// Draw the 4 lines when dragged
-			bool anchor_snapped;
 			Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
 
 			Vector2 corners_pos[4];
@@ -3164,7 +3162,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				real_t anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
 				line_starts[i] = corners_pos[i].lerp(corners_pos[(i + 1) % 4], anchor_val);
 				line_ends[i] = corners_pos[(i + 3) % 4].lerp(corners_pos[(i + 2) % 4], anchor_val);
-				anchor_snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
+				bool anchor_snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
 				viewport->draw_line(line_starts[i], line_ends[i], anchor_snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 			}
 
@@ -3328,7 +3326,7 @@ void CanvasItemEditor::_draw_selection() {
 		// Draw the selected items position / surrounding boxes
 		if (canvas_item->_edit_use_rect()) {
 			Rect2 rect = canvas_item->_edit_get_rect();
-			Vector2 endpoints[4] = {
+			const Vector2 endpoints[4] = {
 				xform.xform(rect.position),
 				xform.xform(rect.position + Vector2(rect.size.x, 0)),
 				xform.xform(rect.position + rect.size),
@@ -4103,7 +4101,7 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
-	Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -4269,7 +4267,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
-			((SnapDialog *)snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+			static_cast<SnapDialog *>(snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 			snap_dialog->popup_centered(Size2(220, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
@@ -4324,8 +4322,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 		case UNLOCK_SELECTED: {
@@ -4346,8 +4344,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 		case GROUP_SELECTED: {
@@ -4368,8 +4366,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 		case UNGROUP_SELECTED: {
@@ -4390,8 +4388,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
 
@@ -4414,7 +4412,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_COPY_POSE: {
 			pose_clipboard.clear();
 
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
@@ -5322,7 +5320,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom to 800%"), Key::KEY_4);
 	ED_SHORTCUT("canvas_item_editor/zoom_1600_percent", TTR("Zoom to 1600%"), Key::KEY_5);
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 
 	// Update the menus' checkboxes
 	call_deferred(SNAME("set_state"), get_state());
@@ -5735,7 +5733,6 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 		if (root_node) {
 			target_node = root_node;
 		} else {
-			drop_pos = p_point;
 			target_node = nullptr;
 		}
 	}

@@ -55,11 +55,11 @@ class EditorHelpSearch : public ConfirmationDialog {
 		SEARCH_SHOW_HIERARCHY = 1 << 30
 	};
 
-	LineEdit *search_box;
-	Button *case_sensitive_button;
-	Button *hierarchy_button;
-	OptionButton *filter_combo;
-	Tree *results_tree;
+	LineEdit *search_box = nullptr;
+	Button *case_sensitive_button = nullptr;
+	Button *hierarchy_button = nullptr;
+	OptionButton *filter_combo = nullptr;
+	Tree *results_tree = nullptr;
 	bool old_search = false;
 	String old_term;
 
@@ -114,8 +114,8 @@ class EditorHelpSearch::Runner : public RefCounted {
 		}
 	};
 
-	Control *ui_service;
-	Tree *results_tree;
+	Control *ui_service = nullptr;
+	Tree *results_tree = nullptr;
 	String term;
 	int search_flags;
 

@@ -419,7 +419,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				continue;
 			}
 
-			if (new_index_count <= 0 || (new_index_count >= (index_count * 0.75f))) {
+			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
 				break;
 			}
 
@@ -521,7 +521,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					Vector3 normal = n0 * w + n1 * u + n2 * v;
 
 					Vector2 orig_uv = ray_uvs[j];
-					real_t orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
+					const real_t orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
 					for (int k = 0; k < 3; k++) {
 						int idx = orig_tri_id * 3 + k;
 						real_t weight = orig_bary[k];

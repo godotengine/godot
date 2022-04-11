@@ -38,12 +38,12 @@
 
 class EditorPropertyRootMotion : public EditorProperty {
 	GDCLASS(EditorPropertyRootMotion, EditorProperty);
-	Button *assign;
-	Button *clear;
+	Button *assign = nullptr;
+	Button *clear = nullptr;
 	NodePath base_hint;
 
-	ConfirmationDialog *filter_dialog;
-	Tree *filters;
+	ConfirmationDialog *filter_dialog = nullptr;
+	Tree *filters = nullptr;
 
 	void _confirmed();
 	void _node_assign();

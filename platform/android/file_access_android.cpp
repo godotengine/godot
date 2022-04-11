@@ -34,7 +34,7 @@
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
-FileAccess *FileAccessAndroid::create_android() {
+Ref<FileAccess> FileAccessAndroid::create_android() {
 	return memnew(FileAccessAndroid);
 }
 

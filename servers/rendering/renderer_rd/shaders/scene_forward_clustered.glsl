@@ -130,13 +130,13 @@ void main() {
 
 	instance_index_interp = instance_index;
 
-	mat4 world_matrix = instances.data[instance_index].transform;
+	mat4 model_matrix = instances.data[instance_index].transform;
 
-	mat3 world_normal_matrix;
+	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		world_normal_matrix = transpose(inverse(mat3(world_matrix)));
+		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
 	} else {
-		world_normal_matrix = mat3(world_matrix);
+		model_normal_matrix = mat3(model_matrix);
 	}
 
 	if (is_multimesh) {
@@ -229,8 +229,8 @@ void main() {
 #endif
 		//transpose
 		matrix = transpose(matrix);
-		world_matrix = world_matrix * matrix;
-		world_normal_matrix = world_normal_matrix * mat3(matrix);
+		model_matrix = model_matrix * matrix;
+		model_normal_matrix = model_normal_matrix * mat3(matrix);
 	}
 
 	vec3 vertex = vertex_attrib;
@@ -267,24 +267,24 @@ void main() {
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (world_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
-	normal = world_normal_matrix * normal;
+	normal = model_normal_matrix * normal;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
-	tangent = world_normal_matrix * tangent;
-	binormal = world_normal_matrix * binormal;
+	tangent = model_normal_matrix * tangent;
+	binormal = model_normal_matrix * binormal;
 
 #endif
 #endif
 
 	float roughness = 1.0;
 
-	mat4 modelview = scene_data.inv_camera_matrix * world_matrix;
-	mat3 modelview_normal = mat3(scene_data.inv_camera_matrix) * world_normal_matrix;
+	mat4 modelview = scene_data.view_matrix * model_matrix;
+	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
 
 	{
 #CODE : VERTEX
@@ -309,14 +309,14 @@ void main() {
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (scene_data.inv_camera_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal = (scene_data.inv_camera_matrix * vec4(normal, 0.0)).xyz;
+	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal = (scene_data.inv_camera_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.inv_camera_matrix * vec4(tangent, 0.0)).xyz;
+	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 
@@ -453,11 +453,13 @@ layout(location = 9) in flat uint instance_index_interp;
 
 //defines to keep compatibility with vertex
 
-#define world_matrix instances.data[instance_index].transform
+#define model_matrix instances.data[draw_call.instance_index].transform
 #ifdef USE_MULTIVIEW
 #define projection_matrix scene_data.projection_matrix_view[ViewIndex]
+#define inv_projection_matrix scene_data.inv_projection_matrix_view[ViewIndex]
 #else
 #define projection_matrix scene_data.projection_matrix
+#define inv_projection_matrix scene_data.inv_projection_matrix
 #endif
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
@@ -497,14 +499,14 @@ layout(location = 1) out uvec2 voxel_gi_buffer;
 #endif //MODE_RENDER_NORMAL
 #else // RENDER DEPTH
 
-#ifdef MODE_MULTIPLE_RENDER_TARGETS
+#ifdef MODE_SEPARATE_SPECULAR
 
 layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
 #else
 
 layout(location = 0) out vec4 frag_color;
-#endif // MODE_MULTIPLE_RENDER_TARGETS
+#endif // MODE_SEPARATE_SPECULAR
 
 #endif // RENDER DEPTH
 
@@ -570,7 +572,7 @@ vec4 fog_process(vec3 vertex) {
 	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
 
 	if (abs(scene_data.fog_height_density) >= 0.0001) {
-		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
+		float y = (scene_data.inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data.fog_height;
 
@@ -1041,7 +1043,7 @@ void main() {
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
 		uint index = instances.data[instance_index].gi_offset;
 
-		vec3 wnormal = mat3(scene_data.camera_matrix) * normal;
+		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
 		const float c1 = 0.429043;
 		const float c2 = 0.511664;
 		const float c3 = 0.743125;
@@ -1095,9 +1097,9 @@ void main() {
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
-		vec3 cam_pos = mat3(scene_data.camera_matrix) * vertex;
-		vec3 cam_normal = mat3(scene_data.camera_matrix) * normal;
-		vec3 cam_reflection = mat3(scene_data.camera_matrix) * reflect(-view, normal);
+		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normal;
+		vec3 cam_reflection = mat3(scene_data.inv_view_matrix) * reflect(-view, normal);
 
 		//apply y-mult
 		cam_pos.y *= sdfgi.y_mult;
@@ -1837,7 +1839,7 @@ void main() {
 				vec3(0, -1, 0),
 				vec3(0, 0, -1));
 
-		vec3 cam_normal = mat3(scene_data.camera_matrix) * normalize(normal_interp);
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
 
 		float closest_dist = -1e20;
 
@@ -1964,7 +1966,7 @@ void main() {
 	//restore fog
 	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
 
-#ifdef MODE_MULTIPLE_RENDER_TARGETS
+#ifdef MODE_SEPARATE_SPECULAR
 
 #ifdef MODE_UNSHADED
 	diffuse_buffer = vec4(albedo.rgb, 0.0);
@@ -1982,7 +1984,7 @@ void main() {
 	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 
-#else //MODE_MULTIPLE_RENDER_TARGETS
+#else //MODE_SEPARATE_SPECULAR
 
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
@@ -1994,7 +1996,7 @@ void main() {
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 
-#endif //MODE_MULTIPLE_RENDER_TARGETS
+#endif //MODE_SEPARATE_SPECULAR
 
 #endif //MODE_RENDER_DEPTH
 }

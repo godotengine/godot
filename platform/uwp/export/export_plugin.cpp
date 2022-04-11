@@ -131,6 +131,14 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 }
 
 bool EditorExportPlatformUWP::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+#ifndef DEV_ENABLED
+	// We don't provide export templates for the UWP platform currently as it
+	// has not been ported for Godot 4.0. This is skipped in DEV_ENABLED so that
+	// contributors can still test the pipeline if/when we can build it again.
+	r_error = "The UWP platform is currently not supported in Godot 4.0.\n";
+	return false;
+#endif
+
 	String err;
 	bool valid = false;
 
@@ -287,14 +295,13 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	Error err = OK;
 
-	FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	AppxPackager packager;
 	packager.init(fa_pack);
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	if (ep.step("Creating package...", 0)) {
 		return ERR_SKIP;
@@ -324,6 +331,9 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		unz_file_info info;
 		char fname[16834];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String path = String::utf8(fname);
 

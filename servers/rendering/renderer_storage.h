@@ -54,7 +54,6 @@ public:
 
 	struct DependencyTracker;
 
-protected:
 	struct Dependency {
 		void changed_notify(DependencyChangedNotification p_notification);
 		void deleted_notify(const RID &p_rid);
@@ -66,7 +65,6 @@ protected:
 		Map<DependencyTracker *, uint32_t> instances;
 	};
 
-public:
 	struct DependencyTracker {
 		void *userdata = nullptr;
 		typedef void (*ChangedCallback)(DependencyChangedNotification, DependencyTracker *);
@@ -121,188 +119,6 @@ public:
 		Set<Dependency *> dependencies;
 	};
 
-	virtual bool can_create_resources_async() const = 0;
-	/* TEXTURE API */
-
-	virtual RID texture_allocate() = 0;
-
-	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) = 0;
-	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
-	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
-	virtual void texture_proxy_initialize(RID p_texture, RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
-
-	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
-	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
-	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
-
-	//these two APIs can be used together or in combination with the others.
-	virtual void texture_2d_placeholder_initialize(RID p_texture) = 0;
-	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) = 0;
-	virtual void texture_3d_placeholder_initialize(RID p_texture) = 0;
-
-	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
-	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const = 0;
-	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const = 0;
-
-	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
-	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
-
-	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
-	virtual String texture_get_path(RID p_texture) const = 0;
-
-	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
-
-	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) = 0;
-
-	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
-
-	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
-
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
-
-	/* CANVAS TEXTURE API */
-
-	virtual RID canvas_texture_allocate() = 0;
-	virtual void canvas_texture_initialize(RID p_rid) = 0;
-
-	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) = 0;
-	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) = 0;
-
-	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) = 0;
-	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) = 0;
-
-	/* SHADER API */
-
-	virtual RID shader_allocate() = 0;
-	virtual void shader_initialize(RID p_rid) = 0;
-
-	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
-	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
-
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
-	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
-
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
-
-	/* COMMON MATERIAL API */
-
-	virtual RID material_allocate() = 0;
-	virtual void material_initialize(RID p_rid) = 0;
-
-	virtual void material_set_render_priority(RID p_material, int priority) = 0;
-	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
-
-	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
-	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
-
-	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
-
-	virtual bool material_is_animated(RID p_material) = 0;
-	virtual bool material_casts_shadows(RID p_material) = 0;
-
-	struct InstanceShaderParam {
-		PropertyInfo info;
-		int index;
-		Variant default_value;
-	};
-
-	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
-
-	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
-
-	/* MESH API */
-
-	virtual RID mesh_allocate() = 0;
-	virtual void mesh_initialize(RID p_rid) = 0;
-
-	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) = 0;
-
-	/// Returns stride
-	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) = 0;
-
-	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
-
-	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) = 0;
-	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
-
-	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
-	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
-	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
-
-	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
-	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
-
-	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
-
-	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
-
-	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
-
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) = 0;
-
-	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
-
-	virtual void mesh_clear(RID p_mesh) = 0;
-
-	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;
-
-	/* MESH INSTANCE */
-
-	virtual RID mesh_instance_create(RID p_base) = 0;
-	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) = 0;
-	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) = 0;
-	virtual void mesh_instance_check_for_update(RID p_mesh_instance) = 0;
-	virtual void update_mesh_instances() = 0;
-
-	/* MULTIMESH API */
-
-	virtual RID multimesh_allocate() = 0;
-	virtual void multimesh_initialize(RID p_rid) = 0;
-
-	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
-
-	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
-
-	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) = 0;
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
-	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
-
-	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
-
-	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
-	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
-
-	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
-	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
-
-	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
-	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
-
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
-
-	/* SKELETON API */
-
-	virtual RID skeleton_allocate() = 0;
-	virtual void skeleton_initialize(RID p_rid) = 0;
-
-	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
-	virtual int skeleton_get_bone_count(RID p_skeleton) const = 0;
-	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) = 0;
-	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
-	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
-	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
-	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
-
 	/* Light API */
 
 	virtual RID directional_light_allocate() = 0;
@@ -330,8 +146,8 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual bool light_directional_get_blend_splits(RID p_light) const = 0;
-	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
-	virtual bool light_directional_is_sky_only(RID p_light) const = 0;
+	virtual void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) = 0;
+	virtual RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const = 0;
 
 	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
@@ -378,24 +194,6 @@ public:
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const = 0;
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
-	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
-
-	/* DECAL API */
-
-	virtual RID decal_allocate() = 0;
-	virtual void decal_initialize(RID p_rid) = 0;
-
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
-	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
-	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
-	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;
-	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) = 0;
-	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) = 0;
-	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
-	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
-	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
-
-	virtual AABB decal_get_aabb(RID p_decal) const = 0;
 
 	/* VOXEL GI API */
 
@@ -561,24 +359,6 @@ public:
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
-
-	/* GLOBAL VARIABLES */
-
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) = 0;
-	virtual void global_variable_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_variable_get_list() const = 0;
-
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
-	virtual Variant global_variable_get(const StringName &p_name) const = 0;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
-
-	virtual void global_variables_load_settings(bool p_load_textures = true) = 0;
-	virtual void global_variables_clear() = 0;
-
-	virtual int32_t global_variables_instance_allocate(RID p_instance) = 0;
-	virtual void global_variables_instance_free(RID p_instance) = 0;
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) = 0;
 
 	/* RENDER TARGET */
 

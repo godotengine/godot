@@ -1961,11 +1961,21 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			int limit = timeline->get_name_limit();
 
+			if (track % 2 == 1) {
+				// Draw a background over odd lines to make long lists of tracks easier to read.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.05));
+			}
+
+			if (hovered) {
+				// Draw hover feedback.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.1));
+			}
+
 			if (has_focus()) {
 				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 				accent.a *= 0.7;
 				// Offside so the horizontal sides aren't cutoff.
-				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
+				draw_style_box(get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles")), Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
@@ -2236,7 +2246,14 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_MOUSE_ENTER:
+			hovered = true;
+			update();
+			break;
 		case NOTIFICATION_MOUSE_EXIT:
+			hovered = false;
+			update();
+			[[fallthrough]];
 		case NOTIFICATION_DRAG_END: {
 			cancel_drop();
 		} break;
@@ -3383,7 +3400,7 @@ Node *AnimationTrackEditor::get_root() const {
 void AnimationTrackEditor::update_keying() {
 	bool keying_enabled = false;
 
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	if (is_visible_in_tree() && animation.is_valid() && editor_history->get_path_size() > 0) {
 		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
 		keying_enabled = Object::cast_to<Node>(obj) != nullptr;
@@ -3776,7 +3793,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 		return;
 	}
 
-	EditorHistory *history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 	for (int i = 1; i < history->get_path_size(); i++) {
 		String prop = history->get_path_property(i);
 		ERR_FAIL_COND(prop.is_empty());
@@ -3856,7 +3873,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 }
 
 void AnimationTrackEditor::insert_value_key(const String &p_property, const Variant &p_value, bool p_advance) {
-	EditorHistory *history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	ERR_FAIL_COND(!root);
 	// Let's build a node path.

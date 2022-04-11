@@ -80,6 +80,17 @@
 				Draws a colored polygon of any amount of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 			</description>
 		</method>
+		<method name="draw_dashed_line">
+			<return type="void" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<argument index="2" name="color" type="Color" />
+			<argument index="3" name="width" type="float" default="1.0" />
+			<argument index="4" name="dash" type="float" default="2.0" />
+			<description>
+				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
+			</description>
+		</method>
 		<method name="draw_end_animation">
 			<return type="void" />
 			<description>
@@ -428,14 +439,14 @@
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], children will be updated with local transform data.
+				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
 			</description>
 		</method>
 		<method name="set_notify_transform">
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
 			<description>
-				If [code]enable[/code] is [code]true[/code], children will be updated with global transform data.
+				If [code]enable[/code] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
 			</description>
 		</method>
 		<method name="show">
@@ -469,9 +480,6 @@
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
 			If [code]true[/code], the object draws behind its parent.
 		</member>
-		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
-			If [code]true[/code], the object draws on top of its parent.
-		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
 			The texture filtering mode to use on this [CanvasItem].
 		</member>
@@ -479,7 +487,7 @@
 			The texture repeating mode to use on this [CanvasItem].
 		</member>
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
-			If [code]true[/code], the node will not inherit its transform from parent [CanvasItem]s.
+			If [code]true[/code], this [CanvasItem] will [i]not[/i] inherit its transform from parent [CanvasItem]s. Its draw order will also be changed to make it draw on top of other [CanvasItem]s that do not have [member top_level] set to [code]true[/code]. The [CanvasItem] will effectively act as if it was placed as a child of a bare [Node].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
@@ -513,7 +521,10 @@
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
-			The [CanvasItem]'s transform has changed. This notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].
+			The [CanvasItem]'s global transform has changed. This notification is only received if enabled by [method set_notify_transform].
+		</constant>
+		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="35">
+			The [CanvasItem]'s local transform has changed. This notification is only received if enabled by [method set_notify_local_transform].
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			The [CanvasItem] is requested to draw.

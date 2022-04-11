@@ -392,7 +392,7 @@ class DisplayServerWindows : public DisplayServer {
 		Rect2i parent_safe_rect;
 	};
 
-	JoypadWindows *joypad;
+	JoypadWindows *joypad = nullptr;
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
@@ -457,7 +457,7 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to) override;
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 

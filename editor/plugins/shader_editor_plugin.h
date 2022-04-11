@@ -65,7 +65,7 @@ protected:
 	static void _bind_methods();
 	virtual void _load_theme_settings() override;
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) override;
+	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
 
 public:
 	virtual void _validate_script() override;
@@ -108,19 +108,19 @@ class ShaderEditor : public PanelContainer {
 		HELP_DOCS,
 	};
 
-	MenuButton *edit_menu;
-	MenuButton *search_menu;
-	PopupMenu *bookmarks_menu;
-	MenuButton *help_menu;
-	PopupMenu *context_menu;
+	MenuButton *edit_menu = nullptr;
+	MenuButton *search_menu = nullptr;
+	PopupMenu *bookmarks_menu = nullptr;
+	MenuButton *help_menu = nullptr;
+	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
 	uint64_t idle;
 
-	GotoLineDialog *goto_line_dialog;
-	ConfirmationDialog *erase_tab_confirm;
-	ConfirmationDialog *disk_changed;
+	GotoLineDialog *goto_line_dialog = nullptr;
+	ConfirmationDialog *erase_tab_confirm = nullptr;
+	ConfirmationDialog *disk_changed = nullptr;
 
-	ShaderTextEditor *shader_editor;
+	ShaderTextEditor *shader_editor = nullptr;
 
 	void _menu_option(int p_option);
 	mutable Ref<Shader> shader;
@@ -161,8 +161,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
 	bool _2d;
-	ShaderEditor *shader_editor;
-	Button *button;
+	ShaderEditor *shader_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "Shader"; }

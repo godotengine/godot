@@ -39,14 +39,14 @@
 class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
 
-	SpinBox *layer;
-	Label *info;
+	SpinBox *layer = nullptr;
+	Label *info = nullptr;
 	Ref<Texture3D> texture;
 
 	Ref<Shader> shader;
 	Ref<ShaderMaterial> material;
 
-	Control *texture_rect;
+	Control *texture_rect = nullptr;
 
 	void _make_shaders();
 

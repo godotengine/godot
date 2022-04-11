@@ -115,7 +115,7 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2 ** 32
+    is64 = sys.maxsize > 2**32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 
@@ -162,6 +162,7 @@ def configure(env):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
+        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
             env.Append(

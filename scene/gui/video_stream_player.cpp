@@ -60,7 +60,7 @@ int VideoStreamPlayer::_audio_mix_callback(void *p_udata, const float *p_data, i
 	ERR_FAIL_NULL_V(p_udata, 0);
 	ERR_FAIL_NULL_V(p_data, 0);
 
-	VideoStreamPlayer *vp = (VideoStreamPlayer *)p_udata;
+	VideoStreamPlayer *vp = static_cast<VideoStreamPlayer *>(p_udata);
 
 	int todo = MIN(vp->resampler.get_writer_space(), p_frames);
 
@@ -77,7 +77,7 @@ int VideoStreamPlayer::_audio_mix_callback(void *p_udata, const float *p_data, i
 
 void VideoStreamPlayer::_mix_audios(void *p_self) {
 	ERR_FAIL_NULL(p_self);
-	reinterpret_cast<VideoStreamPlayer *>(p_self)->_mix_audio();
+	static_cast<VideoStreamPlayer *>(p_self)->_mix_audio();
 }
 
 // Called from audio thread

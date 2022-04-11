@@ -161,8 +161,9 @@ public:
 			if (!monitor_value.is_num()) {
 				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
 				arr[i + max] = Variant();
+			} else {
+				arr[i + max] = monitor_value;
 			}
-			arr[i + max] = monitor_value;
 		}
 
 		EngineDebugger::get_singleton()->send_message("performance:profile_frame", arr);
@@ -189,7 +190,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 		return; //ignore script errors, those go through debugger
 	}
 
-	RemoteDebugger *rd = (RemoteDebugger *)p_this;
+	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
 		return;
 	}
@@ -208,7 +209,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 }
 
 void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error) {
-	RemoteDebugger *rd = (RemoteDebugger *)p_this;
+	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive prints during flush.
 		return;
@@ -656,12 +657,12 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	// Core and profiler captures.
 	Capture core_cap(this,
 			[](void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-				return ((RemoteDebugger *)p_user)->_core_capture(p_cmd, p_data, r_captured);
+				return static_cast<RemoteDebugger *>(p_user)->_core_capture(p_cmd, p_data, r_captured);
 			});
 	register_message_capture("core", core_cap);
 	Capture profiler_cap(this,
 			[](void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-				return ((RemoteDebugger *)p_user)->_profiler_capture(p_cmd, p_data, r_captured);
+				return static_cast<RemoteDebugger *>(p_user)->_profiler_capture(p_cmd, p_data, r_captured);
 			});
 	register_message_capture("profiler", profiler_cap);
 

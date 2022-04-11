@@ -1302,7 +1302,7 @@ public:
 	VisualScriptInstance *instance;
 	VisualScriptExpression *expression;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 	//execute by parsing the tree directly
 	virtual bool _execute(const Variant **p_inputs, VisualScriptExpression::ENode *p_node, Variant &r_ret, String &r_error_str, Callable::CallError &ce) {
 		switch (p_node->type) {
@@ -1512,7 +1512,7 @@ public:
 		return false;
 	}
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!expression->root || expression->error_set) {
 			r_error_str = expression->error_str;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;

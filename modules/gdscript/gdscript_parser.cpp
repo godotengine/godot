@@ -1380,6 +1380,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		push_completion_call(annotation);
 		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0, true);
 		if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
+			push_multiline(true);
 			int argument_index = 0;
 			do {
 				make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
@@ -1391,6 +1392,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 				}
 				annotation->arguments.push_back(argument);
 			} while (match(GDScriptTokenizer::Token::COMMA));
+			pop_multiline();
 
 			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
 		}
@@ -2683,7 +2685,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 			const IdentifierNode *id = static_cast<const IdentifierNode *>(p_previous_operand);
 			Variant::Type builtin_type = get_builtin_type(id->name);
 			if (builtin_type < Variant::VARIANT_MAX) {
-				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT, builtin_type, true);
+				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, builtin_type, true);
 				is_builtin = true;
 			}
 		}
@@ -2750,7 +2752,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				pop_multiline();
 				return nullptr;
 			}
-			call->function_name = current_function->identifier->name;
+			if (current_function->identifier) {
+				call->function_name = current_function->identifier->name;
+			} else {
+				call->function_name = SNAME("<anonymous>");
+			}
 		} else {
 			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
 			make_completion_context(COMPLETION_SUPER_METHOD, call, true);
@@ -3479,6 +3485,15 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+
+	{
+		const int max_flags = 32;
+
+		if (t_hint == PropertyHint::PROPERTY_HINT_FLAGS && p_annotation->resolved_arguments.size() > max_flags) {
+			push_error(vformat(R"(The argument count limit for "@export_flags" is exceeded (%d/%d).)", p_annotation->resolved_arguments.size(), max_flags), p_annotation);
+			return false;
+		}
+	}
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
 	if (variable->exported) {

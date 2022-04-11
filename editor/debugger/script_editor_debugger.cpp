@@ -44,6 +44,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -163,7 +164,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 	switch (file_dialog_purpose) {
 		case SAVE_MONITORS_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -208,7 +209,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 		} break;
 		case SAVE_VRAM_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -392,7 +393,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			stack_dump_info.push_back(d);
 			s->set_metadata(0, d);
 
-			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + d["function"];
+			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + String(d["function"]);
 			s->set_text(0, line);
 
 			if (i == 0) {
@@ -647,7 +648,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			const ServersDebugger::ServerInfo &srv = frame.servers[i];
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
-			c.name = name.capitalize();
+			c.name = EditorPropertyNameProcessor::get_singleton()->process_name(name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			c.items.resize(srv.functions.size());
 			c.total_time = 0;
 			c.signature = "categ::" + name;
@@ -659,7 +660,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				item.self = srv.functions[j].time;
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
-				item.name = item.name.capitalize();
+				item.name = EditorPropertyNameProcessor::get_singleton()->process_name(item.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 				c.total_time += item.total;
 				c.items.write[j] = item;
 			}
@@ -1658,7 +1659,6 @@ bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
@@ -1764,7 +1764,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector = memnew(EditorDebuggerInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->set_v_size_flags(SIZE_EXPAND_FILL);
-		inspector->set_enable_capitalize_paths(false);
+		inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 		inspector->set_read_only(true);
 		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 		inspector->connect("object_edited", callable_mp(this, &ScriptEditorDebugger::_remote_object_edited));

@@ -277,7 +277,7 @@ void AnimatableBody2D::_update_kinematic_motion() {
 }
 
 void AnimatableBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	AnimatableBody2D *body = (AnimatableBody2D *)p_instance;
+	AnimatableBody2D *body = static_cast<AnimatableBody2D *>(p_instance);
 	body->_body_state_changed(p_state);
 }
 
@@ -443,7 +443,7 @@ struct _RigidDynamicBody2DInOut {
 };
 
 void RigidDynamicBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	RigidDynamicBody2D *body = (RigidDynamicBody2D *)p_instance;
+	RigidDynamicBody2D *body = static_cast<RigidDynamicBody2D *>(p_instance);
 	body->_body_state_changed(p_state);
 }
 
@@ -925,7 +925,7 @@ TypedArray<String> RigidDynamicBody2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
 
 	if (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05) {
-		warnings.push_back(TTR("Size changes to RigidDynamicBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(RTR("Size changes to RigidDynamicBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
@@ -1760,7 +1760,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_block_on_wall"), "set_floor_block_on_wall_enabled", "is_floor_block_on_wall_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_floor_snap_length", "get_floor_snap_length");
-	ADD_GROUP("Moving platform", "moving_platform");
+	ADD_GROUP("Moving Platform", "moving_platform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");

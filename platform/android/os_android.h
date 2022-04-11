@@ -52,7 +52,7 @@ private:
 #endif
 
 #if defined(VULKAN_ENABLED)
-	ANativeWindow *native_window;
+	ANativeWindow *native_window = nullptr;
 #endif
 
 	mutable String data_dir_cache;
@@ -60,12 +60,14 @@ private:
 
 	AudioDriverOpenSL audio_driver_android;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
-	GodotJavaWrapper *godot_java;
-	GodotIOJavaWrapper *godot_io_java;
+	GodotJavaWrapper *godot_java = nullptr;
+	GodotIOJavaWrapper *godot_io_java = nullptr;
 
 public:
+	static const char *ANDROID_EXEC_PATH;
+
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
@@ -94,7 +96,7 @@ public:
 	virtual MainLoop *get_main_loop() const override;
 
 	void main_loop_begin();
-	bool main_loop_iterate();
+	bool main_loop_iterate(bool *r_should_swap_buffers = nullptr);
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -108,6 +110,7 @@ public:
 	ANativeWindow *get_native_window() const;
 
 	virtual Error shell_open(String p_uri) override;
+	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
@@ -120,6 +123,12 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	void vibrate_handheld(int p_duration_ms) override;
+
+	virtual String get_config_path() const override;
+
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);

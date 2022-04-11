@@ -171,6 +171,11 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_path, const 
 		if (compress_mode < COMPRESS_VRAM_COMPRESSED) {
 			return false;
 		}
+	} else if (p_option == "compress/normal_map") {
+		int compress_mode = int(p_options["compress/mode"]);
+		if (compress_mode == COMPRESS_LOSSLESS) {
+			return false;
+		}
 	} else if (p_option == "mipmaps/limit") {
 		return p_options["mipmaps/generate"];
 
@@ -208,7 +213,6 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Disabled,Enabled,RGBA Only"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/streamed"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), (p_preset == PRESET_3D ? true : false)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
@@ -225,7 +229,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	}
 }
 
-void ResourceImporterTexture::save_to_ctex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
+void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
 			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png") ||
@@ -318,8 +322,8 @@ void ResourceImporterTexture::save_to_ctex_format(FileAccess *f, const Ref<Image
 }
 
 void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
-	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	ERR_FAIL_NULL(f);
+	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	ERR_FAIL_COND(f.is_null());
 	f->store_8('G');
 	f->store_8('S');
 	f->store_8('T');
@@ -395,8 +399,6 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	Image::UsedChannels used_channels = image->detect_used_channels(csource);
 
 	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality);
-
-	memdelete(f);
 }
 
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -408,7 +410,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	const bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	const bool premult_alpha = p_options["process/premult_alpha"];
 	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
-	const bool stream = p_options["compress/streamed"];
+	// Support for texture streaming is not implemented yet.
+	const bool stream = false;
 	const int size_limit = p_options["process/size_limit"];
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
 	const int normal = p_options["compress/normal_map"];

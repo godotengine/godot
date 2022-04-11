@@ -270,6 +270,7 @@ private:
 	Rect2i to_screen_rect;
 	StringName input_group;
 	StringName gui_input_group;
+	StringName shortcut_input_group;
 	StringName unhandled_input_group;
 	StringName unhandled_key_input_group;
 
@@ -547,7 +548,7 @@ public:
 	bool is_input_disabled() const;
 
 	Vector2 get_mouse_position() const;
-	void warp_mouse(const Vector2 &p_pos);
+	void warp_mouse(const Vector2 &p_position);
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
@@ -608,6 +609,8 @@ public:
 	Window *get_base_window() const;
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
+
+	virtual Transform2D get_screen_transform() const;
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
@@ -731,6 +734,8 @@ public:
 
 	void set_clear_mode(ClearMode p_mode);
 	ClearMode get_clear_mode() const;
+
+	virtual Transform2D get_screen_transform() const override;
 
 	SubViewport();
 	~SubViewport();

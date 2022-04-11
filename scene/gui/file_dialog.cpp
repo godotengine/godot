@@ -95,7 +95,7 @@ void FileDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				set_process_unhandled_input(false);
+				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -119,7 +119,7 @@ void FileDialog::_notification(int p_what) {
 	}
 }
 
-void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -217,7 +217,7 @@ void FileDialog::_post_popup() {
 		tree->grab_focus();
 	}
 
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	// For open dir mode, deselect all items on file dialog open.
 	if (mode == FILE_MODE_OPEN_DIR) {
@@ -798,7 +798,6 @@ void FileDialog::set_access(Access p_access) {
 	if (access == p_access) {
 		return;
 	}
-	memdelete(dir_access);
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1091,5 +1090,4 @@ FileDialog::~FileDialog() {
 	if (unregister_func) {
 		unregister_func(this);
 	}
-	memdelete(dir_access);
 }

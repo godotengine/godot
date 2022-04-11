@@ -432,21 +432,21 @@ struct GDScriptUtilityFunctionsDefinitions {
 	}
 
 	static inline void print_debug(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
 		if (Thread::get_caller_id() == Thread::get_main_id()) {
 			ScriptLanguage *script = GDScriptLanguage::get_singleton();
 			if (script->debug_get_stack_level_count() > 0) {
-				str += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
+				s += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
 			}
 		} else {
-			str += "\n   At: Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id());
+			s += "\n   At: Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id());
 		}
 
-		print_line(str);
+		print_line(s);
 		*r_ret = Variant();
 	}
 

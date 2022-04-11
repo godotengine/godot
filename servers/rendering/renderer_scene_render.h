@@ -223,7 +223,7 @@ public:
 	struct RenderSDFGIUpdateData {
 		bool update_static = false;
 		uint32_t static_cascade_count;
-		uint32_t *static_cascade_indices;
+		uint32_t *static_cascade_indices = nullptr;
 		PagedArray<RID> *static_positional_lights;
 
 		const Vector<RID> *directional_lights;

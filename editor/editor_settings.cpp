@@ -404,12 +404,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	const String display_scale_hint_string = vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(get_auto_display_scale() * 100));
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
-	_initial_set("interface/editor/enable_debugging_pseudolocalization", false);
-	set_restart_if_changed("interface/editor/enable_debugging_pseudolocalization", true);
+	_initial_set("interface/editor/debug/enable_pseudolocalization", false);
+	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);
 	// Use pseudolocalization in editor.
 
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/code_font_size", 14, "8,48,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/code_font_contextual_ligatures", 0, "Default,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
@@ -422,9 +422,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_subpixel_positioning", 1, "Disabled,Auto,One half of a pixel,One quarter of a pixel")
 
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/low_processor_mode_sleep_usec", 6900, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	// Default unfocused usec sleep is for 10 FPS. Allow an unfocused FPS limit
 	// as low as 1 FPS for those who really need low power usage (but don't need
@@ -535,14 +535,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Appearance: Whitespace
 	_initial_set("text_editor/appearance/whitespace/draw_tabs", true);
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false);
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 6, "0,50,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
 
 	// Behavior
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
-	_initial_set("text_editor/behavior/navigation/v_scroll_speed", 80);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -711,10 +711,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/debug/remote_port", 6007, "1,65535,1")
 
 	// SSL
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem")
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	// Profiler
 	_initial_set("debugger/profiler_frame_history_size", 600);
+
+	// HTTP Proxy
+	_initial_set("network/http_proxy/host", "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
 
 	/* Extra config */
 
@@ -838,7 +842,7 @@ void EditorSettings::create() {
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
 		// Validate editor config file.
-		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
+		Ref<DirAccess> dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
@@ -887,7 +891,7 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/enable_debugging_pseudolocalization"));
+	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/debug/enable_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
@@ -1147,12 +1151,11 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	} else {
 		favorites_file = get_project_settings_dir().plus_file("favorites");
 	}
-	FileAccess *f = FileAccess::open(favorites_file, FileAccess::WRITE);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::WRITE);
+	if (f.is_valid()) {
 		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
 		}
-		memdelete(f);
 	}
 }
 
@@ -1168,12 +1171,11 @@ void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	} else {
 		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
 	}
-	FileAccess *f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
+	if (f.is_valid()) {
 		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
 		}
-		memdelete(f);
 	}
 }
 
@@ -1191,24 +1193,22 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 		favorites_file = get_project_settings_dir().plus_file("favorites");
 		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
 	}
-	FileAccess *f = FileAccess::open(favorites_file, FileAccess::READ);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::READ);
+	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
-		memdelete(f);
 	}
 
 	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
-	if (f) {
+	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
-		memdelete(f);
 	}
 }
 
@@ -1223,8 +1223,8 @@ bool EditorSettings::is_dark_theme() {
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 
-	DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
-	if (d) {
+	Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+	if (d.is_valid()) {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1289,8 +1289,8 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccessRef d = DirAccess::open(get_text_editor_themes_dir());
-		if (d) {
+		Ref<DirAccess> d = DirAccess::open(get_text_editor_themes_dir());
+		if (d.is_valid()) {
 			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
 			return true;
 		}
@@ -1341,8 +1341,8 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (!p_custom_path.is_empty()) {
 		template_dir = p_custom_path;
 	}
-	DirAccessRef d = DirAccess::open(template_dir);
-	if (d) {
+	Ref<DirAccess> d = DirAccess::open(template_dir);
+	if (d.is_valid()) {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (!file.is_empty()) {
@@ -1361,7 +1361,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#ifdef OSX_ENABLED
+#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -1385,7 +1385,7 @@ float EditorSettings::get_auto_display_scale() const {
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
+void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 

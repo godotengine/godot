@@ -892,7 +892,7 @@ Vector<StringName> VisualShaderNodeTexture::get_editable_properties() const {
 
 String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 	if (is_input_port_connected(2) && source != SOURCE_PORT) {
-		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+		return RTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
 	}
 
 	if (source == SOURCE_TEXTURE) {
@@ -917,12 +917,12 @@ String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::T
 
 	if (source == SOURCE_DEPTH && p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
 		if (get_output_port_for_preview() == 0) { // DEPTH_TEXTURE is not supported in preview(canvas_item) shader
-			return TTR("Invalid source for preview.");
+			return RTR("Invalid source for preview.");
 		}
 		return String(); // all good
 	}
 
-	return TTR("Invalid source for shader.");
+	return RTR("Invalid source for shader.");
 }
 
 void VisualShaderNodeTexture::_bind_methods() {
@@ -1255,7 +1255,7 @@ void VisualShaderNodeSample3D::_bind_methods() {
 
 String VisualShaderNodeSample3D::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 	if (is_input_port_connected(2) && source != SOURCE_PORT) {
-		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+		return RTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
 	}
 
 	if (source == SOURCE_TEXTURE) {
@@ -1264,7 +1264,7 @@ String VisualShaderNodeSample3D::get_warning(Shader::Mode p_mode, VisualShader::
 	if (source == SOURCE_PORT) {
 		return String(); // all good
 	}
-	return TTR("Invalid source for shader.");
+	return RTR("Invalid source for shader.");
 }
 
 VisualShaderNodeSample3D::VisualShaderNodeSample3D() {
@@ -1575,7 +1575,7 @@ Vector<StringName> VisualShaderNodeCubemap::get_editable_properties() const {
 
 String VisualShaderNodeCubemap::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 	if (is_input_port_connected(2) && source != SOURCE_PORT) {
-		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+		return RTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
 	}
 	return String();
 }
@@ -1967,7 +1967,7 @@ String VisualShaderNodeVectorOp::get_warning(Shader::Mode p_mode, VisualShader::
 	}
 
 	if (invalid_type) {
-		return TTR("Invalid operator for that type.");
+		return RTR("Invalid operator for that type.");
 	}
 
 	return String();
@@ -2741,7 +2741,7 @@ String VisualShaderNodeVectorFunc::get_warning(Shader::Mode p_mode, VisualShader
 	}
 
 	if (invalid_type) {
-		return TTR("Invalid function for that type.");
+		return RTR("Invalid function for that type.");
 	}
 
 	return String();
@@ -5586,10 +5586,10 @@ bool VisualShaderNodeTextureUniform::is_show_prop_names() const {
 
 Map<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
 	Map<StringName, String> names;
-	names.insert("texture_type", TTR("Type"));
-	names.insert("color_default", TTR("Default Color"));
-	names.insert("texture_filter", TTR("Filter"));
-	names.insert("texture_repeat", TTR("Repeat"));
+	names.insert("texture_type", RTR("Type"));
+	names.insert("color_default", RTR("Default Color"));
+	names.insert("texture_filter", RTR("Filter"));
+	names.insert("texture_repeat", RTR("Repeat"));
 	return names;
 }
 
@@ -6458,7 +6458,7 @@ String VisualShaderNodeCompare::get_output_port_name(int p_port) const {
 String VisualShaderNodeCompare::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 	if (comparison_type == CTYPE_BOOLEAN || comparison_type == CTYPE_TRANSFORM) {
 		if (func > FUNC_NOT_EQUAL) {
-			return TTR("Invalid comparison function for that type.");
+			return RTR("Invalid comparison function for that type.");
 		}
 	}
 	return "";
@@ -6805,29 +6805,29 @@ String VisualShaderNodeBillboard::generate_code(Shader::Mode p_mode, VisualShade
 	switch (billboard_type) {
 		case BILLBOARD_TYPE_ENABLED:
 			code += "	{\n";
-			code += "		mat4 __mvm = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0], CAMERA_MATRIX[1], CAMERA_MATRIX[2], WORLD_MATRIX[3]);\n";
+			code += "		mat4 __mvm = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);\n";
 			if (keep_scale) {
-				code += "		__mvm = __mvm * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+				code += "		__mvm = __mvm * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
 			code += "		" + p_output_vars[0] + " = __mvm;\n";
 			code += "	}\n";
 			break;
 		case BILLBOARD_TYPE_FIXED_Y:
 			code += "	{\n";
-			code += "		mat4 __mvm = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0], WORLD_MATRIX[1], vec4(normalize(cross(CAMERA_MATRIX[0].xyz, WORLD_MATRIX[1].xyz)), 0.0), WORLD_MATRIX[3]);\n";
+			code += "		mat4 __mvm = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], MODEL_MATRIX[1], vec4(normalize(cross(INV_VIEW_MATRIX[0].xyz, MODEL_MATRIX[1].xyz)), 0.0), MODEL_MATRIX[3]);\n";
 			if (keep_scale) {
-				code += "		__mvm = __mvm * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+				code += "		__mvm = __mvm * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			} else {
-				code += "		__mvm = __mvm * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0 / length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+				code += "		__mvm = __mvm * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0 / length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
 			code += "		" + p_output_vars[0] + " = __mvm;\n";
 			code += "	}\n";
 			break;
 		case BILLBOARD_TYPE_PARTICLES:
 			code += "	{\n";
-			code += "		mat4 __wm = mat4(normalize(CAMERA_MATRIX[0]) * length(WORLD_MATRIX[0]), normalize(CAMERA_MATRIX[1]) * length(WORLD_MATRIX[0]), normalize(CAMERA_MATRIX[2]) * length(WORLD_MATRIX[2]), WORLD_MATRIX[3]);\n";
+			code += "		mat4 __wm = mat4(normalize(INV_VIEW_MATRIX[0]) * length(MODEL_MATRIX[0]), normalize(INV_VIEW_MATRIX[1]) * length(MODEL_MATRIX[0]), normalize(INV_VIEW_MATRIX[2]) * length(MODEL_MATRIX[2]), MODEL_MATRIX[3]);\n";
 			code += "		__wm = __wm * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
-			code += "		" + p_output_vars[0] + " = INV_CAMERA_MATRIX * __wm;\n";
+			code += "		" + p_output_vars[0] + " = VIEW_MATRIX * __wm;\n";
 			code += "	}\n";
 			break;
 		default:

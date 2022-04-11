@@ -40,11 +40,11 @@ class EditorFileDialog;
 class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);
 
-	OccluderInstance3D *occluder_instance;
+	OccluderInstance3D *occluder_instance = nullptr;
 
-	Button *bake;
+	Button *bake = nullptr;
 
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 
 	void _bake_select_file(const String &p_file);
 	void _bake();

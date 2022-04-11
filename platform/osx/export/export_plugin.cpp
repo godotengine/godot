@@ -72,6 +72,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
@@ -255,8 +256,8 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
 			ResourceSaver::save(path, it);
 
-			FileAccess *f = FileAccess::open(path, FileAccess::READ);
-			if (!f) {
+			Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+			if (f.is_null()) {
 				// Clean up generated file.
 				DirAccess::remove_file_or_error(path);
 				ERR_FAIL();
@@ -266,7 +267,6 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			uint64_t len = f->get_length();
 			data.resize(data.size() + len + 8);
 			f->get_buffer(&data.write[ofs + 8], len);
-			memdelete(f);
 			len += 8;
 			len = BSWAP32(len);
 			memcpy(&data.write[ofs], icon_infos[i].name, 4);
@@ -564,7 +564,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 	}
 
 	Error dir_access_error;
-	DirAccessRef dir_access{ DirAccess::open(p_path, &dir_access_error) };
+	Ref<DirAccess> dir_access{ DirAccess::open(p_path, &dir_access_error) };
 
 	if (dir_access_error != OK) {
 		return dir_access_error;
@@ -602,7 +602,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 	return OK;
 }
 
-Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, const String &p_src_path,
+Error EditorExportPlatformOSX::_copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path,
 		const String &p_in_app_path, bool p_sign_enabled,
 		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
 		bool p_should_error_on_non_code_sign) {
@@ -632,7 +632,7 @@ Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, co
 }
 
 Error EditorExportPlatformOSX::_export_osx_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin,
-		const String &p_app_path_name, DirAccessRef &dir_access,
+		const String &p_app_path_name, Ref<DirAccess> &dir_access,
 		bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
 		const String &p_ent_path) {
 	Error error{ OK };
@@ -681,6 +681,19 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	return OK;
 }
 
+Error EditorExportPlatformOSX::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
+
+	f->store_line("#!/bin/sh");
+	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
+	f->store_line("function realpath() { python -c \"import os,sys; print(os.path.realpath(sys.argv[1]))\" \"$0\"; }");
+	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
+	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
+
+	return OK;
+}
+
 Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -707,8 +720,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_BAD_PATH;
 	}
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	if (ep.step(TTR("Creating app bundle"), 0)) {
 		return ERR_SKIP;
@@ -747,22 +759,30 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Create our application bundle.
 	String tmp_app_dir_name = pkg_name + ".app";
+	String tmp_base_path_name;
 	String tmp_app_path_name;
+	String scr_path;
 	if (export_format == "app") {
+		tmp_base_path_name = p_path.get_base_dir();
 		tmp_app_path_name = p_path;
+		scr_path = p_path.get_basename() + ".command";
 	} else {
-		tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name);
+		tmp_app_path_name = tmp_base_path_name.plus_file(tmp_app_dir_name);
+		scr_path = tmp_base_path_name.plus_file(pkg_name + ".command");
 	}
+
 	print_verbose("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
 
-	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_app_path_name);
-	if (!tmp_app_dir) {
+	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
+	if (tmp_app_dir.is_null()) {
 		err = ERR_CANT_CREATE;
 	}
 
-	if (DirAccess::exists(tmp_app_dir_name)) {
+	DirAccess::remove_file_or_error(scr_path);
+	if (DirAccess::exists(tmp_app_path_name)) {
 		if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
 			tmp_app_dir->erase_contents_recursive();
 		}
@@ -810,7 +830,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
-			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
@@ -856,7 +876,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				String lang = tr->get_locale();
 				String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 				tmp_app_dir->make_dir_recursive(fname);
-				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 				f->store_line("/* Localized versions of Info.plist keys */");
 				f->store_line("");
 				if (appnames.has(lang)) {
@@ -913,6 +933,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 
@@ -971,12 +994,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			if (!iconpath.is_empty()) {
 				if (iconpath.get_extension() == "icns") {
-					FileAccess *icon = FileAccess::open(iconpath, FileAccess::READ);
-					if (icon) {
+					Ref<FileAccess> icon = FileAccess::open(iconpath, FileAccess::READ);
+					if (icon.is_valid()) {
 						data.resize(icon->get_length());
 						icon->get_buffer(&data.write[0], icon->get_length());
-						icon->close();
-						memdelete(icon);
 					}
 				} else {
 					Ref<Image> icon;
@@ -1017,15 +1038,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
 			}
 			if (err == OK) {
-				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
-				if (f) {
+				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
+				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
-					f->close();
 					if (is_execute) {
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
 					}
-					memdelete(f);
 				} else {
 					err = ERR_CANT_CREATE;
 				}
@@ -1041,6 +1060,15 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (!found_binary) {
 		ERR_PRINT(vformat("Requested template binary '%s' not found. It might be missing from your template archive.", binary_to_use));
 		err = ERR_FILE_NOT_FOUND;
+	}
+
+	// Save console script.
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_script");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
+			FileAccess::set_unix_permissions(scr_path, 0755);
+		}
 	}
 
 	if (err == OK) {
@@ -1060,8 +1088,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (sign_enabled && (ent_path.is_empty())) {
 			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
 
-			FileAccess *ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
-			if (ent_f) {
+			Ref<FileAccess> ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
+			if (ent_f.is_valid()) {
 				ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 				ent_f->store_line("<plist version=\"1.0\">");
@@ -1182,16 +1210,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 				ent_f->store_line("</dict>");
 				ent_f->store_line("</plist>");
-
-				ent_f->close();
-				memdelete(ent_f);
 			} else {
 				err = ERR_CANT_CREATE;
 			}
 
 			if ((err == OK) && helpers.size() > 0) {
 				ent_f = FileAccess::open(hlp_ent_path, FileAccess::WRITE);
-				if (ent_f) {
+				if (ent_f.is_valid()) {
 					ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 					ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 					ent_f->store_line("<plist version=\"1.0\">");
@@ -1202,9 +1227,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					ent_f->store_line("<true/>");
 					ent_f->store_line("</dict>");
 					ent_f->store_line("</plist>");
-
-					ent_f->close();
-					memdelete(ent_f);
 				} else {
 					err = ERR_CANT_CREATE;
 				}
@@ -1212,7 +1234,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if ((err == OK) && helpers.size() > 0) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < helpers.size(); i++) {
 				String hlp_path = helpers[i];
 				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
@@ -1239,7 +1261,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (err == OK) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
 				if (shared_objects[i].target.is_empty()) {
@@ -1284,7 +1306,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (ep.step(TTR("Making DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
+				err = _create_dmg(p_path, pkg_name, tmp_base_path_name);
 			}
 			// Sign DMG.
 			if (err == OK && sign_enabled && !ad_hoc) {
@@ -1303,11 +1325,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					OS::get_singleton()->move_to_trash(p_path);
 				}
 
-				FileAccess *dst_f = nullptr;
-				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
+				zlib_filefunc_def io_dst = zipio_create_io();
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
-				_zip_folder_recursive(zip, EditorPaths::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
+				_zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
 
 				zipClose(zip, nullptr);
 			}
@@ -1335,10 +1356,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			tmp_app_dir->remove(ent_path);
 		}
 		if (export_format != "app") {
-			if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
+			if (tmp_app_dir->change_dir(tmp_base_path_name) == OK) {
 				tmp_app_dir->erase_contents_recursive();
 				tmp_app_dir->change_dir("..");
-				tmp_app_dir->remove(tmp_app_dir_name);
+				tmp_app_dir->remove(pkg_name);
 			}
 		}
 	}
@@ -1347,9 +1368,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_root_path.plus_file(p_folder);
+	String dir = p_folder.is_empty() ? p_root_path : p_root_path.plus_file(p_folder);
 
-	DirAccessRef da = DirAccess::open(dir);
+	Ref<DirAccess> da = DirAccess::open(dir);
 	da->list_dir_begin();
 	String f = da->get_next();
 	while (!f.is_empty()) {
@@ -1401,7 +1422,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
 		} else {
-			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers");
+			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
 
 			OS::Time time = OS::get_singleton()->get_time();
 			OS::Date date = OS::get_singleton()->get_date();
@@ -1440,8 +1461,8 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
 					0);
 
-			FileAccessRef fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
-			if (!fa) {
+			Ref<FileAccess> fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
+			if (fa.is_null()) {
 				ERR_FAIL_MSG(vformat("Can't open file to read from path \"%s\".", dir.plus_file(f)));
 			}
 			const int bufsize = 16384;

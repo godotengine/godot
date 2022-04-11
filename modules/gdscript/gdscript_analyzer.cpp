@@ -277,6 +277,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 			base = parser->get_parser()->head->get_datatype();
 		} else {
 			if (p_class->extends.is_empty()) {
+				push_error("Could not resolve an empty super class path.", p_class);
 				return ERR_PARSE_ERROR;
 			}
 			const StringName &name = p_class->extends[extends_index++];
@@ -646,7 +647,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					}
 				}
 
-				// Check if initalizer is an unset identifier (ie: a variable within scope, but declared below)
+				// Check if initializer is an unset identifier (ie: a variable within scope, but declared below)
 				if (member.variable->initializer && !member.variable->initializer->get_datatype().is_set()) {
 					if (member.variable->initializer->type == GDScriptParser::Node::IDENTIFIER) {
 						GDScriptParser::IdentifierNode *initializer_identifier = static_cast<GDScriptParser::IdentifierNode *>(member.variable->initializer);
@@ -1124,6 +1125,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
 
+#ifdef TOOLS_ENABLED
+	int default_value_count = 0;
+#endif // TOOLS_ENABLED
+
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
@@ -1133,8 +1138,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
 #endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
-		if (p_function->parameters[i]->default_value && p_function->parameters[i]->default_value->is_constant) {
-			p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+		if (p_function->parameters[i]->default_value) {
+			default_value_count++;
+
+			if (p_function->parameters[i]->default_value->is_constant) {
+				p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+			}
 		}
 #endif // TOOLS_ENABLED
 	}
@@ -1169,7 +1178,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			int par_count_diff = p_function->parameters.size() - parameters_types.size();
 			valid = valid && par_count_diff >= 0;
-			valid = valid && p_function->default_arg_values.size() >= default_par_count + par_count_diff;
+			valid = valid && default_value_count >= default_par_count + par_count_diff;
 
 			int i = 0;
 			for (const GDScriptParser::DataType &par_type : parameters_types) {
@@ -1203,7 +1212,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	parser->current_function = previous_function;
@@ -2294,7 +2303,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							break;
 #ifdef DEBUG_ENABLED
 						} else {
-							if (par_type.builtin_type == Variant::INT && p_call->arguments[i]->get_datatype().builtin_type == Variant::FLOAT) {
+							if (par_type.builtin_type == Variant::INT && p_call->arguments[i]->get_datatype().builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
 								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
 							}
 #endif
@@ -2417,6 +2426,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		base_type = parser->current_class->base_type;
 		base_type.is_meta_type = false;
 		is_self = true;
+
+		if (p_call->callee == nullptr && !lambda_stack.is_empty()) {
+			push_error("Cannot use `super()` inside a lambda.", p_call);
+		}
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
 		base_type.is_meta_type = false;
@@ -2485,18 +2498,19 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 
 		if (is_self && parser->current_function != nullptr && parser->current_function->is_static && !is_static) {
-			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call->callee);
+			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call);
 		} else if (!is_self && base_type.is_meta_type && !is_static) {
 			base_type.is_meta_type = false; // For `to_string()`.
-			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call->callee);
+			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call);
 		} else if (is_self && !is_static && !lambda_stack.is_empty()) {
-			push_error(vformat(R"*(Cannot call non-static function "%s()" from a lambda function.)*", p_call->function_name), p_call->callee);
+			push_error(vformat(R"*(Cannot call non-static function "%s()" from a lambda function.)*", p_call->function_name), p_call);
 		}
 
 		call_type = return_type;
 	} else {
-		// Check if the name exists as something else.
 		bool found = false;
+
+		// Check if the name exists as something else.
 		if (!p_call->is_super && callee_type != GDScriptParser::Node::NONE) {
 			GDScriptParser::IdentifierNode *callee_id;
 			if (callee_type == GDScriptParser::Node::IDENTIFIER) {
@@ -2526,11 +2540,13 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (!found && (is_self || (base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN))) {
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 			push_error(vformat(R"*(Function "%s()" not found in base %s.)*", p_call->function_name, base_name), p_call->is_super ? p_call : p_call->callee);
+		} else if (!found && (!p_call->is_super && base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::NATIVE && base_type.is_meta_type)) {
+			push_error(vformat(R"*(Static function "%s()" not found in base "%s".)*", p_call->function_name, base_type.native_type.operator String()), p_call);
 		}
 	}
 
 	if (call_type.is_coroutine && !p_is_await && !p_is_root) {
-		push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call->callee);
+		push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
 	}
 
 	p_call->set_datatype(call_type);
@@ -3760,6 +3776,7 @@ bool GDScriptAnalyzer::function_signature_from_info(const MethodInfo &p_info, GD
 	r_return_type = type_from_property(p_info.return_val);
 	r_default_arg_count = p_info.default_arguments.size();
 	r_vararg = (p_info.flags & METHOD_FLAG_VARARG) != 0;
+	r_static = (p_info.flags & METHOD_FLAG_STATIC) != 0;
 
 	for (const PropertyInfo &E : p_info.arguments) {
 		r_par_types.push_back(type_from_property(E));

@@ -79,6 +79,9 @@ void Node::_notification(int p_notification) {
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
+			if (data.shortcut_input) {
+				add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+			}
 			if (data.unhandled_input) {
 				add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -99,6 +102,9 @@ void Node::_notification(int p_notification) {
 
 			if (data.input) {
 				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+			}
+			if (data.shortcut_input) {
+				remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
 			}
 			if (data.unhandled_input) {
 				remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
@@ -124,6 +130,10 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_READY: {
 			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 				set_process_input(true);
+			}
+
+			if (GDVIRTUAL_IS_OVERRIDDEN(_shortcut_input)) {
+				set_process_shortcut_input(true);
 			}
 
 			if (GDVIRTUAL_IS_OVERRIDDEN(_unhandled_input)) {
@@ -582,11 +592,11 @@ uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc
 
 /***** RPC FUNCTIONS ********/
 
-Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 1;
-		return Variant();
+		return;
 	}
 
 	Variant::Type type = p_args[0]->get_type();
@@ -594,7 +604,7 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	StringName method = (*p_args[0]).operator StringName();
@@ -602,21 +612,20 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 	rpcp(0, method, &p_args[1], p_argcount - 1);
 
 	r_error.error = Callable::CallError::CALL_OK;
-	return Variant();
 }
 
-Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 2;
-		return Variant();
+		return;
 	}
 
 	if (p_args[0]->get_type() != Variant::INT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::INT;
-		return Variant();
+		return;
 	}
 
 	Variant::Type type = p_args[1]->get_type();
@@ -624,7 +633,7 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	int peer_id = *p_args[0];
@@ -633,7 +642,6 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	rpcp(peer_id, method, &p_args[2], p_argcount - 2);
 
 	r_error.error = Callable::CallError::CALL_OK;
-	return Variant();
 }
 
 void Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
@@ -835,6 +843,26 @@ void Node::set_process_input(bool p_enable) {
 
 bool Node::is_processing_input() const {
 	return data.input;
+}
+
+void Node::set_process_shortcut_input(bool p_enable) {
+	if (p_enable == data.shortcut_input) {
+		return;
+	}
+	data.shortcut_input = p_enable;
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (p_enable) {
+		add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+	} else {
+		remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+	}
+}
+
+bool Node::is_processing_shortcut_input() const {
+	return data.shortcut_input;
 }
 
 void Node::set_process_unhandled_input(bool p_enable) {
@@ -2487,11 +2515,11 @@ static void _Node_debug_sn(Object *p_obj) {
 }
 #endif // DEBUG_ENABLED
 
-void Node::_print_stray_nodes() {
-	print_stray_nodes();
+void Node::_print_orphan_nodes() {
+	print_orphan_nodes();
 }
 
-void Node::print_stray_nodes() {
+void Node::print_orphan_nodes() {
 #ifdef DEBUG_ENABLED
 	ObjectDB::debug_objects(_Node_debug_sn);
 #endif
@@ -2617,6 +2645,15 @@ void Node::_call_input(const Ref<InputEvent> &p_event) {
 	}
 	input(p_event);
 }
+
+void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
+	GDVIRTUAL_CALL(_shortcut_input, p_event);
+	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
+		return;
+	}
+	shortcut_input(p_event);
+}
+
 void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	GDVIRTUAL_CALL(_unhandled_input, p_event);
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -2624,6 +2661,7 @@ void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 	unhandled_input(p_event);
 }
+
 void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	GDVIRTUAL_CALL(_unhandled_key_input, p_event);
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
@@ -2633,6 +2671,9 @@ void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node::input(const Ref<InputEvent> &p_event) {
+}
+
+void Node::shortcut_input(const Ref<InputEvent> &p_key_event) {
 }
 
 void Node::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2696,6 +2737,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_processing"), &Node::is_processing);
 	ClassDB::bind_method(D_METHOD("set_process_input", "enable"), &Node::set_process_input);
 	ClassDB::bind_method(D_METHOD("is_processing_input"), &Node::is_processing_input);
+	ClassDB::bind_method(D_METHOD("set_process_shortcut_input", "enable"), &Node::set_process_shortcut_input);
+	ClassDB::bind_method(D_METHOD("is_processing_shortcut_input"), &Node::is_processing_shortcut_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_input", "enable"), &Node::set_process_unhandled_input);
 	ClassDB::bind_method(D_METHOD("is_processing_unhandled_input"), &Node::is_processing_unhandled_input);
 	ClassDB::bind_method(D_METHOD("set_process_unhandled_key_input", "enable"), &Node::set_process_unhandled_key_input);
@@ -2703,7 +2746,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
-	ClassDB::bind_method(D_METHOD("print_stray_nodes"), &Node::_print_stray_nodes);
+	ClassDB::bind_method(D_METHOD("print_orphan_nodes"), &Node::_print_orphan_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
@@ -2856,6 +2899,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_ready);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
+	GDVIRTUAL_BIND(_shortcut_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }

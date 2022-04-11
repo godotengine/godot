@@ -68,7 +68,7 @@ public:
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
-	static void unregister_language(ScriptLanguage *p_language);
+	static void unregister_language(const ScriptLanguage *p_language);
 
 	static void set_reload_scripts_on_save(bool p_enable);
 	static bool is_reload_scripts_on_save_enabled();
@@ -132,7 +132,7 @@ public:
 	virtual Error reload(bool p_keep_state = false) = 0;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const = 0;
+	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
 #endif // TOOLS_ENABLED
 
 	virtual bool has_method(const StringName &p_method) const = 0;
@@ -212,42 +212,10 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return get_script()->get_rpc_methods(); }
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
-};
-
-struct ScriptCodeCompletionOption {
-	/* Keep enum in Sync with:                               */
-	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
-	enum Kind {
-		KIND_CLASS,
-		KIND_FUNCTION,
-		KIND_SIGNAL,
-		KIND_VARIABLE,
-		KIND_MEMBER,
-		KIND_ENUM,
-		KIND_CONSTANT,
-		KIND_NODE_PATH,
-		KIND_FILE_PATH,
-		KIND_PLAIN_TEXT,
-	};
-	Kind kind = KIND_PLAIN_TEXT;
-	String display;
-	String insert_text;
-	Color font_color;
-	RES icon;
-	Variant default_value;
-	Vector<Pair<int, int>> matches;
-
-	ScriptCodeCompletionOption() {}
-
-	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
-		display = p_text;
-		insert_text = p_text;
-		kind = p_kind;
-	}
 };
 
 class ScriptCodeCompletionCache {
@@ -261,7 +229,8 @@ public:
 	virtual ~ScriptCodeCompletionCache() {}
 };
 
-class ScriptLanguage {
+class ScriptLanguage : public Object {
+	GDCLASS(ScriptLanguage, Object)
 public:
 	virtual String get_name() const = 0;
 
@@ -326,19 +295,64 @@ public:
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	/* Keep enum in Sync with:                               */
+	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
+	enum CodeCompletionKind {
+		CODE_COMPLETION_KIND_CLASS,
+		CODE_COMPLETION_KIND_FUNCTION,
+		CODE_COMPLETION_KIND_SIGNAL,
+		CODE_COMPLETION_KIND_VARIABLE,
+		CODE_COMPLETION_KIND_MEMBER,
+		CODE_COMPLETION_KIND_ENUM,
+		CODE_COMPLETION_KIND_CONSTANT,
+		CODE_COMPLETION_KIND_NODE_PATH,
+		CODE_COMPLETION_KIND_FILE_PATH,
+		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_MAX
+	};
+
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
+	};
+
+	struct CodeCompletionOption {
+		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
+		String display;
+		String insert_text;
+		Color font_color;
+		RES icon;
+		Variant default_value;
+		Vector<Pair<int, int>> matches;
+		int location = LOCATION_OTHER;
+
+		CodeCompletionOption() {}
+
+		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER) {
+			display = p_text;
+			insert_text = p_text;
+			kind = p_kind;
+			location = p_location;
+		}
+	};
+
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+
+	enum LookupResultType {
+		LOOKUP_RESULT_SCRIPT_LOCATION,
+		LOOKUP_RESULT_CLASS,
+		LOOKUP_RESULT_CLASS_CONSTANT,
+		LOOKUP_RESULT_CLASS_PROPERTY,
+		LOOKUP_RESULT_CLASS_METHOD,
+		LOOKUP_RESULT_CLASS_ENUM,
+		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE,
+		LOOKUP_RESULT_MAX
+	};
 
 	struct LookupResult {
-		enum Type {
-			RESULT_SCRIPT_LOCATION,
-			RESULT_CLASS,
-			RESULT_CLASS_CONSTANT,
-			RESULT_CLASS_PROPERTY,
-			RESULT_CLASS_METHOD,
-			RESULT_CLASS_ENUM,
-			RESULT_CLASS_TBD_GLOBALSCOPE
-		};
-		Type type;
+		LookupResultType type;
 		Ref<Script> script;
 		String class_name;
 		String class_member;
@@ -416,42 +430,42 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-	Object *owner;
+	Object *owner = nullptr;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
 	Map<StringName, Variant> constants;
-	ScriptLanguage *language;
+	ScriptLanguage *language = nullptr;
 	Ref<Script> script;
 
 public:
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const;
-	virtual bool has_method(const StringName &p_method) const;
+	virtual void get_method_list(List<MethodInfo> *p_list) const override;
+	virtual bool has_method(const StringName &p_method) const override;
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
-	virtual void notification(int p_notification) {}
+	virtual void notification(int p_notification) override {}
 
-	virtual Ref<Script> get_script() const { return script; }
+	virtual Ref<Script> get_script() const override { return script; }
 
-	virtual ScriptLanguage *get_language() { return language; }
+	virtual ScriptLanguage *get_language() override { return language; }
 
-	Object *get_owner() { return owner; }
+	Object *get_owner() override { return owner; }
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
-	virtual bool is_placeholder() const { return true; }
+	virtual bool is_placeholder() const override { return true; }
 
-	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
-	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr);
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr) override;
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr) override;
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return Vector<Multiplayer::RPCConfig>(); }
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override { return Vector<Multiplayer::RPCConfig>(); }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

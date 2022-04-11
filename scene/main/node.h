@@ -43,7 +43,6 @@ class PropertyTweener;
 
 class Node : public Object {
 	GDCLASS(Node, Object);
-	OBJ_CATEGORY("Nodes");
 
 public:
 	enum ProcessMode {
@@ -137,6 +136,7 @@ private:
 		bool process_internal = false;
 
 		bool input = false;
+		bool shortcut_input = false;
 		bool unhandled_input = false;
 		bool unhandled_key_input = false;
 
@@ -169,7 +169,7 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
-	void _print_stray_nodes();
+	void _print_orphan_nodes();
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	Array _get_node_and_resource(const NodePath &p_path);
 
@@ -179,8 +179,8 @@ private:
 	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	Array _get_groups() const;
 
-	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
 	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
@@ -216,11 +216,13 @@ protected:
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);
+	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
 protected:
 	virtual void input(const Ref<InputEvent> &p_event);
+	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
 
@@ -232,6 +234,7 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
+	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
@@ -396,6 +399,9 @@ public:
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
 
+	void set_process_shortcut_input(bool p_enable);
+	bool is_processing_shortcut_input() const;
+
 	void set_process_unhandled_input(bool p_enable);
 	bool is_processing_unhandled_input() const;
 
@@ -436,7 +442,7 @@ public:
 
 	void request_ready();
 
-	static void print_stray_nodes();
+	static void print_orphan_nodes();
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);

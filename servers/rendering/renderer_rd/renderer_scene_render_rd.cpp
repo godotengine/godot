@@ -33,6 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -2358,6 +2361,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 }
 
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
@@ -2490,7 +2494,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.exposure_texture = rb->luminance.current;
 			tonemap.auto_exposure_grey = env->auto_exp_scale;
 		} else {
-			tonemap.exposure_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (can_use_effects && env && env->glow_enabled) {
@@ -2506,15 +2510,15 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.glow_texture = rb->blur[1].texture;
 			if (env->glow_map.is_valid()) {
 				tonemap.glow_map_strength = env->glow_map_strength;
-				tonemap.glow_map = storage->texture_get_rd_texture(env->glow_map);
+				tonemap.glow_map = texture_storage->texture_get_rd_texture(env->glow_map);
 			} else {
 				tonemap.glow_map_strength = 0.0f;
-				tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+				tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 			}
 
 		} else {
-			tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
-			tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+			tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
+			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (rb->screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
@@ -2536,7 +2540,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		tonemap.use_color_correction = false;
 		tonemap.use_1d_color_correction = false;
-		tonemap.color_correction_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 		if (can_use_effects && env) {
 			tonemap.use_bcs = env->adjustments_enabled;
@@ -2546,7 +2550,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			if (env->adjustments_enabled && env->color_correction.is_valid()) {
 				tonemap.use_color_correction = true;
 				tonemap.use_1d_color_correction = env->use_1d_color_correction;
-				tonemap.color_correction_texture = storage->texture_get_rd_texture(env->color_correction);
+				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(env->color_correction);
 			}
 		}
 
@@ -2570,6 +2574,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 }
 
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RD::get_singleton()->draw_command_begin_label("Post Process Subpass");
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
@@ -2606,14 +2611,14 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	}
 
 	tonemap.use_glow = false;
-	tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
-	tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
+	tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 	tonemap.use_auto_exposure = false;
-	tonemap.exposure_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+	tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
 
 	tonemap.use_color_correction = false;
 	tonemap.use_1d_color_correction = false;
-	tonemap.color_correction_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 	if (can_use_effects && env) {
 		tonemap.use_bcs = env->adjustments_enabled;
@@ -2623,7 +2628,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		if (env->adjustments_enabled && env->color_correction.is_valid()) {
 			tonemap.use_color_correction = true;
 			tonemap.use_1d_color_correction = env->use_1d_color_correction;
-			tonemap.color_correction_texture = storage->texture_get_rd_texture(env->color_correction);
+			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(env->color_correction);
 		}
 	}
 
@@ -2646,6 +2651,7 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 }
 
 void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	EffectsRD *effects = storage->get_effects();
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -2656,7 +2662,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
 
 			if (shadow_atlas_texture.is_null()) {
-				shadow_atlas_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+				shadow_atlas_texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK);
 			}
 
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
@@ -2674,7 +2680,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
-		RID decal_atlas = storage->decal_atlas_get_texture();
+		RID decal_atlas = RendererRD::DecalAtlasStorage::get_singleton()->decal_atlas_get_texture();
 
 		if (decal_atlas.is_valid()) {
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
@@ -2716,7 +2722,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
 		if (p_occlusion_buffer.is_valid()) {
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
-			effects->copy_to_fb_rect(storage->texture_get_rd_texture(p_occlusion_buffer), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize), true, false);
+			effects->copy_to_fb_rect(texture_storage->texture_get_rd_texture(p_occlusion_buffer), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize), true, false);
 		}
 	}
 }
@@ -3262,6 +3268,8 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 }
 
 void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
+	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+
 	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
 	r_directional_light_count = 0;
@@ -3286,7 +3294,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		RS::LightType type = storage->light_get_type(base);
 		switch (type) {
 			case RS::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_is_sky_only(base)) {
+				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_get_sky_mode(base) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					continue;
 				}
 
@@ -3545,7 +3553,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		RID projector = storage->light_get_projector(base);
 
 		if (projector.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(projector);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(projector);
 
 			if (type == RS::LIGHT_SPOT) {
 				light_data.projector_rect[0] = rect.position.x;
@@ -3661,6 +3669,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 }
 
 void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform) {
+	RendererRD::DecalAtlasStorage *decal_atlas_storage = RendererRD::DecalAtlasStorage::get_singleton();
+
 	Transform3D uv_xform;
 	uv_xform.basis.scale(Vector3(2.0, 1.0, 2.0));
 	uv_xform.origin = Vector3(-1.0, 0.0, -1.0);
@@ -3684,9 +3694,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
 
-		if (storage->decal_is_distance_fade_enabled(decal)) {
-			float fade_begin = storage->decal_get_distance_fade_begin(decal);
-			float fade_length = storage->decal_get_distance_fade_length(decal);
+		if (decal_atlas_storage->decal_is_distance_fade_enabled(decal)) {
+			float fade_begin = decal_atlas_storage->decal_get_distance_fade_begin(decal);
+			float fade_length = decal_atlas_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
 				if (distance > fade_begin + fade_length) {
@@ -3714,15 +3724,15 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			_map_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id, i);
 		}
 
-		di->cull_mask = storage->decal_get_cull_mask(decal);
+		di->cull_mask = decal_atlas_storage->decal_get_cull_mask(decal);
 
 		Transform3D xform = di->transform;
 		float fade = 1.0;
 
-		if (storage->decal_is_distance_fade_enabled(decal)) {
+		if (decal_atlas_storage->decal_is_distance_fade_enabled(decal)) {
 			real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
-			float fade_begin = storage->decal_get_distance_fade_begin(decal);
-			float fade_length = storage->decal_get_distance_fade_length(decal);
+			float fade_begin = decal_atlas_storage->decal_get_distance_fade_begin(decal);
+			float fade_length = decal_atlas_storage->decal_get_distance_fade_length(decal);
 
 			if (distance > fade_begin) {
 				fade = 1.0 - (distance - fade_begin) / fade_length;
@@ -3731,7 +3741,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		Cluster::DecalData &dd = cluster.decals[i];
 
-		Vector3 decal_extents = storage->decal_get_extents(decal);
+		Vector3 decal_extents = decal_atlas_storage->decal_get_extents(decal);
 
 		Transform3D scale_xform;
 		scale_xform.basis.scale(decal_extents);
@@ -3744,12 +3754,12 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		dd.normal[0] = normal.x;
 		dd.normal[1] = normal.y;
 		dd.normal[2] = normal.z;
-		dd.normal_fade = storage->decal_get_normal_fade(decal);
+		dd.normal_fade = decal_atlas_storage->decal_get_normal_fade(decal);
 
-		RID albedo_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
-		RID emission_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
+		RID albedo_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
+		RID emission_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
 		if (albedo_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(albedo_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(albedo_tex);
 			dd.albedo_rect[0] = rect.position.x;
 			dd.albedo_rect[1] = rect.position.y;
 			dd.albedo_rect[2] = rect.size.x;
@@ -3764,10 +3774,10 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.albedo_rect[3] = 0;
 		}
 
-		RID normal_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
+		RID normal_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
 
 		if (normal_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(normal_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(normal_tex);
 			dd.normal_rect[0] = rect.position.x;
 			dd.normal_rect[1] = rect.position.y;
 			dd.normal_rect[2] = rect.size.x;
@@ -3782,9 +3792,9 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.normal_rect[3] = 0;
 		}
 
-		RID orm_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ORM);
+		RID orm_tex = decal_atlas_storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ORM);
 		if (orm_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(orm_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(orm_tex);
 			dd.orm_rect[0] = rect.position.x;
 			dd.orm_rect[1] = rect.position.y;
 			dd.orm_rect[2] = rect.size.x;
@@ -3797,7 +3807,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		}
 
 		if (emission_tex.is_valid()) {
-			Rect2 rect = storage->decal_atlas_get_texture_rect(emission_tex);
+			Rect2 rect = decal_atlas_storage->decal_atlas_get_texture_rect(emission_tex);
 			dd.emission_rect[0] = rect.position.x;
 			dd.emission_rect[1] = rect.position.y;
 			dd.emission_rect[2] = rect.size.x;
@@ -3809,16 +3819,16 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.emission_rect[3] = 0;
 		}
 
-		Color modulate = storage->decal_get_modulate(decal);
+		Color modulate = decal_atlas_storage->decal_get_modulate(decal);
 		dd.modulate[0] = modulate.r;
 		dd.modulate[1] = modulate.g;
 		dd.modulate[2] = modulate.b;
 		dd.modulate[3] = modulate.a * fade;
-		dd.emission_energy = storage->decal_get_emission_energy(decal) * fade;
-		dd.albedo_mix = storage->decal_get_albedo_mix(decal);
-		dd.mask = storage->decal_get_cull_mask(decal);
-		dd.upper_fade = storage->decal_get_upper_fade(decal);
-		dd.lower_fade = storage->decal_get_lower_fade(decal);
+		dd.emission_energy = decal_atlas_storage->decal_get_emission_energy(decal) * fade;
+		dd.albedo_mix = decal_atlas_storage->decal_get_albedo_mix(decal);
+		dd.mask = decal_atlas_storage->decal_get_cull_mask(decal);
+		dd.upper_fade = decal_atlas_storage->decal_get_upper_fade(decal);
+		dd.lower_fade = decal_atlas_storage->decal_get_lower_fade(decal);
 
 		if (current_cluster_builder != nullptr) {
 			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_DECAL, xform, decal_extents);
@@ -3855,7 +3865,7 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	Error err = scene_singleton->volumetric_fog.compiler.compile(RS::SHADER_FOG, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Fog shader compilation failed.");
@@ -3915,13 +3925,13 @@ void RendererSceneRenderRD::FogShaderData::get_param_list(List<PropertyInfo> *p_
 	}
 }
 
-void RendererSceneRenderRD::FogShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
+void RendererSceneRenderRD::FogShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
-		RendererStorage::InstanceShaderParam p;
+		RendererMaterialStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E->get());
 		p.info.name = E->key(); //supply name
 		p.index = E->get().instance_index;
@@ -3956,7 +3966,7 @@ Variant RendererSceneRenderRD::FogShaderData::get_default_parameter(const String
 }
 
 RS::ShaderNativeSourceCode RendererSceneRenderRD::FogShaderData::get_native_source_code() const {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	return scene_singleton->volumetric_fog.shader.version_get_native_source_code(version);
 }
@@ -3966,7 +3976,7 @@ RendererSceneRenderRD::FogShaderData::FogShaderData() {
 }
 
 RendererSceneRenderRD::FogShaderData::~FogShaderData() {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 	ERR_FAIL_COND(!scene_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -3978,7 +3988,7 @@ RendererSceneRenderRD::FogShaderData::~FogShaderData() {
 // Fog material
 
 bool RendererSceneRenderRD::FogMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	uniform_set_updated = true;
 
@@ -3989,23 +3999,23 @@ RendererSceneRenderRD::FogMaterialData::~FogMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_func() {
+RendererRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_func() {
 	FogShaderData *shader_data = memnew(FogShaderData);
 	return shader_data;
 }
 
-RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs() {
+RendererRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs() {
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->_create_fog_shader_func();
 };
 
-RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
+RendererRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
 	FogMaterialData *material_data = memnew(FogMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
 
-RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+RendererRD::MaterialData *RendererSceneRenderRD::_create_fog_material_funcs(RendererRD::ShaderData *p_shader) {
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->_create_fog_material_func(static_cast<FogShaderData *>(p_shader));
 };
 
@@ -4063,6 +4073,9 @@ Vector3i RendererSceneRenderRD::_point_get_position_in_froxel_volume(const Vecto
 }
 
 void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	ERR_FAIL_COND(!is_clustered_enabled()); // can't use volumetric fog without clustered
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
@@ -4263,7 +4276,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			FogMaterialData *material = nullptr;
 
 			if (fog_material.is_valid()) {
-				material = (FogMaterialData *)storage->material_get_data(fog_material, RendererStorageRD::SHADER_TYPE_FOG);
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
 				if (!material || !material->shader_data->valid) {
 					material = nullptr;
 				}
@@ -4271,7 +4284,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			if (!material) {
 				fog_material = volumetric_fog.default_material;
-				material = (FogMaterialData *)storage->material_get_data(fog_material, RendererStorageRD::SHADER_TYPE_FOG);
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
 			}
 
 			ERR_FAIL_COND(!material);
@@ -4364,7 +4377,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.binding = 1;
 			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
 			if (shadow_atlas == nullptr || shadow_atlas->depth.is_null()) {
-				u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
 			} else {
 				u.append_id(shadow_atlas->depth);
 			}
@@ -4380,7 +4393,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			if (directional_shadow.depth.is_valid()) {
 				u.append_id(directional_shadow.depth);
 			} else {
-				u.append_id(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_BLACK));
 			}
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -4545,7 +4558,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 19;
-			RID radiance_texture = storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			RID radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 			RID sky_texture = env->sky.is_valid() ? sky.sky_get_radiance_texture_rd(env->sky) : RID();
 			u.append_id(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);
@@ -5488,7 +5501,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 
 	GeometryInstance *gi = geometry_instance_create(p_base);
 
-	uint32_t sc = RSG::storage->mesh_get_surface_count(p_base);
+	uint32_t sc = RSG::mesh_storage->mesh_get_surface_count(p_base);
 	Vector<RID> materials;
 	materials.resize(sc);
 
@@ -5605,6 +5618,8 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 }
 
 void RendererSceneRenderRD::init() {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	max_cluster_elements = get_max_elements();
 
 	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
@@ -5661,8 +5676,8 @@ void RendererSceneRenderRD::init() {
 			volumetric_fog_modes.push_back("");
 			volumetric_fog.shader.initialize(volumetric_fog_modes);
 
-			storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_FOG, _create_fog_shader_funcs);
-			storage->material_set_data_request_function(RendererStorageRD::SHADER_TYPE_FOG, _create_fog_material_funcs);
+			material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_FOG, _create_fog_shader_funcs);
+			material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_FOG, _create_fog_material_funcs);
 			volumetric_fog.volume_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(VolumetricFogShader::VolumeUBO));
 		}
 
@@ -5701,9 +5716,9 @@ void RendererSceneRenderRD::init() {
 
 		{
 			// default material and shader for fog shader
-			volumetric_fog.default_shader = storage->shader_allocate();
-			storage->shader_initialize(volumetric_fog.default_shader);
-			storage->shader_set_code(volumetric_fog.default_shader, R"(
+			volumetric_fog.default_shader = material_storage->shader_allocate();
+			material_storage->shader_initialize(volumetric_fog.default_shader);
+			material_storage->shader_set_code(volumetric_fog.default_shader, R"(
 // Default fog shader.
 
 shader_type fog;
@@ -5713,11 +5728,11 @@ void fog() {
 	ALBEDO = vec3(1.0);
 }
 )");
-			volumetric_fog.default_material = storage->material_allocate();
-			storage->material_initialize(volumetric_fog.default_material);
-			storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
+			volumetric_fog.default_material = material_storage->material_allocate();
+			material_storage->material_initialize(volumetric_fog.default_material);
+			material_storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
 
-			FogMaterialData *md = (FogMaterialData *)storage->material_get_data(volumetric_fog.default_material, RendererStorageRD::SHADER_TYPE_FOG);
+			FogMaterialData *md = static_cast<FogMaterialData *>(material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG));
 			volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, 0);
 
 			Vector<RD::Uniform> uniforms;
@@ -5747,7 +5762,7 @@ void fog() {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.append_id(storage->global_variables_get_storage_buffer());
+				u.append_id(RendererRD::MaterialStorage::get_singleton()->global_variables_get_storage_buffer());
 				uniforms.push_back(u);
 			}
 
@@ -5816,6 +5831,8 @@ void fog() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
 		RD::get_singleton()->free(E.value.cubemap);
 	}
@@ -5832,20 +5849,10 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 		volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
 		RD::get_singleton()->free(volumetric_fog.volume_ubo);
 		RD::get_singleton()->free(volumetric_fog.params_ubo);
-		storage->free(volumetric_fog.default_shader);
-		storage->free(volumetric_fog.default_material);
+		material_storage->shader_free(volumetric_fog.default_shader);
+		material_storage->material_free(volumetric_fog.default_material);
 	}
 
-	RendererSceneSkyRD::SkyMaterialData *md = (RendererSceneSkyRD::SkyMaterialData *)storage->material_get_data(sky.sky_shader.default_material, RendererStorageRD::SHADER_TYPE_SKY);
-	sky.sky_shader.shader.version_free(md->shader_data->version);
-	RD::get_singleton()->free(sky.sky_scene_state.directional_light_buffer);
-	RD::get_singleton()->free(sky.sky_scene_state.uniform_buffer);
-	memdelete_arr(sky.sky_scene_state.directional_lights);
-	memdelete_arr(sky.sky_scene_state.last_frame_directional_lights);
-	storage->free(sky.sky_shader.default_shader);
-	storage->free(sky.sky_shader.default_material);
-	storage->free(sky.sky_scene_state.fog_shader);
-	storage->free(sky.sky_scene_state.fog_material);
 	memdelete_arr(directional_penumbra_shadow_kernel);
 	memdelete_arr(directional_soft_shadow_kernel);
 	memdelete_arr(penumbra_shadow_kernel);

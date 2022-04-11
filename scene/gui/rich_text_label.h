@@ -78,6 +78,7 @@ public:
 		ITEM_BGCOLOR,
 		ITEM_FGCOLOR,
 		ITEM_META,
+		ITEM_HINT,
 		ITEM_DROPCAP,
 		ITEM_CUSTOMFX
 	};
@@ -216,6 +217,11 @@ private:
 	struct ItemMeta : public Item {
 		Variant meta;
 		ItemMeta() { type = ITEM_META; }
+	};
+
+	struct ItemHint : public Item {
+		String description;
+		ItemHint() { type = ITEM_HINT; }
 	};
 
 	struct ItemParagraph : public Item {
@@ -369,6 +375,7 @@ private:
 
 	int tab_size = 4;
 	bool underline_meta = true;
+	bool underline_hint = true;
 	bool override_selected_font_color = false;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
@@ -428,7 +435,7 @@ private:
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
-	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
+	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
 
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
@@ -452,6 +459,7 @@ private:
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
+	bool _find_hint(Item *p_item, String *r_description);
 	Color _find_bgcolor(Item *p_item);
 	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
@@ -462,6 +470,7 @@ private:
 	void _scroll_changed(double);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 	Item *_get_next_item(Item *p_item, bool p_free = false) const;
 	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
@@ -505,6 +514,7 @@ public:
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
+	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP);
 	void push_fade(int p_start_index, int p_length);
 	void push_shake(int p_strength, float p_rate);
@@ -529,6 +539,9 @@ public:
 
 	void set_meta_underline(bool p_underline);
 	bool is_meta_underlined() const;
+
+	void set_hint_underline(bool p_underline);
+	bool is_hint_underlined() const;
 
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
@@ -571,9 +584,11 @@ public:
 	int get_selection_from() const;
 	int get_selection_to() const;
 	String get_selected_text() const;
+	void select_all();
 	void selection_copy();
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
+	void deselect();
 
 	void parse_bbcode(const String &p_bbcode);
 	void append_text(const String &p_bbcode);

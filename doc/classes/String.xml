@@ -341,7 +341,6 @@
 				print("1.7".is_valid_float()) # Prints "true"
 				print("24".is_valid_float()) # Prints "true"
 				print("7e3".is_valid_float()) # Prints "true"
-				print("24".is_valid_float()) # Prints "true"
 				print("Hello".is_valid_float()) # Prints "false"
 				[/codeblock]
 			</description>
@@ -514,10 +513,28 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="num_int64" qualifiers="static">
+			<return type="String" />
+			<argument index="0" name="number" type="int" />
+			<argument index="1" name="base" type="int" default="10" />
+			<argument index="2" name="capitalize_hex" type="bool" default="false" />
+			<description>
+				Converts a signed [int] to a string representation of a number.
+			</description>
+		</method>
 		<method name="num_scientific" qualifiers="static">
 			<return type="String" />
 			<argument index="0" name="number" type="float" />
 			<description>
+			</description>
+		</method>
+		<method name="num_uint64" qualifiers="static">
+			<return type="String" />
+			<argument index="0" name="number" type="int" />
+			<argument index="1" name="base" type="int" default="10" />
+			<argument index="2" name="capitalize_hex" type="bool" default="false" />
+			<description>
+				Converts a unsigned [int] to a string representation of a number.
 			</description>
 		</method>
 		<method name="pad_decimals" qualifiers="const">
@@ -615,8 +632,8 @@
 				var some_string = "One,Two,Three,Four"
 				var some_array = some_string.rsplit(",", true, 1)
 				print(some_array.size()) # Prints 2
-				print(some_array[0]) # Prints "Four"
-				print(some_array[1]) # Prints "Three,Two,One"
+				print(some_array[0]) # Prints "One,Two,Three"
+				print(some_array[1]) # Prints "Four"
 				[/gdscript]
 				[csharp]
 				// There is no Rsplit.
@@ -660,7 +677,7 @@
 			<return type="float" />
 			<argument index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this string compared to another. 1.0 means totally similar and 0.0 means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of 1.0 means totally similar, while 0.0 means totally dissimilar.
 				[codeblock]
 				print("ABC123".similarity("ABC123")) # Prints "1"
 				print("ABC123".similarity("XYZ456")) # Prints "0"
@@ -884,6 +901,12 @@
 		<operator name="operator +">
 			<return type="String" />
 			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<argument index="0" name="right" type="int" />
 			<description>
 			</description>
 		</operator>

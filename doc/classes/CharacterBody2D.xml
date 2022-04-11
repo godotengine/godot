@@ -183,7 +183,7 @@
 			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.
 		</member>
 		<member name="up_direction" type="Vector2" setter="set_up_direction" getter="get_up_direction" default="Vector2(0, -1)">
-			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector2.UP[/code]. If set to [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
+			Vector pointing upwards, used to determine what is a wall and what is a floor (or a ceiling) when calling [method move_and_slide]. Defaults to [code]Vector2.UP[/code]. As the vector will be normalized it can't be equal to [constant Vector2.ZERO], if you want all collisions to be reported as walls, consider using [constant MOTION_MODE_FLOATING] as [member motion_mode].
 		</member>
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].

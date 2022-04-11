@@ -221,7 +221,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 
 void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String> &r_files) {
 	Error err;
-	DirAccessRef dir = DirAccess::open(p_root_dir, &err);
+	Ref<DirAccess> dir = DirAccess::open(p_root_dir, &err);
 	if (OK == err) {
 		dir->list_dir_begin();
 		String file_name = dir->get_next();
@@ -571,7 +571,7 @@ Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
 	return owner_scene_node;
 }
 
-void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options) {
+void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	String path = get_file_path(p_params.textDocument.uri);
 	String call_hint;
 	bool forced = false;
@@ -638,7 +638,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 					symbol_identifier = "_init";
 				}
 				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_required), symbol_identifier, path, nullptr, ret)) {
-					if (ret.type == ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION) {
+					if (ret.type == ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION) {
 						String target_script_path = path;
 						if (!ret.script.is_null()) {
 							target_script_path = ret.script->get_path();

@@ -183,7 +183,7 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 void WSLServer::poll() {
 	List<int> remove_ids;
 	for (const KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
-		Ref<WSLPeer> peer = (WSLPeer *)E.value.ptr();
+		Ref<WSLPeer> peer = const_cast<WSLPeer *>(static_cast<const WSLPeer *>(E.value.ptr()));
 		peer->poll();
 		if (!peer->is_connected_to_host()) {
 			_on_disconnect(E.key, peer->close_code != -1);
@@ -266,7 +266,7 @@ int WSLServer::get_max_packet_size() const {
 void WSLServer::stop() {
 	_server->stop();
 	for (const KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
-		Ref<WSLPeer> peer = (WSLPeer *)E.value.ptr();
+		Ref<WSLPeer> peer = const_cast<WSLPeer *>(static_cast<const WSLPeer *>(E.value.ptr()));
 		peer->close_now();
 	}
 	_pending.clear();

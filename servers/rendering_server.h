@@ -469,9 +469,15 @@ public:
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS,
 	};
 
+	enum LightDirectionalSkyMode {
+		LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY,
+		LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY,
+		LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY,
+	};
+
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
-	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
+	virtual void light_directional_set_sky_mode(RID p_light, LightDirectionalSkyMode p_mode) = 0;
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
 
@@ -1569,6 +1575,7 @@ VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);
 VARIANT_ENUM_CAST(RenderingServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
+VARIANT_ENUM_CAST(RenderingServer::LightDirectionalSkyMode);
 VARIANT_ENUM_CAST(RenderingServer::LightProjectorFilter);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);

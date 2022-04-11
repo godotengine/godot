@@ -312,7 +312,7 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		virtual bool is_expression() const { return true; }
+		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
 
 	protected:
@@ -1146,7 +1146,7 @@ public:
 		COMPLETION_ASSIGN, // Assignment based on type (e.g. enum values).
 		COMPLETION_ATTRIBUTE, // After id.| to look for members.
 		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
-		COMPLETION_BUILT_IN_TYPE_CONSTANT, // Constants inside a built-in type (e.g. Color.blue).
+		COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
 		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
 		COMPLETION_GET_NODE, // Get node with $ notation.

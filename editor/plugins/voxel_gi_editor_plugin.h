@@ -41,12 +41,12 @@ struct EditorProgress;
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);
 
-	VoxelGI *voxel_gi;
+	VoxelGI *voxel_gi = nullptr;
 
-	HBoxContainer *bake_hb;
-	Button *bake;
+	HBoxContainer *bake_hb = nullptr;
+	Button *bake = nullptr;
 
-	EditorFileDialog *probe_file;
+	EditorFileDialog *probe_file = nullptr;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);

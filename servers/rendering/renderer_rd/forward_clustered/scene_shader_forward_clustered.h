@@ -42,7 +42,7 @@ private:
 	static SceneShaderForwardClustered *singleton;
 
 public:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
@@ -51,16 +51,16 @@ public:
 		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
 		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
 		SHADER_VERSION_DEPTH_PASS_WITH_SDF,
-		SHADER_VERSION_COLOR_PASS,
-		SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-		SHADER_VERSION_LIGHTMAP_COLOR_PASS,
-		SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-
 		SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
-		SHADER_VERSION_COLOR_PASS_MULTIVIEW,
-		SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW,
-
+		SHADER_VERSION_COLOR_PASS,
 		SHADER_VERSION_MAX
+	};
+
+	enum ShaderColorPassFlags {
+		SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 0,
+		SHADER_COLOR_PASS_FLAG_LIGHTMAP = 1 << 1,
+		SHADER_COLOR_PASS_FLAG_MULTIVIEW = 1 << 2,
+		SHADER_COLOR_PASS_FLAG_COUNT = 1 << 3
 	};
 
 	enum PipelineVersion {
@@ -70,20 +70,17 @@ public:
 		PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
 		PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL,
 		PIPELINE_VERSION_DEPTH_PASS_WITH_SDF,
-		PIPELINE_VERSION_OPAQUE_PASS,
-		PIPELINE_VERSION_OPAQUE_PASS_WITH_SEPARATE_SPECULAR,
-		PIPELINE_VERSION_TRANSPARENT_PASS,
-		PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS,
-		PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS_WITH_SEPARATE_SPECULAR,
-		PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS,
-
 		PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW,
-		PIPELINE_VERSION_OPAQUE_PASS_MULTIVIEW,
-		PIPELINE_VERSION_TRANSPARENT_PASS_MULTIVIEW,
-		PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS_MULTIVIEW,
-		PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS_MULTIVIEW,
-
+		PIPELINE_VERSION_COLOR_PASS,
 		PIPELINE_VERSION_MAX
+	};
+
+	enum PipelineColorPassFlags {
+		PIPELINE_COLOR_PASS_FLAG_TRANSPARENT = 1 << 0,
+		PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1,
+		PIPELINE_COLOR_PASS_FLAG_LIGHTMAP = 1 << 2,
+		PIPELINE_COLOR_PASS_FLAG_MULTIVIEW = 1 << 3,
+		PIPELINE_COLOR_PASS_FLAG_COUNT = 1 << 4,
 	};
 
 	enum ShaderSpecializations {
@@ -93,7 +90,7 @@ public:
 		SHADER_SPECIALIZATION_DIRECTIONAL_SOFT_SHADOWS = 1 << 3,
 	};
 
-	struct ShaderData : public RendererStorageRD::ShaderData {
+	struct ShaderData : public RendererRD::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -137,6 +134,7 @@ public:
 		RID version;
 		uint32_t vertex_input_mask;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_VERSION_MAX];
+		PipelineCacheRD color_pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_COLOR_PASS_FLAG_COUNT];
 
 		String path;
 
@@ -180,7 +178,7 @@ public:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -195,13 +193,13 @@ public:
 
 	SelfList<ShaderData>::List shader_list;
 
-	RendererStorageRD::ShaderData *_create_shader_func();
-	static RendererStorageRD::ShaderData *_create_shader_funcs() {
+	RendererRD::ShaderData *_create_shader_func();
+	static RendererRD::ShaderData *_create_shader_funcs() {
 		return static_cast<SceneShaderForwardClustered *>(singleton)->_create_shader_func();
 	}
 
-	struct MaterialData : public RendererStorageRD::MaterialData {
-		ShaderData *shader_data;
+	struct MaterialData : public RendererRD::MaterialData {
+		ShaderData *shader_data = nullptr;
 		RID uniform_set;
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -213,8 +211,8 @@ public:
 		virtual ~MaterialData();
 	};
 
-	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+	RendererRD::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RendererRD::MaterialData *_create_material_funcs(RendererRD::ShaderData *p_shader) {
 		return static_cast<SceneShaderForwardClustered *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
@@ -240,6 +238,7 @@ public:
 	ShaderData *overdraw_material_shader_ptr = nullptr;
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
+	Set<uint32_t> valid_color_pass_pipelines;
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
 

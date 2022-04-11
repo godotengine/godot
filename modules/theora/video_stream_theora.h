@@ -56,7 +56,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	Image::Format format = Image::Format::FORMAT_L8;
 	Vector<uint8_t> frame_data;
 	int frames_pending = 0;
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 	String file_name;
 	int audio_frames_wrote = 0;
 	Point2i size;
@@ -112,7 +112,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	RingBuffer<uint8_t> ring_buffer;
 	Vector<uint8_t> read_buffer;
 	bool thread_eof = false;
-	Semaphore *thread_sem;
+	Semaphore *thread_sem = nullptr;
 	Thread thread;
 	SafeFlag thread_exit;
 

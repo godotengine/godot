@@ -208,7 +208,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 
 	/** TEST ALL EDGES **/
 
-	Vector3 edge_norms[3] = {
+	const Vector3 edge_norms[3] = {
 		vertex[0] - vertex[1],
 		vertex[1] - vertex[2],
 		vertex[2] - vertex[0],

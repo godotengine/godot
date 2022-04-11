@@ -3586,7 +3586,7 @@ TypedArray<String> TileMap::get_configuration_warnings() const {
 	// Check if we have a non-sorted layer in a Z-index with a Y-sorted layer.
 	for (int layer = 0; layer < (int)layers.size(); layer++) {
 		if (!layers[layer].y_sort_enabled && y_sorted_z_index.has(layers[layer].z_index)) {
-			warnings.push_back(TTR("A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole with tiles from Y-sorted layers."));
+			warnings.push_back(RTR("A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole with tiles from Y-sorted layers."));
 			break;
 		}
 	}

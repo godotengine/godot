@@ -384,7 +384,7 @@ void OpenXRInterface::handle_tracker(Tracker *p_tracker) {
 	// profiles are suggested bindings for controller types we know about. OpenXR runtimes can stray away from these
 	// and rebind them or even offer bindings to controllers that are not known to us.
 
-	// We don't really have a consistant way to detect whether a controller is active however as long as it is
+	// We don't really have a consistent way to detect whether a controller is active however as long as it is
 	// unbound it seems to be unavailable, so far unknown controller seem to mimic one of the profiles we've
 	// supplied.
 	if (p_tracker->interaction_profile.is_null()) {
@@ -466,7 +466,7 @@ void OpenXRInterface::free_interaction_profiles() {
 	interaction_profiles.clear();
 }
 
-bool OpenXRInterface::initialise_on_startup() const {
+bool OpenXRInterface::initialize_on_startup() const {
 	if (openxr_api == nullptr) {
 		return false;
 	} else if (!openxr_api->is_initialized()) {
@@ -495,7 +495,7 @@ bool OpenXRInterface::initialize() {
 	// load up our action sets before setting up our session, note that our profiles are suggestions, OpenXR takes ownership of (re)binding
 	_load_action_map();
 
-	if (!openxr_api->initialise_session()) {
+	if (!openxr_api->initialize_session()) {
 		return false;
 	}
 

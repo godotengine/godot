@@ -81,7 +81,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				if (grabbing_spinner_attempt) {
 					if (grabbing_spinner) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 						update();
 					} else {
 						_focus_entered();
@@ -346,7 +346,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			text_ofs.x += glyphs[i].advance;
 		}
 	}
-	TS->free(num_rid);
+	TS->free_rid(num_rid);
 
 	if (get_step() == 1) {
 		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
@@ -414,7 +414,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 			if (mousewheel_over_grabber) {
-				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+				Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
 			}
 
 			grabber_range = width;

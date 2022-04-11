@@ -3,7 +3,8 @@ on: [push, pull_request]
 
 # Global Settings
 env:
-  GODOT_BASE_BRANCH: master
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: master-v2
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:
@@ -18,18 +19,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
-#            cache-name: linux-editor-mono
-#            target: release_debug
-#            tools: true
-#            tests: false # Disabled due freeze caused by mix Mono build and CI
-#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
-#            doc-test: true
-#            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
-#            build-mono: true
-#            artifact: true
+          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+            cache-name: linux-editor-mono
+            target: release_debug
+            tools: true
+            tests: false # Disabled due freeze caused by mix Mono build and CI
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
+            doc-test: true
+            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+            build-mono: true
+            artifact: true
 
-          - name: Editor with doubles and sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
+          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
             cache-name: linux-editor-double-sanitizers
             target: debug
             tools: true
@@ -38,20 +39,31 @@ jobs:
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
-            godot-cpp-test: false
+            godot-cpp-test: true
             bin: "./bin/godot.linuxbsd.double.tools.64.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-#          - name: Template w/ Mono (target=release, tools=no)
-#            cache-name: linux-template-mono
-#            target: release
-#            tools: false
-#            tests: false
-#            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
-#            build-mono: false
-#            artifact: true
+          - name: Editor with clang sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes)
+            cache-name: linux-editor-llvm-sanitizers
+            target: debug
+            tools: true
+            tests: true
+            sconsflags: use_asan=yes use_ubsan=yes use_llvm=yes
+            bin: "./bin/godot.linuxbsd.tools.64.llvm.san"
+            build-mono: false
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+
+          - name: Template w/ Mono (target=release, tools=no)
+            cache-name: linux-template-mono
+            target: release
+            tools: false
+            tests: false
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
+            build-mono: false
+            artifact: true
 
           - name: Minimal Template (target=release, tools=no, everything disabled)
             cache-name: linux-template-minimal
@@ -74,7 +86,8 @@ jobs:
           # The actual dependencies
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
-              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
+              llvm
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -179,14 +192,6 @@ jobs:
         run: |
           cp -f extension_api.json godot-cpp/godot-headers/
           cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
-
-      # Build godot-cpp library
-      - name: Build godot-cpp library
-        if: ${{ matrix.godot-cpp-test }}
-        run: |
-          cd godot-cpp
-          scons target=${{ matrix.target }} generate_bindings=yes -j2
-          cd ..
 
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension

@@ -42,7 +42,7 @@ jmethodID DirAccessJAndroid::_dir_next = nullptr;
 jmethodID DirAccessJAndroid::_dir_close = nullptr;
 jmethodID DirAccessJAndroid::_dir_is_dir = nullptr;
 
-DirAccess *DirAccessJAndroid::create_fs() {
+Ref<DirAccess> DirAccessJAndroid::create_fs() {
 	return memnew(DirAccessJAndroid);
 }
 
@@ -143,7 +143,7 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessJAndroid::get_current_dir(bool p_include_drive) {
+String DirAccessJAndroid::get_current_dir(bool p_include_drive) const {
 	return "res://" + current_dir;
 }
 
@@ -155,9 +155,9 @@ bool DirAccessJAndroid::file_exists(String p_file) {
 		sd = current_dir.plus_file(p_file);
 	}
 
-	FileAccessAndroid *f = memnew(FileAccessAndroid);
+	Ref<FileAccessAndroid> f;
+	f.instantiate();
 	bool exists = f->file_exists(sd);
-	memdelete(f);
 
 	return exists;
 }

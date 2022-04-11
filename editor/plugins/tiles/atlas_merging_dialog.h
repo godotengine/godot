@@ -49,19 +49,19 @@ private:
 	LocalVector<Map<Vector2i, Vector2i>> merged_mapping;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	// Settings.
 	int next_line_after_column = 30;
 
 	// GUI.
-	ItemList *atlas_merging_atlases_list;
-	EditorPropertyVector2i *texture_region_size_editor_property;
-	EditorPropertyInteger *columns_editor_property;
-	TextureRect *preview;
-	Label *select_2_atlases_label;
-	EditorFileDialog *editor_file_dialog;
-	Button *merge_button;
+	ItemList *atlas_merging_atlases_list = nullptr;
+	EditorPropertyVector2i *texture_region_size_editor_property = nullptr;
+	EditorPropertyInteger *columns_editor_property = nullptr;
+	TextureRect *preview = nullptr;
+	Label *select_2_atlases_label = nullptr;
+	EditorFileDialog *editor_file_dialog = nullptr;
+	Button *merge_button = nullptr;
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 

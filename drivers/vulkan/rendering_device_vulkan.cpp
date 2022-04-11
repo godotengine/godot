@@ -1318,7 +1318,7 @@ const VkImageType RenderingDeviceVulkan::vulkan_image_type[RenderingDevice::TEXT
 /**** BUFFER MANAGEMENT ****/
 /***************************/
 
-Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mapping) {
+Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mem_usage, VmaAllocationCreateFlags p_mem_flags) {
 	VkBufferCreateInfo bufferInfo;
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.pNext = nullptr;
@@ -1330,8 +1330,8 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	bufferInfo.pQueueFamilyIndices = nullptr;
 
 	VmaAllocationCreateInfo allocInfo;
-	allocInfo.flags = 0;
-	allocInfo.usage = p_mapping;
+	allocInfo.flags = p_mem_flags;
+	allocInfo.usage = p_mem_usage;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
@@ -1380,8 +1380,8 @@ Error RenderingDeviceVulkan::_insert_staging_block() {
 	bufferInfo.pQueueFamilyIndices = nullptr;
 
 	VmaAllocationCreateInfo allocInfo;
-	allocInfo.flags = 0;
-	allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+	allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
@@ -1484,7 +1484,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 			//this is an old block, which was already processed, let's reuse
 			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
 			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
-		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
+		} else {
 			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
 			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 				//we are still allowed to create a new block, so let's do that and insert it for current pos
@@ -1847,9 +1847,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	uint32_t image_size = get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, p_format.mipmaps, &width, &height);
 
 	VmaAllocationCreateInfo allocInfo;
-	allocInfo.flags = 0;
+	allocInfo.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
 	allocInfo.pool = nullptr;
-	allocInfo.usage = p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
+	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
@@ -2703,7 +2703,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 		//allocate buffer
 		VkCommandBuffer command_buffer = frames[frame].draw_command_buffer; //makes more sense to retrieve
 		Buffer tmp_buffer;
-		_buffer_allocate(&tmp_buffer, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+		_buffer_allocate(&tmp_buffer, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
 
 		{ //Source image barrier
 			VkImageMemoryBarrier image_memory_barrier;
@@ -3364,8 +3364,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	attachment_last_pass.resize(p_attachments.size());
 
 	Vector<VkAttachmentDescription> attachments;
+	Vector<int> attachment_remap;
 
 	for (int i = 0; i < p_attachments.size(); i++) {
+		if (p_attachments[i].usage_flags == AttachmentFormat::UNUSED_ATTACHMENT) {
+			attachment_remap.push_back(VK_ATTACHMENT_UNUSED);
+			continue;
+		}
+
 		ERR_FAIL_INDEX_V(p_attachments[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
 		ERR_FAIL_INDEX_V(p_attachments[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
 		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)),
@@ -3567,7 +3573,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		}
 
 		attachment_last_pass[i] = -1;
-
+		attachment_remap.push_back(attachments.size());
 		attachments.push_back(description);
 	}
 
@@ -3612,7 +3618,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				} else {
 					ERR_FAIL_COND_V_MSG(texture_samples != p_attachments[attachment].samples, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), if an attachment is marked as multisample, all of them should be multisample and use the same number of samples.");
 				}
-				reference.attachment = attachment;
+				reference.attachment = attachment_remap[attachment];
 				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
@@ -3631,7 +3637,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), input attachment (" + itos(j) + ").");
 				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it isn't marked as an input texture.");
 				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
-				reference.attachment = attachment;
+				reference.attachment = attachment_remap[attachment];
 				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
@@ -3657,7 +3663,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 				bool multisample = p_attachments[attachment].samples > TEXTURE_SAMPLES_1;
 				ERR_FAIL_COND_V_MSG(multisample, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachments can't be multisample.");
-				reference.attachment = attachment;
+				reference.attachment = attachment_remap[attachment];
 				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
@@ -3671,7 +3677,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), depth attachment.");
 			ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not a depth attachment.");
 			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
-			depth_stencil_reference.attachment = attachment;
+			depth_stencil_reference.attachment = attachment_remap[attachment];
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			attachment_last_pass[attachment] = i;
 
@@ -3958,14 +3964,13 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
-		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
 
-		ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
+		ERR_FAIL_COND_V_MSG(texture && texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
 
-		if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		if (texture && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			pass.depth_attachment = i;
 		} else {
-			pass.color_attachments.push_back(i);
+			pass.color_attachments.push_back(texture ? i : FramebufferPass::ATTACHMENT_UNUSED);
 		}
 	}
 
@@ -3979,28 +3984,34 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 	_THREAD_SAFE_METHOD_
 
 	Vector<AttachmentFormat> attachments;
+	attachments.resize(p_texture_attachments.size());
 	Size2i size;
-
+	bool size_set = false;
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
-		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
-		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
-
-		ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
-
-		if (i == 0) {
-			size.width = texture->width;
-			size.height = texture->height;
-		} else {
-			ERR_FAIL_COND_V_MSG((uint32_t)size.width != texture->width || (uint32_t)size.height != texture->height, RID(),
-					"All textures in a framebuffer should be the same size.");
-		}
-
 		AttachmentFormat af;
-		af.format = texture->format;
-		af.samples = texture->samples;
-		af.usage_flags = texture->usage_flags;
-		attachments.push_back(af);
+		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
+		if (!texture) {
+			af.usage_flags = AttachmentFormat::UNUSED_ATTACHMENT;
+		} else {
+			ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
+
+			if (!size_set) {
+				size.width = texture->width;
+				size.height = texture->height;
+				size_set = true;
+			} else {
+				ERR_FAIL_COND_V_MSG((uint32_t)size.width != texture->width || (uint32_t)size.height != texture->height, RID(),
+						"All textures in a framebuffer should be the same size.");
+			}
+
+			af.format = texture->format;
+			af.samples = texture->samples;
+			af.usage_flags = texture->usage_flags;
+		}
+		attachments.write[i] = af;
 	}
+
+	ERR_FAIL_COND_V_MSG(!size_set, RID(), "All attachments unused.");
 
 	FramebufferFormatID format_id = framebuffer_format_create_multipass(attachments, p_passes, p_view_count);
 	if (format_id == INVALID_ID) {
@@ -4019,7 +4030,9 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 	RID id = framebuffer_owner.make_rid(framebuffer);
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
-		_add_dependency(id, p_texture_attachments[i]);
+		if (p_texture_attachments[i].is_valid()) {
+			_add_dependency(id, p_texture_attachments[i]);
+		}
 	}
 
 	return id;
@@ -4097,7 +4110,7 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 		usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	}
 	Buffer buffer;
-	_buffer_allocate(&buffer, p_size_bytes, usage, VMA_MEMORY_USAGE_GPU_ONLY);
+	_buffer_allocate(&buffer, p_size_bytes, usage, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
@@ -4259,7 +4272,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 #else
 	index_buffer.max_index = 0xFFFFFFFF;
 #endif
-	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
@@ -4862,9 +4875,8 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining push constants.");
 #if 0
 				if (pconstants[0] == nullptr) {
-					FileAccess *f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
+					Ref<FileAccess> f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
 					f->store_buffer((const uint8_t *)&SpirV[0], SpirV.size() * sizeof(uint32_t));
-					memdelete(f);
 				}
 #endif
 
@@ -4952,8 +4964,8 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 
 	Vector<uint8_t> ret;
 	ret.resize(total_size);
-	uint32_t offset = 0;
 	{
+		uint32_t offset = 0;
 		uint8_t *binptr = ret.ptrw();
 		binptr[0] = 'G';
 		binptr[1] = 'V';
@@ -5026,7 +5038,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	uint32_t bin_data_size = decode_uint32(binptr + 8);
 
-	const RenderingDeviceVulkanShaderBinaryData &binary_data = *(const RenderingDeviceVulkanShaderBinaryData *)(binptr + 12);
+	const RenderingDeviceVulkanShaderBinaryData &binary_data = *(reinterpret_cast<const RenderingDeviceVulkanShaderBinaryData *>(binptr + 12));
 
 	Shader::PushConstant push_constant;
 	push_constant.push_constant_size = binary_data.push_constant_size;
@@ -5038,7 +5050,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	bool is_compute = binary_data.is_compute;
 
-	uint32_t compute_local_size[3] = { binary_data.compute_local_size[0], binary_data.compute_local_size[1], binary_data.compute_local_size[2] };
+	const uint32_t compute_local_size[3] = { binary_data.compute_local_size[0], binary_data.compute_local_size[1], binary_data.compute_local_size[2] };
 
 	read_offset += sizeof(uint32_t) * 3 + bin_data_size;
 
@@ -5062,7 +5074,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) >= binsize, RID());
 		uint32_t set_count = decode_uint32(binptr + read_offset);
 		read_offset += sizeof(uint32_t);
-		const RenderingDeviceVulkanShaderBinaryDataBinding *set_ptr = (const RenderingDeviceVulkanShaderBinaryDataBinding *)(binptr + read_offset);
+		const RenderingDeviceVulkanShaderBinaryDataBinding *set_ptr = reinterpret_cast<const RenderingDeviceVulkanShaderBinaryDataBinding *>(binptr + read_offset);
 		uint32_t set_size = set_count * sizeof(RenderingDeviceVulkanShaderBinaryDataBinding);
 		ERR_FAIL_COND_V(read_offset + set_size >= binsize, RID());
 
@@ -5134,7 +5146,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	Vector<Shader::SpecializationConstant> specialization_constants;
 
 	for (uint32_t i = 0; i < binary_data.specialization_constant_count; i++) {
-		const RenderingDeviceVulkanShaderBinarySpecializationConstant &src_sc = *(const RenderingDeviceVulkanShaderBinarySpecializationConstant *)(binptr + read_offset);
+		const RenderingDeviceVulkanShaderBinarySpecializationConstant &src_sc = *(reinterpret_cast<const RenderingDeviceVulkanShaderBinarySpecializationConstant *>(binptr + read_offset));
 		Shader::SpecializationConstant sc;
 		sc.constant.int_value = src_sc.int_value;
 		sc.constant.type = PipelineSpecializationConstantType(src_sc.type);
@@ -5371,7 +5383,7 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 			"Creating buffers with data is forbidden during creation of a draw list");
 
 	Buffer buffer;
-	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 	ERR_FAIL_COND_V(err != OK, RID());
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
@@ -5397,7 +5409,7 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 	if (p_usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT) {
 		flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 	}
-	Error err = _buffer_allocate(&buffer, p_size_bytes, flags, VMA_MEMORY_USAGE_GPU_ONLY);
+	Error err = _buffer_allocate(&buffer, p_size_bytes, flags, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 	ERR_FAIL_COND_V(err != OK, RID());
 
 	if (p_data.size()) {
@@ -5423,7 +5435,7 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != size_bytes, RID());
 
 	TextureBuffer texture_buffer;
-	Error err = _buffer_allocate(&texture_buffer.buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	Error err = _buffer_allocate(&texture_buffer.buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 	ERR_FAIL_COND_V(err != OK, RID());
 
 	if (p_data.size()) {
@@ -6170,7 +6182,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
 
 	Buffer tmp_buffer;
-	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
 	VkBufferCopy region;
 	region.srcOffset = 0;
 	region.dstOffset = 0;
@@ -6321,7 +6333,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	rasterization_state_create_info.depthClampEnable = p_rasterization_state.enable_depth_clamp;
 	rasterization_state_create_info.rasterizerDiscardEnable = p_rasterization_state.discard_primitives;
 	rasterization_state_create_info.polygonMode = (p_rasterization_state.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL);
-	static VkCullModeFlags cull_mode[3] = {
+	static const VkCullModeFlags cull_mode[3] = {
 		VK_CULL_MODE_NONE,
 		VK_CULL_MODE_FRONT_BIT,
 		VK_CULL_MODE_BACK_BIT
@@ -6348,7 +6360,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	Vector<VkSampleMask> sample_mask;
 	if (p_multisample_state.sample_mask.size()) {
 		//use sample mask
-		int rasterization_sample_mask_expected_size[TEXTURE_SAMPLES_MAX] = {
+		const int rasterization_sample_mask_expected_size[TEXTURE_SAMPLES_MAX] = {
 			1, 2, 4, 8, 16, 32, 64
 		};
 		ERR_FAIL_COND_V(rasterization_sample_mask_expected_size[p_multisample_state.sample_count] != p_multisample_state.sample_mask.size(), RID());
@@ -6417,49 +6429,55 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	Vector<VkPipelineColorBlendAttachmentState> attachment_states;
 	{
 		const FramebufferPass &pass = fb_format.E->key().passes[p_for_render_pass];
-
+		attachment_states.resize(pass.color_attachments.size());
+		ERR_FAIL_COND_V(p_blend_state.attachments.size() < pass.color_attachments.size(), RID());
 		for (int i = 0; i < pass.color_attachments.size(); i++) {
-			if (pass.color_attachments[i] != FramebufferPass::ATTACHMENT_UNUSED) {
-				int idx = attachment_states.size();
+			VkPipelineColorBlendAttachmentState state;
+			if (pass.color_attachments[i] == FramebufferPass::ATTACHMENT_UNUSED) {
+				state.blendEnable = false;
 
-				ERR_FAIL_INDEX_V(idx, p_blend_state.attachments.size(), RID());
-				VkPipelineColorBlendAttachmentState state;
-				state.blendEnable = p_blend_state.attachments[idx].enable_blend;
+				state.srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+				state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+				state.colorBlendOp = VK_BLEND_OP_ADD;
 
-				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].src_color_blend_factor, BLEND_FACTOR_MAX, RID());
-				state.srcColorBlendFactor = blend_factors[p_blend_state.attachments[idx].src_color_blend_factor];
-				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].dst_color_blend_factor, BLEND_FACTOR_MAX, RID());
-				state.dstColorBlendFactor = blend_factors[p_blend_state.attachments[idx].dst_color_blend_factor];
-				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].color_blend_op, BLEND_OP_MAX, RID());
-				state.colorBlendOp = blend_operations[p_blend_state.attachments[idx].color_blend_op];
-
-				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].src_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
-				state.srcAlphaBlendFactor = blend_factors[p_blend_state.attachments[idx].src_alpha_blend_factor];
-				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].dst_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
-				state.dstAlphaBlendFactor = blend_factors[p_blend_state.attachments[idx].dst_alpha_blend_factor];
-				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].alpha_blend_op, BLEND_OP_MAX, RID());
-				state.alphaBlendOp = blend_operations[p_blend_state.attachments[idx].alpha_blend_op];
+				state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+				state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+				state.alphaBlendOp = VK_BLEND_OP_ADD;
 
 				state.colorWriteMask = 0;
-				if (p_blend_state.attachments[idx].write_r) {
+			} else {
+				state.blendEnable = p_blend_state.attachments[i].enable_blend;
+
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_color_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.srcColorBlendFactor = blend_factors[p_blend_state.attachments[i].src_color_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_color_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.dstColorBlendFactor = blend_factors[p_blend_state.attachments[i].dst_color_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[i].color_blend_op, BLEND_OP_MAX, RID());
+				state.colorBlendOp = blend_operations[p_blend_state.attachments[i].color_blend_op];
+
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.srcAlphaBlendFactor = blend_factors[p_blend_state.attachments[i].src_alpha_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.dstAlphaBlendFactor = blend_factors[p_blend_state.attachments[i].dst_alpha_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[i].alpha_blend_op, BLEND_OP_MAX, RID());
+				state.alphaBlendOp = blend_operations[p_blend_state.attachments[i].alpha_blend_op];
+
+				state.colorWriteMask = 0;
+				if (p_blend_state.attachments[i].write_r) {
 					state.colorWriteMask |= VK_COLOR_COMPONENT_R_BIT;
 				}
-				if (p_blend_state.attachments[idx].write_g) {
+				if (p_blend_state.attachments[i].write_g) {
 					state.colorWriteMask |= VK_COLOR_COMPONENT_G_BIT;
 				}
-				if (p_blend_state.attachments[idx].write_b) {
+				if (p_blend_state.attachments[i].write_b) {
 					state.colorWriteMask |= VK_COLOR_COMPONENT_B_BIT;
 				}
-				if (p_blend_state.attachments[idx].write_a) {
+				if (p_blend_state.attachments[i].write_a) {
 					state.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
 				}
-
-				attachment_states.push_back(state);
-				idx++;
 			}
+			attachment_states.write[i] = state;
 		}
-
-		ERR_FAIL_COND_V(attachment_states.size() != p_blend_state.attachments.size(), RID());
 	}
 
 	color_blend_state_create_info.attachmentCount = attachment_states.size();
@@ -6863,10 +6881,11 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 		Vector<VkImageView> attachments;
 		for (int i = 0; i < p_framebuffer->texture_ids.size(); i++) {
 			Texture *texture = texture_owner.get_or_null(p_framebuffer->texture_ids[i]);
-			ERR_FAIL_COND_V(!texture, ERR_BUG);
-			attachments.push_back(texture->view);
-			ERR_FAIL_COND_V(texture->width != p_framebuffer->size.width, ERR_BUG);
-			ERR_FAIL_COND_V(texture->height != p_framebuffer->size.height, ERR_BUG);
+			if (texture) {
+				attachments.push_back(texture->view);
+				ERR_FAIL_COND_V(texture->width != p_framebuffer->size.width, ERR_BUG);
+				ERR_FAIL_COND_V(texture->height != p_framebuffer->size.height, ERR_BUG);
+			}
 		}
 		framebuffer_create_info.attachmentCount = attachments.size();
 		framebuffer_create_info.pAttachments = attachments.ptr();
@@ -6910,12 +6929,17 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 
 	Vector<VkClearValue> clear_values;
 	clear_values.resize(framebuffer->texture_ids.size());
-
+	int clear_values_count = 0;
 	{
 		int color_index = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 			VkClearValue clear_value;
+
+			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
+			if (!texture) {
+				color_index++;
+				continue;
+			}
 
 			if (color_index < p_clear_colors.size() && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 				ERR_FAIL_INDEX_V(color_index, p_clear_colors.size(), ERR_BUG); //a bug
@@ -6934,15 +6958,18 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 				clear_value.color.float32[2] = 0;
 				clear_value.color.float32[3] = 0;
 			}
-			clear_values.write[i] = clear_value;
+			clear_values.write[clear_values_count++] = clear_value;
 		}
 	}
 
-	render_pass_begin.clearValueCount = clear_values.size();
+	render_pass_begin.clearValueCount = clear_values_count;
 	render_pass_begin.pClearValues = clear_values.ptr();
 
 	for (int i = 0; i < p_storage_textures.size(); i++) {
 		Texture *texture = texture_owner.get_or_null(p_storage_textures[i]);
+		if (!texture) {
+			continue;
+		}
 		ERR_CONTINUE_MSG(!(texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT), "Supplied storage texture " + itos(i) + " for draw list is not set to be used for storage.");
 
 		if (texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
@@ -6981,6 +7008,9 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 		Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
+		if (!texture) {
+			continue;
+		}
 		texture->bound = true;
 		draw_list_bound_textures.push_back(framebuffer->texture_ids[i]);
 	}
@@ -6989,15 +7019,21 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 }
 
 void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil) {
+	ERR_FAIL_COND_MSG(p_clear_color && p_clear_colors.size() != framebuffer->texture_ids.size(), "Clear color values supplied (" + itos(p_clear_colors.size()) + ") differ from the amount required for framebuffer color attachments (" + itos(framebuffer->texture_ids.size()) + ").");
 	Vector<VkClearAttachment> clear_attachments;
 	int color_index = 0;
+	int texture_index = 0;
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 		Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
-		VkClearAttachment clear_at = {};
 
+		if (!texture) {
+			texture_index++;
+			continue;
+		}
+
+		VkClearAttachment clear_at = {};
 		if (p_clear_color && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-			ERR_FAIL_INDEX(color_index, p_clear_colors.size()); //a bug
-			Color clear_color = p_clear_colors[color_index];
+			Color clear_color = p_clear_colors[texture_index++];
 			clear_at.clearValue.color.float32[0] = clear_color.r;
 			clear_at.clearValue.color.float32[1] = clear_color.g;
 			clear_at.clearValue.color.float32[2] = clear_color.b;
@@ -7073,18 +7109,14 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	}
 
 	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
-
 		int color_count = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
-
-			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+			if (!texture || !(texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 				color_count++;
 			}
 		}
-
-		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_count, INVALID_ID,
-				"Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer color attachments (" + itos(color_count) + ").");
+		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_count, INVALID_ID, "Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer color attachments (" + itos(color_count) + ").");
 	}
 
 	VkFramebuffer vkframebuffer;
@@ -7176,7 +7208,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 
-			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+			if (!texture || !(texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 				color_count++;
 			}
 		}
@@ -9295,7 +9327,7 @@ String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) cons
 	return frames[frame].timestamp_result_names[p_index];
 }
 
-int RenderingDeviceVulkan::limit_get(Limit p_limit) {
+uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) {
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return limits.maxBoundDescriptorSets;

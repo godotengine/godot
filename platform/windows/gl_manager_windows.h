@@ -52,19 +52,18 @@ public:
 private:
 	// any data specific to the window
 	struct GLWindow {
-		GLWindow() { in_use = false; }
-		bool in_use;
+		bool in_use = false;
 
 		// the external ID .. should match the GL window number .. unused I think
-		DisplayServer::WindowID window_id;
-		int width;
-		int height;
+		DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		int width = 0;
+		int height = 0;
 
 		// windows specific
 		HDC hDC;
 		HWND hwnd;
 
-		int gldisplay_id;
+		int gldisplay_id = 0;
 	};
 
 	struct GLDisplay {
@@ -75,7 +74,7 @@ private:
 	LocalVector<GLWindow> _windows;
 	LocalVector<GLDisplay> _displays;
 
-	GLWindow *_current_window;
+	GLWindow *_current_window = nullptr;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;

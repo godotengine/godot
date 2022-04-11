@@ -1570,7 +1570,7 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 		GodotSpace3D *space = space_owner.get_or_null(p_rid);
 
 		while (space->get_objects().size()) {
-			GodotCollisionObject3D *co = (GodotCollisionObject3D *)space->get_objects().front()->get();
+			GodotCollisionObject3D *co = static_cast<GodotCollisionObject3D *>(space->get_objects().front()->get());
 			co->set_space(nullptr);
 		}
 
@@ -1612,7 +1612,7 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 	active_objects = 0;
 	collision_pairs = 0;
 	for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step((GodotSpace3D *)E->get(), p_step);
+		stepper->step(const_cast<GodotSpace3D *>(E->get()), p_step);
 		island_count += E->get()->get_island_count();
 		active_objects += E->get()->get_active_objects();
 		collision_pairs += E->get()->get_collision_pairs();
@@ -1636,7 +1636,7 @@ void GodotPhysicsServer3D::flush_queries() {
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
 	for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		GodotSpace3D *space = (GodotSpace3D *)E->get();
+		GodotSpace3D *space = const_cast<GodotSpace3D *>(E->get());
 		space->call_queries();
 	}
 
@@ -1709,7 +1709,7 @@ void GodotPhysicsServer3D::_update_shapes() {
 }
 
 void GodotPhysicsServer3D::_shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-	CollCbkData *cbk = (CollCbkData *)p_userdata;
+	CollCbkData *cbk = static_cast<CollCbkData *>(p_userdata);
 
 	if (cbk->max == 0) {
 		return;

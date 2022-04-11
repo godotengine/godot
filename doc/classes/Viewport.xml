@@ -172,7 +172,7 @@
 		</method>
 		<method name="warp_mouse">
 			<return type="void" />
-			<argument index="0" name="to_position" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>

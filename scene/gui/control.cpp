@@ -367,7 +367,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	Ref<Theme> theme = Theme::get_default();
 
-	p_list->push_back(PropertyInfo(Variant::NIL, "Theme Overrides", PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	{
 		List<StringName> names;
@@ -2937,9 +2937,9 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
-void Control::warp_mouse(const Point2 &p_to_pos) {
+void Control::warp_mouse(const Point2 &p_position) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
+	get_viewport()->warp_mouse(get_global_transform_with_canvas().xform(p_position));
 }
 
 bool Control::is_text_field() const {
@@ -3141,7 +3141,7 @@ TypedArray<String> Control::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
-		warnings.push_back(TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
+		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
 	return warnings;
@@ -3331,7 +3331,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Control::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 

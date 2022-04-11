@@ -74,11 +74,11 @@ class ProgressDialog : public PopupPanel {
 		ProgressBar *progress = nullptr;
 		Label *state = nullptr;
 	};
-	HBoxContainer *cancel_hb;
-	Button *cancel;
+	HBoxContainer *cancel_hb = nullptr;
+	Button *cancel = nullptr;
 
 	Map<String, Task> tasks;
-	VBoxContainer *main;
+	VBoxContainer *main = nullptr;
 	uint64_t last_progress_tick;
 
 	static ProgressDialog *singleton;

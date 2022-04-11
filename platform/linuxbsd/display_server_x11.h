@@ -108,7 +108,7 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 
 #if defined(DBUS_ENABLED)
-	FreeDesktopScreenSaver *screensaver;
+	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool keep_screen_on = false;
 #endif
 
@@ -168,7 +168,7 @@ class DisplayServerX11 : public DisplayServer {
 	String internal_clipboard_primary;
 	Window xdnd_source_window;
 	::Display *x11_display;
-	char *xmbstring;
+	char *xmbstring = nullptr;
 	int xmblen;
 	unsigned long last_timestamp;
 	::Time last_keyrelease_time;
@@ -249,7 +249,7 @@ class DisplayServerX11 : public DisplayServer {
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
 	xrr_get_monitors_t xrr_get_monitors;
 	xrr_free_monitors_t xrr_free_monitors;
-	void *xrandr_handle;
+	void *xrandr_handle = nullptr;
 	Bool xrandr_ext_ok;
 
 	struct Property {
@@ -301,7 +301,7 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to) override;
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 

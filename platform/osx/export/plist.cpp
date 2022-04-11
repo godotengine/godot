@@ -343,8 +343,8 @@ PList::PList(const String &p_string) {
 bool PList::load_file(const String &p_filename) {
 	root = Ref<PListNode>();
 
-	FileAccessRef fb = FileAccess::open(p_filename, FileAccess::READ);
-	if (!fb) {
+	Ref<FileAccess> fb = FileAccess::open(p_filename, FileAccess::READ);
+	if (fb.is_null()) {
 		return false;
 	}
 
@@ -398,7 +398,6 @@ bool PList::load_string(const String &p_string) {
 		}
 
 		if (token == "/plist") {
-			in_plist = false;
 			done_plist = true;
 			break;
 		}

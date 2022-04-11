@@ -38,7 +38,7 @@
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
-	TabBar *tab_bar;
+	TabBar *tab_bar = nullptr;
 	bool tabs_visible = true;
 	bool all_tabs_in_front = false;
 	bool menu_hovered = false;
@@ -56,6 +56,7 @@ class TabContainer : public Container {
 	void _on_mouse_exited();
 	void _on_tab_changed(int p_tab);
 	void _on_tab_selected(int p_tab);
+	void _on_tab_button_pressed(int p_tab);
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
@@ -96,6 +97,9 @@ public:
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);

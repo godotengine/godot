@@ -7,9 +7,9 @@ readability.
 
 ## amd-fsr
 
-Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
-Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
-License: MIT
+- Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
+- Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
+- License: MIT
 
 Files extracted from upstream source:
 
@@ -20,12 +20,24 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (646a9f826131cb0b9e14b5e4740874808315f83a, 2021)
+- Version: git (1531cfaf9ed5232248a0a45736686a849ca3befc, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
 - `encoder/` and `transcoder/` folders
+- `LICENSE`
+
+
+## brotli
+
+- Upstream: https://github.com/google/brotli
+- Version: git (f4153a09f87cbb9c826d8fc12c74642bb2d879ea, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `common/`, `dec/` and `include/` folders
 - `LICENSE`
 
 
@@ -118,25 +130,25 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.ttf`, `NotoNaskhArabicUI_*.ttf`:
+- `NotoSans*.woff2`, `NotoNaskhArabicUI_*.woff2`:
   * Upstream: https://github.com/googlefonts/noto-fonts
   * Version: v2017-10-24-phase3-second-cleanup
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
-- `JetBrainsMono_Regular.ttf`:
+- `JetBrainsMono_Regular.woff2`:
 	* Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.242
   * License: OFL-1.1
-- `DroidSans*.ttf`:
+- `DroidSans*.woff2`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
-- `OpenSans_SemiBold.ttf`:
+- `OpenSans_SemiBold.woff2`:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-
+- All fonts are converted from the `.ttf` sources using `https://github.com/google/woff2` tool.
 
 
 ## freetype
@@ -192,7 +204,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 4.0.0 (8d1b000a3edc90c12267b836b4ef3f81c0e53edc, 2022)
+- Version: 4.2.0 (9d5730b958974bc9db95e46e6bad52e9e9cd6e1c, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -371,17 +383,17 @@ that file when upgrading.
 
 ## minizip
 
-- Upstream: http://www.zlib.net
-- Version: 1.2.11 (zlib contrib, 2017)
+- Upstream: https://www.zlib.net
+- Version: 1.2.12 (zlib contrib, 2022)
 - License: zlib
 
 Files extracted from the upstream source:
 
-- contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
+- contrib/minizip/{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}
 
 Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments and a patch is provided in the minizip/ folder.
+comments and a patch is provided in the `patches` folder.
 
 
 ## misc
@@ -412,10 +424,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
   * Version: 1.0 (2011)
   * License: zlib
-- `open-simplex-noise.{c,h}`
-  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
-  * Version: git (826f1dd1724e6fb3ff45f58e48c0fbae864c3403, 2020) + custom changes
-  * License: Public Domain or Unlicense
+- `FastNoiseLite.h}`
+  * Upstream: https://github.com/Auburn/FastNoiseLite
+  * Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022) + custom changes
+  * License: MIT
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
@@ -676,7 +688,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.0-development (2022-02-24), commit `dc3f6bb9159df22ceed69c7765ddfb4fbb1b6ed0`
+Version: 3.0.1-development (2022-03-28), commit `5b598e0a359381d7e2a94149210a1b7642024ae5`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
@@ -713,8 +725,8 @@ Files extracted from upstream source:
 
 ## zlib
 
-- Upstream: http://www.zlib.net
-- Version: 1.2.11 (2017)
+- Upstream: https://www.zlib.net
+- Version: 1.2.12 (2022)
 - License: zlib
 
 Files extracted from upstream source:

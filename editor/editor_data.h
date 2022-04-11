@@ -38,33 +38,32 @@
 class ConfigFile;
 class EditorPlugin;
 
-class EditorHistory {
-	enum {
-		HISTORY_MAX = 64
-	};
-
-	struct Obj {
+/**
+ * Stores the history of objects which have been selected for editing in the Editor & the Inspector.
+ *
+ * Used in the editor to set & access the currently edited object, as well as the history of objects which have been edited.
+ */
+class EditorSelectionHistory {
+	// Stores the object & property (if relevant).
+	struct _Object {
 		REF ref;
 		ObjectID object;
 		String property;
 		bool inspector_only = false;
 	};
 
-	struct History {
-		Vector<Obj> path;
+	// Represents the selection of an object for editing.
+	struct HistoryElement {
+		// The sub-resources of the parent object (first in the path) that have been edited.
+		// For example, Node2D -> nested resource -> nested resource, if edited each individually in their own inspector.
+		Vector<_Object> path;
+		// The current point in the path. This is always equal to the last item in the path - it is never decremented.
 		int level = 0;
 	};
 	friend class EditorData;
 
-	Vector<History> history;
-	int current;
-
-	struct PropertyData {
-		String name;
-		Variant value;
-	};
-
-	void _add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only = false);
+	Vector<HistoryElement> history;
+	int current_elem_idx; // The current history element being edited.
 
 public:
 	void cleanup_history();
@@ -72,13 +71,14 @@ public:
 	bool is_at_beginning() const;
 	bool is_at_end() const;
 
-	void add_object_inspector_only(ObjectID p_object);
-	void add_object(ObjectID p_object);
-	void add_object(ObjectID p_object, const String &p_subprop);
-	void add_object(ObjectID p_object, int p_relevel);
+	// Adds an object to the selection history. A property name can be passed if the target is a subresource of the given object.
+	// If the object should not change the main screen plugin, it can be set as inspector only.
+	void add_object(ObjectID p_object, const String &p_property = String(), bool p_inspector_only = false);
 
 	int get_history_len();
 	int get_history_pos();
+
+	// Gets an object from the history. The most recent object would be the object with p_obj = get_history_len() - 1.
 	ObjectID get_history_obj(int p_obj) const;
 	bool is_history_obj_inspector_only(int p_obj) const;
 
@@ -87,13 +87,16 @@ public:
 	ObjectID get_current();
 	bool is_current_inspector_only() const;
 
+	// Gets the size of the path of the current history item.
 	int get_path_size() const;
+	// Gets the object of the current history item, if valid.
 	ObjectID get_path_object(int p_index) const;
+	// Gets the property of the current history item.
 	String get_path_property(int p_index) const;
 
 	void clear();
 
-	EditorHistory();
+	EditorSelectionHistory();
 };
 
 class EditorSelection;
@@ -112,7 +115,7 @@ public:
 		uint64_t file_modified_time = 0;
 		Dictionary editor_states;
 		List<Node *> selection;
-		Vector<EditorHistory::History> history_stored;
+		Vector<EditorSelectionHistory::HistoryElement> history_stored;
 		int history_current = 0;
 		Dictionary custom_state;
 		uint64_t version = 0;
@@ -210,8 +213,8 @@ public:
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
 	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
 
-	void save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary &p_custom);
-	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
+	void save_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history, const Dictionary &p_custom);
+	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history);
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 
@@ -233,22 +236,33 @@ public:
 	EditorData();
 };
 
+/**
+ * Stores and provides access to the nodes currently selected in the editor.
+ *
+ * This provides a central location for storing "selected" nodes, as a selection can be triggered from multiple places,
+ * such as the SceneTreeDock or a main screen editor plugin (e.g. CanvasItemEditor).
+ */
 class EditorSelection : public Object {
 	GDCLASS(EditorSelection, Object);
 
-private:
+	// Contains the selected nodes and corresponding metadata.
+	// Metadata objects come from calling _get_editor_data on the editor_plugins, passing the selected node.
 	Map<Node *, Object *> selection;
 
+	// Tracks whether the selection change signal has been emitted.
+	// Prevents multiple signals being called in one frame.
 	bool emitted = false;
+
 	bool changed = false;
-	bool nl_changed = false;
+	bool node_list_changed = false;
 
 	void _node_removed(Node *p_node);
 
+	// Editor plugins which are related to selection.
 	List<Object *> editor_plugins;
 	List<Node *> selected_node_list;
 
-	void _update_nl();
+	void _update_node_list();
 	Array _get_transformable_selected_nodes();
 	void _emit_change();
 
@@ -256,10 +270,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	TypedArray<Node> get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
-	bool is_selected(Node *) const;
+	bool is_selected(Node *p_node) const;
 
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
@@ -269,13 +282,20 @@ public:
 		return Object::cast_to<T>(selection[p_node]);
 	}
 
+	// Adds an editor plugin which can provide metadata for selected nodes.
 	void add_editor_plugin(Object *p_object);
 
 	void update();
 	void clear();
 
+	// Returns all the selected nodes.
+	TypedArray<Node> get_selected_nodes();
+	// Returns only the top level selected nodes.
+	// That is, if the selection includes some node and a child of that node, only the parent is returned.
 	List<Node *> &get_selected_node_list();
+	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
+	// Returns the map of selected objects and their metadata.
 	Map<Node *, Object *> &get_selection() { return selection; }
 
 	EditorSelection();

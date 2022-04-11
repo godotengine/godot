@@ -86,6 +86,72 @@ struct hb_bit_page_t
   void set_range (hb_codepoint_t a, hb_codepoint_t b, bool v)
   { if (v) add_range (a, b); else del_range (a, b); }
 
+
+  // Writes out page values to the array p. Returns the number of values
+  // written. At most size codepoints will be written.
+  unsigned int write (uint32_t        base,
+		      unsigned int    start_value,
+		      hb_codepoint_t *p,
+		      unsigned int    size) const
+  {
+    unsigned int start_v = start_value >> ELT_BITS_LOG_2;
+    unsigned int start_bit = start_value & ELT_MASK;
+    unsigned int count = 0;
+    for (unsigned i = start_v; i < len () && count < size; i++)
+    {
+      elt_t bits = v[i];
+      uint32_t v_base = base | (i << ELT_BITS_LOG_2);
+      for (unsigned int j = start_bit; j < ELT_BITS && count < size; j++)
+      {
+	if ((elt_t(1) << j) & bits) {
+	  *p++ = v_base | j;
+	  count++;
+	}
+      }
+      start_bit = 0;
+    }
+    return count;
+  }
+
+  // Writes out the values NOT in this page to the array p. Returns the
+  // number of values written. At most size codepoints will be written.
+  // Returns the number of codepoints written. next_value holds the next value
+  // that should be written (if not present in this page). This is used to fill
+  // any missing value gaps between this page and the previous page, if any.
+  // next_value is updated to one more than the last value present in this page.
+  unsigned int write_inverted (uint32_t        base,
+			       unsigned int    start_value,
+			       hb_codepoint_t *p,
+			       unsigned int    size,
+			       hb_codepoint_t *next_value) const
+  {
+    unsigned int start_v = start_value >> ELT_BITS_LOG_2;
+    unsigned int start_bit = start_value & ELT_MASK;
+    unsigned int count = 0;
+    for (unsigned i = start_v; i < len () && count < size; i++)
+    {
+      elt_t bits = v[i];
+      uint32_t v_offset = i << ELT_BITS_LOG_2;
+      for (unsigned int j = start_bit; j < ELT_BITS && count < size; j++)
+      {
+	if ((elt_t(1) << j) & bits)
+	{
+	  hb_codepoint_t value = base | v_offset | j;
+	  // Emit all the missing values from next_value up to value - 1.
+	  for (hb_codepoint_t k = *next_value; k < value && count < size; k++)
+	  {
+	    *p++ = k;
+	    count++;
+	  }
+	  // Skip over this value;
+	  *next_value = value + 1;
+	}
+      }
+      start_bit = 0;
+    }
+    return count;
+  }
+
   bool is_equal (const hb_bit_page_t &other) const
   {
     return 0 == hb_memcmp (&v, &other.v, sizeof (v));
@@ -179,6 +245,9 @@ struct hb_bit_page_t
   typedef unsigned long long elt_t;
   static constexpr unsigned PAGE_BITS = 512;
   static_assert ((PAGE_BITS & ((PAGE_BITS) - 1)) == 0, "");
+  static constexpr unsigned PAGE_BITS_LOG_2 = 9;
+  static_assert (1 << PAGE_BITS_LOG_2 == PAGE_BITS, "");
+  static constexpr unsigned PAGE_BITMASK = PAGE_BITS - 1;
 
   static unsigned int elt_get_min (const elt_t &elt) { return hb_ctz (elt); }
   static unsigned int elt_get_max (const elt_t &elt) { return hb_bit_storage (elt) - 1; }
@@ -186,7 +255,10 @@ struct hb_bit_page_t
   typedef hb_vector_size_t<elt_t, PAGE_BITS / 8> vector_t;
 
   static constexpr unsigned ELT_BITS = sizeof (elt_t) * 8;
+  static constexpr unsigned ELT_BITS_LOG_2 = 6;
+  static_assert (1 << ELT_BITS_LOG_2 == ELT_BITS, "");
   static constexpr unsigned ELT_MASK = ELT_BITS - 1;
+
   static constexpr unsigned BITS = sizeof (vector_t) * 8;
   static constexpr unsigned MASK = BITS - 1;
   static_assert ((unsigned) PAGE_BITS == (unsigned) BITS, "");

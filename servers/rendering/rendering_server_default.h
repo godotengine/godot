@@ -126,54 +126,53 @@ public:
 
 #include "servers/server_wrap_mt_common.h"
 
-//from now on, calls forwarded to this singleton
-#define ServerName RendererStorage
-#define server_name RSG::storage
-
 	/* TEXTURE API */
 
-#define FUNCRIDTEX0(m_type)                                                                           \
-	virtual RID m_type##_create() override {                                                          \
-		RID ret = RSG::storage->texture_allocate();                                                   \
-		if (Thread::get_caller_id() == server_thread || RSG::storage->can_create_resources_async()) { \
-			RSG::storage->m_type##_initialize(ret);                                                   \
-		} else {                                                                                      \
-			command_queue.push(RSG::storage, &RendererStorage::m_type##_initialize, ret);             \
-		}                                                                                             \
-		return ret;                                                                                   \
+#define ServerName RendererTextureStorage
+#define server_name RSG::texture_storage
+
+#define FUNCRIDTEX0(m_type)                                                                                   \
+	virtual RID m_type##_create() override {                                                                  \
+		RID ret = RSG::texture_storage->texture_allocate();                                                   \
+		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret);                                                   \
+		} else {                                                                                              \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret);      \
+		}                                                                                                     \
+		return ret;                                                                                           \
 	}
 
-#define FUNCRIDTEX1(m_type, m_type1)                                                                  \
-	virtual RID m_type##_create(m_type1 p1) override {                                                \
-		RID ret = RSG::storage->texture_allocate();                                                   \
-		if (Thread::get_caller_id() == server_thread || RSG::storage->can_create_resources_async()) { \
-			RSG::storage->m_type##_initialize(ret, p1);                                               \
-		} else {                                                                                      \
-			command_queue.push(RSG::storage, &RendererStorage::m_type##_initialize, ret, p1);         \
-		}                                                                                             \
-		return ret;                                                                                   \
+#define FUNCRIDTEX1(m_type, m_type1)                                                                          \
+	virtual RID m_type##_create(m_type1 p1) override {                                                        \
+		RID ret = RSG::texture_storage->texture_allocate();                                                   \
+		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret, p1);                                               \
+		} else {                                                                                              \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1);  \
+		}                                                                                                     \
+		return ret;                                                                                           \
 	}
 
-#define FUNCRIDTEX2(m_type, m_type1, m_type2)                                                         \
-	virtual RID m_type##_create(m_type1 p1, m_type2 p2) override {                                    \
-		RID ret = RSG::storage->texture_allocate();                                                   \
-		if (Thread::get_caller_id() == server_thread || RSG::storage->can_create_resources_async()) { \
-			RSG::storage->m_type##_initialize(ret, p1, p2);                                           \
-		} else {                                                                                      \
-			command_queue.push(RSG::storage, &RendererStorage::m_type##_initialize, ret, p1, p2);     \
-		}                                                                                             \
-		return ret;                                                                                   \
+#define FUNCRIDTEX2(m_type, m_type1, m_type2)                                                                    \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2) override {                                               \
+		RID ret = RSG::texture_storage->texture_allocate();                                                      \
+		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {    \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2);                                              \
+		} else {                                                                                                 \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2); \
+		}                                                                                                        \
+		return ret;                                                                                              \
 	}
 
-#define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                  \
-	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override { \
-		RID ret = RSG::storage->texture_allocate();                                                                \
-		if (Thread::get_caller_id() == server_thread || RSG::storage->can_create_resources_async()) {              \
-			RSG::storage->m_type##_initialize(ret, p1, p2, p3, p4, p5, p6);                                        \
-		} else {                                                                                                   \
-			command_queue.push(RSG::storage, &RendererStorage::m_type##_initialize, ret, p1, p2, p3, p4, p5, p6);  \
-		}                                                                                                          \
-		return ret;                                                                                                \
+#define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
+		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
+		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {                    \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4, p5, p6);                                              \
+		} else {                                                                                                                 \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4, p5, p6); \
+		}                                                                                                                        \
+		return ret;                                                                                                              \
 	}
 
 	//these go pass-through, as they can be called from any thread
@@ -216,6 +215,12 @@ public:
 
 	/* SHADER API */
 
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererMaterialStorage
+#define server_name RSG::material_storage
+
 	FUNCRIDSPLIT(shader)
 
 	FUNC2(shader_set_code, RID, const String &)
@@ -243,23 +248,32 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
-		RID mesh = RSG::storage->mesh_allocate();
+//from now on, calls forwarded to this singleton
+#undef ServerName
+#undef server_name
 
-		if (Thread::get_caller_id() == server_thread || RSG::storage->can_create_resources_async()) {
+#define ServerName RendererMeshStorage
+#define server_name RSG::mesh_storage
+
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
+		RID mesh = RSG::mesh_storage->mesh_allocate();
+
+		// TODO once we have RSG::mesh_storage, add can_create_resources_async and call here instead of texture_storage!!
+
+		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {
 			if (Thread::get_caller_id() == server_thread) {
 				command_queue.flush_if_pending();
 			}
-			RSG::storage->mesh_initialize(mesh);
-			RSG::storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
+			RSG::mesh_storage->mesh_initialize(mesh);
+			RSG::mesh_storage->mesh_set_blend_shape_count(mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
-				RSG::storage->mesh_add_surface(mesh, p_surfaces[i]);
+				RSG::mesh_storage->mesh_add_surface(mesh, p_surfaces[i]);
 			}
 		} else {
-			command_queue.push(RSG::storage, &RendererStorage::mesh_initialize, mesh);
-			command_queue.push(RSG::storage, &RendererStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
+			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_initialize, mesh);
+			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
-				command_queue.push(RSG::storage, &RendererStorage::mesh_add_surface, mesh, p_surfaces[i]);
+				command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_add_surface, mesh, p_surfaces[i]);
 			}
 		}
 
@@ -334,6 +348,11 @@ public:
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
 
 	/* Light API */
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
@@ -354,7 +373,7 @@ public:
 
 	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
-	FUNC2(light_directional_set_sky_only, RID, bool)
+	FUNC2(light_directional_set_sky_mode, RID, LightDirectionalSkyMode)
 
 	/* PROBE API */
 
@@ -377,6 +396,12 @@ public:
 
 	/* DECAL API */
 
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererDecalAtlasStorage
+#define server_name RSG::decal_atlas_storage
+
 	FUNCRIDSPLIT(decal)
 
 	FUNC2(decal_set_extents, RID, const Vector3 &)
@@ -390,6 +415,13 @@ public:
 	FUNC2(decal_set_normal_fade, RID, float)
 
 	/* BAKED LIGHT API */
+
+//from now on, calls forwarded to this singleton
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	FUNCRIDSPLIT(voxel_gi)
 
@@ -849,8 +881,8 @@ public:
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererMaterialStorage
+#define server_name RSG::material_storage
 
 	FUNC3(global_variable_add, const StringName &, GlobalVariableType, const Variant &)
 	FUNC1(global_variable_remove, const StringName &)

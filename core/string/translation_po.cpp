@@ -35,7 +35,7 @@
 #ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
 	Error err;
-	FileAccess *file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
 	if (err != OK) {
 		ERR_PRINT("Failed to open translation_map_print_test.txt");
 		return;
@@ -62,7 +62,6 @@ void TranslationPO::print_translation_map() {
 			file->store_line("");
 		}
 	}
-	file->close();
 }
 #endif
 

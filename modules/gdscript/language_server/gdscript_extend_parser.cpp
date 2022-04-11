@@ -108,7 +108,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	document_links.clear();
 
 	GDScriptTokenizer tokenizer;
-	FileAccessRef fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	Ref<FileAccess> fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	tokenizer.set_source_code(p_code);
 	while (true) {
 		GDScriptTokenizer::Token token = tokenizer.scan();

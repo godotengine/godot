@@ -70,6 +70,7 @@
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
 #include "servers/xr_server.h"
 
@@ -399,6 +400,12 @@ Error Main::test_setup() {
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
+	if (tsman) {
+		Ref<TextServerDummy> ts;
+		ts.instantiate();
+		tsman->add_interface(ts);
+	}
+
 	register_core_extensions();
 
 	// From `Main::setup2()`.
@@ -435,7 +442,26 @@ Error Main::test_setup() {
 	initialize_theme();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
-	TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(0));
+
+	/* Use one with the most features available. */
+	int max_features = 0;
+	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		uint32_t features = TextServerManager::get_singleton()->get_interface(i)->get_features();
+		int feature_number = 0;
+		while (features) {
+			feature_number += features & 1;
+			features >>= 1;
+		}
+		if (feature_number >= max_features) {
+			max_features = feature_number;
+			text_driver_idx = i;
+		}
+	}
+	if (text_driver_idx >= 0) {
+		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
+	} else {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
+	}
 
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
@@ -579,8 +605,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();
 	}
-
-	I = args.front();
 
 	String display_driver = "";
 	String audio_driver = "";
@@ -1462,6 +1486,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 
+	// XR project settings.
+	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
+	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://openxr_action_map.tres");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
+
+	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head mounted,Handheld"));
+
+	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
+
+	GLOBAL_DEF_BASIC("xr/openxr/reference_space", "1");
+	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/reference_space", PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"));
+
+#ifdef TOOLS_ENABLED
+	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
+
+	// editor settings (it seems we're too early in the process when setting up rendering, to access editor settings...)
+	// EDITOR_DEF_RST("xr/openxr/in_editor", false);
+	// GLOBAL_DEF("xr/openxr/in_editor", false);
+#endif
+
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew(MessageQueue);
@@ -1531,6 +1577,12 @@ error:
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
 	tsman = memnew(TextServerManager);
+
+	if (tsman) {
+		Ref<TextServerDummy> ts;
+		ts.instantiate();
+		tsman->add_interface(ts);
+	}
 
 	preregister_module_types();
 	preregister_server_types();
@@ -1867,8 +1919,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (text_driver_idx >= 0) {
 		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
 	} else {
-		ERR_PRINT("TextServer: Unable to create TextServer interface.");
-		return ERR_CANT_CREATE;
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
 	MAIN_PRINT("Main: Load Scene Types");
@@ -2061,8 +2112,8 @@ bool Main::start() {
 		}
 
 		{
-			DirAccessRef da = DirAccess::open(doc_tool_path);
-			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a valid directory path.");
+			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
+			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
 #ifndef MODULE_MONO_ENABLED
@@ -2098,7 +2149,7 @@ bool Main::start() {
 				checked_paths.insert(path);
 
 				// Create the module documentation directory if it doesn't exist
-				DirAccessRef da = DirAccess::create_for_path(path);
+				Ref<DirAccess> da = DirAccess::create_for_path(path);
 				err = da->make_dir_recursive(path);
 				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
@@ -2110,7 +2161,7 @@ bool Main::start() {
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
-		DirAccessRef da = DirAccess::create_for_path(index_path);
+		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
 		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
@@ -2245,9 +2296,10 @@ bool Main::start() {
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
-		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows)) {
+		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 			sml->get_root()->set_embedding_subwindows(true);
 		}
+
 		ResourceLoader::add_custom_loaders();
 		ResourceSaver::add_custom_savers();
 
@@ -2282,7 +2334,7 @@ bool Main::start() {
 					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
@@ -2399,10 +2451,10 @@ bool Main::start() {
 							"display/window/stretch/aspect",
 							PROPERTY_HINT_ENUM,
 							"ignore,keep,keep_width,keep_height,expand"));
-			GLOBAL_DEF_BASIC("display/window/stretch/shrink", 1.0);
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink",
+			GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
 					PropertyInfo(Variant::FLOAT,
-							"display/window/stretch/shrink",
+							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
 							"1.0,8.0,0.1"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
@@ -2449,11 +2501,11 @@ bool Main::start() {
 						int sep = local_game_path.rfind("/");
 
 						if (sep == -1) {
-							DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							local_game_path = da->get_current_dir().plus_file(local_game_path);
 						} else {
-							DirAccessRef da = DirAccess::open(local_game_path.substr(0, sep));
-							if (da) {
+							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
+							if (da.is_valid()) {
 								local_game_path = da->get_current_dir().plus_file(
 										local_game_path.substr(sep + 1, local_game_path.length()));
 							}

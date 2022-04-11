@@ -41,91 +41,91 @@ struct CachedData {
 	// corlib classes
 
 	// Let's use the no-namespace format for these too
-	GDMonoClass *class_MonoObject; // object
-	GDMonoClass *class_bool; // bool
-	GDMonoClass *class_int8_t; // sbyte
-	GDMonoClass *class_int16_t; // short
-	GDMonoClass *class_int32_t; // int
-	GDMonoClass *class_int64_t; // long
-	GDMonoClass *class_uint8_t; // byte
-	GDMonoClass *class_uint16_t; // ushort
-	GDMonoClass *class_uint32_t; // uint
-	GDMonoClass *class_uint64_t; // ulong
-	GDMonoClass *class_float; // float
-	GDMonoClass *class_double; // double
-	GDMonoClass *class_String; // string
-	GDMonoClass *class_IntPtr; // System.IntPtr
+	GDMonoClass *class_MonoObject = nullptr; // object
+	GDMonoClass *class_bool = nullptr; // bool
+	GDMonoClass *class_int8_t = nullptr; // sbyte
+	GDMonoClass *class_int16_t = nullptr; // short
+	GDMonoClass *class_int32_t = nullptr; // int
+	GDMonoClass *class_int64_t = nullptr; // long
+	GDMonoClass *class_uint8_t = nullptr; // byte
+	GDMonoClass *class_uint16_t = nullptr; // ushort
+	GDMonoClass *class_uint32_t = nullptr; // uint
+	GDMonoClass *class_uint64_t = nullptr; // ulong
+	GDMonoClass *class_float = nullptr; // float
+	GDMonoClass *class_double = nullptr; // double
+	GDMonoClass *class_String = nullptr; // string
+	GDMonoClass *class_IntPtr = nullptr; // System.IntPtr
 
-	GDMonoClass *class_System_Collections_IEnumerable;
-	GDMonoClass *class_System_Collections_ICollection;
-	GDMonoClass *class_System_Collections_IDictionary;
+	GDMonoClass *class_System_Collections_IEnumerable = nullptr;
+	GDMonoClass *class_System_Collections_ICollection = nullptr;
+	GDMonoClass *class_System_Collections_IDictionary = nullptr;
 
 #ifdef DEBUG_ENABLED
-	GDMonoClass *class_System_Diagnostics_StackTrace;
+	GDMonoClass *class_System_Diagnostics_StackTrace = nullptr;
 	GDMonoMethodThunkR<MonoArray *, MonoObject *> methodthunk_System_Diagnostics_StackTrace_GetFrames;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool;
+	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool = nullptr;
+	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool = nullptr;
 #endif
 
-	GDMonoClass *class_KeyNotFoundException;
+	GDMonoClass *class_KeyNotFoundException = nullptr;
 
-	MonoClass *rawclass_Dictionary;
+	MonoClass *rawclass_Dictionary = nullptr;
 	// -----------------------------------------------
 
-	GDMonoClass *class_Vector2;
-	GDMonoClass *class_Vector2i;
-	GDMonoClass *class_Rect2;
-	GDMonoClass *class_Rect2i;
-	GDMonoClass *class_Transform2D;
-	GDMonoClass *class_Vector3;
-	GDMonoClass *class_Vector3i;
-	GDMonoClass *class_Basis;
-	GDMonoClass *class_Quaternion;
-	GDMonoClass *class_Transform3D;
-	GDMonoClass *class_AABB;
-	GDMonoClass *class_Color;
-	GDMonoClass *class_Plane;
-	GDMonoClass *class_StringName;
-	GDMonoClass *class_NodePath;
-	GDMonoClass *class_RID;
-	GDMonoClass *class_GodotObject;
-	GDMonoClass *class_GodotResource;
-	GDMonoClass *class_Node;
-	GDMonoClass *class_Control;
-	GDMonoClass *class_Node3D;
-	GDMonoClass *class_WeakRef;
-	GDMonoClass *class_Callable;
-	GDMonoClass *class_SignalInfo;
-	GDMonoClass *class_Array;
-	GDMonoClass *class_Dictionary;
-	GDMonoClass *class_MarshalUtils;
-	GDMonoClass *class_ISerializationListener;
+	GDMonoClass *class_Vector2 = nullptr;
+	GDMonoClass *class_Vector2i = nullptr;
+	GDMonoClass *class_Rect2 = nullptr;
+	GDMonoClass *class_Rect2i = nullptr;
+	GDMonoClass *class_Transform2D = nullptr;
+	GDMonoClass *class_Vector3 = nullptr;
+	GDMonoClass *class_Vector3i = nullptr;
+	GDMonoClass *class_Basis = nullptr;
+	GDMonoClass *class_Quaternion = nullptr;
+	GDMonoClass *class_Transform3D = nullptr;
+	GDMonoClass *class_AABB = nullptr;
+	GDMonoClass *class_Color = nullptr;
+	GDMonoClass *class_Plane = nullptr;
+	GDMonoClass *class_StringName = nullptr;
+	GDMonoClass *class_NodePath = nullptr;
+	GDMonoClass *class_RID = nullptr;
+	GDMonoClass *class_GodotObject = nullptr;
+	GDMonoClass *class_GodotResource = nullptr;
+	GDMonoClass *class_Node = nullptr;
+	GDMonoClass *class_Control = nullptr;
+	GDMonoClass *class_Node3D = nullptr;
+	GDMonoClass *class_WeakRef = nullptr;
+	GDMonoClass *class_Callable = nullptr;
+	GDMonoClass *class_SignalInfo = nullptr;
+	GDMonoClass *class_Array = nullptr;
+	GDMonoClass *class_Dictionary = nullptr;
+	GDMonoClass *class_MarshalUtils = nullptr;
+	GDMonoClass *class_ISerializationListener = nullptr;
 
 #ifdef DEBUG_ENABLED
-	GDMonoClass *class_DebuggingUtils;
+	GDMonoClass *class_DebuggingUtils = nullptr;
 	GDMonoMethodThunk<MonoObject *, MonoString **, int *, MonoString **> methodthunk_DebuggingUtils_GetStackFrameInfo;
 #endif
 
-	GDMonoClass *class_ExportAttribute;
-	GDMonoField *field_ExportAttribute_hint;
-	GDMonoField *field_ExportAttribute_hintString;
-	GDMonoClass *class_SignalAttribute;
-	GDMonoClass *class_ToolAttribute;
-	GDMonoClass *class_AnyPeerAttribute;
-	GDMonoClass *class_AuthorityAttribute;
-	GDMonoClass *class_GodotMethodAttribute;
-	GDMonoField *field_GodotMethodAttribute_methodName;
-	GDMonoClass *class_ScriptPathAttribute;
-	GDMonoField *field_ScriptPathAttribute_path;
-	GDMonoClass *class_AssemblyHasScriptsAttribute;
-	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup;
-	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes;
+	GDMonoClass *class_ExportAttribute = nullptr;
+	GDMonoField *field_ExportAttribute_hint = nullptr;
+	GDMonoField *field_ExportAttribute_hintString = nullptr;
+	GDMonoClass *class_SignalAttribute = nullptr;
+	GDMonoClass *class_ToolAttribute = nullptr;
+	GDMonoClass *class_AnyPeerAttribute = nullptr;
+	GDMonoClass *class_AuthorityAttribute = nullptr;
+	GDMonoClass *class_GodotMethodAttribute = nullptr;
+	GDMonoField *field_GodotMethodAttribute_methodName = nullptr;
+	GDMonoClass *class_ScriptPathAttribute = nullptr;
+	GDMonoField *field_ScriptPathAttribute_path = nullptr;
+	GDMonoClass *class_AssemblyHasScriptsAttribute = nullptr;
+	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup = nullptr;
+	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes = nullptr;
 
-	GDMonoField *field_GodotObject_ptr;
-	GDMonoField *field_StringName_ptr;
-	GDMonoField *field_NodePath_ptr;
-	GDMonoField *field_Image_ptr;
-	GDMonoField *field_RID_ptr;
+	GDMonoField *field_GodotObject_ptr = nullptr;
+	GDMonoField *field_StringName_ptr = nullptr;
+	GDMonoField *field_NodePath_ptr = nullptr;
+	GDMonoField *field_Image_ptr = nullptr;
+	GDMonoField *field_RID_ptr = nullptr;
 
 	GDMonoMethodThunk<MonoObject *> methodthunk_GodotObject_Dispose;
 	GDMonoMethodThunkR<Array *, MonoObject *> methodthunk_Array_GetPtr;

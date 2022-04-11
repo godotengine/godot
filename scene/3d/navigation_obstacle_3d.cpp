@@ -107,7 +107,7 @@ TypedArray<String> NavigationObstacle3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object."));
+		warnings.push_back(RTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object."));
 	}
 
 	return warnings;

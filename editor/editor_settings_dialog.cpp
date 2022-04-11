@@ -92,7 +92,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	search_box->grab_focus();
 
 	_update_shortcuts();
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
@@ -119,7 +119,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
-				set_process_unhandled_input(false);
+				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -142,11 +142,13 @@ void EditorSettingsDialog::_notification(int p_what) {
 			if (update_shortcuts_tab) {
 				_update_shortcuts();
 			}
+
+			inspector->update_category_list();
 		} break;
 	}
 }
 
-void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;
@@ -415,6 +417,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
 
+	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
+	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
+
 	for (const String &E : slist) {
 		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
 		if (!sc->has_meta("original")) {
@@ -431,9 +436,11 @@ void EditorSettingsDialog::_update_shortcuts() {
 		} else {
 			section = shortcuts->create_item(root);
 
-			String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name);
+			const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, name_style);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style);
+
 			section->set_text(0, item_name);
-			section->set_tooltip(0, EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(section_name));
+			section->set_tooltip(0, tooltip);
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
 			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
@@ -674,7 +681,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
 	add_child(tabs);
 

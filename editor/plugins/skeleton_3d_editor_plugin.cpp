@@ -419,8 +419,14 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
 	bone_shape->set_transform(capsule_transform);
 
+	/// Get an up vector not collinear with child rest origin
+	Vector3 up = Vector3(0, 1, 0);
+	if (up.cross(child_rest.origin).is_equal_approx(Vector3())) {
+		up = Vector3(0, 0, 1);
+	}
+
 	Transform3D body_transform;
-	body_transform.basis = Basis::looking_at(child_rest.origin);
+	body_transform.basis = Basis::looking_at(child_rest.origin, up);
 	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
 	Transform3D joint_transform;
@@ -811,7 +817,7 @@ void vertex() {
 		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
 	}
 	VERTEX = VERTEX;
-	POSITION=PROJECTION_MATRIX*INV_CAMERA_MATRIX*WORLD_MATRIX*vec4(VERTEX.xyz,1.0);
+	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, 0, 0.999);
 	POINT_SIZE = point_size;
 }
@@ -1104,7 +1110,7 @@ void vertex() {
 		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
 	}
 	VERTEX = VERTEX;
-	POSITION=PROJECTION_MATRIX*INV_CAMERA_MATRIX*WORLD_MATRIX*vec4(VERTEX.xyz,1.0);
+	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, 0, 0.998);
 }
 void fragment() {

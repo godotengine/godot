@@ -63,7 +63,7 @@ class OS_LinuxBSD : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 protected:
 	virtual void initialize() override;

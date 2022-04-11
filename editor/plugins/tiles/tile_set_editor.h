@@ -47,18 +47,18 @@ class TileSetEditor : public VBoxContainer {
 private:
 	Ref<TileSet> tile_set;
 	bool tile_set_changed_needs_update = false;
-	HSplitContainer *split_container;
+	HSplitContainer *split_container = nullptr;
 
 	// TabBar.
-	HBoxContainer *tile_set_toolbar;
-	TabBar *tabs_bar;
+	HBoxContainer *tile_set_toolbar = nullptr;
+	TabBar *tabs_bar = nullptr;
 
 	// Tiles.
-	Label *no_source_selected_label;
-	TileSetAtlasSourceEditor *tile_set_atlas_source_editor;
-	TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor;
+	Label *no_source_selected_label = nullptr;
+	TileSetAtlasSourceEditor *tile_set_atlas_source_editor = nullptr;
+	TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -66,11 +66,11 @@ private:
 	void _update_sources_list(int force_selected_id = -1);
 
 	// Sources management.
-	Button *sources_delete_button;
-	MenuButton *sources_add_button;
-	MenuButton *source_sort_button;
-	MenuButton *sources_advanced_menu_button;
-	ItemList *sources_list;
+	Button *sources_delete_button = nullptr;
+	MenuButton *sources_add_button = nullptr;
+	MenuButton *source_sort_button = nullptr;
+	MenuButton *sources_advanced_menu_button = nullptr;
+	ItemList *sources_list = nullptr;
 	Ref<Texture2D> missing_texture_texture;
 	void _source_selected(int p_source_index);
 	void _source_delete_pressed();
@@ -78,12 +78,12 @@ private:
 	void _sources_advanced_menu_id_pressed(int p_id_pressed);
 	void _set_source_sort(int p_sort);
 
-	AtlasMergingDialog *atlas_merging_dialog;
-	TileProxiesManagerDialog *tile_proxies_manager_dialog;
+	AtlasMergingDialog *atlas_merging_dialog = nullptr;
+	TileProxiesManagerDialog *tile_proxies_manager_dialog = nullptr;
 
 	// Patterns.
-	ItemList *patterns_item_list;
-	Label *patterns_help_label;
+	ItemList *patterns_item_list = nullptr;
+	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
 	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
 	bool select_last_pattern = false;

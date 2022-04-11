@@ -63,8 +63,8 @@ public:
 
 private:
 	struct ErrorHandlerData {
-		TestResult *result;
-		GDScriptTest *self;
+		TestResult *result = nullptr;
+		GDScriptTest *self = nullptr;
 		ErrorHandlerData(TestResult *p_result, GDScriptTest *p_this) {
 			result = p_result;
 			self = p_this;

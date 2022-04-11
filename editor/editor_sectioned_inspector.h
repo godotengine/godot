@@ -42,11 +42,11 @@ class SectionedInspector : public HSplitContainer {
 
 	ObjectID obj;
 
-	Tree *sections;
-	SectionedInspectorFilter *filter;
+	Tree *sections = nullptr;
+	SectionedInspectorFilter *filter = nullptr;
 
 	Map<String, TreeItem *> section_map;
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 	LineEdit *search_box = nullptr;
 
 	String selected_category;
@@ -57,6 +57,9 @@ class SectionedInspector : public HSplitContainer {
 	void _section_selected();
 
 	void _search_changed(const String &p_what);
+
+protected:
+	void _notification(int p_what);
 
 public:
 	void register_search_box(LineEdit *p_box);

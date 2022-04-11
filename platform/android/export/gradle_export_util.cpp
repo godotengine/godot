@@ -75,8 +75,8 @@ String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_or
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir) {
 	if (!DirAccess::exists(p_dir)) {
-		DirAccessRef filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
+		Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 		Error err = filesystem_da->make_dir_recursive(p_dir);
 		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Cannot create directory '" + p_dir + "'.");
 	}
@@ -91,10 +91,9 @@ Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
 	if (err != OK) {
 		return err;
 	}
-	FileAccess *fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_buffer(p_data.ptr(), p_data.size());
-	memdelete(fa);
 	return OK;
 }
 
@@ -109,10 +108,9 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 		}
 		return err;
 	}
-	FileAccess *fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_string(p_data);
-	memdelete(fa);
 	return OK;
 }
 
@@ -122,7 +120,7 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when custom build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-	CustomExportData *export_data = (CustomExportData *)p_userdata;
+	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
 	print_verbose("Saving project files from " + p_path + " into " + dst_path);
 	Error err = store_file_at_path(dst_path, p_data);
@@ -152,8 +150,8 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
-	DirAccessRef da = DirAccess::open("res://android/build/res");
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open("res://android/build/res");
+	if (da.is_null()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to open Android resources directory.");
 		}
@@ -253,11 +251,13 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
-			"tools:replace=\"android:screenOrientation,android:excludeFromRecents\" "
+			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"android:excludeFromRecents=\"%s\" "
-			"android:screenOrientation=\"%s\">\n",
+			"android:screenOrientation=\"%s\" "
+			"android:resizeableActivity=\"%s\">\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
-			orientation);
+			orientation,
+			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
 	if (uses_xr) {
 		manifest_activity_text += "            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n";
 	} else {

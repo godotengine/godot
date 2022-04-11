@@ -38,7 +38,7 @@ class FileAccessMemory : public FileAccess {
 	uint64_t length = 0;
 	mutable uint64_t pos = 0;
 
-	static FileAccess *create();
+	static Ref<FileAccess> create();
 
 public:
 	static void register_file(String p_name, Vector<uint8_t> p_data);

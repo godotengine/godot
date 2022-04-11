@@ -49,7 +49,7 @@ class EditorFileSystemDirectory : public Object {
 	uint64_t modified_time;
 	bool verified = false; //used for checking changes
 
-	EditorFileSystemDirectory *parent;
+	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
 
 	struct FileInfo {
@@ -109,6 +109,37 @@ public:
 	~EditorFileSystemDirectory();
 };
 
+class EditorFileSystemImportFormatSupportQuery : public RefCounted {
+	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted);
+
+protected:
+	GDVIRTUAL0RC(bool, _is_active)
+	GDVIRTUAL0RC(Vector<String>, _get_file_extensions)
+	GDVIRTUAL0RC(bool, _query)
+	static void _bind_methods() {
+		GDVIRTUAL_BIND(_is_active);
+		GDVIRTUAL_BIND(_get_file_extensions);
+		GDVIRTUAL_BIND(_query);
+	}
+
+public:
+	virtual bool is_active() const {
+		bool ret = false;
+		GDVIRTUAL_REQUIRED_CALL(_is_active, ret);
+		return ret;
+	}
+	virtual Vector<String> get_file_extensions() const {
+		Vector<String> ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_file_extensions, ret);
+		return ret;
+	}
+	virtual bool query() {
+		bool ret = false;
+		GDVIRTUAL_REQUIRED_CALL(_query, ret);
+		return ret;
+	}
+};
+
 class EditorFileSystem : public Node {
 	GDCLASS(EditorFileSystem, Node);
 
@@ -136,7 +167,7 @@ class EditorFileSystem : public Node {
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
-	EditorFileSystemDirectory *new_filesystem;
+	EditorFileSystemDirectory *new_filesystem = nullptr;
 
 	bool abort_scan = false;
 	bool scanning = false;
@@ -153,7 +184,7 @@ class EditorFileSystem : public Node {
 
 	void _save_late_updated_files();
 
-	EditorFileSystemDirectory *filesystem;
+	EditorFileSystemDirectory *filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
 
@@ -182,7 +213,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _save_filesystem_cache();
-	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file);
+	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file);
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
@@ -194,7 +225,7 @@ class EditorFileSystem : public Node {
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
 	bool scanning_changes = false;
@@ -257,6 +288,9 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
+	bool _scan_import_support(Vector<String> reimports);
+
+	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
 protected:
 	void _notification(int p_what);
@@ -289,6 +323,8 @@ public:
 
 	static bool _should_skip_directory(const String &p_path);
 
+	void add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
+	void remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	EditorFileSystem();
 	~EditorFileSystem();
 };

@@ -543,14 +543,12 @@ public:
 class VariantConstructNoArgsObject {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+		r_ret = (Object *)nullptr; // Must construct a TYPE_OBJECT containing nullptr.
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantInternal::clear(r_ret);
-		VariantInternal::object_assign_null(r_ret);
+		*r_ret = (Object *)nullptr; // Must construct a TYPE_OBJECT containing nullptr.
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrConstruct<Object *>::construct(nullptr, base);

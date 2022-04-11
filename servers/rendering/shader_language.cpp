@@ -2813,7 +2813,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 								bool error = false;
 								if (p_func->arguments[arg]->type == Node::TYPE_VARIABLE) {
-									const VariableNode *vn = (VariableNode *)p_func->arguments[arg];
+									const VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg]);
 
 									bool is_const = false;
 									ConstantNode::Value value;
@@ -2825,7 +2825,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 									}
 								} else {
 									if (p_func->arguments[arg]->type == Node::TYPE_CONSTANT) {
-										ConstantNode *cn = (ConstantNode *)p_func->arguments[arg];
+										const ConstantNode *cn = static_cast<ConstantNode *>(p_func->arguments[arg]);
 
 										if (cn->get_datatype() == TYPE_INT && cn->values.size() == 1) {
 											int value = cn->values[0].sint;
@@ -4132,7 +4132,7 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 	switch (p_node->type) {
 		case Node::TYPE_OPERATOR: {
-			OperatorNode *op_node = (OperatorNode *)p_node;
+			const OperatorNode *op_node = static_cast<const OperatorNode *>(p_node);
 			for (int i = int(op_node->op == OP_CALL); i < op_node->arguments.size(); i++) {
 				if (!_check_node_constness(op_node->arguments[i])) {
 					return false;
@@ -4142,13 +4142,13 @@ bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 		case Node::TYPE_CONSTANT:
 			break;
 		case Node::TYPE_VARIABLE: {
-			VariableNode *varn = (VariableNode *)p_node;
+			const VariableNode *varn = static_cast<const VariableNode *>(p_node);
 			if (!varn->is_const) {
 				return false;
 			}
 		} break;
 		case Node::TYPE_ARRAY: {
-			ArrayNode *arrn = (ArrayNode *)p_node;
+			const ArrayNode *arrn = static_cast<const ArrayNode *>(p_node);
 			if (!arrn->is_const) {
 				return false;
 			}
@@ -5134,9 +5134,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 					} else if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
-						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_ARRAY;
+						}
 						call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						}
 						if (!call_expression) {
 							return nullptr;
 						}
@@ -5153,7 +5157,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 
 						if (index_expression->type == Node::TYPE_CONSTANT) {
-							ConstantNode *cnode = (ConstantNode *)index_expression;
+							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -5287,9 +5291,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				if (!expr->is_indexed() && expr->get_array_size() > 0) {
 					completion_class = TAG_ARRAY;
-					p_block->block_tag = SubClassTag::TAG_ARRAY;
+					if (p_block != nullptr) {
+						p_block->block_tag = SubClassTag::TAG_ARRAY;
+					}
 					Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-					p_block->block_tag = SubClassTag::TAG_GLOBAL;
+					if (p_block != nullptr) {
+						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+					}
 					if (!call_expression) {
 						return nullptr;
 					}
@@ -5587,9 +5595,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						mn->assign_expression = assign_expression;
 					} else if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
-						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_ARRAY;
+						}
 						Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (p_block != nullptr) {
+							p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						}
 						if (!call_expression) {
 							return nullptr;
 						}
@@ -5607,7 +5619,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 
 						if (index_expression->type == Node::TYPE_CONSTANT) {
-							ConstantNode *cnode = (ConstantNode *)index_expression;
+							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -6690,7 +6702,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 
-									if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+									if (is_const && n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
 										_set_error(RTR("Expected a constant expression."));
 										return ERR_PARSE_ERROR;
 									}
@@ -6746,8 +6758,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
-					if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
-						OperatorNode *op = ((OperatorNode *)n);
+					if (is_const && n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
+						OperatorNode *op = static_cast<OperatorNode *>(n);
 						for (int i = 1; i < op->arguments.size(); i++) {
 							if (!_check_node_constness(op->arguments[i])) {
 								_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
@@ -6791,7 +6803,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} while (tk.type == TK_COMMA); //another variable
 
-			p_block->statements.push_back((Node *)vdnode);
+			p_block->statements.push_back(static_cast<Node *>(vdnode));
 		} else if (tk.type == TK_CURLY_BRACKET_OPEN) {
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
@@ -6913,7 +6925,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				} else {
 					Set<int> constants;
 					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
-						ControlFlowNode *flow = (ControlFlowNode *)switch_block->statements[i];
+						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::TYPE_CONSTANT) {
@@ -7483,8 +7495,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int uniforms = 0;
 	int instance_index = 0;
 #ifdef DEBUG_ENABLED
-	int uniform_buffer_size = 0;
-	int max_uniform_buffer_size = 0;
+	uint64_t uniform_buffer_size = 0;
+	uint64_t max_uniform_buffer_size = 0;
 	int uniform_buffer_exceeded_line = -1;
 
 	bool check_device_limit_warnings = false;
@@ -8455,7 +8467,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 											return ERR_PARSE_ERROR;
 										}
 
-										if (n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+										if (n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
 											_set_error(RTR("Expected constant expression."));
 											return ERR_PARSE_ERROR;
 										}
@@ -8511,8 +8523,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								if (!expr) {
 									return ERR_PARSE_ERROR;
 								}
-								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
-									OperatorNode *op = ((OperatorNode *)expr);
+								if (expr->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(expr)->op == OP_CALL) {
+									OperatorNode *op = static_cast<OperatorNode *>(expr);
 									for (int i = 1; i < op->arguments.size(); i++) {
 										if (!_check_node_constness(op->arguments[i])) {
 											_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
@@ -8849,7 +8861,7 @@ Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOper
 
 	for (int i = p_flow->blocks.size() - 1; i >= 0; i--) {
 		if (p_flow->blocks[i]->type == Node::TYPE_BLOCK) {
-			BlockNode *last_block = (BlockNode *)p_flow->blocks[i];
+			BlockNode *last_block = static_cast<BlockNode *>(p_flow->blocks[i]);
 			if (_find_last_flow_op_in_block(last_block, p_op) == OK) {
 				found = true;
 				break;
@@ -8867,7 +8879,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 
 	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
 		if (p_block->statements[i]->type == Node::TYPE_CONTROL_FLOW) {
-			ControlFlowNode *flow = (ControlFlowNode *)p_block->statements[i];
+			ControlFlowNode *flow = static_cast<ControlFlowNode *>(p_block->statements[i]);
 			if (flow->flow_op == p_op) {
 				found = true;
 				break;
@@ -8878,7 +8890,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 				}
 			}
 		} else if (p_block->statements[i]->type == Node::TYPE_BLOCK) {
-			BlockNode *block = (BlockNode *)p_block->statements[i];
+			BlockNode *block = static_cast<BlockNode *>(p_block->statements[i]);
 			if (_find_last_flow_op_in_block(block, p_op) == OK) {
 				found = true;
 				break;
@@ -9034,7 +9046,7 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
 
 	code = p_code;
@@ -9053,7 +9065,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_SHADER_TYPE: {
 			for (const String &shader_type : p_info.shader_types) {
-				ScriptCodeCompletionOption option(shader_type, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				ScriptLanguage::CodeCompletionOption option(shader_type, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			}
 			return OK;
@@ -9073,7 +9085,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 					if (!found) {
 						for (int j = 0; j < info.options.size(); j++) {
-							ScriptCodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+							ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 							r_options->push_back(option);
 						}
 					}
@@ -9081,7 +9093,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					const String name = String(info.name);
 
 					if (!shader->render_modes.has(name)) {
-						ScriptCodeCompletionOption option(name, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+						ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 						r_options->push_back(option);
 					}
 				}
@@ -9093,7 +9105,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
 				for (int i = 0; i < node->members.size(); i++) {
-					ScriptCodeCompletionOption option(node->members[i]->name, ScriptCodeCompletionOption::KIND_MEMBER);
+					ScriptLanguage::CodeCompletionOption option(node->members[i]->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					r_options->push_back(option);
 				}
 			}
@@ -9115,7 +9127,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (found) {
 					continue;
 				}
-				ScriptCodeCompletionOption option(E.key, ScriptCodeCompletionOption::KIND_FUNCTION);
+				ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 				r_options->push_back(option);
 			}
 
@@ -9124,7 +9136,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_IDENTIFIER:
 		case COMPLETION_FUNCTION_CALL: {
 			bool comp_ident = completion_type == COMPLETION_IDENTIFIER;
-			Map<String, ScriptCodeCompletionOption::Kind> matches;
+			Map<String, ScriptLanguage::CodeCompletionKind> matches;
 			StringName skip_function;
 			BlockNode *block = completion_block;
 
@@ -9133,7 +9145,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					if (comp_ident) {
 						for (const KeyValue<StringName, BlockNode::Variable> &E : block->variables) {
 							if (E.value.line < completion_line) {
-								matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
+								matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
 							}
 						}
 					}
@@ -9141,7 +9153,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					if (block->parent_function) {
 						if (comp_ident) {
 							for (int i = 0; i < block->parent_function->arguments.size(); i++) {
-								matches.insert(block->parent_function->arguments[i].name, ScriptCodeCompletionOption::KIND_VARIABLE);
+								matches.insert(block->parent_function->arguments[i].name, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
 							}
 						}
 						skip_function = block->parent_function->name;
@@ -9152,9 +9164,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (comp_ident) {
 					if (p_info.functions.has("global")) {
 						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
-							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
 							if (E.value.constant) {
-								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+								kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
 							}
 							matches.insert(E.key, kind);
 						}
@@ -9162,9 +9174,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 					if (p_info.functions.has("constants")) {
 						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
-							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
 							if (E.value.constant) {
-								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+								kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
 							}
 							matches.insert(E.key, kind);
 						}
@@ -9172,22 +9184,22 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 					if (skip_function != StringName() && p_info.functions.has(skip_function)) {
 						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
-							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
 							if (E.value.constant) {
-								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+								kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
 							}
 							matches.insert(E.key, kind);
 						}
 					}
 
 					for (const KeyValue<StringName, ShaderNode::Constant> &E : shader->constants) {
-						matches.insert(E.key, ScriptCodeCompletionOption::KIND_CONSTANT);
+						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 					}
 					for (const KeyValue<StringName, ShaderNode::Varying> &E : shader->varyings) {
-						matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
+						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
 					}
 					for (const KeyValue<StringName, ShaderNode::Uniform> &E : shader->uniforms) {
-						matches.insert(E.key, ScriptCodeCompletionOption::KIND_MEMBER);
+						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					}
 				}
 
@@ -9195,7 +9207,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					if (!shader->functions[i].callable || shader->functions[i].name == skip_function) {
 						continue;
 					}
-					matches.insert(String(shader->functions[i].name), ScriptCodeCompletionOption::KIND_FUNCTION);
+					matches.insert(String(shader->functions[i].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 				}
 
 				int idx = 0;
@@ -9203,7 +9215,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 				if (stages && stages->has(skip_function)) {
 					for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[skip_function].stage_functions) {
-						matches.insert(String(E.key), ScriptCodeCompletionOption::KIND_FUNCTION);
+						matches.insert(String(E.key), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 					}
 				}
 
@@ -9212,7 +9224,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						idx++;
 						continue;
 					}
-					matches.insert(String(builtin_func_defs[idx].name), ScriptCodeCompletionOption::KIND_FUNCTION);
+					matches.insert(String(builtin_func_defs[idx].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 					idx++;
 				}
 
@@ -9226,15 +9238,15 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						continue;
 					}
 					if (builtin_func_defs[idx].tag == completion_class) {
-						matches.insert(String(builtin_func_defs[idx].name), ScriptCodeCompletionOption::KIND_FUNCTION);
+						matches.insert(String(builtin_func_defs[idx].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 					}
 					idx++;
 				}
 			}
 
-			for (const KeyValue<String, ScriptCodeCompletionOption::Kind> &E : matches) {
-				ScriptCodeCompletionOption option(E.key, E.value);
-				if (E.value == ScriptCodeCompletionOption::KIND_FUNCTION) {
+			for (const KeyValue<String, ScriptLanguage::CodeCompletionKind> &E : matches) {
+				ScriptLanguage::CodeCompletionOption option(E.key, E.value);
+				if (E.value == ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION) {
 					option.insert_text += "(";
 				}
 				r_options->push_back(option);
@@ -9483,18 +9495,18 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			}
 
 			for (int i = 0; i < limit; i++) {
-				r_options->push_back(ScriptCodeCompletionOption(String::chr(colv[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
-				r_options->push_back(ScriptCodeCompletionOption(String::chr(coordv[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
-				r_options->push_back(ScriptCodeCompletionOption(String::chr(coordt[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
+				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(colv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT));
+				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT));
+				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordt[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT));
 			}
 
 		} break;
 		case COMPLETION_HINT: {
 			if (completion_base == DataType::TYPE_VEC4) {
-				ScriptCodeCompletionOption option("hint_color", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				ScriptLanguage::CodeCompletionOption option("hint_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
-				ScriptCodeCompletionOption option("hint_range", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				ScriptLanguage::CodeCompletionOption option("hint_range", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 
 				if (completion_base == DataType::TYPE_INT) {
 					option.insert_text = "hint_range(0, 100, 1)";
@@ -9530,12 +9542,12 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 
 				for (int i = 0; i < options.size(); i++) {
-					ScriptCodeCompletionOption option(options[i], ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+					ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 					r_options->push_back(option);
 				}
 			}
 			if (!completion_base_array) {
-				ScriptCodeCompletionOption option("instance_index", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				ScriptLanguage::CodeCompletionOption option("instance_index", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				option.insert_text = "instance_index(0)";
 				r_options->push_back(option);
 			}

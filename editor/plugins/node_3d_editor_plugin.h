@@ -190,27 +190,27 @@ private:
 	ViewType view_type;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
-	Node3D *preview_node;
-	AABB *preview_bounds;
+	Node3D *preview_node = nullptr;
+	AABB *preview_bounds = nullptr;
 	Vector<String> selected_files;
-	AcceptDialog *accept;
+	AcceptDialog *accept = nullptr;
 
-	Node *target_node;
+	Node *target_node = nullptr;
 	Point2 drop_pos;
 
-	EditorData *editor_data;
-	EditorSelection *editor_selection;
-	UndoRedo *undo_redo;
+	EditorData *editor_data = nullptr;
+	EditorSelection *editor_selection = nullptr;
+	UndoRedo *undo_redo = nullptr;
 
-	CheckBox *preview_camera;
-	SubViewportContainer *subviewport_container;
+	CheckBox *preview_camera = nullptr;
+	SubViewportContainer *subviewport_container = nullptr;
 
-	MenuButton *view_menu;
-	PopupMenu *display_submenu;
+	MenuButton *view_menu = nullptr;
+	PopupMenu *display_submenu = nullptr;
 
-	Control *surface;
-	SubViewport *viewport;
-	Camera3D *camera;
+	Control *surface = nullptr;
+	SubViewport *viewport = nullptr;
+	Camera3D *camera = nullptr;
 	bool transforming;
 	bool orthogonal;
 	bool auto_orthogonal;
@@ -221,17 +221,17 @@ private:
 	real_t freelook_speed;
 	Vector2 previous_mouse_position;
 
-	Label *info_label;
-	Label *cinema_label;
-	Label *locked_label;
-	Label *zoom_limit_label;
+	Label *info_label = nullptr;
+	Label *cinema_label = nullptr;
+	Label *locked_label = nullptr;
+	Label *zoom_limit_label = nullptr;
 
-	VBoxContainer *top_right_vbox;
-	ViewportRotationControl *rotation_control;
-	Gradient *frame_time_gradient;
-	Label *cpu_time_label;
-	Label *gpu_time_label;
-	Label *fps_label;
+	VBoxContainer *top_right_vbox = nullptr;
+	ViewportRotationControl *rotation_control = nullptr;
+	Gradient *frame_time_gradient = nullptr;
+	Label *cpu_time_label = nullptr;
+	Label *gpu_time_label = nullptr;
+	Label *fps_label = nullptr;
 
 	struct _RayResult {
 		Node3D *item = nullptr;
@@ -274,7 +274,7 @@ private:
 	bool clicked_wants_append;
 	bool selection_in_progress = false;
 
-	PopupMenu *selection_menu;
+	PopupMenu *selection_menu = nullptr;
 
 	enum NavigationZoomStyle {
 		NAVIGATION_ZOOM_VERTICAL,
@@ -375,9 +375,9 @@ private:
 
 	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
-	Node3DEditor *spatial_editor;
+	Node3DEditor *spatial_editor = nullptr;
 
-	Camera3D *previewing;
+	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
 	bool previewing_cinema;
@@ -455,7 +455,7 @@ public:
 	Transform3D original_local;
 	Transform3D last_xform; // last transform
 	bool last_xform_dirty;
-	Node3D *sp;
+	Node3D *sp = nullptr;
 	RID sbox_instance;
 	RID sbox_instance_offset;
 	RID sbox_instance_xray;
@@ -537,13 +537,13 @@ public:
 	};
 
 private:
-	EditorSelection *editor_selection;
+	EditorSelection *editor_selection = nullptr;
 
-	Node3DEditorViewportContainer *viewport_base;
+	Node3DEditorViewportContainer *viewport_base = nullptr;
 	Node3DEditorViewport *viewports[VIEWPORTS_COUNT];
-	VSplitContainer *shader_split;
-	HSplitContainer *left_panel_split;
-	HSplitContainer *right_panel_split;
+	VSplitContainer *shader_split = nullptr;
+	HSplitContainer *left_panel_split = nullptr;
+	HSplitContainer *right_panel_split = nullptr;
 
 	/////
 
@@ -588,7 +588,7 @@ private:
 	Ref<StandardMaterial3D> cursor_material;
 
 	// Scene drag and drop support
-	Node3D *preview_node;
+	Node3D *preview_node = nullptr;
 	AABB preview_bounds;
 
 	struct Gizmo {
@@ -628,31 +628,31 @@ private:
 	Button *tool_button[TOOL_MAX];
 	Button *tool_option_button[TOOL_OPT_MAX];
 
-	MenuButton *transform_menu;
-	PopupMenu *gizmos_menu;
-	MenuButton *view_menu;
+	MenuButton *transform_menu = nullptr;
+	PopupMenu *gizmos_menu = nullptr;
+	MenuButton *view_menu = nullptr;
 
-	AcceptDialog *accept;
+	AcceptDialog *accept = nullptr;
 
-	ConfirmationDialog *snap_dialog;
-	ConfirmationDialog *xform_dialog;
-	ConfirmationDialog *settings_dialog;
+	ConfirmationDialog *snap_dialog = nullptr;
+	ConfirmationDialog *xform_dialog = nullptr;
+	ConfirmationDialog *settings_dialog = nullptr;
 
 	bool snap_enabled;
 	bool snap_key_enabled;
-	LineEdit *snap_translate;
-	LineEdit *snap_rotate;
-	LineEdit *snap_scale;
+	LineEdit *snap_translate = nullptr;
+	LineEdit *snap_rotate = nullptr;
+	LineEdit *snap_scale = nullptr;
 
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
 	LineEdit *xform_scale[3];
-	OptionButton *xform_type;
+	OptionButton *xform_type = nullptr;
 
-	VBoxContainer *settings_vbc;
-	SpinBox *settings_fov;
-	SpinBox *settings_znear;
-	SpinBox *settings_zfar;
+	VBoxContainer *settings_vbc = nullptr;
+	SpinBox *settings_fov = nullptr;
+	SpinBox *settings_znear = nullptr;
+	SpinBox *settings_zfar = nullptr;
 
 	void _snap_changed();
 	void _snap_update();
@@ -662,14 +662,14 @@ private:
 	void _menu_gizmo_toggled(int p_option);
 	void _update_camera_override_button(bool p_game_running);
 	void _update_camera_override_viewport(Object *p_viewport);
-	HBoxContainer *hbc_menu;
+	HBoxContainer *hbc_menu = nullptr;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container;
-	HBoxContainer *hbc_context_menu;
+	PanelContainer *context_menu_container = nullptr;
+	HBoxContainer *hbc_context_menu = nullptr;
 
 	void _generate_selection_boxes();
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	int camera_override_viewport_id;
 
@@ -683,13 +683,13 @@ private:
 
 	void _toggle_maximize_view(Object *p_viewport);
 
-	Node *custom_camera;
+	Node *custom_camera = nullptr;
 
 	Object *_get_editor_data(Object *p_what);
 
 	Ref<Environment> viewport_environment;
 
-	Node3D *selected;
+	Node3D *selected = nullptr;
 
 	void _request_gizmo(Object *p_obj);
 	void _set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
@@ -712,18 +712,18 @@ private:
 	uint32_t world_env_count = 0;
 	uint32_t directional_light_count = 0;
 
-	Button *sun_button;
-	Label *sun_state;
-	Label *sun_title;
-	VBoxContainer *sun_vb;
-	Popup *sun_environ_popup;
-	Control *sun_direction;
-	EditorSpinSlider *sun_angle_altitude;
-	EditorSpinSlider *sun_angle_azimuth;
-	ColorPickerButton *sun_color;
-	EditorSpinSlider *sun_energy;
-	EditorSpinSlider *sun_max_distance;
-	Button *sun_add_to_scene;
+	Button *sun_button = nullptr;
+	Label *sun_state = nullptr;
+	Label *sun_title = nullptr;
+	VBoxContainer *sun_vb = nullptr;
+	Popup *sun_environ_popup = nullptr;
+	Control *sun_direction = nullptr;
+	EditorSpinSlider *sun_angle_altitude = nullptr;
+	EditorSpinSlider *sun_angle_azimuth = nullptr;
+	ColorPickerButton *sun_color = nullptr;
+	EditorSpinSlider *sun_energy = nullptr;
+	EditorSpinSlider *sun_max_distance = nullptr;
+	Button *sun_add_to_scene = nullptr;
 
 	void _sun_direction_draw();
 	void _sun_direction_input(const Ref<InputEvent> &p_event);
@@ -734,23 +734,23 @@ private:
 	Ref<Shader> sun_direction_shader;
 	Ref<ShaderMaterial> sun_direction_material;
 
-	Button *environ_button;
-	Label *environ_state;
-	Label *environ_title;
-	VBoxContainer *environ_vb;
-	ColorPickerButton *environ_sky_color;
-	ColorPickerButton *environ_ground_color;
-	EditorSpinSlider *environ_energy;
-	Button *environ_ao_button;
-	Button *environ_glow_button;
-	Button *environ_tonemap_button;
-	Button *environ_gi_button;
-	Button *environ_add_to_scene;
+	Button *environ_button = nullptr;
+	Label *environ_state = nullptr;
+	Label *environ_title = nullptr;
+	VBoxContainer *environ_vb = nullptr;
+	ColorPickerButton *environ_sky_color = nullptr;
+	ColorPickerButton *environ_ground_color = nullptr;
+	EditorSpinSlider *environ_energy = nullptr;
+	Button *environ_ao_button = nullptr;
+	Button *environ_glow_button = nullptr;
+	Button *environ_tonemap_button = nullptr;
+	Button *environ_gi_button = nullptr;
+	Button *environ_add_to_scene = nullptr;
 
-	Button *sun_environ_settings;
+	Button *sun_environ_settings = nullptr;
 
-	DirectionalLight3D *preview_sun;
-	WorldEnvironment *preview_environment;
+	DirectionalLight3D *preview_sun = nullptr;
+	WorldEnvironment *preview_environment = nullptr;
 	Ref<Environment> environment;
 	Ref<ProceduralSkyMaterial> sky_material;
 
@@ -770,7 +770,7 @@ private:
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	static void _bind_methods();
 
@@ -868,7 +868,7 @@ public:
 class Node3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Node3DEditorPlugin, EditorPlugin);
 
-	Node3DEditor *spatial_editor;
+	Node3DEditor *spatial_editor = nullptr;
 
 public:
 	Node3DEditor *get_spatial_editor() { return spatial_editor; }

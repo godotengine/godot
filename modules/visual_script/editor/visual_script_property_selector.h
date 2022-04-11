@@ -62,23 +62,23 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
 	};
 
-	LineEdit *search_box;
+	LineEdit *search_box = nullptr;
 
-	Button *case_sensitive_button;
-	Button *hierarchy_button;
+	Button *case_sensitive_button = nullptr;
+	Button *hierarchy_button = nullptr;
 
-	Button *search_visual_script_nodes;
-	Button *search_classes;
-	Button *search_operators;
+	Button *search_visual_script_nodes = nullptr;
+	Button *search_classes = nullptr;
+	Button *search_operators = nullptr;
 
-	Button *search_methods;
-	Button *search_signals;
-	Button *search_constants;
-	Button *search_properties;
-	Button *search_theme_items;
+	Button *search_methods = nullptr;
+	Button *search_signals = nullptr;
+	Button *search_constants = nullptr;
+	Button *search_properties = nullptr;
+	Button *search_theme_items = nullptr;
 
-	OptionButton *scope_combo;
-	Tree *results_tree;
+	OptionButton *scope_combo = nullptr;
+	Tree *results_tree = nullptr;
 
 	class SearchRunner;
 	Ref<SearchRunner> search_runner;
@@ -94,7 +94,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	void _item_selected();
 	void _hide_requested();
 
-	EditorHelpBit *help_bit;
+	EditorHelpBit *help_bit = nullptr;
 
 	bool properties = false;
 	bool visual_script_generic = false;
@@ -104,9 +104,9 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	String base_type;
 	String base_script;
 	ObjectID script;
-	Object *instance;
+	Object *instance = nullptr;
 	bool virtuals_only = false;
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 
 protected:
 	void _notification(int p_what);
@@ -159,9 +159,9 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 		}
 	};
 
-	VisualScriptPropertySelector *selector_ui;
-	Control *ui_service;
-	Tree *results_tree;
+	VisualScriptPropertySelector *selector_ui = nullptr;
+	Control *ui_service = nullptr;
+	Tree *results_tree = nullptr;
 	String term;
 	int search_flags;
 	int scope_flags;

@@ -37,12 +37,17 @@
 #include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "storage/canvas_texture_storage.h"
+#include "storage/material_storage.h"
+#include "storage/texture_storage.h"
 
 #include "shaders/canvas.glsl.gen.h"
 
 class RasterizerSceneGLES3;
 
 class RasterizerCanvasGLES3 : public RendererCanvasRender {
+	static RasterizerCanvasGLES3 *singleton;
+
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
 
@@ -164,7 +169,7 @@ public:
 		LocalVector<GLsync> fences;
 		uint32_t current_buffer = 0;
 
-		InstanceData *instance_data_array;
+		InstanceData *instance_data_array = nullptr;
 		bool canvas_texscreen_used;
 		CanvasShaderGLES3 canvas_shader;
 		RID canvas_shader_current_version;
@@ -184,7 +189,7 @@ public:
 		RID current_tex = RID();
 		RID current_normal = RID();
 		RID current_specular = RID();
-		RasterizerStorageGLES3::Texture *current_tex_ptr;
+		GLES3::Texture *current_tex_ptr;
 		RID current_shader_version = RID();
 		RS::PrimitiveType current_primitive = RS::PRIMITIVE_MAX;
 		uint32_t current_primitive_points = 0;
@@ -193,7 +198,7 @@ public:
 		bool end_batch = false;
 
 		Transform3D vp;
-		Light *using_light;
+		Light *using_light = nullptr;
 		bool using_shadow;
 		bool using_transparent_rt;
 
@@ -215,9 +220,9 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES3 *scene_render;
+	RasterizerSceneGLES3 *scene_render = nullptr;
 
-	RasterizerStorageGLES3 *storage;
+	RasterizerStorageGLES3 *storage = nullptr;
 
 	void _set_uniforms();
 
@@ -273,6 +278,8 @@ public:
 
 	void initialize();
 	void finalize();
+
+	static RasterizerCanvasGLES3 *get_singleton();
 	RasterizerCanvasGLES3();
 	~RasterizerCanvasGLES3();
 };

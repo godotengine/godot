@@ -31,6 +31,7 @@
 #ifndef RENDERINGSERVERCANVASRENDER_H
 #define RENDERINGSERVERCANVASRENDER_H
 
+#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_storage.h"
 
 class RendererCanvasRender {
@@ -82,10 +83,10 @@ public:
 		Transform2D light_shader_xform;
 		//Vector2 light_shader_pos;
 
-		Light *shadows_next_ptr;
-		Light *filter_next_ptr;
-		Light *next_ptr;
-		Light *directional_next_ptr;
+		Light *shadows_next_ptr = nullptr;
+		Light *filter_next_ptr = nullptr;
+		Light *next_ptr = nullptr;
+		Light *directional_next_ptr = nullptr;
 
 		RID light_internal;
 		uint64_t version;
@@ -167,7 +168,7 @@ public:
 				MAX_SIZE = 4096
 			};
 			uint32_t usage;
-			uint8_t *memory;
+			uint8_t *memory = nullptr;
 		};
 
 		struct Command {
@@ -184,7 +185,7 @@ public:
 				TYPE_ANIMATION_SLICE,
 			};
 
-			Command *next;
+			Command *next = nullptr;
 			Type type;
 			virtual ~Command() {}
 		};
@@ -304,8 +305,8 @@ public:
 		};
 
 		struct ViewportRender {
-			RenderingServer *owner;
-			void *udata;
+			RenderingServer *owner = nullptr;
+			void *udata = nullptr;
 			Rect2 rect;
 		};
 
@@ -333,22 +334,22 @@ public:
 		RID material;
 		RID skeleton;
 
-		Item *next;
+		Item *next = nullptr;
 
 		struct CopyBackBuffer {
 			Rect2 rect;
 			Rect2 screen_rect;
 			bool full;
 		};
-		CopyBackBuffer *copy_back_buffer;
+		CopyBackBuffer *copy_back_buffer = nullptr;
 
 		Color final_modulate;
 		Transform2D final_transform;
 		Rect2 final_clip_rect;
-		Item *final_clip_owner;
-		Item *material_owner;
-		Item *canvas_group_owner;
-		ViewportRender *vp_render;
+		Item *final_clip_owner = nullptr;
+		Item *material_owner = nullptr;
+		Item *canvas_group_owner = nullptr;
+		ViewportRender *vp_render = nullptr;
 		bool distance_field;
 		bool light_masked;
 
@@ -403,14 +404,14 @@ public:
 					} break;
 					case Item::Command::TYPE_MESH: {
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-						AABB aabb = RendererStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
+						AABB aabb = RendererRD::MeshStorage::get_singleton()->mesh_get_aabb(mesh->mesh, RID());
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
 					} break;
 					case Item::Command::TYPE_MULTIMESH: {
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
-						AABB aabb = RendererStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
+						AABB aabb = RendererRD::MeshStorage::get_singleton()->multimesh_get_aabb(multimesh->multimesh);
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
@@ -452,14 +453,14 @@ public:
 			return rect;
 		}
 
-		Command *commands;
-		Command *last_command;
+		Command *commands = nullptr;
+		Command *last_command = nullptr;
 		Vector<CommandBlock> blocks;
 		uint32_t current_block;
 
 		template <class T>
 		T *alloc_command() {
-			T *command;
+			T *command = nullptr;
 			if (commands == nullptr) {
 				// As the most common use case of canvas items is to
 				// use only one command, the first is done with it's
@@ -589,7 +590,7 @@ public:
 		bool sdf_collision;
 		RS::CanvasOccluderPolygonCullMode cull_cache;
 
-		LightOccluderInstance *next;
+		LightOccluderInstance *next = nullptr;
 
 		LightOccluderInstance() {
 			enabled = true;

@@ -30,6 +30,13 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
+		<method name="get_tab_button_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the button icon from the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
 		<method name="get_tab_control" qualifiers="const">
 			<return type="Control" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -92,6 +99,14 @@
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
 			</description>
 		</method>
+		<method name="set_tab_button_icon">
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the button icon from the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
 		<method name="set_tab_disabled">
 			<return type="void" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -138,7 +153,7 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
-		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="1">
+		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			Sets the position at which tabs will be placed. See [enum TabBar.AlignmentMode] for details.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
@@ -158,6 +173,12 @@
 				Emitted when the [TabContainer]'s [Popup] button is clicked. See [method set_popup] for details.
 			</description>
 		</signal>
+		<signal name="tab_button_pressed">
+			<argument index="0" name="tab" type="int" />
+			<description>
+				Emitted when the user clicks on the button icon on this tab.
+			</description>
+		</signal>
 		<signal name="tab_changed">
 			<argument index="0" name="tab" type="int" />
 			<description>
@@ -172,6 +193,9 @@
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="drop_mark_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Modulation color for the [theme_item drop_mark] icon.
+		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color of disabled tabs.
 		</theme_item>
@@ -205,6 +229,9 @@
 		</theme_item>
 		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab is gonna be dropped (see [member drag_to_rearrange_enabled]).
 		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.

@@ -351,11 +351,15 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// Add mid points
 		int np_id = least_cost_id;
-		while (np_id != -1) {
-			path.push_back(navigation_polys[np_id].entry);
+		while (np_id != -1 && navigation_polys[np_id].back_navigation_poly_id != -1) {
+			int prev = navigation_polys[np_id].back_navigation_edge;
+			int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
+			Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
+			path.push_back(point);
 			np_id = navigation_polys[np_id].back_navigation_poly_id;
 		}
 
+		path.push_back(begin_point);
 		path.reverse();
 	}
 

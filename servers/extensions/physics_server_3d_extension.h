@@ -31,11 +31,11 @@
 #ifndef PHYSICS_SERVER_3D_EXTENSION_H
 #define PHYSICS_SERVER_3D_EXTENSION_H
 
+#include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
-#include "servers/extensions/ext_wrappers.gen.inc"
 #include "servers/physics_server_3d.h"
 
 class PhysicsDirectBodyState3DExtension : public PhysicsDirectBodyState3D {
@@ -45,7 +45,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// The warning is valid, but unavoidable. If the function is not overriden it will error anyway.
+	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
 	EXBIND0RC(Vector3, get_total_gravity)
 	EXBIND0RC(real_t, get_total_angular_damp)
@@ -193,7 +193,7 @@ typedef PhysicsServer3D::MotionCollision PhysicsServer3DExtensionMotionCollision
 typedef PhysicsServer3D::MotionResult PhysicsServer3DExtensionMotionResult;
 
 struct PhysicsServer3DExtensionStateCallback {
-	void *instance;
+	void *instance = nullptr;
 	void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state);
 };
 
@@ -208,7 +208,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// The warning is valid, but unavoidable. If the function is not overriden it will error anyway.
+	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
 	EXBIND0R(RID, world_boundary_shape_create)
 	EXBIND0R(RID, separation_ray_shape_create)

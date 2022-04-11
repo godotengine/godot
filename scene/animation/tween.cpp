@@ -130,6 +130,7 @@ void Tween::stop() {
 	started = false;
 	running = false;
 	dead = false;
+	total_time = 0;
 }
 
 void Tween::pause() {
@@ -272,12 +273,14 @@ bool Tween::step(float p_delta) {
 		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
+		total_time = 0;
 		start_tweeners();
 		started = true;
 	}
 
 	float rem_delta = p_delta * speed_scale;
 	bool step_active = false;
+	total_time += rem_delta;
 
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
@@ -344,6 +347,10 @@ Node *Tween::get_bound_node() const {
 	} else {
 		return nullptr;
 	}
+}
+
+float Tween::get_total_time() const {
+	return total_time;
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
@@ -624,6 +631,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
+	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
@@ -741,12 +749,12 @@ bool PropertyTweener::step(float &r_delta) {
 	}
 
 	float time = MIN(elapsed_time - delay, duration);
-	target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
-
 	if (time < duration) {
+		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
 		r_delta = 0;
 		return true;
 	} else {
+		target_instance->set_indexed(property, final_val);
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
 		emit_signal(SNAME("finished"));
@@ -895,8 +903,13 @@ bool MethodTweener::step(float &r_delta) {
 		return true;
 	}
 
+	Variant current_val;
 	float time = MIN(elapsed_time - delay, duration);
-	Variant current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	if (time < duration) {
+		current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	} else {
+		current_val = final_val;
+	}
 	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *));
 	argptr[0] = &current_val;
 
@@ -938,6 +951,7 @@ MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, 
 	callback = p_callback;
 	initial_val = p_from;
 	delta_val = tween->calculate_delta_value(p_from, p_to);
+	final_val = p_to;
 	duration = p_duration;
 }
 

@@ -464,8 +464,8 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
 
-	FileAccessRef f = FileAccess::open(path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+	if (f.is_null()) {
 		return false;
 	}
 
@@ -530,8 +530,8 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
 
-	FileAccessRef f = FileAccess::open(path, FileAccess::WRITE);
-	ERR_FAIL_COND(!f);
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
 	f->store_32(cache_file_version); //file version
 	uint32_t variant_count = variant_count;
@@ -541,8 +541,6 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 		f->store_32(p_version->variant_data[i].size()); //stage count
 		f->store_buffer(p_version->variant_data[i].ptr(), p_version->variant_data[i].size());
 	}
-
-	f->close();
 #endif
 }
 
@@ -554,11 +552,9 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 	for (int i = 0; i < variant_count; i++) {
 		for (OAHashMap<uint64_t, Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
-			if (it.valid) {
-				glDeleteShader(it.value->vert_id);
-				glDeleteShader(it.value->frag_id);
-				glDeleteProgram(it.value->id);
-			}
+			glDeleteShader(it.value->vert_id);
+			glDeleteShader(it.value->frag_id);
+			glDeleteProgram(it.value->id);
 		}
 	}
 
@@ -644,8 +640,8 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 
 		base_sha256 = hash_build.as_string().sha256_text();
 
-		DirAccessRef d = DirAccess::open(shader_cache_dir);
-		ERR_FAIL_COND(!d);
+		Ref<DirAccess> d = DirAccess::open(shader_cache_dir);
+		ERR_FAIL_COND(d.is_null());
 		if (d->change_dir(name) != OK) {
 			Error err = d->make_dir(name);
 			ERR_FAIL_COND(err != OK);

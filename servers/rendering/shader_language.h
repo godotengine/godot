@@ -386,7 +386,7 @@ public:
 		return node;
 	}
 
-	Node *nodes;
+	Node *nodes = nullptr;
 
 	struct OperatorNode : public Node {
 		DataType return_cache = TYPE_VOID;
@@ -615,20 +615,20 @@ public:
 			DataType type;
 			StringName type_str;
 			DataPrecision precision;
-			ConstantNode *initializer;
+			ConstantNode *initializer = nullptr;
 			int array_size;
 		};
 
 		struct Function {
 			StringName name;
-			FunctionNode *function;
+			FunctionNode *function = nullptr;
 			Set<StringName> uses_function;
 			bool callable;
 		};
 
 		struct Struct {
 			StringName name;
-			StructNode *shader_struct;
+			StructNode *shader_struct = nullptr;
 		};
 
 		struct Varying {
@@ -715,7 +715,7 @@ public:
 		bool is_op;
 		union {
 			Operator op;
-			Node *node;
+			Node *node = nullptr;
 		};
 	};
 
@@ -973,7 +973,7 @@ private:
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
 
-	ShaderNode *shader;
+	ShaderNode *shader = nullptr;
 
 	enum IdentifierType {
 		IDENTIFIER_FUNCTION,
@@ -1021,7 +1021,7 @@ private:
 
 	CompletionType completion_type;
 	int completion_line;
-	BlockNode *completion_block;
+	BlockNode *completion_block = nullptr;
 	DataType completion_base;
 	bool completion_base_array;
 	SubClassTag completion_class;
@@ -1091,7 +1091,7 @@ public:
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
-	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
+	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

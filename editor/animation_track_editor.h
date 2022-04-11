@@ -54,27 +54,27 @@ class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
-	AnimationTrackEdit *track_edit;
+	AnimationTrackEdit *track_edit = nullptr;
 	int name_limit;
-	Range *zoom;
-	Range *h_scroll;
+	Range *zoom = nullptr;
+	Range *h_scroll = nullptr;
 	float play_position_pos;
 
-	HBoxContainer *len_hb;
-	EditorSpinSlider *length;
-	Button *loop;
-	TextureRect *time_icon;
+	HBoxContainer *len_hb = nullptr;
+	EditorSpinSlider *length = nullptr;
+	Button *loop = nullptr;
+	TextureRect *time_icon = nullptr;
 
-	MenuButton *add_track;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	HScrollBar *hscroll;
+	MenuButton *add_track = nullptr;
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
+	HScrollBar *hscroll = nullptr;
 
 	void _zoom_changed(double);
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
 
 	void _play_position_draw();
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	Rect2 hsize_rect;
 
 	bool editing = false;
@@ -146,12 +146,12 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE
 	};
-	AnimationTimelineEdit *timeline;
-	UndoRedo *undo_redo;
-	Popup *path_popup;
-	LineEdit *path;
-	Node *root;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
+	AnimationTimelineEdit *timeline = nullptr;
+	UndoRedo *undo_redo = nullptr;
+	Popup *path_popup = nullptr;
+	LineEdit *path = nullptr;
+	Node *root = nullptr;
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos;
 	NodePath node_path;
 
@@ -169,8 +169,9 @@ class AnimationTrackEdit : public Control {
 	Ref<Texture2D> type_icon;
 	Ref<Texture2D> selected_icon;
 
-	PopupMenu *menu;
+	PopupMenu *menu = nullptr;
 
+	bool hovered = false;
 	bool clicking_on_name = false;
 
 	void _zoom_changed();
@@ -194,7 +195,7 @@ class AnimationTrackEdit : public Control {
 	float moving_selection_from_ofs;
 
 	bool in_group = false;
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -285,27 +286,27 @@ class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
 	Ref<Animation> animation;
-	Node *root;
+	Node *root = nullptr;
 
-	MenuButton *edit;
+	MenuButton *edit = nullptr;
 
-	PanelContainer *main_panel;
-	HScrollBar *hscroll;
-	ScrollContainer *scroll;
-	VBoxContainer *track_vbox;
-	AnimationBezierTrackEdit *bezier_edit;
+	PanelContainer *main_panel = nullptr;
+	HScrollBar *hscroll = nullptr;
+	ScrollContainer *scroll = nullptr;
+	VBoxContainer *track_vbox = nullptr;
+	AnimationBezierTrackEdit *bezier_edit = nullptr;
 
-	Label *info_message;
+	Label *info_message = nullptr;
 
-	AnimationTimelineEdit *timeline;
-	HSlider *zoom;
-	EditorSpinSlider *step;
-	TextureRect *zoom_icon;
-	Button *snap;
-	Button *bezier_edit_icon;
-	OptionButton *snap_mode;
+	AnimationTimelineEdit *timeline = nullptr;
+	HSlider *zoom = nullptr;
+	EditorSpinSlider *step = nullptr;
+	TextureRect *zoom_icon = nullptr;
+	Button *snap = nullptr;
+	Button *bezier_edit_icon = nullptr;
+	OptionButton *snap_mode = nullptr;
 
-	Button *imported_anim_warning;
+	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
 
 	void _snap_mode_changed(int p_mode);
@@ -323,7 +324,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _track_remove_request(int p_track);
 	void _track_grab_focus(int p_track);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
@@ -336,9 +337,9 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _update_step_spinbox();
 
-	PropertySelector *prop_selector;
-	PropertySelector *method_selector;
-	SceneTreeDialog *pick_track;
+	PropertySelector *prop_selector = nullptr;
+	PropertySelector *method_selector = nullptr;
+	SceneTreeDialog *pick_track = nullptr;
 	int adding_track_type;
 	NodePath adding_track_path;
 
@@ -353,10 +354,10 @@ class AnimationTrackEditor : public VBoxContainer {
 		bool advance = false;
 	}; /* insert_data;*/
 
-	Label *insert_confirm_text;
-	CheckBox *insert_confirm_bezier;
-	CheckBox *insert_confirm_reset;
-	ConfirmationDialog *insert_confirm;
+	Label *insert_confirm_text = nullptr;
+	CheckBox *insert_confirm_bezier = nullptr;
+	CheckBox *insert_confirm_reset = nullptr;
+	ConfirmationDialog *insert_confirm = nullptr;
 	bool insert_queue = false;
 	List<InsertData> insert_data;
 
@@ -419,13 +420,13 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_commit();
 	void _move_selection_cancel();
 
-	AnimationTrackKeyEdit *key_edit;
-	AnimationMultiTrackKeyEdit *multi_key_edit;
+	AnimationTrackKeyEdit *key_edit = nullptr;
+	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
 
 	void _clear_key_edit();
 
-	Control *box_selection;
+	Control *box_selection = nullptr;
 	void _box_selection_draw();
 	bool box_selecting = false;
 	Vector2 box_selecting_from;
@@ -440,18 +441,18 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	////////////// edit menu stuff
 
-	ConfirmationDialog *optimize_dialog;
-	SpinBox *optimize_linear_error;
-	SpinBox *optimize_angular_error;
-	SpinBox *optimize_max_angle;
+	ConfirmationDialog *optimize_dialog = nullptr;
+	SpinBox *optimize_linear_error = nullptr;
+	SpinBox *optimize_angular_error = nullptr;
+	SpinBox *optimize_max_angle = nullptr;
 
-	ConfirmationDialog *cleanup_dialog;
-	CheckBox *cleanup_keys;
-	CheckBox *cleanup_tracks;
-	CheckBox *cleanup_all;
+	ConfirmationDialog *cleanup_dialog = nullptr;
+	CheckBox *cleanup_keys = nullptr;
+	CheckBox *cleanup_tracks = nullptr;
+	CheckBox *cleanup_all = nullptr;
 
-	ConfirmationDialog *scale_dialog;
-	SpinBox *scale;
+	ConfirmationDialog *scale_dialog = nullptr;
+	SpinBox *scale = nullptr;
 
 	void _select_all_tracks_for_copy();
 
@@ -464,13 +465,13 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _anim_duplicate_keys(bool transpose);
 
 	void _view_group_toggle();
-	Button *view_group;
-	Button *selected_filter;
+	Button *view_group = nullptr;
+	Button *selected_filter = nullptr;
 
 	void _selection_changed();
 
-	ConfirmationDialog *track_copy_dialog;
-	Tree *track_copy_select;
+	ConfirmationDialog *track_copy_dialog = nullptr;
+	Tree *track_copy_select = nullptr;
 
 	struct TrackClipboard {
 		NodePath full_path;

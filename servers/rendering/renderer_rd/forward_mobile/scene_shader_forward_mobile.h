@@ -40,7 +40,7 @@ namespace RendererSceneRenderImplementation {
 class SceneShaderForwardMobile {
 private:
 	static SceneShaderForwardMobile *singleton;
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 public:
 	enum ShaderVersion {
@@ -57,7 +57,7 @@ public:
 		SHADER_VERSION_MAX
 	};
 
-	struct ShaderData : public RendererStorageRD::ShaderData {
+	struct ShaderData : public RendererRD::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -143,7 +143,7 @@ public:
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -157,13 +157,13 @@ public:
 		virtual ~ShaderData();
 	};
 
-	RendererStorageRD::ShaderData *_create_shader_func();
-	static RendererStorageRD::ShaderData *_create_shader_funcs() {
+	RendererRD::ShaderData *_create_shader_func();
+	static RendererRD::ShaderData *_create_shader_funcs() {
 		return static_cast<SceneShaderForwardMobile *>(singleton)->_create_shader_func();
 	}
 
-	struct MaterialData : public RendererStorageRD::MaterialData {
-		ShaderData *shader_data;
+	struct MaterialData : public RendererRD::MaterialData {
+		ShaderData *shader_data = nullptr;
 		RID uniform_set;
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -177,8 +177,8 @@ public:
 
 	SelfList<ShaderData>::List shader_list;
 
-	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
+	RendererRD::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RendererRD::MaterialData *_create_material_funcs(RendererRD::ShaderData *p_shader) {
 		return static_cast<SceneShaderForwardMobile *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 

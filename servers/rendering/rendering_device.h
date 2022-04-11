@@ -528,6 +528,7 @@ public:
 	/*********************/
 
 	struct AttachmentFormat {
+		enum { UNUSED_ATTACHMENT = 0xFFFFFFFF };
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;
@@ -729,7 +730,7 @@ public:
 		int binding; // Binding index as specified in shader.
 
 	private:
-		// In most cases only one ID is provided per binding, so avoid allocating memory unnecesarily for performance.
+		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
 		RID id; // If only one is provided, this is used.
 		Vector<RID> ids; // If multiple ones are provided, this is used instead.
 
@@ -1222,7 +1223,7 @@ public:
 		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z,
 	};
 
-	virtual int limit_get(Limit p_limit) = 0;
+	virtual uint64_t limit_get(Limit p_limit) = 0;
 
 	//methods below not exposed, used by RenderingDeviceRD
 	virtual void prepare_screen_for_drawing() = 0;

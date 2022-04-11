@@ -378,12 +378,12 @@ TypedArray<String> SoftDynamicBody3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (mesh.is_null()) {
-		warnings.push_back(TTR("This body will be ignored until you set a mesh."));
+		warnings.push_back(RTR("This body will be ignored until you set a mesh."));
 	}
 
 	Transform3D t = get_transform();
 	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		warnings.push_back(TTR("Size changes to SoftDynamicBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(RTR("Size changes to SoftDynamicBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;

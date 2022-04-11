@@ -115,7 +115,7 @@ void Label::_shape() {
 
 	if (lines_dirty) {
 		for (int i = 0; i < lines_rid.size(); i++) {
-			TS->free(lines_rid[i]);
+			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
 
@@ -960,8 +960,8 @@ Label::Label(const String &p_text) {
 
 Label::~Label() {
 	for (int i = 0; i < lines_rid.size(); i++) {
-		TS->free(lines_rid[i]);
+		TS->free_rid(lines_rid[i]);
 	}
 	lines_rid.clear();
-	TS->free(text_rid);
+	TS->free_rid(text_rid);
 }

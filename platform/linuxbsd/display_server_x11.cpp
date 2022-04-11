@@ -363,15 +363,15 @@ DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 	return mouse_mode;
 }
 
-void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
+void DisplayServerX11::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
-		last_mouse_pos = p_to;
+		last_mouse_pos = p_position;
 	} else {
 		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
 		XWarpPointer(x11_display, None, windows[window_id].x11_window,
-				0, 0, 0, 0, (int)p_to.x, (int)p_to.y);
+				0, 0, 0, 0, (int)p_position.x, (int)p_position.y);
 	}
 }
 
@@ -1732,8 +1732,15 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 
 	if (result == Success && data) {
 		Atom *atoms = (Atom *)data;
-		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
-		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		Atom wm_act_max_horz;
+		Atom wm_act_max_vert;
+		if (strcmp(p_atom_name, "_NET_WM_STATE") == 0) {
+			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+		} else {
+			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
+			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		}
 		bool found_wm_act_max_horz = false;
 		bool found_wm_act_max_vert = false;
 
@@ -3045,7 +3052,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 }
 
 void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
-	((DisplayServerX11 *)(get_singleton()))->_dispatch_input_event(p_event);
+	static_cast<DisplayServerX11 *>(get_singleton())->_dispatch_input_event(p_event);
 }
 
 void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
@@ -3099,7 +3106,7 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 }
 
 void DisplayServerX11::_poll_events_thread(void *ud) {
-	DisplayServerX11 *display_server = (DisplayServerX11 *)ud;
+	DisplayServerX11 *display_server = static_cast<DisplayServerX11 *>(ud);
 	display_server->_poll_events();
 }
 
@@ -3201,19 +3208,23 @@ Rect2i DisplayServerX11::window_get_popup_safe_rect(WindowID p_window) const {
 }
 
 void DisplayServerX11::popup_open(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	WindowData &wd = windows[p_window];
 	if (wd.is_popup) {
-		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		// Find current popup parent, or root popup if new window is not transient.
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
 		while (E) {
 			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
-				_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			} else {
 				break;
 			}
+		}
+		if (C) {
+			_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 
 		time_since_popup = OS::get_singleton()->get_ticks_msec();
@@ -3222,16 +3233,22 @@ void DisplayServerX11::popup_open(WindowID p_window) {
 }
 
 void DisplayServerX11::popup_close(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	List<WindowID>::Element *E = popup_list.find(p_window);
 	while (E) {
-		_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 		List<WindowID>::Element *F = E->next();
+		WindowID win_id = E->get();
 		popup_list.erase(E);
+
+		_send_window_event(windows[win_id], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 		E = F;
 	}
 }
 
 void DisplayServerX11::mouse_process_popups() {
+	_THREAD_SAFE_METHOD_
+
 	if (popup_list.is_empty()) {
 		return;
 	}
@@ -3252,7 +3269,9 @@ void DisplayServerX11::mouse_process_popups() {
 			Vector2i pos = Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
 			if ((pos != last_mouse_monitor_pos) || (mask != last_mouse_monitor_mask)) {
 				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
+					List<WindowID>::Element *C = nullptr;
 					List<WindowID>::Element *E = popup_list.back();
+					// Find top popup to close.
 					while (E) {
 						// Popup window area.
 						Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
@@ -3263,11 +3282,12 @@ void DisplayServerX11::mouse_process_popups() {
 						} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 							break;
 						} else {
-							_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
-							List<WindowID>::Element *F = E->prev();
-							popup_list.erase(E);
-							E = F;
+							C = E;
+							E = E->prev();
 						}
+					}
+					if (C) {
+						_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 					}
 				}
 			}

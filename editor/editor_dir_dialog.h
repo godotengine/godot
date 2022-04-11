@@ -39,14 +39,14 @@
 class EditorDirDialog : public ConfirmationDialog {
 	GDCLASS(EditorDirDialog, ConfirmationDialog);
 
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
-	AcceptDialog *mkdirerr;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
 
-	Button *makedir;
+	Button *makedir = nullptr;
 	Set<String> opened_paths;
 
-	Tree *tree;
+	Tree *tree = nullptr;
 	bool updating = false;
 
 	void _item_collapsed(Object *p_item);

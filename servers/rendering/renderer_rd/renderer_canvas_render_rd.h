@@ -41,7 +41,7 @@
 #include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 
 	enum {
 		BASE_UNIFORM_SET = 0,
@@ -151,7 +151,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		ShaderCompiler compiler;
 	} shader;
 
-	struct ShaderData : public RendererStorageRD::ShaderData {
+	struct CanvasShaderData : public RendererRD::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -182,7 +182,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
@@ -190,28 +190,28 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
-		ShaderData();
-		virtual ~ShaderData();
+		CanvasShaderData();
+		virtual ~CanvasShaderData();
 	};
 
-	RendererStorageRD::ShaderData *_create_shader_func();
-	static RendererStorageRD::ShaderData *_create_shader_funcs() {
+	RendererRD::ShaderData *_create_shader_func();
+	static RendererRD::ShaderData *_create_shader_funcs() {
 		return static_cast<RendererCanvasRenderRD *>(singleton)->_create_shader_func();
 	}
 
-	struct MaterialData : public RendererStorageRD::MaterialData {
-		ShaderData *shader_data;
+	struct CanvasMaterialData : public RendererRD::MaterialData {
+		CanvasShaderData *shader_data = nullptr;
 		RID uniform_set;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
 		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
-		virtual ~MaterialData();
+		virtual ~CanvasMaterialData();
 	};
 
-	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
-	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
-		return static_cast<RendererCanvasRenderRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+	RendererRD::MaterialData *_create_material_func(CanvasShaderData *p_shader);
+	static RendererRD::MaterialData *_create_material_funcs(RendererRD::ShaderData *p_shader) {
+		return static_cast<RendererCanvasRenderRD *>(singleton)->_create_material_func(static_cast<CanvasShaderData *>(p_shader));
 	}
 
 	/**************************/
@@ -361,7 +361,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			uint32_t pad2;
 		};
 
-		LightUniform *light_uniforms;
+		LightUniform *light_uniforms = nullptr;
 
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;

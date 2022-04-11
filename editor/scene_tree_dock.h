@@ -109,29 +109,29 @@ class SceneTreeDock : public VBoxContainer {
 	bool reset_create_dialog = false;
 
 	int current_option;
-	CreateDialog *create_dialog;
+	CreateDialog *create_dialog = nullptr;
 #ifdef MODULE_REGEX_ENABLED
-	RenameDialog *rename_dialog;
+	RenameDialog *rename_dialog = nullptr;
 #endif // MODULE_REGEX_ENABLED
 
-	Button *button_add;
-	Button *button_instance;
-	Button *button_create_script;
-	Button *button_detach_script;
-	MenuButton *button_tree_menu;
+	Button *button_add = nullptr;
+	Button *button_instance = nullptr;
+	Button *button_create_script = nullptr;
+	Button *button_detach_script = nullptr;
+	MenuButton *button_tree_menu = nullptr;
 
-	Button *button_2d;
-	Button *button_3d;
-	Button *button_ui;
-	Button *button_custom;
-	Button *button_clipboard;
+	Button *button_2d = nullptr;
+	Button *button_3d = nullptr;
+	Button *button_ui = nullptr;
+	Button *button_custom = nullptr;
+	Button *button_clipboard = nullptr;
 
-	HBoxContainer *button_hb;
+	HBoxContainer *button_hb = nullptr;
 	Button *edit_local, *edit_remote;
-	SceneTreeEditor *scene_tree;
-	Control *remote_tree;
+	SceneTreeEditor *scene_tree = nullptr;
+	Control *remote_tree = nullptr;
 
-	HBoxContainer *tool_hbc;
+	HBoxContainer *tool_hbc = nullptr;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _property_selected(int p_idx);
 	void _node_collapsed(Object *p_obj);
@@ -140,40 +140,40 @@ class SceneTreeDock : public VBoxContainer {
 	String resource_drop_path;
 	void _perform_property_drop(Node *p_node, String p_property, RES p_res);
 
-	EditorData *editor_data;
-	EditorSelection *editor_selection;
+	EditorData *editor_data = nullptr;
+	EditorSelection *editor_selection = nullptr;
 
 	List<Node *> node_clipboard;
 	String clipboard_source_scene;
 	HashMap<String, Map<RES, RES>> clipboard_resource_remap;
 
-	ScriptCreateDialog *script_create_dialog;
-	ShaderCreateDialog *shader_create_dialog;
-	AcceptDialog *accept;
-	ConfirmationDialog *delete_dialog;
-	ConfirmationDialog *editable_instance_remove_dialog;
-	ConfirmationDialog *placeholder_editable_instance_remove_dialog;
+	ScriptCreateDialog *script_create_dialog = nullptr;
+	ShaderCreateDialog *shader_create_dialog = nullptr;
+	AcceptDialog *accept = nullptr;
+	ConfirmationDialog *delete_dialog = nullptr;
+	ConfirmationDialog *editable_instance_remove_dialog = nullptr;
+	ConfirmationDialog *placeholder_editable_instance_remove_dialog = nullptr;
 
-	ReparentDialog *reparent_dialog;
-	EditorQuickOpen *quick_open;
-	EditorFileDialog *new_scene_from_dialog;
+	ReparentDialog *reparent_dialog = nullptr;
+	EditorQuickOpen *quick_open = nullptr;
+	EditorFileDialog *new_scene_from_dialog = nullptr;
 
-	LineEdit *filter;
-	TextureRect *filter_icon;
+	LineEdit *filter = nullptr;
+	TextureRect *filter_icon = nullptr;
 
-	PopupMenu *menu;
-	PopupMenu *menu_subresources;
-	PopupMenu *menu_properties;
-	ConfirmationDialog *clear_inherit_confirm;
+	PopupMenu *menu = nullptr;
+	PopupMenu *menu_subresources = nullptr;
+	PopupMenu *menu_properties = nullptr;
+	ConfirmationDialog *clear_inherit_confirm = nullptr;
 
 	bool first_enter = true;
 
 	void _create();
 	void _do_create(Node *p_parent);
-	Node *scene_root;
-	Node *edited_scene;
+	Node *scene_root = nullptr;
+	Node *edited_scene = nullptr;
 
-	VBoxContainer *create_root_dialog;
+	VBoxContainer *create_root_dialog = nullptr;
 	String selected_favorite_root;
 
 	Ref<ShaderMaterial> selected_shader_material;
@@ -220,7 +220,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _nodes_drag_begin();
 	virtual void input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void _import_subscene();
 

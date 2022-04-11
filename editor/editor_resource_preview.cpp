@@ -199,14 +199,12 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			if (has_small_texture) {
 				ResourceSaver::save(cache_base + "_small.png", r_small_texture);
 			}
-			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
-			ERR_FAIL_COND_MSG(!f, "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
+			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
+			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			f->store_line(itos(thumbnail_size));
 			f->store_line(itos(has_small_texture));
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
 			f->store_line(FileAccess::get_md5(p_item.path));
-			f->close();
-			memdelete(f);
 		}
 	}
 }
@@ -251,8 +249,8 @@ void EditorResourcePreview::_iterate() {
 				//does not have it, try to load a cached thumbnail
 
 				String file = cache_base + ".txt";
-				FileAccess *f = FileAccess::open(file, FileAccess::READ);
-				if (!f) {
+				Ref<FileAccess> f = FileAccess::open(file, FileAccess::READ);
+				if (f.is_null()) {
 					// No cache found, generate
 					_generate_preview(texture, small_texture, item, cache_base);
 				} else {
@@ -265,11 +263,9 @@ void EditorResourcePreview::_iterate() {
 
 					if (tsize != thumbnail_size) {
 						cache_valid = false;
-						memdelete(f);
 					} else if (last_modtime != modtime) {
 						String last_md5 = f->get_line();
 						String md5 = FileAccess::get_md5(item.path);
-						memdelete(f);
 
 						if (last_md5 != md5) {
 							cache_valid = false;
@@ -278,7 +274,7 @@ void EditorResourcePreview::_iterate() {
 							//update modified time
 
 							f = FileAccess::open(file, FileAccess::WRITE);
-							if (!f) {
+							if (f.is_null()) {
 								// Not returning as this would leave the thread hanging and would require
 								// some proper cleanup/disabling of resource preview generation.
 								ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
@@ -287,11 +283,8 @@ void EditorResourcePreview::_iterate() {
 								f->store_line(itos(has_small_texture));
 								f->store_line(itos(modtime));
 								f->store_line(md5);
-								memdelete(f);
 							}
 						}
-					} else {
-						memdelete(f);
 					}
 
 					if (cache_valid) {

@@ -63,13 +63,6 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
-Files: ./modules/fbx/fbx_parser/
-Comment: Open Asset Import Library (FBX parser)
-Copyright: 2006-2020, assimp team
- 2007-2022, Juan Linietsky, Ariel Manzur.
- 2014-2022, Godot Engine contributors.
-License: BSD-3-clause
-
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
@@ -127,8 +120,13 @@ License: Expat
 
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
-Copyright: 2019, Binomial LLC.
+Copyright: 2022, Binomial LLC.
 License: Apache-2.0
+
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
 
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
@@ -161,17 +159,17 @@ Comment: etcpak
 Copyright: 2013-2021, Bartosz Taudul
 License: BSD-3-clause
 
-Files: ./thirdparty/fonts/DroidSans*.ttf
+Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/JetBrainsMono_Regular.ttf
+Files: ./thirdparty/fonts/JetBrainsMono_Regular.woff2
 Comment: JetBrains Mono font
 Copyright: 2020, JetBrains s.r.o.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/NotoSans*.ttf
+Files: ./thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
@@ -305,11 +303,10 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
-Files: ./thirdparty/misc/open-simplex-noise.c
- ./thirdparty/misc/open-simplex-noise.h
-Comment: OpenSimplex Noise
-Copyright: 2014, Stephen M. Cameron
-License: public-domain or Unlicense
+Files: ./thirdparty/noise/FastNoiseLite.h
+Comment: FastNoise Lite
+Copyright: 2020, Jordan Peck and contributors
+License: MIT
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h

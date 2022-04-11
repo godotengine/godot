@@ -110,9 +110,10 @@ Error EditorRun::run(const String &p_scene) {
 	}
 
 	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
-	bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
-	int display_scale = 1;
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
+		bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
+		int display_scale = 1;
+
 		if (OS::get_singleton()->is_hidpi_allowed()) {
 			if (hidpi_proj) {
 				display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.

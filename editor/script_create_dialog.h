@@ -45,27 +45,27 @@ class EditorFileDialog;
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
-	LineEdit *class_name;
-	Label *error_label;
-	Label *path_error_label;
-	Label *builtin_warning_label;
-	Label *script_name_warning_label;
-	Label *template_info_label;
-	PanelContainer *status_panel;
-	LineEdit *parent_name;
-	Button *parent_browse_button;
-	Button *parent_search_button;
-	OptionButton *language_menu;
-	OptionButton *template_menu;
-	LineEdit *file_path;
-	LineEdit *internal_name;
-	Button *path_button;
-	EditorFileDialog *file_browse;
-	CheckBox *internal;
-	CheckBox *use_templates;
-	VBoxContainer *path_vb;
-	AcceptDialog *alert;
-	CreateDialog *select_class;
+	LineEdit *class_name = nullptr;
+	Label *error_label = nullptr;
+	Label *path_error_label = nullptr;
+	Label *builtin_warning_label = nullptr;
+	Label *script_name_warning_label = nullptr;
+	Label *template_info_label = nullptr;
+	PanelContainer *status_panel = nullptr;
+	LineEdit *parent_name = nullptr;
+	Button *parent_browse_button = nullptr;
+	Button *parent_search_button = nullptr;
+	OptionButton *language_menu = nullptr;
+	OptionButton *template_menu = nullptr;
+	LineEdit *file_path = nullptr;
+	LineEdit *internal_name = nullptr;
+	Button *path_button = nullptr;
+	EditorFileDialog *file_browse = nullptr;
+	CheckBox *internal = nullptr;
+	CheckBox *use_templates = nullptr;
+	VBoxContainer *path_vb = nullptr;
+	AcceptDialog *alert = nullptr;
+	CreateDialog *select_class = nullptr;
 	bool is_browsing_parent = false;
 	String template_inactive_message;
 	String initial_bp;
@@ -83,12 +83,13 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	int current_language;
 	int default_language;
 	bool re_check_path = false;
+	Dictionary templates_dictionary;
 
 	Control *path_controls[2];
 	Control *name_controls[2];
 
 	Vector<ScriptLanguage::ScriptTemplate> template_list;
-	ScriptLanguage *language;
+	ScriptLanguage *language = nullptr;
 
 	String base_type;
 

@@ -115,25 +115,24 @@ collect_features_use (hb_ot_shape_planner_t *plan)
   map->add_gsub_pause (setup_syllables_use);
 
   /* "Default glyph pre-processing group" */
-  map->enable_feature (HB_TAG('l','o','c','l'));
-  map->enable_feature (HB_TAG('c','c','m','p'));
-  map->enable_feature (HB_TAG('n','u','k','t'));
-  map->enable_feature (HB_TAG('a','k','h','n'), F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('l','o','c','l'), F_PER_SYLLABLE);
+  map->enable_feature (HB_TAG('c','c','m','p'), F_PER_SYLLABLE);
+  map->enable_feature (HB_TAG('n','u','k','t'), F_PER_SYLLABLE);
+  map->enable_feature (HB_TAG('a','k','h','n'), F_MANUAL_ZWJ | F_PER_SYLLABLE);
 
   /* "Reordering group" */
   map->add_gsub_pause (_hb_clear_substitution_flags);
-  map->add_feature (HB_TAG('r','p','h','f'), F_MANUAL_ZWJ);
+  map->add_feature (HB_TAG('r','p','h','f'), F_MANUAL_ZWJ | F_PER_SYLLABLE);
   map->add_gsub_pause (record_rphf_use);
   map->add_gsub_pause (_hb_clear_substitution_flags);
-  map->enable_feature (HB_TAG('p','r','e','f'), F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('p','r','e','f'), F_MANUAL_ZWJ | F_PER_SYLLABLE);
   map->add_gsub_pause (record_pref_use);
 
   /* "Orthographic unit shaping group" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (use_basic_features); i++)
-    map->enable_feature (use_basic_features[i], F_MANUAL_ZWJ);
+    map->enable_feature (use_basic_features[i], F_MANUAL_ZWJ | F_PER_SYLLABLE);
 
   map->add_gsub_pause (reorder_use);
-  map->add_gsub_pause (_hb_clear_syllables);
 
   /* "Topographical features" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (use_topographical_features); i++)
@@ -206,7 +205,7 @@ setup_masks_use (const hb_ot_shape_plan_t *plan,
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
-    info[i].use_category() = hb_use_get_category (info[i].codepoint);
+    info[i].use_category() = hb_use_get_category (info[i]);
 }
 
 static void
@@ -257,7 +256,6 @@ setup_topographical_masks (const hb_ot_shape_plan_t *plan,
     use_syllable_type_t syllable_type = (use_syllable_type_t) (info[start].syllable() & 0x0F);
     switch (syllable_type)
     {
-      case use_symbol_cluster:
       case use_hieroglyph_cluster:
       case use_non_cluster:
 	/* These don't join.  Nothing to do. */
@@ -269,6 +267,7 @@ setup_topographical_masks (const hb_ot_shape_plan_t *plan,
       case use_standard_cluster:
       case use_number_joiner_terminated_cluster:
       case use_numeral_cluster:
+      case use_symbol_cluster:
       case use_broken_cluster:
 
 	bool join = last_form == JOINING_FORM_FINA || last_form == JOINING_FORM_ISOL;
@@ -350,7 +349,7 @@ record_pref_use (const hb_ot_shape_plan_t *plan HB_UNUSED,
 static inline bool
 is_halant_use (const hb_glyph_info_t &info)
 {
-  return (info.use_category() == USE(H) || info.use_category() == USE(HVM)) &&
+  return (info.use_category() == USE(H) || info.use_category() == USE(IS)) &&
 	 !_hb_glyph_info_ligated (&info);
 }
 
@@ -363,6 +362,7 @@ reorder_syllable_use (hb_buffer_t *buffer, unsigned int start, unsigned int end)
 		  (FLAG (use_virama_terminated_cluster) |
 		   FLAG (use_sakot_terminated_cluster) |
 		   FLAG (use_standard_cluster) |
+		   FLAG (use_symbol_cluster) |
 		   FLAG (use_broken_cluster) |
 		   0))))
     return;

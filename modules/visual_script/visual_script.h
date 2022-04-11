@@ -350,8 +350,8 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
-		static Vector<DocData::ClassDoc> docs;
+	virtual Vector<DocData::ClassDoc> get_documentation() const override {
+		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
 #endif // TOOLS_ENABLED
@@ -507,7 +507,7 @@ class VisualScriptLanguage : public ScriptLanguage {
 	String _debug_error;
 	int _debug_call_stack_pos = 0;
 	int _debug_max_call_stack;
-	CallLevel *_call_stack;
+	CallLevel *_call_stack = nullptr;
 
 public:
 	StringName notification = "_notification";

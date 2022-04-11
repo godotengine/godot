@@ -254,8 +254,8 @@ protected:
 		struct UBO {
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+			float inv_view_matrix[16];
+			float view_matrix[16];
 
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
@@ -328,7 +328,7 @@ protected:
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 

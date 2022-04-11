@@ -219,7 +219,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		}
 	};
 
-	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mapping);
+	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mem_usage, VmaAllocationCreateFlags p_mem_flags);
 	Error _buffer_free(Buffer *p_buffer);
 	Error _buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer = false, uint32_t p_required_align = 32);
 
@@ -1203,7 +1203,7 @@ public:
 	/**** Limits ****/
 	/****************/
 
-	virtual int limit_get(Limit p_limit);
+	virtual uint64_t limit_get(Limit p_limit);
 
 	virtual void prepare_screen_for_drawing();
 	void initialize(VulkanContext *p_context, bool p_local_device = false);

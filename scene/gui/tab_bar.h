@@ -86,7 +86,7 @@ private:
 	Vector<Tab> tabs;
 	int current = 0;
 	int previous = 0;
-	AlignmentMode tab_alignment = ALIGNMENT_CENTER;
+	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
@@ -101,6 +101,7 @@ private:
 	int max_width = 0;
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
+	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 

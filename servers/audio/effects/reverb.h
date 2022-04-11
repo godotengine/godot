@@ -75,7 +75,7 @@ private:
 
 	Comb comb[MAX_COMBS];
 	AllPass allpass[MAX_ALLPASS];
-	float *input_buffer;
+	float *input_buffer = nullptr;
 	float *echo_buffer = nullptr;
 	int echo_buffer_size;
 	int echo_buffer_pos;

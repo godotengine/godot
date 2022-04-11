@@ -11,7 +11,7 @@
 	<methods>
 		<method name="_value_changed" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="" type="float" />
+			<argument index="0" name="new_value" type="float" />
 			<description>
 				Called when the [Range]'s value is changed (following the same conditions as [signal value_changed]).
 			</description>

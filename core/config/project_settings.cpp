@@ -145,7 +145,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		return p_path.simplify_path();
 	}
 
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	String path = p_path.replace("\\", "/").simplify_path();
 
@@ -537,8 +537,8 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
 
-	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V_MSG(!d, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_path + "'.");
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V_MSG(d.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_path + "'.");
 	d->change_dir(p_path);
 
 	String current_dir = d->get_current_dir();
@@ -613,17 +613,14 @@ bool ProjectSettings::has_setting(String p_var) const {
 
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err != OK) {
 		return err;
 	}
 
 	uint8_t hdr[4];
 	f->get_buffer(hdr, 4);
-	if (hdr[0] != 'E' || hdr[1] != 'C' || hdr[2] != 'F' || hdr[3] != 'G') {
-		memdelete(f);
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Corrupted header in binary project.binary (not ECFG).");
-	}
+	ERR_FAIL_COND_V_MSG((hdr[0] != 'E' || hdr[1] != 'C' || hdr[2] != 'F' || hdr[3] != 'G'), ERR_FILE_CORRUPT, "Corrupted header in binary project.binary (not ECFG).");
 
 	uint32_t count = f->get_32();
 
@@ -646,16 +643,14 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		set(key, value);
 	}
 
-	f->close();
-	memdelete(f);
 	return OK;
 }
 
 Error ProjectSettings::_load_settings_text(const String &p_path) {
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (!f) {
+	if (f.is_null()) {
 		// FIXME: Above 'err' error code is ERR_FILE_CANT_OPEN if the file is missing
 		// This needs to be streamlined if we want decent error reporting
 		return ERR_FILE_NOT_FOUND;
@@ -680,25 +675,18 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
-			memdelete(f);
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
 			last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
 			return OK;
-		} else if (err != OK) {
-			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
-			memdelete(f);
-			return err;
 		}
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 
 		if (!assign.is_empty()) {
 			if (section.is_empty() && assign == "config_version") {
 				config_version = value;
-				if (config_version > CONFIG_VERSION) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
-				}
+				ERR_FAIL_COND_V_MSG(config_version > CONFIG_VERSION, ERR_FILE_CANT_OPEN, vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
 			} else {
 				if (section.is_empty()) {
 					set(assign, value);
@@ -778,7 +766,7 @@ Error ProjectSettings::save() {
 
 Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
 
 	uint8_t hdr[4] = { 'E', 'C', 'F', 'G' };
@@ -798,19 +786,13 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 		int len;
 		err = encode_variant(p_custom_features, nullptr, len, false);
-		if (err != OK) {
-			memdelete(file);
-			ERR_FAIL_V(err);
-		}
+		ERR_FAIL_COND_V(err != OK, err);
 
 		Vector<uint8_t> buff;
 		buff.resize(len);
 
 		err = encode_variant(p_custom_features, buff.ptrw(), len, false);
-		if (err != OK) {
-			memdelete(file);
-			ERR_FAIL_V(err);
-		}
+		ERR_FAIL_COND_V(err != OK, err);
 		file->store_32(len);
 		file->store_buffer(buff.ptr(), buff.size());
 
@@ -834,33 +816,24 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
-			if (err != OK) {
-				memdelete(file);
-			}
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
 
 			Vector<uint8_t> buff;
 			buff.resize(len);
 
 			err = encode_variant(value, buff.ptrw(), len, true);
-			if (err != OK) {
-				memdelete(file);
-			}
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
 			file->store_32(len);
 			file->store_buffer(buff.ptr(), buff.size());
 		}
 	}
 
-	file->close();
-	memdelete(file);
-
 	return OK;
 }
 
 Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.godot - " + p_file + ".");
 
@@ -904,9 +877,6 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 			file->store_string(F.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
-
-	file->close();
-	memdelete(file);
 
 	return OK;
 }

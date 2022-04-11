@@ -40,31 +40,37 @@ GodotBroadPhase3DBVH::ID GodotBroadPhase3DBVH::create(GodotCollisionObject3D *p_
 }
 
 void GodotBroadPhase3DBVH::move(ID p_id, const AABB &p_aabb) {
+	ERR_FAIL_COND(!p_id);
 	bvh.move(p_id - 1, p_aabb);
 }
 
 void GodotBroadPhase3DBVH::set_static(ID p_id, bool p_static) {
+	ERR_FAIL_COND(!p_id);
 	uint32_t tree_id = p_static ? TREE_STATIC : TREE_DYNAMIC;
 	uint32_t tree_collision_mask = p_static ? TREE_FLAG_DYNAMIC : (TREE_FLAG_STATIC | TREE_FLAG_DYNAMIC);
 	bvh.set_tree(p_id - 1, tree_id, tree_collision_mask, false);
 }
 
 void GodotBroadPhase3DBVH::remove(ID p_id) {
+	ERR_FAIL_COND(!p_id);
 	bvh.erase(p_id - 1);
 }
 
 GodotCollisionObject3D *GodotBroadPhase3DBVH::get_object(ID p_id) const {
+	ERR_FAIL_COND_V(!p_id, nullptr);
 	GodotCollisionObject3D *it = bvh.get(p_id - 1);
 	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
 
 bool GodotBroadPhase3DBVH::is_static(ID p_id) const {
+	ERR_FAIL_COND_V(!p_id, false);
 	uint32_t tree_id = bvh.get_tree_id(p_id - 1);
 	return tree_id == 0;
 }
 
 int GodotBroadPhase3DBVH::get_subindex(ID p_id) const {
+	ERR_FAIL_COND_V(!p_id, 0);
 	return bvh.get_subindex(p_id - 1);
 }
 
@@ -81,7 +87,7 @@ int GodotBroadPhase3DBVH::cull_aabb(const AABB &p_aabb, GodotCollisionObject3D *
 }
 
 void *GodotBroadPhase3DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollisionObject3D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject3D *p_object_B, int subindex_B) {
-	GodotBroadPhase3DBVH *bpo = (GodotBroadPhase3DBVH *)(self);
+	GodotBroadPhase3DBVH *bpo = static_cast<GodotBroadPhase3DBVH *>(self);
 	if (!bpo->pair_callback) {
 		return nullptr;
 	}
@@ -90,7 +96,7 @@ void *GodotBroadPhase3DBVH::_pair_callback(void *self, uint32_t p_A, GodotCollis
 }
 
 void GodotBroadPhase3DBVH::_unpair_callback(void *self, uint32_t p_A, GodotCollisionObject3D *p_object_A, int subindex_A, uint32_t p_B, GodotCollisionObject3D *p_object_B, int subindex_B, void *pairdata) {
-	GodotBroadPhase3DBVH *bpo = (GodotBroadPhase3DBVH *)(self);
+	GodotBroadPhase3DBVH *bpo = static_cast<GodotBroadPhase3DBVH *>(self);
 	if (!bpo->unpair_callback) {
 		return;
 	}

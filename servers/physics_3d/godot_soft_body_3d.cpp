@@ -1272,7 +1272,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	real_t hit_dist_sq = INFINITY;
 
 	static bool process_hit(uint32_t p_face_index, void *p_userdata) {
-		_SoftBodyIntersectSegmentInfo &query_info = *(_SoftBodyIntersectSegmentInfo *)(p_userdata);
+		_SoftBodyIntersectSegmentInfo &query_info = *(static_cast<_SoftBodyIntersectSegmentInfo *>(p_userdata));
 
 		Vector3 points[3];
 		query_info.soft_body->get_face_points(p_face_index, points[0], points[1], points[2]);

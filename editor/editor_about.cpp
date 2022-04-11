@@ -43,10 +43,10 @@ void EditorAbout::_theme_changed() {
 	const int font_size = get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts"));
 	_tpl_text->add_theme_font_override("normal_font", font);
 	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
-	_tpl_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
+	_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
 	_license_text->add_theme_font_override("normal_font", font);
 	_license_text->add_theme_font_size_override("normal_font_size", font_size);
-	_license_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
+	_license_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
 	_logo->set_texture(get_theme_icon(SNAME("Logo"), SNAME("EditorIcons")));
 }
 
@@ -159,6 +159,7 @@ EditorAbout::EditorAbout() {
 	hbc->add_child(version_info_vbc);
 
 	TabContainer *tc = memnew(TabContainer);
+	tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
@@ -169,9 +170,7 @@ EditorAbout::EditorAbout() {
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
 	// TRANSLATORS: This refers to a job title.
-	// The trailing space is used to distinguish with the project list application,
-	// you do not have to keep it in your translation.
-	dev_sections.push_back(TTR("Project Manager "));
+	dev_sections.push_back(TTR("Project Manager", "Job Title"));
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
 		AUTHORS_PROJECT_MANAGERS, AUTHORS_DEVELOPERS };

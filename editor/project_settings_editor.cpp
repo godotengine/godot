@@ -49,7 +49,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 	_add_feature_overrides();
 	general_settings_inspector->update_category_list();
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
@@ -202,7 +202,7 @@ void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
 	type_box->select(type_box->get_item_index(p_type));
 }
 
-void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
+void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;
@@ -351,7 +351,7 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 			undo_redo->create_action(TTR("Edit Input Action Event"));
 		} else if (event_count > old_event_count) {
 			undo_redo->create_action(TTR("Add Input Action Event"));
-		} else if (event_count < old_event_count) {
+		} else {
 			undo_redo->create_action(TTR("Remove Input Action Event"));
 		}
 
@@ -559,7 +559,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
@@ -617,6 +616,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
+	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));

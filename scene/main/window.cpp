@@ -981,7 +981,7 @@ void Window::_window_input_text(const String &p_text) {
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal(SNAME("files_dropped"), p_files, current_screen);
+	emit_signal(SNAME("files_dropped"), p_files);
 }
 
 Viewport *Window::get_parent_viewport() const {
@@ -1079,6 +1079,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
 	Rect2 parent_rect;
 
@@ -1100,6 +1101,14 @@ void Window::popup_centered_ratio(float p_ratio) {
 
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal(SNAME("about_to_popup"));
+
+	if (!_get_embedder() && get_flag(FLAG_POPUP)) {
+		// Send a focus-out notification when opening a Window Manager Popup.
+		SceneTree *scene_tree = get_tree();
+		if (scene_tree) {
+			scene_tree->notify_group("_viewports", NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+		}
+	}
 
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
@@ -1450,6 +1459,15 @@ void Window::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = hint_string;
 	}
+}
+
+Transform2D Window::get_screen_transform() const {
+	Transform2D embedder_transform = Transform2D();
+	if (_get_embedder()) {
+		embedder_transform.translate(get_position());
+		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
+	}
+	return embedder_transform * Viewport::get_screen_transform();
 }
 
 void Window::_bind_methods() {

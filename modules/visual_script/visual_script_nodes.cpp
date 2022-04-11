@@ -274,9 +274,9 @@ public:
 	VisualScriptFunction *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		int ac = node->get_argument_count();
 
 #ifdef DEBUG_ENABLED
@@ -775,9 +775,9 @@ String VisualScriptComposeArray::get_text() const {
 class VisualScriptComposeArrayNode : public VisualScriptNodeInstance {
 public:
 	int input_count = 0;
-	virtual int get_working_memory_size() const { return 0; }
+	virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (input_count > 0) {
 			Array arr;
 			for (int i = 0; i < input_count; i++) {
@@ -1098,9 +1098,9 @@ public:
 	bool unary;
 	Variant::Operator op;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool valid;
 		if (unary) {
 			Variant::evaluate(op, *p_inputs[0], Variant(), *p_outputs[0], valid);
@@ -1218,9 +1218,9 @@ void VisualScriptSelect::_bind_methods() {
 
 class VisualScriptNodeInstanceSelect : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool cond = *p_inputs[0];
 		if (cond) {
 			*p_outputs[0] = *p_inputs[1];
@@ -1330,7 +1330,7 @@ public:
 	VisualScriptInstance *instance;
 	StringName variable;
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!instance->get_variable(variable, p_outputs[0])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
@@ -1440,9 +1440,9 @@ public:
 	VisualScriptInstance *instance;
 	StringName variable;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!instance->set_variable(variable, *p_inputs[0])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableSet not found in script: ") + "'" + String(variable) + "'";
@@ -1559,9 +1559,9 @@ void VisualScriptConstant::_bind_methods() {
 class VisualScriptNodeInstanceConstant : public VisualScriptNodeInstance {
 public:
 	Variant constant;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = constant;
 		return 0;
 	}
@@ -1652,9 +1652,9 @@ void VisualScriptPreload::_bind_methods() {
 class VisualScriptNodeInstancePreload : public VisualScriptNodeInstance {
 public:
 	Ref<Resource> preload;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = preload;
 		return 0;
 	}
@@ -1711,9 +1711,9 @@ String VisualScriptIndexGet::get_caption() const {
 
 class VisualScriptNodeInstanceIndexGet : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool valid;
 		*p_outputs[0] = p_inputs[0]->get(*p_inputs[1], &valid);
 
@@ -1778,9 +1778,9 @@ String VisualScriptIndexSet::get_caption() const {
 
 class VisualScriptNodeInstanceIndexSet : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		bool valid;
 		((Variant *)p_inputs[0])->set(*p_inputs[1], *p_inputs[2], &valid);
 
@@ -1850,9 +1850,9 @@ int VisualScriptGlobalConstant::get_global_constant() {
 class VisualScriptNodeInstanceGlobalConstant : public VisualScriptNodeInstance {
 public:
 	int index;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = CoreConstants::get_global_constant_value(index);
 		return 0;
 	}
@@ -1963,9 +1963,9 @@ class VisualScriptNodeInstanceClassConstant : public VisualScriptNodeInstance {
 public:
 	int value;
 	bool valid;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
 			r_error_str = "Invalid constant name, pick a valid class constant.";
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2097,9 +2097,9 @@ class VisualScriptNodeInstanceBasicTypeConstant : public VisualScriptNodeInstanc
 public:
 	Variant value;
 	bool valid;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
 			r_error_str = "Invalid constant name, pick a valid basic type constant.";
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2226,9 +2226,9 @@ VisualScriptMathConstant::MathConstant VisualScriptMathConstant::get_math_consta
 class VisualScriptNodeInstanceMathConstant : public VisualScriptNodeInstance {
 public:
 	float value;
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = value;
 		return 0;
 	}
@@ -2320,9 +2320,9 @@ class VisualScriptNodeInstanceEngineSingleton : public VisualScriptNodeInstance 
 public:
 	Object *singleton;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = singleton;
 		return 0;
 	}
@@ -2431,9 +2431,9 @@ public:
 	VisualScriptInstance *instance;
 	NodePath path;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 		if (!node) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2611,9 +2611,9 @@ public:
 	VisualScriptSceneTree *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 		if (!node) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2707,9 +2707,9 @@ class VisualScriptNodeInstanceResourcePath : public VisualScriptNodeInstance {
 public:
 	String path;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = path;
 		return 0;
 	}
@@ -2779,9 +2779,9 @@ class VisualScriptNodeInstanceSelf : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = instance->get_owner_ptr();
 		return 0;
 	}
@@ -2969,8 +2969,8 @@ public:
 	int out_count;
 	int work_mem_size;
 
-	virtual int get_working_memory_size() const { return work_mem_size; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int get_working_memory_size() const override { return work_mem_size; }
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(node, _step)) {
 			Array in_values;
 			Array out_values;
@@ -3164,9 +3164,9 @@ public:
 	int input_args;
 	bool valid;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!valid) {
 			r_error_str = "Node requires a script with a _subcall(<args>) method to work.";
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -3281,9 +3281,9 @@ class VisualScriptNodeInstanceComment : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		return 0;
 	}
 };
@@ -3382,9 +3382,9 @@ public:
 	Variant::Type type;
 	int argcount;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Callable::CallError ce;
 		Variant::construct(type, *p_outputs[0], p_inputs, argcount, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
@@ -3498,8 +3498,8 @@ public:
 	VisualScriptInstance *instance;
 	StringName name;
 
-	virtual int get_working_memory_size() const { return 1; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int get_working_memory_size() const override { return 1; }
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_outputs[0] = *p_working_mem;
 		return 0;
 	}
@@ -3605,8 +3605,8 @@ public:
 	VisualScriptInstance *instance;
 	StringName name;
 
-	virtual int get_working_memory_size() const { return 1; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int get_working_memory_size() const override { return 1; }
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		*p_working_mem = *p_inputs[0];
 		*p_outputs[0] = *p_working_mem;
 		return 0;
@@ -3730,7 +3730,7 @@ public:
 	StringName action;
 	VisualScriptInputAction::Mode mode;
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		switch (mode) {
 			case VisualScriptInputAction::MODE_PRESSED: {
 				*p_outputs[0] = Input::get_singleton()->is_action_pressed(action);
@@ -3907,9 +3907,9 @@ public:
 	VisualScriptInstance *instance;
 	Vector<StringName> outputs;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		Variant in = *p_inputs[0];
 
 		for (int i = 0; i < outputs.size(); i++) {

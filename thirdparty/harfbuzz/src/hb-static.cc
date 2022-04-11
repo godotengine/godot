@@ -56,6 +56,7 @@ const unsigned char _hb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
 
 /* hb_face_t */
 
+#ifndef HB_NO_BORING_EXPANSION
 static inline unsigned
 load_num_glyphs_from_loca (const hb_face_t *face)
 {
@@ -72,6 +73,7 @@ load_num_glyphs_from_loca (const hb_face_t *face)
 
   return ret;
 }
+#endif
 
 static inline unsigned
 load_num_glyphs_from_maxp (const hb_face_t *face)

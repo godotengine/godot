@@ -994,13 +994,12 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				Array a = p_morph_meshes[mi]->get_surface_arrays(surface);
 				//add valid weight and bone arrays if they exist, TODO check if they are unique to shape (generally not)
 
-				if (has_weights) {
-					a[Mesh::ARRAY_WEIGHTS] = d[Mesh::ARRAY_WEIGHTS];
-					a[Mesh::ARRAY_BONES] = d[Mesh::ARRAY_BONES];
+				// Enforce blend shape mask array format
+				for (int mj = 0; mj < Mesh::ARRAY_MAX; mj++) {
+					if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << mj))) {
+						a[mj] = Variant();
+					}
 				}
-
-				a[Mesh::ARRAY_INDEX] = Variant();
-				//a.resize(Mesh::ARRAY_MAX); //no need for index
 				mr.push_back(a);
 			}
 
@@ -1802,7 +1801,14 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 				name = state.animations[i]->get_name();
 			}
 
-			ap->add_animation(name, state.animations[i]);
+			Ref<AnimationLibrary> library;
+			if (!ap->has_animation_library("")) {
+				library.instantiate();
+				ap->add_animation_library("", library);
+			} else {
+				library = ap->get_animation_library("");
+			}
+			library->add_animation(name, state.animations[i]);
 		}
 		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);

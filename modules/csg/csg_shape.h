@@ -368,7 +368,7 @@ private:
 	PathRotation path_rotation;
 	bool path_local;
 
-	Path3D *path;
+	Path3D *path = nullptr;
 
 	bool smooth_faces;
 	bool path_continuous_u;

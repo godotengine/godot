@@ -897,6 +897,9 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 			case CALL_INPUT_TYPE_INPUT:
 				n->_call_input(p_input);
 				break;
+			case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+				n->_call_shortcut_input(p_input);
+				break;
 			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
 				n->_call_unhandled_input(p_input);
 				break;
@@ -912,34 +915,32 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	}
 }
 
-Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	ERR_FAIL_COND_V(p_argcount < 3, Variant());
-	ERR_FAIL_COND_V(!p_args[0]->is_num(), Variant());
-	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING, Variant());
-	ERR_FAIL_COND_V(p_args[2]->get_type() != Variant::STRING_NAME && p_args[2]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND(p_argcount < 3);
+	ERR_FAIL_COND(!p_args[0]->is_num());
+	ERR_FAIL_COND(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING);
+	ERR_FAIL_COND(p_args[2]->get_type() != Variant::STRING_NAME && p_args[2]->get_type() != Variant::STRING);
 
 	int flags = *p_args[0];
 	StringName group = *p_args[1];
 	StringName method = *p_args[2];
 
 	call_group_flagsp(flags, group, method, p_args + 3, p_argcount - 3);
-	return Variant();
 }
 
-Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	ERR_FAIL_COND_V(p_argcount < 2, Variant());
-	ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Variant());
-	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND(p_argcount < 2);
+	ERR_FAIL_COND(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING);
+	ERR_FAIL_COND(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING);
 
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];
 
 	call_group_flagsp(0, group, method, p_args + 2, p_argcount - 2);
-	return Variant();
 }
 
 int64_t SceneTree::get_frame() const {
@@ -1261,7 +1262,7 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	if (p_function == "change_scene") {
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
 

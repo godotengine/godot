@@ -52,6 +52,7 @@ public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
 	Variant _new();
 	Object *instantiate();
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	GDScriptNativeClass(const StringName &p_name);
 };
 
@@ -212,7 +213,7 @@ public:
 	virtual void update_exports() override;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		return docs;
 	}
 #endif // TOOLS_ENABLED
@@ -265,7 +266,7 @@ class GDScriptInstance : public ScriptInstance {
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
-	Object *owner;
+	Object *owner = nullptr;
 	Ref<GDScript> script;
 #ifdef DEBUG_ENABLED
 	Map<StringName, int> member_indices_cache; //used only for hot script reloading
@@ -311,17 +312,17 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
 
-	Variant *_global_array;
+	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	Map<StringName, int> globals;
 	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
-		Variant *stack;
-		GDScriptFunction *function;
-		GDScriptInstance *instance;
-		int *ip;
-		int *line;
+		Variant *stack = nullptr;
+		GDScriptFunction *function = nullptr;
+		GDScriptInstance *instance = nullptr;
+		int *ip = nullptr;
+		int *line = nullptr;
 	};
 
 	int _debug_parse_err_line;
@@ -329,7 +330,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	String _debug_error;
 	int _debug_call_stack_pos;
 	int _debug_max_call_stack;
-	CallLevel *_call_stack;
+	CallLevel *_call_stack = nullptr;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 
@@ -455,7 +456,7 @@ public:
 	virtual bool can_inherit_from_file() const override { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 #endif

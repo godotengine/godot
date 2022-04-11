@@ -81,13 +81,13 @@ public:
 
 	Error connect_to_host(const String &p_host, uint16_t p_port);
 
-	void poll();
-	bool is_peer_connected();
-	bool has_message();
-	Array get_message();
-	Error put_message(const Array &p_arr);
-	int get_max_message_size() const;
-	void close();
+	void poll() override;
+	bool is_peer_connected() override;
+	bool has_message() override;
+	Array get_message() override;
+	Error put_message(const Array &p_arr) override;
+	int get_max_message_size() const override;
+	void close() override;
 
 	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>());
 	~RemoteDebuggerPeerTCP();

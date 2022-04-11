@@ -22,7 +22,7 @@
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.

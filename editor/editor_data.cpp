@@ -38,12 +38,13 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
-void EditorHistory::cleanup_history() {
+void EditorSelectionHistory::cleanup_history() {
 	for (int i = 0; i < history.size(); i++) {
 		bool fail = false;
 
 		for (int j = 0; j < history[i].path.size(); j++) {
 			if (!history[i].path[j].ref.is_null()) {
+				// Reference is not null - object still alive.
 				continue;
 			}
 
@@ -51,21 +52,16 @@ void EditorHistory::cleanup_history() {
 			if (obj) {
 				Node *n = Object::cast_to<Node>(obj);
 				if (n && n->is_inside_tree()) {
+					// Node valid and inside tree - object still alive.
 					continue;
 				}
-				if (!n) { // Possibly still alive
+				if (!n) {
+					// Node possibly still alive.
 					continue;
 				}
-			}
+			} // Else: object not valid - not alive.
 
-			if (j <= history[i].level) {
-				//before or equal level, complete fail
-				fail = true;
-			} else {
-				//after level, clip
-				history.write[i].path.resize(j);
-			}
-
+			fail = true;
 			break;
 		}
 
@@ -75,16 +71,16 @@ void EditorHistory::cleanup_history() {
 		}
 	}
 
-	if (current >= history.size()) {
-		current = history.size() - 1;
+	if (current_elem_idx >= history.size()) {
+		current_elem_idx = history.size() - 1;
 	}
 }
 
-void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only) {
+void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_property, bool p_inspector_only) {
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
 	RefCounted *r = Object::cast_to<RefCounted>(obj);
-	Obj o;
+	_Object o;
 	if (r) {
 		o.ref = REF(r);
 	}
@@ -92,86 +88,64 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 	o.property = p_property;
 	o.inspector_only = p_inspector_only;
 
-	History h;
-
-	bool has_prev = current >= 0 && current < history.size();
+	bool has_prev = current_elem_idx >= 0 && current_elem_idx < history.size();
 
 	if (has_prev) {
-		history.resize(current + 1); //clip history to next
+		history.resize(current_elem_idx + 1); // Clip history to next.
 	}
 
+	HistoryElement h;
 	if (!p_property.is_empty() && has_prev) {
-		//add a sub property
-		History &pr = history.write[current];
-		h = pr;
+		// Add a sub property.
+		HistoryElement &prev_element = history.write[current_elem_idx];
+		h = prev_element;
 		h.path.resize(h.level + 1);
 		h.path.push_back(o);
 		h.level++;
-	} else if (p_level_change != -1 && has_prev) {
-		//add a sub property
-		History &pr = history.write[current];
-		h = pr;
-		ERR_FAIL_INDEX(p_level_change, h.path.size());
-		h.level = p_level_change;
+
 	} else {
-		//add a new node
+		// Create a new history item.
 		h.path.push_back(o);
 		h.level = 0;
 	}
 
 	history.push_back(h);
-	current++;
+	current_elem_idx++;
 }
 
-void EditorHistory::add_object_inspector_only(ObjectID p_object) {
-	_add_object(p_object, "", -1, true);
-}
-
-void EditorHistory::add_object(ObjectID p_object) {
-	_add_object(p_object, "", -1);
-}
-
-void EditorHistory::add_object(ObjectID p_object, const String &p_subprop) {
-	_add_object(p_object, p_subprop, -1);
-}
-
-void EditorHistory::add_object(ObjectID p_object, int p_relevel) {
-	_add_object(p_object, "", p_relevel);
-}
-
-int EditorHistory::get_history_len() {
+int EditorSelectionHistory::get_history_len() {
 	return history.size();
 }
 
-int EditorHistory::get_history_pos() {
-	return current;
+int EditorSelectionHistory::get_history_pos() {
+	return current_elem_idx;
 }
 
-bool EditorHistory::is_history_obj_inspector_only(int p_obj) const {
+bool EditorSelectionHistory::is_history_obj_inspector_only(int p_obj) const {
 	ERR_FAIL_INDEX_V(p_obj, history.size(), false);
 	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), false);
 	return history[p_obj].path[history[p_obj].level].inspector_only;
 }
 
-ObjectID EditorHistory::get_history_obj(int p_obj) const {
+ObjectID EditorSelectionHistory::get_history_obj(int p_obj) const {
 	ERR_FAIL_INDEX_V(p_obj, history.size(), ObjectID());
 	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), ObjectID());
 	return history[p_obj].path[history[p_obj].level].object;
 }
 
-bool EditorHistory::is_at_beginning() const {
-	return current <= 0;
+bool EditorSelectionHistory::is_at_beginning() const {
+	return current_elem_idx <= 0;
 }
 
-bool EditorHistory::is_at_end() const {
-	return ((current + 1) >= history.size());
+bool EditorSelectionHistory::is_at_end() const {
+	return ((current_elem_idx + 1) >= history.size());
 }
 
-bool EditorHistory::next() {
+bool EditorSelectionHistory::next() {
 	cleanup_history();
 
-	if ((current + 1) < history.size()) {
-		current++;
+	if ((current_elem_idx + 1) < history.size()) {
+		current_elem_idx++;
 	} else {
 		return false;
 	}
@@ -179,11 +153,11 @@ bool EditorHistory::next() {
 	return true;
 }
 
-bool EditorHistory::previous() {
+bool EditorSelectionHistory::previous() {
 	cleanup_history();
 
-	if (current > 0) {
-		current--;
+	if (current_elem_idx > 0) {
+		current_elem_idx--;
 	} else {
 		return false;
 	}
@@ -191,75 +165,62 @@ bool EditorHistory::previous() {
 	return true;
 }
 
-bool EditorHistory::is_current_inspector_only() const {
-	if (current < 0 || current >= history.size()) {
+bool EditorSelectionHistory::is_current_inspector_only() const {
+	if (current_elem_idx < 0 || current_elem_idx >= history.size()) {
 		return false;
 	}
 
-	const History &h = history[current];
+	const HistoryElement &h = history[current_elem_idx];
 	return h.path[h.level].inspector_only;
 }
 
-ObjectID EditorHistory::get_current() {
-	if (current < 0 || current >= history.size()) {
+ObjectID EditorSelectionHistory::get_current() {
+	if (current_elem_idx < 0 || current_elem_idx >= history.size()) {
 		return ObjectID();
 	}
 
-	History &h = history.write[current];
-	Object *obj = ObjectDB::get_instance(h.path[h.level].object);
-	if (!obj) {
-		return ObjectID();
-	}
-
-	return obj->get_instance_id();
+	Object *obj = ObjectDB::get_instance(get_history_obj(current_elem_idx));
+	return obj ? obj->get_instance_id() : ObjectID();
 }
 
-int EditorHistory::get_path_size() const {
-	if (current < 0 || current >= history.size()) {
+int EditorSelectionHistory::get_path_size() const {
+	if (current_elem_idx < 0 || current_elem_idx >= history.size()) {
 		return 0;
 	}
 
-	const History &h = history[current];
-	return h.path.size();
+	return history[current_elem_idx].path.size();
 }
 
-ObjectID EditorHistory::get_path_object(int p_index) const {
-	if (current < 0 || current >= history.size()) {
+ObjectID EditorSelectionHistory::get_path_object(int p_index) const {
+	if (current_elem_idx < 0 || current_elem_idx >= history.size()) {
 		return ObjectID();
 	}
 
-	const History &h = history[current];
+	ERR_FAIL_INDEX_V(p_index, history[current_elem_idx].path.size(), ObjectID());
 
-	ERR_FAIL_INDEX_V(p_index, h.path.size(), ObjectID());
-
-	Object *obj = ObjectDB::get_instance(h.path[p_index].object);
-	if (!obj) {
-		return ObjectID();
-	}
-
-	return obj->get_instance_id();
+	Object *obj = ObjectDB::get_instance(history[current_elem_idx].path[p_index].object);
+	return obj ? obj->get_instance_id() : ObjectID();
 }
 
-String EditorHistory::get_path_property(int p_index) const {
-	if (current < 0 || current >= history.size()) {
+String EditorSelectionHistory::get_path_property(int p_index) const {
+	if (current_elem_idx < 0 || current_elem_idx >= history.size()) {
 		return "";
 	}
 
-	const History &h = history[current];
-
-	ERR_FAIL_INDEX_V(p_index, h.path.size(), "");
-
-	return h.path[p_index].property;
+	ERR_FAIL_INDEX_V(p_index, history[current_elem_idx].path.size(), "");
+	return history[current_elem_idx].path[p_index].property;
 }
 
-void EditorHistory::clear() {
+void EditorSelectionHistory::clear() {
 	history.clear();
-	current = -1;
+	current_elem_idx = -1;
 }
 
-EditorHistory::EditorHistory() {
-	current = -1;
+EditorSelectionHistory::EditorSelectionHistory() {
+	current_elem_idx = -1;
 }
+
+////////////////////////////////////////////////////////////
 
 EditorPlugin *EditorData::get_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.
@@ -636,14 +597,14 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
 		ep.step(TTR("Storing local changes..."), 0);
-		//pack first, so it stores diffs to previous version of saved scene
+		// Pack first, so it stores diffs to previous version of saved scene.
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err != OK, false);
 		ep.step(TTR("Updating scene..."), 1);
 		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene, false);
 
-		//transfer selection
+		// Transfer selection.
 		List<Node *> new_selection;
 		for (const Node *E : edited_scene.write[p_idx].selection) {
 			NodePath p = edited_scene[p_idx].root->get_path_to(E);
@@ -675,7 +636,6 @@ int EditorData::get_edited_scene() const {
 void EditorData::set_edited_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	current_edited_scene = p_idx;
-	//swap
 }
 
 Node *EditorData::get_edited_scene_root(int p_idx) {
@@ -850,23 +810,23 @@ NodePath EditorData::get_edited_scene_live_edit_root() {
 	return edited_scene[current_edited_scene].live_edit_root;
 }
 
-void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary &p_custom) {
+void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history, const Dictionary &p_custom) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 
 	EditedScene &es = edited_scene.write[current_edited_scene];
 	es.selection = p_selection->get_full_selected_node_list();
-	es.history_current = p_history->current;
+	es.history_current = p_history->current_elem_idx;
 	es.history_stored = p_history->history;
 	es.editor_states = get_editor_states();
 	es.custom_state = p_custom;
 }
 
-Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history) {
+Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history) {
 	ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), Dictionary());
 
-	EditedScene &es = edited_scene.write[current_edited_scene];
+	const EditedScene &es = edited_scene.write[current_edited_scene];
 
-	p_history->current = es.history_current;
+	p_history->current_elem_idx = es.history_current;
 	p_history->history = es.history_stored;
 
 	p_selection->clear();
@@ -1033,12 +993,11 @@ void EditorData::script_class_load_icon_paths() {
 
 EditorData::EditorData() {
 	current_edited_scene = -1;
-
-	//load_imported_scenes_from_globals();
 	script_class_load_icon_paths();
 }
 
-///////////
+///////////////////////////////////////////////////////////////////////////////
+
 void EditorSelection::_node_removed(Node *p_node) {
 	if (!selection.has(p_node)) {
 		return;
@@ -1050,7 +1009,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	}
 	selection.erase(p_node);
 	changed = true;
-	nl_changed = true;
+	node_list_changed = true;
 }
 
 void EditorSelection::add_node(Node *p_node) {
@@ -1061,7 +1020,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 
 	changed = true;
-	nl_changed = true;
+	node_list_changed = true;
 	Object *meta = nullptr;
 	for (Object *E : editor_plugins) {
 		meta = E->call("_get_editor_data", p_node);
@@ -1072,30 +1031,90 @@ void EditorSelection::add_node(Node *p_node) {
 	selection[p_node] = meta;
 
 	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed), varray(p_node), CONNECT_ONESHOT);
-
-	//emit_signal(SNAME("selection_changed"));
 }
 
 void EditorSelection::remove_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
-
 	if (!selection.has(p_node)) {
 		return;
 	}
 
 	changed = true;
-	nl_changed = true;
+	node_list_changed = true;
 	Object *meta = selection[p_node];
 	if (meta) {
 		memdelete(meta);
 	}
 	selection.erase(p_node);
+
 	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
-	//emit_signal(SNAME("selection_changed"));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
 	return selection.has(p_node);
+}
+
+void EditorSelection::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("clear"), &EditorSelection::clear);
+	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
+	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
+	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
+	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
+	ADD_SIGNAL(MethodInfo("selection_changed"));
+}
+
+void EditorSelection::add_editor_plugin(Object *p_object) {
+	editor_plugins.push_back(p_object);
+}
+
+void EditorSelection::_update_node_list() {
+	if (!node_list_changed) {
+		return;
+	}
+
+	selected_node_list.clear();
+
+	// If the selection does not have the parent of the selected node, then add the node to the node list.
+	// However, if the parent is already selected, then adding this node is redundant as
+	// it is included with the parent, so skip it.
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node *parent = E.key;
+		parent = parent->get_parent();
+		bool skip = false;
+		while (parent) {
+			if (selection.has(parent)) {
+				skip = true;
+				break;
+			}
+			parent = parent->get_parent();
+		}
+
+		if (skip) {
+			continue;
+		}
+		selected_node_list.push_back(E.key);
+	}
+
+	node_list_changed = true;
+}
+
+void EditorSelection::update() {
+	_update_node_list();
+
+	if (!changed) {
+		return;
+	}
+	changed = false;
+	if (!emitted) {
+		emitted = true;
+		call_deferred(SNAME("_emit_change"));
+	}
+}
+
+void EditorSelection::_emit_change() {
+	emit_signal(SNAME("selection_changed"));
+	emitted = false;
 }
 
 Array EditorSelection::_get_transformable_selected_nodes() {
@@ -1118,71 +1137,11 @@ TypedArray<Node> EditorSelection::get_selected_nodes() {
 	return ret;
 }
 
-void EditorSelection::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("clear"), &EditorSelection::clear);
-	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
-	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
-	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
-	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
-	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
-	ADD_SIGNAL(MethodInfo("selection_changed"));
-}
-
-void EditorSelection::add_editor_plugin(Object *p_object) {
-	editor_plugins.push_back(p_object);
-}
-
-void EditorSelection::_update_nl() {
-	if (!nl_changed) {
-		return;
-	}
-
-	selected_node_list.clear();
-
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node *parent = E.key;
-		parent = parent->get_parent();
-		bool skip = false;
-		while (parent) {
-			if (selection.has(parent)) {
-				skip = true;
-				break;
-			}
-			parent = parent->get_parent();
-		}
-
-		if (skip) {
-			continue;
-		}
-		selected_node_list.push_back(E.key);
-	}
-
-	nl_changed = true;
-}
-
-void EditorSelection::update() {
-	_update_nl();
-
-	if (!changed) {
-		return;
-	}
-	changed = false;
-	if (!emitted) {
-		emitted = true;
-		call_deferred(SNAME("_emit_change"));
-	}
-}
-
-void EditorSelection::_emit_change() {
-	emit_signal(SNAME("selection_changed"));
-	emitted = false;
-}
-
 List<Node *> &EditorSelection::get_selected_node_list() {
 	if (changed) {
 		update();
 	} else {
-		_update_nl();
+		_update_node_list();
 	}
 	return selected_node_list;
 }
@@ -1202,7 +1161,7 @@ void EditorSelection::clear() {
 	}
 
 	changed = true;
-	nl_changed = true;
+	node_list_changed = true;
 }
 
 EditorSelection::EditorSelection() {

@@ -139,6 +139,7 @@
 #include "scene/multiplayer/scene_cache_interface.h"
 #include "scene/multiplayer/scene_replication_interface.h"
 #include "scene/multiplayer/scene_rpc_interface.h"
+#include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -809,6 +810,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
+	GDREGISTER_CLASS(PortableCompressedTexture2D);
 	GDREGISTER_CLASS(ImageTexture);
 	GDREGISTER_CLASS(AtlasTexture);
 	GDREGISTER_CLASS(MeshTexture);
@@ -833,6 +835,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CompressedTexture2DArray);
 
 	GDREGISTER_CLASS(Animation);
+	GDREGISTER_CLASS(AnimationLibrary);
 	GDREGISTER_CLASS(FontData);
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);
@@ -895,17 +898,16 @@ void register_scene_types() {
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
+	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
 	ClassDB::add_compatibility_class("BitmapFont", "Font");
 	ClassDB::add_compatibility_class("DynamicFont", "Font");
 	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
-	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
+	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
+	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
-	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
-	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
-	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
-	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
 	ClassDB::add_compatibility_class("Portal", "Node3D");
 	ClassDB::add_compatibility_class("Room", "Node3D");
@@ -926,6 +928,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
 	ClassDB::add_compatibility_class("ARVRPositionalTracker", "XRPositionalTracker");
 	ClassDB::add_compatibility_class("ARVRServer", "XRServer");
+	ClassDB::add_compatibility_class("AStar", "AStar3D");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
 	ClassDB::add_compatibility_class("Camera", "Camera3D");
@@ -953,6 +956,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
 	ClassDB::add_compatibility_class("EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin");
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
+	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
+	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
 	ClassDB::add_compatibility_class("GradientTexture", "GradientTexture1D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");

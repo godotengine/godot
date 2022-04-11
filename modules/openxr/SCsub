@@ -75,13 +75,16 @@ module_obj = []
 env_openxr.add_source_files(module_obj, "*.cpp")
 env_openxr.add_source_files(module_obj, "action_map/*.cpp")
 
-# We're a little more targetted with our extensions
+# We're a little more targeted with our extensions
 if env["platform"] == "android":
     env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
 if env["vulkan"]:
     env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
 
 env.modules_sources += module_obj
+
+if env["tools"]:
+    SConscript("editor/SCsub")
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

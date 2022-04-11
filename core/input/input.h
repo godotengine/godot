@@ -157,9 +157,9 @@ private:
 	};
 
 	struct JoyEvent {
-		int type;
-		int index; // Can be either JoyAxis or JoyButton.
-		float value;
+		int type = TYPE_MAX;
+		int index = -1; // Can be either JoyAxis or JoyButton.
+		float value = 0.f;
 	};
 
 	struct JoyBinding {
@@ -216,7 +216,7 @@ private:
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
-	static void (*warp_mouse_func)(const Vector2 &p_to_pos);
+	static void (*warp_mouse_func)(const Vector2 &p_position);
 
 	static CursorShape (*get_current_cursor_shape_func)();
 	static void (*set_custom_mouse_cursor_func)(const RES &, CursorShape, const Vector2 &);
@@ -273,7 +273,7 @@ public:
 	Vector2 get_last_mouse_velocity();
 	MouseButton get_mouse_button_mask() const;
 
-	void warp_mouse_position(const Vector2 &p_to);
+	void warp_mouse(const Vector2 &p_position);
 	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
 	void parse_input_event(const Ref<InputEvent> &p_event);

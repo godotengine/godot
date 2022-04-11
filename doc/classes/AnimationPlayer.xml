@@ -14,12 +14,11 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
-		<method name="add_animation">
+		<method name="add_animation_library">
 			<return type="int" enum="Error" />
 			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="animation" type="Animation" />
+			<argument index="1" name="library" type="AnimationLibrary" />
 			<description>
-				Adds [code]animation[/code] to the player accessible with the key [code]name[/code].
 			</description>
 		</method>
 		<method name="advance">
@@ -63,11 +62,28 @@
 				Returns the name of [code]animation[/code] or an empty string if not found.
 			</description>
 		</method>
+		<method name="find_animation_library" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="animation" type="Animation" />
+			<description>
+			</description>
+		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns the [Animation] with key [code]name[/code] or [code]null[/code] if not found.
+			</description>
+		</method>
+		<method name="get_animation_library" qualifiers="const">
+			<return type="AnimationLibrary" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_library_list" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
@@ -101,6 +117,12 @@
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
+			</description>
+		</method>
+		<method name="has_animation_library" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -138,19 +160,17 @@
 				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
 			</description>
 		</method>
-		<method name="remove_animation">
+		<method name="remove_animation_library">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<description>
-				Removes the animation with key [code]name[/code].
 			</description>
 		</method>
-		<method name="rename_animation">
+		<method name="rename_animation_library">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="newname" type="StringName" />
 			<description>
-				Renames an existing animation with key [code]name[/code] to [code]newname[/code].
 			</description>
 		</method>
 		<method name="seek">

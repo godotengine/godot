@@ -249,7 +249,7 @@ static const int DEFAULT_TARGET_SDK_VERSION = 30; // Should match the value in '
 const String SDK_VERSION_RANGE = vformat("%s,%s,1", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
 
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
-	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
+	EditorExportPlatformAndroid *ea = static_cast<EditorExportPlatformAndroid *>(ud);
 
 	while (!ea->quit_request.is_set()) {
 		// Check for plugins updates
@@ -596,8 +596,8 @@ Vector<String> EditorExportPlatformAndroid::get_abis() {
 /// List the gdap files in the directory specified by the p_path parameter.
 Vector<String> EditorExportPlatformAndroid::list_gdap_files(const String &p_path) {
 	Vector<String> dir_files;
-	DirAccessRef da = DirAccess::open(p_path);
-	if (da) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	if (da.is_valid()) {
 		da->list_dir_begin();
 		while (true) {
 			String file = da->get_next();
@@ -685,7 +685,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 		ERR_PRINT(err);
 		return FAILED;
 	}
-	APKExportData *ed = (APKExportData *)p_userdata;
+	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 	Vector<String> abis = get_abis();
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
@@ -710,7 +710,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 }
 
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-	APKExportData *ed = (APKExportData *)p_userdata;
+	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 	String dst_path = p_path.replace_first("res://", "assets/");
 
 	store_in_apk(ed, dst_path, p_data, _should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0);
@@ -725,7 +725,7 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 	ERR_FAIL_COND_V_MSG(!p_so.path.get_file().begins_with("lib"), FAILED,
 			"Android .so file names must start with \"lib\", but got: " + p_so.path);
 	Vector<String> abis = get_abis();
-	CustomExportData *export_data = (CustomExportData *)p_userdata;
+	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
 		int abi_index = abis.find(p_so.tags[i]);
@@ -863,6 +863,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	bool classify_as_game = p_preset->get("package/classify_as_game");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
 	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
+	bool is_resizeable = bool(GLOBAL_GET("display/window/size/resizable"));
 
 	Vector<String> perms;
 	// Write permissions into the perms variable.
@@ -978,6 +979,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "activity" && attrname == "excludeFromRecents") {
 						encode_uint32(exclude_from_recents, &p_manifest.write[iofs + 16]);
+					}
+
+					if (tname == "activity" && attrname == "resizeableActivity") {
+						encode_uint32(is_resizeable, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "supports-screens") {
@@ -2003,7 +2008,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 
 	Error errn;
 	String build_tools_dir = sdk_path.plus_file("build-tools");
-	DirAccessRef da = DirAccess::open(build_tools_dir, &errn);
+	Ref<DirAccess> da = DirAccess::open(build_tools_dir, &errn);
 	if (errn != OK) {
 		print_error("Unable to open Android 'build-tools' directory.");
 		return apksigner_path;
@@ -2120,7 +2125,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	} else {
 		Error errn;
 		// Check for the platform-tools directory.
-		DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
+		Ref<DirAccess> da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
 		if (errn != OK) {
 			err += TTR("Invalid Android SDK path in Editor Settings.");
 			err += TTR("Missing 'platform-tools' directory!");
@@ -2138,7 +2143,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		}
 
 		// Check for the build-tools directory.
-		DirAccessRef build_tools_da = DirAccess::open(sdk_path.plus_file("build-tools"), &errn);
+		Ref<DirAccess> build_tools_da = DirAccess::open(sdk_path.plus_file("build-tools"), &errn);
 		if (errn != OK) {
 			err += TTR("Invalid Android SDK path in Editor Settings.");
 			err += TTR("Missing 'build-tools' directory!");
@@ -2417,12 +2422,12 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 }
 
 void EditorExportPlatformAndroid::_clear_assets_directory() {
-	DirAccessRef da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	// Clear the APK assets directory
 	if (da_res->dir_exists(APK_ASSETS_DIRECTORY)) {
 		print_verbose("Clearing APK assets directory..");
-		DirAccessRef da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
+		Ref<DirAccess> da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
 		da_res->remove(APK_ASSETS_DIRECTORY);
 	}
@@ -2430,7 +2435,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 	// Clear the AAB assets directory
 	if (da_res->dir_exists(AAB_ASSETS_DIRECTORY)) {
 		print_verbose("Clearing AAB assets directory..");
-		DirAccessRef da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
+		Ref<DirAccess> da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
 		da_res->remove(AAB_ASSETS_DIRECTORY);
 	}
@@ -2450,7 +2455,7 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 	ERR_FAIL_COND_MSG(error, "Error parsing \"" + libs_json + "\" on line " + itos(json.get_error_line()) + ": " + json.get_error_message());
 
 	Vector<String> libs = json.get_data();
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (int i = 0; i < libs.size(); i++) {
 		print_verbose("Removing previously installed library " + libs[i]);
 		da->remove(libs[i]);
@@ -2539,14 +2544,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		//test that installed build version is alright
 		{
 			print_verbose("Checking build version..");
-			FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
-			if (!f) {
+			Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::READ);
+			if (f.is_null()) {
 				EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
 				return ERR_UNCONFIGURED;
 			}
 			String version = f->get_line().strip_edges();
 			print_verbose("- build version: " + version);
-			f->close();
 			if (version != VERSION_FULL_CONFIG) {
 				EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
 				return ERR_UNCONFIGURED;
@@ -2582,10 +2586,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 			if (user_data.libs.size() > 0) {
-				FileAccessRef fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
+				Ref<FileAccess> fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
 				JSON json;
 				fa->store_string(json.stringify(user_data.libs, "\t"));
-				fa->close();
 			}
 		} else {
 			print_verbose("Saving apk expansion file..");
@@ -2765,8 +2768,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		return ERR_FILE_BAD_PATH;
 	}
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	if (ep.step(TTR("Creating APK..."), 0)) {
 		return ERR_SKIP;
@@ -2780,9 +2782,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	int ret = unzGoToFirstFile(pkg);
 
-	zlib_filefunc_def io2 = io;
-	FileAccess *dst_f = nullptr;
-	io2.opaque = &dst_f;
+	zlib_filefunc_def io2 = zipio_create_io();
 
 	String tmp_unaligned_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
@@ -2807,6 +2807,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		bool skip = false;
 
@@ -2975,9 +2978,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	ret = unzGoToFirstFile(tmp_unaligned);
 
-	io2 = io;
-	dst_f = nullptr;
-	io2.opaque = &dst_f;
+	io2 = zipio_create_io();
 	zipFile final_apk = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 	// Take files from the unaligned APK and write them out to the aligned one
@@ -2991,6 +2992,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		char fname[16384];
 		char extra[16384];
 		ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 

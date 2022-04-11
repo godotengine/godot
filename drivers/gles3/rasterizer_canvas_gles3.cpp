@@ -38,6 +38,9 @@
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "storage/canvas_texture_storage.h"
+#include "storage/config.h"
+#include "storage/material_storage.h"
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
@@ -210,6 +213,8 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 }
 
 void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer) {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	Item *current_clip = nullptr;
 
 	Transform2D canvas_transform_inverse = p_canvas_transform_inverse;
@@ -226,14 +231,14 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		Item *ci = items[i];
 
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
-		RasterizerStorageGLES3::Material *material_ptr = storage->material_owner.get_or_null(material);
+		GLES3::Material *material_ptr = material_storage->get_material(material);
 
 		if (material.is_null() && ci->canvas_group != nullptr) {
 			material = default_canvas_group_material;
 		}
 
 		if (material != prev_material) {
-			RasterizerStorageGLES3::Shader *shader_ptr = nullptr;
+			GLES3::Shader *shader_ptr = nullptr;
 
 			if (material_ptr) {
 				shader_ptr = material_ptr->shader;
@@ -260,7 +265,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 				for (int ti = 0; ti < tc; i++) {
 					glActiveTexture(GL_TEXTURE0 + ti);
 
-					RasterizerStorageGLES3::Texture *t = storage->texture_owner.get_or_null(textures[ti].second);
+					GLES3::Texture *t = texture_storage->get_texture(textures[ti].second);
 
 					if (!t) {
 						switch (texture_uniforms[i].hint) {
@@ -358,7 +363,6 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 			state.instance_data_array[r_index].dst_rect[i] = 0.0;
 			state.instance_data_array[r_index].lights[i] = uint32_t(0);
 		}
-		state.instance_data_array[r_index].flags = base_flags;
 		state.instance_data_array[r_index].color_texture_pixel_size[0] = 0.0;
 		state.instance_data_array[r_index].color_texture_pixel_size[1] = 0.0;
 
@@ -904,6 +908,8 @@ void RasterizerCanvasGLES3::canvas_end() {
 }
 
 void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index, RID &r_last_texture, Size2 &r_texpixel_size) {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+
 	if (p_texture == RID()) {
 		p_texture = default_canvas_texture;
 	}
@@ -915,20 +921,20 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 	state.end_batch = true;
 	_render_batch(r_index);
 
-	RasterizerStorageGLES3::CanvasTexture *ct = nullptr;
+	GLES3::CanvasTexture *ct = nullptr;
 
-	RasterizerStorageGLES3::Texture *t = storage->texture_owner.get_or_null(p_texture);
+	GLES3::Texture *t = texture_storage->get_texture(p_texture);
 
 	if (t) {
 		//regular texture
 		if (!t->canvas_texture) {
-			t->canvas_texture = memnew(RasterizerStorageGLES3::CanvasTexture);
+			t->canvas_texture = memnew(GLES3::CanvasTexture);
 			t->canvas_texture->diffuse = p_texture;
 		}
 
 		ct = t->canvas_texture;
 	} else {
-		ct = storage->canvas_texture_owner.get_or_null(p_texture);
+		ct = GLES3::CanvasTextureStorage::get_singleton()->get_canvas_texture(p_texture);
 	}
 
 	if (!ct) {
@@ -943,7 +949,7 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
 	ERR_FAIL_COND(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
 
-	RasterizerStorageGLES3::Texture *texture = storage->texture_owner.get_or_null(ct->diffuse);
+	GLES3::Texture *texture = texture_storage->get_texture(ct->diffuse);
 
 	if (!texture) {
 		state.current_tex = RID();
@@ -967,18 +973,18 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 		texture->GLSetRepeat(GL_TEXTURE_2D, repeat);
 	}
 
-	RasterizerStorageGLES3::Texture *normal_map = storage->texture_owner.get_or_null(ct->normal_map);
+	GLES3::Texture *normal_map = texture_storage->get_texture(ct->normal_map);
 
 	if (!normal_map) {
 		state.current_normal = RID();
 		ct->use_normal_cache = false;
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+		glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 6);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
 
 	} else {
 		normal_map = normal_map->get_ptr();
 
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+		glActiveTexture(GL_TEXTURE0 + storage->config->max_texture_image_units - 6);
 		glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 		state.current_normal = ct->normal_map;
 		ct->use_normal_cache = true;
@@ -986,18 +992,18 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 		texture->GLSetRepeat(GL_TEXTURE_2D, repeat);
 	}
 
-	RasterizerStorageGLES3::Texture *specular_map = storage->texture_owner.get_or_null(ct->specular);
+	GLES3::Texture *specular_map = texture_storage->get_texture(ct->specular);
 
 	if (!specular_map) {
 		state.current_specular = RID();
 		ct->use_specular_cache = false;
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 7);
+		glActiveTexture(GL_TEXTURE0 + storage->config->max_texture_image_units - 7);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 	} else {
 		specular_map = specular_map->get_ptr();
 
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 7);
+		glActiveTexture(GL_TEXTURE0 + storage->config->max_texture_image_units - 7);
 		glBindTexture(GL_TEXTURE_2D, specular_map->tex_id);
 		state.current_specular = ct->specular;
 		ct->use_specular_cache = true;
@@ -1249,6 +1255,9 @@ void RasterizerCanvasGLES3::_allocate_instance_data_buffer() {
 }
 
 void RasterizerCanvasGLES3::initialize() {
+	GLES3::CanvasTextureStorage *canvas_texture_storage = GLES3::CanvasTextureStorage::get_singleton();
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
 	// quad buffer
 	{
 		glGenBuffers(1, &data.canvas_quad_vertices);
@@ -1408,7 +1417,7 @@ void RasterizerCanvasGLES3::initialize() {
 	state.canvas_shader_default_version = state.canvas_shader.version_create();
 	state.canvas_shader.version_bind_shader(state.canvas_shader_default_version, CanvasShaderGLES3::MODE_QUAD);
 
-	//state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
+	//state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_RGBA_SHADOWS, storage->config->use_rgba_2d_shadows);
 
 	//state.canvas_shader.bind();
 
@@ -1417,10 +1426,10 @@ void RasterizerCanvasGLES3::initialize() {
 	//state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
 
 	{
-		default_canvas_group_shader = storage->shader_allocate();
-		storage->shader_initialize(default_canvas_group_shader);
+		default_canvas_group_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(default_canvas_group_shader);
 
-		storage->shader_set_code(default_canvas_group_shader, R"(
+		material_storage->shader_set_code(default_canvas_group_shader, R"(
 // Default CanvasGroup shader.
 
 shader_type canvas_item;
@@ -1435,14 +1444,14 @@ void fragment() {
 	COLOR *= c;
 }
 )");
-		default_canvas_group_material = storage->material_allocate();
-		storage->material_initialize(default_canvas_group_material);
+		default_canvas_group_material = material_storage->material_allocate();
+		material_storage->material_initialize(default_canvas_group_material);
 
-		storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
+		material_storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 
-	default_canvas_texture = storage->canvas_texture_allocate();
-	storage->canvas_texture_initialize(default_canvas_texture);
+	default_canvas_texture = canvas_texture_storage->canvas_texture_allocate();
+	canvas_texture_storage->canvas_texture_initialize(default_canvas_texture);
 
 	state.using_light = nullptr;
 	state.using_transparent_rt = false;
@@ -1450,13 +1459,25 @@ void fragment() {
 	state.current_shader_version = state.canvas_shader_default_version;
 }
 
-RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
+RasterizerCanvasGLES3 *RasterizerCanvasGLES3::singleton = nullptr;
+
+RasterizerCanvasGLES3 *RasterizerCanvasGLES3::get_singleton() {
+	return singleton;
 }
+
+RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
+	singleton = this;
+}
+
 RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
+	GLES3::CanvasTextureStorage *canvas_texture_storage = GLES3::CanvasTextureStorage::get_singleton();
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
 	state.canvas_shader.version_free(state.canvas_shader_default_version);
-	storage->free(default_canvas_group_material);
-	storage->free(default_canvas_group_shader);
-	storage->free(default_canvas_texture);
+	material_storage->material_free(default_canvas_group_material);
+	material_storage->shader_free(default_canvas_group_shader);
+	canvas_texture_storage->canvas_texture_free(default_canvas_texture);
+	singleton = nullptr;
 }
 
 void RasterizerCanvasGLES3::finalize() {

@@ -38,16 +38,35 @@
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
 
+#ifdef TOOLS_ENABLED
+
+#include "editor/editor_node.h"
+#include "editor/openxr_editor_plugin.h"
+
+static void _editor_init() {
+	if (OpenXRAPI::openxr_is_enabled(false)) {
+		// Only add our OpenXR action map editor if OpenXR is enabled for our project
+
+		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
+	}
+}
+
+#endif
+
 OpenXRAPI *openxr_api = nullptr;
 Ref<OpenXRInterface> openxr_interface;
 
 void preregister_openxr_types() {
 	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
-	OpenXRAPI::setup_global_defs();
-	openxr_api = OpenXRAPI::get_singleton();
-	if (openxr_api) {
-		if (!openxr_api->initialise(Main::get_rendering_driver_name())) {
+	if (OpenXRAPI::openxr_is_enabled()) {
+		openxr_api = memnew(OpenXRAPI);
+		ERR_FAIL_NULL(openxr_api);
+
+		if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+			memdelete(openxr_api);
+			openxr_api = nullptr;
 			return;
 		}
 	}
@@ -67,15 +86,19 @@ void register_openxr_types() {
 		openxr_interface.instantiate();
 		xr_server->add_interface(openxr_interface);
 
-		if (openxr_interface->initialise_on_startup()) {
+		if (openxr_interface->initialize_on_startup()) {
 			openxr_interface->initialize();
 		}
 	}
+
+#ifdef TOOLS_ENABLED
+	EditorNode::add_init_callback(_editor_init);
+#endif
 }
 
 void unregister_openxr_types() {
 	if (openxr_interface.is_valid()) {
-		// uninitialise just in case
+		// uninitialize just in case
 		if (openxr_interface->is_initialized()) {
 			openxr_interface->uninitialize();
 		}
@@ -96,5 +119,6 @@ void unregister_openxr_types() {
 	if (openxr_api) {
 		openxr_api->finish();
 		memdelete(openxr_api);
+		openxr_api = nullptr;
 	}
 }

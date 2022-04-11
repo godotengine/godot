@@ -44,7 +44,7 @@ class CPUParticles3DEditor : public GPUParticles3DEditorBase {
 
 	};
 
-	CPUParticles3D *node;
+	CPUParticles3D *node = nullptr;
 
 	void _menu_option(int);
 
@@ -65,7 +65,7 @@ public:
 class CPUParticles3DEditorPlugin : public EditorPlugin {
 	GDCLASS(CPUParticles3DEditorPlugin, EditorPlugin);
 
-	CPUParticles3DEditor *particles_editor;
+	CPUParticles3DEditor *particles_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "CPUParticles3D"; }

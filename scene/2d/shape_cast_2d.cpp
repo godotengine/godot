@@ -382,7 +382,7 @@ TypedArray<String> ShapeCast2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node2D::get_configuration_warnings();
 
 	if (shape.is_null()) {
-		warnings.push_back(TTR("This node cannot interact with other objects unless a Shape2D is assigned."));
+		warnings.push_back(RTR("This node cannot interact with other objects unless a Shape2D is assigned."));
 	}
 	return warnings;
 }

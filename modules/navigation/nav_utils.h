@@ -89,7 +89,7 @@ struct Edge {
 };
 
 struct Polygon {
-	NavRegion *owner;
+	NavRegion *owner = nullptr;
 
 	/// The points of this `Polygon`
 	std::vector<Point> points;

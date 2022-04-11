@@ -1038,8 +1038,8 @@ Transform2D Viewport::get_final_transform() const {
 
 void Viewport::_update_canvas_items(Node *p_node) {
 	if (p_node != this) {
-		Viewport *vp = Object::cast_to<Viewport>(p_node);
-		if (vp) {
+		Window *w = Object::cast_to<Window>(p_node);
+		if (w && (!w->is_inside_tree() || !w->is_embedded())) {
 			return;
 		}
 
@@ -1124,9 +1124,10 @@ Vector2 Viewport::get_mouse_position() const {
 	return gui.last_mouse_pos;
 }
 
-void Viewport::warp_mouse(const Vector2 &p_pos) {
-	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
-	Input::get_singleton()->warp_mouse_position(gpos);
+void Viewport::warp_mouse(const Vector2 &p_position) {
+	Transform2D xform = get_screen_transform();
+	Vector2 gpos = xform.xform(p_position).round();
+	Input::get_singleton()->warp_mouse(gpos);
 }
 
 void Viewport::_gui_sort_roots() {
@@ -1603,29 +1604,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_input(mouse_focus, mb);
 			}
 
-			// In case the mouse was released after for example dragging a scrollbar,
-			// check whether the current control is different from the stored one. If
-			// it is different, rather than wait for it to be updated the next time the
-			// mouse is moved, notify the control so that it can e.g. drop the highlight.
-			// This code is duplicated from the mm.is_valid()-case further below.
-			Control *over = nullptr;
-			if (gui.mouse_focus) {
-				over = gui.mouse_focus;
-			} else {
-				over = gui_find_control(mpos);
-			}
-
-			if (gui.mouse_focus_mask == MouseButton::NONE && over != gui.mouse_over) {
-				_drop_mouse_over();
-				_gui_cancel_tooltip();
-
-				if (over) {
-					_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
-				}
-			}
-
-			gui.mouse_over = over;
-
 			set_input_as_handled();
 		}
 	}
@@ -1685,9 +1663,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		Control *over = nullptr;
-		if (gui.mouse_focus) {
-			over = gui.mouse_focus;
-		} else if (gui.mouse_in_viewport) {
+		if (gui.mouse_in_viewport) {
 			over = gui_find_control(mpos);
 		}
 
@@ -1699,6 +1675,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
+		}
+
+		if (gui.mouse_focus) {
+			over = gui.mouse_focus;
 		}
 
 		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape();
@@ -1871,8 +1851,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (viewport_under) {
-				Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
-				viewport_pos = ai.xform(viewport_pos);
+				if (viewport_under != this) {
+					Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
+					viewport_pos = ai.xform(viewport_pos);
+				}
 				// Find control under at position.
 				gui.drag_mouse_over = viewport_under->gui_find_control(viewport_pos);
 				if (gui.drag_mouse_over) {
@@ -2001,30 +1983,58 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
 
-			if (p_event->is_action_pressed("ui_focus_next", true, true)) {
-				next = from->find_next_valid_focus();
-			}
+			Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+			if (joypadmotion_event.is_valid()) {
+				Input *input = Input::get_singleton();
 
-			if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
-				next = from->find_prev_valid_focus();
-			}
+				if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+					next = from->find_next_valid_focus();
+				}
 
-			if (p_event->is_action_pressed("ui_up", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_TOP);
-			}
+				if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+					next = from->find_prev_valid_focus();
+				}
 
-			if (p_event->is_action_pressed("ui_left", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_LEFT);
-			}
+				if (p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
+					next = from->_get_focus_neighbor(SIDE_TOP);
+				}
 
-			if (p_event->is_action_pressed("ui_right", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_RIGHT);
-			}
+				if (p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
+					next = from->_get_focus_neighbor(SIDE_LEFT);
+				}
 
-			if (p_event->is_action_pressed("ui_down", true, true)) {
-				next = from->_get_focus_neighbor(SIDE_BOTTOM);
-			}
+				if (p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
+					next = from->_get_focus_neighbor(SIDE_RIGHT);
+				}
 
+				if (p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
+					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+				}
+			} else {
+				if (p_event->is_action_pressed("ui_focus_next", true, true)) {
+					next = from->find_next_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
+					next = from->find_prev_valid_focus();
+				}
+
+				if (p_event->is_action_pressed("ui_up", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_TOP);
+				}
+
+				if (p_event->is_action_pressed("ui_left", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_LEFT);
+				}
+
+				if (p_event->is_action_pressed("ui_right", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_RIGHT);
+				}
+
+				if (p_event->is_action_pressed("ui_down", true, true)) {
+					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+				}
+			}
 			if (next) {
 				next->grab_focus();
 				set_input_as_handled();
@@ -2691,7 +2701,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = p_event;
 	}
 
-	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
+	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
 	}
@@ -2734,11 +2744,18 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 		ev = p_event;
 	}
 
-	// Unhandled Input.
-	get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, ev, this);
+	// Shortcut Input.
+	if (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr) {
+		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, ev, this);
+	}
 
-	// Unhandled key Input - used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, etc.
-	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr)) {
+	// Unhandled Input.
+	if (!is_input_handled()) {
+		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, ev, this);
+	}
+
+	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
+	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr)) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, ev, this);
 	}
 
@@ -2805,7 +2822,7 @@ TypedArray<String> Viewport::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (size.x == 0 || size.y == 0) {
-		warnings.push_back(TTR("Viewport size must be greater than 0 to render anything."));
+		warnings.push_back(RTR("Viewport size must be greater than 0 to render anything."));
 	}
 	return warnings;
 }
@@ -3104,6 +3121,10 @@ void Viewport::set_sdf_scale(SDFScale p_sdf_scale) {
 
 Viewport::SDFScale Viewport::get_sdf_scale() const {
 	return sdf_scale;
+}
+
+Transform2D Viewport::get_screen_transform() const {
+	return _get_input_pre_xform().affine_inverse() * get_final_transform();
 }
 
 #ifndef _3D_DISABLED
@@ -3614,7 +3635,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
@@ -3865,6 +3886,7 @@ Viewport::Viewport() {
 	input_group = "_vp_input" + id;
 	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;
+	shortcut_input_group = "_vp_shortcut_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
 	// Window tooltip.
@@ -3962,6 +3984,20 @@ Transform2D SubViewport::_stretch_transform() {
 	}
 
 	return transform;
+}
+
+Transform2D SubViewport::get_screen_transform() const {
+	Transform2D container_transform = Transform2D();
+	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (c) {
+		if (c->is_stretch_enabled()) {
+			container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
+		}
+		container_transform = c->get_viewport()->get_screen_transform() * c->get_global_transform_with_canvas() * container_transform;
+	} else {
+		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
+	}
+	return container_transform * Viewport::get_screen_transform();
 }
 
 void SubViewport::_notification(int p_what) {

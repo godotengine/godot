@@ -44,7 +44,7 @@ class EditorSpinSlider : public Range {
 	bool hover_updown = false;
 	bool mouse_hover = false;
 
-	TextureRect *grabber;
+	TextureRect *grabber = nullptr;
 	int grabber_range;
 
 	bool mouse_over_spin = false;

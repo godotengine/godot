@@ -147,7 +147,7 @@ private:
 		bool is_op = false;
 		union {
 			Variant::Operator op;
-			ENode *node;
+			ENode *node = nullptr;
 		};
 	};
 
