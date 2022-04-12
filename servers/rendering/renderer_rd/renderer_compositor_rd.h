@@ -42,6 +42,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
@@ -52,6 +53,7 @@ protected:
 	RendererRD::LightStorage *light_storage;
 	RendererRD::MaterialStorage *material_storage;
 	RendererRD::MeshStorage *mesh_storage;
+	RendererRD::ParticlesStorage *particles_storage;
 	RendererRD::TextureStorage *texture_storage;
 	RendererStorageRD *storage = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
@@ -99,6 +101,7 @@ public:
 	RendererLightStorage *get_light_storage() { return light_storage; };
 	RendererMaterialStorage *get_material_storage() { return material_storage; };
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; };
+	RendererParticlesStorage *get_particles_storage() { return particles_storage; };
 	RendererTextureStorage *get_texture_storage() { return texture_storage; };
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }

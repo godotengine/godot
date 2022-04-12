@@ -40,6 +40,7 @@
 #include "servers/rendering/dummy/storage/light_storage.h"
 #include "servers/rendering/dummy/storage/material_storage.h"
 #include "servers/rendering/dummy/storage/mesh_storage.h"
+#include "servers/rendering/dummy/storage/particles_storage.h"
 #include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
@@ -54,6 +55,7 @@ protected:
 	RendererDummy::LightStorage light_storage;
 	RendererDummy::MaterialStorage material_storage;
 	RendererDummy::MeshStorage mesh_storage;
+	RendererDummy::ParticlesStorage particles_storage;
 	RendererDummy::TextureStorage texture_storage;
 	RasterizerStorageDummy storage;
 	RasterizerSceneDummy scene;
@@ -62,6 +64,7 @@ public:
 	RendererLightStorage *get_light_storage() override { return &light_storage; };
 	RendererMaterialStorage *get_material_storage() override { return &material_storage; };
 	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; };
+	RendererParticlesStorage *get_particles_storage() override { return &particles_storage; };
 	RendererTextureStorage *get_texture_storage() override { return &texture_storage; };
 	RendererStorage *get_storage() override { return &storage; }
 	RendererCanvasRender *get_canvas() override { return &canvas; }

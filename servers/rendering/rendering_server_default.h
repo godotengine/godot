@@ -459,6 +459,12 @@ public:
 
 	/* PARTICLES */
 
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererParticlesStorage
+#define server_name RSG::particles_storage
+
 	FUNCRIDSPLIT(particles)
 
 	FUNC2(particles_set_mode, RID, ParticlesMode)
@@ -513,6 +519,12 @@ public:
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
 	/* FOG VOLUME */
+
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererStorage
+#define server_name RSG::storage
 
 	FUNCRIDSPLIT(fog_volume)
 

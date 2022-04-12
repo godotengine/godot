@@ -1338,7 +1338,7 @@ void RendererCanvasCull::canvas_item_add_particles(RID p_item, RID p_particles, 
 	part->texture = p_texture;
 
 	//take the chance and request processing for them, at least once until they become visible again
-	RSG::storage->particles_request_process(p_particles);
+	RSG::particles_storage->particles_request_process(p_particles);
 }
 
 void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture) {

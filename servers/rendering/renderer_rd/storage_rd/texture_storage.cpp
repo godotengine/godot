@@ -470,7 +470,7 @@ void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS:
 }
 
 bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
-	RendererStorageRD *storage = RendererStorageRD::base_singleton;
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 	CanvasTexture *ct = nullptr;
 	Texture *t = get_texture(p_texture);
@@ -552,7 +552,7 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 3;
-			u.append_id(storage->sampler_rd_get_default(filter, repeat));
+			u.append_id(material_storage->sampler_rd_get_default(filter, repeat));
 			uniforms.push_back(u);
 		}
 

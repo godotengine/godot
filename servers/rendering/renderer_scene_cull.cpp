@@ -228,7 +228,7 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		voxel_gi->lights.insert(A);
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
-		RSG::storage->particles_add_collision(A->base, collision->instance);
+		RSG::particles_storage->particles_add_collision(A->base, collision->instance);
 	}
 }
 
@@ -344,7 +344,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		voxel_gi->lights.erase(A);
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
-		RSG::storage->particles_remove_collision(A->base, collision->instance);
+		RSG::particles_storage->particles_remove_collision(A->base, collision->instance);
 	}
 }
 
@@ -659,8 +659,8 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			} break;
 			case RS::INSTANCE_PARTICLES_COLLISION: {
 				InstanceParticlesCollisionData *collision = memnew(InstanceParticlesCollisionData);
-				collision->instance = RSG::storage->particles_collision_instance_create(p_base);
-				RSG::storage->particles_collision_instance_set_active(collision->instance, instance->visible);
+				collision->instance = RSG::particles_storage->particles_collision_instance_create(p_base);
+				RSG::particles_storage->particles_collision_instance_set_active(collision->instance, instance->visible);
 				instance->base_data = collision;
 			} break;
 			case RS::INSTANCE_FOG_VOLUME: {
@@ -941,7 +941,7 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 
 	if (instance->base_type == RS::INSTANCE_PARTICLES_COLLISION) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(instance->base_data);
-		RSG::storage->particles_collision_instance_set_active(collision->instance, p_visible);
+		RSG::particles_storage->particles_collision_instance_set_active(collision->instance, p_visible);
 	}
 
 	if (instance->base_type == RS::INSTANCE_FOG_VOLUME) {
@@ -1529,15 +1529,15 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 
 		scene_render->voxel_gi_instance_set_transform_to_data(voxel_gi->probe_instance, p_instance->transform);
 	} else if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
-		RSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
+		RSG::particles_storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
 	} else if (p_instance->base_type == RS::INSTANCE_PARTICLES_COLLISION) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(p_instance->base_data);
 
 		//remove materials no longer used and un-own them
-		if (RSG::storage->particles_collision_is_heightfield(p_instance->base)) {
+		if (RSG::particles_storage->particles_collision_is_heightfield(p_instance->base)) {
 			heightfield_particle_colliders_update_list.insert(p_instance);
 		}
-		RSG::storage->particles_collision_instance_set_transform(collision->instance, p_instance->transform);
+		RSG::particles_storage->particles_collision_instance_set_transform(collision->instance, p_instance->transform);
 	} else if (p_instance->base_type == RS::INSTANCE_FOG_VOLUME) {
 		InstanceFogVolumeData *volume = static_cast<InstanceFogVolumeData *>(p_instance->base_data);
 		scene_render->fog_volume_instance_set_transform(volume->instance, p_instance->transform);
@@ -1864,12 +1864,12 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
 			} else {
-				new_aabb = RSG::storage->particles_get_aabb(p_instance->base);
+				new_aabb = RSG::particles_storage->particles_get_aabb(p_instance->base);
 			}
 
 		} break;
 		case RenderingServer::INSTANCE_PARTICLES_COLLISION: {
-			new_aabb = RSG::storage->particles_collision_get_aabb(p_instance->base);
+			new_aabb = RSG::particles_storage->particles_collision_get_aabb(p_instance->base);
 
 		} break;
 		case RenderingServer::INSTANCE_FOG_VOLUME: {
@@ -2714,14 +2714,14 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						mesh_visible = true;
 					} else if (base_type == RS::INSTANCE_PARTICLES) {
 						//particles visible? process them
-						if (RSG::storage->particles_is_inactive(idata.base_rid)) {
+						if (RSG::particles_storage->particles_is_inactive(idata.base_rid)) {
 							//but if nothing is going on, don't do it.
 							keep = false;
 						} else {
 							cull_data.cull->lock.lock();
-							RSG::storage->particles_request_process(idata.base_rid);
+							RSG::particles_storage->particles_request_process(idata.base_rid);
 							cull_data.cull->lock.unlock();
-							RSG::storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_axis(2).normalized(), cull_data.cam_transform.basis.get_axis(1).normalized());
+							RSG::particles_storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_axis(2).normalized(), cull_data.cam_transform.basis.get_axis(1).normalized());
 							//particles visible? request redraw
 							RenderingServerDefault::redraw_request();
 						}
@@ -3592,7 +3592,7 @@ void RendererSceneCull::render_particle_colliders() {
 	while (heightfield_particle_colliders_update_list.front()) {
 		Instance *hfpc = heightfield_particle_colliders_update_list.front()->get();
 
-		if (hfpc->scenario && hfpc->base_type == RS::INSTANCE_PARTICLES_COLLISION && RSG::storage->particles_collision_is_heightfield(hfpc->base)) {
+		if (hfpc->scenario && hfpc->base_type == RS::INSTANCE_PARTICLES_COLLISION && RSG::particles_storage->particles_collision_is_heightfield(hfpc->base)) {
 			//update heightfield
 			instance_cull_result.clear();
 			scene_cull_result.geometry_instances.clear();
@@ -3686,7 +3686,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 		if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
 			// update the process material dependency
 
-			RID particle_material = RSG::storage->particles_get_process_material(p_instance->base);
+			RID particle_material = RSG::particles_storage->particles_get_process_material(p_instance->base);
 			if (particle_material.is_valid()) {
 				RSG::material_storage->material_update_dependency(particle_material, &p_instance->dependency_tracker);
 			}
@@ -3776,10 +3776,10 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 				} else if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
 					bool cast_shadows = false;
 
-					int dp = RSG::storage->particles_get_draw_passes(p_instance->base);
+					int dp = RSG::particles_storage->particles_get_draw_passes(p_instance->base);
 
 					for (int i = 0; i < dp; i++) {
-						RID mesh = RSG::storage->particles_get_draw_pass_mesh(p_instance->base, i);
+						RID mesh = RSG::particles_storage->particles_get_draw_pass_mesh(p_instance->base, i);
 						if (!mesh.is_valid()) {
 							continue;
 						}

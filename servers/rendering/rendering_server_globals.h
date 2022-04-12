@@ -37,6 +37,7 @@
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 class RendererCanvasCull;
@@ -50,6 +51,7 @@ public:
 	static RendererLightStorage *light_storage;
 	static RendererMaterialStorage *material_storage;
 	static RendererMeshStorage *mesh_storage;
+	static RendererParticlesStorage *particles_storage;
 	static RendererTextureStorage *texture_storage;
 	static RendererStorage *storage;
 	static RendererCanvasRender *canvas_render;

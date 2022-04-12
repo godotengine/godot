@@ -35,6 +35,7 @@ bool RenderingServerGlobals::threaded = false;
 RendererLightStorage *RenderingServerGlobals::light_storage = nullptr;
 RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
 RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
+RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
 RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
 RendererStorage *RenderingServerGlobals::storage = nullptr;
 RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
