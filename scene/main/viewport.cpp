@@ -3186,7 +3186,13 @@ bool Viewport::is_handling_input_locally() const {
 }
 
 void Viewport::_validate_property(PropertyInfo &property) const {
-	if (VisualServer::get_singleton()->is_low_end() && (property.name == "hdr" || property.name == "use_32_bpc_depth")) {
+	if (VisualServer::get_singleton()->is_low_end() && (property.name == "hdr" || property.name == "use_32_bpc_depth" || property.name == "debanding" || property.name == "sharpen_intensity" || property.name == "debug_draw")) {
+		// Only available in GLES3.
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	}
+
+	if (!VisualServer::get_singleton()->is_low_end() && (property.name == "render_direct_to_screen")) {
+		// Only available in GLES2.
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 }
@@ -3342,7 +3348,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fxaa"), "set_use_fxaa", "get_use_fxaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debanding"), "set_use_debanding", "get_use_debanding");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sharpen_intensity"), "set_sharpen_intensity", "get_sharpen_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sharpen_intensity", PROPERTY_HINT_RANGE, "0,1"), "set_sharpen_intensity", "get_sharpen_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_32_bpc_depth"), "set_use_32_bpc_depth", "get_use_32_bpc_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
