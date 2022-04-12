@@ -148,6 +148,34 @@ bool ShaderGLES3::_bind(bool p_binding_fallback) {
 	}
 }
 
+bool ShaderGLES3::is_custom_code_ready_for_render(uint32_t p_code_id) {
+	if (p_code_id == 0) {
+		return true;
+	}
+	if (!is_async_compilation_supported() || get_ubershader_flags_uniform() == -1) {
+		return true;
+	}
+
+	CustomCode *cc = custom_code_map.getptr(p_code_id);
+	ERR_FAIL_COND_V(!cc, false);
+	if (cc->async_mode == ASYNC_MODE_HIDDEN) {
+#ifdef DEBUG_ENABLED
+		if (VS::get_singleton()->is_force_shader_fallbacks_enabled()) {
+			return false;
+		}
+#endif
+		VersionKey effective_version;
+		effective_version.version = new_conditional_version.version;
+		effective_version.code_version = p_code_id;
+		Version *v = version_map.getptr(effective_version);
+		if (!v || cc->version != v->code_version || v->compile_status != Version::COMPILE_STATUS_OK) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool ShaderGLES3::_bind_ubershader() {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(!is_async_compilation_supported(), false);
