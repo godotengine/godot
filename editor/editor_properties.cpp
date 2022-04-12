@@ -1893,6 +1893,112 @@ EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 	}
 }
 
+///////////////////// VECTOR4 /////////////////////////
+
+void EditorPropertyVector4::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyVector4::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Vector4 v4;
+	v4.x = spin[0]->get_value();
+	v4.y = spin[1]->get_value();
+	v4.z = spin[2]->get_value();
+	v4.w = spin[3]->get_value();
+
+	emit_changed(get_edited_property(), v4, p_name);
+}
+
+void EditorPropertyVector4::update_property() {
+	update_using_vector(get_edited_object()->get(get_edited_property()));
+}
+
+void EditorPropertyVector4::update_using_vector(Vector4 p_vector) {
+	setting = true;
+	spin[0]->set_value(p_vector.x);
+	spin[1]->set_value(p_vector.y);
+	spin[2]->set_value(p_vector.z);
+	spin[3]->set_value(p_vector.w);
+	setting = false;
+}
+
+Vector4 EditorPropertyVector4::get_vector() {
+	Vector4 v4;
+	v4.x = spin[0]->get_value();
+	v4.y = spin[1]->get_value();
+	v4.z = spin[2]->get_value();
+	v4.w = spin[3]->get_value();
+	return v4;
+}
+
+void EditorPropertyVector4::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->add_theme_color_override("label_color", colors[i]);
+			}
+		} break;
+	}
+}
+
+void EditorPropertyVector4::_bind_methods() {
+}
+
+void EditorPropertyVector4::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyVector4::EditorPropertyVector4(bool p_force_wide) {
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+
+	BoxContainer *bc;
+
+	if (p_force_wide) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+	} else if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
+	static const char *desc[4] = { "x", "y", "z", "w" };
+	for (int i = 0; i < 4; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_flat(true);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4::_value_changed), varray(desc[i]));
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
+	}
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
+}
+
 ///////////////////// VECTOR2i /////////////////////////
 
 void EditorPropertyVector2i::_set_read_only(bool p_read_only) {
@@ -3620,6 +3726,13 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
 			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			return editor;
+
+		} break;
+		case Variant::VECTOR4: {
+			EditorPropertyVector4 *editor = memnew(EditorPropertyVector4(p_wide));
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 
 		} break;

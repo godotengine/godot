@@ -281,6 +281,11 @@ SETGET_NUMBER_STRUCT(Vector3i, int64_t, x)
 SETGET_NUMBER_STRUCT(Vector3i, int64_t, y)
 SETGET_NUMBER_STRUCT(Vector3i, int64_t, z)
 
+SETGET_NUMBER_STRUCT(Vector4, double, x)
+SETGET_NUMBER_STRUCT(Vector4, double, y)
+SETGET_NUMBER_STRUCT(Vector4, double, z)
+SETGET_NUMBER_STRUCT(Vector4, double, w)
+
 SETGET_STRUCT(Rect2, Vector2, position)
 SETGET_STRUCT(Rect2, Vector2, size)
 SETGET_STRUCT_FUNC(Rect2, Vector2, end, set_end, get_end)

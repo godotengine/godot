@@ -196,6 +196,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Rect2i>::init, // RECT2I.
 	&VariantInitializer<Vector3>::init, // VECTOR3.
 	&VariantInitializer<Vector3i>::init, // VECTOR3I.
+	&VariantInitializer<Vector4>::init, // VECTOR4.
 	&VariantInitializer<Transform2D>::init, // TRANSFORM2D.
 	&VariantInitializer<Plane>::init, // PLANE.
 	&VariantInitializer<Quaternion>::init, // QUATERNION.
@@ -279,6 +280,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_RECT2I,                \
 		&&OPCODE_CALL_PTRCALL_VECTOR3,               \
 		&&OPCODE_CALL_PTRCALL_VECTOR3I,              \
+		&&OPCODE_CALL_PTRCALL_VECTOR4,               \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM2D,           \
 		&&OPCODE_CALL_PTRCALL_PLANE,                 \
 		&&OPCODE_CALL_PTRCALL_QUATERNION,            \
@@ -367,6 +369,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_RECT2I,                 \
 		&&OPCODE_TYPE_ADJUST_VECTOR3,                \
 		&&OPCODE_TYPE_ADJUST_VECTOR3I,               \
+		&&OPCODE_TYPE_ADJUST_VECTOR4,                \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,            \
 		&&OPCODE_TYPE_ADJUST_PLANE,                  \
 		&&OPCODE_TYPE_ADJUST_QUATERNION,             \
@@ -430,6 +433,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_VECTOR2I get_vector2i
 #define OP_GET_VECTOR3 get_vector3
 #define OP_GET_VECTOR3I get_vector3i
+#define OP_GET_VECTOR4 get_vector4
 #define OP_GET_RECT2 get_rect2
 #define OP_GET_RECT2I get_rect2i
 #define OP_GET_QUATERNION get_quaternion
@@ -1827,6 +1831,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_CALL_PTR(RECT2I);
 			OPCODE_CALL_PTR(VECTOR3);
 			OPCODE_CALL_PTR(VECTOR3I);
+			OPCODE_CALL_PTR(VECTOR4);
 			OPCODE_CALL_PTR(TRANSFORM2D);
 			OPCODE_CALL_PTR(PLANE);
 			OPCODE_CALL_PTR(QUATERNION);
@@ -3258,6 +3263,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(RECT2I, Rect2i);
 			OPCODE_TYPE_ADJUST(VECTOR3, Vector3);
 			OPCODE_TYPE_ADJUST(VECTOR3I, Vector3i);
+			OPCODE_TYPE_ADJUST(VECTOR4, Vector4);
 			OPCODE_TYPE_ADJUST(TRANSFORM2D, Transform2D);
 			OPCODE_TYPE_ADJUST(PLANE, Plane);
 			OPCODE_TYPE_ADJUST(QUATERNION, Quaternion);

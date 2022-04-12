@@ -83,6 +83,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case VECTOR3I: {
 			return "Vector3i";
 		} break;
+		case VECTOR4: {
+			return "Vector4";
+		} break;
 		case PLANE: {
 			return "Plane";
 
@@ -298,7 +301,6 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			valid_types = valid;
 
 		} break;
-
 		case QUATERNION: {
 			static const Type valid[] = {
 				BASIS,
@@ -604,7 +606,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			valid_types = valid;
 
 		} break;
-
 		case QUATERNION: {
 			static const Type valid[] = {
 				BASIS,
@@ -858,6 +859,10 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i();
 
 		} break;
+		case VECTOR4: {
+			return *reinterpret_cast<const Vector4 *>(_data._mem) == Vector4();
+
+		} break;
 		case PLANE: {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane();
 
@@ -998,6 +1003,10 @@ bool Variant::is_one() const {
 			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i(1, 1, 1);
 
 		} break;
+		case VECTOR4: {
+			return *reinterpret_cast<const Vector4 *>(_data._mem) == Vector4(1, 1, 1, 1);
+
+		} break;
 		case PLANE: {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane(1, 1, 1, 1);
 
@@ -1083,6 +1092,9 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case VECTOR3I: {
 			memnew_placement(_data._mem, Vector3i(*reinterpret_cast<const Vector3i *>(p_variant._data._mem)));
+		} break;
+		case VECTOR4: {
+			memnew_placement(_data._mem, Vector4(*reinterpret_cast<const Vector4 *>(p_variant._data._mem)));
 		} break;
 		case PLANE: {
 			memnew_placement(_data._mem, Plane(*reinterpret_cast<const Plane *>(p_variant._data._mem)));
@@ -1250,6 +1262,9 @@ void Variant::zero() {
 		case VECTOR3I:
 			*reinterpret_cast<Vector3i *>(this->_data._mem) = Vector3i();
 			break;
+		case VECTOR4:
+			*reinterpret_cast<Vector4 *>(this->_data._mem) = Vector4();
+			break;
 		case PLANE:
 			*reinterpret_cast<Plane *>(this->_data._mem) = Plane();
 			break;
@@ -1271,7 +1286,8 @@ void Variant::_clear_internal() {
 			reinterpret_cast<String *>(_data._mem)->~String();
 		} break;
 		/*
-		// no point, they don't allocate memory
+		// No point, they don't allocate memory.
+		VECTOR4,
 		VECTOR3,
 		PLANE,
 		QUATERNION,
@@ -1659,6 +1675,8 @@ String Variant::stringify(int recursion_count) const {
 			return operator Vector3();
 		case VECTOR3I:
 			return operator Vector3i();
+		case VECTOR4:
+			return operator Vector4();
 		case PLANE:
 			return operator Plane();
 		case AABB:
@@ -1855,6 +1873,22 @@ Variant::operator Vector3i() const {
 		return Vector3i(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
 	} else {
 		return Vector3i();
+	}
+}
+
+Variant::operator Vector4() const {
+	if (type == VECTOR4) {
+		return *reinterpret_cast<const Vector4 *>(_data._mem);
+	} else if (type == VECTOR3) {
+		return Vector4(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y, reinterpret_cast<const Vector3 *>(_data._mem)->z, 0.0);
+	} else if (type == VECTOR3I) {
+		return Vector4(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0.0);
+	} else if (type == VECTOR2) {
+		return Vector4(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0, 0.0);
+	} else if (type == VECTOR2I) {
+		return Vector4(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0, 0.0);
+	} else {
+		return Vector4();
 	}
 }
 
@@ -2353,6 +2387,16 @@ Variant::Variant(const char32_t *p_wstring) {
 	memnew_placement(_data._mem, String(p_wstring));
 }
 
+Variant::Variant(const Vector2 &p_vector2) {
+	type = VECTOR2;
+	memnew_placement(_data._mem, Vector2(p_vector2));
+}
+
+Variant::Variant(const Vector2i &p_vector2i) {
+	type = VECTOR2I;
+	memnew_placement(_data._mem, Vector2i(p_vector2i));
+}
+
 Variant::Variant(const Vector3 &p_vector3) {
 	type = VECTOR3;
 	memnew_placement(_data._mem, Vector3(p_vector3));
@@ -2363,14 +2407,9 @@ Variant::Variant(const Vector3i &p_vector3i) {
 	memnew_placement(_data._mem, Vector3i(p_vector3i));
 }
 
-Variant::Variant(const Vector2 &p_vector2) {
-	type = VECTOR2;
-	memnew_placement(_data._mem, Vector2(p_vector2));
-}
-
-Variant::Variant(const Vector2i &p_vector2i) {
-	type = VECTOR2I;
-	memnew_placement(_data._mem, Vector2i(p_vector2i));
+Variant::Variant(const Vector4 &p_vector4) {
+	type = VECTOR4;
+	memnew_placement(_data._mem, Vector4(p_vector4));
 }
 
 Variant::Variant(const Rect2 &p_rect2) {
@@ -2635,6 +2674,9 @@ void Variant::operator=(const Variant &p_variant) {
 		case VECTOR3I: {
 			*reinterpret_cast<Vector3i *>(_data._mem) = *reinterpret_cast<const Vector3i *>(p_variant._data._mem);
 		} break;
+		case VECTOR4: {
+			*reinterpret_cast<Vector4 *>(_data._mem) = *reinterpret_cast<const Vector4 *>(p_variant._data._mem);
+		} break;
 		case PLANE: {
 			*reinterpret_cast<Plane *>(_data._mem) = *reinterpret_cast<const Plane *>(p_variant._data._mem);
 		} break;
@@ -2805,6 +2847,12 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			uint32_t hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector3i *>(_data._mem)->x);
 			hash = hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector3i *>(_data._mem)->y, hash);
 			return hash_djb2_one_32((uint32_t) reinterpret_cast<const Vector3i *>(_data._mem)->z, hash);
+		} break;
+		case VECTOR4: {
+			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->x);
+			hash = hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->y, hash);
+			hash = hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->z, hash);
+			return hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->w, hash);
 		} break;
 		case PLANE: {
 			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.x);
@@ -3034,7 +3082,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
 			(hash_compare_scalar((p_lhs).z, (p_rhs).z))
 
-#define hash_compare_quaternion(p_lhs, p_rhs)              \
+#define hash_compare_vector4(p_lhs, p_rhs)                 \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) &&         \
 			(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
 			(hash_compare_scalar((p_lhs).z, (p_rhs).z)) && \
@@ -3132,6 +3180,12 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 
 			return *l == *r;
 		} break;
+		case VECTOR4: {
+			const Vector4 *l = reinterpret_cast<const Vector4 *>(_data._mem);
+			const Vector4 *r = reinterpret_cast<const Vector4 *>(p_variant._data._mem);
+
+			return hash_compare_vector4(*l, *r);
+		} break;
 
 		case PLANE: {
 			const Plane *l = reinterpret_cast<const Plane *>(_data._mem);
@@ -3154,7 +3208,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Quaternion *l = reinterpret_cast<const Quaternion *>(_data._mem);
 			const Quaternion *r = reinterpret_cast<const Quaternion *>(p_variant._data._mem);
 
-			return hash_compare_quaternion(*l, *r);
+			return hash_compare_vector4(*l, *r);
 		} break;
 
 		case BASIS: {

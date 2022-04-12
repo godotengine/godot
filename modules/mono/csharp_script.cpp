@@ -480,6 +480,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::RECT2I,
 		Variant::VECTOR3,
 		Variant::VECTOR3I,
+		Variant::VECTOR4,
 		Variant::TRANSFORM2D,
 		Variant::PLANE,
 		Variant::QUATERNION,

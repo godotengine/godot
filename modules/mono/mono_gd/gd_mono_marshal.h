@@ -261,6 +261,12 @@ enum {
 			offsetof(Vector3i, y) == (sizeof(int32_t) * 1) &&
 			offsetof(Vector3i, z) == (sizeof(int32_t) * 2)),
 
+	MATCHES_Vector4 = (MATCHES_int && (sizeof(Vector4) == (sizeof(real_t) * 4)) &&
+			offsetof(Vector4, x) == (sizeof(real_t) * 0) &&
+			offsetof(Vector4, y) == (sizeof(real_t) * 1) &&
+			offsetof(Vector4, z) == (sizeof(real_t) * 2) &&
+			offsetof(Vector4, w) == (sizeof(real_t) * 3)),
+
 	MATCHES_Basis = (MATCHES_Vector3 && (sizeof(Basis) == (sizeof(Vector3) * 3))), // No field offset required, it stores an array
 
 	MATCHES_Quaternion = (MATCHES_real_t && (sizeof(Quaternion) == (sizeof(real_t) * 4)) &&
@@ -291,7 +297,7 @@ enum {
 // In the future we may force this if we want to ref return these structs
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
-static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
+static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 && MATCHES_Vector4 &&
 				MATCHES_Basis && MATCHES_Quaternion && MATCHES_Transform3D && MATCHES_AABB && MATCHES_Color &&
 				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
@@ -397,6 +403,19 @@ struct M_Vector3i {
 
 	static _FORCE_INLINE_ M_Vector3i convert_from(const Vector3i &p_from) {
 		M_Vector3i ret = { p_from.x, p_from.y, p_from.z };
+		return ret;
+	}
+};
+
+struct M_Vector4 {
+	real_t x, y, z, w;
+
+	static _FORCE_INLINE_ Vector4 convert_to(const M_Vector4 &p_from) {
+		return Vector4(p_from.x, p_from.y, p_from.z, p_from.w);
+	}
+
+	static _FORCE_INLINE_ M_Vector4 convert_from(const Vector4 &p_from) {
+		M_Vector4 ret = { p_from.x, p_from.y, p_from.z, p_from.w };
 		return ret;
 	}
 };
@@ -532,6 +551,7 @@ DECL_TYPE_MARSHAL_TEMPLATES(Rect2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform2D)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3i)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector4)
 DECL_TYPE_MARSHAL_TEMPLATES(Basis)
 DECL_TYPE_MARSHAL_TEMPLATES(Quaternion)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform3D)

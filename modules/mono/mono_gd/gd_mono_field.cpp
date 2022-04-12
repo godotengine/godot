@@ -140,6 +140,12 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			if (tclass == CACHED_CLASS(Vector4)) {
+				GDMonoMarshal::M_Vector4 from = MARSHALLED_OUT(Vector4, p_value.operator ::Vector4());
+				mono_field_set_value(p_object, mono_field, &from);
+				break;
+			}
+
 			if (tclass == CACHED_CLASS(Basis)) {
 				GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_value.operator ::Basis());
 				mono_field_set_value(p_object, mono_field, &from);
@@ -326,6 +332,10 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				} break;
 				case Variant::VECTOR3I: {
 					GDMonoMarshal::M_Vector3i from = MARSHALLED_OUT(Vector3i, p_value.operator ::Vector3i());
+					mono_field_set_value(p_object, mono_field, &from);
+				} break;
+				case Variant::VECTOR4: {
+					GDMonoMarshal::M_Vector4 from = MARSHALLED_OUT(Vector4, p_value.operator ::Vector4());
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
 				case Variant::TRANSFORM2D: {

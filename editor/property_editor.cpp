@@ -713,6 +713,18 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			value_editor[1]->set_text(String::num(vec.y));
 			value_editor[2]->set_text(String::num(vec.z));
 		} break;
+		case Variant::VECTOR4: {
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("z");
+			field_names.push_back("w");
+			config_value_editors(4, 4, 10, field_names);
+			Vector4 vec = v;
+			value_editor[0]->set_text(String::num(vec.x));
+			value_editor[1]->set_text(String::num(vec.y));
+			value_editor[2]->set_text(String::num(vec.z));
+			value_editor[3]->set_text(String::num(vec.w));
+		} break;
 		case Variant::PLANE: {
 			field_names.push_back("x");
 			field_names.push_back("y");
@@ -1525,6 +1537,18 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 		} break;
+		case Variant::VECTOR4: {
+			Vector4 vec;
+			vec.x = _parse_real_expression(value_editor[0]->get_text());
+			vec.y = _parse_real_expression(value_editor[1]->get_text());
+			vec.z = _parse_real_expression(value_editor[2]->get_text());
+			vec.w = _parse_real_expression(value_editor[3]->get_text());
+			v = vec;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+
+		} break;
 		case Variant::PLANE: {
 			Plane pl;
 			pl.normal.x = _parse_real_expression(value_editor[0]->get_text());
@@ -1670,6 +1694,7 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
 		case Variant::PLANE:
 		case Variant::QUATERNION:
 		case Variant::AABB:

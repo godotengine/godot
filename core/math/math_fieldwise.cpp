@@ -77,6 +77,17 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
+		case Variant::VECTOR4: {
+			SETUP_TYPE(Vector4)
+
+			/**/ TRY_TRANSFER_FIELD("x", x)
+			else TRY_TRANSFER_FIELD("y", y)
+			else TRY_TRANSFER_FIELD("z", z)
+			else TRY_TRANSFER_FIELD("w", w)
+
+			return target;
+		}
+
 		case Variant::PLANE: {
 			SETUP_TYPE(Plane)
 

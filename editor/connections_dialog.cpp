@@ -209,6 +209,9 @@ void ConnectDialog::_add_bind() {
 		case Variant::VECTOR3:
 			value = Vector3();
 			break;
+		case Variant::VECTOR4:
+			value = Vector4();
+			break;
 		case Variant::PLANE:
 			value = Plane();
 			break;
@@ -459,6 +462,7 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Vector2", Variant::VECTOR2);
 	type_list->add_item("Rect2", Variant::RECT2);
 	type_list->add_item("Vector3", Variant::VECTOR3);
+	type_list->add_item("Vector4", Variant::VECTOR4);
 	type_list->add_item("Plane", Variant::PLANE);
 	type_list->add_item("Quaternion", Variant::QUATERNION);
 	type_list->add_item("AABB", Variant::AABB);

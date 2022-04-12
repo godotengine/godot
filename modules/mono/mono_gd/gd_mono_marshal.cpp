@@ -100,6 +100,10 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::VECTOR3I;
 			}
 
+			if (vtclass == CACHED_CLASS(Vector4)) {
+				return Variant::VECTOR4;
+			}
+
 			if (vtclass == CACHED_CLASS(Basis)) {
 				return Variant::BASIS;
 			}
@@ -535,6 +539,10 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 			GDMonoMarshal::M_Vector3i from = MARSHALLED_OUT(Vector3i, p_var.operator ::Vector3i());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3i), &from);
 		}
+		case Variant::VECTOR4: {
+			GDMonoMarshal::M_Vector4 from = MARSHALLED_OUT(Vector4, p_var.operator ::Vector4());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector4), &from);
+		}
 		case Variant::TRANSFORM2D: {
 			GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var.operator ::Transform2D());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform2D), &from);
@@ -653,6 +661,7 @@ size_t variant_get_managed_unboxed_size(const ManagedType &p_type) {
 			RETURN_CHECK_FOR_STRUCT(Transform2D);
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
+			RETURN_CHECK_FOR_STRUCT(Vector4);
 			RETURN_CHECK_FOR_STRUCT(Basis);
 			RETURN_CHECK_FOR_STRUCT(Quaternion);
 			RETURN_CHECK_FOR_STRUCT(Transform3D);
@@ -758,6 +767,7 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 			RETURN_CHECK_FOR_STRUCT(Transform2D);
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
+			RETURN_CHECK_FOR_STRUCT(Vector4);
 			RETURN_CHECK_FOR_STRUCT(Basis);
 			RETURN_CHECK_FOR_STRUCT(Quaternion);
 			RETURN_CHECK_FOR_STRUCT(Transform3D);
@@ -911,6 +921,7 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 			RETURN_CHECK_FOR_STRUCT(Transform2D);
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
+			RETURN_CHECK_FOR_STRUCT(Vector4);
 			RETURN_CHECK_FOR_STRUCT(Basis);
 			RETURN_CHECK_FOR_STRUCT(Quaternion);
 			RETURN_CHECK_FOR_STRUCT(Transform3D);
@@ -1059,6 +1070,10 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 
 			if (vtclass == CACHED_CLASS(Vector3i)) {
 				return MARSHALLED_IN(Vector3i, unbox_addr<GDMonoMarshal::M_Vector3i>(p_obj));
+			}
+
+			if (vtclass == CACHED_CLASS(Vector4)) {
+				return MARSHALLED_IN(Vector4, unbox_addr<GDMonoMarshal::M_Vector4>(p_obj));
 			}
 
 			if (vtclass == CACHED_CLASS(Basis)) {

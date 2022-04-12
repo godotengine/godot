@@ -450,6 +450,18 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			return r;
 		}
 
+		case Variant::VECTOR4: {
+			Vector4 i = p_initial_val;
+			Vector4 d = p_delta_val;
+			Vector4 r;
+
+			APPLY_EQUATION(x);
+			APPLY_EQUATION(y);
+			APPLY_EQUATION(z);
+			APPLY_EQUATION(w);
+			return r;
+		}
+
 		case Variant::TRANSFORM2D: {
 			Transform2D i = p_initial_val;
 			Transform2D d = p_delta_val;

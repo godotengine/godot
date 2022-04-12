@@ -376,6 +376,9 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::VECTOR3I:
 				color = Color(0.84, 0.49, 0.93);
 				break;
+			case Variant::VECTOR4:
+				color = Color(1.0, 0.125, 0.95);
+				break;
 			case Variant::TRANSFORM2D:
 				color = Color(0.77, 0.93, 0.41);
 				break;
@@ -481,6 +484,9 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 				break;
 			case Variant::VECTOR3I:
 				color = Color(0.86, 0.42, 0.93);
+				break;
+			case Variant::VECTOR4:
+				color = Color(1.0, 0.125, 0.95);
 				break;
 			case Variant::TRANSFORM2D:
 				color = Color(0.59, 0.81, 0.1);
@@ -621,6 +627,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
@@ -1074,6 +1081,7 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
@@ -3474,6 +3482,8 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				n->set_basic_type(Variant::VECTOR3);
 			} else if (property_path[0] == "Vector3i") {
 				n->set_basic_type(Variant::VECTOR3I);
+			} else if (property_path[0] == "Vector4") {
+				n->set_basic_type(Variant::VECTOR4);
 			} else if (property_path[0] == "Plane") {
 				n->set_basic_type(Variant::PLANE);
 			} else if (property_path[0] == "ABB") {

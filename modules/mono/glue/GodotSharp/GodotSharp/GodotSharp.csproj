@@ -65,6 +65,7 @@
     <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />
     <Compile Include="Core\Vector3i.cs" />
+    <Compile Include="Core\Vector4.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <!--

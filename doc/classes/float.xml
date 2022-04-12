@@ -111,6 +111,16 @@
 			</description>
 		</operator>
 		<operator name="operator *">
+			<return type="Vector4" />
+			<argument index="0" name="right" type="Vector4" />
+			<description>
+				Multiplies each component of the [Vector4] by the given [float]. Returns a [Vector4].
+				[codeblock]
+				print(0.5 * Vector4(10, 15, 20, 25)) # Prints "(5, 7.5, 10, 12.5)"
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>

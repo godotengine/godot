@@ -138,6 +138,8 @@ public:
 	_FORCE_INLINE_ static const Vector3 *get_vector3(const Variant *v) { return reinterpret_cast<const Vector3 *>(v->_data._mem); }
 	_FORCE_INLINE_ static Vector3i *get_vector3i(Variant *v) { return reinterpret_cast<Vector3i *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Vector3i *get_vector3i(const Variant *v) { return reinterpret_cast<const Vector3i *>(v->_data._mem); }
+	_FORCE_INLINE_ static Vector4 *get_vector4(Variant *v) { return reinterpret_cast<Vector4 *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Vector4 *get_vector4(const Variant *v) { return reinterpret_cast<const Vector4 *>(v->_data._mem); }
 	_FORCE_INLINE_ static Transform2D *get_transform2d(Variant *v) { return v->_data._transform2d; }
 	_FORCE_INLINE_ static const Transform2D *get_transform2d(const Variant *v) { return v->_data._transform2d; }
 	_FORCE_INLINE_ static Plane *get_plane(Variant *v) { return reinterpret_cast<Plane *>(v->_data._mem); }
@@ -324,6 +326,8 @@ public:
 				return get_vector3(v);
 			case Variant::VECTOR3I:
 				return get_vector3i(v);
+			case Variant::VECTOR4:
+				return get_vector4(v);
 			case Variant::RECT2:
 				return get_rect2(v);
 			case Variant::RECT2I:
@@ -402,6 +406,8 @@ public:
 				return get_vector3(v);
 			case Variant::VECTOR3I:
 				return get_vector3i(v);
+			case Variant::VECTOR4:
+				return get_vector4(v);
 			case Variant::RECT2:
 				return get_rect2(v);
 			case Variant::RECT2I:
@@ -592,6 +598,12 @@ struct VariantGetInternalPtr<Vector3i> {
 };
 
 template <>
+struct VariantGetInternalPtr<Vector4> {
+	static Vector4 *get_ptr(Variant *v) { return VariantInternal::get_vector4(v); }
+	static const Vector4 *get_ptr(const Variant *v) { return VariantInternal::get_vector4(v); }
+};
+
+template <>
 struct VariantGetInternalPtr<Transform2D> {
 	static Transform2D *get_ptr(Variant *v) { return VariantInternal::get_transform2d(v); }
 	static const Transform2D *get_ptr(const Variant *v) { return VariantInternal::get_transform2d(v); }
@@ -765,6 +777,7 @@ VARIANT_ACCESSOR_NUMBER(Vector2::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector2i::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector3::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector3i::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector4::Axis)
 
 template <>
 struct VariantInternalAccessor<Basis::EulerOrder> {
@@ -830,6 +843,12 @@ template <>
 struct VariantInternalAccessor<Vector3i> {
 	static _FORCE_INLINE_ const Vector3i &get(const Variant *v) { return *VariantInternal::get_vector3i(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Vector3i &p_value) { *VariantInternal::get_vector3i(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Vector4> {
+	static _FORCE_INLINE_ const Vector4 &get(const Variant *v) { return *VariantInternal::get_vector4(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Vector4 &p_value) { *VariantInternal::get_vector4(v) = p_value; }
 };
 
 template <>
@@ -1034,6 +1053,7 @@ INITIALIZER_INT(Vector2::Axis)
 INITIALIZER_INT(Vector2i::Axis)
 INITIALIZER_INT(Vector3::Axis)
 INITIALIZER_INT(Vector3i::Axis)
+INITIALIZER_INT(Vector4::Axis)
 
 template <>
 struct VariantInitializer<double> {
@@ -1078,6 +1098,11 @@ struct VariantInitializer<Vector3> {
 template <>
 struct VariantInitializer<Vector3i> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector3i>(v); }
+};
+
+template <>
+struct VariantInitializer<Vector4> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4>(v); }
 };
 
 template <>
@@ -1257,6 +1282,11 @@ struct VariantZeroAssigner<Vector3> {
 template <>
 struct VariantZeroAssigner<Vector3i> {
 	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector3i(v) = Vector3i(); }
+};
+
+template <>
+struct VariantZeroAssigner<Vector4> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector4(v) = Vector4(); }
 };
 
 template <>

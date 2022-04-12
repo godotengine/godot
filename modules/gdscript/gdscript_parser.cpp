@@ -60,6 +60,7 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 		builtin_types["Transform2D"] = Variant::TRANSFORM2D;
 		builtin_types["Vector3"] = Variant::VECTOR3;
 		builtin_types["Vector3i"] = Variant::VECTOR3I;
+		builtin_types["Vector4"] = Variant::VECTOR4;
 		builtin_types["AABB"] = Variant::AABB;
 		builtin_types["Plane"] = Variant::PLANE;
 		builtin_types["Quaternion"] = Variant::QUATERNION;

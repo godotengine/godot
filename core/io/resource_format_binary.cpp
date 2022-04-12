@@ -80,6 +80,7 @@ enum {
 	VARIANT_VECTOR3I = 47,
 	VARIANT_PACKED_INT64_ARRAY = 48,
 	VARIANT_PACKED_FLOAT64_ARRAY = 49,
+	VARIANT_VECTOR4 = 50,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -234,6 +235,14 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			v.x = f->get_32();
 			v.y = f->get_32();
 			v.z = f->get_32();
+			r_v = v;
+		} break;
+		case VARIANT_VECTOR4: {
+			Vector4 v;
+			v.x = f->get_real();
+			v.y = f->get_real();
+			v.z = f->get_real();
+			v.w = f->get_real();
 			r_v = v;
 		} break;
 		case VARIANT_PLANE: {
@@ -1435,6 +1444,15 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(val.x);
 			f->store_32(val.y);
 			f->store_32(val.z);
+
+		} break;
+		case Variant::VECTOR4: {
+			f->store_32(VARIANT_VECTOR4);
+			Vector4 val = p_property;
+			f->store_32(val.x);
+			f->store_32(val.y);
+			f->store_32(val.z);
+			f->store_32(val.w);
 
 		} break;
 		case Variant::PLANE: {

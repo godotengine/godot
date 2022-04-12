@@ -1607,6 +1607,37 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
 
+	/* Vector4 */
+
+	bind_method(Vector4, min_axis_index, sarray(), varray());
+	bind_method(Vector4, max_axis_index, sarray(), varray());
+	bind_method(Vector4, direction_to, sarray("to"), varray());
+	bind_method(Vector4, distance_to, sarray("to"), varray());
+	bind_method(Vector4, distance_squared_to, sarray("to"), varray());
+	bind_method(Vector4, length, sarray(), varray());
+	bind_method(Vector4, length_squared, sarray(), varray());
+	bind_method(Vector4, limit_length, sarray("length"), varray(1.0));
+	bind_method(Vector4, normalized, sarray(), varray());
+	bind_method(Vector4, is_normalized, sarray(), varray());
+	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
+	bind_method(Vector4, inverse, sarray(), varray());
+	bind_method(Vector4, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4, snapped, sarray("step"), varray());
+	bind_method(Vector4, lerp, sarray("to", "weight"), varray());
+	bind_method(Vector4, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector4, move_toward, sarray("to", "delta"), varray());
+	bind_method(Vector4, dot, sarray("with"), varray());
+	bind_method(Vector4, abs, sarray(), varray());
+	bind_method(Vector4, floor, sarray(), varray());
+	bind_method(Vector4, ceil, sarray(), varray());
+	bind_method(Vector4, round, sarray(), varray());
+	bind_method(Vector4, posmod, sarray("mod"), varray());
+	bind_method(Vector4, posmodv, sarray("modv"), varray());
+	bind_method(Vector4, project, sarray("b"), varray());
+	bind_method(Vector4, bounce, sarray("n"), varray());
+	bind_method(Vector4, reflect, sarray("n"), varray());
+	bind_method(Vector4, sign, sarray(), varray());
+
 	/* Plane */
 
 	bind_method(Plane, normalized, sarray(), varray());
@@ -2109,6 +2140,15 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "DOWN", Vector3i(0, -1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "FORWARD", Vector3i(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "BACK", Vector3i(0, 0, 1));
+
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_X", Vector4::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Z", Vector4::AXIS_Z);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_W", Vector4::AXIS_W);
+
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
 
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_X", Vector2::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);

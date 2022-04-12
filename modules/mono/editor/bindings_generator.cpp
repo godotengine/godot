@@ -2611,6 +2611,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
 		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
@@ -3159,6 +3160,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::VECTOR2I:
 		case Variant::VECTOR3:
 		case Variant::VECTOR3I:
+		case Variant::VECTOR4:
 			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
@@ -3288,6 +3290,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Transform2D)
 	INSERT_STRUCT_TYPE(Vector3)
 	INSERT_STRUCT_TYPE(Vector3i)
+	INSERT_STRUCT_TYPE(Vector4)
 	INSERT_STRUCT_TYPE(Basis)
 	INSERT_STRUCT_TYPE(Quaternion)
 	INSERT_STRUCT_TYPE(Transform3D)
@@ -3665,6 +3668,7 @@ void BindingsGenerator::_populate_global_constants() {
 	hardcoded_enums.push_back("Vector2i.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
 	hardcoded_enums.push_back("Vector3i.Axis");
+	hardcoded_enums.push_back("Vector4.Axis");
 	for (const StringName &enum_cname : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore

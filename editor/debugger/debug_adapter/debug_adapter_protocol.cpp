@@ -257,6 +257,32 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
+		case Variant::VECTOR4: {
+			int id = variable_id++;
+			Vector4 vec = p_var;
+			const String type_scalar = Variant::get_type_name(Variant::FLOAT);
+			DAP::Variable x, y, z, w;
+			x.name = "x";
+			y.name = "y";
+			z.name = "z";
+			w.name = "w";
+			x.type = type_scalar;
+			y.type = type_scalar;
+			z.type = type_scalar;
+			w.type = type_scalar;
+			x.value = rtos(vec.x);
+			y.value = rtos(vec.y);
+			z.value = rtos(vec.z);
+			w.value = rtos(vec.w);
+
+			Array arr;
+			arr.push_back(x.to_json());
+			arr.push_back(y.to_json());
+			arr.push_back(z.to_json());
+			arr.push_back(w.to_json());
+			variable_list.insert(id, arr);
+			return id;
+		}
 		case Variant::TRANSFORM2D: {
 			int id = variable_id++;
 			Transform2D transform = p_var;

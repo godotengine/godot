@@ -501,6 +501,25 @@ public:
 	EditorPropertyVector3(bool p_force_wide = false);
 };
 
+class EditorPropertyVector4 : public EditorProperty {
+	GDCLASS(EditorPropertyVector4, EditorProperty);
+	EditorSpinSlider *spin[4];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	virtual void update_using_vector(Vector4 p_vector);
+	virtual Vector4 get_vector();
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyVector4(bool p_force_wide = false);
+};
+
 class EditorPropertyVector2i : public EditorProperty {
 	GDCLASS(EditorPropertyVector2i, EditorProperty);
 	EditorSpinSlider *spin[2];
