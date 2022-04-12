@@ -30,6 +30,7 @@
 
 #include "rich_text_label.h"
 
+#include "core/input/input_map.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -1868,6 +1869,13 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				vscroll->set_value(vscroll->get_value() + vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
+		if (b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
+			_generate_context_menu();
+			menu->set_position(get_screen_position() + b->get_position());
+			menu->reset_size();
+			menu->popup();
+			grab_focus();
+		}
 	}
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
@@ -1909,12 +1917,24 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				vscroll->set_value(vscroll->get_max());
 				handled = true;
 			}
-			if (k->is_action("ui_text_select_all")) {
-				select_all();
-				handled = true;
+			if (is_shortcut_keys_enabled()) {
+				if (k->is_action("ui_text_select_all")) {
+					select_all();
+					handled = true;
+				}
+				if (k->is_action("ui_copy")) {
+					selection_copy();
+					handled = true;
+				}
 			}
-			if (k->is_action("ui_copy")) {
-				selection_copy();
+			if (k->is_action("ui_menu", true)) {
+				if (context_menu_enabled) {
+					_generate_context_menu();
+					menu->set_position(get_screen_position());
+					menu->reset_size();
+					menu->popup();
+					menu->grab_focus();
+				}
 				handled = true;
 			}
 
@@ -4175,6 +4195,32 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 	return text;
 }
 
+void RichTextLabel::set_context_menu_enabled(bool p_enabled) {
+	context_menu_enabled = p_enabled;
+}
+
+bool RichTextLabel::is_context_menu_enabled() const {
+	return context_menu_enabled;
+}
+
+void RichTextLabel::set_shortcut_keys_enabled(bool p_enabled) {
+	shortcut_keys_enabled = p_enabled;
+}
+
+bool RichTextLabel::is_shortcut_keys_enabled() const {
+	return shortcut_keys_enabled;
+}
+
+// Context menu.
+PopupMenu *RichTextLabel::get_menu() const {
+	const_cast<RichTextLabel *>(this)->_generate_context_menu();
+	return menu;
+}
+
+bool RichTextLabel::is_menu_visible() const {
+	return menu && menu->is_visible();
+}
+
 String RichTextLabel::get_selected_text() const {
 	if (!selection.active || !selection.enabled) {
 		return "";
@@ -4527,6 +4573,12 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selection_enabled", "enabled"), &RichTextLabel::set_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_selection_enabled"), &RichTextLabel::is_selection_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enabled"), &RichTextLabel::set_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &RichTextLabel::is_context_menu_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enabled"), &RichTextLabel::set_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &RichTextLabel::is_shortcut_keys_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &RichTextLabel::set_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &RichTextLabel::is_deselect_on_focus_loss_enabled);
 
@@ -4576,6 +4628,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_effects"), &RichTextLabel::get_effects);
 	ClassDB::bind_method(D_METHOD("install_effect", "effect"), &RichTextLabel::install_effect);
 
+	ClassDB::bind_method(D_METHOD("get_menu"), &RichTextLabel::get_menu);
+	ClassDB::bind_method(D_METHOD("is_menu_visible"), &RichTextLabel::is_menu_visible);
+
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 
@@ -4596,6 +4651,9 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 
 	ADD_GROUP("Locale", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -4774,6 +4832,59 @@ Size2 RichTextLabel::get_minimum_size() const {
 	}
 
 	return size;
+}
+
+// Context menu.
+void RichTextLabel::_generate_context_menu() {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		add_child(menu, false, INTERNAL_MODE_FRONT);
+
+		menu->connect("id_pressed", callable_mp(this, &RichTextLabel::_menu_option));
+	}
+
+	// Reorganize context menu.
+	menu->clear();
+	if (selection.enabled) {
+		menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : Key::NONE);
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : Key::NONE);
+	}
+}
+
+Key RichTextLabel::_get_menu_action_accelerator(const String &p_action) {
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(p_action);
+	if (!events) {
+		return Key::NONE;
+	}
+
+	// Use first event in the list for the accelerator.
+	const List<Ref<InputEvent>>::Element *first_event = events->front();
+	if (!first_event) {
+		return Key::NONE;
+	}
+
+	const Ref<InputEventKey> event = first_event->get();
+	if (event.is_null()) {
+		return Key::NONE;
+	}
+
+	// Use physical keycode if non-zero
+	if (event->get_physical_keycode() != Key::NONE) {
+		return event->get_physical_keycode_with_modifiers();
+	} else {
+		return event->get_keycode_with_modifiers();
+	}
+}
+
+void RichTextLabel::_menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_COPY: {
+			selection_copy();
+		} break;
+		case MENU_SELECT_ALL: {
+			select_all();
+		} break;
+	}
 }
 
 void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag) {

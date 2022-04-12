@@ -32,6 +32,7 @@
 #define RICH_TEXT_LABEL_H
 
 #include "rich_text_effect.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -89,6 +90,11 @@ public:
 		VC_GLYPHS_AUTO,
 		VC_GLYPHS_LTR,
 		VC_GLYPHS_RTL,
+	};
+
+	enum MenuItems {
+		MENU_COPY,
+		MENU_SELECT_ALL,
 	};
 
 protected:
@@ -420,6 +426,15 @@ private:
 	Selection selection;
 	bool deselect_on_focus_loss_enabled = true;
 
+	bool context_menu_enabled = false;
+	bool shortcut_keys_enabled = true;
+
+	// Context menu.
+	PopupMenu *menu = nullptr;
+	void _generate_context_menu();
+	Key _get_menu_action_accelerator(const String &p_action);
+	void _menu_option(int p_option);
+
 	int visible_characters = -1;
 	float percent_visible = 1.0;
 	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
@@ -555,6 +570,12 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_context_menu_enabled(bool p_enabled);
+	bool is_context_menu_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
+
 	void set_fit_content_height(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
 
@@ -589,6 +610,10 @@ public:
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
+
+	// Context menu.
+	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void parse_bbcode(const String &p_bbcode);
 	void append_text(const String &p_bbcode);

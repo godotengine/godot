@@ -94,6 +94,13 @@
 				Returns the vertical offset of the line found at the provided index.
 			</description>
 		</method>
+		<method name="get_menu" qualifiers="const">
+			<return type="PopupMenu" />
+			<description>
+				Returns the [PopupMenu] of this [RichTextLabel]. By default, this menu is displayed when right-clicking on the [RichTextLabel].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+			</description>
+		</method>
 		<method name="get_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -161,6 +168,12 @@
 			<argument index="0" name="effect" type="Variant" />
 			<description>
 				Installs a custom effect. [code]effect[/code] should be a valid [RichTextEffect].
+			</description>
+		</method>
+		<method name="is_menu_visible" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
 		<method name="newline">
@@ -433,6 +446,9 @@
 			If [code]true[/code], the label uses BBCode formatting.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="false">
+			If [code]true[/code], a right-click displays the context menu.
+		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
@@ -468,6 +484,9 @@
 		</member>
 		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled" default="false">
 			If [code]true[/code], the label allows text selection.
+		</member>
+		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
