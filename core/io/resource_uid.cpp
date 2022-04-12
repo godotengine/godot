@@ -220,7 +220,7 @@ Error ResourceUID::update_cache() {
 		}
 	}
 
-	if (f != nullptr) {
+	if (f.is_valid()) {
 		f->seek(0);
 		f->store_32(cache_entries); //update amount of entries
 	}

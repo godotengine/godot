@@ -105,7 +105,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 		*r_error = err;
 	}
 	if (err != OK) {
-		ret = Ref<FileAccess>();
+		ret.unref();
 	}
 
 	return ret;

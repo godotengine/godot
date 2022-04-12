@@ -227,14 +227,20 @@ Error FileAccessPack::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessPack::close() {
-	f->close();
+	f.unref();
 }
 
 bool FileAccessPack::is_open() const {
-	return f->is_open();
+	if (f.is_valid()) {
+		return f->is_open();
+	} else {
+		return false;
+	}
 }
 
 void FileAccessPack::seek(uint64_t p_position) {
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use.");
+
 	if (p_position > pf.size) {
 		eof = true;
 	} else {
@@ -262,6 +268,7 @@ bool FileAccessPack::eof_reached() const {
 }
 
 uint8_t FileAccessPack::get_8() const {
+	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use.");
 	if (pos >= pf.size) {
 		eof = true;
 		return 0;
@@ -272,6 +279,7 @@ uint8_t FileAccessPack::get_8() const {
 }
 
 uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	ERR_FAIL_COND_V_MSG(f.is_null(), -1, "File must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	if (eof) {
@@ -295,6 +303,8 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 }
 
 void FileAccessPack::set_big_endian(bool p_big_endian) {
+	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use.");
+
 	FileAccess::set_big_endian(p_big_endian);
 	f->set_big_endian(p_big_endian);
 }

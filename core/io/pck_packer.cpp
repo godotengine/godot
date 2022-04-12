@@ -216,7 +216,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		Ref<FileAccess> src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 
-		fae = Ref<FileAccess>();
+		fae.unref();
 		Ref<FileAccess> ftmp = file;
 		if (files[i].encrypted) {
 			fae.instantiate();
@@ -253,7 +253,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		printf("\n");
 	}
 
-	file = Ref<FileAccess>();
+	file.unref();
 	memdelete_arr(buf);
 
 	return OK;

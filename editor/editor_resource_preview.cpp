@@ -263,28 +263,31 @@ void EditorResourcePreview::_iterate() {
 
 					if (tsize != thumbnail_size) {
 						cache_valid = false;
+						f.unref();
 					} else if (last_modtime != modtime) {
 						String last_md5 = f->get_line();
 						String md5 = FileAccess::get_md5(item.path);
+						f.unref();
 
 						if (last_md5 != md5) {
 							cache_valid = false;
-
 						} else {
 							//update modified time
 
-							f = FileAccess::open(file, FileAccess::WRITE);
-							if (f.is_null()) {
+							Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
+							if (f2.is_null()) {
 								// Not returning as this would leave the thread hanging and would require
 								// some proper cleanup/disabling of resource preview generation.
 								ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 							} else {
-								f->store_line(itos(thumbnail_size));
-								f->store_line(itos(has_small_texture));
-								f->store_line(itos(modtime));
-								f->store_line(md5);
+								f2->store_line(itos(thumbnail_size));
+								f2->store_line(itos(has_small_texture));
+								f2->store_line(itos(modtime));
+								f2->store_line(md5);
 							}
 						}
+					} else {
+						f.unref();
 					}
 
 					if (cache_valid) {

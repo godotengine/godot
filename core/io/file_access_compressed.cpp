@@ -63,7 +63,7 @@ Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	cmode = (Compression::Mode)f->get_32();
 	block_size = f->get_32();
 	if (block_size == 0) {
-		f = Ref<FileAccess>();
+		f.unref();
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Can't open compressed file '" + p_base->get_path() + "' with block size 0, it is corrupted.");
 	}
 	read_total = f->get_32();
@@ -106,7 +106,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	f = FileAccess::open(p_path, p_mode_flags, &err);
 	if (err != OK) {
 		//not openable
-		f = Ref<FileAccess>();
+		f.unref();
 		return err;
 	}
 
@@ -126,7 +126,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 		rmagic[4] = 0;
 		err = ERR_FILE_UNRECOGNIZED;
 		if (magic != rmagic || (err = open_after_magic(f)) != OK) {
-			f = Ref<FileAccess>();
+			f.unref();
 			return err;
 		}
 	}
@@ -180,7 +180,7 @@ void FileAccessCompressed::close() {
 		buffer.clear();
 		read_blocks.clear();
 	}
-	f = Ref<FileAccess>();
+	f.unref();
 }
 
 bool FileAccessCompressed::is_open() const {

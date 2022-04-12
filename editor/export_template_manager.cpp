@@ -514,7 +514,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		}
 
 		f->store_buffer(data.ptr(), data.size());
-
+		f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif
@@ -728,6 +728,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 			Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 			if (f.is_valid()) {
 				f->store_buffer(data.ptr(), data.size());
+				f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif

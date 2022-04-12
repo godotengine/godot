@@ -81,12 +81,14 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	const String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, nullptr);
-	Ref<FileAccess> f = FileAccess::open(output_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Unable to create ZIP file.");
-	Vector<uint8_t> buf;
-	buf.resize(f->get_length());
-	f->get_buffer(buf.ptrw(), buf.size());
-	godot_js_os_download_buffer(buf.ptr(), buf.size(), output_name.utf8().get_data(), "application/zip");
+	{
+		Ref<FileAccess> f = FileAccess::open(output_path, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Unable to create ZIP file.");
+		Vector<uint8_t> buf;
+		buf.resize(f->get_length());
+		f->get_buffer(buf.ptrw(), buf.size());
+		godot_js_os_download_buffer(buf.ptr(), buf.size(), output_name.utf8().get_data(), "application/zip");
+	}
 
 	// Remove the temporary file since it was sent to the user's native filesystem as a download.
 	DirAccess::remove_file_or_error(output_path);

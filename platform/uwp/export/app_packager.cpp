@@ -457,7 +457,7 @@ void AppxPackager::finish() {
 	Vector<uint8_t> end_record = make_end_of_central_record();
 	package->store_buffer(end_record.ptr(), end_record.size());
 
-	package = Ref<FileAccess>();
+	package.unref();
 }
 
 AppxPackager::AppxPackager() {}
