@@ -1501,7 +1501,7 @@
 			The property is a translatable string.
 		</constant>
 		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
-			Used to group properties together in the editor.
+			Used to group properties together in the editor. See [EditorInspector].
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.
