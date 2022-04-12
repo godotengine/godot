@@ -115,27 +115,11 @@ Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessEncrypted::close() {
+void FileAccessEncrypted::_close() {
 	if (file.is_null()) {
 		return;
 	}
 
-	_release();
-
-	file.unref();
-}
-
-void FileAccessEncrypted::release() {
-	if (file.is_null()) {
-		return;
-	}
-
-	_release();
-
-	file.unref();
-}
-
-void FileAccessEncrypted::_release() {
 	if (writing) {
 		Vector<uint8_t> compressed;
 		uint64_t len = data.size();
@@ -173,6 +157,8 @@ void FileAccessEncrypted::_release() {
 		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();
 	}
+
+	file.unref();
 }
 
 bool FileAccessEncrypted::is_open() const {
@@ -309,7 +295,5 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 }
 
 FileAccessEncrypted::~FileAccessEncrypted() {
-	if (file.is_valid()) {
-		close();
-	}
+	_close();
 }

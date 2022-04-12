@@ -94,10 +94,6 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessMemory::close() {
-	data = nullptr;
-}
-
 bool FileAccessMemory::is_open() const {
 	return data != nullptr;
 }

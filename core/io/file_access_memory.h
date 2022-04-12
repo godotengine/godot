@@ -46,7 +46,6 @@ public:
 
 	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

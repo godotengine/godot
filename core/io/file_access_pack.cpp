@@ -226,10 +226,6 @@ Error FileAccessPack::_open(const String &p_path, int p_mode_flags) {
 	return ERR_UNAVAILABLE;
 }
 
-void FileAccessPack::close() {
-	f.unref();
-}
-
 bool FileAccessPack::is_open() const {
 	if (f.is_valid()) {
 		return f->is_open();
