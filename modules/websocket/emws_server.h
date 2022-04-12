@@ -42,6 +42,7 @@ class EMWSServer : public WebSocketServer {
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	void set_extra_headers(const Vector<String> &p_headers);
 	Error listen(int p_port, Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;
