@@ -2727,7 +2727,7 @@ void VisualScriptEditor::_center_on_node(int p_id) {
 
 	if (gn) {
 		gn->set_selected(true);
-		Vector2 new_scroll = gn->get_position_offset() - graph->get_size() * 0.5 + gn->get_size() * 0.5;
+		Vector2 new_scroll = gn->get_position_offset() * graph->get_zoom() - graph->get_size() * 0.5 + gn->get_size() * 0.5;
 		graph->set_scroll_ofs(new_scroll);
 		script->set_scroll(new_scroll / EDSCALE);
 		script->set_edited(true);
