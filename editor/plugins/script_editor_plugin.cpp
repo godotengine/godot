@@ -1091,10 +1091,12 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 	switch (file_dialog_option) {
 		case FILE_NEW_TEXTFILE: {
 			Error err;
-			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
-			if (err) {
-				EditorNode::get_singleton()->show_warning(TTR("Error writing TextFile:") + "\n" + p_file, TTR("Error!"));
-				break;
+			{
+				Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+				if (err) {
+					EditorNode::get_singleton()->show_warning(TTR("Error writing TextFile:") + "\n" + p_file, TTR("Error!"));
+					break;
+				}
 			}
 
 			if (EditorFileSystem::get_singleton()) {
@@ -2209,13 +2211,15 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	String source = sqscr->get_text();
 
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	{
+		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
 
-	file->store_string(source);
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		return ERR_CANT_CREATE;
+		file->store_string(source);
+		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
+			return ERR_CANT_CREATE;
+		}
 	}
 
 	if (ResourceSaver::get_timestamp_on_save()) {

@@ -275,27 +275,29 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
-	Ref<FileAccess> fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_from);
+	{
+		Ref<FileAccess> fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_from);
 
-	Ref<FileAccess> fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_to);
+		Ref<FileAccess> fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_to);
 
-	fsrc->seek_end(0);
-	int size = fsrc->get_position();
-	fsrc->seek(0);
-	err = OK;
-	while (size--) {
-		if (fsrc->get_error() != OK) {
-			err = fsrc->get_error();
-			break;
+		fsrc->seek_end(0);
+		int size = fsrc->get_position();
+		fsrc->seek(0);
+		err = OK;
+		while (size--) {
+			if (fsrc->get_error() != OK) {
+				err = fsrc->get_error();
+				break;
+			}
+			if (fdst->get_error() != OK) {
+				err = fdst->get_error();
+				break;
+			}
+
+			fdst->store_8(fsrc->get_8());
 		}
-		if (fdst->get_error() != OK) {
-			err = fdst->get_error();
-			break;
-		}
-
-		fdst->store_8(fsrc->get_8());
 	}
 
 	if (err == OK && p_chmod_flags != -1) {

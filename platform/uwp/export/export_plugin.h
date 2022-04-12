@@ -346,18 +346,20 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			ERR_FAIL_V_MSG(data, err_string);
 		}
 
-		Ref<FileAccess> f = FileAccess::open(tmp_path, FileAccess::READ, &err);
+		{
+			Ref<FileAccess> f = FileAccess::open(tmp_path, FileAccess::READ, &err);
 
-		if (err != OK) {
-			String err_string = "Couldn't open temp logo file.";
-			// Cleanup generated file.
-			DirAccess::remove_file_or_error(tmp_path);
-			EditorNode::add_io_error(err_string);
-			ERR_FAIL_V_MSG(data, err_string);
+			if (err != OK) {
+				String err_string = "Couldn't open temp logo file.";
+				// Cleanup generated file.
+				DirAccess::remove_file_or_error(tmp_path);
+				EditorNode::add_io_error(err_string);
+				ERR_FAIL_V_MSG(data, err_string);
+			}
+
+			data.resize(f->get_length());
+			f->get_buffer(data.ptrw(), data.size());
 		}
-
-		data.resize(f->get_length());
-		f->get_buffer(data.ptrw(), data.size());
 
 		DirAccess::remove_file_or_error(tmp_path);
 

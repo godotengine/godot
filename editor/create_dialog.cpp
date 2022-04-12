@@ -377,13 +377,15 @@ void CreateDialog::_confirmed() {
 		return;
 	}
 
-	Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::WRITE);
-	if (f.is_valid()) {
-		f->store_line(selected_item);
+	{
+		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::WRITE);
+		if (f.is_valid()) {
+			f->store_line(selected_item);
 
-		for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
-			if (recent->get_item_text(i) != selected_item) {
-				f->store_line(recent->get_item_text(i));
+			for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
+				if (recent->get_item_text(i) != selected_item) {
+					f->store_line(recent->get_item_text(i));
+				}
 			}
 		}
 	}
@@ -645,23 +647,25 @@ void CreateDialog::_save_and_update_favorite_list() {
 	favorites->clear();
 	TreeItem *root = favorites->create_item();
 
-	Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
-	if (f.is_valid()) {
-		for (int i = 0; i < favorite_list.size(); i++) {
-			String l = favorite_list[i];
-			String name = l.get_slicec(' ', 0);
-			if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name))) {
-				continue;
-			}
-			f->store_line(l);
+	{
+		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
+		if (f.is_valid()) {
+			for (int i = 0; i < favorite_list.size(); i++) {
+				String l = favorite_list[i];
+				String name = l.get_slicec(' ', 0);
+				if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name))) {
+					continue;
+				}
+				f->store_line(l);
 
-			if (_is_class_disabled_by_feature_profile(name)) {
-				continue;
-			}
+				if (_is_class_disabled_by_feature_profile(name)) {
+					continue;
+				}
 
-			TreeItem *ti = favorites->create_item(root);
-			ti->set_text(0, l);
-			ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				TreeItem *ti = favorites->create_item(root);
+				ti->set_text(0, l);
+				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+			}
 		}
 	}
 

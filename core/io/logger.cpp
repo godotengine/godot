@@ -148,7 +148,7 @@ void RotatedFileLogger::clear_old_backups() {
 }
 
 void RotatedFileLogger::rotate_file() {
-	file = Ref<FileAccess>();
+	file.unref();
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {

@@ -789,7 +789,7 @@ Error ResourceLoaderBinary::load() {
 		resource_cache.push_back(res);
 
 		if (main) {
-			f = Ref<FileAccess>();
+			f.unref();
 			resource = res;
 			resource->set_as_translation_remapped(translation_remapped);
 			error = OK;
@@ -868,7 +868,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		fac.instantiate();
 		error = fac->open_after_magic(f);
 		if (error != OK) {
-			f = Ref<FileAccess>();
+			f.unref();
 			ERR_FAIL_MSG("Failed to open binary resource file: " + local_path + ".");
 		}
 		f = fac;
@@ -876,7 +876,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
-		f = Ref<FileAccess>();
+		f.unref();
 		ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
 	}
 
@@ -901,7 +901,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	print_bl("format: " + itos(ver_format));
 
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
-		f = Ref<FileAccess>();
+		f.unref();
 		ERR_FAIL_MSG(vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
 				local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
 	}
@@ -978,6 +978,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 
 	if (f->eof_reached()) {
 		error = ERR_FILE_CORRUPT;
+		f.unref();
 		ERR_FAIL_MSG("Premature end of file (EOF): " + local_path + ".");
 	}
 }
@@ -994,7 +995,7 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 		fac.instantiate();
 		error = fac->open_after_magic(f);
 		if (error != OK) {
-			f = Ref<FileAccess>();
+			f.unref();
 			return "";
 		}
 		f = fac;
@@ -1002,7 +1003,7 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
-		f = Ref<FileAccess>();
+		f.unref();
 		return "";
 	}
 
@@ -1016,7 +1017,7 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	uint32_t ver_format = f->get_32();
 
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
-		f = Ref<FileAccess>();
+		f.unref();
 		return "";
 	}
 

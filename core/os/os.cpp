@@ -201,14 +201,14 @@ void OS::print_all_resources(String p_to_file) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
-			_OSPRF = Ref<FileAccess>();
+			_OSPRF.unref();
 			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	_OSPRF = Ref<FileAccess>();
+	_OSPRF.unref();
 }
 
 void OS::print_resources_in_use(bool p_short) {

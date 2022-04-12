@@ -1088,7 +1088,7 @@ void File::flush() {
 
 void File::close() {
 	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened.");
-	f = Ref<FileAccess>();
+	f.unref();
 }
 
 bool File::is_open() const {

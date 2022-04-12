@@ -152,7 +152,7 @@ void VideoStreamPlaybackTheora::clear() {
 	theora_eos = false;
 	vorbis_eos = false;
 
-	file = Ref<FileAccess>();
+	file.unref();
 	playing = false;
 };
 

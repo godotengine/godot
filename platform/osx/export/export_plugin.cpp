@@ -256,21 +256,23 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
 			ResourceSaver::save(path, it);
 
-			Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
-			if (f.is_null()) {
-				// Clean up generated file.
-				DirAccess::remove_file_or_error(path);
-				ERR_FAIL();
-			}
+			{
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+				if (f.is_null()) {
+					// Clean up generated file.
+					DirAccess::remove_file_or_error(path);
+					ERR_FAIL();
+				}
 
-			int ofs = data.size();
-			uint64_t len = f->get_length();
-			data.resize(data.size() + len + 8);
-			f->get_buffer(&data.write[ofs + 8], len);
-			len += 8;
-			len = BSWAP32(len);
-			memcpy(&data.write[ofs], icon_infos[i].name, 4);
-			encode_uint32(len, &data.write[ofs + 4]);
+				int ofs = data.size();
+				uint64_t len = f->get_length();
+				data.resize(data.size() + len + 8);
+				f->get_buffer(&data.write[ofs + 8], len);
+				len += 8;
+				len = BSWAP32(len);
+				memcpy(&data.write[ofs], icon_infos[i].name, 4);
+				encode_uint32(len, &data.write[ofs + 4]);
+			}
 
 			// Clean up generated file.
 			DirAccess::remove_file_or_error(path);

@@ -890,7 +890,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 		fw->store_8(c);
 		c = f->get_8();
 	}
-	f = Ref<FileAccess>();
+	f.unref();
 
 	bool all_ok = fw->get_error() == OK;
 
@@ -1098,142 +1098,143 @@ Error ResourceLoaderText::save_as_binary(Ref<FileAccess> p_f, const String &p_pa
 	wf->store_32(0); //zero sub resources, still parsing them
 
 	String temp_file = p_path + ".temp";
-	Ref<FileAccess> wf2 = FileAccess::open(temp_file, FileAccess::WRITE);
-	if (wf2.is_null()) {
-		return ERR_CANT_OPEN;
-	}
-
 	Vector<uint64_t> local_offsets;
 	Vector<uint64_t> local_pointers_pos;
-
-	while (next_tag.name == "sub_resource" || next_tag.name == "resource") {
-		String type;
-		int id = -1;
-		bool main_res;
-
-		if (next_tag.name == "sub_resource") {
-			if (!next_tag.fields.has("type")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'type' in external resource tag";
-				_printerr();
-				return error;
-			}
-
-			if (!next_tag.fields.has("id")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'id' in external resource tag";
-				_printerr();
-				return error;
-			}
-
-			type = next_tag.fields["type"];
-			id = next_tag.fields["id"];
-			main_res = false;
-		} else {
-			type = res_type;
-			id = 0; //used for last anyway
-			main_res = true;
+	{
+		Ref<FileAccess> wf2 = FileAccess::open(temp_file, FileAccess::WRITE);
+		if (wf2.is_null()) {
+			return ERR_CANT_OPEN;
 		}
 
-		local_offsets.push_back(wf2->get_position());
+		while (next_tag.name == "sub_resource" || next_tag.name == "resource") {
+			String type;
+			int id = -1;
+			bool main_res;
 
-		bs_save_unicode_string(wf, "local://" + itos(id));
-		local_pointers_pos.push_back(wf->get_position());
-		wf->store_64(0); //temp local offset
-
-		bs_save_unicode_string(wf2, type);
-		uint64_t propcount_ofs = wf2->get_position();
-		wf2->store_32(0);
-
-		int prop_count = 0;
-
-		while (true) {
-			String assign;
-			Variant value;
-
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
-
-			if (error) {
-				if (main_res && error == ERR_FILE_EOF) {
-					next_tag.name = ""; //exit
-					break;
+			if (next_tag.name == "sub_resource") {
+				if (!next_tag.fields.has("type")) {
+					error = ERR_FILE_CORRUPT;
+					error_text = "Missing 'type' in external resource tag";
+					_printerr();
+					return error;
 				}
 
+				if (!next_tag.fields.has("id")) {
+					error = ERR_FILE_CORRUPT;
+					error_text = "Missing 'id' in external resource tag";
+					_printerr();
+					return error;
+				}
+
+				type = next_tag.fields["type"];
+				id = next_tag.fields["id"];
+				main_res = false;
+			} else {
+				type = res_type;
+				id = 0; //used for last anyway
+				main_res = true;
+			}
+
+			local_offsets.push_back(wf2->get_position());
+
+			bs_save_unicode_string(wf, "local://" + itos(id));
+			local_pointers_pos.push_back(wf->get_position());
+			wf->store_64(0); //temp local offset
+
+			bs_save_unicode_string(wf2, type);
+			uint64_t propcount_ofs = wf2->get_position();
+			wf2->store_32(0);
+
+			int prop_count = 0;
+
+			while (true) {
+				String assign;
+				Variant value;
+
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+
+				if (error) {
+					if (main_res && error == ERR_FILE_EOF) {
+						next_tag.name = ""; //exit
+						break;
+					}
+
+					_printerr();
+					return error;
+				}
+
+				if (!assign.is_empty()) {
+					Map<StringName, int> empty_string_map; //unused
+					bs_save_unicode_string(wf2, assign, true);
+					ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
+					prop_count++;
+
+				} else if (!next_tag.name.is_empty()) {
+					error = OK;
+					break;
+				} else {
+					error = ERR_FILE_CORRUPT;
+					error_text = "Premature end of file while parsing [sub_resource]";
+					_printerr();
+					return error;
+				}
+			}
+
+			wf2->seek(propcount_ofs);
+			wf2->store_32(prop_count);
+			wf2->seek_end();
+		}
+
+		if (next_tag.name == "node") {
+			//this is a node, must save one more!
+
+			if (!is_scene) {
+				error_text += "found the 'node' tag on a resource file!";
 				_printerr();
+				error = ERR_FILE_CORRUPT;
 				return error;
 			}
 
-			if (!assign.is_empty()) {
+			Ref<PackedScene> packed_scene = _parse_node_tag(rp);
+
+			if (!packed_scene.is_valid()) {
+				return error;
+			}
+
+			error = OK;
+			//get it here
+			List<PropertyInfo> props;
+			packed_scene->get_property_list(&props);
+
+			bs_save_unicode_string(wf, "local://0");
+			local_pointers_pos.push_back(wf->get_position());
+			wf->store_64(0); //temp local offset
+
+			local_offsets.push_back(wf2->get_position());
+			bs_save_unicode_string(wf2, "PackedScene");
+			uint64_t propcount_ofs = wf2->get_position();
+			wf2->store_32(0);
+
+			int prop_count = 0;
+
+			for (const PropertyInfo &E : props) {
+				if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+
+				String name = E.name;
+				Variant value = packed_scene->get(name);
+
 				Map<StringName, int> empty_string_map; //unused
-				bs_save_unicode_string(wf2, assign, true);
+				bs_save_unicode_string(wf2, name, true);
 				ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
 				prop_count++;
-
-			} else if (!next_tag.name.is_empty()) {
-				error = OK;
-				break;
-			} else {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Premature end of file while parsing [sub_resource]";
-				_printerr();
-				return error;
-			}
-		}
-
-		wf2->seek(propcount_ofs);
-		wf2->store_32(prop_count);
-		wf2->seek_end();
-	}
-
-	if (next_tag.name == "node") {
-		//this is a node, must save one more!
-
-		if (!is_scene) {
-			error_text += "found the 'node' tag on a resource file!";
-			_printerr();
-			error = ERR_FILE_CORRUPT;
-			return error;
-		}
-
-		Ref<PackedScene> packed_scene = _parse_node_tag(rp);
-
-		if (!packed_scene.is_valid()) {
-			return error;
-		}
-
-		error = OK;
-		//get it here
-		List<PropertyInfo> props;
-		packed_scene->get_property_list(&props);
-
-		bs_save_unicode_string(wf, "local://0");
-		local_pointers_pos.push_back(wf->get_position());
-		wf->store_64(0); //temp local offset
-
-		local_offsets.push_back(wf2->get_position());
-		bs_save_unicode_string(wf2, "PackedScene");
-		uint64_t propcount_ofs = wf2->get_position();
-		wf2->store_32(0);
-
-		int prop_count = 0;
-
-		for (const PropertyInfo &E : props) {
-			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
 			}
 
-			String name = E.name;
-			Variant value = packed_scene->get(name);
-
-			Map<StringName, int> empty_string_map; //unused
-			bs_save_unicode_string(wf2, name, true);
-			ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
-			prop_count++;
+			wf2->seek(propcount_ofs);
+			wf2->store_32(prop_count);
+			wf2->seek_end();
 		}
-
-		wf2->seek(propcount_ofs);
-		wf2->store_32(prop_count);
-		wf2->seek_end();
 	}
 
 	uint64_t offset_from = wf->get_position();

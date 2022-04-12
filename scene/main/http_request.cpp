@@ -197,7 +197,7 @@ void HTTPRequest::cancel_request() {
 		thread.wait_to_finish();
 	}
 
-	file = Ref<FileAccess>();
+	file.unref();
 	client->close();
 	body.clear();
 	got_response = false;

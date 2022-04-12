@@ -122,9 +122,7 @@ void FileAccessEncrypted::close() {
 
 	_release();
 
-	file->close();
-
-	file = Ref<FileAccess>();
+	file.unref();
 }
 
 void FileAccessEncrypted::release() {
@@ -134,7 +132,7 @@ void FileAccessEncrypted::release() {
 
 	_release();
 
-	file = Ref<FileAccess>();
+	file.unref();
 }
 
 void FileAccessEncrypted::_release() {
