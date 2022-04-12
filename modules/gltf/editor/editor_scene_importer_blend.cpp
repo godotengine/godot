@@ -238,13 +238,12 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	return gltf->generate_scene(state, p_bake_fps);
 }
 
-Ref<Animation> EditorSceneFormatImporterBlend::import_animation(const String &p_path, uint32_t p_flags,
-		const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	return Ref<Animation>();
-}
-
-Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_option,
+Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
 		const Map<StringName, Variant> &p_options) {
+	if (p_path.get_extension().to_lower() != "blend") {
+		return true;
+	}
+
 	if (p_option.begins_with("animation/")) {
 		if (p_option != "animation/import" && !bool(p_options["animation/import"])) {
 			return false;
@@ -254,6 +253,9 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 }
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
+	if (p_path.get_extension().to_lower() != "blend") {
+		return;
+	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, SNAME(PATH)), VALUE));
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \

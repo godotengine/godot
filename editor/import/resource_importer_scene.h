@@ -56,9 +56,8 @@ protected:
 	GDVIRTUAL0RC(int, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL4R(Object *, _import_scene, String, uint32_t, Dictionary, uint32_t)
-	GDVIRTUAL4R(Ref<Animation>, _import_animation, String, uint32_t, Dictionary, uint32_t)
 	GDVIRTUAL1(_get_import_options, String)
-	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
+	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 
 public:
 	enum ImportFlags {
@@ -67,14 +66,14 @@ public:
 		IMPORT_FAIL_ON_MISSING_DEPENDENCIES = 4,
 		IMPORT_GENERATE_TANGENT_ARRAYS = 8,
 		IMPORT_USE_NAMED_SKIN_BINDS = 16,
+		IMPORT_DISCARD_MESHES_AND_MATERIALS = 32, //used for optimizing animation import
 	};
 
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options);
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const Map<StringName, Variant> &p_options);
 
 	EditorSceneFormatImporter() {}
 };
@@ -118,11 +117,11 @@ private:
 
 protected:
 	GDVIRTUAL1(_get_internal_import_options, int)
-	GDVIRTUAL2RC(Variant, _get_internal_option_visibility, int, String)
+	GDVIRTUAL3RC(Variant, _get_internal_option_visibility, int, bool, String)
 	GDVIRTUAL2RC(Variant, _get_internal_option_update_view_required, int, String)
 	GDVIRTUAL4(_internal_process, int, Node *, Node *, RES)
 	GDVIRTUAL1(_get_import_options, String)
-	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
+	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 	GDVIRTUAL1(_pre_process, Node *)
 	GDVIRTUAL1(_post_process, Node *)
 
@@ -134,13 +133,13 @@ public:
 	void add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
 
 	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, bool p_for_animation, const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual Variant get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
 
 	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, RES p_resource, const Dictionary &p_options);
 
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const Map<StringName, Variant> &p_options) const;
 
 	virtual void pre_process(Node *p_scene, const Map<StringName, Variant> &p_options);
 	virtual void post_process(Node *p_scene, const Map<StringName, Variant> &p_options);
@@ -153,9 +152,11 @@ VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	Vector<Ref<EditorSceneFormatImporter>> importers;
+	static Vector<Ref<EditorSceneFormatImporter>> importers;
+	static Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
 
-	static ResourceImporterScene *singleton;
+	static ResourceImporterScene *scene_singleton;
+	static ResourceImporterScene *animation_singleton;
 
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
@@ -225,18 +226,21 @@ class ResourceImporterScene : public ResourceImporter {
 
 	void _optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions);
 
-	mutable Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
+	bool animation_importer = false;
 
 public:
-	static ResourceImporterScene *get_singleton() { return singleton; }
+	static ResourceImporterScene *get_scene_singleton() { return scene_singleton; }
+	static ResourceImporterScene *get_animation_singleton() { return animation_singleton; }
 
-	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
-	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
+	static void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
+	static void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
 	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
 
-	void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
-	void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
+	static void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
+	static void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
+
+	static void clean_up_importer_plugins();
 
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
@@ -283,7 +287,7 @@ public:
 
 	virtual bool can_import_threaded() const override { return false; }
 
-	ResourceImporterScene();
+	ResourceImporterScene(bool p_animation_import = false);
 
 	template <class M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options);
@@ -299,7 +303,6 @@ public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) override;
 };
 
 #include "scene/resources/box_shape_3d.h"
