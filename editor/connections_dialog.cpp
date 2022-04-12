@@ -365,6 +365,24 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 
 	deferred->set_pressed(b_deferred);
 	oneshot->set_pressed(b_oneshot);
+
+	MethodInfo r_signal;
+	Ref<Script> source_script = source->get_script();
+	if (source_script.is_valid() && source_script->has_script_signal(signal)) {
+		List<MethodInfo> signals;
+		source_script->get_script_signal_list(&signals);
+		for (MethodInfo &mi : signals) {
+			if (mi.name == signal) {
+				r_signal = mi;
+				break;
+			}
+		}
+	} else {
+		ClassDB::get_signal(source->get_class(), signal, &r_signal);
+	}
+
+	unbind_count->set_max(r_signal.arguments.size());
+
 	unbind_count->set_value(p_cd.unbinds);
 	_unbind_count_changed(p_cd.unbinds);
 
@@ -619,6 +637,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	if (add_script_function) {
 		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
+		script_function_args.resize(script_function_args.size() - cd.unbinds);
 		for (int i = 0; i < cd.binds.size(); i++) {
 			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cd.binds[i].get_type()));
 		}
