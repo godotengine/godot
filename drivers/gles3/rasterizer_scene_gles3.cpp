@@ -1136,6 +1136,9 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 	state.scene_shader.set_custom_shader(p_material->shader->custom_code_id);
 	bool rebind = state.scene_shader.bind();
+	if (!ShaderGLES3::get_active()) {
+		return false;
+	}
 
 	if (p_material->ubo_id) {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, p_material->ubo_id);
@@ -2173,6 +2176,9 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 				storage->info.render.shader_rebind_count++;
 			}
 		}
+		if (!ShaderGLES3::get_active()) {
+			continue;
+		}
 
 		if (!(e->sort_key & SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
 			_setup_light(e, p_view_transform);
@@ -2318,6 +2324,11 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 	if (p_depth_pass) {
 		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || ((has_base_alpha || p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_OFF) && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) || p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_NEVER || p_material->shader->spatial.no_depth_test) {
 			return; //bye
+		}
+		if (!p_material->shader->shader->is_custom_code_ready_for_render(p_material->shader->custom_code_id)) {
+			// The shader is not guaranteed to be able to render (i.e., a not yet ready async hidden one);
+			// skip depth rendering because otherwise we risk masking out pixels that won't get written to at the actual render pass
+			return;
 		}
 
 		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
