@@ -155,7 +155,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::VECTOR3;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_VEC4: {
-				pinfo.type = Variant::PLANE;
+				pinfo.type = Variant::QUATERNION;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_RECT2: {
 				pinfo.type = Variant::RECT2;
