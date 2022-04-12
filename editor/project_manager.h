@@ -42,9 +42,9 @@ class ProjectDialog;
 class ProjectList;
 
 enum FilterOption {
+	EDIT_DATE,
 	NAME,
 	PATH,
-	EDIT_DATE,
 };
 
 class ProjectManager : public Control {
