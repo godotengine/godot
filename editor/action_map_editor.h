@@ -67,7 +67,7 @@ private:
 
 	// Listening for input
 	Label *event_as_text = nullptr;
-	ColorRect *mouse_detection_rect = nullptr;
+	Panel *mouse_detection_rect = nullptr;
 
 	// List of All Key/Mouse/Joypad input options.
 	int allowed_input_types;
