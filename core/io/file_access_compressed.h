@@ -63,13 +63,14 @@ class FileAccessCompressed : public FileAccess {
 	mutable Vector<uint8_t> buffer;
 	Ref<FileAccess> f;
 
+	void _close();
+
 public:
 	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint32_t p_block_size = 4096);
 
 	Error open_after_magic(Ref<FileAccess> p_base);
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

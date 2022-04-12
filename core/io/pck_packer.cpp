@@ -195,7 +195,8 @@ Error PCKPacker::flush(bool p_verbose) {
 	}
 
 	if (fae.is_valid()) {
-		fae->release();
+		fhead.unref();
+		fae.unref();
 	}
 
 	int header_padding = _get_pad(alignment, file->get_position());
@@ -216,7 +217,6 @@ Error PCKPacker::flush(bool p_verbose) {
 		Ref<FileAccess> src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 
-		fae.unref();
 		Ref<FileAccess> ftmp = file;
 		if (files[i].encrypted) {
 			fae.instantiate();
@@ -234,7 +234,8 @@ Error PCKPacker::flush(bool p_verbose) {
 		}
 
 		if (fae.is_valid()) {
-			fae->release();
+			ftmp.unref();
+			fae.unref();
 		}
 
 		int pad = _get_pad(alignment, file->get_position());

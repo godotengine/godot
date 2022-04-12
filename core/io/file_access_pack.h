@@ -157,7 +157,6 @@ class FileAccessPack : public FileAccess {
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 public:
-	virtual void close();
 	virtual bool is_open() const;
 
 	virtual void seek(uint64_t p_position);

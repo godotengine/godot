@@ -235,7 +235,7 @@ ZipArchive::~ZipArchive() {
 }
 
 Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
-	close();
+	_close();
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);
 	ZipArchive *arch = ZipArchive::get_singleton();
@@ -249,7 +249,7 @@ Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessZip::close() {
+void FileAccessZip::_close() {
 	if (!zfile) {
 		return;
 	}
@@ -341,7 +341,7 @@ FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile 
 }
 
 FileAccessZip::~FileAccessZip() {
-	close();
+	_close();
 }
 
 #endif // MINIZIP_ENABLED

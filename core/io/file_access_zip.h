@@ -82,9 +82,10 @@ class FileAccessZip : public FileAccess {
 
 	mutable bool at_eof;
 
+	void _close();
+
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

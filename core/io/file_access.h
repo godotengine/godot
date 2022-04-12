@@ -88,7 +88,6 @@ public:
 		WRITE_READ = 7,
 	};
 
-	virtual void close() = 0; ///< close a file
 	virtual bool is_open() const = 0; ///< true when file is open
 
 	virtual String get_path() const { return ""; } /// returns the path for the current open file

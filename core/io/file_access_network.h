@@ -113,6 +113,7 @@ class FileAccessNetwork : public FileAccess {
 	void _queue_page(int32_t p_page) const;
 	void _respond(uint64_t p_len, Error p_status);
 	void _set_block(uint64_t p_offset, const Vector<uint8_t> &p_block);
+	void _close();
 
 public:
 	enum Command {
@@ -131,7 +132,6 @@ public:
 	};
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

@@ -343,7 +343,8 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	ftmp->store_buffer(p_data.ptr(), p_data.size());
 
 	if (fae.is_valid()) {
-		fae->release();
+		ftmp.unref();
+		fae.unref();
 	}
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
@@ -1273,7 +1274,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	}
 
 	if (fae.is_valid()) {
-		fae->release();
+		fhead.unref();
+		fae.unref();
 	}
 
 	int header_padding = _get_pad(PCK_PADDING, f->get_position());

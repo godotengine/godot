@@ -48,9 +48,10 @@ class FileAccessWindows : public FileAccess {
 	String path_src;
 	String save_path;
 
+	void _close();
+
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual String get_path() const; /// returns the path for the current open file

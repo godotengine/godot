@@ -97,10 +97,7 @@ Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 
 Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags == READ_WRITE, ERR_UNAVAILABLE);
-
-	if (f.is_valid()) {
-		close();
-	}
+	_close();
 
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
@@ -134,7 +131,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessCompressed::close() {
+void FileAccessCompressed::_close() {
 	if (f.is_null()) {
 		return;
 	}
@@ -373,7 +370,5 @@ Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t
 }
 
 FileAccessCompressed::~FileAccessCompressed() {
-	if (f.is_valid()) {
-		close();
-	}
+	_close();
 }
