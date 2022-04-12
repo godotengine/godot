@@ -104,7 +104,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, const Vector<String> &p_extra_headers) {
 	if (OS::get_singleton()->get_ticks_msec() - time > p_timeout) {
 		print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", p_timeout * 0.001));
 		return ERR_TIMEOUT;
@@ -149,6 +149,9 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 				if (protocol != "") {
 					s += "Sec-WebSocket-Protocol: " + protocol + "\r\n";
 				}
+				for (int i = 0; i < p_extra_headers.size(); i++) {
+					s += p_extra_headers[i] + "\r\n";
+				}
 				s += "\r\n";
 				response = s.utf8();
 				has_request = true;
@@ -173,6 +176,10 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 	}
 
 	return OK;
+}
+
+void WSLServer::set_extra_headers(const Vector<String> &p_headers) {
+	_extra_headers = p_headers;
 }
 
 Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
@@ -206,7 +213,7 @@ void WSLServer::poll() {
 	List<Ref<PendingPeer>> remove_peers;
 	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
 		Ref<PendingPeer> ppeer = E->get();
-		Error err = ppeer->do_handshake(_protocols, handshake_timeout);
+		Error err = ppeer->do_handshake(_protocols, handshake_timeout, _extra_headers);
 		if (err == ERR_BUSY) {
 			continue;
 		} else if (err != OK) {
