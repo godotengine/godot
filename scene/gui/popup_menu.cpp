@@ -564,10 +564,8 @@ void PopupMenu::_draw_items() {
 		// Separator
 		item_ofs.x += items[i].h_ofs;
 		if (items[i].separator) {
-			int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
-			int sep_ofs = Math::floor((h - sep_h) / 2.0);
 			if (!text.is_empty() || !items[i].icon.is_null()) {
-				int content_size = items[i].text_buf->get_size().width;
+				int content_size = items[i].text_buf->get_size().width + hseparation * 2;
 				if (!items[i].icon.is_null()) {
 					content_size += icon_size.width + hseparation;
 				}
@@ -576,12 +574,18 @@ void PopupMenu::_draw_items() {
 				int content_left = content_center - content_size / 2;
 				int content_right = content_center + content_size / 2;
 				if (content_left > item_ofs.x) {
+					int sep_h = labeled_separator_left->get_center_size().height + labeled_separator_left->get_minimum_size().height;
+					int sep_ofs = Math::floor((h - sep_h) / 2.0);
 					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, content_left - item_ofs.x), sep_h)));
 				}
 				if (content_right < display_width) {
+					int sep_h = labeled_separator_right->get_center_size().height + labeled_separator_right->get_minimum_size().height;
+					int sep_ofs = Math::floor((h - sep_h) / 2.0);
 					labeled_separator_right->draw(ci, Rect2(Point2(content_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - content_right), sep_h)));
 				}
 			} else {
+				int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
+				int sep_ofs = Math::floor((h - sep_h) / 2.0);
 				separator->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(display_width, sep_h)));
 			}
 		}
