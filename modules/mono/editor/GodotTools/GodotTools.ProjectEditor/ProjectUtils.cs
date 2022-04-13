@@ -108,8 +108,22 @@ namespace GodotTools.ProjectEditor
 
             var normalizedInclude = include.NormalizePath();
 
-            if (root.RemoveItemChecked(itemType, normalizedInclude))
-                root.Save();
+            var item = root.FindItemOrNullAbs(itemType, normalizedInclude);
+
+            // Couldn't find an existing item that matches to remove
+            if (item == null)
+                return;
+
+            var glob = MSBuildGlob.Parse(item.Include);
+
+            // If the item include uses globbing don't remove it
+            if (!string.IsNullOrEmpty(glob.WildcardDirectoryPart) || glob.FilenamePart.Contains("*"))
+            {
+                return;
+            }
+
+            item.Parent.RemoveChild(item);
+            root.Save();
         }
 
         public static void RenameItemsToNewFolderInProjectChecked(string projectPath, string itemType, string oldFolder, string newFolder)

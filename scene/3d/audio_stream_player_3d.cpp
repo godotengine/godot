@@ -622,6 +622,12 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 }
 
 void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
+	// Instancing audio streams can cause large memory allocations, do it prior to AudioServer::lock.
+	Ref<AudioStreamPlayback> pre_instanced_playback;
+	if (p_stream.is_valid()) {
+		pre_instanced_playback = p_stream->instance_playback();
+	}
+
 	AudioServer::get_singleton()->lock();
 
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
@@ -635,7 +641,7 @@ void AudioStreamPlayer3D::set_stream(Ref<AudioStream> p_stream) {
 
 	if (p_stream.is_valid()) {
 		stream = p_stream;
-		stream_playback = p_stream->instance_playback();
+		stream_playback = pre_instanced_playback;
 	}
 
 	AudioServer::get_singleton()->unlock();
