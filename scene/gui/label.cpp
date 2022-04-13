@@ -458,7 +458,7 @@ void Label::regenerate_word_cache() {
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				if (i == 0 || (i != 0 && prev_insert_newline)) {
+				if (i == 0 || prev_insert_newline) {
 					if (current_word_size == 0) {
 						word_pos = i;
 					}
