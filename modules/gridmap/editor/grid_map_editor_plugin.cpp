@@ -952,7 +952,18 @@ void GridMapEditor::_draw_floor_grid(RID mesh_id, int floor) {
 		shape_points.append(Vector2(0.5, 0.5));
 		shape_points.append(Vector2(-0.5, 0.5));
 	} else {
-		float overlap = 0.25;
+		float overlap = 0.0;
+		switch (node->get_cell_shape()) {
+			case GridMap::CELL_SHAPE_ISOMETRIC:
+				overlap = 0.5;
+				break;
+			case GridMap::CELL_SHAPE_HEXAGON:
+				overlap = 0.25;
+				break;
+			default:
+				break;
+		}
+
 		shape_points.append(Vector2(0.0, -0.5));
 		shape_points.append(Vector2(-0.5, overlap - 0.5));
 		shape_points.append(Vector2(-0.5, 0.5 - overlap));

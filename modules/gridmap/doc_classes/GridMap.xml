@@ -204,7 +204,10 @@
 		<constant name="CELL_SHAPE_SQUARE" value="0" enum="CellShape">
 			Rectangular cell shape.
 		</constant>
-		<constant name="CELL_SHAPE_HEXAGON" value="1" enum="CellShape">
+		<constant name="CELL_SHAPE_ISOMETRIC" value="1" enum="CellShape">
+			Diamond cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_HEXAGON" value="2" enum="CellShape">
 			Hexagonal cell shape.
 		</constant>
 		<constant name="CELL_LAYOUT_STACKED" value="0" enum="CellLayout">

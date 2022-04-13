@@ -448,7 +448,7 @@ int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
 Vector3 GridMap::map_to_world(const Vector3i &p_pos) const {
 	Vector3 ret = p_pos;
 
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
+	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON || cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
 		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
@@ -497,12 +497,21 @@ Vector3 GridMap::map_to_world(const Vector3i &p_pos) const {
 	}
 
 	// Multiply by the overlapping ratio
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
-		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-			ret.z *= 0.75;
-		} else { // CELL_OFFSET_AXIS_VERTICAL
-			ret.x *= 0.75;
+	double overlapping_ratio = 1.0;
+	if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
+		if (cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
+			overlapping_ratio = 0.75;
 		}
+		ret.z *= overlapping_ratio;
+	} else { // CELL_OFFSET_AXIS_VERTICAL
+		if (cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
+			overlapping_ratio = 0.75;
+		}
+		ret.x *= overlapping_ratio;
 	}
 
 	// Add the offset
@@ -521,19 +530,23 @@ Vector3i GridMap::world_to_map(const Vector3 &p_pos) const {
 	// Divide by the overlapping ratio
 	double overlapping_ratio = 1.0;
 	if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-		if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
+		if (cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
 			overlapping_ratio = 0.75;
 		}
 		ret.z /= overlapping_ratio;
 	} else { // CELL_OFFSET_AXIS_VERTICAL
-		if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
+		if (cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
 			overlapping_ratio = 0.75;
 		}
 		ret.x /= overlapping_ratio;
 	}
 
 	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the world position accordingly.
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
+	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON || cell_shape == GridMap::CELL_SHAPE_ISOMETRIC) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
 		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
@@ -1145,7 +1158,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
 	ADD_GROUP("Cell", "cell_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Hexagon"), "set_cell_shape", "get_cell_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Hexagon"), "set_cell_shape", "get_cell_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_cell_layout", "get_cell_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_cell_offset_axis", "get_cell_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");
@@ -1162,6 +1175,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
 	BIND_ENUM_CONSTANT(CELL_SHAPE_SQUARE);
+	BIND_ENUM_CONSTANT(CELL_SHAPE_ISOMETRIC);
 	BIND_ENUM_CONSTANT(CELL_SHAPE_HEXAGON);
 
 	BIND_ENUM_CONSTANT(CELL_LAYOUT_STACKED);

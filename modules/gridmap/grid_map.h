@@ -46,6 +46,7 @@ class GridMap : public Node3D {
 public:
 	enum CellShape {
 		CELL_SHAPE_SQUARE,
+		CELL_SHAPE_ISOMETRIC,
 		CELL_SHAPE_HEXAGON,
 	};
 
