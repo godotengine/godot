@@ -150,6 +150,8 @@ private:
 
 		VSet<PosKey> cells;
 
+		void clear_navpoly();
+
 		void operator=(const Quadrant &q) {
 			pos = q.pos;
 			canvas_items = q.canvas_items;
