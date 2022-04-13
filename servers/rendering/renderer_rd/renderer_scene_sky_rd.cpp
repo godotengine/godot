@@ -1194,7 +1194,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 					float sign = storage->light_is_negative(base) ? -1 : 1;
 					sky_light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
 
-					Color linear_col = storage->light_get_color(base).to_linear();
+					Color linear_col = storage->light_get_color(base).srgb_to_linear();
 					sky_light_data.color[0] = linear_col.r;
 					sky_light_data.color[1] = linear_col.g;
 					sky_light_data.color[2] = linear_col.b;
@@ -1286,7 +1286,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 	sky_scene_state.ubo.fog_enabled = p_env->fog_enabled;
 	sky_scene_state.ubo.fog_density = p_env->fog_density;
 	sky_scene_state.ubo.fog_aerial_perspective = p_env->fog_aerial_perspective;
-	Color fog_color = p_env->fog_light_color.to_linear();
+	Color fog_color = p_env->fog_light_color.srgb_to_linear();
 	float fog_energy = p_env->fog_light_energy;
 	sky_scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
 	sky_scene_state.ubo.fog_light_color[1] = fog_color.g * fog_energy;

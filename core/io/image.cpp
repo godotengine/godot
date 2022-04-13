@@ -3276,7 +3276,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
-			new_image->set_pixel(col, row, get_pixel(col, row).to_srgb());
+			new_image->set_pixel(col, row, get_pixel(col, row).linear_to_srgb());
 		}
 	}
 

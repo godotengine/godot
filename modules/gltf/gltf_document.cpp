@@ -3272,7 +3272,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			Dictionary mr;
 			{
 				Array arr;
-				const Color c = material->get_albedo().to_linear();
+				const Color c = material->get_albedo().srgb_to_linear();
 				arr.push_back(c.r);
 				arr.push_back(c.g);
 				arr.push_back(c.b);
@@ -3473,7 +3473,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 		}
 
 		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
-			const Color c = material->get_emission().to_srgb();
+			const Color c = material->get_emission().linear_to_srgb();
 			Array arr;
 			arr.push_back(c.r);
 			arr.push_back(c.g);
@@ -3555,7 +3555,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (sgm.has("diffuseFactor")) {
 				const Array &arr = sgm["diffuseFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
-				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).to_srgb();
+				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).linear_to_srgb();
 				spec_gloss->diffuse_factor = c;
 				material->set_albedo(spec_gloss->diffuse_factor);
 			}
@@ -3586,7 +3586,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (mr.has("baseColorFactor")) {
 				const Array &arr = mr["baseColorFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
-				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).to_srgb();
+				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).linear_to_srgb();
 				material->set_albedo(c);
 			}
 
@@ -3653,7 +3653,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 		if (d.has("emissiveFactor")) {
 			const Array &arr = d["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
-			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
+			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
 
 			material->set_emission(c);
@@ -3737,11 +3737,11 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	}
 	for (int32_t y = 0; y < r_spec_gloss->spec_gloss_img->get_height(); y++) {
 		for (int32_t x = 0; x < r_spec_gloss->spec_gloss_img->get_width(); x++) {
-			const Color specular_pixel = r_spec_gloss->spec_gloss_img->get_pixel(x, y).to_linear();
+			const Color specular_pixel = r_spec_gloss->spec_gloss_img->get_pixel(x, y).srgb_to_linear();
 			Color specular = Color(specular_pixel.r, specular_pixel.g, specular_pixel.b);
 			specular *= r_spec_gloss->specular_factor;
 			Color diffuse = Color(1.0f, 1.0f, 1.0f);
-			diffuse *= r_spec_gloss->diffuse_img->get_pixel(x, y).to_linear();
+			diffuse *= r_spec_gloss->diffuse_img->get_pixel(x, y).srgb_to_linear();
 			float metallic = 0.0f;
 			Color base_color;
 			spec_gloss_to_metal_base_color(specular, diffuse, base_color, metallic);
@@ -3758,7 +3758,7 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 			mr.g = 1.0f - mr.g;
 			rm_img->set_pixel(x, y, mr);
 			if (r_spec_gloss->diffuse_img.is_valid()) {
-				r_spec_gloss->diffuse_img->set_pixel(x, y, base_color.to_srgb());
+				r_spec_gloss->diffuse_img->set_pixel(x, y, base_color.linear_to_srgb());
 			}
 		}
 	}
@@ -4626,7 +4626,7 @@ Error GLTFDocument::_parse_lights(Ref<GLTFState> state) {
 		if (d.has("color")) {
 			const Array &arr = d["color"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
-			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
+			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
 			light->color = c;
 		}
 		if (d.has("intensity")) {

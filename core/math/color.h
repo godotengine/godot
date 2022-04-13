@@ -169,14 +169,14 @@ struct _NO_DISCARD_ Color {
 		return res;
 	}
 
-	_FORCE_INLINE_ Color to_linear() const {
+	_FORCE_INLINE_ Color srgb_to_linear() const {
 		return Color(
 				r < 0.04045f ? r * (1.0 / 12.92) : Math::pow((r + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				g < 0.04045f ? g * (1.0 / 12.92) : Math::pow((g + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				b < 0.04045f ? b * (1.0 / 12.92) : Math::pow((b + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				a);
 	}
-	_FORCE_INLINE_ Color to_srgb() const {
+	_FORCE_INLINE_ Color linear_to_srgb() const {
 		return Color(
 				r < 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math::pow(r, 1.0f / 2.4f) - 0.055f,
 				g < 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math::pow(g, 1.0f / 2.4f) - 0.055f,
