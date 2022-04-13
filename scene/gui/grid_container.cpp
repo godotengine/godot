@@ -50,6 +50,9 @@ void GridContainer::_notification(int p_what) {
 				if (!c || !c->is_visible_in_tree()) {
 					continue;
 				}
+				if (c->is_set_as_toplevel()) {
+					continue;
+				}
 
 				int row = valid_controls_index / columns;
 				int col = valid_controls_index % columns;
