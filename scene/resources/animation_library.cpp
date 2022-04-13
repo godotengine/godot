@@ -55,7 +55,7 @@ void AnimationLibrary::remove_animation(const StringName &p_name) {
 
 void AnimationLibrary::rename_animation(const StringName &p_name, const StringName &p_new_name) {
 	ERR_FAIL_COND(!animations.has(p_name));
-	ERR_FAIL_COND_MSG(String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("["), "Invalid animation name: " + String(p_name) + ".");
+	ERR_FAIL_COND_MSG(String(p_new_name).contains("/") || String(p_new_name).contains(":") || String(p_new_name).contains(",") || String(p_new_name).contains("["), "Invalid animation name: " + String(p_new_name) + ".");
 	ERR_FAIL_COND(animations.has(p_new_name));
 
 	animations.insert(p_new_name, animations[p_name]);
