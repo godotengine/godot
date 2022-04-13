@@ -326,7 +326,7 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		Callable::CallError ce;
 
 		{
-			List<WindowID>::Element *E = popup_list.front();
+			List<WindowID>::Element *E = popup_list.back();
 			if (E && Object::cast_to<InputEventKey>(*p_event)) {
 				// Redirect keyboard input to active popup.
 				if (windows.has(E->get())) {
