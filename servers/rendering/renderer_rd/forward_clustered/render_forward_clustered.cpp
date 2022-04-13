@@ -783,7 +783,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		//ambient
 		if (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && (env_bg == RS::ENV_BG_CLEAR_COLOR || env_bg == RS::ENV_BG_COLOR)) {
 			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
-			color = color.to_linear();
+			color = color.srgb_to_linear();
 
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * bg_energy;
@@ -793,7 +793,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		} else {
 			float energy = environment_get_ambient_light_energy(p_render_data->environment);
 			Color color = environment_get_ambient_light_color(p_render_data->environment);
-			color = color.to_linear();
+			color = color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
 			scene_state.ubo.ambient_light_color_energy[2] = color.b * energy;
@@ -829,7 +829,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
 		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
 
-		Color fog_color = environment_get_fog_light_color(p_render_data->environment).to_linear();
+		Color fog_color = environment_get_fog_light_color(p_render_data->environment).srgb_to_linear();
 		float fog_energy = environment_get_fog_light_energy(p_render_data->environment);
 
 		scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
@@ -844,7 +844,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		} else {
 			scene_state.ubo.use_ambient_light = true;
 			Color clear_color = p_default_bg_color;
-			clear_color = clear_color.to_linear();
+			clear_color = clear_color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = clear_color.r;
 			scene_state.ubo.ambient_light_color_energy[1] = clear_color.g;
 			scene_state.ubo.ambient_light_color_energy[2] = clear_color.b;
@@ -1391,7 +1391,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.b *= bg_energy;
 				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
 			} break;
 			case RS::ENV_BG_COLOR: {
@@ -1401,7 +1401,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.b *= bg_energy;
 				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
 			} break;
 			case RS::ENV_BG_SKY: {
@@ -1520,7 +1520,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		Vector<Color> c;
 		{
-			Color cc = clear_color.to_linear();
+			Color cc = clear_color.srgb_to_linear();
 			if (using_separate_specular) {
 				cc.a = 0; //subsurf scatter must be 0
 			}

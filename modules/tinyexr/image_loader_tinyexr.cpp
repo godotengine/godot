@@ -230,7 +230,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool
 						}
 
 						if (p_force_linear) {
-							color = color.to_linear();
+							color = color.srgb_to_linear();
 						}
 
 						*row_w++ = Math::make_half_float(color.r);
@@ -261,7 +261,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool
 						}
 
 						if (p_force_linear) {
-							color = color.to_linear();
+							color = color.srgb_to_linear();
 						}
 
 						*row_w++ = color.r;

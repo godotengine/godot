@@ -921,7 +921,7 @@ void RendererSceneGIRD::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, 
 
 		if (p_env->background == RS::ENV_BG_CLEAR_COLOR) {
 			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
-			Color c = storage->get_default_clear_color().to_linear();
+			Color c = storage->get_default_clear_color().srgb_to_linear();
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
 			push_constant.sky_color[2] = c.b;
@@ -1469,7 +1469,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].direction[1] = dir.y;
 			lights[idx].direction[2] = dir.z;
 			Color color = storage->light_get_color(li->light);
-			color = color.to_linear();
+			color = color.srgb_to_linear();
 			lights[idx].color[0] = color.r;
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
@@ -1514,7 +1514,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].position[1] = pos.y;
 			lights[idx].position[2] = pos.z;
 			Color color = storage->light_get_color(li->light);
-			color = color.to_linear();
+			color = color.srgb_to_linear();
 			lights[idx].color[0] = color.r;
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
@@ -1953,7 +1953,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 				lights[idx].position[1] = pos.y;
 				lights[idx].position[2] = pos.z;
 				Color color = storage->light_get_color(li->light);
-				color = color.to_linear();
+				color = color.srgb_to_linear();
 				lights[idx].color[0] = color.r;
 				lights[idx].color[1] = color.g;
 				lights[idx].color[2] = color.b;
@@ -2396,7 +2396,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				l.attenuation = storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
 				l.energy = storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 				l.radius = to_cell.basis.xform(Vector3(storage->light_get_param(light, RS::LIGHT_PARAM_RANGE), 0, 0)).length();
-				Color color = storage->light_get_color(light).to_linear();
+				Color color = storage->light_get_color(light).srgb_to_linear();
 				l.color[0] = color.r;
 				l.color[1] = color.g;
 				l.color[2] = color.b;

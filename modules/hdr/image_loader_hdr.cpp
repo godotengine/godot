@@ -132,7 +132,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_f
 					ptr[2] * exp / 255.0);
 
 			if (p_force_linear) {
-				c = c.to_linear();
+				c = c.srgb_to_linear();
 			}
 
 			*(uint32_t *)ptr = c.to_rgbe9995();

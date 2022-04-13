@@ -517,7 +517,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		ambient_color_sky_mix = env->ambient_sky_contribution;
 		const float ambient_energy = env->ambient_light_energy;
 		ambient_color = env->ambient_light;
-		ambient_color = ambient_color.to_linear();
+		ambient_color = ambient_color.srgb_to_linear();
 		ambient_color.r *= ambient_energy;
 		ambient_color.g *= ambient_energy;
 		ambient_color.b *= ambient_energy;
@@ -536,7 +536,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	} else {
 		const float bg_energy = env->bg_energy;
 		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? storage->get_default_clear_color() : env->bg_color);
-		panorama_color = panorama_color.to_linear();
+		panorama_color = panorama_color.srgb_to_linear();
 		panorama_color.r *= bg_energy;
 		panorama_color.g *= bg_energy;
 		panorama_color.b *= bg_energy;
@@ -3245,7 +3245,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		reflection_ubo.exterior = !storage->reflection_probe_is_interior(base_probe);
 		reflection_ubo.box_project = storage->reflection_probe_is_box_projection(base_probe);
 
-		Color ambient_linear = storage->reflection_probe_get_ambient_color(base_probe).to_linear();
+		Color ambient_linear = storage->reflection_probe_get_ambient_color(base_probe).srgb_to_linear();
 		float interior_ambient_energy = storage->reflection_probe_get_ambient_color_energy(base_probe);
 		reflection_ubo.ambient[0] = ambient_linear.r * interior_ambient_energy;
 		reflection_ubo.ambient[1] = ambient_linear.g * interior_ambient_energy;
@@ -3312,7 +3312,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
 
-				Color linear_col = storage->light_get_color(base).to_linear();
+				Color linear_col = storage->light_get_color(base).srgb_to_linear();
 				light_data.color[0] = linear_col.r;
 				light_data.color[1] = linear_col.g;
 				light_data.color[2] = linear_col.b;
@@ -3491,7 +3491,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		Transform3D light_transform = li->transform;
 
 		float sign = storage->light_is_negative(base) ? -1 : 1;
-		Color linear_col = storage->light_get_color(base).to_linear();
+		Color linear_col = storage->light_get_color(base).srgb_to_linear();
 
 		light_data.attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
 
@@ -4641,7 +4641,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	params.fog_frustum_end = fog_end;
 
-	Color ambient_color = env->ambient_light.to_linear();
+	Color ambient_color = env->ambient_light.srgb_to_linear();
 	params.ambient_color[0] = ambient_color.r;
 	params.ambient_color[1] = ambient_color.g;
 	params.ambient_color[2] = ambient_color.b;
@@ -4653,13 +4653,13 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	params.directional_light_count = p_directional_light_count;
 
-	Color emission = env->volumetric_fog_emission.to_linear();
+	Color emission = env->volumetric_fog_emission.srgb_to_linear();
 	params.base_emission[0] = emission.r * env->volumetric_fog_emission_energy;
 	params.base_emission[1] = emission.g * env->volumetric_fog_emission_energy;
 	params.base_emission[2] = emission.b * env->volumetric_fog_emission_energy;
 	params.base_density = env->volumetric_fog_density;
 
-	Color base_scattering = env->volumetric_fog_scattering.to_linear();
+	Color base_scattering = env->volumetric_fog_scattering.srgb_to_linear();
 	params.base_scattering[0] = base_scattering.r;
 	params.base_scattering[1] = base_scattering.g;
 	params.base_scattering[2] = base_scattering.b;
