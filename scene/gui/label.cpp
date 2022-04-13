@@ -464,8 +464,7 @@ void Label::regenerate_word_cache() {
 					}
 					current_word_size += space_width;
 					line_width += space_width;
-				}
-				else if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
+				} else if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
 				} else {
