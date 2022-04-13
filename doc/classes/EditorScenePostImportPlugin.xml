@@ -34,7 +34,8 @@
 		<method name="_get_internal_option_visibility" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="category" type="int" />
-			<argument index="1" name="option" type="String" />
+			<argument index="1" name="for_animation" type="bool" />
+			<argument index="2" name="option" type="String" />
 			<description>
 				Return true or false whether a given option should be visible. Return null to ignore.
 			</description>
@@ -42,7 +43,8 @@
 		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="path" type="String" />
-			<argument index="1" name="option" type="String" />
+			<argument index="1" name="for_animation" type="bool" />
+			<argument index="2" name="option" type="String" />
 			<description>
 				Return true or false whether a given option should be visible. Return null to ignore.
 			</description>

@@ -457,10 +457,6 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 	return scene;
 }
 
-Ref<Animation> EditorOBJImporter::import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	return Ref<Animation>();
-}
-
 void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("obj");
 }
