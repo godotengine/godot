@@ -1072,7 +1072,6 @@ Error File::open_compressed(const String &p_path, ModeFlags p_mode_flags, Compre
 }
 
 Error File::open(const String &p_path, ModeFlags p_mode_flags) {
-	close();
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
 	if (f.is_valid()) {
