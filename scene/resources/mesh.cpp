@@ -119,10 +119,21 @@ AABB Mesh::get_aabb() const {
 	return ret;
 }
 
-Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
+Ref<TriangleMesh> Mesh::generate_triangle_mesh(Array p_bone_transforms) const {
 	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;
 	}
+
+	// Bone transforms
+	Vector<Transform3D> bone_transforms;
+	int total_bone_transforms = p_bone_transforms.size();
+	bone_transforms.resize(total_bone_transforms);
+
+	for (int i = 0; i < p_bone_transforms.size(); i++) {
+		ERR_FAIL_COND_V(p_bone_transforms[i].get_type() != Variant::TRANSFORM3D, Ref<TriangleMesh>());
+		bone_transforms.set(i, p_bone_transforms[i]);
+	}
+	//
 
 	int faces_size = 0;
 
@@ -187,12 +198,39 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			const int *ir = indices.ptr();
 
 			if (primitive == PRIMITIVE_TRIANGLES) {
-				for (int j = 0; j < ic; j++) {
-					int index = ir[j];
-					ERR_FAIL_COND_V(index >= vc, Ref<TriangleMesh>());
-					facesw[widx++] = vr[index];
+				if (surface_get_format(i) & (ARRAY_FORMAT_BONES | ARRAY_FORMAT_WEIGHTS) && total_bone_transforms > 0) {
+					int bone_weight_length = surface_get_format(i) & ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+
+					Vector<int> bones = a[ARRAY_BONES];
+					Vector<float> weights = a[ARRAY_WEIGHTS];
+
+					const int *bo = bones.ptr();
+					const float *we = weights.ptr();
+
+					for (int j = 0; j < ic; j++) {
+						int index = ir[j];
+						Vector3 vert = vr[index];
+						Vector3 transformed_vert = Vector3();
+
+						for (int k = 0; k < bone_weight_length; k++) {
+							int idx = bo[index * bone_weight_length + k];
+							float w = we[index * bone_weight_length + k];
+							if (w < FLT_EPSILON) {
+								continue;
+							}
+							ERR_FAIL_INDEX_V(idx, total_bone_transforms, Ref<TriangleMesh>());
+							transformed_vert += bone_transforms[idx].xform(vert) * w;
+						}
+						facesw[widx++] = transformed_vert;
+					}
+				} else {
+					for (int j = 0; j < ic; j++) {
+						int index = ir[j];
+						facesw[widx++] = vr[index];
+					}
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
+				// Triangle strips do not currently support mesh transforms.
 				for (int j = 2; j < ic; j++) {
 					facesw[widx++] = vr[ir[j - 2]];
 					facesw[widx++] = vr[ir[j - 1]];
@@ -202,10 +240,36 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 		} else {
 			if (primitive == PRIMITIVE_TRIANGLES) {
-				for (int j = 0; j < vc; j++) {
-					facesw[widx++] = vr[j];
+				if (surface_get_format(i) & (ARRAY_FORMAT_BONES | ARRAY_FORMAT_WEIGHTS) && total_bone_transforms > 0) {
+					int bone_weight_length = surface_get_format(i) & ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+
+					Vector<int> bones = a[ARRAY_BONES];
+					Vector<float> weights = a[ARRAY_WEIGHTS];
+
+					const int *bo = bones.ptr();
+					const float *we = weights.ptr();
+
+					for (int j = 0; j < vc; j++) {
+						Vector3 vert = vr[j];
+						Vector3 transformed_vert = Vector3();
+						for (int k = 0; k < bone_weight_length; k++) {
+							int idx = bo[j * bone_weight_length + k];
+							float w = we[j * bone_weight_length + k];
+							if (w < FLT_EPSILON) {
+								continue;
+							}
+							ERR_FAIL_INDEX_V(idx, total_bone_transforms, Ref<TriangleMesh>());
+							transformed_vert += bone_transforms[idx].xform(vert) * w;
+						}
+						facesw[widx++] = transformed_vert;
+					}
+				} else {
+					for (int j = 0; j < vc; j++) {
+						facesw[widx++] = vr[j];
+					}
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
+				// Triangle strips do not currently support mesh transforms.
 				for (int j = 2; j < vc; j++) {
 					facesw[widx++] = vr[j - 2];
 					facesw[widx++] = vr[j - 1];
@@ -2082,7 +2146,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("get_faces"), &ArrayMesh::get_faces);
-	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
+	ClassDB::bind_method(D_METHOD("generate_triangle_mesh", "bone_transforms"), &ArrayMesh::generate_triangle_mesh, DEFVAL(Array()));
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &ArrayMesh::get_custom_aabb);

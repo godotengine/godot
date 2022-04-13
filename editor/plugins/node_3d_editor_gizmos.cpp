@@ -1978,14 +1978,52 @@ bool MeshInstance3DGizmoPlugin::can_be_hidden() const {
 }
 
 void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
-	Ref<Mesh> m = mesh->get_mesh();
+	Ref<Mesh> m = mi->get_mesh();
 
 	if (!m.is_valid()) {
 		return; //none
+	}
+
+	// Use skeleton if we have one
+	NodePath skeleton_path = mi->get_skeleton_path();
+	Ref<Skin> skin = mi->get_skin();
+	if (skin.is_valid()) {
+		Node *node = mi->get_node_or_null(skeleton_path);
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
+		if (skeleton) {
+			int bone_count = skeleton->get_bone_count();
+			int bind_count = skin->get_bind_count();
+
+			if (bone_count == bind_count) {
+				Array bone_transform_array;
+				bool invalid_bone_names = false;
+
+				for (int i = 0; i < bind_count; i++) {
+					Transform3D bind_pose = skin->get_bind_pose(i);
+					String bind_name = skin->get_bind_name(i);
+
+					int bone_idx = skeleton->find_bone(bind_name);
+					if (bone_idx >= 0) {
+						bone_transform_array.push_back(skeleton->get_bone_global_pose(i) * bind_pose);
+					} else {
+						invalid_bone_names = true;
+						break;
+					}
+				}
+
+				if (!invalid_bone_names) {
+					Ref<TriangleMesh> tm = m->generate_triangle_mesh(bone_transform_array);
+					if (tm.is_valid()) {
+						p_gizmo->add_collision_triangles(tm);
+						return;
+					}
+				}
+			}
+		}
 	}
 
 	Ref<TriangleMesh> tm = m->generate_triangle_mesh();

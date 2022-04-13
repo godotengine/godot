@@ -187,6 +187,8 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	} else {
 		RenderingServer::get_singleton()->instance_attach_skeleton(get_instance(), RID());
 	}
+
+	update_gizmos();
 }
 
 void MeshInstance3D::set_skin(const Ref<Skin> &p_skin) {

@@ -142,8 +142,10 @@
 		</method>
 		<method name="generate_triangle_mesh" qualifiers="const">
 			<return type="TriangleMesh" />
+			<argument index="0" name="bone_transforms" type="Array" default="[]" />
 			<description>
 				Generate a [TriangleMesh] from the mesh. Considers only surfaces using one of these primitive types: [constant PRIMITIVE_TRIANGLES], [constant PRIMITIVE_TRIANGLE_STRIP].
+				If a non-empty array of [code]bone_transforms[/code] containing [Transform3D] are provided matching the mesh's bones and weights, the resulting [TriangleMesh] will be deformed based on this.
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">
