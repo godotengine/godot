@@ -494,7 +494,7 @@
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
-			[b]Note:[/b] This setting is ignored on iOS and Android.
+			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
 			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.

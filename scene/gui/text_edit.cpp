@@ -6474,9 +6474,6 @@ void TextEdit::undo() {
 
 	TextOperation op = undo_stack_pos->get();
 	_do_text_op(op, true);
-	if (op.type != TextOperation::TYPE_INSERT && (op.from_line != op.to_line || op.to_column != op.from_column + 1)) {
-		select(op.from_line, op.from_column, op.to_line, op.to_column);
-	}
 
 	current_op.version = op.prev_version;
 	if (undo_stack_pos->get().chain_backward) {
@@ -6490,6 +6487,10 @@ void TextEdit::undo() {
 				break;
 			}
 		}
+	}
+
+	if (op.type != TextOperation::TYPE_INSERT && (op.from_line != op.to_line || op.to_column != op.from_column + 1)) {
+		select(op.from_line, op.from_column, op.to_line, op.to_column);
 	}
 
 	_update_scrollbars();

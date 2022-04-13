@@ -1061,8 +1061,15 @@ void Object::set_meta(const String &p_name, const Variant &p_value) {
 	metadata[p_name] = p_value;
 }
 
-Variant Object::get_meta(const String &p_name) const {
+Variant Object::get_meta(const String &p_name, const Variant &p_default) const {
 	ERR_FAIL_COND_V(!metadata.has(p_name), Variant());
+	if (!metadata.has(p_name)) {
+		if (p_default != Variant()) {
+			return p_default;
+		} else {
+			ERR_FAIL_V_MSG(Variant(), "The object does not have any 'meta' values with the key '" + p_name + "'.");
+		}
+	}
 	return metadata[p_name];
 }
 
@@ -1675,7 +1682,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
 	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);
-	ClassDB::bind_method(D_METHOD("get_meta", "name"), &Object::get_meta);
+	ClassDB::bind_method(D_METHOD("get_meta", "name", "default"), &Object::get_meta, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
 

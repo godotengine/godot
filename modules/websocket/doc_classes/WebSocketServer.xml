@@ -59,6 +59,13 @@
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.), on the [WebSocketPeer] returned via [code]get_peer(id)[/code] to communicate with the peer with given [code]id[/code] (e.g. [code]get_peer(id).get_available_packet_count[/code]).
 			</description>
 		</method>
+		<method name="set_extra_headers">
+			<return type="void" />
+			<argument index="0" name="headers" type="PoolStringArray" default="PoolStringArray(  )" />
+			<description>
+				Sets additional headers to be sent to clients during the HTTP handshake.
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
