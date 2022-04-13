@@ -432,7 +432,7 @@ void Label::regenerate_word_cache() {
 				space_count = 0;
 			} else if ((i == xl_text.length() || current == '\n') && last != nullptr && space_count != 0) {
 				//in case there are trailing white spaces we add a placeholder word cache with just the spaces
-                prev_insert_newline = false;
+				prev_insert_newline = false;
 
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
