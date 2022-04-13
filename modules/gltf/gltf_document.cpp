@@ -65,6 +65,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/surface_tool.h"
@@ -80,6 +81,7 @@
 
 // FIXME: Hardcoded to avoid editor dependency.
 #define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
+#define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2918,30 +2920,32 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			//just add it
-
 			Ref<BaseMaterial3D> mat;
-			if (p.has("material")) {
-				const int material = p["material"];
-				ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
-				Ref<BaseMaterial3D> mat3d = state->materials[material];
-				ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
-				if (has_vertex_color) {
-					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-				}
-				mat = mat3d;
+			String mat_name;
+			if (!state->discard_meshes_and_materials) {
+				if (p.has("material")) {
+					const int material = p["material"];
+					ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
+					Ref<BaseMaterial3D> mat3d = state->materials[material];
+					ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
+					if (has_vertex_color) {
+						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					}
+					mat = mat3d;
 
-			} else {
-				Ref<StandardMaterial3D> mat3d;
-				mat3d.instantiate();
-				if (has_vertex_color) {
-					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				} else {
+					Ref<StandardMaterial3D> mat3d;
+					mat3d.instantiate();
+					if (has_vertex_color) {
+						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					}
+					mat = mat3d;
 				}
-				mat = mat3d;
+				ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+				mat_name = mat->get_name();
 			}
-			ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
 			import_mesh->add_surface(primitive, array, morphs,
-					Dictionary(), mat, mat->get_name(), flags);
+					Dictionary(), mat, mat_name, flags);
 		}
 
 		Vector<float> blend_weights;
@@ -6908,8 +6912,8 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 
 Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32_t p_flags, int32_t p_bake_fps) {
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
-	state->use_named_skin_binds =
-			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	_convert_scene_node(state, p_node, -1, -1);
 	if (!state->buffers.size()) {
@@ -6929,6 +6933,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
@@ -6968,20 +6973,22 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* PARSE IMAGES */
-	err = _parse_images(state, p_search_path);
+	if (!state->discard_meshes_and_materials) {
+		/* PARSE IMAGES */
+		err = _parse_images(state, p_search_path);
 
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* PARSE TEXTURES */
-	err = _parse_textures(state);
+		/* PARSE TEXTURES */
+		err = _parse_textures(state);
 
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* PARSE TEXTURES */
-	err = _parse_materials(state);
+		/* PARSE TEXTURES */
+		err = _parse_materials(state);
 
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+	}
 
 	/* PARSE SKINS */
 	err = _parse_skins(state);
@@ -7033,6 +7040,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	}
 	r_state->filename = p_path.get_file().get_basename();
 	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
