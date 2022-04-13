@@ -169,7 +169,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	return -1;
 }
 
-void PopupMenu::_activate_submenu(int p_over) {
+void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Node *n = get_node(items[p_over].submenu);
 	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[p_over].submenu + ".");
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
@@ -213,8 +213,10 @@ void PopupMenu::_activate_submenu(int p_over) {
 		return;
 	}
 
+	submenu_pum->activated_by_keyboard = p_by_keyboard;
+
 	// If not triggered by the mouse, start the popup with its first item selected.
-	if (submenu_pum->get_item_count() > 0 && Input::get_singleton()->is_action_just_pressed("ui_accept")) {
+	if (submenu_pum->get_item_count() > 0 && p_by_keyboard) {
 		submenu_pum->set_current_index(0);
 	}
 
@@ -323,14 +325,14 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			set_input_as_handled();
 		}
 	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !!items[mouse_over].separator && items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
-			_activate_submenu(mouse_over);
+		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && !items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
+			_activate_submenu(mouse_over, true);
 			set_input_as_handled();
 		}
 	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 			if (!items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
-				_activate_submenu(mouse_over);
+				_activate_submenu(mouse_over, true);
 			} else {
 				activate_item(mouse_over);
 			}
@@ -396,6 +398,11 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
+		if (m->get_velocity().is_equal_approx(Vector2())) {
+			return;
+		}
+		activated_by_keyboard = false;
+
 		for (const Rect2 &E : autohide_areas) {
 			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E.has_point(m->get_position())) {
 				_close_pressed();
@@ -687,7 +694,7 @@ void PopupMenu::_draw_background() {
 void PopupMenu::_minimum_lifetime_timeout() {
 	close_allowed = true;
 	// If the mouse still isn't in this popup after timer expires, close.
-	if (!get_visible_rect().has_point(get_mouse_position())) {
+	if (!activated_by_keyboard && !get_visible_rect().has_point(get_mouse_position())) {
 		_close_pressed();
 	}
 }
@@ -772,7 +779,7 @@ void PopupMenu::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// Only used when using operating system windows.
-			if (!is_embedded() && autohide_areas.size()) {
+			if (!activated_by_keyboard && !is_embedded() && autohide_areas.size()) {
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
 				mouse_pos -= get_position();
 
