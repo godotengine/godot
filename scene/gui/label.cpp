@@ -447,12 +447,19 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
+				line_width = 0;
 			} else if (current != ' ') {
 				total_char_cache++;
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
+				if (line_width == 0) {
+					if (current_word_size == 0) {
+						word_pos = i;
+					}
+					current_word_size += space_width;
+					line_width += space_width;
+				} else if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
 				} else {
