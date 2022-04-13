@@ -253,9 +253,7 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 
 	if (renaming_edit) {
 		edit_label[0]->set_text(TTR("New name:"));
-		edit_label[0]->set_position(Point2(5, 5));
 		edit_label[0]->show();
-		edit_line[0]->set_begin(Point2(15, 25));
 		edit_line[0]->set_text(edited_node);
 		edit_line[0]->show();
 		edit_dialog->set_size(Size2(150, 50));
@@ -289,57 +287,43 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 				return;
 			case AnimationTreePlayer::NODE_TIMESCALE:
 				edit_label[0]->set_text(TTR("Scale:"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
-				edit_line[0]->set_begin(Point2(15, 25));
 				edit_line[0]->set_text(rtos(anim_tree->timescale_node_get_scale(edited_node)));
 				edit_line[0]->show();
 				edit_dialog->set_size(Size2(150, 50));
 				break;
 			case AnimationTreePlayer::NODE_ONESHOT:
 				edit_label[0]->set_text(TTR("Fade In (s):"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
-				edit_line[0]->set_begin(Point2(15, 25));
 				edit_line[0]->set_text(rtos(anim_tree->oneshot_node_get_fadein_time(edited_node)));
 				edit_line[0]->show();
 				edit_label[1]->set_text(TTR("Fade Out (s):"));
-				edit_label[1]->set_position(Point2(5, 55));
 				edit_label[1]->show();
-				edit_line[1]->set_begin(Point2(15, 75));
 				edit_line[1]->set_text(rtos(anim_tree->oneshot_node_get_fadeout_time(edited_node)));
 				edit_line[1]->show();
 
 				edit_option->clear();
 				edit_option->add_item(TTR("Blend"), 0);
-				edit_option->add_item(TTR("Mix"), 1);
-				edit_option->set_begin(Point2(15, 105));
+				edit_option->add_item(TTR("Add"), 1);
 
 				edit_option->select(anim_tree->oneshot_node_get_mix_mode(edited_node));
 				edit_option->show();
 
 				edit_check->set_text(TTR("Auto Restart:"));
-				edit_check->set_begin(Point2(15, 125));
 				edit_check->set_pressed(anim_tree->oneshot_node_has_autorestart(edited_node));
 				edit_check->show();
 
 				edit_label[2]->set_text(TTR("Restart (s):"));
-				edit_label[2]->set_position(Point2(5, 145));
 				edit_label[2]->show();
-				edit_line[2]->set_begin(Point2(15, 165));
 				edit_line[2]->set_text(rtos(anim_tree->oneshot_node_get_autorestart_delay(edited_node)));
 				edit_line[2]->show();
 				edit_label[3]->set_text(TTR("Random Restart (s):"));
-				edit_label[3]->set_position(Point2(5, 195));
 				edit_label[3]->show();
-				edit_line[3]->set_begin(Point2(15, 215));
 				edit_line[3]->set_text(rtos(anim_tree->oneshot_node_get_autorestart_random_delay(edited_node)));
 				edit_line[3]->show();
 
-				filter_button->set_begin(Point2(10, 245));
 				filter_button->show();
 
-				edit_button->set_begin(Point2(10, 268));
 				edit_button->set_text(TTR("Start!"));
 
 				edit_button->show();
@@ -351,28 +335,23 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 			case AnimationTreePlayer::NODE_MIX:
 
 				edit_label[0]->set_text(TTR("Amount:"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
 				edit_scroll[0]->set_min(0);
 				edit_scroll[0]->set_max(1);
 				edit_scroll[0]->set_step(0.01);
 				edit_scroll[0]->set_value(anim_tree->mix_node_get_amount(edited_node));
-				edit_scroll[0]->set_begin(Point2(15, 25));
 				edit_scroll[0]->show();
 				edit_dialog->set_size(Size2(150, 50));
 
 				break;
 			case AnimationTreePlayer::NODE_BLEND2:
 				edit_label[0]->set_text(TTR("Blend:"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
 				edit_scroll[0]->set_min(0);
 				edit_scroll[0]->set_max(1);
 				edit_scroll[0]->set_step(0.01);
 				edit_scroll[0]->set_value(anim_tree->blend2_node_get_amount(edited_node));
-				edit_scroll[0]->set_begin(Point2(15, 25));
 				edit_scroll[0]->show();
-				filter_button->set_begin(Point2(10, 47));
 				filter_button->show();
 				edit_dialog->set_size(Size2(150, 74));
 
@@ -380,13 +359,11 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 
 			case AnimationTreePlayer::NODE_BLEND3:
 				edit_label[0]->set_text(TTR("Blend:"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
 				edit_scroll[0]->set_min(-1);
 				edit_scroll[0]->set_max(1);
 				edit_scroll[0]->set_step(0.01);
 				edit_scroll[0]->set_value(anim_tree->blend3_node_get_amount(edited_node));
-				edit_scroll[0]->set_begin(Point2(15, 25));
 				edit_scroll[0]->show();
 				edit_dialog->set_size(Size2(150, 50));
 
@@ -394,22 +371,18 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 			case AnimationTreePlayer::NODE_BLEND4:
 
 				edit_label[0]->set_text(TTR("Blend 0:"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
 				edit_scroll[0]->set_min(0);
 				edit_scroll[0]->set_max(1);
 				edit_scroll[0]->set_step(0.01);
 				edit_scroll[0]->set_value(anim_tree->blend4_node_get_amount(edited_node).x);
-				edit_scroll[0]->set_begin(Point2(15, 25));
 				edit_scroll[0]->show();
 				edit_label[1]->set_text(TTR("Blend 1:"));
-				edit_label[1]->set_position(Point2(5, 55));
 				edit_label[1]->show();
 				edit_scroll[1]->set_min(0);
 				edit_scroll[1]->set_max(1);
 				edit_scroll[1]->set_step(0.01);
 				edit_scroll[1]->set_value(anim_tree->blend4_node_get_amount(edited_node).y);
-				edit_scroll[1]->set_begin(Point2(15, 75));
 				edit_scroll[1]->show();
 				edit_dialog->set_size(Size2(150, 100));
 
@@ -417,16 +390,9 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 
 			case AnimationTreePlayer::NODE_TRANSITION: {
 				edit_label[0]->set_text(TTR("X-Fade Time (s):"));
-				edit_label[0]->set_position(Point2(5, 5));
 				edit_label[0]->show();
-				edit_line[0]->set_begin(Point2(15, 25));
 				edit_line[0]->set_text(rtos(anim_tree->transition_node_get_xfade_time(edited_node)));
 				edit_line[0]->show();
-
-				edit_label[1]->set_text(TTR("Current:"));
-				edit_label[1]->set_position(Point2(5, 55));
-				edit_label[1]->show();
-				edit_option->set_begin(Point2(15, 75));
 
 				edit_option->clear();
 
@@ -1281,49 +1247,43 @@ AnimationTreePlayerEditor::AnimationTreePlayerEditor() {
 	updating_edit = false;
 
 	edit_dialog = memnew(PopupPanel);
-	//edit_dialog->get_ok()->hide();
-	//edit_dialog->get_cancel()->hide();
 	add_child(edit_dialog);
 
+	VBoxContainer *vb = memnew(VBoxContainer);
+	edit_dialog->add_child(vb);
+	vb->set_anchors_preset(PRESET_WIDE);
+
 	edit_option = memnew(OptionButton);
-	edit_option->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	edit_option->set_margin(MARGIN_RIGHT, -10);
-	edit_dialog->add_child(edit_option);
+	vb->add_child(edit_option);
 	edit_option->connect("item_selected", this, "_edit_dialog_changedf");
 	edit_option->hide();
 
-	for (int i = 0; i < 2; i++) {
-		edit_scroll[i] = memnew(HSlider);
-		edit_scroll[i]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-		edit_scroll[i]->set_margin(MARGIN_RIGHT, -10);
-		edit_dialog->add_child(edit_scroll[i]);
-		edit_scroll[i]->hide();
-		edit_scroll[i]->connect("value_changed", this, "_edit_dialog_changedf");
-	}
 	for (int i = 0; i < 4; i++) {
+		edit_label[i] = memnew(Label);
+		vb->add_child(edit_label[i]);
+		edit_label[i]->hide();
+
 		edit_line[i] = memnew(LineEdit);
-		edit_line[i]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-		edit_line[i]->set_margin(MARGIN_RIGHT, -10);
-		edit_dialog->add_child(edit_line[i]);
+		vb->add_child(edit_line[i]);
 		edit_line[i]->hide();
 		edit_line[i]->connect("text_changed", this, "_edit_dialog_changeds");
 		edit_line[i]->connect("text_entered", this, "_edit_dialog_changede");
-		edit_label[i] = memnew(Label);
-		edit_dialog->add_child(edit_label[i]);
-		edit_label[i]->hide();
+
+		if (i < 2) {
+			edit_scroll[i] = memnew(HSlider);
+			vb->add_child(edit_scroll[i]);
+			edit_scroll[i]->hide();
+			edit_scroll[i]->connect("value_changed", this, "_edit_dialog_changedf");
+		}
 	}
 
 	edit_button = memnew(Button);
-	edit_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	edit_button->set_margin(MARGIN_RIGHT, -10);
-	edit_dialog->add_child(edit_button);
+	vb->add_child(edit_button);
 	edit_button->hide();
 	edit_button->connect("pressed", this, "_edit_oneshot_start");
 
 	edit_check = memnew(CheckButton);
-	edit_check->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	edit_check->set_margin(MARGIN_RIGHT, -10);
-	edit_dialog->add_child(edit_check);
+	vb->add_child(edit_check);
 	edit_check->hide();
 	edit_check->connect("pressed", this, "_edit_dialog_changed");
 
@@ -1345,7 +1305,7 @@ AnimationTreePlayerEditor::AnimationTreePlayerEditor() {
 	filter_button = memnew(Button);
 	filter_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	filter_button->set_margin(MARGIN_RIGHT, -10);
-	edit_dialog->add_child(filter_button);
+	vb->add_child(filter_button);
 	filter_button->hide();
 	filter_button->set_text(TTR("Filters..."));
 	filter_button->connect("pressed", this, "_edit_filters");
