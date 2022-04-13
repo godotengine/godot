@@ -4257,7 +4257,7 @@ void RichTextLabel::select_all() {
 
 	while (it) {
 		if (it->type != ITEM_FRAME) {
-			if (from_item == nullptr) {
+			if (!from_item) {
 				from_item = it;
 			} else {
 				to_item = it;
@@ -4265,13 +4265,22 @@ void RichTextLabel::select_all() {
 		}
 		it = _get_next_item(it, true);
 	}
+	if (!from_item || !to_item) {
+		return;
+	}
 
 	ItemFrame *from_frame = nullptr;
 	int from_line = 0;
 	_find_frame(from_item, &from_frame, &from_line);
+	if (!from_frame) {
+		return;
+	}
 	ItemFrame *to_frame = nullptr;
 	int to_line = 0;
 	_find_frame(to_item, &to_frame, &to_line);
+	if (!to_frame) {
+		return;
+	}
 	selection.from_line = from_line;
 	selection.from_frame = from_frame;
 	selection.from_char = 0;
