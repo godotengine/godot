@@ -386,6 +386,9 @@ void Label::regenerate_word_cache() {
 	real_t space_width = font->get_char_size(' ').width;
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
+
+	bool prev_insert_newline = false;
+	
 	total_char_cache = 0;
 
 	WordCache *last = nullptr;
@@ -413,6 +416,7 @@ void Label::regenerate_word_cache() {
 
 		if (current < 33) {
 			if (current_word_size > 0) {
+				prev_insert_newline = false;
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
 					last->next = wc;
@@ -429,6 +433,7 @@ void Label::regenerate_word_cache() {
 				space_count = 0;
 			} else if ((i == xl_text.length() || current == '\n') && last != nullptr && space_count != 0) {
 				//in case there are trailing white spaces we add a placeholder word cache with just the spaces
+				prev_insert_newline = false;
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
 					last->next = wc;
@@ -447,12 +452,19 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
+				prev_insert_newline = true;
 			} else if (current != ' ') {
 				total_char_cache++;
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
+				if (i == 0 || prev_insert_newline) {
+					if (current_word_size == 0) {
+						word_pos = i;
+					}
+					current_word_size += space_width;
+					line_width += space_width;
+				} else if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
 				} else {
@@ -462,6 +474,7 @@ void Label::regenerate_word_cache() {
 
 		} else {
 			// latin characters
+			prev_insert_newline = false;
 			if (current_word_size == 0) {
 				word_pos = i;
 			}
