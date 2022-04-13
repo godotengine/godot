@@ -293,15 +293,15 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				raster_state.cull_mode = cull_mode_rd;
 				raster_state.wireframe = wireframe;
 
-				RD::PipelineColorBlendState blend_state;
-				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
-				RD::PipelineMultisampleState multisample_state;
-
 				if (k == PIPELINE_VERSION_COLOR_PASS) {
 					for (int l = 0; l < PIPELINE_COLOR_PASS_FLAG_COUNT; l++) {
 						if (!shader_singleton->valid_color_pass_pipelines.has(l)) {
 							continue;
 						}
+
+						RD::PipelineColorBlendState blend_state;
+						RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
+						RD::PipelineMultisampleState multisample_state;
 
 						int shader_flags = 0;
 						if (l & PIPELINE_COLOR_PASS_FLAG_TRANSPARENT) {
@@ -338,6 +338,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						color_pipelines[i][j][l].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
 					}
 				} else {
+					RD::PipelineColorBlendState blend_state;
+					RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
+					RD::PipelineMultisampleState multisample_state;
+
 					if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW) {
 						//none, leave empty
 					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
