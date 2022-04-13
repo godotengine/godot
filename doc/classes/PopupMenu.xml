@@ -569,7 +569,7 @@
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
-			The horizontal space between the item's name and the shortcut text/submenu arrow.
+			The horizontal space between the item's elements.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
 		</theme_item>
