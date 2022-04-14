@@ -872,7 +872,7 @@ void EditorPropertyDictionary::update_property() {
 
 		object->set_dict(dict);
 		VBoxContainer *add_vbox = nullptr;
-		double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+		double default_float_step = Math::pow(10.0, EDITOR_GET("interface/inspector/default_float_step_exponent"));
 
 		for (int i = 0; i < total_amount; i++) {
 			String prop_name;

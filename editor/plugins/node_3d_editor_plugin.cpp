@@ -4074,7 +4074,7 @@ void Node3DEditorViewport::commit_transform() {
 void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 	Vector3 ray_pos = _get_ray_pos(p_mousepos);
 	Vector3 ray = _get_ray(p_mousepos);
-	double snap = EDITOR_GET("interface/inspector/default_float_step");
+	double snap = Math::pow(10.0, EDITOR_GET("interface/inspector/default_float_step_exponent"));
 	int snap_step_decimals = Math::range_step_decimals(snap);
 
 	switch (_edit.mode) {
