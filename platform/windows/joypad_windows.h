@@ -70,9 +70,9 @@ private:
 	};
 
 	struct dinput_gamepad {
-		int id;
-		bool attached;
-		bool confirmed;
+		int id = 0;
+		bool attached = false;
+		bool confirmed = false;
 		bool last_buttons[MAX_JOY_BUTTONS];
 		DWORD last_pad;
 
@@ -92,13 +92,13 @@ private:
 	};
 
 	struct xinput_gamepad {
-		int id;
-		bool attached;
-		bool vibrating;
+		int id = 0;
+		bool attached = false;
+		bool vibrating = false;
 		DWORD last_packet;
 		XINPUT_STATE state;
-		uint64_t ff_timestamp;
-		uint64_t ff_end_timestamp;
+		uint64_t ff_timestamp = 0;
+		uint64_t ff_end_timestamp = 0;
 
 		xinput_gamepad() {
 			attached = false;

@@ -48,18 +48,18 @@
 #undef CursorShape
 
 class OS_Server : public OS_Unix {
-	VisualServer *visual_server;
+	VisualServer *visual_server = nullptr;
 	VideoMode current_videomode;
 	List<String> args;
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
-	bool grab;
+	bool grab = false;
 
 	virtual void delete_main_loop();
 
-	bool force_quit;
+	bool force_quit = false;
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 #ifdef __APPLE__
 	PowerOSX *power_manager;

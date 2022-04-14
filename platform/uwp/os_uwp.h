@@ -58,13 +58,13 @@ public:
 			CHAR_EVENT_MESSAGE
 		};
 
-		bool alt, shift, control;
-		MessageType type;
-		bool pressed;
-		unsigned int scancode;
-		unsigned int physical_scancode;
-		unsigned int unicode;
-		bool echo;
+		bool alt = false, shift = false, control = false;
+		MessageType type = KEY_EVENT_MESSAGE;
+		bool pressed = false;
+		unsigned int scancode = 0;
+		unsigned int physical_scancode = 0;
+		unsigned int unicode = 0;
+		bool echo = false;
 		CorePhysicalKeyStatus status;
 	};
 

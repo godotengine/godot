@@ -58,12 +58,12 @@ private:
 	struct ControllerDevice {
 		Windows::Gaming::Input::IGameController ^ controller_reference;
 
-		int id;
-		bool connected;
+		int id = -1;
+		bool connected = false;
 		ControllerType type;
-		float ff_timestamp;
-		float ff_end_timestamp;
-		bool vibrating;
+		float ff_timestamp = 0;
+		float ff_end_timestamp = 0;
+		bool vibrating = false;
 
 		ControllerDevice() {
 			id = -1;
