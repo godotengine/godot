@@ -447,32 +447,12 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-				line_width = 0;
-=======
-				prev_insert_newline = true;
->>>>>>> d87902accb (Fix for leading space pushing text outside label boundary in autowrap mode problem)
-=======
-				line_width = 0;
->>>>>>> 18efb0d2b2 (Implemented fix without using local variable)
-=======
->>>>>>> 286fff2f6f (Removed one unneeded variable set statement)
 			} else if (current != ' ') {
 				total_char_cache++;
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-<<<<<<< HEAD
-<<<<<<< HEAD
 				if (line_width == 0) {
-=======
-				if (i == 0 || prev_insert_newline) {
->>>>>>> d87902accb (Fix for leading space pushing text outside label boundary in autowrap mode problem)
-=======
-				if (line_width == 0) {
->>>>>>> 18efb0d2b2 (Implemented fix without using local variable)
 					if (current_word_size == 0) {
 						word_pos = i;
 					}
