@@ -70,22 +70,17 @@ private:
 	};
 
 	struct dinput_gamepad {
-		int id = 0;
+		int id = -1;
 		bool attached = false;
 		bool confirmed = false;
 		bool last_buttons[MAX_JOY_BUTTONS];
-		DWORD last_pad;
+		DWORD last_pad = -1;
 
 		LPDIRECTINPUTDEVICE8 di_joy;
 		List<LONG> joy_axis;
 		GUID guid;
 
 		dinput_gamepad() {
-			id = -1;
-			last_pad = -1;
-			attached = false;
-			confirmed = false;
-
 			for (int i = 0; i < MAX_JOY_BUTTONS; i++)
 				last_buttons[i] = false;
 		}
@@ -95,18 +90,10 @@ private:
 		int id = 0;
 		bool attached = false;
 		bool vibrating = false;
-		DWORD last_packet;
+		DWORD last_packet = 0;
 		XINPUT_STATE state;
 		uint64_t ff_timestamp = 0;
 		uint64_t ff_end_timestamp = 0;
-
-		xinput_gamepad() {
-			attached = false;
-			vibrating = false;
-			ff_timestamp = 0;
-			ff_end_timestamp = 0;
-			last_packet = 0;
-		}
 	};
 
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);

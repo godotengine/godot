@@ -161,11 +161,6 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 	return true;
 }
 
-FileAccessAndroid::FileAccessAndroid() {
-	a = NULL;
-	eof = false;
-}
-
 FileAccessAndroid::~FileAccessAndroid() {
 	close();
 }

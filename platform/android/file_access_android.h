@@ -74,7 +74,6 @@ public:
 
 	//static void make_default();
 
-	FileAccessAndroid();
 	~FileAccessAndroid();
 };
 
