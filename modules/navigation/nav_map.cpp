@@ -226,6 +226,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			navigation_polys.push_back(np);
 			to_visit.clear();
 			to_visit.push_back(0);
+			least_cost_id = 0;
 
 			reachable_end = nullptr;
 
@@ -245,6 +246,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			}
 		}
 
+		ERR_BREAK(least_cost_id == -1);
+
 		// Stores the further reachable end polygon, in case our goal is not reachable.
 		if (is_reachable) {
 			float d = navigation_polys[least_cost_id].entry.distance_to(p_destination);
@@ -253,8 +256,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				reachable_end = navigation_polys[least_cost_id].poly;
 			}
 		}
-
-		ERR_BREAK(least_cost_id == -1);
 
 		// Check if we reached the end
 		if (navigation_polys[least_cost_id].poly == end_poly) {
