@@ -6597,13 +6597,13 @@ void TextEdit::_confirm_completion() {
 
 	if (last_completion_char == '(') {
 		if (next_char == last_completion_char) {
-			_base_remove_text(cursor.line, cursor.column - 1, cursor.line, cursor.column);
+			_remove_text(cursor.line, cursor.column - 1, cursor.line, cursor.column);
 		} else if (auto_brace_completion_enabled) {
 			insert_text_at_cursor(")");
 			cursor.column--;
 		}
 	} else if (last_completion_char == ')' && next_char == '(') {
-		_base_remove_text(cursor.line, cursor.column - 2, cursor.line, cursor.column);
+		_remove_text(cursor.line, cursor.column - 2, cursor.line, cursor.column);
 		if (line[cursor.column + 1] != ')') {
 			cursor.column--;
 		}
