@@ -542,15 +542,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			String current = animation->get_item_text(animation->get_selected());
 			Ref<Animation> anim = player->get_animation(current);
 
-			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
-			List<PropertyInfo> plist;
-			anim->get_property_list(&plist);
-			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-				if (E->get().usage & PROPERTY_USAGE_STORAGE) {
-					new_anim->set(E->get().name, anim->get(E->get().name));
-				}
-			}
-			new_anim->set_path("");
+			Ref<Animation> new_anim = _animation_clone(anim);
 			new_anim->set_name(new_name);
 
 			undo_redo->create_action(TTR("Duplicate Animation"));
@@ -1018,6 +1010,23 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	name->grab_focus();
 }
 
+Ref<Animation> AnimationPlayerEditor::_animation_clone(const Ref<Animation> p_anim) {
+	Ref<Animation> new_anim = memnew(Animation);
+
+	List<PropertyInfo> plist;
+	p_anim->get_property_list(&plist);
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+		const PropertyInfo &property = E->get();
+		if (property.usage & PROPERTY_USAGE_STORAGE) {
+			new_anim->set(property.name, p_anim->get(property.name));
+		}
+	}
+
+	new_anim->set_path("");
+
+	return new_anim;
+}
+
 void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	if (updating || !player || player->is_playing()) {
 		return;
@@ -1114,37 +1123,47 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_NEW_ANIM: {
 			_animation_new();
 		} break;
+
 		case TOOL_LOAD_ANIM: {
 			_animation_load();
 		} break;
+
 		case TOOL_SAVE_ANIM: {
 			if (anim.is_valid()) {
 				_animation_save(anim);
 			}
 		} break;
+
 		case TOOL_SAVE_AS_ANIM: {
 			if (anim.is_valid()) {
 				_animation_save_as(anim);
 			}
 		} break;
+
 		case TOOL_DUPLICATE_ANIM: {
 			_animation_duplicate();
 		} break;
+
 		case TOOL_RENAME_ANIM: {
 			_animation_rename();
 		} break;
+
 		case TOOL_EDIT_TRANSITIONS: {
 			_animation_blend();
 		} break;
+
 		case TOOL_REMOVE_ANIM: {
 			_animation_remove();
 		} break;
+
 		case TOOL_COPY_ANIM: {
 			if (anim.is_valid()) {
 				EditorSettings::get_singleton()->set_resource_clipboard(anim);
 			}
 		} break;
-		case TOOL_PASTE_ANIM: {
+
+		case TOOL_PASTE_ANIM:
+		case TOOL_PASTE_ANIM_REF: {
 			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim2.is_valid()) {
 				error_dialog->set_text(TTR("No animation resource on clipboard!"));
@@ -1164,6 +1183,11 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 				name = base + " " + itos(idx);
 			}
 
+			if (p_option == TOOL_PASTE_ANIM) {
+				anim2 = _animation_clone(anim2);
+				anim2->set_name(name);
+			}
+
 			undo_redo->create_action(TTR("Paste Animation"));
 			undo_redo->add_do_method(player, "add_animation", name, anim2);
 			undo_redo->add_undo_method(player, "remove_animation", name);
@@ -1173,6 +1197,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			_select_anim_by_name(name);
 		} break;
+
 		case TOOL_EDIT_RESOURCE: {
 			if (anim.is_valid()) {
 				editor->edit_resource(anim);
@@ -1606,6 +1631,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy")), TOOL_COPY_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate...")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
