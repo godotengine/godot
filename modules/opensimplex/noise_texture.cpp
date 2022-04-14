@@ -74,6 +74,9 @@ void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bump_strength", "bump_strength"), &NoiseTexture::set_bump_strength);
 	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture::get_bump_strength);
 
+	ClassDB::bind_method(D_METHOD("set_color_ramp", "color_ramp"), &NoiseTexture::set_color_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture::get_color_ramp);
+
 	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture::_update_texture);
 	ClassDB::bind_method(D_METHOD("_queue_update"), &NoiseTexture::_queue_update);
 	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture::_generate_texture);
@@ -84,6 +87,7 @@ void NoiseTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normalmap"), "set_as_normalmap", "is_normalmap");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "OpenSimplexNoise"), "set_noise", "get_noise");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "noise_offset"), "set_noise_offset", "get_noise_offset");
 }
@@ -144,11 +148,42 @@ Ref<Image> NoiseTexture::_generate_texture() {
 		image = ref_noise->get_image(size.x, size.y, noise_offset);
 	}
 
+	if (color_ramp.is_valid()) {
+		image = _modulate_with_gradient(image, color_ramp);
+	}
+
 	if (as_normalmap) {
 		image->bumpmap_to_normalmap(bump_strength);
 	}
 
 	return image;
+}
+
+Ref<Image> NoiseTexture::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) {
+	int width = p_image->get_width();
+	int height = p_image->get_height();
+
+	Ref<Image> new_image;
+	new_image.instance();
+
+	PoolVector<uint8_t> data;
+	data.resize(width * height * 4);
+
+	PoolVector<uint8_t>::Write wd8 = data.write();
+
+	for (int row = 0, x = 0; row < height; row++) {
+		for (int col = 0; col < width; col++, x++) {
+			Color pixel_color = p_image->get_pixel(col, row);
+			Color ramp_color = color_ramp->get_color_at_offset(pixel_color.r);
+			wd8[x * 4 + 0] = uint8_t(CLAMP(ramp_color.r * 255, 0, 255));
+			wd8[x * 4 + 1] = uint8_t(CLAMP(ramp_color.g * 255, 0, 255));
+			wd8[x * 4 + 2] = uint8_t(CLAMP(ramp_color.b * 255, 0, 255));
+			wd8[x * 4 + 3] = uint8_t(CLAMP(ramp_color.a * 255, 0, 255));
+		}
+	}
+
+	new_image->create(width, height, false, Image::FORMAT_RGBA8, data);
+	return new_image;
 }
 
 void NoiseTexture::_update_texture() {
@@ -225,7 +260,7 @@ void NoiseTexture::set_seamless(bool p_seamless) {
 	_queue_update();
 }
 
-bool NoiseTexture::get_seamless() {
+bool NoiseTexture::get_seamless() const {
 	return seamless;
 }
 
@@ -238,7 +273,7 @@ void NoiseTexture::set_as_normalmap(bool p_as_normalmap) {
 	_change_notify();
 }
 
-bool NoiseTexture::is_normalmap() {
+bool NoiseTexture::is_normalmap() const {
 	return as_normalmap;
 }
 
@@ -252,8 +287,20 @@ void NoiseTexture::set_bump_strength(float p_bump_strength) {
 	}
 }
 
-float NoiseTexture::get_bump_strength() {
+float NoiseTexture::get_bump_strength() const {
 	return bump_strength;
+}
+
+void NoiseTexture::set_color_ramp(const Ref<Gradient> &p_gradient) {
+	color_ramp = p_gradient;
+	if (color_ramp.is_valid()) {
+		color_ramp->connect("changed", this, "_queue_update");
+	}
+	_queue_update();
+}
+
+Ref<Gradient> NoiseTexture::get_color_ramp() const {
+	return color_ramp;
 }
 
 int NoiseTexture::get_width() const {

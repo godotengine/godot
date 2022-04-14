@@ -24,6 +24,9 @@
 		<member name="bump_strength" type="float" setter="set_bump_strength" getter="get_bump_strength" default="8.0">
 			Strength of the bump maps used in this texture. A higher value will make the bump maps appear larger while a lower value will make them appear softer.
 		</member>
+		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
+			A [Gradient] which is used to map the luminance of each pixel to a color value.
+		</member>
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="7" />
 		<member name="height" type="int" setter="set_height" getter="get_height" default="512">
 			Height of the generated texture.

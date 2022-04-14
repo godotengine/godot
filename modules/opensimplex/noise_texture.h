@@ -60,6 +60,7 @@ private:
 	bool seamless;
 	bool as_normalmap;
 	float bump_strength;
+	Ref<Gradient> color_ramp;
 
 	void _thread_done(const Ref<Image> &p_image);
 	static void _thread_function(void *p_ud);
@@ -68,6 +69,8 @@ private:
 	Ref<Image> _generate_texture();
 	void _update_texture();
 	void _set_texture_data(const Ref<Image> &p_image);
+
+	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
 
 protected:
 	static void _bind_methods();
@@ -84,13 +87,16 @@ public:
 	Vector2 get_noise_offset() const;
 
 	void set_seamless(bool p_seamless);
-	bool get_seamless();
+	bool get_seamless() const;
 
 	void set_as_normalmap(bool p_as_normalmap);
-	bool is_normalmap();
+	bool is_normalmap() const;
 
 	void set_bump_strength(float p_bump_strength);
-	float get_bump_strength();
+	float get_bump_strength() const;
+
+	void set_color_ramp(const Ref<Gradient> &p_gradient);
+	Ref<Gradient> get_color_ramp() const;
 
 	int get_width() const;
 	int get_height() const;
