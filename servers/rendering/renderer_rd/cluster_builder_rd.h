@@ -73,13 +73,8 @@ class ClusterBuilderSharedDataRD {
 		ClusterRenderShaderRD cluster_render_shader;
 		RID shader_version;
 		RID shader;
-		enum PipelineVersion {
-			PIPELINE_NORMAL,
-			PIPELINE_MSAA,
-			PIPELINE_MAX
-		};
 
-		RID shader_pipelines[PIPELINE_MAX];
+		RID shader_pipeline;
 	} cluster_render;
 
 	struct ClusterStore {

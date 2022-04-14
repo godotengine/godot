@@ -52,10 +52,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		cluster_render.cluster_render_shader.initialize(versions);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
-		RD::PipelineMultisampleState ms;
-		ms.sample_count = RD::TEXTURE_SAMPLES_4;
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
+		cluster_render.shader_pipeline = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
 	}
 	{
 		Vector<String> versions;
@@ -436,7 +433,7 @@ void ClusterBuilderRD::bake_cluster() {
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
 			ClusterBuilderSharedDataRD::ClusterRender::PushConstant push_constant = {};
 
-			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shared->cluster_render.shader_pipelines[use_msaa ? ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_MSAA : ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_NORMAL]);
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shared->cluster_render.shader_pipeline);
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, cluster_render_uniform_set, 0);
 
 			for (uint32_t i = 0; i < render_element_count;) {
