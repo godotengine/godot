@@ -937,8 +937,8 @@ void ItemList::_notification(int p_what) {
 
 			draw_style_box(bg, Rect2(Point2(), size));
 
-			int hseparation = get_theme_constant(SNAME("hseparation"));
-			int vseparation = get_theme_constant(SNAME("vseparation"));
+			int hseparation = get_theme_constant(SNAME("h_separation"));
+			int vseparation = get_theme_constant(SNAME("v_separation"));
 			int icon_margin = get_theme_constant(SNAME("icon_margin"));
 			int line_separation = get_theme_constant(SNAME("line_separation"));
 			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));

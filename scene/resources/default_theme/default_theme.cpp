@@ -177,7 +177,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("icon_focus_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
-	theme->set_constant("hseparation", "Button", 2 * scale);
+	theme->set_constant("h_separation", "Button", 2 * scale);
 
 	// LinkButton
 
@@ -230,7 +230,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
 	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "OptionButton", 2 * scale);
+	theme->set_constant("h_separation", "OptionButton", 2 * scale);
 	theme->set_constant("arrow_margin", "OptionButton", 4 * scale);
 	theme->set_constant("outline_size", "OptionButton", 0);
 
@@ -252,7 +252,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "MenuButton", Color(1, 1, 1, 0.3));
 	theme->set_color("font_outline_color", "MenuButton", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "MenuButton", 3 * scale);
+	theme->set_constant("h_separation", "MenuButton", 3 * scale);
 	theme->set_constant("outline_size", "MenuButton", 0);
 
 	// CheckBox
@@ -295,8 +295,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
 	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "CheckBox", 4 * scale);
-	theme->set_constant("check_vadjust", "CheckBox", 0 * scale);
+	theme->set_constant("h_separation", "CheckBox", 4 * scale);
+	theme->set_constant("check_v_adjust", "CheckBox", 0 * scale);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
 	// CheckButton
@@ -335,8 +335,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "CheckButton", control_font_disabled_color);
 	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "CheckButton", 4 * scale);
-	theme->set_constant("check_vadjust", "CheckButton", 0 * scale);
+	theme->set_constant("h_separation", "CheckButton", 4 * scale);
+	theme->set_constant("check_v_adjust", "CheckButton", 0 * scale);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
 	// Label
@@ -582,8 +582,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("close", "Window", icons["close"]);
 	theme->set_icon("close_pressed", "Window", icons["close_hl"]);
-	theme->set_constant("close_h_ofs", "Window", 18 * scale);
-	theme->set_constant("close_v_ofs", "Window", 24 * scale);
+	theme->set_constant("close_h_offset", "Window", 18 * scale);
+	theme->set_constant("close_v_offset", "Window", 24 * scale);
 
 	// Dialogs
 
@@ -665,8 +665,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "PopupMenu", Color(1, 1, 1));
 	theme->set_color("font_separator_outline_color", "PopupMenu", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
-	theme->set_constant("vseparation", "PopupMenu", 4 * scale);
+	theme->set_constant("h_separation", "PopupMenu", 4 * scale);
+	theme->set_constant("v_separation", "PopupMenu", 4 * scale);
 	theme->set_constant("outline_size", "PopupMenu", 0);
 	theme->set_constant("separator_outline_size", "PopupMenu", 0);
 	theme->set_constant("item_start_padding", "PopupMenu", 2 * scale);
@@ -688,9 +688,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	graphnode_position->set_border_color(Color(0.98, 0.89, 0.27));
 
 	theme->set_stylebox("frame", "GraphNode", graphnode_normal);
-	theme->set_stylebox("selectedframe", "GraphNode", graphnode_selected);
+	theme->set_stylebox("selected_frame", "GraphNode", graphnode_selected);
 	theme->set_stylebox("comment", "GraphNode", graphnode_comment_normal);
-	theme->set_stylebox("commentfocus", "GraphNode", graphnode_comment_selected);
+	theme->set_stylebox("comment_focus", "GraphNode", graphnode_comment_selected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphnode_breakpoint);
 	theme->set_stylebox("position", "GraphNode", graphnode_position);
 
@@ -746,8 +746,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("children_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
 	theme->set_color("custom_button_font_highlight", "Tree", control_font_hover_color);
 
-	theme->set_constant("hseparation", "Tree", 4 * scale);
-	theme->set_constant("vseparation", "Tree", 4 * scale);
+	theme->set_constant("h_separation", "Tree", 4 * scale);
+	theme->set_constant("v_separation", "Tree", 4 * scale);
 	theme->set_constant("item_margin", "Tree", 16 * scale);
 	theme->set_constant("button_margin", "Tree", 4 * scale);
 	theme->set_constant("draw_relationship_lines", "Tree", 0);
@@ -764,8 +764,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("bg", "ItemList", make_flat_stylebox(style_normal_color));
 	theme->set_stylebox("bg_focus", "ItemList", focus);
-	theme->set_constant("hseparation", "ItemList", 4);
-	theme->set_constant("vseparation", "ItemList", 2);
+	theme->set_constant("h_separation", "ItemList", 4);
+	theme->set_constant("v_separation", "ItemList", 2);
 	theme->set_constant("icon_margin", "ItemList", 4);
 	theme->set_constant("line_separation", "ItemList", 2 * scale);
 
@@ -846,7 +846,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
 	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "TabBar", 4 * scale);
+	theme->set_constant("h_separation", "TabBar", 4 * scale);
 	theme->set_constant("outline_size", "TabBar", 0);
 
 	// Separators
@@ -896,7 +896,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
 	theme->set_color("font_outline_color", "ColorPickerButton", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
+	theme->set_constant("h_separation", "ColorPickerButton", 2 * scale);
 	theme->set_constant("outline_size", "ColorPickerButton", 0);
 
 	// ColorPresetButton
@@ -956,8 +956,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * scale);
 
 	theme->set_constant("line_separation", "RichTextLabel", 0 * scale);
-	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
-	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);
+	theme->set_constant("table_h_separation", "RichTextLabel", 3 * scale);
+	theme->set_constant("table_v_separation", "RichTextLabel", 3 * scale);
 
 	theme->set_constant("outline_size", "RichTextLabel", 0);
 
@@ -976,16 +976,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("margin_top", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_right", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
-	theme->set_constant("hseparation", "GridContainer", 4 * scale);
-	theme->set_constant("vseparation", "GridContainer", 4 * scale);
+	theme->set_constant("h_separation", "GridContainer", 4 * scale);
+	theme->set_constant("v_separation", "GridContainer", 4 * scale);
 	theme->set_constant("separation", "HSplitContainer", 12 * scale);
 	theme->set_constant("separation", "VSplitContainer", 12 * scale);
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
-	theme->set_constant("hseparation", "HFlowContainer", 4 * scale);
-	theme->set_constant("vseparation", "HFlowContainer", 4 * scale);
-	theme->set_constant("hseparation", "VFlowContainer", 4 * scale);
-	theme->set_constant("vseparation", "VFlowContainer", 4 * scale);
+	theme->set_constant("h_separation", "HFlowContainer", 4 * scale);
+	theme->set_constant("v_separation", "HFlowContainer", 4 * scale);
+	theme->set_constant("h_separation", "VFlowContainer", 4 * scale);
+	theme->set_constant("v_separation", "VFlowContainer", 4 * scale);
 
 	theme->set_stylebox("panel", "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 

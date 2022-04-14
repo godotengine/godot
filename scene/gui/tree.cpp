@@ -1412,8 +1412,8 @@ void Tree::update_cache() {
 	cache.font_color = get_theme_color(SNAME("font_color"));
 	cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
 	cache.drop_position_color = get_theme_color(SNAME("drop_position_color"));
-	cache.hseparation = get_theme_constant(SNAME("hseparation"));
-	cache.vseparation = get_theme_constant(SNAME("vseparation"));
+	cache.hseparation = get_theme_constant(SNAME("h_separation"));
+	cache.vseparation = get_theme_constant(SNAME("v_separation"));
 	cache.item_margin = get_theme_constant(SNAME("item_margin"));
 	cache.button_margin = get_theme_constant(SNAME("button_margin"));
 

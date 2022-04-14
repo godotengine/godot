@@ -558,7 +558,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("state_machine_frame"), SNAME("GraphNode"));
-	Ref<StyleBox> style_selected = get_theme_stylebox(SNAME("state_machine_selectedframe"), SNAME("GraphNode"));
+	Ref<StyleBox> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
 
 	Ref<Font> font = get_theme_font(SNAME("title_font"), SNAME("GraphNode"));
 	int font_size = get_theme_font_size(SNAME("title_font_size"), SNAME("GraphNode"));

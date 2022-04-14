@@ -53,7 +53,7 @@ Size2 Button::get_minimum_size() const {
 			if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
 				minsize.width += _icon->get_width();
 				if (!xl_text.is_empty()) {
-					minsize.width += get_theme_constant(SNAME("hseparation"));
+					minsize.width += get_theme_constant(SNAME("h_separation"));
 				}
 			} else {
 				minsize.width = MAX(minsize.width, _icon->get_width());
@@ -244,21 +244,21 @@ void Button::_notification(int p_what) {
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 					style_offset.x = style->get_margin(SIDE_LEFT);
 					if (_internal_margin[SIDE_LEFT] > 0) {
-						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
+						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
 					}
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
 					style_offset.x = 0.0;
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_RIGHT) {
 					style_offset.x = -style->get_margin(SIDE_RIGHT);
 					if (_internal_margin[SIDE_RIGHT] > 0) {
-						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("hseparation"));
+						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("h_separation"));
 					}
 				}
 				style_offset.y = style->get_margin(SIDE_TOP);
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_theme_constant(SNAME("hseparation")) + icon_ofs_region;
+					_size.width -= get_theme_constant(SNAME("h_separation")) + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
@@ -286,7 +286,7 @@ void Button::_notification(int p_what) {
 				}
 			}
 
-			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant(SNAME("hseparation")), 0) : Point2();
+			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant(SNAME("h_separation")), 0) : Point2();
 			if (align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER && icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
 				icon_ofs.x = 0.0;
 			}
@@ -296,10 +296,10 @@ void Button::_notification(int p_what) {
 			int text_width = MAX(1, clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
-				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
+				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
 			}
 			if (_internal_margin[SIDE_RIGHT] > 0) {
-				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant(SNAME("hseparation"));
+				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant(SNAME("h_separation"));
 			}
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
@@ -313,7 +313,7 @@ void Button::_notification(int p_what) {
 						icon_ofs.x = 0.0;
 					}
 					if (_internal_margin[SIDE_LEFT] > 0) {
-						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
+						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
 					} else {
 						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
 					}
@@ -330,7 +330,7 @@ void Button::_notification(int p_what) {
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (_internal_margin[SIDE_RIGHT] > 0) {
-						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("hseparation"));
+						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("h_separation"));
 					} else {
 						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
 					}

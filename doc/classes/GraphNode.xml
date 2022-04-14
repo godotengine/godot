@@ -331,7 +331,7 @@
 		<theme_item name="comment" data_type="style" type="StyleBox">
 			The [StyleBox] used when [member comment] is enabled.
 		</theme_item>
-		<theme_item name="commentfocus" data_type="style" type="StyleBox">
+		<theme_item name="comment_focus" data_type="style" type="StyleBox">
 			The [StyleBox] used when [member comment] is enabled and the [GraphNode] is focused.
 		</theme_item>
 		<theme_item name="frame" data_type="style" type="StyleBox">
@@ -340,7 +340,7 @@
 		<theme_item name="position" data_type="style" type="StyleBox">
 			The background used when [member overlay] is set to [constant OVERLAY_POSITION].
 		</theme_item>
-		<theme_item name="selectedframe" data_type="style" type="StyleBox">
+		<theme_item name="selected_frame" data_type="style" type="StyleBox">
 			The background used when the [GraphNode] is selected.
 		</theme_item>
 	</theme_items>

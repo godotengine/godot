@@ -49,7 +49,7 @@ Size2 TabBar::get_minimum_size() const {
 	Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
 	Ref<StyleBox> button_highlight = get_theme_stylebox(SNAME("button_highlight"));
 	Ref<Texture2D> close = get_theme_icon(SNAME("close"));
-	int hseparation = get_theme_constant(SNAME("hseparation"));
+	int hseparation = get_theme_constant(SNAME("h_separation"));
 
 	int y_margin = MAX(MAX(tab_unselected->get_minimum_size().height, tab_selected->get_minimum_size().height), tab_disabled->get_minimum_size().height);
 
@@ -477,7 +477,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 
 	Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 	int outline_size = get_theme_constant(SNAME("outline_size"));
-	int hseparation = get_theme_constant(SNAME("hseparation"));
+	int hseparation = get_theme_constant(SNAME("h_separation"));
 
 	Rect2 sb_rect = Rect2(p_x, 0, tabs[p_index].size_cache, get_size().height);
 	p_tab_style->draw(ci, sb_rect);
@@ -1272,7 +1272,7 @@ int TabBar::get_tab_width(int p_idx) const {
 	Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
 	Ref<StyleBox> tab_selected = get_theme_stylebox(SNAME("tab_selected"));
 	Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
-	int hseparation = get_theme_constant(SNAME("hseparation"));
+	int hseparation = get_theme_constant(SNAME("h_separation"));
 
 	Ref<StyleBox> style;
 
