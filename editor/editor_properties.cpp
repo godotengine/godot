@@ -3404,7 +3404,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 }
 
 EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
-	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+	double default_float_step = Math::pow(10.0, EDITOR_GET("interface/inspector/default_float_step_exponent"));
 
 	switch (p_type) {
 		// atomic types
