@@ -635,23 +635,28 @@ void PopupMenu::_draw_items() {
 			}
 		}
 
-		// Text
 		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 		int outline_size = get_theme_constant(SNAME("outline_size"));
+
+		// Text
 		if (items[i].separator) {
+			Color font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
+			int separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
+
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (!rtl && !items[i].icon.is_null()) {
 					text_pos.x += icon_size.width + hseparation;
 				}
 
-				if (outline_size > 0 && font_outline_color.a > 0) {
-					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				if (separator_outline_size > 0 && font_separator_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, separator_outline_size, font_separator_outline_color);
 				}
 				items[i].text_buf->draw(ci, text_pos, font_separator_color);
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
+
 			if (rtl) {
 				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (outline_size > 0 && font_outline_color.a > 0) {
@@ -724,8 +729,8 @@ void PopupMenu::_shape_item(int p_item) {
 	if (items.write[p_item].dirty) {
 		items.write[p_item].text_buf->clear();
 
-		Ref<Font> font = get_theme_font(SNAME("font"));
-		int font_size = get_theme_font_size(SNAME("font_size"));
+		Ref<Font> font = get_theme_font(items[p_item].separator ? SNAME("font_separator") : SNAME("font"));
+		int font_size = get_theme_font_size(items[p_item].separator ? SNAME("font_separator_size") : SNAME("font_size"));
 
 		if (items[p_item].text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			items.write[p_item].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
