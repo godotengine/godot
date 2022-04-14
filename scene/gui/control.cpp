@@ -707,9 +707,17 @@ void Control::_notification(int p_notification) {
 #endif
 		} break;
 
-		case NOTIFICATION_ENTER_CANVAS: {
+		case NOTIFICATION_PARENTED: {
 			data.parent = Object::cast_to<Control>(get_parent());
 			data.parent_window = Object::cast_to<Window>(get_parent());
+		} break;
+
+		case NOTIFICATION_UNPARENTED: {
+			data.parent = nullptr;
+			data.parent_window = nullptr;
+		} break;
+
+		case NOTIFICATION_ENTER_CANVAS: {
 			data.is_rtl_dirty = true;
 
 			Node *parent = this; //meh
@@ -780,9 +788,7 @@ void Control::_notification(int p_notification) {
 				data.RI = nullptr;
 			}
 
-			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
-			data.parent_window = nullptr;
 			data.is_rtl_dirty = true;
 		} break;
 
