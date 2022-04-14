@@ -653,7 +653,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("submenu_mirrored", "PopupMenu", icons["arrow_left"]);
 
 	theme->set_font("font", "PopupMenu", Ref<Font>());
+	theme->set_font("font_separator", "PopupMenu", Ref<Font>());
 	theme->set_font_size("font_size", "PopupMenu", -1);
+	theme->set_font_size("font_separator_size", "PopupMenu", -1);
 
 	theme->set_color("font_color", "PopupMenu", control_font_color);
 	theme->set_color("font_accelerator_color", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
@@ -661,10 +663,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_color", "PopupMenu", control_font_color);
 	theme->set_color("font_separator_color", "PopupMenu", control_font_color);
 	theme->set_color("font_outline_color", "PopupMenu", Color(1, 1, 1));
+	theme->set_color("font_separator_outline_color", "PopupMenu", Color(1, 1, 1));
 
 	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("vseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("outline_size", "PopupMenu", 0);
+	theme->set_constant("separator_outline_size", "PopupMenu", 0);
 	theme->set_constant("item_start_padding", "PopupMenu", 2 * scale);
 	theme->set_constant("item_end_padding", "PopupMenu", 2 * scale);
 
