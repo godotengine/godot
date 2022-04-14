@@ -184,27 +184,24 @@
 		<method name="range" qualifiers="vararg">
 			<return type="Array" />
 			<description>
-				Returns an array with the given range. Range can be 1 argument [code]N[/code] (0 to [code]N[/code] - 1), two arguments ([code]initial[/code], [code]final - 1[/code]) or three arguments ([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). Returns an empty array if the range isn't valid (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
-				Returns an array with the given range. [code]range()[/code] can have 1 argument N ([code]0[/code] to [code]N - 1[/code]), two arguments ([code]initial[/code], [code]final - 1[/code]) or three arguments ([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). [code]increment[/code] can be negative. If [code]increment[/code] is negative, [code]final - 1[/code] will become [code]final + 1[/code]. Also, the initial value must be greater than the final value for the loop to run.
-				[code]range()[/code] converts all arguments to [int] before processing.
+				Returns an array with the given range. [method range] can be called in three ways:
+				[code]range(n: int)[/code]: Starts from 0, increases by steps of 1, and stops [i]before[/i] [code]n[/code]. The argument [code]n[/code] is [b]exclusive[/b].
+				[code]range(b: int, n: int)[/code]: Starts from [code]b[/code], increases by steps of 1, and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively.
+				[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], increases/decreases by steps of [code]s[/code], and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is [code]0[/code], an error message is printed.
+				[method range] converts all arguments to [int] before processing.
+				[b]Note:[/b] Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
+				Examples:
 				[codeblock]
-				print(range(4))
-				print(range(2, 5))
-				print(range(0, 6, 2))
-				[/codeblock]
-				Output:
-				[codeblock]
-				[0, 1, 2, 3]
-				[2, 3, 4]
-				[0, 2, 4]
+				print(range(4))        # Prints [0, 1, 2, 3]
+				print(range(2, 5))     # Prints [2, 3, 4]
+				print(range(0, 6, 2))  # Prints [0, 2, 4]
+				print(range(4, 1, -1)) # Prints [4, 3, 2]
 				[/codeblock]
 				To iterate over an [Array] backwards, use:
 				[codeblock]
 				var array = [3, 6, 9]
-				var i := array.size() - 1
-				while i &gt;= 0:
-				    print(array[i])
-				    i -= 1
+				for i in range(array.size(), 0, -1):
+				    print(array[i - 1])
 				[/codeblock]
 				Output:
 				[codeblock]
