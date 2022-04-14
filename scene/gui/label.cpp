@@ -386,7 +386,6 @@ void Label::regenerate_word_cache() {
 	real_t space_width = font->get_char_size(' ').width;
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
-
 	total_char_cache = 0;
 
 	WordCache *last = nullptr;
