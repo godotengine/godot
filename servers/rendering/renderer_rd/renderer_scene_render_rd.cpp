@@ -2957,22 +2957,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					continue;
 				}
 
-				const real_t distance = camera_plane.distance_to(li->transform.origin);
+				const real_t depth = camera_plane.distance_to(li->transform.origin);
 
 				if (light_storage->light_is_distance_fade_enabled(li->light)) {
+					// Use `distance_squared_to()` to speed up distance checks.
+					const real_t distance = p_camera_transform.origin.distance_squared_to(li->transform.origin);
 					const float fade_begin = light_storage->light_get_distance_fade_begin(li->light);
 					const float fade_length = light_storage->light_get_distance_fade_length(li->light);
 
-					if (distance > fade_begin) {
-						if (distance > fade_begin + fade_length) {
-							// Out of range, don't draw this light to improve performance.
-							continue;
-						}
+					if (distance > Math::pow(fade_begin + fade_length, 2)) {
+						// Out of range, don't draw this light to improve performance.
+						continue;
 					}
 				}
 
 				cluster.omni_light_sort[cluster.omni_light_count].instance = li;
-				cluster.omni_light_sort[cluster.omni_light_count].depth = distance;
+				cluster.omni_light_sort[cluster.omni_light_count].depth = depth;
 				cluster.omni_light_count++;
 			} break;
 			case RS::LIGHT_SPOT: {
@@ -2980,22 +2980,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					continue;
 				}
 
-				const real_t distance = camera_plane.distance_to(li->transform.origin);
+				const real_t depth = camera_plane.distance_to(li->transform.origin);
 
 				if (light_storage->light_is_distance_fade_enabled(li->light)) {
+					// Use `distance_squared_to()` to speed up distance checks.
+					const real_t distance = p_camera_transform.origin.distance_squared_to(li->transform.origin);
 					const float fade_begin = light_storage->light_get_distance_fade_begin(li->light);
 					const float fade_length = light_storage->light_get_distance_fade_length(li->light);
 
-					if (distance > fade_begin) {
-						if (distance > fade_begin + fade_length) {
-							// Out of range, don't draw this light to improve performance.
-							continue;
-						}
+					if (distance > Math::pow(fade_begin + fade_length, 2)) {
+						// Out of range, don't draw this light to improve performance.
+						continue;
 					}
 				}
 
 				cluster.spot_light_sort[cluster.spot_light_count].instance = li;
-				cluster.spot_light_sort[cluster.spot_light_count].depth = distance;
+				cluster.spot_light_sort[cluster.spot_light_count].depth = depth;
 				cluster.spot_light_count++;
 			} break;
 		}
@@ -3051,7 +3051,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			fade_begin = light_storage->light_get_distance_fade_begin(li->light);
 			fade_shadow = light_storage->light_get_distance_fade_shadow(li->light);
 			fade_length = light_storage->light_get_distance_fade_length(li->light);
-			distance = camera_plane.distance_to(li->transform.origin);
+			distance = p_camera_transform.origin.distance_to(li->transform.origin);
 
 			// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
 			if (distance > fade_begin) {
@@ -3227,12 +3227,14 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	}
 }
 
-void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform) {
+void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_transform) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	Transform3D uv_xform;
 	uv_xform.basis.scale(Vector3(2.0, 1.0, 2.0));
 	uv_xform.origin = Vector3(-1.0, 0.0, -1.0);
+
+	const Transform3D camera_inverse_xform = p_camera_transform.affine_inverse();
 
 	uint32_t decal_count = p_decals.size();
 
@@ -3251,21 +3253,22 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		Transform3D xform = di->transform;
 
-		real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
+		const real_t depth = -camera_inverse_xform.xform(xform.origin).z;
 
 		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
+			// Use `distance_squared_to()` to speed up distance checks.
+			const real_t distance = p_camera_transform.origin.distance_squared_to(xform.origin);
 			float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
 			float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
-			if (distance > fade_begin) {
-				if (distance > fade_begin + fade_length) {
-					continue; // do not use this decal, its invisible
-				}
+			if (distance > Math::pow(fade_begin + fade_length, 2)) {
+				// Out of range, don't draw this decal to improve performance.
+				continue;
 			}
 		}
 
 		cluster.decal_sort[cluster.decal_count].instance = di;
-		cluster.decal_sort[cluster.decal_count].depth = distance;
+		cluster.decal_sort[cluster.decal_count].depth = depth;
 		cluster.decal_count++;
 	}
 
@@ -3289,7 +3292,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		float fade = 1.0;
 
 		if (texture_storage->decal_is_distance_fade_enabled(decal)) {
-			const real_t distance = -p_camera_inverse_xform.xform(xform.origin).z;
+			const real_t distance = p_camera_transform.origin.distance_to(xform.origin);
 			const float fade_begin = texture_storage->decal_get_distance_fade_begin(decal);
 			const float fade_length = texture_storage->decal_get_distance_fade_length(decal);
 
@@ -3305,11 +3308,12 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 		Transform3D scale_xform;
 		scale_xform.basis.scale(decal_extents);
-		Transform3D to_decal_xform = (p_camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
+
+		const Transform3D to_decal_xform = (camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
 		RendererRD::MaterialStorage::store_transform(to_decal_xform, dd.xform);
 
 		Vector3 normal = xform.basis.get_column(Vector3::AXIS_Y).normalized();
-		normal = p_camera_inverse_xform.basis.xform(normal); //camera is normalized, so fine
+		normal = camera_inverse_xform.basis.xform(normal); //camera is normalized, so fine
 
 		dd.normal[0] = normal.x;
 		dd.normal[1] = normal.y;
@@ -3343,7 +3347,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			dd.normal_rect[2] = rect.size.x;
 			dd.normal_rect[3] = rect.size.y;
 
-			Basis normal_xform = p_camera_inverse_xform.basis * xform.basis.orthonormalized();
+			const Basis normal_xform = camera_inverse_xform.basis * xform.basis.orthonormalized();
 			RendererRD::MaterialStorage::store_basis_3x4(normal_xform, dd.normal_xform);
 		} else {
 			dd.normal_rect[0] = 0;
@@ -3638,7 +3642,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
 	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
-	_setup_decals(*p_render_data->decals, p_render_data->cam_transform.affine_inverse());
+	_setup_decals(*p_render_data->decals, p_render_data->cam_transform);
 
 	p_render_data->directional_light_count = directional_light_count;
 
