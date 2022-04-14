@@ -116,13 +116,25 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t wlr_data_control_manager_name = 0;
 	};
 
+	struct WaylandState;
+
 	struct WindowData {
+		// For use in event sending and whatnot.
+		WindowID id;
+		WaylandState *wls;
+
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
-		bool buffer_created = false;
+		struct xdg_popup *xdg_popup = nullptr;
 
+		Set<WindowID> children;
+		WindowID parent = INVALID_WINDOW_ID;
+
+		bool visible = false;
+
+		uint32_t flags;
 		VSyncMode vsync_mode;
 		Rect2i rect;
 
@@ -132,10 +144,6 @@ class DisplayServerWayland : public DisplayServer {
 
 		// Metadata.
 		String title;
-
-		// TODO: Handle more cleanly.
-		WindowID id;
-		List<Ref<WaylandMessage>> *message_queue;
 	};
 
 	struct ScreenData {
@@ -159,21 +167,20 @@ class DisplayServerWayland : public DisplayServer {
 		Point2i position;
 		uint32_t motion_time = 0;
 
-		// Relative motion's has its own optional event and so needs its own time.
+		// Relative motion has its own optional event and so needs its own time.
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		WindowID focused_window_id = INVALID_WINDOW_ID;
+		WindowID pointed_window_id = INVALID_WINDOW_ID;
 
 		MouseButton pressed_button_mask = MouseButton::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		uint32_t button_time = 0;
+		uint32_t button_serial = 0;
 
 		Vector2 scroll_vector;
 	};
-
-	struct WaylandState;
 
 	struct SeatState {
 		WaylandState *wls = nullptr;
@@ -210,7 +217,7 @@ class DisplayServerWayland : public DisplayServer {
 
 		xkb_layout_index_t current_layout_index = 0;
 
-		WindowID focused_window_id = INVALID_WINDOW_ID;
+		WindowID keyboard_focused_window_id = INVALID_WINDOW_ID;
 
 		int32_t repeat_key_delay_msec = 0;
 		int32_t repeat_start_delay_msec = 0;
@@ -237,8 +244,6 @@ class DisplayServerWayland : public DisplayServer {
 		Vector<uint8_t> primary_data;
 	};
 
-	// TODO: Perhaps we could make this just contain references to in-class
-	// variables? We access them a lot here.
 	struct WaylandState {
 		Mutex mutex;
 
@@ -287,16 +292,16 @@ class DisplayServerWayland : public DisplayServer {
 		SafeFlag events_thread_done;
 
 		List<Ref<WaylandMessage>> message_queue;
+
+#ifdef VULKAN_ENABLED
+		VulkanContextWayland *context_vulkan = nullptr;
+		RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
 	};
 
 	WaylandState wls;
 
 	Thread events_thread;
-
-#ifdef VULKAN_ENABLED
-	VulkanContextWayland *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
-#endif
 
 	String read_data_control_offer(zwlr_data_control_offer_v1 *wlr_data_control_offer) const;
 
@@ -309,7 +314,8 @@ class DisplayServerWayland : public DisplayServer {
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
-	void _destroy_window(WindowID p_id);
+	void _send_window_event(WindowID p_window, WindowEvent p_event);
+	void _delete_window(WindowID p_window);
 
 	static void _poll_events_thread(void *p_wls);
 
@@ -361,13 +367,17 @@ class DisplayServerWayland : public DisplayServer {
 	// xdg-shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 	static void _xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
+
 	static void _xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
 	static void _xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel);
+
+	static void _xdg_popup_on_configure(void *data, struct xdg_popup *xdg_popup, int32_t x, int32_t y, int32_t width, int32_t height);
+	static void _xdg_popup_on_popup_done(void *data, struct xdg_popup *xdg_popup);
+	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
-	// Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
 		.global = _wl_registry_on_global,
 		.global_remove = _wl_registry_on_global_remove,
@@ -423,6 +433,12 @@ class DisplayServerWayland : public DisplayServer {
 	static constexpr struct xdg_toplevel_listener xdg_toplevel_listener = {
 		.configure = _xdg_toplevel_on_configure,
 		.close = _xdg_toplevel_on_close,
+	};
+
+	static constexpr struct xdg_popup_listener xdg_popup_listener = {
+		.configure = _xdg_popup_on_configure,
+		.popup_done = _xdg_popup_on_popup_done,
+		.repositioned = _xdg_popup_on_repositioned,
 	};
 
 	// wlr-protocols event listeners.
