@@ -452,7 +452,17 @@ void Label::regenerate_word_cache() {
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
+<<<<<<< HEAD
 				if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
+=======
+				if (line_width == 0) {
+					if (current_word_size == 0) {
+						word_pos = i;
+					}
+					current_word_size += space_width;
+					line_width += space_width;
+				} else if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
+>>>>>>> 766e57a15c (Merge branch 'leading-space-new-3.x' of https://github.com/ZheisterCoding/godot into leading-space-new-3.x)
 					space_count++;
 					line_width += space_width;
 				} else {
