@@ -447,7 +447,6 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
-				line_width = 0;
 			} else if (current != ' ') {
 				total_char_cache++;
 			}
