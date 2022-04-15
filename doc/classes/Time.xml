@@ -50,6 +50,7 @@
 			<description>
 				Converts the given ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS) to a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code].
 				If [code]weekday[/code] is false, then the [code]weekday[/code] entry is excluded (the calculation is relatively expensive).
+				[b]Note:[/b] Any decimal fraction in the time string will be ignored silently.
 			</description>
 		</method>
 		<method name="get_datetime_dict_from_system" qualifiers="const">
@@ -171,12 +172,14 @@
 			<description>
 				Converts the given ISO 8601 date and/or time string to a Unix timestamp. The string can contain a date only, a time only, or both.
 				[b]Note:[/b] Unix timestamps are often in UTC. This method does not do any timezone conversion, so the timestamp will be in the same timezone as the given datetime string.
+				[b]Note:[/b] Any decimal fraction in the time string will be ignored silently.
 			</description>
 		</method>
 		<method name="get_unix_time_from_system" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the current Unix timestamp in seconds based on the system time in UTC. This method is implemented by the operating system and always returns the time in UTC.
+				[b]Note:[/b] Unlike other methods that use integer timestamps, this method returns the timestamp as a [float] for sub-second precision.
 			</description>
 		</method>
 	</methods>
