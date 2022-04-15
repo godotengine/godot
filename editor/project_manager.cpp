@@ -2386,7 +2386,6 @@ ProjectManager::ProjectManager() {
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
-		float custom_display_scale = EditorSettings::get_singleton()->get("interface/editor/custom_display_scale");
 
 		switch (display_scale) {
 			case 0:
@@ -2412,15 +2411,9 @@ ProjectManager::ProjectManager() {
 				editor_set_scale(2.0);
 				break;
 			default:
-				editor_set_scale(custom_display_scale);
+				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
 				break;
 		}
-
-		// Define a minimum window size to prevent UI elements from overlapping or being cut off
-		OS::get_singleton()->set_min_window_size(Size2(750, 420) * EDSCALE);
-
-		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
-		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
@@ -2703,6 +2696,20 @@ ProjectManager::ProjectManager() {
 	ask_update_settings = memnew(ConfirmationDialog);
 	ask_update_settings->get_ok()->connect("pressed", this, "_confirm_update_settings");
 	gui_base->add_child(ask_update_settings);
+
+	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
+	OS::get_singleton()->set_min_window_size(Size2(750, 420) * EDSCALE);
+
+	// Resize the bootsplash window based on editor display scale.
+	const float scale_factor = MAX(1, EDSCALE);
+	if (scale_factor > 1.0 + CMP_EPSILON) {
+		const Vector2 window_size = OS::get_singleton()->get_window_size() * scale_factor;
+		const Vector2 screen_size = OS::get_singleton()->get_screen_size();
+		const Vector2 window_position = Vector2(screen_size.x - window_size.x, screen_size.y - window_size.y) * 0.5;
+		// Handle multi-monitor setups correctly by moving the window relative to the current screen.
+		OS::get_singleton()->set_window_position(OS::get_singleton()->get_screen_position() + window_position);
+		OS::get_singleton()->set_window_size(window_size);
+	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
