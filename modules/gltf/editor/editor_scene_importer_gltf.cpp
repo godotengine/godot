@@ -64,9 +64,4 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	return doc->generate_scene(state, p_bake_fps);
 }
 
-Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	return Ref<Animation>();
-}
-
 #endif // TOOLS_ENABLED

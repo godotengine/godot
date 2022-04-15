@@ -85,6 +85,10 @@ private:
 	static IOPath hpmr_io_paths[];
 	static IOPath touch_io_paths[];
 	static IOPath index_io_paths[];
+	static IOPath odyssey_io_paths[];
+	static IOPath vive_cosmos_paths[];
+	static IOPath vive_focus3_paths[];
+	static IOPath huawei_controller_paths[];
 	static InteractionProfile available_interaction_profiles[];
 	static int available_interaction_profile_count;
 

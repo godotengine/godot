@@ -52,7 +52,7 @@ TEST_CASE("[PCKPacker] Pack an empty PCK file") {
 			"Flushing the PCK should return an OK error code.");
 
 	Error err;
-	FileAccessRef f = FileAccess::open(output_pck_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(output_pck_path, FileAccess::READ, &err);
 	CHECK_MESSAGE(
 			err == OK,
 			"The generated empty PCK file should be opened successfully.");
@@ -106,7 +106,7 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 			"Flushing the PCK should return an OK error code.");
 
 	Error err;
-	FileAccessRef f = FileAccess::open(output_pck_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(output_pck_path, FileAccess::READ, &err);
 	CHECK_MESSAGE(
 			err == OK,
 			"The generated non-empty PCK file should be opened successfully.");

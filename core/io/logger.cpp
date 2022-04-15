@@ -115,21 +115,14 @@ void Logger::logf_error(const char *p_format, ...) {
 	va_end(argp);
 }
 
-void RotatedFileLogger::close_file() {
-	if (file) {
-		memdelete(file);
-		file = nullptr;
-	}
-}
-
 void RotatedFileLogger::clear_old_backups() {
 	int max_backups = max_files - 1; // -1 for the current file
 
 	String basename = base_path.get_file().get_basename();
 	String extension = base_path.get_extension();
 
-	DirAccessRef da = DirAccess::open(base_path.get_base_dir());
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(base_path.get_base_dir());
+	if (da.is_null()) {
 		return;
 	}
 
@@ -155,7 +148,7 @@ void RotatedFileLogger::clear_old_backups() {
 }
 
 void RotatedFileLogger::rotate_file() {
-	close_file();
+	file.unref();
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
@@ -165,20 +158,21 @@ void RotatedFileLogger::rotate_file() {
 				backup_name += "." + base_path.get_extension();
 			}
 
-			DirAccessRef da = DirAccess::open(base_path.get_base_dir());
-			if (da) {
+			Ref<DirAccess> da = DirAccess::open(base_path.get_base_dir());
+			if (da.is_valid()) {
 				da->copy(base_path, backup_name);
 			}
 			clear_old_backups();
 		}
 	} else {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_USERDATA);
-		if (da) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_USERDATA);
+		if (da.is_valid()) {
 			da->make_dir_recursive(base_path.get_base_dir());
 		}
 	}
 
 	file = FileAccess::open(base_path, FileAccess::WRITE);
+	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefor can't be registered in ObjectDB.
 }
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
@@ -192,7 +186,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		return;
 	}
 
-	if (file) {
+	if (file.is_valid()) {
 		const int static_buf_size = 512;
 		char static_buf[static_buf_size];
 		char *buf = static_buf;
@@ -216,10 +210,6 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			file->flush();
 		}
 	}
-}
-
-RotatedFileLogger::~RotatedFileLogger() {
-	close_file();
 }
 
 void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {

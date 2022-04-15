@@ -139,6 +139,7 @@
 #include "scene/multiplayer/scene_cache_interface.h"
 #include "scene/multiplayer/scene_replication_interface.h"
 #include "scene/multiplayer/scene_rpc_interface.h"
+#include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -834,6 +835,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CompressedTexture2DArray);
 
 	GDREGISTER_CLASS(Animation);
+	GDREGISTER_CLASS(AnimationLibrary);
 	GDREGISTER_CLASS(FontData);
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);

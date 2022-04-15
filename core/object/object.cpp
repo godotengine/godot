@@ -1848,6 +1848,13 @@ Object::Object() {
 	_construct_object(false);
 }
 
+void Object::detach_from_objectdb() {
+	if (_instance_id != ObjectID()) {
+		ObjectDB::remove_instance(this);
+		_instance_id = ObjectID();
+	}
+}
+
 Object::~Object() {
 	if (script_instance) {
 		memdelete(script_instance);
@@ -1887,8 +1894,10 @@ Object::~Object() {
 		c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
 	}
 
-	ObjectDB::remove_instance(this);
-	_instance_id = ObjectID();
+	if (_instance_id != ObjectID()) {
+		ObjectDB::remove_instance(this);
+		_instance_id = ObjectID();
+	}
 	_predelete_ok = 2;
 
 	if (_instance_bindings != nullptr) {

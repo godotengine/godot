@@ -164,7 +164,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 	switch (file_dialog_purpose) {
 		case SAVE_MONITORS_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);
@@ -209,7 +209,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 		} break;
 		case SAVE_VRAM_CSV: {
 			Error err;
-			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
 				ERR_PRINT("Failed to open " + p_file);

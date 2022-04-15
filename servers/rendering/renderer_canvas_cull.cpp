@@ -552,26 +552,187 @@ void RendererCanvasCull::canvas_item_set_update_when_visible(RID p_item, bool p_
 	canvas_item->update_when_visible = p_update;
 }
 
-void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width) {
+void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
+
+	Vector2 diff = (p_from - p_to);
+	Vector2 dir = diff.orthogonal().normalized();
+	Vector2 t = dir * p_width * 0.5;
+
+	Vector2 begin_left;
+	Vector2 begin_right;
+	Vector2 end_left;
+	Vector2 end_right;
+
 	if (p_width > 1.001) {
-		Vector2 t = (p_from - p_to).orthogonal().normalized() * p_width * 0.5;
-		line->points[0] = p_from + t;
-		line->points[1] = p_from - t;
-		line->points[2] = p_to - t;
-		line->points[3] = p_to + t;
+		begin_left = p_from + t;
+		begin_right = p_from - t;
+		end_left = p_to + t;
+		end_right = p_to - t;
+
+		line->points[0] = begin_left;
+		line->points[1] = begin_right;
+		line->points[2] = end_right;
+		line->points[3] = end_left;
 		line->point_count = 4;
 	} else {
-		line->point_count = 2;
+		begin_left = p_from;
+		begin_right = p_from;
+		end_left = p_to;
+		end_right = p_to;
+
 		line->points[0] = p_from;
 		line->points[1] = p_to;
+		line->point_count = 2;
 	}
 	for (uint32_t i = 0; i < line->point_count; i++) {
 		line->colors[i] = p_color;
+	}
+
+	if (p_antialiased) {
+		float border_size = 2.0;
+		if (p_width < border_size) {
+			border_size = p_width;
+		}
+		Vector2 dir2 = diff.normalized();
+
+		Vector2 border = dir * border_size;
+		Vector2 border2 = dir2 * border_size;
+
+		Color transparent = Color(p_color.r, p_color.g, p_color.b, 0.0);
+
+		{
+			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!left_border);
+
+			left_border->points[0] = begin_left;
+			left_border->points[1] = begin_left + border;
+			left_border->points[2] = end_left + border;
+			left_border->points[3] = end_left;
+
+			left_border->colors[0] = p_color;
+			left_border->colors[1] = transparent;
+			left_border->colors[2] = transparent;
+			left_border->colors[3] = p_color;
+
+			left_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *right_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!right_border);
+
+			right_border->points[0] = begin_right;
+			right_border->points[1] = begin_right - border;
+			right_border->points[2] = end_right - border;
+			right_border->points[3] = end_right;
+
+			right_border->colors[0] = p_color;
+			right_border->colors[1] = transparent;
+			right_border->colors[2] = transparent;
+			right_border->colors[3] = p_color;
+
+			right_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_border);
+
+			top_border->points[0] = begin_left;
+			top_border->points[1] = begin_left + border2;
+			top_border->points[2] = begin_right + border2;
+			top_border->points[3] = begin_right;
+
+			top_border->colors[0] = p_color;
+			top_border->colors[1] = transparent;
+			top_border->colors[2] = transparent;
+			top_border->colors[3] = p_color;
+
+			top_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_border);
+
+			bottom_border->points[0] = end_left;
+			bottom_border->points[1] = end_left - border2;
+			bottom_border->points[2] = end_right - border2;
+			bottom_border->points[3] = end_right;
+
+			bottom_border->colors[0] = p_color;
+			bottom_border->colors[1] = transparent;
+			bottom_border->colors[2] = transparent;
+			bottom_border->colors[3] = p_color;
+
+			bottom_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_left_corner);
+
+			top_left_corner->points[0] = begin_left;
+			top_left_corner->points[1] = begin_left + border2;
+			top_left_corner->points[2] = begin_left + border + border2;
+			top_left_corner->points[3] = begin_left + border;
+
+			top_left_corner->colors[0] = p_color;
+			top_left_corner->colors[1] = transparent;
+			top_left_corner->colors[2] = transparent;
+			top_left_corner->colors[3] = transparent;
+
+			top_left_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!top_right_corner);
+
+			top_right_corner->points[0] = begin_right;
+			top_right_corner->points[1] = begin_right + border2;
+			top_right_corner->points[2] = begin_right - border + border2;
+			top_right_corner->points[3] = begin_right - border;
+
+			top_right_corner->colors[0] = p_color;
+			top_right_corner->colors[1] = transparent;
+			top_right_corner->colors[2] = transparent;
+			top_right_corner->colors[3] = transparent;
+
+			top_right_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_left_corner);
+
+			bottom_left_corner->points[0] = end_left;
+			bottom_left_corner->points[1] = end_left - border2;
+			bottom_left_corner->points[2] = end_left + border - border2;
+			bottom_left_corner->points[3] = end_left + border;
+
+			bottom_left_corner->colors[0] = p_color;
+			bottom_left_corner->colors[1] = transparent;
+			bottom_left_corner->colors[2] = transparent;
+			bottom_left_corner->colors[3] = transparent;
+
+			bottom_left_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_COND(!bottom_right_corner);
+
+			bottom_right_corner->points[0] = end_right;
+			bottom_right_corner->points[1] = end_right - border2;
+			bottom_right_corner->points[2] = end_right - border - border2;
+			bottom_right_corner->points[3] = end_right - border;
+
+			bottom_right_corner->colors[0] = p_color;
+			bottom_right_corner->colors[1] = transparent;
+			bottom_right_corner->colors[2] = transparent;
+			bottom_right_corner->colors[3] = transparent;
+
+			bottom_right_corner->point_count = 4;
+		}
 	}
 }
 
@@ -602,42 +763,119 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	Color *colors_ptr = colors.ptrw();
 
 	if (p_antialiased) {
+		float border_size = 2.0;
+		if (p_width < border_size) {
+			border_size = p_width;
+		}
 		Color color2 = Color(1, 1, 1, 0);
 
-		PackedColorArray colors_top;
-		PackedVector2Array points_top;
+		PackedColorArray colors_begin;
+		PackedVector2Array points_begin;
 
-		colors_top.resize(pc2);
-		points_top.resize(pc2);
+		colors_begin.resize(4);
+		points_begin.resize(4);
 
-		PackedColorArray colors_bottom;
-		PackedVector2Array points_bottom;
+		PackedColorArray colors_begin_left_corner;
+		PackedVector2Array points_begin_left_corner;
 
-		colors_bottom.resize(pc2);
-		points_bottom.resize(pc2);
+		colors_begin_left_corner.resize(4);
+		points_begin_left_corner.resize(4);
 
-		Item::CommandPolygon *pline_top = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_top);
+		PackedColorArray colors_begin_right_corner;
+		PackedVector2Array points_begin_right_corner;
 
-		Item::CommandPolygon *pline_bottom = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_bottom);
+		colors_begin_right_corner.resize(4);
+		points_begin_right_corner.resize(4);
 
-		//make three trianglestrip's for drawing the antialiased line...
+		PackedColorArray colors_end;
+		PackedVector2Array points_end;
 
-		Vector2 *points_top_ptr = points_top.ptrw();
-		Vector2 *points_bottom_ptr = points_bottom.ptrw();
+		colors_end.resize(4);
+		points_end.resize(4);
 
-		Color *colors_top_ptr = colors_top.ptrw();
-		Color *colors_bottom_ptr = colors_bottom.ptrw();
+		PackedColorArray colors_end_left_corner;
+		PackedVector2Array points_end_left_corner;
+
+		colors_end_left_corner.resize(4);
+		points_end_left_corner.resize(4);
+
+		PackedColorArray colors_end_right_corner;
+		PackedVector2Array points_end_right_corner;
+
+		colors_end_right_corner.resize(4);
+		points_end_right_corner.resize(4);
+
+		PackedColorArray colors_left;
+		PackedVector2Array points_left;
+
+		colors_left.resize(pc2);
+		points_left.resize(pc2);
+
+		PackedColorArray colors_right;
+		PackedVector2Array points_right;
+
+		colors_right.resize(pc2);
+		points_right.resize(pc2);
+
+		Item::CommandPolygon *pline_begin = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_begin);
+
+		Item::CommandPolygon *pline_begin_left_corner = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_begin_left_corner);
+
+		Item::CommandPolygon *pline_begin_right_corner = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_begin_right_corner);
+
+		Item::CommandPolygon *pline_end = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_end);
+
+		Item::CommandPolygon *pline_end_left_corner = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_end_left_corner);
+
+		Item::CommandPolygon *pline_end_right_corner = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_end_right_corner);
+
+		Item::CommandPolygon *pline_left = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_left);
+
+		Item::CommandPolygon *pline_right = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_right);
+
+		// Makes nine triangle strips for drawing the antialiased line.
+
+		Vector2 *points_begin_ptr = points_begin.ptrw();
+		Vector2 *points_begin_left_corner_ptr = points_begin_left_corner.ptrw();
+		Vector2 *points_begin_right_corner_ptr = points_begin_right_corner.ptrw();
+		Vector2 *points_end_ptr = points_end.ptrw();
+		Vector2 *points_end_left_corner_ptr = points_end_left_corner.ptrw();
+		Vector2 *points_end_right_corner_ptr = points_end_right_corner.ptrw();
+		Vector2 *points_left_ptr = points_left.ptrw();
+		Vector2 *points_right_ptr = points_right.ptrw();
+
+		Color *colors_begin_ptr = colors_begin.ptrw();
+		Color *colors_begin_left_corner_ptr = colors_begin_left_corner.ptrw();
+		Color *colors_begin_right_corner_ptr = colors_begin_right_corner.ptrw();
+		Color *colors_end_ptr = colors_end.ptrw();
+		Color *colors_end_left_corner_ptr = colors_end_left_corner.ptrw();
+		Color *colors_end_right_corner_ptr = colors_end_right_corner.ptrw();
+		Color *colors_left_ptr = colors_left.ptrw();
+		Color *colors_right_ptr = colors_right.ptrw();
 
 		for (int i = 0, j = 0; i < pc; i++, j += 2) {
+			bool is_begin = i == 0;
+			bool is_end = i == pc - 1;
+
 			Vector2 t;
-			if (i == pc - 1) {
+			Vector2 end_border;
+			Vector2 begin_border;
+			if (is_end) {
 				t = prev_t;
+				end_border = (p_points[i] - p_points[i - 1]).normalized() * border_size;
 			} else {
 				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
-				if (i == 0) {
+				if (is_begin) {
 					prev_t = t;
+					begin_border = (p_points[i] - p_points[i + 1]).normalized() * border_size;
 				}
 			}
 
@@ -645,17 +883,17 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 			Vector2 dir = (t + prev_t).normalized();
 			Vector2 tangent = dir * p_width * 0.5;
-			Vector2 border = dir * 2.0;
+			Vector2 border = dir * border_size;
 			Vector2 pos = p_points[i];
 
 			points_ptr[j] = pos + tangent;
 			points_ptr[j2] = pos - tangent;
 
-			points_top_ptr[j] = pos + tangent + border;
-			points_top_ptr[j2] = pos + tangent;
+			points_left_ptr[j] = pos + tangent + border;
+			points_left_ptr[j2] = pos + tangent;
 
-			points_bottom_ptr[j] = pos - tangent;
-			points_bottom_ptr[j2] = pos - tangent - border;
+			points_right_ptr[j] = pos - tangent;
+			points_right_ptr[j2] = pos - tangent - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
@@ -665,22 +903,104 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			colors_ptr[j] = color;
 			colors_ptr[j2] = color;
 
-			colors_top_ptr[j] = color2;
-			colors_top_ptr[j2] = color;
+			colors_left_ptr[j] = color2;
+			colors_left_ptr[j2] = color;
 
-			colors_bottom_ptr[j] = color;
-			colors_bottom_ptr[j2] = color2;
+			colors_right_ptr[j] = color;
+			colors_right_ptr[j2] = color2;
+
+			if (is_begin) {
+				points_begin_ptr[0] = pos + tangent + begin_border;
+				points_begin_ptr[1] = pos - tangent + begin_border;
+				points_begin_ptr[2] = pos + tangent;
+				points_begin_ptr[3] = pos - tangent;
+
+				colors_begin_ptr[0] = color2;
+				colors_begin_ptr[1] = color2;
+				colors_begin_ptr[2] = color;
+				colors_begin_ptr[3] = color;
+
+				points_begin_left_corner_ptr[0] = pos - tangent - border;
+				points_begin_left_corner_ptr[1] = pos - tangent + begin_border - border;
+				points_begin_left_corner_ptr[2] = pos - tangent;
+				points_begin_left_corner_ptr[3] = pos - tangent + begin_border;
+
+				colors_begin_left_corner_ptr[0] = color2;
+				colors_begin_left_corner_ptr[1] = color2;
+				colors_begin_left_corner_ptr[2] = color;
+				colors_begin_left_corner_ptr[3] = color2;
+
+				points_begin_right_corner_ptr[0] = pos + tangent + begin_border;
+				points_begin_right_corner_ptr[1] = pos + tangent + begin_border + border;
+				points_begin_right_corner_ptr[2] = pos + tangent;
+				points_begin_right_corner_ptr[3] = pos + tangent + border;
+
+				colors_begin_right_corner_ptr[0] = color2;
+				colors_begin_right_corner_ptr[1] = color2;
+				colors_begin_right_corner_ptr[2] = color;
+				colors_begin_right_corner_ptr[3] = color2;
+			}
+
+			if (is_end) {
+				points_end_ptr[0] = pos + tangent + end_border;
+				points_end_ptr[1] = pos - tangent + end_border;
+				points_end_ptr[2] = pos + tangent;
+				points_end_ptr[3] = pos - tangent;
+
+				colors_end_ptr[0] = color2;
+				colors_end_ptr[1] = color2;
+				colors_end_ptr[2] = color;
+				colors_end_ptr[3] = color;
+
+				points_end_left_corner_ptr[0] = pos - tangent - border;
+				points_end_left_corner_ptr[1] = pos - tangent + end_border - border;
+				points_end_left_corner_ptr[2] = pos - tangent;
+				points_end_left_corner_ptr[3] = pos - tangent + end_border;
+
+				colors_end_left_corner_ptr[0] = color2;
+				colors_end_left_corner_ptr[1] = color2;
+				colors_end_left_corner_ptr[2] = color;
+				colors_end_left_corner_ptr[3] = color2;
+
+				points_end_right_corner_ptr[0] = pos + tangent + end_border;
+				points_end_right_corner_ptr[1] = pos + tangent + end_border + border;
+				points_end_right_corner_ptr[2] = pos + tangent;
+				points_end_right_corner_ptr[3] = pos + tangent + border;
+
+				colors_end_right_corner_ptr[0] = color2;
+				colors_end_right_corner_ptr[1] = color2;
+				colors_end_right_corner_ptr[2] = color;
+				colors_end_right_corner_ptr[3] = color2;
+			}
 
 			prev_t = t;
 		}
 
-		pline_top->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_top->polygon.create(indices, points_top, colors_top);
+		pline_begin->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_begin->polygon.create(indices, points_begin, colors_begin);
 
-		pline_bottom->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_bottom->polygon.create(indices, points_bottom, colors_bottom);
+		pline_begin_left_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_begin_left_corner->polygon.create(indices, points_begin_left_corner, colors_begin_left_corner);
+
+		pline_begin_right_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_begin_right_corner->polygon.create(indices, points_begin_right_corner, colors_begin_right_corner);
+
+		pline_end->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_end->polygon.create(indices, points_end, colors_end);
+
+		pline_end_left_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_end_left_corner->polygon.create(indices, points_end_left_corner, colors_end_left_corner);
+
+		pline_end_right_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_end_right_corner->polygon.create(indices, points_end_right_corner, colors_end_right_corner);
+
+		pline_left->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_left->polygon.create(indices, points_left, colors_left);
+
+		pline_right->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_right->polygon.create(indices, points_right, colors_right);
 	} else {
-		//make a trianglestrip for drawing the line...
+		// Makes a single triangle strip for drawing the line.
 
 		for (int i = 0, j = 0; i < pc; i++, j += 2) {
 			Vector2 t;

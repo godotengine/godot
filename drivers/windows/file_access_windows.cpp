@@ -59,11 +59,10 @@ void FileAccessWindows::check_errors() const {
 }
 
 Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
+	_close();
+
 	path_src = p_path;
 	path = fix_path(p_path);
-	if (f) {
-		close();
-	}
 
 	const WCHAR *mode_string;
 
@@ -134,7 +133,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	}
 }
 
-void FileAccessWindows::close() {
+void FileAccessWindows::_close() {
 	if (!f) {
 		return;
 	}
@@ -350,7 +349,7 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 }
 
 FileAccessWindows::~FileAccessWindows() {
-	close();
+	_close();
 }
 
 #endif // WINDOWS_ENABLED

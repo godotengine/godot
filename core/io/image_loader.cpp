@@ -44,17 +44,14 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 	return false;
 }
 
-Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom, bool p_force_linear, float p_scale) {
+Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, bool p_force_linear, float p_scale) {
 	ERR_FAIL_COND_V_MSG(p_image.is_null(), ERR_INVALID_PARAMETER, "It's not a reference to a valid Image object.");
 
-	FileAccess *f = p_custom;
-	if (!f) {
+	Ref<FileAccess> f = p_custom;
+	if (f.is_null()) {
 		Error err;
 		f = FileAccess::open(p_file, FileAccess::READ, &err);
-		if (!f) {
-			ERR_PRINT("Error opening file '" + p_file + "'.");
-			return err;
-		}
+		ERR_FAIL_COND_V_MSG(f.is_null(), err, "Error opening file '" + p_file + "'.");
 	}
 
 	String extension = p_file.get_extension();
@@ -69,16 +66,8 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 		}
 
 		if (err != ERR_FILE_UNRECOGNIZED) {
-			if (!p_custom) {
-				memdelete(f);
-			}
-
 			return err;
 		}
-	}
-
-	if (!p_custom) {
-		memdelete(f);
 	}
 
 	return ERR_FILE_UNRECOGNIZED;
@@ -123,8 +112,8 @@ void ImageLoader::cleanup() {
 /////////////////
 
 RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
@@ -136,7 +125,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 
 	bool unrecognized = header[0] != 'G' || header[1] != 'D' || header[2] != 'I' || header[3] != 'M';
 	if (unrecognized) {
-		memdelete(f);
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
@@ -155,7 +143,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 	}
 
 	if (idx == -1) {
-		memdelete(f);
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}
@@ -166,8 +153,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 	image.instantiate();
 
 	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
-
-	memdelete(f);
 
 	if (err != OK) {
 		if (r_error) {

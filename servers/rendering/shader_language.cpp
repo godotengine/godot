@@ -5144,7 +5144,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (!call_expression) {
 							return nullptr;
 						}
-						data_type = call_expression->get_datatype();
 					} else if (tk.type == TK_BRACKET_OPEN) { // indexing
 						index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
@@ -5598,15 +5597,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (p_block != nullptr) {
 							p_block->block_tag = SubClassTag::TAG_ARRAY;
 						}
-						Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
+						mn->call_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (p_block != nullptr) {
 							p_block->block_tag = SubClassTag::TAG_GLOBAL;
 						}
-						if (!call_expression) {
+						if (!mn->call_expression) {
 							return nullptr;
 						}
-						mn->datatype = call_expression->get_datatype();
-						mn->call_expression = call_expression;
 					} else if (tk.type == TK_BRACKET_OPEN) {
 						Node *index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {

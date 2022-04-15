@@ -416,7 +416,7 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 
 void EditorNode::_update_title() {
 	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String title = (appname.is_empty() ? "Unnamed Project" : appname) + String(" - ") + VERSION_NAME;
+	String title = (appname.is_empty() ? TTR("Unnamed Project") : appname) + String(" - ") + VERSION_NAME;
 	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_scene_file_path() : String();
 	if (!edited.is_empty()) {
 		// Display the edited scene name before the program name so that it can be seen in the OS task bar.
@@ -935,7 +935,7 @@ void EditorNode::_fs_changed() {
 		}
 
 		if (export_preset.is_null()) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			if (da->file_exists("res://export_presets.cfg")) {
 				export_error = vformat(
 						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
@@ -1058,7 +1058,7 @@ void EditorNode::_scan_external_changes() {
 	// Check if any edited scene has changed.
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
 			continue;
 		}
@@ -5478,7 +5478,7 @@ void EditorNode::_global_menu_new_window(const Variant &p_tag) {
 	}
 }
 
-void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
+void EditorNode::_dropped_files(const Vector<String> &p_files) {
 	String to_path = ProjectSettings::get_singleton()->globalize_path(FileSystemDock::get_singleton()->get_selected_path());
 
 	_add_dropped_files_recursive(p_files, to_path);
@@ -5487,7 +5487,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 }
 
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	for (int i = 0; i < p_files.size(); i++) {
 		String from = p_files[i];
@@ -5496,7 +5496,7 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 		if (dir->dir_exists(from)) {
 			Vector<String> sub_files;
 
-			DirAccessRef sub_dir = DirAccess::open(from);
+			Ref<DirAccess> sub_dir = DirAccess::open(from);
 			sub_dir->list_dir_begin();
 
 			String next_file = sub_dir->get_next();
@@ -5997,18 +5997,22 @@ EditorNode::EditorNode() {
 		import_scene.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 
+		Ref<ResourceImporterScene> import_animation;
+		import_animation = Ref<ResourceImporterScene>(memnew(ResourceImporterScene(true)));
+		ResourceFormatImporter::get_singleton()->add_importer(import_animation);
+
 		{
 			Ref<EditorSceneFormatImporterCollada> import_collada;
 			import_collada.instantiate();
-			import_scene->add_importer(import_collada);
+			ResourceImporterScene::add_importer(import_collada);
 
 			Ref<EditorOBJImporter> import_obj2;
 			import_obj2.instantiate();
-			import_scene->add_importer(import_obj2);
+			ResourceImporterScene::add_importer(import_obj2);
 
 			Ref<EditorSceneFormatImporterESCN> import_escn;
 			import_escn.instantiate();
-			import_scene->add_importer(import_escn);
+			ResourceImporterScene::add_importer(import_escn);
 		}
 
 		Ref<ResourceImporterBitMap> import_bitmap;
@@ -7245,6 +7249,7 @@ EditorNode::EditorNode() {
 EditorNode::~EditorNode() {
 	EditorInspector::cleanup_plugins();
 	EditorTranslationParser::get_singleton()->clean_parsers();
+	ResourceImporterScene::clean_up_importer_plugins();
 
 	remove_print_handler(&print_handler);
 	EditorHelp::cleanup_doc();

@@ -1801,34 +1801,20 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 				name = state.animations[i]->get_name();
 			}
 
-			ap->add_animation(name, state.animations[i]);
+			Ref<AnimationLibrary> library;
+			if (!ap->has_animation_library("")) {
+				library.instantiate();
+				ap->add_animation_library("", library);
+			} else {
+				library = ap->get_animation_library("");
+			}
+			library->add_animation(name, state.animations[i]);
 		}
 		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);
 	}
 
 	return state.scene;
-}
-
-Ref<Animation> EditorSceneFormatImporterCollada::import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	ColladaImport state;
-
-	state.use_mesh_builtin_materials = false;
-
-	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
-
-	state.create_animations(true);
-	if (state.scene) {
-		memdelete(state.scene);
-	}
-
-	if (state.animations.size() == 0) {
-		return Ref<Animation>();
-	}
-	Ref<Animation> anim = state.animations[0];
-
-	return anim;
 }
 
 EditorSceneFormatImporterCollada::EditorSceneFormatImporterCollada() {

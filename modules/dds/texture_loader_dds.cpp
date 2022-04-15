@@ -100,12 +100,12 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	}
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (f.is_null()) {
 		return RES();
 	}
 
-	FileAccessRef fref(f);
+	Ref<FileAccess> fref(f);
 	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}

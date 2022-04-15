@@ -145,7 +145,7 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 String GDScriptCache::get_source_code(const String &p_path) {
 	Vector<uint8_t> source_file;
 	Error err;
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
 		ERR_FAIL_COND_V(err, "");
 	}
@@ -153,7 +153,6 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	uint64_t len = f->get_length();
 	source_file.resize(len + 1);
 	uint64_t r = f->get_buffer(source_file.ptrw(), len);
-	f->close();
 	ERR_FAIL_COND_V(r != len, "");
 	source_file.write[len] = 0;
 

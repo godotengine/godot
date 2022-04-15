@@ -117,6 +117,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 8);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -149,6 +151,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
+	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0);
+
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
@@ -183,6 +187,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4);
+
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
 
@@ -314,6 +320,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 32, bool is_hemisphere = false);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 

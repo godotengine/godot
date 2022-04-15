@@ -40,6 +40,7 @@
 #include <openxr/openxr.h>
 
 class OpenXRAPI;
+class OpenXRActionMap;
 
 class OpenXRExtensionWrapper {
 protected:

@@ -410,7 +410,6 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 		}
 		uint64_t len = f->get_length();
 		PackedByteArray icu_data = f->get_buffer(len);
-		f->close();
 
 		UErrorCode err = U_ZERO_ERROR;
 		udata_setCommonData(icu_data.ptr(), &err);
@@ -461,9 +460,8 @@ bool TextServerAdvanced::save_support_data(const String &p_filename) const {
 	icu_data.resize(U_ICUDATA_SIZE);
 	memcpy(icu_data.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
 	f->store_buffer(icu_data);
-	f->close();
-	return true;
 
+	return true;
 #else
 	return false;
 #endif
