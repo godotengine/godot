@@ -407,10 +407,11 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -s, --script <script>                        Run a script.\n");
 	OS::get_singleton()->print("  --check-only                                 Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export <preset> <path>                     Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
-	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
-	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
-	OS::get_singleton()->print("  --export-pack <preset> <path>                Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	OS::get_singleton()->print("  --export-release <preset> <path>             Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
+	OS::get_singleton()->print("                                               The target directory must exist.\n");
+	OS::get_singleton()->print("  --export-debug <preset> <path>               Export the project in debug mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("  --export-pack <preset> <path>                Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
 	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]              Converts project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]  Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --doctool [<path>]                           Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
@@ -1077,7 +1078,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
 			main_args.push_back(I->get());
-		} else if (I->get() == "--export" || I->get() == "--export-debug" ||
+		} else if (I->get() == "--export-release" || I->get() == "--export-debug" ||
 				I->get() == "--export-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
@@ -2473,7 +2474,7 @@ bool Main::start() {
 					doc_tool_path = ".";
 					parsed_pair = false;
 				}
-			} else if (args[i] == "--export") {
+			} else if (args[i] == "--export-release") {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
 			} else if (args[i] == "--export-debug") {
