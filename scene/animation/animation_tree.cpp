@@ -623,11 +623,13 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track_xform->skeleton = nullptr;
 						track_xform->bone_idx = -1;
 
+						bool has_rest = false;
 						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(node_3d)) {
 							Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
 							track_xform->skeleton = sk;
 							int bone_idx = sk->find_bone(path.get_subname(0));
 							if (bone_idx != -1) {
+								has_rest = true;
 								track_xform->bone_idx = bone_idx;
 								Transform3D rest = sk->get_bone_rest(bone_idx);
 								track_xform->init_loc = rest.origin;
@@ -656,7 +658,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							}
 						}
 
-						if (has_reset_anim) {
+						// For non Skeleton3D bone animation.
+						if (has_reset_anim && !has_rest) {
 							int rt = reset_anim->find_track(path, track_type);
 							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
 								switch (track_type) {
@@ -1321,9 +1324,8 @@ void AnimationTree::_process_graph(double p_delta) {
 								if (!t->init_value) {
 									t->init_value = value;
 									t->init_value.zero();
-								} else {
-									t->value = t->init_value;
 								}
+								t->value = t->init_value;
 							}
 
 							Variant::sub(value, t->init_value, value);
