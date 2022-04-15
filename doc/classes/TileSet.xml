@@ -591,7 +591,7 @@
 			Tile coordinates layout where both axis stay consistent with their respective local horizontal and vertical axis.
 		</constant>
 		<constant name="TILE_LAYOUT_STACKED_OFFSET" value="1" enum="TileLayout">
-			Same as [code]TILE_LAYOUT_STAKED[/code], but the first half-offset is negative instead of positive.
+			Same as [constant TILE_LAYOUT_STACKED], but the first half-offset is negative instead of positive.
 		</constant>
 		<constant name="TILE_LAYOUT_STAIRS_RIGHT" value="2" enum="TileLayout">
 			Tile coordinates layout where the horizontal axis stay horizontal, and the vertical one goes down-right.
