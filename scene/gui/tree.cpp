@@ -1422,52 +1422,58 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	}
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
-
 		TreeItem *c = p_item->children;
 
 		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
 
 		while (c) {
+			int child_h = -1;
 			if (htotal >= 0) {
-				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+			}
 
-				// Draw relationship lines.
-				if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
-					int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+			// Draw relationship lines.
+			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
 
-					if (c->get_children() != nullptr) {
-						root_pos -= Point2i(cache.arrow->get_width(), 0);
-					}
+				if (c->get_children() != nullptr) {
+					root_pos -= Point2i(cache.arrow->get_width(), 0);
+				}
 
-					float line_width = 1.0;
+				float line_width = 1.0;
 #ifdef TOOLS_ENABLED
-					line_width *= EDSCALE;
+				line_width *= EDSCALE;
 #endif
 
-					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
 
-					if (root_pos.y + line_width >= 0) {
-						// Order of parts on this bend: the horizontal line first, then the vertical line.
+				if (root_pos.y + line_width >= 0) {
+					// Order of parts on this bend: the horizontal line first, then the vertical line.
+					if (htotal >= 0) {
 						VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-						VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
 					}
-
-					prev_ofs = root_pos.y;
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
 				}
 
-				if (child_h < 0) {
-					if (cache.draw_relationship_lines == 0) {
-						return -1; // break, stop drawing, no need to anymore
-					} else {
-						htotal = -1;
-						children_pos.y = cache.offset.y + p_draw_size.height;
-					}
-				} else {
-					htotal += child_h;
-					children_pos.y += child_h;
+				prev_ofs = root_pos.y;
+			}
+
+			if (child_h < 0) {
+				if (htotal == -1) {
+					break; // Last loop done, stop.
 				}
+
+				if (cache.draw_relationship_lines == 0) {
+					return -1; // No need to draw anymore, full stop.
+				}
+
+				htotal = -1;
+				children_pos.y = cache.offset.y + p_draw_size.height;
+			} else {
+				htotal += child_h;
+				children_pos.y += child_h;
 			}
 
 			c = c->next;
