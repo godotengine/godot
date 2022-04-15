@@ -74,6 +74,15 @@ int Engine::get_max_fps() const {
 	return _max_fps;
 }
 
+void Engine::set_fixed_fps(int p_fps) {
+	ERR_FAIL_COND_MSG(p_fps <= -1, "Fixed FPS must be a positive value (or 0 to disable fixed FPS).");
+	fixed_fps = p_fps;
+}
+
+int Engine::get_fixed_fps() const {
+	return fixed_fps;
+}
+
 uint64_t Engine::get_frames_drawn() {
 	return frames_drawn;
 }
