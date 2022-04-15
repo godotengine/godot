@@ -76,9 +76,9 @@ _arguments \
   '--print-fps[print the frames per second to the stdout]' \
   '(-s, --script)'{-s,--script}'[run a script]:path to script:_files' \
   '--check-only[only parse for errors and quit (use with --script)]' \
-  '--export[export the project using the given preset and matching release template]:export preset name then path' \
-  '--export-debug[same as --export, but using the debug template]:export preset name then path' \
-  '--export-pack[same as --export, but only export the game pack for the given preset]:export preset name then path' \
+  '--export-release[export the project in release mode using the given preset and output path]:export preset name then path' \
+  '--export-debug[export the project in debug mode using the given preset and output path]:export preset name then path' \
+  '--export-pack[export the project data only as a PCK or ZIP file using the given preset and output path]:export preset name then path' \
   '--convert-3to4[converts project from Godot 3.x to Godot 4.x]' \
   '--validate-conversion-3to4[shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x]' \
   '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory (optional):_dirs' \
