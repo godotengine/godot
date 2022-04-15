@@ -124,50 +124,54 @@ VARIANT_ENUM_CAST(Time::Weekday);
 		}                                                                           \
 	}
 
-#define PARSE_ISO8601_STRING                                     \
-	int64_t year = UNIX_EPOCH_YEAR_AD;                           \
-	Month month = MONTH_JANUARY;                                 \
-	uint8_t day = 1;                                             \
-	uint8_t hour = 0;                                            \
-	uint8_t minute = 0;                                          \
-	uint8_t second = 0;                                          \
-	{                                                            \
-		bool has_date = false, has_time = false;                 \
-		String date, time;                                       \
-		if (p_datetime.find_char('T') > 0) {                     \
-			has_date = has_time = true;                          \
-			Vector<String> array = p_datetime.split("T");        \
-			date = array[0];                                     \
-			time = array[1];                                     \
-		} else if (p_datetime.find_char(' ') > 0) {              \
-			has_date = has_time = true;                          \
-			Vector<String> array = p_datetime.split(" ");        \
-			date = array[0];                                     \
-			time = array[1];                                     \
-		} else if (p_datetime.find_char('-', 1) > 0) {           \
-			has_date = true;                                     \
-			date = p_datetime;                                   \
-		} else if (p_datetime.find_char(':') > 0) {              \
-			has_time = true;                                     \
-			time = p_datetime;                                   \
-		}                                                        \
-		/* Set the variables from the contents of the string. */ \
-		if (has_date) {                                          \
-			Vector<int> array = date.split_ints("-", false);     \
-			year = array[0];                                     \
-			month = (Month)array[1];                             \
-			day = array[2];                                      \
-			/* Handle negative years. */                         \
-			if (p_datetime.find_char('-') == 0) {                \
-				year *= -1;                                      \
-			}                                                    \
-		}                                                        \
-		if (has_time) {                                          \
-			Vector<int> array = time.split_ints(":", false);     \
-			hour = array[0];                                     \
-			minute = array[1];                                   \
-			second = array[2];                                   \
-		}                                                        \
+#define PARSE_ISO8601_STRING(ret)                                                             \
+	int64_t year = UNIX_EPOCH_YEAR_AD;                                                        \
+	Month month = MONTH_JANUARY;                                                              \
+	uint8_t day = 1;                                                                          \
+	uint8_t hour = 0;                                                                         \
+	uint8_t minute = 0;                                                                       \
+	uint8_t second = 0;                                                                       \
+	{                                                                                         \
+		bool has_date = false, has_time = false;                                              \
+		String date, time;                                                                    \
+		if (p_datetime.find_char('T') > 0) {                                                  \
+			has_date = has_time = true;                                                       \
+			Vector<String> array = p_datetime.split("T");                                     \
+			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
+			date = array[0];                                                                  \
+			time = array[1];                                                                  \
+		} else if (p_datetime.find_char(' ') > 0) {                                           \
+			has_date = has_time = true;                                                       \
+			Vector<String> array = p_datetime.split(" ");                                     \
+			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
+			date = array[0];                                                                  \
+			time = array[1];                                                                  \
+		} else if (p_datetime.find_char('-', 1) > 0) {                                        \
+			has_date = true;                                                                  \
+			date = p_datetime;                                                                \
+		} else if (p_datetime.find_char(':') > 0) {                                           \
+			has_time = true;                                                                  \
+			time = p_datetime;                                                                \
+		}                                                                                     \
+		/* Set the variables from the contents of the string. */                              \
+		if (has_date) {                                                                       \
+			Vector<int> array = date.split_ints("-", false);                                  \
+			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 date string.");      \
+			year = array[0];                                                                  \
+			month = (Month)array[1];                                                          \
+			day = array[2];                                                                   \
+			/* Handle negative years. */                                                      \
+			if (p_datetime.find_char('-') == 0) {                                             \
+				year *= -1;                                                                   \
+			}                                                                                 \
+		}                                                                                     \
+		if (has_time) {                                                                       \
+			Vector<int> array = time.split_ints(":", false);                                  \
+			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 time string.");      \
+			hour = array[0];                                                                  \
+			minute = array[1];                                                                \
+			second = array[2];                                                                \
+		}                                                                                     \
 	}
 
 #define EXTRACT_FROM_DICTIONARY                                                                   \
@@ -253,7 +257,7 @@ String Time::get_time_string_from_unix_time(int64_t p_unix_time_val) const {
 }
 
 Dictionary Time::get_datetime_dict_from_string(String p_datetime, bool p_weekday) const {
-	PARSE_ISO8601_STRING
+	PARSE_ISO8601_STRING(Dictionary())
 	Dictionary dict;
 	dict[YEAR_KEY] = year;
 	dict[MONTH_KEY] = (uint8_t)month;
@@ -293,7 +297,7 @@ int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) cons
 }
 
 int64_t Time::get_unix_time_from_datetime_string(String p_datetime) const {
-	PARSE_ISO8601_STRING
+	PARSE_ISO8601_STRING(-1)
 	VALIDATE_YMDHMS(0)
 	YMD_TO_DAY_NUMBER
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
