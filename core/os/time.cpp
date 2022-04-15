@@ -261,7 +261,7 @@ String Time::get_time_string_from_unix_time(int64_t p_unix_time_val) const {
 	return vformat("%02d:%02d:%02d", hour, minute, second);
 }
 
-Dictionary Time::get_datetime_dict_from_string(String p_datetime, bool p_weekday) const {
+Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool p_weekday) const {
 	PARSE_ISO8601_STRING(Dictionary())
 	Dictionary dict;
 	dict[YEAR_KEY] = year;
@@ -279,7 +279,7 @@ Dictionary Time::get_datetime_dict_from_string(String p_datetime, bool p_weekday
 	return dict;
 }
 
-String Time::get_datetime_string_from_dict(const Dictionary p_datetime, bool p_use_space) const {
+String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS("")
@@ -410,8 +410,8 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_datetime_string_from_unix_time", "unix_time_val", "use_space"), &Time::get_datetime_string_from_unix_time, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_date_string_from_unix_time", "unix_time_val"), &Time::get_date_string_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_time_string_from_unix_time", "unix_time_val"), &Time::get_time_string_from_unix_time);
-	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_string", "datetime", "weekday"), &Time::get_datetime_dict_from_string);
-	ClassDB::bind_method(D_METHOD("get_datetime_string_from_dict", "datetime", "use_space"), &Time::get_datetime_string_from_dict);
+	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_datetime_string", "datetime", "weekday"), &Time::get_datetime_dict_from_datetime_string);
+	ClassDB::bind_method(D_METHOD("get_datetime_string_from_datetime_dict", "datetime", "use_space"), &Time::get_datetime_string_from_datetime_dict);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_dict", "datetime"), &Time::get_unix_time_from_datetime_dict);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_string", "datetime"), &Time::get_unix_time_from_datetime_string);
 	ClassDB::bind_method(D_METHOD("get_offset_string_from_offset_minutes", "offset_minutes"), &Time::get_offset_string_from_offset_minutes);
