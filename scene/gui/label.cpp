@@ -387,6 +387,7 @@ void Label::regenerate_word_cache() {
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
+	bool was_separatable = false;
 
 	WordCache *last = nullptr;
 
@@ -411,8 +412,11 @@ void Label::regenerate_word_cache() {
 		bool insert_newline = false;
 		real_t char_width = 0;
 
-		if (current < 33) {
-			if (current_word_size > 0) {
+		bool separation_changed = i > 0 && was_separatable != separatable;
+		was_separatable = separatable;
+
+		if (current < 33) { // Control characters and space.
+			if (current_word_size > 0) { // These characters always create a word-break.
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
 					last->next = wc;
@@ -428,7 +432,7 @@ void Label::regenerate_word_cache() {
 				current_word_size = 0;
 				space_count = 0;
 			} else if ((i == xl_text.length() || current == '\n') && last != nullptr && space_count != 0) {
-				//in case there are trailing white spaces we add a placeholder word cache with just the spaces
+				// In case there are trailing white spaces we add a placeholder word cache with just the spaces.
 				WordCache *wc = memnew(WordCache);
 				if (word_cache) {
 					last->next = wc;
@@ -466,8 +470,24 @@ void Label::regenerate_word_cache() {
 				}
 			}
 
-		} else {
-			// latin characters
+		} else { // Characters with graphical representation.
+			// Word-break on CJK & non-CJK edge.
+			if (separation_changed && current_word_size > 0) {
+				WordCache *wc = memnew(WordCache);
+				if (word_cache) {
+					last->next = wc;
+				} else {
+					word_cache = wc;
+				}
+				last = wc;
+
+				wc->pixel_width = current_word_size;
+				wc->char_pos = word_pos;
+				wc->word_len = i - word_pos;
+				wc->space_count = space_count;
+				current_word_size = 0;
+				space_count = 0;
+			}
 			if (current_word_size == 0) {
 				word_pos = i;
 			}
