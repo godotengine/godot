@@ -1129,8 +1129,6 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 	} else if (wlr_data_control_source == ss->primary_data_control_source) {
 		data_to_send = &ss->primary_data;
 		print_verbose("Clipboard: requested primary selection.");
-	} else {
-		return;
 	}
 
 	if (data_to_send) {
@@ -1348,7 +1346,7 @@ void DisplayServerWayland::clipboard_set(const String &p_text) {
 
 	if (!wls.current_seat->selection_data_control_source) {
 		ss.selection_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
-		zwlr_data_control_source_v1_add_listener(ss.selection_data_control_source, &wlr_data_control_source_listener, &wls);
+		zwlr_data_control_source_v1_add_listener(ss.selection_data_control_source, &wlr_data_control_source_listener, wls.current_seat);
 		zwlr_data_control_source_v1_offer(ss.selection_data_control_source, "text/plain");
 
 		zwlr_data_control_device_v1_set_selection(ss.wlr_data_control_device, ss.selection_data_control_source);
@@ -1382,7 +1380,7 @@ void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 
 	if (!ss.primary_data_control_source) {
 		ss.primary_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
-		zwlr_data_control_source_v1_add_listener(ss.primary_data_control_source, &wlr_data_control_source_listener, &wls);
+		zwlr_data_control_source_v1_add_listener(ss.primary_data_control_source, &wlr_data_control_source_listener, wls.current_seat);
 		zwlr_data_control_source_v1_offer(ss.primary_data_control_source, "text/plain");
 
 		zwlr_data_control_device_v1_set_primary_selection(ss.wlr_data_control_device, ss.primary_data_control_source);
