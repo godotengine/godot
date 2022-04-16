@@ -1222,8 +1222,9 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return false;
 	}
 
+	TreeItem *root = tree->get_root();
 	int section = tree->get_drop_section_at_position(p_point);
-	if (section < -1 || (section == -1 && !item->get_parent())) {
+	if (section < -1 || (section == -1 && (item->get_parent() == root))) {
 		return false;
 	}
 
