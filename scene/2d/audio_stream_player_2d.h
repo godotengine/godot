@@ -70,7 +70,6 @@ private:
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
-	StringName _get_actual_bus();
 	void _update_panning();
 	void _bus_layout_changed();
 

@@ -477,40 +477,8 @@ bool Area2D::overlaps_body(Node *p_body) const {
 	return E->get().in_tree;
 }
 
-void Area2D::set_audio_bus_override(bool p_override) {
-	audio_bus_override = p_override;
-}
-
-bool Area2D::is_overriding_audio_bus() const {
-	return audio_bus_override;
-}
-
-void Area2D::set_audio_bus_name(const StringName &p_audio_bus) {
-	audio_bus = p_audio_bus;
-}
-
-StringName Area2D::get_audio_bus_name() const {
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
-			return audio_bus;
-		}
-	}
-	return "Master";
-}
-
 void Area2D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "audio_bus_name") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
-
-		property.hint_string = options;
-	} else if (property.name.begins_with("gravity") && property.name != "gravity_space_override") {
+	if (property.name.begins_with("gravity") && property.name != "gravity_space_override") {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		} else {
@@ -581,12 +549,6 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area2D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area2D::overlaps_area);
 
-	ClassDB::bind_method(D_METHOD("set_audio_bus_name", "name"), &Area2D::set_audio_bus_name);
-	ClassDB::bind_method(D_METHOD("get_audio_bus_name"), &Area2D::get_audio_bus_name);
-
-	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
-	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
-
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node2D"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node2D"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node2D")));
@@ -616,10 +578,6 @@ void Area2D::_bind_methods() {
 	ADD_GROUP("Angular Damp", "angular_damp_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_angular_damp_space_override_mode", "get_angular_damp_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
-
-	ADD_GROUP("Audio Bus", "audio_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);

@@ -46,6 +46,11 @@ public:
 	};
 
 private:
+	struct SendEntry {
+		StringName send;
+		float loudness_scale;
+	};
+
 	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
 
@@ -54,7 +59,7 @@ private:
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
 	bool autoplay = false;
-	StringName bus = SNAME("Master");
+	Vector<SendEntry> sends;
 	int max_polyphony = 1;
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
@@ -69,11 +74,15 @@ private:
 	void _bus_layout_changed();
 	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
 
-	Vector<AudioFrame> _get_volume_vector();
+	Vector<AudioFrame> _get_volume_vector() const;
 
 protected:
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	virtual TypedArray<String> get_configuration_warnings() const override;
 	static void _bind_methods();
 
 public:
@@ -95,8 +104,25 @@ public:
 	bool is_playing() const;
 	float get_playback_position();
 
-	void set_bus(const StringName &p_bus);
-	StringName get_bus() const;
+	// Used for the editor plugin that faciliates editing of sends.
+	void add_send(int p_index);
+	void move_send(int p_index_from, int p_index_to);
+	void remove_send(int p_index);
+
+	// Send controls exposed to script.
+	void set_send(int p_index, StringName p_send_name);
+	StringName get_send(int p_index) const;
+	void set_send_loudness_scale(int p_index, float p_loudness_scale);
+	float get_send_loudness_scale(int p_index) const;
+
+	// Convenience method primarily for script.
+	int find_send_index_by_name(StringName p_send_name) const;
+
+	void set_sends_count(int p_count);
+	int get_sends_count() const;
+
+	Map<StringName, Vector<AudioFrame>> get_sends_internal() const;
+	void update_sends_internal();
 
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled();

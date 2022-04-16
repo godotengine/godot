@@ -129,9 +129,6 @@ private:
 	Map<ObjectID, AreaState> area_map;
 	void _clear_monitoring();
 
-	bool audio_bus_override = false;
-	StringName audio_bus;
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -182,12 +179,6 @@ public:
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
-
-	void set_audio_bus_override(bool p_override);
-	bool is_overriding_audio_bus() const;
-
-	void set_audio_bus_name(const StringName &p_audio_bus);
-	StringName get_audio_bus_name() const;
 
 	Area2D();
 	~Area2D();

@@ -133,6 +133,7 @@
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
+#include "editor/plugins/audio_stream_player_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -7053,6 +7054,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
 	add_editor_plugin(memnew(Texture3DEditorPlugin));
 	add_editor_plugin(memnew(AudioStreamEditorPlugin));
+	add_editor_plugin(memnew(AudioStreamPlayerEditorPlugin));
 	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	add_editor_plugin(memnew(Skeleton3DEditorPlugin));
