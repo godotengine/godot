@@ -99,6 +99,9 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		Vector<Node *> children;
+		HashMap<StringName, Node *> owned_unique_nodes;
+		bool unique_name_in_owner = false;
+
 		int internal_children_front = 0;
 		int internal_children_back = 0;
 		int pos = -1;
@@ -192,6 +195,9 @@ private:
 
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
+
+	void _release_unique_name_in_owner();
+	void _acquire_unique_name_in_owner();
 
 protected:
 	void _block() { data.blocked++; }
@@ -344,6 +350,9 @@ public:
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
+
+	void set_unique_name_in_owner(bool p_enabled);
+	bool is_unique_name_in_owner() const;
 
 	void remove_and_skip();
 	int get_index(bool p_include_internal = true) const;

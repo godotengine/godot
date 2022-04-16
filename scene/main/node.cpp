@@ -257,6 +257,9 @@ void Node::_propagate_after_exit_tree() {
 		}
 
 		if (!found) {
+			if (data.unique_name_in_owner) {
+				_release_unique_name_in_owner();
+			}
 			data.owner->data.owned.erase(data.OW);
 			data.owner = nullptr;
 		}
@@ -917,10 +920,18 @@ void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
+
+	if (data.unique_name_in_owner && data.owner) {
+		_release_unique_name_in_owner();
+	}
 	data.name = name;
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this, true);
+	}
+
+	if (data.unique_name_in_owner && data.owner) {
+		_acquire_unique_name_in_owner();
 	}
 
 	propagate_notification(NOTIFICATION_PATH_RENAMED);
@@ -1303,6 +1314,24 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 				next = root;
 			}
 
+		} else if (name.is_node_unique_name()) {
+			if (current->data.owned_unique_nodes.size()) {
+				// Has unique nodes in ownership
+				Node **unique = current->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else if (current->data.owner) {
+				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+				if (!unique) {
+					return nullptr;
+				}
+				next = *unique;
+			} else {
+				return nullptr;
+			}
+
 		} else {
 			next = nullptr;
 
@@ -1498,8 +1527,54 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.OW = data.owner->data.owned.back();
 }
 
+void Node::_release_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which == nullptr || *which != this) {
+		return; // Ignore.
+	}
+	data.owner->data.owned_unique_nodes.erase(key);
+}
+
+void Node::_acquire_unique_name_in_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
+	if (which != nullptr && *which != this) {
+		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'. This node is no longer set unique."), get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which)));
+		data.unique_name_in_owner = false;
+		return;
+	}
+	data.owner->data.owned_unique_nodes[key] = this;
+}
+
+void Node::set_unique_name_in_owner(bool p_enabled) {
+	if (data.unique_name_in_owner == p_enabled) {
+		return;
+	}
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_release_unique_name_in_owner();
+	}
+	data.unique_name_in_owner = p_enabled;
+
+	if (data.unique_name_in_owner && data.owner != nullptr) {
+		_acquire_unique_name_in_owner();
+	}
+
+	update_configuration_warnings();
+}
+
+bool Node::is_unique_name_in_owner() const {
+	return data.unique_name_in_owner;
+}
+
 void Node::set_owner(Node *p_owner) {
 	if (data.owner) {
+		if (data.unique_name_in_owner) {
+			_release_unique_name_in_owner();
+		}
 		data.owner->data.owned.erase(data.OW);
 		data.OW = nullptr;
 		data.owner = nullptr;
@@ -1526,6 +1601,10 @@ void Node::set_owner(Node *p_owner) {
 	ERR_FAIL_COND(!owner_valid);
 
 	_set_owner_nocheck(p_owner);
+
+	if (data.unique_name_in_owner) {
+		_acquire_unique_name_in_owner();
+	}
 }
 
 Node *Node::get_owner() const {
@@ -2585,16 +2664,16 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 TypedArray<String> Node::get_configuration_warnings() const {
+	TypedArray<String> ret;
+
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
-		TypedArray<String> ret;
-		ret.resize(warnings.size());
 		for (int i = 0; i < warnings.size(); i++) {
-			ret[i] = warnings[i];
+			ret.push_back(warnings[i]);
 		}
-		return ret;
 	}
-	return Array();
+
+	return ret;
 }
 
 String Node::get_configuration_warnings_as_string() const {
@@ -2789,6 +2868,11 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
+
+	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
+	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_unique_name_in_owner", "is_unique_name_in_owner");
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
