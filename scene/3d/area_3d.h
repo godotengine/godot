@@ -133,14 +133,6 @@ private:
 	Map<ObjectID, AreaState> area_map;
 	void _clear_monitoring();
 
-	bool audio_bus_override = false;
-	StringName audio_bus = "Master";
-
-	bool use_reverb_bus = false;
-	StringName reverb_bus = "Master";
-	float reverb_amount = 0.0;
-	float reverb_uniformity = 0.0;
-
 	void _validate_property(PropertyInfo &property) const override;
 
 	void _initialize_wind();
@@ -203,24 +195,6 @@ public:
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
-
-	void set_audio_bus_override(bool p_override);
-	bool is_overriding_audio_bus() const;
-
-	void set_audio_bus_name(const StringName &p_audio_bus);
-	StringName get_audio_bus_name() const;
-
-	void set_use_reverb_bus(bool p_enable);
-	bool is_using_reverb_bus() const;
-
-	void set_reverb_bus(const StringName &p_audio_bus);
-	StringName get_reverb_bus() const;
-
-	void set_reverb_amount(float p_amount);
-	float get_reverb_amount() const;
-
-	void set_reverb_uniformity(float p_uniformity);
-	float get_reverb_uniformity() const;
 
 	Area3D();
 	~Area3D();

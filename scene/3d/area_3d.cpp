@@ -540,77 +540,8 @@ bool Area3D::overlaps_body(Node *p_body) const {
 	return E->get().in_tree;
 }
 
-void Area3D::set_audio_bus_override(bool p_override) {
-	audio_bus_override = p_override;
-}
-
-bool Area3D::is_overriding_audio_bus() const {
-	return audio_bus_override;
-}
-
-void Area3D::set_audio_bus_name(const StringName &p_audio_bus) {
-	audio_bus = p_audio_bus;
-}
-
-StringName Area3D::get_audio_bus_name() const {
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
-			return audio_bus;
-		}
-	}
-	return "Master";
-}
-
-void Area3D::set_use_reverb_bus(bool p_enable) {
-	use_reverb_bus = p_enable;
-}
-
-bool Area3D::is_using_reverb_bus() const {
-	return use_reverb_bus;
-}
-
-void Area3D::set_reverb_bus(const StringName &p_audio_bus) {
-	reverb_bus = p_audio_bus;
-}
-
-StringName Area3D::get_reverb_bus() const {
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_name(i) == reverb_bus) {
-			return reverb_bus;
-		}
-	}
-	return "Master";
-}
-
-void Area3D::set_reverb_amount(float p_amount) {
-	reverb_amount = p_amount;
-}
-
-float Area3D::get_reverb_amount() const {
-	return reverb_amount;
-}
-
-void Area3D::set_reverb_uniformity(float p_uniformity) {
-	reverb_uniformity = p_uniformity;
-}
-
-float Area3D::get_reverb_uniformity() const {
-	return reverb_uniformity;
-}
-
 void Area3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "audio_bus_name" || property.name == "reverb_bus_name") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
-
-		property.hint_string = options;
-	} else if (property.name.begins_with("gravity") && property.name != "gravity_space_override") {
+	if (property.name.begins_with("gravity") && property.name != "gravity_space_override") {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		} else {
@@ -692,24 +623,6 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area3D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area3D::overlaps_area);
 
-	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area3D::set_audio_bus_override);
-	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area3D::is_overriding_audio_bus);
-
-	ClassDB::bind_method(D_METHOD("set_audio_bus_name", "name"), &Area3D::set_audio_bus_name);
-	ClassDB::bind_method(D_METHOD("get_audio_bus_name"), &Area3D::get_audio_bus_name);
-
-	ClassDB::bind_method(D_METHOD("set_use_reverb_bus", "enable"), &Area3D::set_use_reverb_bus);
-	ClassDB::bind_method(D_METHOD("is_using_reverb_bus"), &Area3D::is_using_reverb_bus);
-
-	ClassDB::bind_method(D_METHOD("set_reverb_bus", "name"), &Area3D::set_reverb_bus);
-	ClassDB::bind_method(D_METHOD("get_reverb_bus"), &Area3D::get_reverb_bus);
-
-	ClassDB::bind_method(D_METHOD("set_reverb_amount", "amount"), &Area3D::set_reverb_amount);
-	ClassDB::bind_method(D_METHOD("get_reverb_amount"), &Area3D::get_reverb_amount);
-
-	ClassDB::bind_method(D_METHOD("set_reverb_uniformity", "amount"), &Area3D::set_reverb_uniformity);
-	ClassDB::bind_method(D_METHOD("get_reverb_uniformity"), &Area3D::get_reverb_uniformity);
-
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node3D"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node3D"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node3D")));
@@ -744,16 +657,6 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wind_force_magnitude", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), "set_wind_force_magnitude", "get_wind_force_magnitude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wind_attenuation_factor", PROPERTY_HINT_RANGE, "0.0,3.0,0.001,or_greater"), "set_wind_attenuation_factor", "get_wind_attenuation_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "wind_source_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_wind_source_path", "get_wind_source_path");
-
-	ADD_GROUP("Audio Bus", "audio_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
-
-	ADD_GROUP("Reverb Bus", "reverb_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enable"), "set_use_reverb_bus", "is_using_reverb_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus", "get_reverb_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);

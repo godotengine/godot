@@ -91,8 +91,6 @@ private:
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
-	StringName _get_actual_bus();
-	Area3D *_get_overriding_area();
 	Vector<AudioFrame> _update_panning();
 
 	void _bus_layout_changed();

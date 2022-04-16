@@ -139,7 +139,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	Ref<AudioStreamPlayback> stream_playback = stream->instance_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
 
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, get_sends_internal(), p_from_pos, pitch_scale);
 	stream_playbacks.push_back(stream_playback);
 	active.set();
 	set_process_internal(true);
@@ -180,22 +180,6 @@ float AudioStreamPlayer::get_playback_position() {
 		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
 	}
 	return 0;
-}
-
-void AudioStreamPlayer::set_bus(const StringName &p_bus) {
-	bus = p_bus;
-	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, p_bus, _get_volume_vector());
-	}
-}
-
-StringName AudioStreamPlayer::get_bus() const {
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-		if (AudioServer::get_singleton()->get_bus_name(i) == String(bus)) {
-			return bus;
-		}
-	}
-	return SNAME("Master");
 }
 
 void AudioStreamPlayer::set_autoplay(bool p_enable) {
@@ -246,7 +230,7 @@ bool AudioStreamPlayer::get_stream_paused() const {
 	return false;
 }
 
-Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
+Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() const {
 	Vector<AudioFrame> volume_vector;
 	// We need at most four stereo pairs (for 7.1 systems).
 	volume_vector.resize(4);
@@ -284,7 +268,7 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 }
 
 void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
-	if (property.name == "bus") {
+	if (property.name.ends_with("/send")) {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			if (i > 0) {
@@ -304,11 +288,183 @@ void AudioStreamPlayer::_bus_layout_changed() {
 	notify_property_list_changed();
 }
 
+void AudioStreamPlayer::add_send(int p_index) {
+	if (p_index < 0) {
+		p_index = sends.size();
+	}
+	ERR_FAIL_COND(p_index > sends.size());
+	SendEntry entry{ SNAME("Master"), 1.0f };
+	sends.insert(p_index, entry);
+	emit_signal(SNAME("changed"));
+	update_sends_internal();
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer::move_send(int p_index_from, int p_index_to) {
+	ERR_FAIL_COND(p_index_from < 0);
+	ERR_FAIL_COND(p_index_from >= sends.size());
+	ERR_FAIL_COND(p_index_to < 0);
+	ERR_FAIL_COND(p_index_to > sends.size());
+	sends.insert(p_index_to, sends[p_index_from]);
+	// If 'from' is strictly after 'to' we need to increment the index by one because of the insertion.
+	if (p_index_from > p_index_to) {
+		p_index_from++;
+	}
+	sends.remove_at(p_index_from);
+	emit_signal(SNAME("changed"));
+	update_sends_internal();
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer::remove_send(int p_index) {
+	ERR_FAIL_COND(p_index < 0);
+	ERR_FAIL_COND(p_index >= sends.size());
+	sends.remove_at(p_index);
+	emit_signal(SNAME("changed"));
+	update_sends_internal();
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer::set_send(int p_index, StringName p_send_name) {
+	ERR_FAIL_COND(p_index < 0);
+	ERR_FAIL_COND(p_index >= sends.size());
+	sends.write[p_index].send = p_send_name;
+	update_sends_internal();
+}
+
+StringName AudioStreamPlayer::get_send(int p_index) const {
+	ERR_FAIL_COND_V(p_index < 0, SNAME(""));
+	ERR_FAIL_COND_V(p_index >= sends.size(), SNAME(""));
+	return sends[p_index].send;
+}
+
+void AudioStreamPlayer::set_send_loudness_scale(int p_index, float p_loudness_scale) {
+	ERR_FAIL_COND(p_index < 0);
+	ERR_FAIL_COND(p_index >= sends.size());
+	sends.write[p_index].loudness_scale = p_loudness_scale;
+	update_sends_internal();
+}
+
+float AudioStreamPlayer::get_send_loudness_scale(int p_index) const {
+	ERR_FAIL_COND_V(p_index < 0, 0.0f);
+	ERR_FAIL_COND_V(p_index >= sends.size(), 0.0f);
+	return sends[p_index].loudness_scale;
+}
+
+int AudioStreamPlayer::find_send_index_by_name(StringName p_send_name) const {
+	for (int send_idx = 0; send_idx < sends.size(); send_idx++) {
+		if (sends[send_idx].send == p_send_name) {
+			return send_idx;
+		}
+	}
+	return -1;
+}
+
+void AudioStreamPlayer::set_sends_count(int p_count) {
+	sends.resize(p_count);
+}
+
+int AudioStreamPlayer::get_sends_count() const {
+	return sends.size();
+}
+
+Map<StringName, Vector<AudioFrame>> AudioStreamPlayer::get_sends_internal() const {
+	// If the user set up this player to send multiple times to the same bus, add the loudness together.
+	Map<StringName, float> per_send_loudness_scale_total;
+	for (int send_idx = 0; send_idx < sends.size(); send_idx++) {
+		per_send_loudness_scale_total[sends[send_idx].send] += sends[send_idx].loudness_scale;
+	}
+	// Set up each volume vector according to the totals.
+	Map<StringName, Vector<AudioFrame>> per_send_volume_vector;
+	for (KeyValue<StringName, float> pair : per_send_loudness_scale_total) {
+		Vector<AudioFrame> volume_vector = _get_volume_vector();
+		for (AudioFrame &volume : volume_vector) {
+			volume *= pair.value;
+		}
+		per_send_volume_vector[pair.key] = volume_vector;
+	}
+	return per_send_volume_vector;
+}
+
+void AudioStreamPlayer::update_sends_internal() {
+	Map<StringName, Vector<AudioFrame>> sends_volume_linear = get_sends_internal();
+	for (Ref<AudioStreamPlayback> playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, sends_volume_linear);
+	}
+}
+
 Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
 	if (!stream_playbacks.is_empty()) {
 		return stream_playbacks[stream_playbacks.size() - 1];
 	}
 	return nullptr;
+}
+
+bool AudioStreamPlayer::_get(const StringName &p_name, Variant &r_ret) const {
+	if (Node::_get(p_name, r_ret)) {
+		return true;
+	}
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() == 2 && components[0].begins_with("send_") && components[0].trim_prefix("send_").is_valid_int()) {
+		int index = components[0].trim_prefix("send_").to_int();
+		if (index < 0 || index >= (int)sends.size()) {
+			return false;
+		}
+
+		if (components[1] == "send") {
+			r_ret = get_send(index);
+			return true;
+		} else if (components[1] == "loudness_scale") {
+			r_ret = get_send_loudness_scale(index);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return false;
+}
+
+bool AudioStreamPlayer::_set(const StringName &p_name, const Variant &p_value) {
+	if (Node::_set(p_name, p_value)) {
+		return true;
+	}
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() == 2 && components[0].begins_with("send_") && components[0].trim_prefix("send_").is_valid_int()) {
+		int index = components[0].trim_prefix("send_").to_int();
+		if (index < 0 || index >= (int)sends.size()) {
+			return false;
+		}
+
+		if (components[1] == "send") {
+			set_send(index, p_value);
+			return true;
+		} else if (components[1] == "loudness_scale") {
+			set_send_loudness_scale(index, p_value);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return false;
+}
+
+void AudioStreamPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
+	Node::_get_property_list(p_list);
+
+	String bus_hint_string;
+	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+		if (i > 0) {
+			bus_hint_string += ",";
+		}
+		String name = AudioServer::get_singleton()->get_bus_name(i);
+		bus_hint_string += name;
+	}
+
+	p_list->push_back(PropertyInfo(Variant::NIL, "Sends", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (int i = 0; i < sends.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, vformat("send_%d/send", i), PROPERTY_HINT_ENUM, bus_hint_string));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("send_%d/loudness_scale", i), PROPERTY_HINT_RANGE, "0,2,0.001,or_greater"));
+	}
 }
 
 void AudioStreamPlayer::_bind_methods() {
@@ -328,9 +484,6 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer::is_playing);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer::get_playback_position);
 
-	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
-	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
-
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::is_autoplay_enabled);
 
@@ -348,6 +501,19 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
 
+	ClassDB::bind_method(D_METHOD("add_send", "index"), &AudioStreamPlayer::add_send);
+	ClassDB::bind_method(D_METHOD("move_send", "index_from", "index_to"), &AudioStreamPlayer::move_send);
+	ClassDB::bind_method(D_METHOD("remove_send", "index"), &AudioStreamPlayer::remove_send);
+
+	ClassDB::bind_method(D_METHOD("set_send", "index", "send_name"), &AudioStreamPlayer::set_send);
+	ClassDB::bind_method(D_METHOD("get_send", "index"), &AudioStreamPlayer::get_send);
+	ClassDB::bind_method(D_METHOD("set_send_loudness_scale", "index", "loudness_scale"), &AudioStreamPlayer::set_send_loudness_scale);
+	ClassDB::bind_method(D_METHOD("get_send_loudness_scale", "index"), &AudioStreamPlayer::get_send_loudness_scale);
+	ClassDB::bind_method(D_METHOD("find_send_index_by_name", "send_name"), &AudioStreamPlayer::find_send_index_by_name);
+	ClassDB::bind_method(D_METHOD("set_sends_count", "count"), &AudioStreamPlayer::set_sends_count);
+	ClassDB::bind_method(D_METHOD("get_sends_count"), &AudioStreamPlayer::get_sends_count);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sends_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_sends_count", "get_sends_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
@@ -356,7 +522,8 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+
+	ADD_ARRAY("sends", "send_");
 
 	ADD_SIGNAL(MethodInfo("finished"));
 

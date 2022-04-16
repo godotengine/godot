@@ -30,7 +30,6 @@
 
 #include "audio_stream_player_3d.h"
 
-#include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -136,78 +135,6 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	}
 }
 
-void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol) {
-	reverb_vol.resize(4);
-	reverb_vol.write[0] = AudioFrame(0, 0);
-	reverb_vol.write[1] = AudioFrame(0, 0);
-	reverb_vol.write[2] = AudioFrame(0, 0);
-	reverb_vol.write[3] = AudioFrame(0, 0);
-
-	float uniformity = area->get_reverb_uniformity();
-	float area_send = area->get_reverb_amount();
-
-	if (uniformity > 0.0) {
-		float distance = listener_area_pos.length();
-		float attenuation = Math::db2linear(_get_attenuation_db(distance));
-
-		// Determine the fraction of sound that would come from each speaker if they were all driven uniformly.
-		float center_val[3] = { 0.5f, 0.25f, 0.16666f };
-		int channel_count = AudioServer::get_singleton()->get_channel_count();
-		AudioFrame center_frame(center_val[channel_count - 1], center_val[channel_count - 1]);
-
-		if (attenuation < 1.0) {
-			//pan the uniform sound
-			Vector3 rev_pos = listener_area_pos;
-			rev_pos.y = 0;
-			rev_pos.normalize();
-
-			if (channel_count >= 1) {
-				// Stereo pair
-				float c = rev_pos.x * 0.5 + 0.5;
-				reverb_vol.write[0].l = 1.0 - c;
-				reverb_vol.write[0].r = c;
-			}
-
-			if (channel_count >= 3) {
-				// Center pair + Side pair
-				float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
-				float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
-
-				reverb_vol.write[1].l = xl;
-				reverb_vol.write[1].r = xr;
-				reverb_vol.write[2].l = 1.0 - xr;
-				reverb_vol.write[2].r = 1.0 - xl;
-			}
-
-			if (channel_count >= 4) {
-				// Rear pair
-				// FIXME: Not sure what math should be done here
-				float c = rev_pos.x * 0.5 + 0.5;
-				reverb_vol.write[3].l = 1.0 - c;
-				reverb_vol.write[3].r = c;
-			}
-
-			for (int i = 0; i < channel_count; i++) {
-				reverb_vol.write[i] = reverb_vol[i].lerp(center_frame, attenuation);
-			}
-		} else {
-			for (int i = 0; i < channel_count; i++) {
-				reverb_vol.write[i] = center_frame;
-			}
-		}
-
-		for (int i = 0; i < channel_count; i++) {
-			reverb_vol.write[i] = direct_path_vol[i].lerp(reverb_vol[i] * attenuation, uniformity);
-			reverb_vol.write[i] *= area_send;
-		}
-
-	} else {
-		for (int i = 0; i < 4; i++) {
-			reverb_vol.write[i] = direct_path_vol[i] * area_send;
-		}
-	}
-}
-
 float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	float att = 0;
 	switch (attenuation_model) {
@@ -282,7 +209,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 				Map<StringName, Vector<AudioFrame>> bus_map;
-				bus_map[_get_actual_bus()] = volume_vector;
+				bus_map[bus] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				stream_playbacks.push_back(new_playback);
 				setplay.set(-1);
@@ -316,52 +243,6 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			}
 		} break;
 	}
-}
-
-Area3D *AudioStreamPlayer3D::_get_overriding_area() {
-	//check if any area is diverting sound into a bus
-	Ref<World3D> world_3d = get_world_3d();
-	ERR_FAIL_COND_V(world_3d.is_null(), nullptr);
-
-	Vector3 global_pos = get_global_transform().origin;
-
-	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
-
-	PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
-
-	PhysicsDirectSpaceState3D::PointParameters point_params;
-	point_params.position = global_pos;
-	point_params.collision_mask = area_mask;
-	point_params.collide_with_bodies = false;
-	point_params.collide_with_areas = true;
-
-	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
-
-	for (int i = 0; i < areas; i++) {
-		if (!sr[i].collider) {
-			continue;
-		}
-
-		Area3D *tarea = Object::cast_to<Area3D>(sr[i].collider);
-		if (!tarea) {
-			continue;
-		}
-
-		if (!tarea->is_overriding_audio_bus() && !tarea->is_using_reverb_bus()) {
-			continue;
-		}
-
-		return tarea;
-	}
-	return nullptr;
-}
-
-StringName AudioStreamPlayer3D::_get_actual_bus() {
-	Area3D *overriding_area = _get_overriding_area();
-	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
-		return overriding_area->get_audio_bus_name();
-	}
-	return bus;
 }
 
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
@@ -417,22 +298,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		float dist = local_pos.length();
 
-		Vector3 area_sound_pos;
-		Vector3 listener_area_pos;
-
-		Area3D *area = _get_overriding_area();
-
-		if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
-			area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
-			listener_area_pos = listener_node->get_global_transform().affine_inverse().xform(area_sound_pos);
-		}
-
 		if (max_distance > 0) {
 			float total_max = max_distance;
 
-			if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
-				total_max = MAX(total_max, listener_area_pos.length());
-			}
 			if (total_max > max_distance) {
 				continue; //can't hear this sound in this listener
 			}
@@ -467,21 +335,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 
 		Map<StringName, Vector<AudioFrame>> bus_volumes;
-		if (area) {
-			if (area->is_overriding_audio_bus()) {
-				//override audio bus
-				bus_volumes[area->get_audio_bus_name()] = output_volume_vector;
-			}
-
-			if (area->is_using_reverb_bus()) {
-				StringName reverb_bus_name = area->get_reverb_bus();
-				Vector<AudioFrame> reverb_vol;
-				_calc_reverb_vol(area, listener_area_pos, output_volume_vector, reverb_vol);
-				bus_volumes[reverb_bus_name] = reverb_vol;
-			}
-		} else {
-			bus_volumes[bus] = output_volume_vector;
-		}
+		bus_volumes[bus] = output_volume_vector;
 
 		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_volumes);
@@ -671,14 +525,6 @@ float AudioStreamPlayer3D::get_max_distance() const {
 	return max_distance;
 }
 
-void AudioStreamPlayer3D::set_area_mask(uint32_t p_mask) {
-	area_mask = p_mask;
-}
-
-uint32_t AudioStreamPlayer3D::get_area_mask() const {
-	return area_mask;
-}
-
 void AudioStreamPlayer3D::set_emission_angle_enabled(bool p_enable) {
 	emission_angle_enabled = p_enable;
 	update_gizmos();
@@ -820,9 +666,6 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_distance", "metres"), &AudioStreamPlayer3D::set_max_distance);
 	ClassDB::bind_method(D_METHOD("get_max_distance"), &AudioStreamPlayer3D::get_max_distance);
 
-	ClassDB::bind_method(D_METHOD("set_area_mask", "mask"), &AudioStreamPlayer3D::set_area_mask);
-	ClassDB::bind_method(D_METHOD("get_area_mask"), &AudioStreamPlayer3D::get_area_mask);
-
 	ClassDB::bind_method(D_METHOD("set_emission_angle", "degrees"), &AudioStreamPlayer3D::set_emission_angle);
 	ClassDB::bind_method(D_METHOD("get_emission_angle"), &AudioStreamPlayer3D::get_emission_angle);
 
@@ -864,7 +707,6 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_GROUP("Emission Angle", "emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emission_angle_enabled"), "set_emission_angle_enabled", "is_emission_angle_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_degrees", PROPERTY_HINT_RANGE, "0.1,90,0.1,degrees"), "set_emission_angle", "get_emission_angle");

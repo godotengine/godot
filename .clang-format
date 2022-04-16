@@ -158,9 +158,6 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 # SpacesInCStyleCastParentheses: false
 ## Godot TODO: We'll want to use a min of 1, but we need to see how to fix
 ## our comment capitalization at the same time.
-SpacesInLineCommentPrefix:
-  Minimum:         0
-  Maximum:         -1
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
 # SpaceBeforeSquareBrackets: false

@@ -1181,15 +1181,6 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 	} while (!playback_node->state.compare_exchange_strong(old_state, new_state));
 }
 
-void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes) {
-	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
-
-	Map<StringName, Vector<AudioFrame>> map;
-	map[p_bus] = p_volumes;
-
-	set_playback_bus_volumes_linear(p_playback, map);
-}
-
 void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes) {
 	ERR_FAIL_COND(p_bus_volumes.size() > MAX_BUSES_PER_PLAYBACK);
 

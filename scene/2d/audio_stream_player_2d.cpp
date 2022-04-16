@@ -30,7 +30,6 @@
 
 #include "audio_stream_player_2d.h"
 
-#include "scene/2d/area_2d.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/main/window.h"
 #include "scene/resources/world_2d.h"
@@ -70,7 +69,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 				active.set();
 				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-				AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get(), pitch_scale);
+				AudioServer::get_singleton()->start_playback_stream(new_playback, default_bus, volume_vector, setplay.get(), pitch_scale);
 				stream_playbacks.push_back(new_playback);
 				setplay.set(-1);
 			}
@@ -103,39 +102,6 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			}
 		} break;
 	}
-}
-
-StringName AudioStreamPlayer2D::_get_actual_bus() {
-	Vector2 global_pos = get_global_position();
-
-	//check if any area is diverting sound into a bus
-	Ref<World2D> world_2d = get_world_2d();
-	ERR_FAIL_COND_V(world_2d.is_null(), SNAME("Master"));
-
-	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
-
-	PhysicsDirectSpaceState2D::PointParameters point_params;
-	point_params.position = global_pos;
-	point_params.collision_mask = area_mask;
-	point_params.collide_with_bodies = false;
-	point_params.collide_with_areas = true;
-
-	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
-
-	for (int i = 0; i < areas; i++) {
-		Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
-		if (!area2d) {
-			continue;
-		}
-
-		if (!area2d->is_overriding_audio_bus()) {
-			continue;
-		}
-
-		return area2d->get_audio_bus_name();
-	}
-	return default_bus;
 }
 
 void AudioStreamPlayer2D::_update_panning() {
@@ -194,8 +160,10 @@ void AudioStreamPlayer2D::_update_panning() {
 		volume_vector.write[0] = AudioFrame(l, r) * multiplier;
 	}
 
+	Map<StringName, Vector<AudioFrame>> volume_map;
+	volume_map[default_bus] = volume_vector;
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, _get_actual_bus(), volume_vector);
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, volume_map);
 	}
 
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
@@ -351,14 +319,6 @@ float AudioStreamPlayer2D::get_attenuation() const {
 	return attenuation;
 }
 
-void AudioStreamPlayer2D::set_area_mask(uint32_t p_mask) {
-	area_mask = p_mask;
-}
-
-uint32_t AudioStreamPlayer2D::get_area_mask() const {
-	return area_mask;
-}
-
 void AudioStreamPlayer2D::set_stream_paused(bool p_pause) {
 	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
@@ -423,9 +383,6 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attenuation", "curve"), &AudioStreamPlayer2D::set_attenuation);
 	ClassDB::bind_method(D_METHOD("get_attenuation"), &AudioStreamPlayer2D::get_attenuation);
 
-	ClassDB::bind_method(D_METHOD("set_area_mask", "mask"), &AudioStreamPlayer2D::set_area_mask);
-	ClassDB::bind_method(D_METHOD("get_area_mask"), &AudioStreamPlayer2D::get_area_mask);
-
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer2D::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer2D::get_stream_paused);
 
@@ -444,7 +401,6 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 
 	ADD_SIGNAL(MethodInfo("finished"));
 }
