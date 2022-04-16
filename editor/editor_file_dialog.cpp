@@ -106,7 +106,7 @@ void EditorFileDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				set_process_unhandled_input(false);
+				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -126,7 +126,7 @@ void EditorFileDialog::_notification(int p_what) {
 	}
 }
 
-void EditorFileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -327,7 +327,7 @@ void EditorFileDialog::_post_popup() {
 		_update_favorites();
 	}
 
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 }
 
 void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -789,7 +789,7 @@ void EditorFileDialog::update_file_list() {
 			}
 		} else if (!dir_access->current_is_hidden()) {
 			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir() && !EditorFileSystem::_should_skip_directory(full_path)) {
+			if (dir_access->current_is_dir() && (!EditorFileSystem::_should_skip_directory(full_path) || Engine::get_singleton()->is_project_manager_hint())) {
 				dirs.push_back(item);
 			} else {
 				files.push_back(item);
@@ -1065,7 +1065,6 @@ void EditorFileDialog::set_access(Access p_access) {
 	if (access == p_access) {
 		return;
 	}
-	memdelete(dir_access);
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1099,16 +1098,18 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 }
 
 void EditorFileDialog::_make_dir_confirm() {
-	if (EditorFileSystem::get_singleton()->get_filesystem_path(makedirname->get_text().strip_edges())) {
+	const String stripped_dirname = makedirname->get_text().strip_edges();
+
+	if (dir_access->dir_exists(stripped_dirname)) {
 		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
 		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
 		makedirname->set_text(""); // Reset label.
 		return;
 	}
 
-	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
+	Error err = dir_access->make_dir(stripped_dirname);
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text().strip_edges());
+		dir_access->change_dir(stripped_dirname);
 		invalidate();
 		update_filters();
 		update_dir();
@@ -1851,5 +1852,4 @@ EditorFileDialog::~EditorFileDialog() {
 	if (unregister_func) {
 		unregister_func(this);
 	}
-	memdelete(dir_access);
 }

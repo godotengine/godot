@@ -41,10 +41,10 @@
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
-	ScrollContainer *preview_container;
-	ColorRect *preview_bg;
-	MarginContainer *preview_overlay;
-	Control *picker_overlay;
+	ScrollContainer *preview_container = nullptr;
+	ColorRect *preview_bg = nullptr;
+	MarginContainer *preview_overlay = nullptr;
+	Control *picker_overlay = nullptr;
 	Control *hovered_control = nullptr;
 
 	struct ThemeCache {
@@ -69,9 +69,9 @@ class ThemeEditorPreview : public VBoxContainer {
 	void _reset_picker_overlay();
 
 protected:
-	HBoxContainer *preview_toolbar;
-	MarginContainer *preview_content;
-	Button *picker_button;
+	HBoxContainer *preview_toolbar = nullptr;
+	MarginContainer *preview_content = nullptr;
+	Button *picker_button = nullptr;
 
 	void add_preview_overlay(Control *p_overlay);
 
@@ -96,7 +96,7 @@ class SceneThemeEditorPreview : public ThemeEditorPreview {
 
 	Ref<PackedScene> loaded_scene;
 
-	Button *reload_scene_button;
+	Button *reload_scene_button = nullptr;
 
 	void _reload_scene();
 

@@ -80,7 +80,7 @@ public:
 class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
-	PopupMenu *change_type;
+	PopupMenu *change_type = nullptr;
 	bool updating = false;
 	bool dropping = false;
 
@@ -88,12 +88,12 @@ class EditorPropertyArray : public EditorProperty {
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
-	Button *edit;
-	VBoxContainer *vbox;
-	VBoxContainer *property_vbox;
-	EditorSpinSlider *size_slider;
-	Button *button_add_item;
-	EditorPaginator *paginator;
+	Button *edit = nullptr;
+	VBoxContainer *vbox = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
@@ -138,19 +138,19 @@ public:
 class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
-	PopupMenu *change_type;
+	PopupMenu *change_type = nullptr;
 	bool updating = false;
 
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
-	Button *edit;
-	VBoxContainer *vbox;
-	VBoxContainer *property_vbox;
-	EditorSpinSlider *size_slider;
-	Button *button_add_item;
-	EditorPaginator *paginator;
+	Button *edit = nullptr;
+	VBoxContainer *vbox = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 
 	void _page_changed(int p_page);
 	void _edit_pressed();
@@ -173,19 +173,19 @@ public:
 class EditorPropertyLocalizableString : public EditorProperty {
 	GDCLASS(EditorPropertyLocalizableString, EditorProperty);
 
-	EditorLocaleDialog *locale_select;
+	EditorLocaleDialog *locale_select = nullptr;
 
 	bool updating;
 
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
-	Button *edit;
-	VBoxContainer *vbox;
-	VBoxContainer *property_vbox;
-	EditorSpinSlider *size_slider;
-	Button *button_add_item;
-	EditorPaginator *paginator;
+	Button *edit = nullptr;
+	VBoxContainer *vbox = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 
 	void _page_changed(int p_page);
 	void _edit_pressed();

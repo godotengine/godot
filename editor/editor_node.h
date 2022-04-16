@@ -275,161 +275,161 @@ private:
 	bool _initializing_plugins = false;
 	Map<String, EditorPlugin *> addon_name_to_plugin;
 
-	PanelContainer *scene_root_parent;
-	Control *theme_base;
-	Control *gui_base;
-	VBoxContainer *main_vbox;
-	OptionButton *rendering_driver;
+	PanelContainer *scene_root_parent = nullptr;
+	Control *theme_base = nullptr;
+	Control *gui_base = nullptr;
+	VBoxContainer *main_vbox = nullptr;
+	OptionButton *rendering_driver = nullptr;
 
-	ConfirmationDialog *video_restart_dialog;
+	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	int rendering_driver_current;
 	String rendering_driver_request;
 
 	// Split containers.
-	HSplitContainer *left_l_hsplit;
-	VSplitContainer *left_l_vsplit;
-	HSplitContainer *left_r_hsplit;
-	VSplitContainer *left_r_vsplit;
-	HSplitContainer *main_hsplit;
-	HSplitContainer *right_hsplit;
-	VSplitContainer *right_l_vsplit;
-	VSplitContainer *right_r_vsplit;
-	VSplitContainer *center_split;
+	HSplitContainer *left_l_hsplit = nullptr;
+	VSplitContainer *left_l_vsplit = nullptr;
+	HSplitContainer *left_r_hsplit = nullptr;
+	VSplitContainer *left_r_vsplit = nullptr;
+	HSplitContainer *main_hsplit = nullptr;
+	HSplitContainer *right_hsplit = nullptr;
+	VSplitContainer *right_l_vsplit = nullptr;
+	VSplitContainer *right_r_vsplit = nullptr;
+	VSplitContainer *center_split = nullptr;
 	// To access those easily by index.
 	Vector<VSplitContainer *> vsplits;
 	Vector<HSplitContainer *> hsplits;
 
 	// Main tabs.
-	TabBar *scene_tabs;
-	PopupMenu *scene_tabs_context_menu;
-	Panel *tab_preview_panel;
-	TextureRect *tab_preview;
+	TabBar *scene_tabs = nullptr;
+	PopupMenu *scene_tabs_context_menu = nullptr;
+	Panel *tab_preview_panel = nullptr;
+	TextureRect *tab_preview = nullptr;
 	int tab_closing_idx;
 
 	bool exiting = false;
 	bool dimmed = false;
 
 	int old_split_ofs;
-	VSplitContainer *top_split;
-	HBoxContainer *bottom_hb;
-	Control *vp_base;
+	VSplitContainer *top_split = nullptr;
+	HBoxContainer *bottom_hb = nullptr;
+	Control *vp_base = nullptr;
 
-	HBoxContainer *menu_hb;
-	Control *main_control;
-	MenuButton *file_menu;
-	MenuButton *project_menu;
-	MenuButton *debug_menu;
-	MenuButton *settings_menu;
-	MenuButton *help_menu;
-	PopupMenu *tool_menu;
-	Button *export_button;
-	Button *prev_scene;
-	Button *play_button;
-	Button *pause_button;
-	Button *stop_button;
-	Button *run_settings_button;
-	Button *play_scene_button;
-	Button *play_custom_scene_button;
-	Button *search_button;
-	TextureProgressBar *audio_vu;
+	HBoxContainer *menu_hb = nullptr;
+	Control *main_control = nullptr;
+	MenuButton *file_menu = nullptr;
+	MenuButton *project_menu = nullptr;
+	MenuButton *debug_menu = nullptr;
+	MenuButton *settings_menu = nullptr;
+	MenuButton *help_menu = nullptr;
+	PopupMenu *tool_menu = nullptr;
+	Button *export_button = nullptr;
+	Button *prev_scene = nullptr;
+	Button *play_button = nullptr;
+	Button *pause_button = nullptr;
+	Button *stop_button = nullptr;
+	Button *run_settings_button = nullptr;
+	Button *play_scene_button = nullptr;
+	Button *play_custom_scene_button = nullptr;
+	Button *search_button = nullptr;
+	TextureProgressBar *audio_vu = nullptr;
 
-	Timer *screenshot_timer;
+	Timer *screenshot_timer = nullptr;
 
-	PluginConfigDialog *plugin_config_dialog;
+	PluginConfigDialog *plugin_config_dialog = nullptr;
 
-	RichTextLabel *load_errors;
-	AcceptDialog *load_error_dialog;
+	RichTextLabel *load_errors = nullptr;
+	AcceptDialog *load_error_dialog = nullptr;
 
-	RichTextLabel *execute_outputs;
-	AcceptDialog *execute_output_dialog;
+	RichTextLabel *execute_outputs = nullptr;
+	AcceptDialog *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
 
-	PopupMenu *recent_scenes;
+	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
 	List<String> previous_scenes;
 	String defer_load_scene;
-	Node *_last_instantiated_scene;
+	Node *_last_instantiated_scene = nullptr;
 
-	ConfirmationDialog *confirmation;
-	ConfirmationDialog *save_confirmation;
-	ConfirmationDialog *import_confirmation;
-	ConfirmationDialog *pick_main_scene;
-	Button *select_current_scene_button;
-	AcceptDialog *accept;
-	AcceptDialog *save_accept;
-	EditorAbout *about;
-	AcceptDialog *warning;
+	ConfirmationDialog *confirmation = nullptr;
+	ConfirmationDialog *save_confirmation = nullptr;
+	ConfirmationDialog *import_confirmation = nullptr;
+	ConfirmationDialog *pick_main_scene = nullptr;
+	Button *select_current_scene_button = nullptr;
+	AcceptDialog *accept = nullptr;
+	AcceptDialog *save_accept = nullptr;
+	EditorAbout *about = nullptr;
+	AcceptDialog *warning = nullptr;
 
 	int overridden_default_layout;
 	Ref<ConfigFile> default_layout;
-	PopupMenu *editor_layouts;
-	EditorLayoutsDialog *layout_dialog;
+	PopupMenu *editor_layouts = nullptr;
+	EditorLayoutsDialog *layout_dialog = nullptr;
 
-	ConfirmationDialog *custom_build_manage_templates;
-	ConfirmationDialog *install_android_build_template;
-	ConfirmationDialog *remove_android_build_template;
+	ConfirmationDialog *custom_build_manage_templates = nullptr;
+	ConfirmationDialog *install_android_build_template = nullptr;
+	ConfirmationDialog *remove_android_build_template = nullptr;
 
-	PopupMenu *vcs_actions_menu;
-	EditorFileDialog *file;
-	ExportTemplateManager *export_template_manager;
-	EditorFeatureProfileManager *feature_profile_manager;
-	EditorFileDialog *file_templates;
-	EditorFileDialog *file_export_lib;
-	EditorFileDialog *file_script;
-	EditorFileDialog *file_android_build_source;
-	CheckBox *file_export_lib_merge;
-	CheckBox *file_export_lib_apply_xforms;
+	PopupMenu *vcs_actions_menu = nullptr;
+	EditorFileDialog *file = nullptr;
+	ExportTemplateManager *export_template_manager = nullptr;
+	EditorFeatureProfileManager *feature_profile_manager = nullptr;
+	EditorFileDialog *file_templates = nullptr;
+	EditorFileDialog *file_export_lib = nullptr;
+	EditorFileDialog *file_script = nullptr;
+	EditorFileDialog *file_android_build_source = nullptr;
+	CheckBox *file_export_lib_merge = nullptr;
+	CheckBox *file_export_lib_apply_xforms = nullptr;
 	String current_path;
-	MenuButton *update_spinner;
+	MenuButton *update_spinner = nullptr;
 
-	HBoxContainer *main_editor_button_vb;
+	HBoxContainer *main_editor_button_vb = nullptr;
 	Vector<Button *> main_editor_buttons;
 	Vector<EditorPlugin *> editor_table;
 
-	AudioStreamPreviewGenerator *audio_preview_gen;
-	ProgressDialog *progress_dialog;
-	BackgroundProgress *progress_hb;
+	AudioStreamPreviewGenerator *audio_preview_gen = nullptr;
+	ProgressDialog *progress_dialog = nullptr;
+	BackgroundProgress *progress_hb = nullptr;
 
-	DependencyErrorDialog *dependency_error;
+	DependencyErrorDialog *dependency_error = nullptr;
 	Map<String, Set<String>> dependency_errors;
-	DependencyEditor *dependency_fixer;
-	OrphanResourcesDialog *orphan_resources;
-	ConfirmationDialog *open_imported;
-	Button *new_inherited_button;
+	DependencyEditor *dependency_fixer = nullptr;
+	OrphanResourcesDialog *orphan_resources = nullptr;
+	ConfirmationDialog *open_imported = nullptr;
+	Button *new_inherited_button = nullptr;
 	String open_import_request;
 
 	Vector<Control *> floating_docks;
 
-	Button *dock_float;
-	Button *dock_tab_move_left;
-	Button *dock_tab_move_right;
-	Control *dock_select;
-	PopupPanel *dock_select_popup;
+	Button *dock_float = nullptr;
+	Button *dock_tab_move_left = nullptr;
+	Button *dock_tab_move_right = nullptr;
+	Control *dock_select = nullptr;
+	PopupPanel *dock_select_popup = nullptr;
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
-	Timer *dock_drag_timer;
+	Timer *dock_drag_timer = nullptr;
 	bool docks_visible = true;
 	int dock_popup_selected_idx;
 	int dock_select_rect_over_idx;
 
-	HBoxContainer *tabbar_container;
-	Button *distraction_free;
-	Button *scene_tab_add;
-	Control *scene_tab_add_ph;
+	HBoxContainer *tabbar_container = nullptr;
+	Button *distraction_free = nullptr;
+	Button *scene_tab_add = nullptr;
+	Control *scene_tab_add_ph = nullptr;
 
 	Vector<BottomPanelItem> bottom_panel_items;
-	PanelContainer *bottom_panel;
-	HBoxContainer *bottom_panel_hb;
-	HBoxContainer *bottom_panel_hb_editors;
-	VBoxContainer *bottom_panel_vb;
-	EditorToaster *editor_toaster;
-	LinkButton *version_btn;
-	Button *bottom_panel_raise;
+	PanelContainer *bottom_panel = nullptr;
+	HBoxContainer *bottom_panel_hb = nullptr;
+	HBoxContainer *bottom_panel_hb_editors = nullptr;
+	VBoxContainer *bottom_panel_vb = nullptr;
+	EditorToaster *editor_toaster = nullptr;
+	LinkButton *version_btn = nullptr;
+	Button *bottom_panel_raise = nullptr;
 
-	Tree *disk_changed_list;
-	ConfirmationDialog *disk_changed;
+	Tree *disk_changed_list = nullptr;
+	ConfirmationDialog *disk_changed = nullptr;
 
 	bool scene_distraction_free = false;
 	bool script_distraction_free = false;
@@ -447,8 +447,8 @@ private:
 
 	int current_menu_option;
 
-	SubViewport *scene_root; // Root of the scene being edited.
-	Object *current;
+	SubViewport *scene_root = nullptr; // Root of the scene being edited.
+	Object *current = nullptr;
 
 	Ref<Resource> saving_resource;
 
@@ -464,8 +464,8 @@ private:
 	uint64_t saved_version;
 	uint64_t last_checked_version;
 
-	DynamicFontImportSettings *fontdata_import_settings;
-	SceneImportSettings *scene_import_settings;
+	DynamicFontImportSettings *fontdata_import_settings = nullptr;
+	SceneImportSettings *scene_import_settings = nullptr;
 
 	String import_reload_fn;
 
@@ -485,7 +485,7 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
-		EditorNode *en = (EditorNode *)ud;
+		EditorNode *en = static_cast<EditorNode *>(ud);
 		if (!en->dependency_errors.has(p_path)) {
 			en->dependency_errors[p_path] = Set<String>();
 		}
@@ -575,7 +575,7 @@ private:
 	void _open_recent_scene(int p_idx);
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);
-	void _dropped_files(const Vector<String> &p_files, int p_screen);
+	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
 	void _update_from_settings();
@@ -585,7 +585,7 @@ private:
 
 	void _exit_editor(int p_exit_code);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool has_main_screen() const { return true; }
 

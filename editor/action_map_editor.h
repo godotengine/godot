@@ -63,24 +63,24 @@ private:
 
 	Ref<InputEvent> event = Ref<InputEvent>();
 
-	TabContainer *tab_container;
+	TabContainer *tab_container = nullptr;
 
 	// Listening for input
-	Label *event_as_text;
-	ColorRect *mouse_detection_rect;
+	Label *event_as_text = nullptr;
+	Panel *mouse_detection_rect = nullptr;
 
 	// List of All Key/Mouse/Joypad input options.
 	int allowed_input_types;
-	Tree *input_list_tree;
-	LineEdit *input_list_search;
+	Tree *input_list_tree = nullptr;
+	LineEdit *input_list_search = nullptr;
 
 	// Additional Options, shown depending on event selected
-	VBoxContainer *additional_options_container;
+	VBoxContainer *additional_options_container = nullptr;
 
-	HBoxContainer *device_container;
-	OptionButton *device_id_option;
+	HBoxContainer *device_container = nullptr;
+	OptionButton *device_id_option = nullptr;
 
-	HBoxContainer *mod_container; // Contains the subcontainer and the store command checkbox.
+	HBoxContainer *mod_container = nullptr; // Contains the subcontainer and the store command checkbox.
 
 	enum ModCheckbox {
 		MOD_ALT,
@@ -93,11 +93,11 @@ private:
 	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Ctrl", "Metakey" };
 
 	CheckBox *mod_checkboxes[MOD_MAX];
-	CheckBox *store_command_checkbox;
+	CheckBox *store_command_checkbox = nullptr;
 
-	CheckBox *physical_key_checkbox;
+	CheckBox *physical_key_checkbox = nullptr;
 
-	void _set_event(const Ref<InputEvent> &p_event);
+	void _set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection = true);
 
 	void _tab_selected(int p_tab);
 	void _listen_window_input(const Ref<InputEvent> &p_event);
@@ -110,9 +110,10 @@ private:
 	void _store_command_toggled(bool p_checked);
 	void _physical_keycode_toggled(bool p_checked);
 
-	void _set_current_device(int i_device);
+	void _device_selection_changed(int p_option_button_index);
+	void _set_current_device(int p_device);
 	int _get_current_device() const;
-	String _get_device_string(int i_device) const;
+	String _get_device_string(int p_device) const;
 
 protected:
 	void _notification(int p_what);
@@ -121,7 +122,7 @@ public:
 	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.
 	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>());
 	Ref<InputEvent> get_event() const;
-	String get_event_text(const Ref<InputEvent> &p_event);
+	String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) const;
 
 	void set_allowed_input_types(int p_type_masks);
 
@@ -149,7 +150,7 @@ private:
 	};
 
 	Vector<ActionInfo> actions_cache;
-	Tree *action_tree;
+	Tree *action_tree = nullptr;
 
 	// Storing which action/event is currently being edited in the InputEventConfigurationDialog.
 
@@ -159,17 +160,17 @@ private:
 
 	// Popups
 
-	InputEventConfigurationDialog *event_config_dialog;
-	AcceptDialog *message;
+	InputEventConfigurationDialog *event_config_dialog = nullptr;
+	AcceptDialog *message = nullptr;
 
 	// Filtering and Adding actions
 
 	bool show_builtin_actions = false;
-	CheckButton *show_builtin_actions_checkbutton;
-	LineEdit *action_list_search;
+	CheckButton *show_builtin_actions_checkbutton = nullptr;
+	LineEdit *action_list_search = nullptr;
 
-	HBoxContainer *add_hbox;
-	LineEdit *add_edit;
+	HBoxContainer *add_hbox = nullptr;
+	LineEdit *add_edit = nullptr;
 
 	void _event_config_confirmed();
 

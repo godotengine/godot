@@ -153,7 +153,7 @@ public:
 		}
 	}
 
-	virtual void set_space(GodotSpace3D *p_space);
+	virtual void set_space(GodotSpace3D *p_space) override;
 
 	void set_mesh(RID p_mesh);
 
@@ -204,8 +204,8 @@ public:
 	void predict_motion(real_t p_delta);
 	void solve_constraints(real_t p_delta);
 
-	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return ((Node *)p_node)->index; }
-	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return ((Face *)p_face)->index; }
+	_FORCE_INLINE_ uint32_t get_node_index(void *p_node) const { return static_cast<Node *>(p_node)->index; }
+	_FORCE_INLINE_ uint32_t get_face_index(void *p_face) const { return static_cast<Face *>(p_face)->index; }
 
 	// Return true to stop the query.
 	// p_index is the node index for AABB query, face index for Ray query.
@@ -215,7 +215,7 @@ public:
 	void query_ray(const Vector3 &p_from, const Vector3 &p_to, QueryResultCallback p_result_callback, void *p_userdata);
 
 protected:
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 
 private:
 	void update_normals_and_centroids();

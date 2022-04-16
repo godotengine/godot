@@ -246,7 +246,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	{
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->change_dir(p.get_base_dir()) != OK) {
 			return TTR("Base path is invalid.");
 		}
@@ -254,7 +254,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	{
 		// Check if file exists.
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->dir_exists(p)) {
 			return TTR("A directory with the same name exists.");
 		} else if (p_file_must_exist && !da->file_exists(p)) {
@@ -547,7 +547,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	}
 
 	// Check if file exists.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (da->file_exists(p)) {
 		is_new_script_created = false;
@@ -824,8 +824,8 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 
 	String dir_path = p_dir.plus_file(p_object);
 
-	DirAccessRef d = DirAccess::open(dir_path);
-	if (d) {
+	Ref<DirAccess> d = DirAccess::open(dir_path);
+	if (d.is_valid()) {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (file != String()) {
@@ -858,7 +858,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 
 	// Parse file for meta-information and script content
 	Error err;
-	FileAccess *file = FileAccess::open(p_path.plus_file(p_filename), FileAccess::READ, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path.plus_file(p_filename), FileAccess::READ, &err);
 	if (!err) {
 		while (!file->eof_reached()) {
 			String line = file->get_line();
@@ -890,8 +890,6 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 				script_template.content += line.replace("\t", "_TS_") + "\n";
 			}
 		}
-		file->close();
-		memdelete(file);
 	}
 
 	script_template.content = script_template.content.lstrip("\n");

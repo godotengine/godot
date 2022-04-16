@@ -244,7 +244,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 			bool ret = tr.transcode_image_level(ptr, size, 0, i, dst + ofs, level.m_total_blocks - i, format);
 			if (!ret) {
-				printf("failed! on level %i\n", i);
+				printf("failed! on level %u\n", i);
 				break;
 			};
 

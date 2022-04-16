@@ -202,6 +202,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	bool _set(const StringName &p_name, const Variant &p_value);

@@ -146,11 +146,10 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 				int iterations = 10;
 				float low = 0;
 				float high = 1;
-				float middle;
 
 				//narrow high and low as much as possible
 				for (int k = 0; k < iterations; k++) {
-					middle = (low + high) / 2;
+					float middle = (low + high) / 2;
 
 					Vector2 interp = _bezier_interp(middle, start, out_handle, in_handle, end);
 

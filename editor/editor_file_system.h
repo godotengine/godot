@@ -49,7 +49,7 @@ class EditorFileSystemDirectory : public Object {
 	uint64_t modified_time;
 	bool verified = false; //used for checking changes
 
-	EditorFileSystemDirectory *parent;
+	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
 
 	struct FileInfo {
@@ -167,7 +167,7 @@ class EditorFileSystem : public Node {
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
-	EditorFileSystemDirectory *new_filesystem;
+	EditorFileSystemDirectory *new_filesystem = nullptr;
 
 	bool abort_scan = false;
 	bool scanning = false;
@@ -184,7 +184,7 @@ class EditorFileSystem : public Node {
 
 	void _save_late_updated_files();
 
-	EditorFileSystemDirectory *filesystem;
+	EditorFileSystemDirectory *filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
 
@@ -213,7 +213,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _save_filesystem_cache();
-	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file);
+	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file);
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
@@ -225,7 +225,7 @@ class EditorFileSystem : public Node {
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
 	bool scanning_changes = false;

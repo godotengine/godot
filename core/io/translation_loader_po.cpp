@@ -34,7 +34,7 @@
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
 
-RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
+RES TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}
@@ -49,9 +49,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 		uint16_t version_maj = f->get_16();
 		uint16_t version_min = f->get_16();
-		if (version_maj > 1) {
-			ERR_FAIL_V_MSG(RES(), vformat("Unsupported MO file %s, version %d.%d.", path, version_maj, version_min));
-		}
+		ERR_FAIL_COND_V_MSG(version_maj > 1, RES(), vformat("Unsupported MO file %s, version %d.%d.", path, version_maj, version_min));
 
 		uint32_t num_strings = f->get_32();
 		uint32_t id_table_offset = f->get_32();
@@ -98,7 +96,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			{
 				Vector<uint8_t> data;
 				f->seek(trans_table_offset + i * 8);
-				uint32_t str_start = 0;
 				uint32_t str_len = f->get_32();
 				uint32_t str_offset = f->get_32();
 
@@ -116,6 +113,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 						translation->set_plural_rule(config.substr(p_start, p_end - p_start));
 					}
 				} else {
+					uint32_t str_start = 0;
 					Vector<String> plural_msg;
 					for (uint32_t j = 0; j < str_len + 1; j++) {
 						if (data[j] == 0x00) {
@@ -134,7 +132,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			}
 		}
 
-		memdelete(f);
 	} else {
 		// Try to load as text PO file.
 		f->seek(0);
@@ -173,7 +170,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			// If we reached last line and it's not a content line, break, otherwise let processing that last loop
 			if (is_eof && l.is_empty()) {
 				if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
-					memdelete(f);
 					ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));
 				} else {
 					break;
@@ -181,10 +177,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			}
 
 			if (l.begins_with("msgctxt")) {
-				if (status != STATUS_READING_STRING && status != STATUS_READING_PLURAL) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(RES(), "Unexpected 'msgctxt', was expecting 'msgid_plural' or 'msgstr' before 'msgctxt' while parsing: " + path + ":" + itos(line));
-				}
+				ERR_FAIL_COND_V_MSG(status != STATUS_READING_STRING && status != STATUS_READING_PLURAL, RES(), "Unexpected 'msgctxt', was expecting 'msgid_plural' or 'msgstr' before 'msgctxt' while parsing: " + path + ":" + itos(line));
 
 				// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
 				// and set "entered_context" to true to prevent adding twice.
@@ -192,10 +185,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 					if (status == STATUS_READING_STRING) {
 						translation->add_message(msg_id, msg_str, msg_context);
 					} else if (status == STATUS_READING_PLURAL) {
-						if (plural_index != plural_forms - 1) {
-							memdelete(f);
-							ERR_FAIL_V_MSG(RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
-						}
+						ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
 						translation->add_plural_message(msg_id, msgs_plural, msg_context);
 					}
 				}
@@ -207,10 +197,8 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 			if (l.begins_with("msgid_plural")) {
 				if (plural_forms == 0) {
-					memdelete(f);
 					ERR_FAIL_V_MSG(RES(), "PO file uses 'msgid_plural' but 'Plural-Forms' is invalid or missing in header: " + path + ":" + itos(line));
 				} else if (status != STATUS_READING_ID) {
-					memdelete(f);
 					ERR_FAIL_V_MSG(RES(), "Unexpected 'msgid_plural', was expecting 'msgid' before 'msgid_plural' while parsing: " + path + ":" + itos(line));
 				}
 				// We don't record the message in "msgid_plural" itself as tr_n(), TTRN(), RTRN() interfaces provide the plural string already.
@@ -221,20 +209,14 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				msgs_plural.resize(plural_forms);
 				status = STATUS_READING_PLURAL;
 			} else if (l.begins_with("msgid")) {
-				if (status == STATUS_READING_ID) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(RES(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
-				}
+				ERR_FAIL_COND_V_MSG(status == STATUS_READING_ID, RES(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
 
 				if (!msg_id.is_empty()) {
 					if (!skip_this && !entered_context) {
 						if (status == STATUS_READING_STRING) {
 							translation->add_message(msg_id, msg_str, msg_context);
 						} else if (status == STATUS_READING_PLURAL) {
-							if (plural_index != plural_forms - 1) {
-								memdelete(f);
-								ERR_FAIL_V_MSG(RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
-							}
+							ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
 							translation->add_plural_message(msg_id, msgs_plural, msg_context);
 						}
 					}
@@ -263,18 +245,11 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			}
 
 			if (l.begins_with("msgstr[")) {
-				if (status != STATUS_READING_PLURAL) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr[]', was expecting 'msgid_plural' before 'msgstr[]' while parsing: " + path + ":" + itos(line));
-				}
+				ERR_FAIL_COND_V_MSG(status != STATUS_READING_PLURAL, RES(), "Unexpected 'msgstr[]', was expecting 'msgid_plural' before 'msgstr[]' while parsing: " + path + ":" + itos(line));
 				plural_index++; // Increment to add to the next slot in vector msgs_plural.
 				l = l.substr(9, l.length()).strip_edges();
 			} else if (l.begins_with("msgstr")) {
-				if (status != STATUS_READING_ID) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: " + path + ":" + itos(line));
-				}
-
+				ERR_FAIL_COND_V_MSG(status != STATUS_READING_ID, RES(), "Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: " + path + ":" + itos(line));
 				l = l.substr(6, l.length()).strip_edges();
 				status = STATUS_READING_STRING;
 			}
@@ -287,10 +262,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				continue; // Nothing to read or comment.
 			}
 
-			if (!l.begins_with("\"") || status == STATUS_NONE) {
-				memdelete(f);
-				ERR_FAIL_V_MSG(RES(), "Invalid line '" + l + "' while parsing: " + path + ":" + itos(line));
-			}
+			ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, RES(), "Invalid line '" + l + "' while parsing: " + path + ":" + itos(line));
 
 			l = l.substr(1, l.length());
 			// Find final quote, ignoring escaped ones (\").
@@ -312,10 +284,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				escape_next = false;
 			}
 
-			if (end_pos == -1) {
-				memdelete(f);
-				ERR_FAIL_V_MSG(RES(), "Expected '\"' at end of message while parsing: " + path + ":" + itos(line));
-			}
+			ERR_FAIL_COND_V_MSG(end_pos == -1, RES(), "Expected '\"' at end of message while parsing: " + path + ":" + itos(line));
 
 			l = l.substr(0, end_pos);
 			l = l.c_unescape();
@@ -327,17 +296,12 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			} else if (status == STATUS_READING_CONTEXT) {
 				msg_context += l;
 			} else if (status == STATUS_READING_PLURAL && plural_index >= 0) {
-				if (plural_index >= plural_forms) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(RES(), "Unexpected plural form while parsing: " + path + ":" + itos(line));
-				}
+				ERR_FAIL_COND_V_MSG(plural_index >= plural_forms, RES(), "Unexpected plural form while parsing: " + path + ":" + itos(line));
 				msgs_plural.write[plural_index] = msgs_plural[plural_index] + l;
 			}
 
 			line++;
 		}
-
-		memdelete(f);
 
 		// Add the last set of data from last iteration.
 		if (status == STATUS_READING_STRING) {
@@ -350,10 +314,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			}
 		} else if (status == STATUS_READING_PLURAL) {
 			if (!skip_this && !msg_id.is_empty()) {
-				if (plural_index != plural_forms - 1) {
-					memdelete(f);
-					ERR_FAIL_V_MSG(RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
-				}
+				ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
 				translation->add_plural_message(msg_id, msgs_plural, msg_context);
 			}
 		}
@@ -388,8 +349,8 @@ RES TranslationLoaderPO::load(const String &p_path, const String &p_original_pat
 		*r_error = ERR_CANT_OPEN;
 	}
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), RES(), "Cannot open file '" + p_path + "'.");
 
 	return load_translation(f, r_error);
 }

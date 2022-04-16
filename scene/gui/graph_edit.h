@@ -46,7 +46,7 @@ class GraphEditFilter : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 	virtual bool has_point(const Point2 &p_point) const override;
 
 public:
@@ -58,7 +58,7 @@ class GraphEditMinimap : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditFilter;
-	GraphEdit *ge;
+	GraphEdit *ge = nullptr;
 
 protected:
 public:
@@ -109,20 +109,20 @@ public:
 	};
 
 private:
-	Label *zoom_label;
-	Button *zoom_minus;
-	Button *zoom_reset;
-	Button *zoom_plus;
+	Label *zoom_label = nullptr;
+	Button *zoom_minus = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_plus = nullptr;
 
-	Button *snap_button;
-	SpinBox *snap_amount;
+	Button *snap_button = nullptr;
+	SpinBox *snap_amount = nullptr;
 
-	Button *minimap_button;
+	Button *minimap_button = nullptr;
 
-	Button *layout_button;
+	Button *layout_button = nullptr;
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	float port_grab_distance_horizontal = 0.0;
 	float port_grab_distance_vertical;
@@ -190,9 +190,9 @@ private:
 	void _scroll_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
-	Control *connections_layer;
-	GraphEditFilter *top_layer;
-	GraphEditMinimap *minimap;
+	Control *connections_layer = nullptr;
+	GraphEditFilter *top_layer = nullptr;
+	GraphEditMinimap *minimap = nullptr;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
 	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
@@ -236,7 +236,7 @@ private:
 	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
 	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
 
-	HBoxContainer *zoom_hb;
+	HBoxContainer *zoom_hb = nullptr;
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);

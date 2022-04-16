@@ -52,7 +52,7 @@ private:
 #endif
 
 #if defined(VULKAN_ENABLED)
-	ANativeWindow *native_window;
+	ANativeWindow *native_window = nullptr;
 #endif
 
 	mutable String data_dir_cache;
@@ -60,10 +60,10 @@ private:
 
 	AudioDriverOpenSL audio_driver_android;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
-	GodotJavaWrapper *godot_java;
-	GodotIOJavaWrapper *godot_io_java;
+	GodotJavaWrapper *godot_java = nullptr;
+	GodotIOJavaWrapper *godot_io_java = nullptr;
 
 public:
 	static const char *ANDROID_EXEC_PATH;

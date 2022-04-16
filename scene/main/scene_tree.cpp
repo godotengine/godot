@@ -897,6 +897,9 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 			case CALL_INPUT_TYPE_INPUT:
 				n->_call_input(p_input);
 				break;
+			case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+				n->_call_shortcut_input(p_input);
+				break;
 			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
 				n->_call_unhandled_input(p_input);
 				break;
@@ -1259,7 +1262,7 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	if (p_function == "change_scene") {
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
 

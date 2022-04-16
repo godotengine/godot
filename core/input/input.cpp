@@ -772,6 +772,8 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = true;
 	action.strength = p_strength;
+	action.raw_strength = p_strength;
+	action.exact = true;
 
 	action_state[p_action] = action;
 }
@@ -783,6 +785,8 @@ void Input::action_release(const StringName &p_action) {
 	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = false;
 	action.strength = 0.f;
+	action.raw_strength = 0.f;
+	action.exact = true;
 
 	action_state[p_action] = action;
 }
@@ -850,6 +854,8 @@ void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, co
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
+
+	ERR_FAIL_INDEX(p_shape, CursorShape::CURSOR_MAX);
 
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
@@ -1070,7 +1076,6 @@ void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
-	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
@@ -1106,7 +1111,6 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 
 Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value) {
 	JoyEvent event;
-	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];

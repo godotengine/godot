@@ -700,7 +700,7 @@ void fragment() {
 		material_storage->material_initialize(default_material);
 		material_storage->material_set_shader(default_material, default_shader);
 
-		MaterialData *md = (MaterialData *)material_storage->material_get_data(default_material, RendererRD::SHADER_TYPE_3D);
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::SHADER_TYPE_3D));
 		default_shader_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
 
 		default_material_shader_ptr = md->shader_data;
@@ -727,7 +727,7 @@ void fragment() {
 		material_storage->material_initialize(overdraw_material);
 		material_storage->material_set_shader(overdraw_material, overdraw_material_shader);
 
-		MaterialData *md = (MaterialData *)material_storage->material_get_data(overdraw_material, RendererRD::SHADER_TYPE_3D);
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(overdraw_material, RendererRD::SHADER_TYPE_3D));
 		overdraw_material_shader_ptr = md->shader_data;
 		overdraw_material_uniform_set = md->uniform_set;
 	}

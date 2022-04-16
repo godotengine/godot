@@ -326,7 +326,7 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		Callable::CallError ce;
 
 		{
-			List<WindowID>::Element *E = popup_list.front();
+			List<WindowID>::Element *E = popup_list.back();
 			if (E && Object::cast_to<InputEventKey>(*p_event)) {
 				// Redirect keyboard input to active popup.
 				if (windows.has(E->get())) {
@@ -2892,14 +2892,13 @@ void DisplayServerOSX::swap_buffers() {
 void DisplayServerOSX::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
-	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
-	ERR_FAIL_COND(!f);
+	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
+	ERR_FAIL_COND(f.is_null());
 
 	Vector<uint8_t> data;
 	uint64_t len = f->get_length();
 	data.resize(len);
 	f->get_buffer((uint8_t *)&data.write[0], len);
-	memdelete(f);
 
 	NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
 	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
@@ -3000,20 +2999,24 @@ Rect2i DisplayServerOSX::window_get_popup_safe_rect(WindowID p_window) const {
 }
 
 void DisplayServerOSX::popup_open(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	WindowData &wd = windows[p_window];
 	if (wd.is_popup) {
 		bool was_empty = popup_list.is_empty();
-		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		// Find current popup parent, or root popup if new window is not transient.
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
 		while (E) {
 			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
-				send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			} else {
 				break;
 			}
+		}
+		if (C) {
+			send_window_event(windows[C->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 
 		if (was_empty && popup_list.is_empty()) {
@@ -3026,12 +3029,16 @@ void DisplayServerOSX::popup_open(WindowID p_window) {
 }
 
 void DisplayServerOSX::popup_close(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	bool was_empty = popup_list.is_empty();
 	List<WindowID>::Element *E = popup_list.find(p_window);
 	while (E) {
-		send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		List<WindowID>::Element *F = E->next();
+		WindowID win_id = E->get();
 		popup_list.erase(E);
+
+		send_window_event(windows[win_id], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		E = F;
 	}
 	if (!was_empty && popup_list.is_empty()) {
@@ -3047,11 +3054,8 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 	if (p_close) {
 		// Close all popups.
 		List<WindowID>::Element *E = popup_list.front();
-		while (E) {
+		if (E) {
 			send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-			List<WindowID>::Element *F = E->next();
-			popup_list.erase(E);
-			E = F;
 		}
 		if (!was_empty) {
 			// Inform OS that all popups are closed.
@@ -3064,7 +3068,9 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 		}
 
 		Point2i pos = mouse_get_position();
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
+		// Find top popup to close.
 		while (E) {
 			// Popup window area.
 			Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
@@ -3075,11 +3081,12 @@ void DisplayServerOSX::mouse_process_popups(bool p_close) {
 			} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 				break;
 			} else {
-				send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			}
+		}
+		if (C) {
+			send_window_event(windows[C->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 		if (!was_empty && popup_list.is_empty()) {
 			// Inform OS that all popups are closed.

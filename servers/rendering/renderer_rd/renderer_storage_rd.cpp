@@ -421,7 +421,7 @@ void RendererStorageRD::_particles_allocate_emission_buffer(Particles *particles
 
 	particles->emission_buffer_data.resize(sizeof(ParticleEmissionBuffer::Data) * particles->amount + sizeof(uint32_t) * 4);
 	memset(particles->emission_buffer_data.ptrw(), 0, particles->emission_buffer_data.size());
-	particles->emission_buffer = (ParticleEmissionBuffer *)particles->emission_buffer_data.ptrw();
+	particles->emission_buffer = reinterpret_cast<ParticleEmissionBuffer *>(particles->emission_buffer_data.ptrw());
 	particles->emission_buffer->particle_max = particles->amount;
 
 	particles->emission_storage_buffer = RD::get_singleton()->storage_buffer_create(particles->emission_buffer_data.size(), particles->emission_buffer_data);
@@ -997,9 +997,9 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 
 	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams) * p_particles->trail_params.size(), p_particles->trail_params.ptr());
 
-	ParticlesMaterialData *m = (ParticlesMaterialData *)material_storage->material_get_data(p_particles->process_material, RendererRD::SHADER_TYPE_PARTICLES);
+	ParticlesMaterialData *m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(p_particles->process_material, RendererRD::SHADER_TYPE_PARTICLES));
 	if (!m) {
-		m = (ParticlesMaterialData *)material_storage->material_get_data(particles_shader.default_material, RendererRD::SHADER_TYPE_PARTICLES);
+		m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, RendererRD::SHADER_TYPE_PARTICLES));
 	}
 
 	ERR_FAIL_COND(!m);
@@ -4098,7 +4098,7 @@ void process() {
 		material_storage->material_initialize(particles_shader.default_material);
 		material_storage->material_set_shader(particles_shader.default_material, particles_shader.default_shader);
 
-		ParticlesMaterialData *md = (ParticlesMaterialData *)material_storage->material_get_data(particles_shader.default_material, RendererRD::SHADER_TYPE_PARTICLES);
+		ParticlesMaterialData *md = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, RendererRD::SHADER_TYPE_PARTICLES));
 		particles_shader.default_shader_rd = particles_shader.shader.version_get_shader(md->shader_data->version, 0);
 
 		Vector<RD::Uniform> uniforms;

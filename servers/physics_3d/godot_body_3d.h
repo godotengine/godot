@@ -109,7 +109,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	bool first_time_kinematic = false;
 
 	void _mass_properties_changed();
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 	Transform3D new_transform;
 
 	Map<GodotConstraint3D *, int> constraint_map;
@@ -301,7 +301,7 @@ public:
 	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
 	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }
 
-	void set_space(GodotSpace3D *p_space);
+	void set_space(GodotSpace3D *p_space) override;
 
 	void update_mass_properties();
 	void reset_mass_properties();

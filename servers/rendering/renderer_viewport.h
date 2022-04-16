@@ -129,7 +129,7 @@ public:
 		};
 
 		struct CanvasData {
-			CanvasBase *canvas;
+			CanvasBase *canvas = nullptr;
 			Transform2D transform;
 			int layer;
 			int sublayer;

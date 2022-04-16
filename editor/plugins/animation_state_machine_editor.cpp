@@ -499,7 +499,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		accent.a *= 0.6;
 	}
 
-	Ref<Texture2D> icons[6] = {
+	const Ref<Texture2D> icons[6] = {
 		get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionSyncBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionEndBig"), SNAME("EditorIcons")),

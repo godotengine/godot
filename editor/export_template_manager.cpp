@@ -44,7 +44,7 @@
 
 void ExportTemplateManager::_update_template_status() {
 	// Fetch installed templates from the file system.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	const String &templates_dir = EditorSettings::get_singleton()->get_templates_dir();
 
 	Error err = da->change_dir(templates_dir);
@@ -194,7 +194,7 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 				bool ret = _install_file_selected(path, true);
 				if (ret) {
 					// Clean up downloaded file.
-					DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 					Error err = da->remove(path);
 					if (err != OK) {
 						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove temporary file:") + "\n" + path + "\n");
@@ -374,10 +374,7 @@ void ExportTemplateManager::_install_file() {
 }
 
 bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_skip_progress) {
-	// unzClose() will take care of closing the file stored in the unzFile,
-	// so we don't need to `memdelete(fa)` in this method.
-	FileAccess *fa = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&fa);
+	zlib_filefunc_def io = zipio_create_io();
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	if (!pkg) {
@@ -395,6 +392,9 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 		if (file.ends_with("version.txt")) {
@@ -404,6 +404,9 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			// Read.
 			unzOpenCurrentFile(pkg);
 			ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			if (ret != UNZ_OK) {
+				break;
+			}
 			unzCloseCurrentFile(pkg);
 
 			String data_str;
@@ -435,7 +438,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		return false;
 	}
 
-	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String template_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(version);
 	Error err = d->make_dir_recursive(template_path);
 	if (err != OK) {
@@ -455,7 +458,10 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		// Get filename.
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file_path(String::utf8(fname).simplify_path());
 
@@ -471,7 +477,10 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		// Read
 		unzOpenCurrentFile(pkg);
-		unzReadCurrentFile(pkg, data.ptrw(), data.size());
+		ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+		if (ret != UNZ_OK) {
+			break;
+		}
 		unzCloseCurrentFile(pkg);
 
 		String base_dir = file_path.get_base_dir().trim_suffix("/");
@@ -480,8 +489,8 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/");
 			file = base_dir.plus_file(file);
 
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-			ERR_CONTINUE(!da);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			ERR_CONTINUE(da.is_null());
 
 			String output_dir = template_path.plus_file(base_dir);
 
@@ -496,16 +505,16 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		}
 
 		String to_write = template_path.plus_file(file);
-		FileAccessRef f = FileAccess::open(to_write, FileAccess::WRITE);
+		Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 
-		if (!f) {
+		if (f.is_null()) {
 			ret = unzGoToNextFile(pkg);
 			fc++;
 			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
 		}
 
 		f->store_buffer(data.ptr(), data.size());
-
+		f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif
@@ -530,7 +539,7 @@ void ExportTemplateManager::_uninstall_template(const String &p_version) {
 }
 
 void ExportTemplateManager::_uninstall_template_confirmed() {
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	const String &templates_dir = EditorSettings::get_singleton()->get_templates_dir();
 
 	Error err = da->change_dir(templates_dir);
@@ -644,17 +653,16 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 	// To support custom Android builds, we install the Java source code and buildsystem
 	// from android_source.zip to the project's res://android folder.
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 
 	// Make res://android dir (if it does not exist).
 	da->make_dir("android");
 	{
 		// Add version, to ensure building won't work if template and Godot version don't match.
-		FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::WRITE);
-		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::WRITE);
+		ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
 		f->store_line(VERSION_FULL_CONFIG);
-		f->close();
 	}
 
 	// Create the android plugins directory.
@@ -665,16 +673,14 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 	ERR_FAIL_COND_V(err != OK, err);
 	{
 		// Add an empty .gdignore file to avoid scan.
-		FileAccessRef f = FileAccess::open("res://android/build/.gdignore", FileAccess::WRITE);
-		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		Ref<FileAccess> f = FileAccess::open("res://android/build/.gdignore", FileAccess::WRITE);
+		ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
 		f->store_line("");
-		f->close();
 	}
 
 	// Uncompress source template.
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
@@ -697,6 +703,9 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		unz_file_info info;
 		char fpath[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String path = String::utf8(fpath);
 		String base_dir = path.get_base_dir();
@@ -716,10 +725,10 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 			}
 
 			String to_write = String("res://android/build").plus_file(path);
-			FileAccess *f = FileAccess::open(to_write, FileAccess::WRITE);
-			if (f) {
+			Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
+			if (f.is_valid()) {
 				f->store_buffer(data.ptr(), data.size());
-				memdelete(f);
+				f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif

@@ -103,8 +103,9 @@
 			<argument index="1" name="to" type="Vector2" />
 			<argument index="2" name="color" type="Color" />
 			<argument index="3" name="width" type="float" default="1.0" />
+			<argument index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
+				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
 			</description>
 		</method>
 		<method name="draw_mesh">
@@ -191,7 +192,7 @@
 			<argument index="2" name="width" type="float" default="1.0" />
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -201,7 +202,7 @@
 			<argument index="2" name="width" type="float" default="1.0" />
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -479,9 +480,6 @@
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
 			If [code]true[/code], the object draws behind its parent.
-		</member>
-		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
-			If [code]true[/code], the object draws on top of its parent.
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
 			The texture filtering mode to use on this [CanvasItem].

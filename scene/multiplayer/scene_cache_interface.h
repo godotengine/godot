@@ -37,7 +37,7 @@ class SceneCacheInterface : public MultiplayerCacheInterface {
 	GDCLASS(SceneCacheInterface, MultiplayerCacheInterface);
 
 private:
-	MultiplayerAPI *multiplayer;
+	MultiplayerAPI *multiplayer = nullptr;
 
 	//path sent caches
 	struct PathSentCache {

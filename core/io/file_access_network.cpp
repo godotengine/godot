@@ -165,7 +165,7 @@ void FileAccessNetworkClient::_thread_func() {
 }
 
 void FileAccessNetworkClient::_thread_func(void *s) {
-	FileAccessNetworkClient *self = (FileAccessNetworkClient *)s;
+	FileAccessNetworkClient *self = static_cast<FileAccessNetworkClient *>(s);
 
 	self->_thread_func();
 }
@@ -254,9 +254,8 @@ void FileAccessNetwork::_respond(uint64_t p_len, Error p_status) {
 
 Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags != READ, ERR_UNAVAILABLE);
-	if (opened) {
-		close();
-	}
+	_close();
+
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	DEBUG_PRINT("open: " + p_path);
 
@@ -287,7 +286,7 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	return response;
 }
 
-void FileAccessNetwork::close() {
+void FileAccessNetwork::_close() {
 	if (!opened) {
 		return;
 	}
@@ -483,7 +482,7 @@ FileAccessNetwork::FileAccessNetwork() {
 }
 
 FileAccessNetwork::~FileAccessNetwork() {
-	close();
+	_close();
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();

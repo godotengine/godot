@@ -37,7 +37,7 @@
 class LightOccluder2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(LightOccluder2DEditor, AbstractPolygon2DEditor);
 
-	LightOccluder2D *node;
+	LightOccluder2D *node = nullptr;
 
 	Ref<OccluderPolygon2D> _ensure_occluder() const;
 

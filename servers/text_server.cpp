@@ -395,7 +395,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_range", "shaped"), &TextServer::shaped_text_get_range);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks_adv", "shaped", "width", "start", "once", "break_flags"), &TextServer::shaped_text_get_line_breaks_adv, DEFVAL(0), DEFVAL(true), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::shaped_text_get_word_breaks);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::shaped_text_get_word_breaks, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::shaped_text_get_trim_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::shaped_text_get_ellipsis_pos);
@@ -758,7 +758,7 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, in
 
 	int word_start = range.x;
 
-	int l_size = shaped_text_get_glyph_count(p_shaped);
+	const int l_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
 	for (int i = 0; i < l_size; i++) {
@@ -979,6 +979,14 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direction_in_range(co
 	}
 }
 
+_FORCE_INLINE_ void _push_range(Vector<Vector2> &r_vector, real_t p_start, real_t p_end) {
+	if (!r_vector.is_empty() && Math::is_equal_approx(r_vector[r_vector.size() - 1].y, p_start, (real_t)UNIT_EPSILON)) {
+		r_vector.write[r_vector.size() - 1].y = p_end;
+	} else {
+		r_vector.push_back(Vector2(p_start, p_end));
+	}
+}
+
 Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64_t p_start, int64_t p_end) const {
 	Vector<Vector2> ranges;
 
@@ -1003,7 +1011,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						for (int j = 0; j < glyphs[i].count; j++) {
 							advance += glyphs[i + j].advance;
 						}
-						ranges.push_back(Vector2(off, off + advance));
+						_push_range(ranges, off, off + advance);
 					}
 					// Only start of grapheme is in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end > end) {
@@ -1013,9 +1021,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - end), off + advance));
+							_push_range(ranges, off + char_adv * (glyphs[i].end - end), off + advance);
 						} else {
-							ranges.push_back(Vector2(off, off + char_adv * (end - glyphs[i].start)));
+							_push_range(ranges, off, off + char_adv * (end - glyphs[i].start));
 						}
 					}
 					// Only end of grapheme is in selection range.
@@ -1026,9 +1034,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off, off + char_adv * (glyphs[i].end - start)));
+							_push_range(ranges, off, off + char_adv * (glyphs[i].end - start));
 						} else {
-							ranges.push_back(Vector2(off + char_adv * (start - glyphs[i].start), off + advance));
+							_push_range(ranges, off + char_adv * (start - glyphs[i].start), off + advance);
 						}
 					}
 					// Selection range is within grapheme.
@@ -1039,34 +1047,15 @@ Vector<Vector2> TextServer::shaped_text_get_selection(const RID &p_shaped, int64
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - end), off + char_adv * (glyphs[i].end - start)));
+							_push_range(ranges, off + char_adv * (glyphs[i].end - end), off + char_adv * (glyphs[i].end - start));
 						} else {
-							ranges.push_back(Vector2(off + char_adv * (start - glyphs[i].start), off + char_adv * (end - glyphs[i].start)));
+							_push_range(ranges, off + char_adv * (start - glyphs[i].start), off + char_adv * (end - glyphs[i].start));
 						}
 					}
 				}
 			}
 			off += glyphs[i].advance;
 		}
-	}
-
-	// Merge intersecting ranges.
-	int i = 0;
-	while (i < ranges.size()) {
-		i++;
-	}
-	i = 0;
-	while (i < ranges.size()) {
-		int j = i + 1;
-		while (j < ranges.size()) {
-			if (Math::is_equal_approx(ranges[i].y, ranges[j].x, (real_t)UNIT_EPSILON)) {
-				ranges.write[i].y = ranges[j].y;
-				ranges.remove_at(j);
-				continue;
-			}
-			j++;
-		}
-		i++;
 	}
 
 	return ranges;

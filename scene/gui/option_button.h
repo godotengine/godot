@@ -37,7 +37,7 @@
 class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);
 
-	PopupMenu *popup;
+	PopupMenu *popup = nullptr;
 	int current = -1;
 
 	void _focused(int p_which);
@@ -77,12 +77,16 @@ public:
 	int get_item_index(int p_id) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
+	bool is_item_separator(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
+
+	bool has_selectable_items() const;
+	int get_selectable_item(bool p_from_last = false) const;
 
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
-	void add_separator();
+	void add_separator(const String &p_text = "");
 
 	void clear();
 

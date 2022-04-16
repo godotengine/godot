@@ -68,7 +68,7 @@ public:
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
-	static void unregister_language(ScriptLanguage *p_language);
+	static void unregister_language(const ScriptLanguage *p_language);
 
 	static void set_reload_scripts_on_save(bool p_enable);
 	static bool is_reload_scripts_on_save_enabled();
@@ -430,42 +430,42 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-	Object *owner;
+	Object *owner = nullptr;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
 	Map<StringName, Variant> constants;
-	ScriptLanguage *language;
+	ScriptLanguage *language = nullptr;
 	Ref<Script> script;
 
 public:
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const;
-	virtual bool has_method(const StringName &p_method) const;
+	virtual void get_method_list(List<MethodInfo> *p_list) const override;
+	virtual bool has_method(const StringName &p_method) const override;
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
-	virtual void notification(int p_notification) {}
+	virtual void notification(int p_notification) override {}
 
-	virtual Ref<Script> get_script() const { return script; }
+	virtual Ref<Script> get_script() const override { return script; }
 
-	virtual ScriptLanguage *get_language() { return language; }
+	virtual ScriptLanguage *get_language() override { return language; }
 
-	Object *get_owner() { return owner; }
+	Object *get_owner() override { return owner; }
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
-	virtual bool is_placeholder() const { return true; }
+	virtual bool is_placeholder() const override { return true; }
 
-	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
-	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr);
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr) override;
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr) override;
 
-	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return Vector<Multiplayer::RPCConfig>(); }
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override { return Vector<Multiplayer::RPCConfig>(); }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

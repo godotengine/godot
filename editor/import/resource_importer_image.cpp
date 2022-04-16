@@ -71,10 +71,9 @@ void ResourceImporterImage::get_import_options(const String &p_path, List<Import
 }
 
 Error ResourceImporterImage::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
 
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");
-
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");
 	uint64_t len = f->get_length();
 
 	Vector<uint8_t> data;
@@ -82,10 +81,8 @@ Error ResourceImporterImage::import(const String &p_source_file, const String &p
 
 	f->get_buffer(data.ptrw(), len);
 
-	memdelete(f);
-
 	f = FileAccess::open(p_save_path + ".image", FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file in path '" + p_save_path + ".image'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file in path '" + p_save_path + ".image'.");
 
 	//save the header GDIM
 	const uint8_t header[4] = { 'G', 'D', 'I', 'M' };
@@ -94,8 +91,6 @@ Error ResourceImporterImage::import(const String &p_source_file, const String &p
 	f->store_pascal_string(p_source_file.get_extension().to_lower());
 	//SAVE the actual image
 	f->store_buffer(data.ptr(), len);
-
-	memdelete(f);
 
 	return OK;
 }

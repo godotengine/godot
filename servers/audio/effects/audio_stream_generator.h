@@ -65,7 +65,7 @@ class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
 	int skips;
 	bool active;
 	float mixed;
-	AudioStreamGenerator *generator;
+	AudioStreamGenerator *generator = nullptr;
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;

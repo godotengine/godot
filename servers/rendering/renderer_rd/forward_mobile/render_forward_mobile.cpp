@@ -298,7 +298,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 
 	RenderBufferDataForwardMobile *rb = nullptr;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
-		rb = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
+		rb = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
 
 	// default render buffer and scene state uniform set
@@ -350,7 +350,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 			texture = shadow_atlas_get_texture(p_render_data->shadow_atlas);
 		}
 		if (!texture.is_valid()) {
-			texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
+			texture = texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_DEPTH);
 		}
 		u.append_id(texture);
 		uniforms.push_back(u);
@@ -362,7 +362,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (p_use_directional_shadow_atlas && directional_shadow_get_texture().is_valid()) {
 			u.append_id(directional_shadow_get_texture());
 		} else {
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_DEPTH));
 		}
 		uniforms.push_back(u);
 	}
@@ -425,7 +425,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		u.binding = 9;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID dbt = rb ? render_buffers_get_back_depth_texture(p_render_data->render_buffers) : RID();
-		RID texture = (dbt.is_valid()) ? dbt : texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
+		RID texture = (dbt.is_valid()) ? dbt : texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_DEPTH);
 		u.append_id(texture);
 		uniforms.push_back(u);
 	}
@@ -477,7 +477,7 @@ void RenderForwardMobile::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, c
 void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) {
 	RenderBufferDataForwardMobile *render_buffer = nullptr;
 	if (p_render_data->render_buffers.is_valid()) {
-		render_buffer = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
+		render_buffer = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 	}
 	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
 
@@ -596,7 +596,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				/*
 				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
 				*/
 			} break;
@@ -608,7 +608,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				/*
 				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
 				*/
 			} break;
@@ -723,10 +723,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		{
 			// regular forward for now
 			Vector<Color> c;
-			c.push_back(clear_color.to_linear()); // our render buffer
+			c.push_back(clear_color.srgb_to_linear()); // our render buffer
 			if (render_buffer) {
 				if (render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-					c.push_back(clear_color.to_linear()); // our resolve buffer
+					c.push_back(clear_color.srgb_to_linear()); // our resolve buffer
 				}
 				if (using_subpass_post_process) {
 					c.push_back(Color()); // our 2D buffer we're copying into
@@ -1569,7 +1569,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 	scene_state.ubo.fog_enabled = false;
 
 	if (p_render_data->render_buffers.is_valid()) {
-		RenderBufferDataForwardMobile *render_buffers = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
+		RenderBufferDataForwardMobile *render_buffers = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
 		if (render_buffers->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			scene_state.ubo.gi_upscale_for_msaa = true;
 		}
@@ -1616,7 +1616,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		//ambient
 		if (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && (env_bg == RS::ENV_BG_CLEAR_COLOR || env_bg == RS::ENV_BG_COLOR)) {
 			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
-			color = color.to_linear();
+			color = color.srgb_to_linear();
 
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * bg_energy;
@@ -1626,7 +1626,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		} else {
 			float energy = environment_get_ambient_light_energy(p_render_data->environment);
 			Color color = environment_get_ambient_light_color(p_render_data->environment);
-			color = color.to_linear();
+			color = color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
 			scene_state.ubo.ambient_light_color_energy[2] = color.b * energy;
@@ -1657,7 +1657,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
 		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
 
-		Color fog_color = environment_get_fog_light_color(p_render_data->environment).to_linear();
+		Color fog_color = environment_get_fog_light_color(p_render_data->environment).srgb_to_linear();
 		float fog_energy = environment_get_fog_light_energy(p_render_data->environment);
 
 		scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
@@ -1672,7 +1672,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		} else {
 			scene_state.ubo.use_ambient_light = true;
 			Color clear_color = p_default_bg_color;
-			clear_color = clear_color.to_linear();
+			clear_color = clear_color.srgb_to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = clear_color.r;
 			scene_state.ubo.ambient_light_color_energy[1] = clear_color.g;
 			scene_state.ubo.ambient_light_color_energy[2] = clear_color.b;
@@ -2335,7 +2335,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	void *surface_shadow = nullptr;
 	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
-		material_shadow = (SceneShaderForwardMobile::MaterialData *)RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D);
+		material_shadow = static_cast<SceneShaderForwardMobile::MaterialData *>(RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D));
 
 		RID shadow_mesh = mesh_storage->mesh_get_shadow_mesh(p_mesh);
 
@@ -2394,7 +2394,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(Geo
 
 	while (material->next_pass.is_valid()) {
 		RID next_pass = material->next_pass;
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(next_pass, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(next_pass, RendererRD::SHADER_TYPE_3D));
 		if (!material || !material->shader_data->valid) {
 			break;
 		}
@@ -2414,7 +2414,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 	SceneShaderForwardMobile::MaterialData *material = nullptr;
 
 	if (m_src.is_valid()) {
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D));
 		if (!material || !material->shader_data->valid) {
 			material = nullptr;
 		}
@@ -2425,7 +2425,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 			material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);
 		}
 	} else {
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(scene_shader.default_material, RendererRD::SHADER_TYPE_3D));
 		m_src = scene_shader.default_material;
 	}
 
@@ -2436,7 +2436,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 	if (ginstance->data->material_overlay.is_valid()) {
 		m_src = ginstance->data->material_overlay;
 
-		material = (SceneShaderForwardMobile::MaterialData *)material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D);
+		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(m_src, RendererRD::SHADER_TYPE_3D));
 		if (material && material->shader_data->valid) {
 			if (ginstance->data->dirty_dependencies) {
 				material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);

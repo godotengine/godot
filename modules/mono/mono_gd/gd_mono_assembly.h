@@ -68,8 +68,8 @@ class GDMonoAssembly {
 	};
 
 	String name;
-	MonoImage *image;
-	MonoAssembly *assembly;
+	MonoImage *image = nullptr;
+	MonoAssembly *assembly = nullptr;
 
 	bool attrs_fetched = false;
 	MonoCustomAttrInfo *attributes = nullptr;

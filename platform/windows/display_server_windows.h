@@ -392,7 +392,7 @@ class DisplayServerWindows : public DisplayServer {
 		Rect2i parent_safe_rect;
 	};
 
-	JoypadWindows *joypad;
+	JoypadWindows *joypad = nullptr;
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;

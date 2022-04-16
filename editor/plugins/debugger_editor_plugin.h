@@ -41,9 +41,9 @@ class DebuggerEditorPlugin : public EditorPlugin {
 	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
 
 private:
-	MenuButton *debug_menu;
-	EditorFileServer *file_server;
-	PopupMenu *instances_menu;
+	MenuButton *debug_menu = nullptr;
+	EditorFileServer *file_server = nullptr;
+	PopupMenu *instances_menu = nullptr;
 
 	enum MenuOptions {
 		RUN_FILE_SERVER,

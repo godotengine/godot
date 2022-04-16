@@ -101,6 +101,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 
 		if (tree->popup_edited_item == this) {
 			tree->popup_edited_item = nullptr;
+			tree->popup_pressing_edited_item = nullptr;
 			tree->pressing_for_editor = false;
 		}
 
@@ -2088,7 +2089,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	}
 
 	if (!p_item->collapsed) { /* if not collapsed, check the children */
-
 		TreeItem *c = p_item->first_child;
 
 		int base_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
@@ -2096,82 +2096,97 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int prev_hl_ofs = base_ofs;
 
 		while (c) {
+			int child_h = -1;
 			if (htotal >= 0) {
-				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+			}
 
-				// Draw relationship lines.
-				if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
-					int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-					int parent_ofs = p_pos.x + cache.item_margin;
-					Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+			// Draw relationship lines.
+			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				int parent_ofs = p_pos.x + cache.item_margin;
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
 
-					if (c->get_first_child() != nullptr) {
-						root_pos -= Point2i(cache.arrow->get_width(), 0);
+				if (c->get_first_child() != nullptr) {
+					root_pos -= Point2i(cache.arrow->get_width(), 0);
+				}
+
+				float line_width = cache.relationship_line_width * Math::round(cache.base_scale);
+				float parent_line_width = cache.parent_hl_line_width * Math::round(cache.base_scale);
+				float children_line_width = cache.children_hl_line_width * Math::round(cache.base_scale);
+
+				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+
+				int more_prev_ofs = 0;
+
+				if (root_pos.y + line_width >= 0) {
+					if (rtl) {
+						root_pos.x = get_size().width - root_pos.x;
+						parent_pos.x = get_size().width - parent_pos.x;
 					}
 
-					float line_width = cache.relationship_line_width * Math::round(cache.base_scale);
-					float parent_line_width = cache.parent_hl_line_width * Math::round(cache.base_scale);
-					float children_line_width = cache.children_hl_line_width * Math::round(cache.base_scale);
-
-					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
-
-					int more_prev_ofs = 0;
-
-					if (root_pos.y + line_width >= 0) {
-						if (rtl) {
-							root_pos.x = get_size().width - root_pos.x;
-							parent_pos.x = get_size().width - parent_pos.x;
-						}
-
-						// Order of parts on this bend: the horizontal line first, then the vertical line.
-						if (_is_branch_selected(c)) {
-							// If this item or one of its children is selected, we draw the line using parent highlight style.
+					// Order of parts on this bend: the horizontal line first, then the vertical line.
+					if (_is_branch_selected(c)) {
+						// If this item or one of its children is selected, we draw the line using parent highlight style.
+						if (htotal >= 0) {
 							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.parent_hl_line_color, parent_line_width);
+						}
+						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+						more_prev_ofs = cache.parent_hl_line_margin;
+						prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+					} else if (p_item->is_selected(0)) {
+						// If parent item is selected (but this item is not), we draw the line using children highlight style.
+						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+						if (_is_sibling_branch_selected(c)) {
+							if (htotal >= 0) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+							}
 							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
 
-							more_prev_ofs = cache.parent_hl_line_margin;
 							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
-						} else if (p_item->is_selected(0)) {
-							// If parent item is selected (but this item is not), we draw the line using children highlight style.
-							// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
-							if (_is_sibling_branch_selected(c)) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
-
-								prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
-							} else {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), cache.children_hl_line_color, children_line_width);
-							}
 						} else {
-							// If nothing of the above is true, we draw the line using normal style.
-							// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
-							if (_is_sibling_branch_selected(c)) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + cache.parent_hl_line_margin, root_pos.y), cache.relationship_line_color, line_width);
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
-
-								prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
-							} else {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), cache.relationship_line_color, line_width);
+							if (htotal >= 0) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
 							}
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), cache.children_hl_line_color, children_line_width);
+						}
+					} else {
+						// If nothing of the above is true, we draw the line using normal style.
+						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+						if (_is_sibling_branch_selected(c)) {
+							if (htotal >= 0) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + cache.parent_hl_line_margin, root_pos.y), cache.relationship_line_color, line_width);
+							}
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						} else {
+							if (htotal >= 0) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+							}
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), cache.relationship_line_color, line_width);
 						}
 					}
-
-					prev_ofs = root_pos.y + more_prev_ofs;
 				}
 
-				if (child_h < 0) {
-					if (cache.draw_relationship_lines == 0) {
-						return -1; // break, stop drawing, no need to anymore
-					}
+				prev_ofs = root_pos.y + more_prev_ofs;
+			}
 
-					htotal = -1;
-					children_pos.y = cache.offset.y + p_draw_size.height;
-				} else {
-					htotal += child_h;
-					children_pos.y += child_h;
+			if (child_h < 0) {
+				if (htotal == -1) {
+					break; // Last loop done, stop.
 				}
+
+				if (cache.draw_relationship_lines == 0) {
+					return -1; // No need to draw anymore, full stop.
+				}
+
+				htotal = -1;
+				children_pos.y = cache.offset.y + p_draw_size.height;
+			} else {
+				htotal += child_h;
+				children_pos.y += child_h;
 			}
 
 			c = c->next;
@@ -2670,8 +2685,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		}
 
 		click_handled = true;
-		popup_edited_item = p_item;
-		popup_edited_item_col = col;
+		popup_pressing_edited_item = p_item;
+		popup_pressing_edited_item_column = col;
 
 		pressing_item_rect = Rect2(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs) - cache.offset, Size2(col_width, item_h));
 		pressing_for_editor_text = editor_text;
@@ -3206,10 +3221,16 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 		}
 
-		if (pressing_for_editor && popup_edited_item && (popup_edited_item->get_cell_mode(popup_edited_item_col) == TreeItem::CELL_MODE_RANGE)) {
-			//range drag
+		if (pressing_for_editor && popup_pressing_edited_item && (popup_pressing_edited_item->get_cell_mode(popup_pressing_edited_item_column) == TreeItem::CELL_MODE_RANGE)) {
+			/* This needs to happen now, because the popup can be closed when pressing another item, and must remain the popup edited item until it actually closes */
+			popup_edited_item = popup_pressing_edited_item;
+			popup_edited_item_col = popup_pressing_edited_item_column;
+
+			popup_pressing_edited_item = nullptr;
+			popup_pressing_edited_item_column = -1;
 
 			if (!range_drag_enabled) {
+				//range drag
 				Vector2 cpos = mm->get_position();
 				if (rtl) {
 					cpos.x = get_size().width - cpos.x;
@@ -3994,6 +4015,7 @@ void Tree::clear() {
 	selected_item = nullptr;
 	edited_item = nullptr;
 	popup_edited_item = nullptr;
+	popup_pressing_edited_item = nullptr;
 
 	update();
 };
@@ -4309,11 +4331,15 @@ int Tree::get_pressed_button() const {
 	return pressed_button;
 }
 
-Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column) const {
+Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 	ERR_FAIL_NULL_V(p_item, Rect2());
 	ERR_FAIL_COND_V(p_item->tree != this, Rect2());
 	if (p_column != -1) {
 		ERR_FAIL_INDEX_V(p_column, columns.size(), Rect2());
+	}
+	if (p_button != -1) {
+		ERR_FAIL_COND_V(p_column == -1, Rect2()); // pass a column if you want to pass a button
+		ERR_FAIL_INDEX_V(p_button, p_item->cells[p_column].buttons.size(), Rect2());
 	}
 
 	int ofs = get_item_offset(p_item);
@@ -4332,6 +4358,19 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column) const {
 		}
 		r.position.x = accum;
 		r.size.x = get_column_width(p_column);
+		if (p_button != -1) {
+			const TreeItem::Cell &c = p_item->cells[p_column];
+			Vector2 ofst = Vector2(r.position.x + r.size.x, r.position.y);
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
+				ofst.x -= size.x;
+
+				if (j == p_button) {
+					return Rect2(ofst, size);
+				}
+			}
+		}
 	}
 
 	return r;
@@ -4870,7 +4909,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
 	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
-	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::get_item_rect, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column", "button_index"), &Tree::get_item_rect, DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
 	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
 	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);

@@ -404,8 +404,11 @@ void PanoramaSkyMaterial::_update_shader() {
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
 // NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+
 shader_type sky;
-uniform sampler2D source_panorama : %s, hint_albedo;
+
+uniform sampler2D source_panorama : %s, hint_black_albedo;
+
 void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb;
 }

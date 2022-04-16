@@ -43,7 +43,7 @@ class ResourceLoaderBinary {
 	Ref<Resource> resource;
 	uint32_t ver_format = 0;
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 
 	uint64_t importmd_ofs = 0;
 
@@ -98,12 +98,11 @@ public:
 	void set_translation_remapped(bool p_remapped);
 
 	void set_remaps(const Map<String, String> &p_remaps) { remaps = p_remaps; }
-	void open(FileAccess *p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
-	String recognize(FileAccess *p_f);
-	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
+	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
+	String recognize(Ref<FileAccess> p_f);
+	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 
 	ResourceLoaderBinary() {}
-	~ResourceLoaderBinary();
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
@@ -127,7 +126,6 @@ class ResourceFormatSaverBinaryInstance {
 	bool skip_editor;
 	bool big_endian;
 	bool takeover_paths;
-	FileAccess *f;
 	String magic;
 	Set<RES> resource_set;
 
@@ -155,9 +153,9 @@ class ResourceFormatSaverBinaryInstance {
 		List<Property> properties;
 	};
 
-	static void _pad_buffer(FileAccess *f, int p_bytes);
+	static void _pad_buffer(Ref<FileAccess> f, int p_bytes);
 	void _find_resources(const Variant &p_variant, bool p_main = false);
-	static void save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len = false);
+	static void save_unicode_string(Ref<FileAccess> f, const String &p_string, bool p_bit_on_len = false);
 	int get_string_index(const String &p_string);
 
 public:
@@ -170,7 +168,7 @@ public:
 		RESERVED_FIELDS = 11
 	};
 	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	static void write_variant(FileAccess *f, const Variant &p_property, Map<RES, int> &resource_map, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
+	static void write_variant(Ref<FileAccess> f, const Variant &p_property, Map<RES, int> &resource_map, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {

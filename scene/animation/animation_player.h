@@ -36,6 +36,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/animation_library.h"
 
 #ifdef TOOLS_ENABLED
 class AnimatedValuesBackup : public RefCounted {
@@ -184,9 +185,20 @@ private:
 		StringName next;
 		Vector<TrackNodeCache *> node_cache;
 		Ref<Animation> animation;
+		StringName animation_library;
+		uint64_t last_update = 0;
 	};
 
 	Map<StringName, AnimationData> animation_set;
+
+	struct AnimationLibraryData {
+		StringName name;
+		Ref<AnimationLibrary> library;
+		bool operator<(const AnimationLibraryData &p_data) const { return name.operator String() < p_data.name.operator String(); }
+	};
+
+	LocalVector<AnimationLibraryData> animation_libraries;
+
 	struct BlendKey {
 		StringName from;
 		StringName to;
@@ -261,6 +273,15 @@ private:
 
 	bool playing = false;
 
+	uint64_t animation_set_update_pass = 1;
+	void _animation_set_cache_update();
+	void _animation_added(const StringName &p_name, const StringName &p_library);
+	void _animation_removed(const StringName &p_name, const StringName &p_library);
+	void _animation_renamed(const StringName &p_name, const StringName &p_to_name, const StringName &p_library);
+	void _rename_animation(const StringName &p_from_name, const StringName &p_to_name);
+
+	TypedArray<StringName> _get_animation_library_list() const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -272,13 +293,18 @@ protected:
 
 public:
 	StringName find_animation(const Ref<Animation> &p_animation) const;
+	StringName find_animation_library(const Ref<Animation> &p_animation) const;
 
-	Error add_animation(const StringName &p_name, const Ref<Animation> &p_animation);
-	void remove_animation(const StringName &p_name);
-	void rename_animation(const StringName &p_name, const StringName &p_new_name);
-	bool has_animation(const StringName &p_name) const;
+	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
+	void remove_animation_library(const StringName &p_name);
+	void rename_animation_library(const StringName &p_name, const StringName &p_new_name);
+	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
+	void get_animation_library_list(List<StringName> *p_animations) const;
+	bool has_animation_library(const StringName &p_name) const;
+
 	Ref<Animation> get_animation(const StringName &p_name) const;
 	void get_animation_list(List<StringName> *p_animations) const;
+	bool has_animation(const StringName &p_name) const;
 
 	void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time);
 	float get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const;
@@ -339,6 +365,8 @@ public:
 	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
 	bool can_apply_reset() const;
 #endif
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	AnimationPlayer();
 	~AnimationPlayer();

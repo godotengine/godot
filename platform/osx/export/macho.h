@@ -161,7 +161,7 @@ class MachO : public RefCounted {
 		uint32_t reserved3;
 	};
 
-	FileAccess *fa = nullptr;
+	Ref<FileAccess> fa;
 	bool swap = false;
 
 	uint64_t lc_limit = 0;
@@ -203,13 +203,11 @@ public:
 
 	PackedByteArray get_requirements();
 
-	const FileAccess *get_file() const;
-	FileAccess *get_file();
+	const Ref<FileAccess> get_file() const;
+	Ref<FileAccess> get_file();
 
 	uint64_t get_signature_size();
 	bool set_signature_size(uint64_t p_size);
-
-	~MachO();
 };
 
 #endif // MODULE_REGEX_ENABLED

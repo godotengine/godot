@@ -141,7 +141,7 @@ struct _SoftBodyContactCollisionInfo {
 };
 
 void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-	_SoftBodyContactCollisionInfo &cinfo = *(_SoftBodyContactCollisionInfo *)(p_userdata);
+	_SoftBodyContactCollisionInfo &cinfo = *(static_cast<_SoftBodyContactCollisionInfo *>(p_userdata));
 
 	++cinfo.contact_count;
 
@@ -170,7 +170,7 @@ struct _SoftBodyQueryInfo {
 };
 
 bool GodotCollisionSolver3D::soft_body_query_callback(uint32_t p_node_index, void *p_userdata) {
-	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
+	_SoftBodyQueryInfo &query_cinfo = *(static_cast<_SoftBodyQueryInfo *>(p_userdata));
 
 	Vector3 node_position = query_cinfo.soft_body->get_node_position(p_node_index);
 
@@ -189,7 +189,7 @@ bool GodotCollisionSolver3D::soft_body_query_callback(uint32_t p_node_index, voi
 }
 
 bool GodotCollisionSolver3D::soft_body_concave_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_SoftBodyQueryInfo &query_cinfo = *(_SoftBodyQueryInfo *)(p_userdata);
+	_SoftBodyQueryInfo &query_cinfo = *(static_cast<_SoftBodyQueryInfo *>(p_userdata));
 
 	query_cinfo.shape_A = p_convex;
 
@@ -292,7 +292,7 @@ struct _ConcaveCollisionInfo {
 };
 
 bool GodotCollisionSolver3D::concave_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
+	_ConcaveCollisionInfo &cinfo = *(static_cast<_ConcaveCollisionInfo *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, nullptr, cinfo.margin_A, cinfo.margin_B);
@@ -422,7 +422,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 }
 
 bool GodotCollisionSolver3D::concave_distance_callback(void *p_userdata, GodotShape3D *p_convex) {
-	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
+	_ConcaveCollisionInfo &cinfo = *(static_cast<_ConcaveCollisionInfo *>(p_userdata));
 	cinfo.aabb_tests++;
 
 	Vector3 close_A, close_B;

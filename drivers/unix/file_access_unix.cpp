@@ -71,10 +71,7 @@ void FileAccessUnix::check_errors() const {
 }
 
 Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
-	if (f) {
-		fclose(f);
-	}
-	f = nullptr;
+	_close();
 
 	path_src = p_path;
 	path = fix_path(p_path);
@@ -148,7 +145,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessUnix::close() {
+void FileAccessUnix::_close() {
 	if (!f) {
 		return;
 	}
@@ -336,14 +333,14 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 	return FAILED;
 }
 
-FileAccess *FileAccessUnix::create_libc() {
+Ref<FileAccess> FileAccessUnix::create_libc() {
 	return memnew(FileAccessUnix);
 }
 
 CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {
-	close();
+	_close();
 }
 
 #endif

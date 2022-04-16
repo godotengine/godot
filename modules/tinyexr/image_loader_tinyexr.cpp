@@ -37,7 +37,7 @@
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
-Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale) {
 	Vector<uint8_t> src_image;
 	uint64_t src_image_len = f->get_length();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -46,8 +46,6 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	uint8_t *w = src_image.ptrw();
 
 	f->get_buffer(&w[0], src_image_len);
-
-	f->close();
 
 	// Re-implementation of tinyexr's LoadEXRFromMemory using Godot types to store the Image data
 	// and Godot's error codes.
@@ -232,7 +230,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 						}
 
 						if (p_force_linear) {
-							color = color.to_linear();
+							color = color.srgb_to_linear();
 						}
 
 						*row_w++ = Math::make_half_float(color.r);
@@ -263,7 +261,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 						}
 
 						if (p_force_linear) {
-							color = color.to_linear();
+							color = color.srgb_to_linear();
 						}
 
 						*row_w++ = color.r;

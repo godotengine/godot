@@ -39,9 +39,9 @@ class ItemList;
 class EditorLayoutsDialog : public ConfirmationDialog {
 	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);
 
-	LineEdit *name;
-	ItemList *layout_names;
-	VBoxContainer *makevb;
+	LineEdit *name = nullptr;
+	ItemList *layout_names = nullptr;
+	VBoxContainer *makevb = nullptr;
 
 	void _line_gui_input(const Ref<InputEvent> &p_event);
 

@@ -47,6 +47,8 @@
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
+///////////////////////////////////
+
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	if (player && player == p_node) {
 		player = nullptr;
@@ -148,9 +150,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(SNAME(m_icon), SNAME("EditorIcons")))
 
 			ITEM_ICON(TOOL_NEW_ANIM, "New");
-			ITEM_ICON(TOOL_LOAD_ANIM, "Load");
-			ITEM_ICON(TOOL_SAVE_ANIM, "Save");
-			ITEM_ICON(TOOL_SAVE_AS_ANIM, "Save");
+			ITEM_ICON(TOOL_ANIM_LIBRARY, "AnimationLibrary");
 			ITEM_ICON(TOOL_DUPLICATE_ANIM, "Duplicate");
 			ITEM_ICON(TOOL_RENAME_ANIM, "Rename");
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
@@ -166,7 +166,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	if (updating) {
 		return;
 	}
-	if (animation->get_item_count() == 0) {
+	if (animation->has_selectable_items() == 0) {
 		return;
 	}
 
@@ -192,10 +192,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 }
 
 void AnimationPlayerEditor::_play_pressed() {
-	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
-		current = animation->get_item_text(animation->get_selected());
-	}
+	String current = _get_current();
 
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
@@ -209,10 +206,7 @@ void AnimationPlayerEditor::_play_pressed() {
 }
 
 void AnimationPlayerEditor::_play_from_pressed() {
-	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
-		current = animation->get_item_text(animation->get_selected());
-	}
+	String current = _get_current();
 
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
@@ -229,12 +223,15 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	stop->set_pressed(false);
 }
 
-void AnimationPlayerEditor::_play_bw_pressed() {
+String AnimationPlayerEditor::_get_current() const {
 	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
+	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count() && !animation->is_item_separator(animation->get_selected())) {
 		current = animation->get_item_text(animation->get_selected());
 	}
-
+	return current;
+}
+void AnimationPlayerEditor::_play_bw_pressed() {
+	String current = _get_current();
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
@@ -247,10 +244,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 }
 
 void AnimationPlayerEditor::_play_bw_from_pressed() {
-	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
-		current = animation->get_item_text(animation->get_selected());
-	}
+	String current = _get_current();
 
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
@@ -282,10 +276,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	}
 	// when selecting an animation, the idea is that the only interesting behavior
 	// ui-wise is that it should play/blend the next one if currently playing
-	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
-		current = animation->get_item_text(animation->get_selected());
-	}
+	String current = _get_current();
 
 	if (!current.is_empty()) {
 		player->set_assigned_animation(current);
@@ -330,6 +321,20 @@ void AnimationPlayerEditor::_animation_new() {
 		break;
 	}
 
+	List<StringName> libraries;
+	player->get_animation_library_list(&libraries);
+	library->clear();
+	for (const StringName &K : libraries) {
+		library->add_item((K == StringName()) ? String(TTR("[Global]")) : String(K));
+		library->set_item_metadata(0, String(K));
+	}
+
+	if (libraries.size() > 1) {
+		library->show();
+	} else {
+		library->hide();
+	}
+
 	name->set_text(base);
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
@@ -337,7 +342,7 @@ void AnimationPlayerEditor::_animation_new() {
 }
 
 void AnimationPlayerEditor::_animation_rename() {
-	if (animation->get_item_count() == 0) {
+	if (!animation->has_selectable_items()) {
 		return;
 	}
 	int selected = animation->get_selected();
@@ -349,84 +354,11 @@ void AnimationPlayerEditor::_animation_rename() {
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
-}
-
-void AnimationPlayerEditor::_animation_load() {
-	ERR_FAIL_COND(!player);
-	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-	file->clear_filters();
-	List<String> extensions;
-
-	ResourceLoader::get_recognized_extensions_for_type("Animation", &extensions);
-	for (const String &E : extensions) {
-		file->add_filter("*." + E + " ; " + E.to_upper());
-	}
-
-	file->popup_file_dialog();
-}
-
-void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resource, const String &p_path) {
-	int flg = 0;
-	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
-		flg |= ResourceSaver::FLAG_COMPRESS;
-	}
-
-	String path = ProjectSettings::get_singleton()->localize_path(p_path);
-	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
-
-	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Error saving resource!"));
-		return;
-	}
-
-	((Resource *)p_resource.ptr())->set_path(path);
-	EditorNode::get_singleton()->emit_signal(SNAME("resource_saved"), p_resource);
-}
-
-void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
-	if (p_resource->get_path().is_resource_file()) {
-		_animation_save_in_path(p_resource, p_resource->get_path());
-	} else {
-		_animation_save_as(p_resource);
-	}
-}
-
-void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) {
-	file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-
-	List<String> extensions;
-	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
-	file->clear_filters();
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
-	}
-
-	String path;
-	//file->set_current_path(current_path);
-	if (!p_resource->get_path().is_empty()) {
-		path = p_resource->get_path();
-		if (extensions.size()) {
-			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == nullptr) {
-				path = p_resource->get_path().get_base_dir() + p_resource->get_name() + "." + extensions.front()->get();
-			}
-		}
-	} else {
-		if (extensions.size()) {
-			if (!p_resource->get_name().is_empty()) {
-				path = p_resource->get_name() + "." + extensions.front()->get().to_lower();
-			} else {
-				String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
-				path = "new_" + resource_name_snake_case + "." + extensions.front()->get().to_lower();
-			}
-		}
-	}
-	file->set_current_path(path);
-	file->set_title(TTR("Save Resource As..."));
-	file->popup_file_dialog();
+	library->hide();
 }
 
 void AnimationPlayerEditor::_animation_remove() {
-	if (animation->get_item_count() == 0) {
+	if (!animation->has_selectable_items()) {
 		return;
 	}
 
@@ -440,6 +372,9 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	String current = animation->get_item_text(animation->get_selected());
 	Ref<Animation> anim = player->get_animation(current);
 
+	Ref<AnimationLibrary> al = player->get_animation_library(player->find_animation_library(anim));
+	ERR_FAIL_COND(al.is_null());
+
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -447,11 +382,11 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 		// Avoid having the autoplay icon linger around if there is only one animation in the player.
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 	}
-	undo_redo->add_do_method(player, "remove_animation", current);
-	undo_redo->add_undo_method(player, "add_animation", current, anim);
+	undo_redo->add_do_method(al.ptr(), "remove_animation", current);
+	undo_redo->add_undo_method(al.ptr(), "add_animation", current, anim);
 	undo_redo->add_do_method(this, "_animation_player_changed", player);
 	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	if (animation->get_item_count() == 1) {
+	if (animation->has_selectable_items() && animation->get_selectable_item(false) == animation->get_selectable_item(true)) { // Last item remaining.
 		undo_redo->add_do_method(this, "_stop_onion_skinning");
 		undo_redo->add_undo_method(this, "_start_onion_skinning");
 	}
@@ -498,7 +433,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	if (name_dialog_op == TOOL_RENAME_ANIM && animation->get_item_count() > 0 && animation->get_item_text(animation->get_selected()) == new_name) {
+	if (name_dialog_op == TOOL_RENAME_ANIM && animation->has_selectable_items() && animation->get_item_text(animation->get_selected()) == new_name) {
 		name_dialog->hide();
 		return;
 	}
@@ -514,10 +449,13 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			String current = animation->get_item_text(animation->get_selected());
 			Ref<Animation> anim = player->get_animation(current);
 
+			Ref<AnimationLibrary> al = player->get_animation_library(player->find_animation_library(anim));
+			ERR_FAIL_COND(al.is_null());
+
 			undo_redo->create_action(TTR("Rename Animation"));
-			undo_redo->add_do_method(player, "rename_animation", current, new_name);
+			undo_redo->add_do_method(al.ptr(), "rename_animation", current, new_name);
 			undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
-			undo_redo->add_undo_method(player, "rename_animation", new_name, current);
+			undo_redo->add_undo_method(al.ptr(), "rename_animation", new_name, current);
 			undo_redo->add_undo_method(anim.ptr(), "set_name", current);
 			undo_redo->add_do_method(this, "_animation_player_changed", player);
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -530,14 +468,34 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 			new_anim->set_name(new_name);
 
+			Ref<AnimationLibrary> al;
+			if (library->is_visible()) {
+				al = player->get_animation_library(library->get_item_metadata(library->get_selected()));
+			} else {
+				if (player->has_animation_library("")) {
+					al = player->get_animation_library("");
+				}
+			}
+
 			undo_redo->create_action(TTR("Add Animation"));
-			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-			undo_redo->add_undo_method(player, "remove_animation", new_name);
+
+			bool lib_added = false;
+			if (al.is_null()) {
+				al.instantiate();
+				lib_added = true;
+				undo_redo->add_do_method(player, "add_animation_library", "", al);
+			}
+
+			undo_redo->add_do_method(al.ptr(), "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(al.ptr(), "remove_animation", new_name);
 			undo_redo->add_do_method(this, "_animation_player_changed", player);
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
-			if (animation->get_item_count() == 0) {
+			if (!animation->has_selectable_items()) {
 				undo_redo->add_do_method(this, "_start_onion_skinning");
 				undo_redo->add_undo_method(this, "_stop_onion_skinning");
+			}
+			if (lib_added) {
+				undo_redo->add_undo_method(player, "remove_animation_library", "");
 			}
 			undo_redo->commit_action();
 
@@ -551,9 +509,11 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			Ref<Animation> new_anim = _animation_clone(anim);
 			new_anim->set_name(new_name);
 
+			Ref<AnimationLibrary> library = player->get_animation_library(player->find_animation_library(anim));
+
 			undo_redo->create_action(TTR("Duplicate Animation"));
-			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-			undo_redo->add_undo_method(player, "remove_animation", new_name);
+			undo_redo->add_do_method(library.ptr(), "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(library.ptr(), "remove_animation", new_name);
 			undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
 			undo_redo->add_do_method(this, "_animation_player_changed", player);
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -567,7 +527,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 }
 
 void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
-	if (animation->get_item_count() == 0) {
+	if (!animation->has_selectable_items()) {
 		return;
 	}
 
@@ -588,7 +548,7 @@ void AnimationPlayerEditor::_animation_blend() {
 
 	blend_editor.tree->clear();
 
-	if (animation->get_item_count() == 0) {
+	if (!animation->has_selectable_items()) {
 		return;
 	}
 
@@ -643,7 +603,7 @@ void AnimationPlayerEditor::_blend_edited() {
 		return;
 	}
 
-	if (animation->get_item_count() == 0) {
+	if (!animation->has_selectable_items()) {
 		return;
 	}
 
@@ -722,16 +682,16 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 }
 
 void AnimationPlayerEditor::_animation_resource_edit() {
-	if (animation->get_item_count()) {
-		String current = animation->get_item_text(animation->get_selected());
+	String current = _get_current();
+	if (current != String()) {
 		Ref<Animation> anim = player->get_animation(current);
 		EditorNode::get_singleton()->edit_resource(anim);
 	}
 }
 
 void AnimationPlayerEditor::_animation_edit() {
-	if (animation->get_item_count()) {
-		String current = animation->get_item_text(animation->get_selected());
+	String current = _get_current();
+	if (current != String()) {
 		Ref<Animation> anim = player->get_animation(current);
 		track_editor->set_animation(anim);
 
@@ -742,51 +702,6 @@ void AnimationPlayerEditor::_animation_edit() {
 	} else {
 		track_editor->set_animation(Ref<Animation>());
 		track_editor->set_root(nullptr);
-	}
-}
-
-void AnimationPlayerEditor::_save_animation(String p_file) {
-	String current = animation->get_item_text(animation->get_selected());
-	if (!current.is_empty()) {
-		Ref<Animation> anim = player->get_animation(current);
-
-		ERR_FAIL_COND(!Object::cast_to<Resource>(*anim));
-
-		RES current_res = RES(Object::cast_to<Resource>(*anim));
-
-		_animation_save_in_path(current_res, p_file);
-	}
-}
-
-void AnimationPlayerEditor::_load_animations(Vector<String> p_files) {
-	ERR_FAIL_COND(!player);
-
-	for (int i = 0; i < p_files.size(); i++) {
-		String file = p_files[i];
-
-		Ref<Resource> res = ResourceLoader::load(file, "Animation");
-		ERR_FAIL_COND_MSG(res.is_null(), "Cannot load Animation from file '" + file + "'.");
-		ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + file + "' is not Animation.");
-		if (file.rfind("/") != -1) {
-			file = file.substr(file.rfind("/") + 1, file.length());
-		}
-		if (file.rfind("\\") != -1) {
-			file = file.substr(file.rfind("\\") + 1, file.length());
-		}
-
-		if (file.contains(".")) {
-			file = file.substr(0, file.find("."));
-		}
-
-		undo_redo->create_action(TTR("Load Animation"));
-		undo_redo->add_do_method(player, "add_animation", file, res);
-		undo_redo->add_undo_method(player, "remove_animation", file);
-		if (player->has_animation(file)) {
-			undo_redo->add_undo_method(player, "add_animation", file, player->get_animation(file));
-		}
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
 	}
 }
 
@@ -824,49 +739,67 @@ void AnimationPlayerEditor::_update_animation() {
 
 void AnimationPlayerEditor::_update_player() {
 	updating = true;
-	List<StringName> animlist;
-	if (player) {
-		player->get_animation_list(&animlist);
-	}
 
 	animation->clear();
-
-#define ITEM_DISABLED(m_item, m_disabled) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), m_disabled)
-
-	ITEM_DISABLED(TOOL_SAVE_ANIM, animlist.size() == 0);
-	ITEM_DISABLED(TOOL_SAVE_AS_ANIM, animlist.size() == 0);
-	ITEM_DISABLED(TOOL_DUPLICATE_ANIM, animlist.size() == 0);
-	ITEM_DISABLED(TOOL_RENAME_ANIM, animlist.size() == 0);
-	ITEM_DISABLED(TOOL_EDIT_TRANSITIONS, animlist.size() == 0);
-	ITEM_DISABLED(TOOL_COPY_ANIM, animlist.size() == 0);
-	ITEM_DISABLED(TOOL_REMOVE_ANIM, animlist.size() == 0);
-
-	stop->set_disabled(animlist.size() == 0);
-	play->set_disabled(animlist.size() == 0);
-	play_bw->set_disabled(animlist.size() == 0);
-	play_bw_from->set_disabled(animlist.size() == 0);
-	play_from->set_disabled(animlist.size() == 0);
-	frame->set_editable(animlist.size() != 0);
-	animation->set_disabled(animlist.size() == 0);
-	autoplay->set_disabled(animlist.size() == 0);
-	tool_anim->set_disabled(player == nullptr);
-	onion_toggle->set_disabled(animlist.size() == 0);
-	onion_skinning->set_disabled(animlist.size() == 0);
-	pin->set_disabled(player == nullptr);
 
 	if (!player) {
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 		return;
 	}
 
-	int active_idx = -1;
-	for (const StringName &E : animlist) {
-		animation->add_item(E);
+	List<StringName> libraries;
+	if (player) {
+		player->get_animation_library_list(&libraries);
+	}
 
-		if (player->get_assigned_animation() == E) {
-			active_idx = animation->get_item_count() - 1;
+	int active_idx = -1;
+	bool no_anims_found = true;
+
+	for (const StringName &K : libraries) {
+		if (K != StringName()) {
+			animation->add_separator(K);
+		}
+
+		Ref<AnimationLibrary> library = player->get_animation_library(K);
+		List<StringName> animlist;
+		library->get_animation_list(&animlist);
+
+		for (const StringName &E : animlist) {
+			String path = K;
+			if (path != "") {
+				path += "/";
+			}
+			path += E;
+			animation->add_item(path);
+			if (player->get_assigned_animation() == path) {
+				active_idx = animation->get_selectable_item(true);
+			}
+			no_anims_found = false;
 		}
 	}
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), no_anims_found)
+
+	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
+	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
+	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
+	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
+	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
+
+#undef ITEM_CHECK_DISABLED
+
+	stop->set_disabled(no_anims_found);
+	play->set_disabled(no_anims_found);
+	play_bw->set_disabled(no_anims_found);
+	play_bw_from->set_disabled(no_anims_found);
+	play_from->set_disabled(no_anims_found);
+	frame->set_editable(!no_anims_found);
+	animation->set_disabled(no_anims_found);
+	autoplay->set_disabled(no_anims_found);
+	tool_anim->set_disabled(player == nullptr);
+	onion_toggle->set_disabled(no_anims_found);
+	onion_skinning->set_disabled(no_anims_found);
+	pin->set_disabled(player == nullptr);
+
 	_update_animation_list_icons();
 
 	updating = false;
@@ -874,16 +807,16 @@ void AnimationPlayerEditor::_update_player() {
 		animation->select(active_idx);
 		autoplay->set_pressed(animation->get_item_text(active_idx) == player->get_autoplay());
 		_animation_selected(active_idx);
-
-	} else if (animation->get_item_count() > 0) {
-		animation->select(0);
-		autoplay->set_pressed(animation->get_item_text(0) == player->get_autoplay());
-		_animation_selected(0);
+	} else if (animation->has_selectable_items()) {
+		int item = animation->get_selectable_item();
+		animation->select(item);
+		autoplay->set_pressed(animation->get_item_text(item) == player->get_autoplay());
+		_animation_selected(item);
 	} else {
 		_animation_selected(0);
 	}
 
-	if (animation->get_item_count()) {
+	if (!no_anims_found) {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 		track_editor->set_animation(anim);
@@ -899,6 +832,9 @@ void AnimationPlayerEditor::_update_player() {
 void AnimationPlayerEditor::_update_animation_list_icons() {
 	for (int i = 0; i < animation->get_item_count(); i++) {
 		String name = animation->get_item_text(i);
+		if (animation->is_item_disabled(i) || animation->is_item_separator(i)) {
+			continue;
+		}
 
 		Ref<Texture2D> icon;
 		if (name == player->get_autoplay()) {
@@ -925,7 +861,7 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 		_update_player();
 
 		if (onion.enabled) {
-			if (animation->get_item_count() > 0) {
+			if (animation->has_selectable_items()) {
 				_start_onion_skinning();
 			} else {
 				_stop_onion_skinning();
@@ -940,6 +876,8 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 
 		track_editor->show_select_node_warning(true);
 	}
+
+	library_editor->set_animation_player(player);
 }
 
 void AnimationPlayerEditor::forward_force_draw_over_viewport(Control *p_overlay) {
@@ -993,7 +931,7 @@ void AnimationPlayerEditor::forward_force_draw_over_viewport(Control *p_overlay)
 }
 
 void AnimationPlayerEditor::_animation_duplicate() {
-	if (!animation->get_item_count()) {
+	if (!animation->has_selectable_items()) {
 		return;
 	}
 
@@ -1029,29 +967,6 @@ Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
 	new_anim->set_path("");
 
 	return new_anim;
-}
-
-void AnimationPlayerEditor::_animation_paste(Ref<Animation> p_anim) {
-	String name = p_anim->get_name();
-	if (name.is_empty()) {
-		name = TTR("Pasted Animation");
-	}
-
-	int idx = 1;
-	String base = name;
-	while (player->has_animation(name)) {
-		idx++;
-		name = base + " " + itos(idx);
-	}
-
-	undo_redo->create_action(TTR("Paste Animation"));
-	undo_redo->add_do_method(player, "add_animation", name, p_anim);
-	undo_redo->add_undo_method(player, "remove_animation", name);
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
-
-	_select_anim_by_name(name);
 }
 
 void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool p_timeline_only) {
@@ -1095,6 +1010,9 @@ void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 		if (blend_editor.dialog->is_visible()) {
 			_animation_blend(); // Update.
 		}
+		if (library_editor->is_visible()) {
+			library_editor->update_tree();
+		}
 	}
 }
 
@@ -1134,10 +1052,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag,
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
-	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
-		current = animation->get_item_text(animation->get_selected());
-	}
+	String current = _get_current();
 
 	Ref<Animation> anim;
 	if (!current.is_empty()) {
@@ -1148,18 +1063,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_NEW_ANIM: {
 			_animation_new();
 		} break;
-		case TOOL_LOAD_ANIM: {
-			_animation_load();
-		} break;
-		case TOOL_SAVE_ANIM: {
-			if (anim.is_valid()) {
-				_animation_save(anim);
-			}
-		} break;
-		case TOOL_SAVE_AS_ANIM: {
-			if (anim.is_valid()) {
-				_animation_save_as(anim);
-			}
+		case TOOL_ANIM_LIBRARY: {
+			library_editor->set_animation_player(player);
+			library_editor->show_dialog();
 		} break;
 		case TOOL_DUPLICATE_ANIM: {
 			_animation_duplicate();
@@ -1173,47 +1079,10 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_REMOVE_ANIM: {
 			_animation_remove();
 		} break;
-		case TOOL_COPY_ANIM: {
-			if (!animation->get_item_count()) {
-				error_dialog->set_text(TTR("No animation to copy!"));
-				error_dialog->popup_centered();
-				return;
-			}
-
-			String current2 = animation->get_item_text(animation->get_selected());
-			Ref<Animation> anim2 = player->get_animation(current2);
-			EditorSettings::get_singleton()->set_resource_clipboard(anim2);
-		} break;
-		case TOOL_PASTE_ANIM: {
-			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (!anim2.is_valid()) {
-				error_dialog->set_text(TTR("No animation resource in clipboard!"));
-				error_dialog->popup_centered();
-				return;
-			}
-			Ref<Animation> new_anim = _animation_clone(anim2);
-			_animation_paste(new_anim);
-		} break;
-		case TOOL_PASTE_ANIM_REF: {
-			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (!anim2.is_valid()) {
-				error_dialog->set_text(TTR("No animation resource in clipboard!"));
-				error_dialog->popup_centered();
-				return;
-			}
-
-			_animation_paste(anim2);
-		} break;
 		case TOOL_EDIT_RESOURCE: {
-			if (!animation->get_item_count()) {
-				error_dialog->set_text(TTR("No animation to edit!"));
-				error_dialog->popup_centered();
-				return;
+			if (anim.is_valid()) {
+				EditorNode::get_singleton()->edit_resource(anim);
 			}
-
-			String current2 = animation->get_item_text(animation->get_selected());
-			Ref<Animation> anim2 = player->get_animation(current2);
-			EditorNode::get_singleton()->edit_resource(anim2);
 		} break;
 	}
 }
@@ -1267,7 +1136,7 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 	}
 }
 
-void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
+void AnimationPlayerEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
@@ -1300,7 +1169,7 @@ void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 }
 
 void AnimationPlayerEditor::_editor_visibility_changed() {
-	if (is_visible() && animation->get_item_count() > 0) {
+	if (is_visible() && animation->has_selectable_items()) {
 		_start_onion_skinning();
 	}
 }
@@ -1536,7 +1405,6 @@ void AnimationPlayerEditor::_pin_pressed() {
 void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
 	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
-	ClassDB::bind_method(D_METHOD("_animation_load"), &AnimationPlayerEditor::_animation_load);
 	ClassDB::bind_method(D_METHOD("_animation_remove"), &AnimationPlayerEditor::_animation_remove);
 	ClassDB::bind_method(D_METHOD("_animation_blend"), &AnimationPlayerEditor::_animation_blend);
 	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
@@ -1623,13 +1491,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->set_text(TTR("Animation"));
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New")), TOOL_NEW_ANIM);
 	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation", TTR("Load")), TOOL_LOAD_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_animation", TTR("Save")), TOOL_SAVE_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as_animation", TTR("Save As...")), TOOL_SAVE_AS_ANIM);
-	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy")), TOOL_COPY_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/animation_libraries", TTR("Manage Animations...")), TOOL_ANIM_LIBRARY);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate...")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
@@ -1638,6 +1500,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTR("Open in Inspector")), TOOL_EDIT_RESOURCE);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
+	tool_anim->set_disabled(true);
 	hb->add_child(tool_anim);
 
 	animation = memnew(OptionButton);
@@ -1705,8 +1568,14 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	name_title = memnew(Label(TTR("Animation Name:")));
 	vb->add_child(name_title);
 
+	HBoxContainer *name_hb = memnew(HBoxContainer);
 	name = memnew(LineEdit);
-	vb->add_child(name);
+	name_hb->add_child(name);
+	name->set_h_size_flags(SIZE_EXPAND_FILL);
+	library = memnew(OptionButton);
+	name_hb->add_child(library);
+	library->hide();
+	vb->add_child(name_hb);
 	name_dialog->register_text_enter(name);
 
 	error_dialog = memnew(ConfirmationDialog);
@@ -1742,15 +1611,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_save_animation));
-	file->connect("files_selected", callable_mp(this, &AnimationPlayerEditor::_load_animations));
 	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
 	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	last_active = false;
 	timeline_position = 0;
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1758,6 +1625,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	track_editor->connect("animation_len_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
 
 	_update_player();
+
+	library_editor = memnew(AnimationLibraryEditor);
+	add_child(library_editor);
+	library_editor->connect("update_editor", callable_mp(this, &AnimationPlayerEditor::_animation_player_changed));
 
 	// Onion skinning.
 

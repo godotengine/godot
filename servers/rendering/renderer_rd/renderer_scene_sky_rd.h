@@ -63,7 +63,7 @@ public:
 	};
 
 private:
-	RendererStorageRD *storage;
+	RendererStorageRD *storage = nullptr;
 	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
 	RID index_buffer;
@@ -162,8 +162,8 @@ public:
 
 		UBO ubo;
 
-		SkyDirectionalLightData *directional_lights;
-		SkyDirectionalLightData *last_frame_directional_lights;
+		SkyDirectionalLightData *directional_lights = nullptr;
+		SkyDirectionalLightData *last_frame_directional_lights = nullptr;
 		uint32_t max_directional_lights;
 		uint32_t last_frame_directional_light_count;
 		RID directional_light_buffer;
@@ -228,7 +228,7 @@ public:
 	} sky_shader;
 
 	struct SkyMaterialData : public RendererRD::MaterialData {
-		SkyShaderData *shader_data;
+		SkyShaderData *shader_data = nullptr;
 		RID uniform_set;
 		bool uniform_set_updated;
 
@@ -262,7 +262,7 @@ public:
 		Sky *dirty_list = nullptr;
 
 		//State to track when radiance cubemap needs updating
-		SkyMaterialData *prev_material;
+		SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position;
 		float prev_time;
 

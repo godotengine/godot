@@ -169,7 +169,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	return -1;
 }
 
-void PopupMenu::_activate_submenu(int p_over) {
+void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Node *n = get_node(items[p_over].submenu);
 	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[p_over].submenu + ".");
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
@@ -213,8 +213,10 @@ void PopupMenu::_activate_submenu(int p_over) {
 		return;
 	}
 
+	submenu_pum->activated_by_keyboard = p_by_keyboard;
+
 	// If not triggered by the mouse, start the popup with its first item selected.
-	if (submenu_pum->get_item_count() > 0 && Input::get_singleton()->is_action_just_pressed("ui_accept")) {
+	if (submenu_pum->get_item_count() > 0 && p_by_keyboard) {
 		submenu_pum->set_current_index(0);
 	}
 
@@ -323,14 +325,14 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			set_input_as_handled();
 		}
 	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !!items[mouse_over].separator && items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
-			_activate_submenu(mouse_over);
+		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && !items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
+			_activate_submenu(mouse_over, true);
 			set_input_as_handled();
 		}
 	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 			if (!items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
-				_activate_submenu(mouse_over);
+				_activate_submenu(mouse_over, true);
 			} else {
 				activate_item(mouse_over);
 			}
@@ -396,6 +398,11 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
+		if (m->get_velocity().is_equal_approx(Vector2())) {
+			return;
+		}
+		activated_by_keyboard = false;
+
 		for (const Rect2 &E : autohide_areas) {
 			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E.has_point(m->get_position())) {
 				_close_pressed();
@@ -557,10 +564,8 @@ void PopupMenu::_draw_items() {
 		// Separator
 		item_ofs.x += items[i].h_ofs;
 		if (items[i].separator) {
-			int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
-			int sep_ofs = Math::floor((h - sep_h) / 2.0);
 			if (!text.is_empty() || !items[i].icon.is_null()) {
-				int content_size = items[i].text_buf->get_size().width;
+				int content_size = items[i].text_buf->get_size().width + hseparation * 2;
 				if (!items[i].icon.is_null()) {
 					content_size += icon_size.width + hseparation;
 				}
@@ -569,12 +574,18 @@ void PopupMenu::_draw_items() {
 				int content_left = content_center - content_size / 2;
 				int content_right = content_center + content_size / 2;
 				if (content_left > item_ofs.x) {
+					int sep_h = labeled_separator_left->get_center_size().height + labeled_separator_left->get_minimum_size().height;
+					int sep_ofs = Math::floor((h - sep_h) / 2.0);
 					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, content_left - item_ofs.x), sep_h)));
 				}
 				if (content_right < display_width) {
+					int sep_h = labeled_separator_right->get_center_size().height + labeled_separator_right->get_minimum_size().height;
+					int sep_ofs = Math::floor((h - sep_h) / 2.0);
 					labeled_separator_right->draw(ci, Rect2(Point2(content_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - content_right), sep_h)));
 				}
 			} else {
+				int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
+				int sep_ofs = Math::floor((h - sep_h) / 2.0);
 				separator->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(display_width, sep_h)));
 			}
 		}
@@ -624,23 +635,28 @@ void PopupMenu::_draw_items() {
 			}
 		}
 
-		// Text
 		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 		int outline_size = get_theme_constant(SNAME("outline_size"));
+
+		// Text
 		if (items[i].separator) {
+			Color font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
+			int separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
+
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (!rtl && !items[i].icon.is_null()) {
 					text_pos.x += icon_size.width + hseparation;
 				}
 
-				if (outline_size > 0 && font_outline_color.a > 0) {
-					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				if (separator_outline_size > 0 && font_separator_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, separator_outline_size, font_separator_outline_color);
 				}
 				items[i].text_buf->draw(ci, text_pos, font_separator_color);
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
+
 			if (rtl) {
 				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (outline_size > 0 && font_outline_color.a > 0) {
@@ -687,7 +703,7 @@ void PopupMenu::_draw_background() {
 void PopupMenu::_minimum_lifetime_timeout() {
 	close_allowed = true;
 	// If the mouse still isn't in this popup after timer expires, close.
-	if (!get_visible_rect().has_point(get_mouse_position())) {
+	if (!activated_by_keyboard && !get_visible_rect().has_point(get_mouse_position())) {
 		_close_pressed();
 	}
 }
@@ -713,8 +729,8 @@ void PopupMenu::_shape_item(int p_item) {
 	if (items.write[p_item].dirty) {
 		items.write[p_item].text_buf->clear();
 
-		Ref<Font> font = get_theme_font(SNAME("font"));
-		int font_size = get_theme_font_size(SNAME("font_size"));
+		Ref<Font> font = get_theme_font(items[p_item].separator ? SNAME("font_separator") : SNAME("font"));
+		int font_size = get_theme_font_size(items[p_item].separator ? SNAME("font_separator_size") : SNAME("font_size"));
 
 		if (items[p_item].text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			items.write[p_item].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -772,7 +788,7 @@ void PopupMenu::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// Only used when using operating system windows.
-			if (!is_embedded() && autohide_areas.size()) {
+			if (!activated_by_keyboard && !is_embedded() && autohide_areas.size()) {
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
 				mouse_pos -= get_position();
 

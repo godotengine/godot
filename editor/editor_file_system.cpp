@@ -218,81 +218,80 @@ void EditorFileSystem::_scan_filesystem() {
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
-	FileAccess *f = FileAccess::open(fscache, FileAccess::READ);
+	{
+		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
 
-	bool first = true;
-	if (f) {
-		//read the disk cache
-		while (!f->eof_reached()) {
-			String l = f->get_line().strip_edges();
-			if (first) {
-				if (first_scan) {
-					// only use this on first scan, afterwards it gets ignored
-					// this is so on first reimport we synchronize versions, then
-					// we don't care until editor restart. This is for usability mainly so
-					// your workflow is not killed after changing a setting by forceful reimporting
-					// everything there is.
-					filesystem_settings_version_for_import = l.strip_edges();
-					if (filesystem_settings_version_for_import != ResourceFormatImporter::get_singleton()->get_import_settings_hash()) {
-						revalidate_import_files = true;
+		bool first = true;
+		if (f.is_valid()) {
+			//read the disk cache
+			while (!f->eof_reached()) {
+				String l = f->get_line().strip_edges();
+				if (first) {
+					if (first_scan) {
+						// only use this on first scan, afterwards it gets ignored
+						// this is so on first reimport we synchronize versions, then
+						// we don't care until editor restart. This is for usability mainly so
+						// your workflow is not killed after changing a setting by forceful reimporting
+						// everything there is.
+						filesystem_settings_version_for_import = l.strip_edges();
+						if (filesystem_settings_version_for_import != ResourceFormatImporter::get_singleton()->get_import_settings_hash()) {
+							revalidate_import_files = true;
+						}
 					}
+					first = false;
+					continue;
 				}
-				first = false;
-				continue;
-			}
-			if (l.is_empty()) {
-				continue;
-			}
-
-			if (l.begins_with("::")) {
-				Vector<String> split = l.split("::");
-				ERR_CONTINUE(split.size() != 3);
-				String name = split[1];
-
-				cpath = name;
-
-			} else {
-				Vector<String> split = l.split("::");
-				ERR_CONTINUE(split.size() != 9);
-				String name = split[0];
-				String file;
-
-				file = name;
-				name = cpath.plus_file(name);
-
-				FileCache fc;
-				fc.type = split[1];
-				fc.uid = split[2].to_int();
-				fc.modification_time = split[3].to_int();
-				fc.import_modification_time = split[4].to_int();
-				fc.import_valid = split[5].to_int() != 0;
-				fc.import_group_file = split[6].strip_edges();
-				fc.script_class_name = split[7].get_slice("<>", 0);
-				fc.script_class_extends = split[7].get_slice("<>", 1);
-				fc.script_class_icon_path = split[7].get_slice("<>", 2);
-
-				String deps = split[8].strip_edges();
-				if (deps.length()) {
-					Vector<String> dp = deps.split("<>");
-					for (int i = 0; i < dp.size(); i++) {
-						String path = dp[i];
-						fc.deps.push_back(path);
-					}
+				if (l.is_empty()) {
+					continue;
 				}
 
-				file_cache[name] = fc;
+				if (l.begins_with("::")) {
+					Vector<String> split = l.split("::");
+					ERR_CONTINUE(split.size() != 3);
+					String name = split[1];
+
+					cpath = name;
+
+				} else {
+					Vector<String> split = l.split("::");
+					ERR_CONTINUE(split.size() != 9);
+					String name = split[0];
+					String file;
+
+					file = name;
+					name = cpath.plus_file(name);
+
+					FileCache fc;
+					fc.type = split[1];
+					fc.uid = split[2].to_int();
+					fc.modification_time = split[3].to_int();
+					fc.import_modification_time = split[4].to_int();
+					fc.import_valid = split[5].to_int() != 0;
+					fc.import_group_file = split[6].strip_edges();
+					fc.script_class_name = split[7].get_slice("<>", 0);
+					fc.script_class_extends = split[7].get_slice("<>", 1);
+					fc.script_class_icon_path = split[7].get_slice("<>", 2);
+
+					String deps = split[8].strip_edges();
+					if (deps.length()) {
+						Vector<String> dp = deps.split("<>");
+						for (int i = 0; i < dp.size(); i++) {
+							String path = dp[i];
+							fc.deps.push_back(path);
+						}
+					}
+
+					file_cache[name] = fc;
+				}
 			}
 		}
-
-		f->close();
-		memdelete(f);
 	}
 
 	String update_cache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 
 	if (FileAccess::exists(update_cache)) {
 		{
-			FileAccessRef f2 = FileAccess::open(update_cache, FileAccess::READ);
+			Ref<FileAccess> f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
 			while (!l.is_empty()) {
 				file_cache.erase(l); //erase cache for this, so it gets updated
@@ -300,7 +299,7 @@ void EditorFileSystem::_scan_filesystem() {
 			}
 		}
 
-		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		d->remove(update_cache); //bye bye update cache
 	}
 
@@ -314,13 +313,11 @@ void EditorFileSystem::_scan_filesystem() {
 	new_filesystem = memnew(EditorFileSystemDirectory);
 	new_filesystem->parent = nullptr;
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
 	_scan_new_dir(new_filesystem, d, sp);
 
 	file_cache.clear(); //clear caches, no longer needed
-
-	memdelete(d);
 
 	if (!first_scan) {
 		//on the first scan this is done from the main thread after re-importing
@@ -335,13 +332,11 @@ void EditorFileSystem::_save_filesystem_cache() {
 
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
 
-	FileAccess *f = FileAccess::open(fscache, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!f, "Cannot create file '" + fscache + "'. Check user write permissions.");
+	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 
 	f->store_line(filesystem_settings_version_for_import);
 	_save_filesystem_cache(filesystem, f);
-	f->close();
-	memdelete(f);
 }
 
 void EditorFileSystem::_thread_func(void *_userdata) {
@@ -364,9 +359,9 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (!f) { //no import file, do reimport
+	if (f.is_null()) { //no import file, do reimport
 		return true;
 	}
 
@@ -400,7 +395,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			break;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import:" + itos(lines) + "' error '" + error_text + "'.");
-			memdelete(f);
 			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
 		}
 
@@ -431,8 +425,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		}
 	}
 
-	memdelete(f);
-
 	if (importer_name == "keep") {
 		return false; //keep mode, do not reimport
 	}
@@ -453,8 +445,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
-	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
-	if (!md5s) { // No md5's stored for this resource
+	Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
+	if (md5s.is_null()) { // No md5's stored for this resource
 		return true;
 	}
 
@@ -472,7 +464,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			break;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import.md5:" + itos(lines) + "' error '" + error_text + "'.");
-			memdelete(md5s);
 			return false; // parse error
 		}
 		if (!assign.is_empty()) {
@@ -485,7 +476,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			}
 		}
 	}
-	memdelete(md5s);
 
 	//imported files are gone, reimport
 	for (const String &E : to_check) {
@@ -742,7 +732,7 @@ EditorFileSystem::ScanProgress EditorFileSystem::ScanProgress::get_sub(int p_cur
 	return sp;
 }
 
-void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress) {
+void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress) {
 	List<String> dirs;
 	List<String> files;
 
@@ -967,7 +957,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 		//then scan files and directories and check what's different
 
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 		Error ret = da->change_dir(cd);
 		ERR_FAIL_COND_MSG(ret != OK, "Cannot change to '" + cd + "' folder.");
@@ -998,10 +988,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 					efd->parent = p_dir;
 					efd->name = f;
-					DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+					Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 					d->change_dir(cd.plus_file(f));
 					_scan_new_dir(efd, d, p_progress.get_sub(1, 1));
-					memdelete(d);
 
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_DIR_ADD;
@@ -1137,7 +1126,7 @@ void EditorFileSystem::_delete_internal_files(String p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (const String &E : paths) {
 			da->remove(E);
 		}
@@ -1282,7 +1271,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem() {
 	return filesystem;
 }
 
-void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file) {
+void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file) {
 	if (!p_dir) {
 		return; //none
 	}
@@ -1467,8 +1456,8 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
-	FileAccessRef f = FileAccess::open(fscache, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!f, "Cannot create file '" + fscache + "'. Check user write permissions.");
+	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
 		f->store_line(E->get());
 	}
@@ -1713,78 +1702,78 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	for (const KeyValue<String, Map<StringName, Variant>> &E : source_file_options) {
 		const String &file = E.key;
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
-		FileAccessRef f = FileAccess::open(file + ".import", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
-
-		//write manually, as order matters ([remap] has to go first for performance).
-		f->store_line("[remap]");
-		f->store_line("");
-		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
-		int version = importer->get_format_version();
-		if (version > 0) {
-			f->store_line("importer_version=" + itos(version));
-		}
-		if (!importer->get_resource_type().is_empty()) {
-			f->store_line("type=\"" + importer->get_resource_type() + "\"");
-		}
-
 		Vector<String> dest_paths;
+		{
+			Ref<FileAccess> f = FileAccess::open(file + ".import", FileAccess::WRITE);
+			ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
 
-		if (err == OK) {
-			String path = base_path + "." + importer->get_save_extension();
-			f->store_line("path=\"" + path + "\"");
-			dest_paths.push_back(path);
-		}
-
-		f->store_line("group_file=" + Variant(p_group_file).get_construct_string());
-
-		if (err == OK) {
-			f->store_line("valid=true");
-		} else {
-			f->store_line("valid=false");
-		}
-		f->store_line("[deps]\n");
-
-		f->store_line("");
-
-		f->store_line("source_file=" + Variant(file).get_construct_string());
-		if (dest_paths.size()) {
-			Array dp;
-			for (int i = 0; i < dest_paths.size(); i++) {
-				dp.push_back(dest_paths[i]);
+			//write manually, as order matters ([remap] has to go first for performance).
+			f->store_line("[remap]");
+			f->store_line("");
+			f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+			int version = importer->get_format_version();
+			if (version > 0) {
+				f->store_line("importer_version=" + itos(version));
 			}
-			f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
-		}
-		f->store_line("[params]");
-		f->store_line("");
-
-		//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
-
-		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(file, &options);
-		//set default values
-		for (const ResourceImporter::ImportOption &F : options) {
-			String base = F.option.name;
-			Variant v = F.default_value;
-			if (source_file_options[file].has(base)) {
-				v = source_file_options[file][base];
+			if (!importer->get_resource_type().is_empty()) {
+				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
-			String value;
-			VariantWriter::write_to_string(v, value);
-			f->store_line(base + "=" + value);
-		}
 
-		f->close();
+			if (err == OK) {
+				String path = base_path + "." + importer->get_save_extension();
+				f->store_line("path=\"" + path + "\"");
+				dest_paths.push_back(path);
+			}
+
+			f->store_line("group_file=" + Variant(p_group_file).get_construct_string());
+
+			if (err == OK) {
+				f->store_line("valid=true");
+			} else {
+				f->store_line("valid=false");
+			}
+			f->store_line("[deps]\n");
+
+			f->store_line("");
+
+			f->store_line("source_file=" + Variant(file).get_construct_string());
+			if (dest_paths.size()) {
+				Array dp;
+				for (int i = 0; i < dest_paths.size(); i++) {
+					dp.push_back(dest_paths[i]);
+				}
+				f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
+			}
+			f->store_line("[params]");
+			f->store_line("");
+
+			//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
+
+			List<ResourceImporter::ImportOption> options;
+			importer->get_import_options(file, &options);
+			//set default values
+			for (const ResourceImporter::ImportOption &F : options) {
+				String base = F.option.name;
+				Variant v = F.default_value;
+				if (source_file_options[file].has(base)) {
+					v = source_file_options[file][base];
+				}
+				String value;
+				VariantWriter::write_to_string(v, value);
+				f->store_line(base + "=" + value);
+			}
+		}
 
 		// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
-		FileAccessRef md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(!md5s, ERR_FILE_CANT_OPEN, "Cannot open MD5 file '" + base_path + ".md5'.");
+		{
+			Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
+			ERR_FAIL_COND_V_MSG(md5s.is_null(), ERR_FILE_CANT_OPEN, "Cannot open MD5 file '" + base_path + ".md5'.");
 
-		md5s->store_line("source_md5=\"" + FileAccess::get_md5(file) + "\"");
-		if (dest_paths.size()) {
-			md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+			md5s->store_line("source_md5=\"" + FileAccess::get_md5(file) + "\"");
+			if (dest_paths.size()) {
+				md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+			}
 		}
-		md5s->close();
 
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
@@ -1930,106 +1919,104 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	//as import is complete, save the .import file
 
-	FileAccess *f = FileAccess::open(p_file + ".import", FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + p_file + ".import'.");
-
-	//write manually, as order matters ([remap] has to go first for performance).
-	f->store_line("[remap]");
-	f->store_line("");
-	f->store_line("importer=\"" + importer->get_importer_name() + "\"");
-	int version = importer->get_format_version();
-	if (version > 0) {
-		f->store_line("importer_version=" + itos(version));
-	}
-	if (!importer->get_resource_type().is_empty()) {
-		f->store_line("type=\"" + importer->get_resource_type() + "\"");
-	}
-
-	if (uid == ResourceUID::INVALID_ID) {
-		uid = ResourceUID::get_singleton()->create_id();
-	}
-
-	f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); //store in readable format
-
 	Vector<String> dest_paths;
+	{
+		Ref<FileAccess> f = FileAccess::open(p_file + ".import", FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_file + ".import'.");
 
-	if (err == OK) {
-		if (importer->get_save_extension().is_empty()) {
-			//no path
-		} else if (import_variants.size()) {
-			//import with variants
-			for (const String &E : import_variants) {
-				String path = base_path.c_escape() + "." + E + "." + importer->get_save_extension();
+		//write manually, as order matters ([remap] has to go first for performance).
+		f->store_line("[remap]");
+		f->store_line("");
+		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+		int version = importer->get_format_version();
+		if (version > 0) {
+			f->store_line("importer_version=" + itos(version));
+		}
+		if (!importer->get_resource_type().is_empty()) {
+			f->store_line("type=\"" + importer->get_resource_type() + "\"");
+		}
 
-				f->store_line("path." + E + "=\"" + path + "\"");
+		if (uid == ResourceUID::INVALID_ID) {
+			uid = ResourceUID::get_singleton()->create_id();
+		}
+
+		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); //store in readable format
+
+		if (err == OK) {
+			if (importer->get_save_extension().is_empty()) {
+				//no path
+			} else if (import_variants.size()) {
+				//import with variants
+				for (const String &E : import_variants) {
+					String path = base_path.c_escape() + "." + E + "." + importer->get_save_extension();
+
+					f->store_line("path." + E + "=\"" + path + "\"");
+					dest_paths.push_back(path);
+				}
+			} else {
+				String path = base_path + "." + importer->get_save_extension();
+				f->store_line("path=\"" + path + "\"");
 				dest_paths.push_back(path);
 			}
+
 		} else {
-			String path = base_path + "." + importer->get_save_extension();
-			f->store_line("path=\"" + path + "\"");
-			dest_paths.push_back(path);
+			f->store_line("valid=false");
 		}
 
-	} else {
-		f->store_line("valid=false");
-	}
-
-	if (metadata != Variant()) {
-		f->store_line("metadata=" + metadata.get_construct_string());
-	}
-
-	f->store_line("");
-
-	f->store_line("[deps]\n");
-
-	if (gen_files.size()) {
-		Array genf;
-		for (const String &E : gen_files) {
-			genf.push_back(E);
-			dest_paths.push_back(E);
+		if (metadata != Variant()) {
+			f->store_line("metadata=" + metadata.get_construct_string());
 		}
 
-		String value;
-		VariantWriter::write_to_string(genf, value);
-		f->store_line("files=" + value);
 		f->store_line("");
-	}
 
-	f->store_line("source_file=" + Variant(p_file).get_construct_string());
+		f->store_line("[deps]\n");
 
-	if (dest_paths.size()) {
-		Array dp;
-		for (int i = 0; i < dest_paths.size(); i++) {
-			dp.push_back(dest_paths[i]);
+		if (gen_files.size()) {
+			Array genf;
+			for (const String &E : gen_files) {
+				genf.push_back(E);
+				dest_paths.push_back(E);
+			}
+
+			String value;
+			VariantWriter::write_to_string(genf, value);
+			f->store_line("files=" + value);
+			f->store_line("");
 		}
-		f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
+
+		f->store_line("source_file=" + Variant(p_file).get_construct_string());
+
+		if (dest_paths.size()) {
+			Array dp;
+			for (int i = 0; i < dest_paths.size(); i++) {
+				dp.push_back(dest_paths[i]);
+			}
+			f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
+		}
+
+		f->store_line("[params]");
+		f->store_line("");
+
+		//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
+
+		for (const ResourceImporter::ImportOption &E : opts) {
+			String base = E.option.name;
+			String value;
+			VariantWriter::write_to_string(params[base], value);
+			f->store_line(base + "=" + value);
+		}
 	}
-
-	f->store_line("[params]");
-	f->store_line("");
-
-	//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
-
-	for (const ResourceImporter::ImportOption &E : opts) {
-		String base = E.option.name;
-		String value;
-		VariantWriter::write_to_string(params[base], value);
-		f->store_line(base + "=" + value);
-	}
-
-	f->close();
-	memdelete(f);
 
 	// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
-	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!md5s, "Cannot open MD5 file '" + base_path + ".md5'.");
+	{
+		Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(md5s.is_null(), "Cannot open MD5 file '" + base_path + ".md5'.");
 
-	md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
-	if (dest_paths.size()) {
-		md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+		md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
+		if (dest_paths.size()) {
+			md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+		}
 	}
-	md5s->close();
-	memdelete(md5s);
 
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
@@ -2342,14 +2329,14 @@ bool EditorFileSystem::_scan_extensions() {
 	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
 	if (extensions.size()) {
 		if (extensions_added.size() || extensions_removed.size()) { //extensions were added or removed
-			FileAccessRef f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
 			for (const String &E : extensions) {
 				f->store_line(E);
 			}
 		}
 	} else {
 		if (loaded_extensions.size() || FileAccess::exists(extension_list_config_file)) { //extensions were removed
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			da->remove(extension_list_config_file);
 		}
 	}
@@ -2438,7 +2425,7 @@ EditorFileSystem::EditorFileSystem() {
 	new_filesystem = nullptr;
 
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	using_fat32_or_exfat = (da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "exFAT");
 
 	scan_total = 0;

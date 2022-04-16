@@ -85,26 +85,26 @@ private:
 		ACTION_DELETE_ALL_BREAKPOINTS,
 	};
 
-	AcceptDialog *msgdialog;
+	AcceptDialog *msgdialog = nullptr;
 
-	LineEdit *clicked_ctrl;
-	LineEdit *clicked_ctrl_type;
-	LineEdit *live_edit_root;
-	Button *le_set;
-	Button *le_clear;
-	Button *export_csv;
+	LineEdit *clicked_ctrl = nullptr;
+	LineEdit *clicked_ctrl_type = nullptr;
+	LineEdit *live_edit_root = nullptr;
+	Button *le_set = nullptr;
+	Button *le_clear = nullptr;
+	Button *export_csv = nullptr;
 
-	VBoxContainer *errors_tab;
-	Tree *error_tree;
-	Button *expand_all_button;
-	Button *collapse_all_button;
-	Button *clear_button;
-	PopupMenu *item_menu;
+	VBoxContainer *errors_tab = nullptr;
+	Tree *error_tree = nullptr;
+	Button *expand_all_button = nullptr;
+	Button *collapse_all_button = nullptr;
+	Button *clear_button = nullptr;
+	PopupMenu *item_menu = nullptr;
 
-	Tree *breakpoints_tree;
-	PopupMenu *breakpoints_menu;
+	Tree *breakpoints_tree = nullptr;
+	PopupMenu *breakpoints_menu = nullptr;
 
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 	enum FileDialogPurpose {
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
@@ -117,31 +117,31 @@ private:
 	bool skip_breakpoints_value = false;
 	Ref<Script> stack_script;
 
-	TabContainer *tabs;
+	TabContainer *tabs = nullptr;
 
-	Label *reason;
+	Label *reason = nullptr;
 
-	Button *skip_breakpoints;
-	Button *copy;
-	Button *step;
-	Button *next;
-	Button *dobreak;
-	Button *docontinue;
+	Button *skip_breakpoints = nullptr;
+	Button *copy = nullptr;
+	Button *step = nullptr;
+	Button *next = nullptr;
+	Button *dobreak = nullptr;
+	Button *docontinue = nullptr;
 	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
 	// Each debugger should have it's tree in the future I guess.
 	const Tree *editor_remote_tree = nullptr;
 
 	Map<int, String> profiler_signature;
 
-	Tree *vmem_tree;
-	Button *vmem_refresh;
-	Button *vmem_export;
-	LineEdit *vmem_total;
+	Tree *vmem_tree = nullptr;
+	Button *vmem_refresh = nullptr;
+	Button *vmem_export = nullptr;
+	LineEdit *vmem_total = nullptr;
 
-	Tree *stack_dump;
+	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
-	EditorDebuggerInspector *inspector;
-	SceneDebuggerTree *scene_tree;
+	EditorDebuggerInspector *inspector = nullptr;
+	SceneDebuggerTree *scene_tree = nullptr;
 
 	Ref<RemoteDebuggerPeer> peer;
 
@@ -149,10 +149,10 @@ private:
 	int last_path_id;
 	Map<String, int> res_path_cache;
 
-	EditorProfiler *profiler;
-	EditorVisualProfiler *visual_profiler;
-	EditorNetworkProfiler *network_profiler;
-	EditorPerformanceProfiler *performance_profiler;
+	EditorProfiler *profiler = nullptr;
+	EditorVisualProfiler *visual_profiler = nullptr;
+	EditorNetworkProfiler *network_profiler = nullptr;
+	EditorPerformanceProfiler *performance_profiler = nullptr;
 
 	OS::ProcessID remote_pid = 0;
 	bool breaked = false;

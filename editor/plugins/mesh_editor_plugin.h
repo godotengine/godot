@@ -44,17 +44,17 @@ class MeshEditor : public SubViewportContainer {
 	float rot_x;
 	float rot_y;
 
-	SubViewport *viewport;
-	MeshInstance3D *mesh_instance;
-	Node3D *rotation;
-	DirectionalLight3D *light1;
-	DirectionalLight3D *light2;
-	Camera3D *camera;
+	SubViewport *viewport = nullptr;
+	MeshInstance3D *mesh_instance = nullptr;
+	Node3D *rotation = nullptr;
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
+	Camera3D *camera = nullptr;
 
 	Ref<Mesh> mesh;
 
-	TextureButton *light_1_switch;
-	TextureButton *light_2_switch;
+	TextureButton *light_1_switch = nullptr;
+	TextureButton *light_2_switch = nullptr;
 
 	void _button_pressed(Node *p_button);
 	bool first_enter;

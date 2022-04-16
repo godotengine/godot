@@ -195,7 +195,7 @@ void joypad::add_hid_element(IOHIDElementRef p_element) {
 }
 
 static void hid_element_added(const void *p_value, void *p_parameter) {
-	joypad *joy = (joypad *)p_parameter;
+	joypad *joy = static_cast<joypad *>(p_parameter);
 	joy->add_hid_element((IOHIDElementRef)p_value);
 }
 
@@ -540,10 +540,10 @@ static CFDictionaryRef create_match_dictionary(const UInt32 page, const UInt32 u
 	CFDictionaryRef retval = nullptr;
 	CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
 	CFNumberRef usageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
-	const void *keys[2] = { (void *)CFSTR(kIOHIDDeviceUsagePageKey), (void *)CFSTR(kIOHIDDeviceUsageKey) };
-	const void *vals[2] = { (void *)pageNumRef, (void *)usageNumRef };
 
 	if (pageNumRef && usageNumRef) {
+		const void *keys[2] = { (void *)CFSTR(kIOHIDDeviceUsagePageKey), (void *)CFSTR(kIOHIDDeviceUsageKey) };
+		const void *vals[2] = { (void *)pageNumRef, (void *)usageNumRef };
 		retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 	}
 

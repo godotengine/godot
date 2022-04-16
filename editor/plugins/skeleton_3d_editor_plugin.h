@@ -60,10 +60,10 @@ class BoneTransformEditor : public VBoxContainer {
 
 	Rect2 background_rects[5];
 
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 	// String property;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	bool toggle_enabled = false;
 	bool updating = false;
@@ -108,26 +108,26 @@ class Skeleton3DEditor : public VBoxContainer {
 		Transform3D relative_rest; // Relative to skeleton node.
 	};
 
-	EditorInspectorPluginSkeleton *editor_plugin;
+	EditorInspectorPluginSkeleton *editor_plugin = nullptr;
 
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 
 	Tree *joint_tree = nullptr;
 	BoneTransformEditor *rest_editor = nullptr;
 	BoneTransformEditor *pose_editor = nullptr;
 
-	VSeparator *separator;
+	VSeparator *separator = nullptr;
 	MenuButton *skeleton_options = nullptr;
-	Button *edit_mode_button;
+	Button *edit_mode_button = nullptr;
 
 	bool edit_mode = false;
 
-	HBoxContainer *animation_hb;
-	Button *key_loc_button;
-	Button *key_rot_button;
-	Button *key_scale_button;
-	Button *key_insert_button;
-	Button *key_insert_all_button;
+	HBoxContainer *animation_hb = nullptr;
+	Button *key_loc_button = nullptr;
+	Button *key_rot_button = nullptr;
+	Button *key_scale_button = nullptr;
+	Button *key_insert_button = nullptr;
+	Button *key_insert_all_button = nullptr;
 
 	EditorFileDialog *file_dialog = nullptr;
 
@@ -163,7 +163,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void set_bone_options_enabled(const bool p_bone_options_enabled);
 
 	// Handle.
-	MeshInstance3D *handles_mesh_instance;
+	MeshInstance3D *handles_mesh_instance = nullptr;
 	Ref<ImmediateMesh> handles_mesh;
 	Ref<ShaderMaterial> handle_material;
 	Ref<Shader> handle_shader;
@@ -220,7 +220,7 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 
 	friend class Skeleton3DEditorPlugin;
 
-	Skeleton3DEditor *skel_editor;
+	Skeleton3DEditor *skel_editor = nullptr;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
@@ -230,7 +230,7 @@ public:
 class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginSkeleton *skeleton_plugin;
+	EditorInspectorPluginSkeleton *skeleton_plugin = nullptr;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;

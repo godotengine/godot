@@ -35,8 +35,8 @@
 #ifdef MODULE_REGEX_ENABLED
 
 bool LipO::is_lipo(const String &p_path) {
-	FileAccessRef fb = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fb, false, vformat("LipO: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 	uint32_t magic = fb->get_32();
 	return (magic == 0xbebafeca || magic == 0xcafebabe || magic == 0xbfbafeca || magic == 0xcafebabf);
 }
@@ -45,7 +45,7 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 	close();
 
 	fa = FileAccess::open(p_output_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, false, vformat("LipO: Can't open file: \"%s\".", p_output_path));
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_output_path));
 
 	uint64_t max_size = 0;
 	for (int i = 0; i < p_files.size(); i++) {
@@ -64,8 +64,8 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 
 		archs.push_back(arch);
 
-		FileAccessRef fb = FileAccess::open(p_files[i], FileAccess::READ);
-		if (!fb) {
+		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
+		if (fb.is_null()) {
 			close();
 			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s.\"", p_files[i]));
 		}
@@ -101,8 +101,8 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 
 	// Write files and padding.
 	for (int i = 0; i < archs.size(); i++) {
-		FileAccessRef fb = FileAccess::open(p_files[i], FileAccess::READ);
-		if (!fb) {
+		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
+		if (fb.is_null()) {
 			close();
 			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s.\"", p_files[i]));
 		}
@@ -123,7 +123,6 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 		if (br > 0) {
 			fa->store_buffer(step, br);
 		}
-		fb->close();
 	}
 	return true;
 }
@@ -132,7 +131,7 @@ bool LipO::open_file(const String &p_path) {
 	close();
 
 	fa = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, false, vformat("LipO: Can't open file: \"%s\".", p_path));
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 
 	uint32_t magic = fa->get_32();
 	if (magic == 0xbebafeca) {
@@ -197,16 +196,16 @@ bool LipO::open_file(const String &p_path) {
 }
 
 int LipO::get_arch_count() const {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "LipO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "LipO: File not opened.");
 	return archs.size();
 }
 
 bool LipO::extract_arch(int p_index, const String &p_path) {
-	ERR_FAIL_COND_V_MSG(!fa, false, "LipO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "LipO: File not opened.");
 	ERR_FAIL_INDEX_V(p_index, archs.size(), false);
 
-	FileAccessRef fb = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!fb, false, vformat("LipO: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 
 	fa->seek(archs[p_index].offset);
 
@@ -223,16 +222,10 @@ bool LipO::extract_arch(int p_index, const String &p_path) {
 	if (br > 0) {
 		fb->store_buffer(step, br);
 	}
-	fb->close();
 	return true;
 }
 
 void LipO::close() {
-	if (fa) {
-		fa->close();
-		memdelete(fa);
-		fa = nullptr;
-	}
 	archs.clear();
 }
 

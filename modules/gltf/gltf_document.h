@@ -196,7 +196,7 @@ private:
 	Ref<Texture2D> _get_texture(Ref<GLTFState> state,
 			const GLTFTextureIndex p_texture);
 	Error _parse_json(const String &p_path, Ref<GLTFState> state);
-	Error _parse_glb(FileAccess *f, Ref<GLTFState> state);
+	Error _parse_glb(Ref<FileAccess> f, Ref<GLTFState> state);
 	void _compute_node_heights(Ref<GLTFState> state);
 	Error _parse_buffers(Ref<GLTFState> state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> state);
@@ -457,7 +457,7 @@ public:
 	void _convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			String p_animation_track_name);
 	Error _serialize(Ref<GLTFState> state, const String &p_path);
-	Error _parse(Ref<GLTFState> state, String p_path, FileAccess *f, int p_bake_fps);
+	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps);
 };
 
 #endif // GLTF_DOCUMENT_H

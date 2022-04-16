@@ -36,14 +36,14 @@
 #include "i_mono_class_member.h"
 
 class GDMonoProperty : public IMonoClassMember {
-	GDMonoClass *owner;
-	MonoProperty *mono_property;
+	GDMonoClass *owner = nullptr;
+	MonoProperty *mono_property = nullptr;
 
 	StringName name;
 	ManagedType type;
 
 	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+	MonoCustomAttrInfo *attributes = nullptr;
 
 	unsigned int param_buffer_size;
 

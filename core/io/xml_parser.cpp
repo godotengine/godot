@@ -472,7 +472,7 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 
 Error XMLParser::open(const String &p_path) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
@@ -487,8 +487,6 @@ Error XMLParser::open(const String &p_path) {
 	file->get_buffer((uint8_t *)data, length);
 	data[length] = 0;
 	P = data;
-
-	memdelete(file);
 
 	return OK;
 }

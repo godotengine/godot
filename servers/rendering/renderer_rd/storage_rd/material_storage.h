@@ -73,7 +73,7 @@ typedef ShaderData *(*ShaderDataRequestFunction)();
 struct Material;
 
 struct Shader {
-	ShaderData *data;
+	ShaderData *data = nullptr;
 	String code;
 	ShaderType type;
 	Map<StringName, Map<int, RID>> default_texture_parameter;
@@ -177,9 +177,9 @@ struct GlobalVariables {
 	List<RID> materials_using_texture;
 
 	RID buffer;
-	Value *buffer_values;
-	ValueUsage *buffer_usage;
-	bool *buffer_dirty_regions;
+	Value *buffer_values = nullptr;
+	ValueUsage *buffer_usage = nullptr;
+	bool *buffer_dirty_regions = nullptr;
 	uint32_t buffer_dirty_region_count = 0;
 
 	uint32_t buffer_size;

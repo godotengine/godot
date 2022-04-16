@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_shader_lang.h                                                   */
+/*  animation_library.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_SHADER_LANG_H
-#define TEST_SHADER_LANG_H
+#ifndef ANIMATION_LIBRARY_H
+#define ANIMATION_LIBRARY_H
 
-class MainLoop;
+#include "core/variant/typed_array.h"
+#include "scene/resources/animation.h"
 
-namespace TestShaderLang {
+class AnimationLibrary : public Resource {
+	GDCLASS(AnimationLibrary, Resource)
 
-MainLoop *test();
-}
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
 
-#endif // TEST_SHADER_LANG_H
+	TypedArray<StringName> _get_animation_list() const;
+
+	friend class AnimationPlayer; //for faster access
+	Map<StringName, Ref<Animation>> animations;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error add_animation(const StringName &p_name, const Ref<Animation> &p_animation);
+	void remove_animation(const StringName &p_name);
+	void rename_animation(const StringName &p_name, const StringName &p_new_name);
+	bool has_animation(const StringName &p_name) const;
+	Ref<Animation> get_animation(const StringName &p_name) const;
+	void get_animation_list(List<StringName> *p_animations) const;
+
+	AnimationLibrary();
+};
+
+#endif // ANIMATIONLIBRARY_H

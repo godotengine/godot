@@ -349,7 +349,7 @@ public:
 class File : public RefCounted {
 	GDCLASS(File, RefCounted);
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	bool big_endian = false;
 
 protected:
@@ -442,12 +442,11 @@ public:
 	uint64_t get_modified_time(const String &p_file) const;
 
 	File() {}
-	virtual ~File();
 };
 
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
-	DirAccess *d;
+	Ref<DirAccess> d;
 
 	bool dir_open = false;
 	bool include_navigational = false;
@@ -495,7 +494,6 @@ public:
 	Error remove(String p_name);
 
 	Directory();
-	virtual ~Directory();
 };
 
 class Marshalls : public Object {

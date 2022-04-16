@@ -95,11 +95,11 @@ class CustomPropertyEditor : public PopupPanel {
 		EASING_OUT_IN
 	};
 
-	PopupMenu *menu;
-	SceneTreeDialog *scene_tree;
-	EditorFileDialog *file;
-	EditorLocaleDialog *locale;
-	ConfirmationDialog *error;
+	PopupMenu *menu = nullptr;
+	SceneTreeDialog *scene_tree = nullptr;
+	EditorFileDialog *file = nullptr;
+	EditorLocaleDialog *locale = nullptr;
+	ConfirmationDialog *error = nullptr;
 	String name;
 	Variant::Type type;
 	Variant v;
@@ -107,34 +107,34 @@ class CustomPropertyEditor : public PopupPanel {
 	int hint;
 	String hint_text;
 	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4];
-	VBoxContainer *value_vbox;
+	VBoxContainer *value_vbox = nullptr;
 	LineEdit *value_editor[MAX_VALUE_EDITORS];
 	int focused_value_editor;
 	Label *value_label[MAX_VALUE_EDITORS];
 	HScrollBar *scroll[4];
-	HBoxContainer *action_hboxes;
+	HBoxContainer *action_hboxes = nullptr;
 	Button *action_buttons[MAX_ACTION_BUTTONS];
-	MenuButton *type_button;
+	MenuButton *type_button = nullptr;
 	Vector<String> inheritors_array;
-	TextureRect *texture_preview;
-	ColorPicker *color_picker;
-	TextEdit *text_edit;
+	TextureRect *texture_preview = nullptr;
+	ColorPicker *color_picker = nullptr;
+	TextEdit *text_edit = nullptr;
 	bool read_only = false;
 	bool picking_viewport;
-	GridContainer *checks20gc;
+	GridContainer *checks20gc = nullptr;
 	CheckBox *checks20[20];
-	SpinBox *spinbox;
-	HSlider *slider;
+	SpinBox *spinbox = nullptr;
+	HSlider *slider = nullptr;
 
-	Control *easing_draw;
-	CreateDialog *create_dialog;
-	PropertySelector *property_select;
+	Control *easing_draw = nullptr;
+	CreateDialog *create_dialog = nullptr;
+	PropertySelector *property_select = nullptr;
 
-	Object *owner;
+	Object *owner = nullptr;
 
 	bool updating = false;
 
-	PropertyValueEvaluator *evaluator;
+	PropertyValueEvaluator *evaluator = nullptr;
 
 	void _text_edit_changed();
 	void _file_selected(String p_file);

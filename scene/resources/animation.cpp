@@ -3428,7 +3428,6 @@ real_t Animation::bezier_track_interpolate(int p_track, double p_time) const {
 	real_t duration = bt->values[idx + 1].time - bt->values[idx].time; // time duration between our two keyframes
 	real_t low = 0.0; // 0% of the current animation segment
 	real_t high = 1.0; // 100% of the current animation segment
-	real_t middle;
 
 	Vector2 start(0, bt->values[idx].value.value);
 	Vector2 start_out = start + bt->values[idx].value.out_handle;
@@ -3437,7 +3436,7 @@ real_t Animation::bezier_track_interpolate(int p_track, double p_time) const {
 
 	//narrow high and low as much as possible
 	for (int i = 0; i < iterations; i++) {
-		middle = (low + high) / 2;
+		real_t middle = (low + high) / 2;
 
 		Vector2 interp = _bezier_interp(middle, start, start_out, end_in, end);
 
@@ -3829,7 +3828,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compress", "page_size", "fps", "split_tolerance"), &Animation::compress, DEFVAL(8192), DEFVAL(120), DEFVAL(4.0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode"), "set_loop_mode", "get_loop_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_step", "get_step");
 
 	ADD_SIGNAL(MethodInfo("tracks_changed"));

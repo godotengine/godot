@@ -47,8 +47,6 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
 			const Map<StringName, Variant> &p_options, int p_bake_fps,
 			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags,
-			const Map<StringName, Variant> &p_options, int p_bake_fps) override;
 };
 
 #endif // TOOLS_ENABLED

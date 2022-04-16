@@ -576,10 +576,10 @@ void MaterialStorage::_update_material(Material *p_material) {
 	}
 
 	{
-		bool can_cast_shadow = false;
-		bool is_animated = false;
-
 		if (p_material->shader && p_material->shader->mode == RS::SHADER_SPATIAL) {
+			bool can_cast_shadow = false;
+			bool is_animated = false;
+
 			if (p_material->shader->spatial.blend_mode == Shader::Spatial::BLEND_MODE_MIX &&
 					(!p_material->shader->spatial.uses_alpha || p_material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 				can_cast_shadow = true;

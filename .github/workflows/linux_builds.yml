@@ -193,14 +193,6 @@ jobs:
           cp -f extension_api.json godot-cpp/godot-headers/
           cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
 
-      # Build godot-cpp library
-      - name: Build godot-cpp library
-        if: ${{ matrix.godot-cpp-test }}
-        run: |
-          cd godot-cpp
-          scons target=${{ matrix.target }} generate_bindings=yes -j2
-          cd ..
-
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension
         if: ${{ matrix.godot-cpp-test }}

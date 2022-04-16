@@ -84,6 +84,17 @@
 				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
 			</description>
 		</method>
+		<method name="_shortcut_input" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<description>
+				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
+				It is only called if shortcut processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_shortcut_input].
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
+				This method can be used to handle shortcuts.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+			</description>
+		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
@@ -102,6 +113,7 @@
 				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
+				This method can be used to handle Unicode character input with [kbd]Alt[/kbd], [kbd]Alt + Ctrl[/kbd], and [kbd]Alt + Shift[/kbd] modifiers, after shortcuts were handled.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
@@ -462,6 +474,12 @@
 				Returns [code]true[/code] if internal processing is enabled (see [method set_process_internal]).
 			</description>
 		</method>
+		<method name="is_processing_shortcut_input" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is processing shortcuts (see [method set_process_shortcut_input]).
+			</description>
+		</method>
 		<method name="is_processing_unhandled_input" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -673,6 +691,13 @@
 				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
 			</description>
 		</method>
+		<method name="set_process_shortcut_input">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				Enables shortcut processing. Enabled automatically if [method _shortcut_input] is overridden. Any calls to this before [method _ready] will be ignored.
+			</description>
+		</method>
 		<method name="set_process_unhandled_input">
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
@@ -707,7 +732,7 @@
 			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
 		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
-			Add a custom description to a node.
+			Add a custom description to a node. It will be displayed in a tooltip when hovered in editor's scene tree.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).

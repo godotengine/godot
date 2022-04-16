@@ -57,11 +57,11 @@ private:
 	ObjectID tile_map_id;
 	Ref<TileSet> tile_set;
 
-	Button *tilemap_editor_button;
-	TileMapEditor *tilemap_editor;
+	Button *tilemap_editor_button = nullptr;
+	TileMapEditor *tilemap_editor = nullptr;
 
-	Button *tileset_editor_button;
-	TileSetEditor *tileset_editor;
+	Button *tileset_editor_button = nullptr;
+	TileSetEditor *tileset_editor = nullptr;
 
 	void _update_editors();
 

@@ -134,7 +134,7 @@ private:
 
 	Vector<TreeItem *> children_cache;
 	bool is_root = false; // for tree root
-	Tree *tree; // tree (for reference)
+	Tree *tree = nullptr; // tree (for reference)
 
 	TreeItem(Tree *p_tree);
 
@@ -379,6 +379,9 @@ private:
 	TreeItem *selected_item = nullptr;
 	TreeItem *edited_item = nullptr;
 
+	TreeItem *popup_pressing_edited_item = nullptr; // Candidate.
+	int popup_pressing_edited_item_column = -1;
+
 	TreeItem *drop_mode_over = nullptr;
 	int drop_mode_section = 0;
 
@@ -428,18 +431,18 @@ private:
 
 	bool show_column_titles = false;
 
-	VBoxContainer *popup_editor_vb;
+	VBoxContainer *popup_editor_vb = nullptr;
 
-	Popup *popup_editor;
+	Popup *popup_editor = nullptr;
 	LineEdit *text_editor = nullptr;
-	HSlider *value_editor;
+	HSlider *value_editor = nullptr;
 	bool updating_value_editor = false;
 	uint64_t focus_in_id = 0;
 	PopupMenu *popup_menu = nullptr;
 
 	Vector<ColumnInfo> columns;
 
-	Timer *range_click_timer;
+	Timer *range_click_timer = nullptr;
 	TreeItem *range_item_last = nullptr;
 	bool range_up_last = false;
 	void _range_click_timeout();
@@ -553,8 +556,8 @@ private:
 	int _get_title_button_height() const;
 
 	void _scroll_moved(float p_value);
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	bool h_scroll_enabled = true;
 	bool v_scroll_enabled = true;
@@ -673,7 +676,7 @@ public:
 	Rect2 get_custom_popup_rect() const;
 
 	int get_item_offset(TreeItem *p_item) const;
-	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1) const;
+	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
 	bool edit_selected();
 	bool is_editing();
 

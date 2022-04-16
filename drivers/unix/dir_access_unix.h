@@ -41,9 +41,9 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
-	DIR *dir_stream;
+	DIR *dir_stream = nullptr;
 
-	static DirAccess *create_fs();
+	static Ref<DirAccess> create_fs();
 
 	String current_dir;
 	bool _cisdir;
@@ -67,7 +67,7 @@ public:
 	virtual bool drives_are_shortcuts();
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true) const; ///< return current dir location
 	virtual Error make_dir(String p_dir);
 
 	virtual bool file_exists(String p_file);

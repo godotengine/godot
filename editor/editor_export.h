@@ -184,7 +184,7 @@ private:
 	};
 
 	struct PackData {
-		FileAccess *f = nullptr;
+		Ref<FileAccess> f;
 		Vector<SavedData> file_ofs;
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
@@ -207,7 +207,7 @@ private:
 	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
-	void _edit_files_with_filter(DirAccess *da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude);
+	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude);
 	void _edit_filter_list(Set<String> &r_list, const String &p_filter, bool exclude);
 
 	static Error _add_shared_object(void *p_userdata, const SharedObject &p_so);
@@ -380,7 +380,7 @@ class EditorExport : public Node {
 
 	StringName _export_presets_updated;
 
-	Timer *save_timer;
+	Timer *save_timer = nullptr;
 	bool block_save = false;
 
 	static EditorExport *singleton;

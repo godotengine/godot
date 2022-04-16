@@ -32,6 +32,7 @@
 #define RICH_TEXT_LABEL_H
 
 #include "rich_text_effect.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -89,6 +90,11 @@ public:
 		VC_GLYPHS_AUTO,
 		VC_GLYPHS_LTR,
 		VC_GLYPHS_RTL,
+	};
+
+	enum MenuItems {
+		MENU_COPY,
+		MENU_SELECT_ALL,
 	};
 
 protected:
@@ -420,6 +426,15 @@ private:
 	Selection selection;
 	bool deselect_on_focus_loss_enabled = true;
 
+	bool context_menu_enabled = false;
+	bool shortcut_keys_enabled = true;
+
+	// Context menu.
+	PopupMenu *menu = nullptr;
+	void _generate_context_menu();
+	Key _get_menu_action_accelerator(const String &p_action);
+	void _menu_option(int p_option);
+
 	int visible_characters = -1;
 	float percent_visible = 1.0;
 	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
@@ -435,7 +450,7 @@ private:
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
-	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
+	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false);
 
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
@@ -555,6 +570,12 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_context_menu_enabled(bool p_enabled);
+	bool is_context_menu_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
+
 	void set_fit_content_height(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
 
@@ -584,10 +605,15 @@ public:
 	int get_selection_from() const;
 	int get_selection_to() const;
 	String get_selected_text() const;
+	void select_all();
 	void selection_copy();
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
+
+	// Context menu.
+	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void parse_bbcode(const String &p_bbcode);
 	void append_text(const String &p_bbcode);

@@ -517,7 +517,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		ambient_color_sky_mix = env->ambient_sky_contribution;
 		const float ambient_energy = env->ambient_light_energy;
 		ambient_color = env->ambient_light;
-		ambient_color = ambient_color.to_linear();
+		ambient_color = ambient_color.srgb_to_linear();
 		ambient_color.r *= ambient_energy;
 		ambient_color.g *= ambient_energy;
 		ambient_color.b *= ambient_energy;
@@ -536,7 +536,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	} else {
 		const float bg_energy = env->bg_energy;
 		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? storage->get_default_clear_color() : env->bg_color);
-		panorama_color = panorama_color.to_linear();
+		panorama_color = panorama_color.srgb_to_linear();
 		panorama_color.r *= bg_energy;
 		panorama_color.g *= bg_energy;
 		panorama_color.b *= bg_energy;
@@ -3245,7 +3245,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		reflection_ubo.exterior = !storage->reflection_probe_is_interior(base_probe);
 		reflection_ubo.box_project = storage->reflection_probe_is_box_projection(base_probe);
 
-		Color ambient_linear = storage->reflection_probe_get_ambient_color(base_probe).to_linear();
+		Color ambient_linear = storage->reflection_probe_get_ambient_color(base_probe).srgb_to_linear();
 		float interior_ambient_energy = storage->reflection_probe_get_ambient_color_energy(base_probe);
 		reflection_ubo.ambient[0] = ambient_linear.r * interior_ambient_energy;
 		reflection_ubo.ambient[1] = ambient_linear.g * interior_ambient_energy;
@@ -3312,7 +3312,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY) * Math_PI;
 
-				Color linear_col = storage->light_get_color(base).to_linear();
+				Color linear_col = storage->light_get_color(base).srgb_to_linear();
 				light_data.color[0] = linear_col.r;
 				light_data.color[1] = linear_col.g;
 				light_data.color[2] = linear_col.b;
@@ -3491,7 +3491,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		Transform3D light_transform = li->transform;
 
 		float sign = storage->light_is_negative(base) ? -1 : 1;
-		Color linear_col = storage->light_get_color(base).to_linear();
+		Color linear_col = storage->light_get_color(base).srgb_to_linear();
 
 		light_data.attenuation = storage->light_get_param(base, RS::LIGHT_PARAM_ATTENUATION);
 
@@ -3865,7 +3865,7 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	Error err = scene_singleton->volumetric_fog.compiler.compile(RS::SHADER_FOG, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Fog shader compilation failed.");
@@ -3966,7 +3966,7 @@ Variant RendererSceneRenderRD::FogShaderData::get_default_parameter(const String
 }
 
 RS::ShaderNativeSourceCode RendererSceneRenderRD::FogShaderData::get_native_source_code() const {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	return scene_singleton->volumetric_fog.shader.version_get_native_source_code(version);
 }
@@ -3976,7 +3976,7 @@ RendererSceneRenderRD::FogShaderData::FogShaderData() {
 }
 
 RendererSceneRenderRD::FogShaderData::~FogShaderData() {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 	ERR_FAIL_COND(!scene_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -3988,7 +3988,7 @@ RendererSceneRenderRD::FogShaderData::~FogShaderData() {
 // Fog material
 
 bool RendererSceneRenderRD::FogMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RendererSceneRenderRD *scene_singleton = (RendererSceneRenderRD *)RendererSceneRenderRD::singleton;
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	uniform_set_updated = true;
 
@@ -4276,7 +4276,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			FogMaterialData *material = nullptr;
 
 			if (fog_material.is_valid()) {
-				material = (FogMaterialData *)material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG);
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
 				if (!material || !material->shader_data->valid) {
 					material = nullptr;
 				}
@@ -4284,7 +4284,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			if (!material) {
 				fog_material = volumetric_fog.default_material;
-				material = (FogMaterialData *)material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG);
+				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::SHADER_TYPE_FOG));
 			}
 
 			ERR_FAIL_COND(!material);
@@ -4641,7 +4641,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	params.fog_frustum_end = fog_end;
 
-	Color ambient_color = env->ambient_light.to_linear();
+	Color ambient_color = env->ambient_light.srgb_to_linear();
 	params.ambient_color[0] = ambient_color.r;
 	params.ambient_color[1] = ambient_color.g;
 	params.ambient_color[2] = ambient_color.b;
@@ -4653,13 +4653,13 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 	params.directional_light_count = p_directional_light_count;
 
-	Color emission = env->volumetric_fog_emission.to_linear();
+	Color emission = env->volumetric_fog_emission.srgb_to_linear();
 	params.base_emission[0] = emission.r * env->volumetric_fog_emission_energy;
 	params.base_emission[1] = emission.g * env->volumetric_fog_emission_energy;
 	params.base_emission[2] = emission.b * env->volumetric_fog_emission_energy;
 	params.base_density = env->volumetric_fog_density;
 
-	Color base_scattering = env->volumetric_fog_scattering.to_linear();
+	Color base_scattering = env->volumetric_fog_scattering.srgb_to_linear();
 	params.base_scattering[0] = base_scattering.r;
 	params.base_scattering[1] = base_scattering.g;
 	params.base_scattering[2] = base_scattering.b;
@@ -5732,7 +5732,7 @@ void fog() {
 			material_storage->material_initialize(volumetric_fog.default_material);
 			material_storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
 
-			FogMaterialData *md = (FogMaterialData *)material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG);
+			FogMaterialData *md = static_cast<FogMaterialData *>(material_storage->material_get_data(volumetric_fog.default_material, RendererRD::SHADER_TYPE_FOG));
 			volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, 0);
 
 			Vector<RD::Uniform> uniforms;

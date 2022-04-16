@@ -538,10 +538,10 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 
 	Map<String, int> type_count;
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	if (p_file) {
 		f = FileAccess::open(String::utf8(p_file), FileAccess::WRITE);
-		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String::utf8(p_file) + "'.");
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file at path '" + String::utf8(p_file) + "'.");
 	}
 
 	const String *K = nullptr;
@@ -555,20 +555,16 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		type_count[r->get_class()]++;
 
 		if (!p_short) {
-			if (f) {
+			if (f.is_valid()) {
 				f->store_line(r->get_class() + ": " + r->get_path());
 			}
 		}
 	}
 
 	for (const KeyValue<String, int> &E : type_count) {
-		if (f) {
+		if (f.is_valid()) {
 			f->store_line(E.key + " count: " + itos(E.value));
 		}
-	}
-	if (f) {
-		f->close();
-		memdelete(f);
 	}
 
 	lock.read_unlock();

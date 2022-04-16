@@ -80,7 +80,9 @@ void OS::print_error(const char *p_function, const char *p_file, int p_line, con
 		return;
 	}
 
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+	if (_logger) {
+		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+	}
 }
 
 void OS::print(const char *p_format, ...) {
@@ -91,7 +93,9 @@ void OS::print(const char *p_format, ...) {
 	va_list argp;
 	va_start(argp, p_format);
 
-	_logger->logv(p_format, argp, false);
+	if (_logger) {
+		_logger->logv(p_format, argp, false);
+	}
 
 	va_end(argp);
 }
@@ -104,7 +108,9 @@ void OS::printerr(const char *p_format, ...) {
 	va_list argp;
 	va_start(argp, p_format);
 
-	_logger->logv(p_format, argp, true);
+	if (_logger) {
+		_logger->logv(p_format, argp, true);
+	}
 
 	va_end(argp);
 }
@@ -173,7 +179,7 @@ void OS::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
 }
 
-static FileAccess *_OSPRF = nullptr;
+static Ref<FileAccess> _OSPRF;
 
 static void _OS_printres(Object *p_obj) {
 	Resource *res = Object::cast_to<Resource>(p_obj);
@@ -182,7 +188,7 @@ static void _OS_printres(Object *p_obj) {
 	}
 
 	String str = vformat("%s - %s - %s", res->to_string(), res->get_name(), res->get_path());
-	if (_OSPRF) {
+	if (_OSPRF.is_valid()) {
 		_OSPRF->store_line(str);
 	} else {
 		print_line(str);
@@ -190,24 +196,19 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF.is_valid());
 	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
-			_OSPRF = nullptr;
+			_OSPRF.unref();
 			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (!p_to_file.is_empty()) {
-		if (_OSPRF) {
-			memdelete(_OSPRF);
-		}
-		_OSPRF = nullptr;
-	}
+	_OSPRF.unref();
 }
 
 void OS::print_resources_in_use(bool p_short) {
@@ -332,7 +333,7 @@ void OS::ensure_user_data_dir() {
 		return;
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
 	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
 }
@@ -550,6 +551,8 @@ OS::OS() {
 }
 
 OS::~OS() {
-	memdelete(_logger);
+	if (_logger) {
+		memdelete(_logger);
+	}
 	singleton = nullptr;
 }

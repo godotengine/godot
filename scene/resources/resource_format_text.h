@@ -43,7 +43,7 @@ class ResourceLoaderText {
 	String res_path;
 	String error_text;
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 
 	VariantParser::StreamFile stream;
 
@@ -96,8 +96,8 @@ class ResourceLoaderText {
 		Map<String, RES> resource_map;
 	};
 
-	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_sub_resource_dummy((DummyReadData *)(p_self), p_stream, r_res, line, r_err_str); }
-	static Error _parse_ext_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_ext_resource_dummy((DummyReadData *)(p_self), p_stream, r_res, line, r_err_str); }
+	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_sub_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str); }
+	static Error _parse_ext_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_ext_resource_dummy(static_cast<DummyReadData *>(p_self), p_stream, r_res, line, r_err_str); }
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
@@ -120,15 +120,14 @@ public:
 	int get_stage_count() const;
 	void set_translation_remapped(bool p_remapped);
 
-	void open(FileAccess *p_f, bool p_skip_first_tag = false);
-	String recognize(FileAccess *p_f);
-	ResourceUID::ID get_uid(FileAccess *p_f);
-	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
-	Error rename_dependencies(FileAccess *p_f, const String &p_path, const Map<String, String> &p_map);
+	void open(Ref<FileAccess> p_f, bool p_skip_first_tag = false);
+	String recognize(Ref<FileAccess> p_f);
+	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
+	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
+	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const Map<String, String> &p_map);
 
-	Error save_as_binary(FileAccess *p_f, const String &p_path);
+	Error save_as_binary(Ref<FileAccess> p_f, const String &p_path);
 	ResourceLoaderText();
-	~ResourceLoaderText();
 };
 
 class ResourceFormatLoaderText : public ResourceFormatLoader {
@@ -157,7 +156,6 @@ class ResourceFormatSaverTextInstance {
 	bool relative_paths = false;
 	bool bundle_resources = false;
 	bool skip_editor = false;
-	FileAccess *f = nullptr;
 
 	struct NonPersistentKey { //for resource properties generated on the fly
 		RES base;

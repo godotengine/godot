@@ -70,7 +70,7 @@ void TexturePreview::_update_metadata_label_text() {
 		format = texture->get_class();
 	}
 
-	metadata_label->set_text(itos(texture->get_width()) + "x" + itos(texture->get_height()) + " " + format);
+	metadata_label->set_text(vformat(String::utf8("%s×%s %s"), itos(texture->get_width()), itos(texture->get_height()), format));
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {

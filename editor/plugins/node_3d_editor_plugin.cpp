@@ -369,7 +369,7 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
@@ -2467,7 +2467,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			_update_camera(delta);
 
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
@@ -6848,7 +6848,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 	}
 }
 
-void Node3DEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree()) {
@@ -7120,7 +7120,9 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 				}
 			}
 		}
-		sp->update_gizmos();
+		if (!sp->get_gizmos().is_empty()) {
+			sp->update_gizmos();
+		}
 	}
 }
 
@@ -7893,7 +7895,7 @@ Node3DEditor::Node3DEditor() {
 
 	selected = nullptr;
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 	add_to_group("_spatial_editor_group");
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);

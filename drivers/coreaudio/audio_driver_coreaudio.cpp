@@ -42,7 +42,7 @@
 OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected device is the Default call set_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
@@ -56,7 +56,7 @@ OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected device is the Default call set_device to update the
 	// kAudioOutputUnitProperty_CurrentDevice property
@@ -168,7 +168,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inRefCon);
 
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
@@ -209,7 +209,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inRefCon);
 	if (!ad->active) {
 		return 0;
 	}

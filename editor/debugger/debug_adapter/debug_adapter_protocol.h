@@ -76,7 +76,7 @@ class DebugAdapterProtocol : public Object {
 
 private:
 	static DebugAdapterProtocol *singleton;
-	DebugAdapterParser *parser;
+	DebugAdapterParser *parser = nullptr;
 
 	List<Ref<DAPeer>> clients;
 	Ref<TCPServer> server;

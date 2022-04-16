@@ -93,7 +93,7 @@ enum OpenGLTextureFlags {
 struct Texture {
 	RID self;
 
-	Texture *proxy;
+	Texture *proxy = nullptr;
 	Set<Texture *> proxy_owners;
 
 	String path;
@@ -125,20 +125,20 @@ struct Texture {
 
 	uint16_t stored_cube_sides;
 
-	RenderTarget *render_target;
+	RenderTarget *render_target = nullptr;
 
 	Vector<Ref<Image>> images;
 
 	bool redraw_if_visible;
 
 	RS::TextureDetectCallback detect_3d;
-	void *detect_3d_ud;
+	void *detect_3d_ud = nullptr;
 
 	RS::TextureDetectCallback detect_srgb;
-	void *detect_srgb_ud;
+	void *detect_srgb_ud = nullptr;
 
 	RS::TextureDetectCallback detect_normal;
-	void *detect_normal_ud;
+	void *detect_normal_ud = nullptr;
 
 	CanvasTexture *canvas_texture = nullptr;
 

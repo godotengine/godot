@@ -42,14 +42,14 @@ class NavigationMeshEditor : public Control {
 
 	GDCLASS(NavigationMeshEditor, Control);
 
-	AcceptDialog *err_dialog;
+	AcceptDialog *err_dialog = nullptr;
 
-	HBoxContainer *bake_hbox;
-	Button *button_bake;
-	Button *button_reset;
-	Label *bake_info;
+	HBoxContainer *bake_hbox = nullptr;
+	Button *button_bake = nullptr;
+	Button *button_reset = nullptr;
+	Label *bake_info = nullptr;
 
-	NavigationRegion3D *node;
+	NavigationRegion3D *node = nullptr;
 
 	void _bake_pressed();
 	void _clear_pressed();
@@ -68,7 +68,7 @@ public:
 class NavigationMeshEditorPlugin : public EditorPlugin {
 	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
 
-	NavigationMeshEditor *navigation_mesh_editor;
+	NavigationMeshEditor *navigation_mesh_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "NavigationMesh"; }

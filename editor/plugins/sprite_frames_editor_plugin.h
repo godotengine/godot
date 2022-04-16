@@ -48,48 +48,61 @@ class EditorFileDialog;
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
-	Button *load;
-	Button *load_sheet;
-	Button *_delete;
-	Button *copy;
-	Button *paste;
-	Button *empty;
-	Button *empty2;
-	Button *move_up;
-	Button *move_down;
-	Button *zoom_out;
-	Button *zoom_reset;
-	Button *zoom_in;
-	ItemList *tree;
+	enum {
+		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
+		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertial" values.
+		PARAM_SIZE, // Keep "Size" values.
+	};
+	int dominant_param = PARAM_FRAME_COUNT;
+
+	Button *load = nullptr;
+	Button *load_sheet = nullptr;
+	Button *_delete = nullptr;
+	Button *copy = nullptr;
+	Button *paste = nullptr;
+	Button *empty = nullptr;
+	Button *empty2 = nullptr;
+	Button *move_up = nullptr;
+	Button *move_down = nullptr;
+	Button *zoom_out = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_in = nullptr;
+	ItemList *tree = nullptr;
 	bool loading_scene;
 	int sel;
 
-	Button *new_anim;
-	Button *remove_anim;
+	Button *new_anim = nullptr;
+	Button *remove_anim = nullptr;
 
-	Tree *animations;
-	SpinBox *anim_speed;
-	CheckButton *anim_loop;
+	Tree *animations = nullptr;
+	SpinBox *anim_speed = nullptr;
+	CheckButton *anim_loop = nullptr;
 
-	EditorFileDialog *file;
+	EditorFileDialog *file = nullptr;
 
-	AcceptDialog *dialog;
+	AcceptDialog *dialog = nullptr;
 
-	SpriteFrames *frames;
+	SpriteFrames *frames = nullptr;
 
 	StringName edited_anim;
 
-	ConfirmationDialog *delete_dialog;
+	ConfirmationDialog *delete_dialog = nullptr;
 
-	ConfirmationDialog *split_sheet_dialog;
-	ScrollContainer *split_sheet_scroll;
-	TextureRect *split_sheet_preview;
-	SpinBox *split_sheet_h;
-	SpinBox *split_sheet_v;
-	Button *split_sheet_zoom_out;
-	Button *split_sheet_zoom_reset;
-	Button *split_sheet_zoom_in;
-	EditorFileDialog *file_split_sheet;
+	ConfirmationDialog *split_sheet_dialog = nullptr;
+	ScrollContainer *split_sheet_scroll = nullptr;
+	TextureRect *split_sheet_preview = nullptr;
+	SpinBox *split_sheet_h = nullptr;
+	SpinBox *split_sheet_v = nullptr;
+	SpinBox *split_sheet_size_x = nullptr;
+	SpinBox *split_sheet_size_y = nullptr;
+	SpinBox *split_sheet_sep_x = nullptr;
+	SpinBox *split_sheet_sep_y = nullptr;
+	SpinBox *split_sheet_offset_x = nullptr;
+	SpinBox *split_sheet_offset_y = nullptr;
+	Button *split_sheet_zoom_out = nullptr;
+	Button *split_sheet_zoom_reset = nullptr;
+	Button *split_sheet_zoom_in = nullptr;
+	EditorFileDialog *file_split_sheet = nullptr;
 	Set<int> frames_selected;
 	Set<int> frames_toggled_by_mouse_hover;
 	int last_frame_selected;
@@ -102,6 +115,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	float sheet_zoom;
 	float max_sheet_zoom;
 	float min_sheet_zoom;
+
+	Size2i _get_frame_count() const;
+	Size2i _get_frame_size() const;
+	Size2i _get_offset() const;
+	Size2i _get_separation() const;
 
 	void _load_pressed();
 	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
@@ -128,8 +146,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _zoom_reset();
 
 	bool updating;
+	bool updating_split_settings = false; // Skip SpinBox/Range callback when setting value by code.
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -139,7 +158,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
-	void _sheet_spin_changed(double);
+	void _sheet_spin_changed(double p_value, int p_dominant_param);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
@@ -164,8 +183,8 @@ public:
 class SpriteFramesEditorPlugin : public EditorPlugin {
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
-	SpriteFramesEditor *frames_editor;
-	Button *button;
+	SpriteFramesEditor *frames_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "SpriteFrames"; }

@@ -386,7 +386,7 @@ public:
 		return node;
 	}
 
-	Node *nodes;
+	Node *nodes = nullptr;
 
 	struct OperatorNode : public Node {
 		DataType return_cache = TYPE_VOID;
@@ -451,8 +451,8 @@ public:
 		int array_size = 0;
 		bool is_local = false;
 
-		virtual DataType get_datatype() const override { return datatype_cache; }
-		virtual String get_datatype_name() const override { return String(struct_name); }
+		virtual DataType get_datatype() const override { return call_expression ? call_expression->get_datatype() : datatype_cache; }
+		virtual String get_datatype_name() const override { return call_expression ? call_expression->get_datatype_name() : String(struct_name); }
 		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
 		virtual bool is_indexed() const override { return index_expression != nullptr; }
 
@@ -558,8 +558,8 @@ public:
 		Node *call_expression = nullptr;
 		bool has_swizzling_duplicates = false;
 
-		virtual DataType get_datatype() const override { return datatype; }
-		virtual String get_datatype_name() const override { return String(struct_name); }
+		virtual DataType get_datatype() const override { return call_expression ? call_expression->get_datatype() : datatype; }
+		virtual String get_datatype_name() const override { return call_expression ? call_expression->get_datatype_name() : String(struct_name); }
 		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
 		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
 
@@ -615,20 +615,20 @@ public:
 			DataType type;
 			StringName type_str;
 			DataPrecision precision;
-			ConstantNode *initializer;
+			ConstantNode *initializer = nullptr;
 			int array_size;
 		};
 
 		struct Function {
 			StringName name;
-			FunctionNode *function;
+			FunctionNode *function = nullptr;
 			Set<StringName> uses_function;
 			bool callable;
 		};
 
 		struct Struct {
 			StringName name;
-			StructNode *shader_struct;
+			StructNode *shader_struct = nullptr;
 		};
 
 		struct Varying {
@@ -715,7 +715,7 @@ public:
 		bool is_op;
 		union {
 			Operator op;
-			Node *node;
+			Node *node = nullptr;
 		};
 	};
 
@@ -973,7 +973,7 @@ private:
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
 
-	ShaderNode *shader;
+	ShaderNode *shader = nullptr;
 
 	enum IdentifierType {
 		IDENTIFIER_FUNCTION,
@@ -1021,7 +1021,7 @@ private:
 
 	CompletionType completion_type;
 	int completion_line;
-	BlockNode *completion_block;
+	BlockNode *completion_block = nullptr;
 	DataType completion_base;
 	bool completion_base_array;
 	SubClassTag completion_class;

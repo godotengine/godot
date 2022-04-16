@@ -46,7 +46,7 @@ String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len)
 }
 
 void AppxPackager::make_block_map(const String &p_path) {
-	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
+	Ref<FileAccess> tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
 	tmp_file->store_string("<BlockMap xmlns=\"http://schemas.microsoft.com/appx/2010/blockmap\" HashMethod=\"http://www.w3.org/2001/04/xmlenc#sha256\">");
@@ -69,9 +69,6 @@ void AppxPackager::make_block_map(const String &p_path) {
 	}
 
 	tmp_file->store_string("</BlockMap>");
-
-	tmp_file->close();
-	memdelete(tmp_file);
 }
 
 String AppxPackager::content_type(String p_extension) {
@@ -89,7 +86,7 @@ String AppxPackager::content_type(String p_extension) {
 }
 
 void AppxPackager::make_content_types(const String &p_path) {
-	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
+	Ref<FileAccess> tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 	tmp_file->store_string("<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">");
@@ -118,9 +115,6 @@ void AppxPackager::make_content_types(const String &p_path) {
 	tmp_file->store_string("<Override PartName=\"/AppxMetadata/CodeIntegrity.cat\" ContentType=\"application/vnd.ms-pkiseccat\" />");
 
 	tmp_file->store_string("</Types>");
-
-	tmp_file->close();
-	memdelete(tmp_file);
 }
 
 Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
@@ -285,7 +279,7 @@ Vector<uint8_t> AppxPackager::make_end_of_central_record() {
 	return buf;
 }
 
-void AppxPackager::init(FileAccess *p_fa) {
+void AppxPackager::init(Ref<FileAccess> p_fa) {
 	package = p_fa;
 	central_dir_offset = 0;
 	end_of_central_dir_offset = 0;
@@ -301,7 +295,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	FileMeta meta;
 	meta.name = p_file_name;
 	meta.uncompressed_size = p_len;
-	meta.compressed_size = p_len;
 	meta.compressed = p_compress;
 	meta.zip_offset = package->get_position();
 
@@ -309,7 +302,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 	// Data for compression
 	z_stream strm;
-	FileAccess *strm_f = nullptr;
 	Vector<uint8_t> strm_in;
 	strm_in.resize(BLOCK_SIZE);
 	Vector<uint8_t> strm_out;
@@ -317,7 +309,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	if (p_compress) {
 		strm.zalloc = zipio_alloc;
 		strm.zfree = zipio_free;
-		strm.opaque = &strm_f;
+		strm.opaque = Z_NULL;
 
 		strm_out.resize(BLOCK_SIZE + 8);
 
@@ -419,16 +411,15 @@ void AppxPackager::finish() {
 	const String &tmp_blockmap_file_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
 	make_block_map(tmp_blockmap_file_path);
 
-	FileAccess *blockmap_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::READ);
-	Vector<uint8_t> blockmap_buffer;
-	blockmap_buffer.resize(blockmap_file->get_length());
+	{
+		Ref<FileAccess> blockmap_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::READ);
+		Vector<uint8_t> blockmap_buffer;
+		blockmap_buffer.resize(blockmap_file->get_length());
 
-	blockmap_file->get_buffer(blockmap_buffer.ptrw(), blockmap_buffer.size());
+		blockmap_file->get_buffer(blockmap_buffer.ptrw(), blockmap_buffer.size());
 
-	add_file("AppxBlockMap.xml", blockmap_buffer.ptr(), blockmap_buffer.size(), -1, -1, true);
-
-	blockmap_file->close();
-	memdelete(blockmap_file);
+		add_file("AppxBlockMap.xml", blockmap_buffer.ptr(), blockmap_buffer.size(), -1, -1, true);
+	}
 
 	// Add content types
 
@@ -437,16 +428,15 @@ void AppxPackager::finish() {
 	const String &tmp_content_types_file_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
 	make_content_types(tmp_content_types_file_path);
 
-	FileAccess *types_file = FileAccess::open(tmp_content_types_file_path, FileAccess::READ);
-	Vector<uint8_t> types_buffer;
-	types_buffer.resize(types_file->get_length());
+	{
+		Ref<FileAccess> types_file = FileAccess::open(tmp_content_types_file_path, FileAccess::READ);
+		Vector<uint8_t> types_buffer;
+		types_buffer.resize(types_file->get_length());
 
-	types_file->get_buffer(types_buffer.ptrw(), types_buffer.size());
+		types_file->get_buffer(types_buffer.ptrw(), types_buffer.size());
 
-	add_file("[Content_Types].xml", types_buffer.ptr(), types_buffer.size(), -1, -1, true);
-
-	types_file->close();
-	memdelete(types_file);
+		add_file("[Content_Types].xml", types_buffer.ptr(), types_buffer.size(), -1, -1, true);
+	}
 
 	// Cleanup generated files.
 	DirAccess::remove_file_or_error(tmp_blockmap_file_path);
@@ -467,9 +457,7 @@ void AppxPackager::finish() {
 	Vector<uint8_t> end_record = make_end_of_central_record();
 	package->store_buffer(end_record.ptr(), end_record.size());
 
-	package->close();
-	memdelete(package);
-	package = nullptr;
+	package.unref();
 }
 
 AppxPackager::AppxPackager() {}

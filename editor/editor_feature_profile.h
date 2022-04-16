@@ -117,25 +117,25 @@ class EditorFeatureProfileManager : public AcceptDialog {
 		CLASS_OPTION_DISABLE_EDITOR
 	};
 
-	ConfirmationDialog *erase_profile_dialog;
-	ConfirmationDialog *new_profile_dialog;
-	LineEdit *new_profile_name;
+	ConfirmationDialog *erase_profile_dialog = nullptr;
+	ConfirmationDialog *new_profile_dialog = nullptr;
+	LineEdit *new_profile_name = nullptr;
 
-	LineEdit *current_profile_name;
-	OptionButton *profile_list;
+	LineEdit *current_profile_name = nullptr;
+	OptionButton *profile_list = nullptr;
 	Button *profile_actions[PROFILE_MAX];
 
-	HSplitContainer *h_split;
+	HSplitContainer *h_split = nullptr;
 
-	VBoxContainer *class_list_vbc;
-	Tree *class_list;
-	VBoxContainer *property_list_vbc;
-	Tree *property_list;
-	EditorHelpBit *description_bit;
-	Label *no_profile_selected_help;
+	VBoxContainer *class_list_vbc = nullptr;
+	Tree *class_list = nullptr;
+	VBoxContainer *property_list_vbc = nullptr;
+	Tree *property_list = nullptr;
+	EditorHelpBit *description_bit = nullptr;
+	Label *no_profile_selected_help = nullptr;
 
-	EditorFileDialog *import_profiles;
-	EditorFileDialog *export_profile;
+	EditorFileDialog *import_profiles = nullptr;
+	EditorFileDialog *export_profile = nullptr;
 
 	void _profile_action(int p_action);
 	void _profile_selected(int p_what);
@@ -163,7 +163,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _property_item_edited();
 	void _save_and_update();
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 	void _emit_current_profile_changed();
 
 	static EditorFeatureProfileManager *singleton;

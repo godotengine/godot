@@ -95,11 +95,11 @@ public:
 	VisualScriptYield::YieldMode mode;
 	double wait_time;
 
-	virtual int get_working_memory_size() const { return 1; } //yield needs at least 1
+	virtual int get_working_memory_size() const override { return 1; } //yield needs at least 1
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
 		} else {
@@ -506,11 +506,11 @@ public:
 	VisualScriptYieldSignal *node;
 	VisualScriptInstance *instance;
 
-	virtual int get_working_memory_size() const { return 1; }
+	virtual int get_working_memory_size() const override { return 1; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
 		} else {

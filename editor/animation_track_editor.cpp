@@ -1961,11 +1961,21 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			int limit = timeline->get_name_limit();
 
+			if (track % 2 == 1) {
+				// Draw a background over odd lines to make long lists of tracks easier to read.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.05));
+			}
+
+			if (hovered) {
+				// Draw hover feedback.
+				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), Color(0.5, 0.5, 0.5, 0.1));
+			}
+
 			if (has_focus()) {
 				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 				accent.a *= 0.7;
 				// Offside so the horizontal sides aren't cutoff.
-				draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
+				draw_style_box(get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles")), Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
@@ -2236,7 +2246,16 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_MOUSE_ENTER:
+			hovered = true;
+			update();
+			break;
 		case NOTIFICATION_MOUSE_EXIT:
+			hovered = false;
+			// When the mouse cursor exits the track, we're no longer hovering any keyframe.
+			hovering_key_idx = -1;
+			update();
+			[[fallthrough]];
 		case NOTIFICATION_DRAG_END: {
 			cancel_drop();
 		} break;
@@ -2348,7 +2367,13 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 	}
 
-	draw_texture(icon_to_draw, ofs);
+	// Use a different color for the currently hovered key.
+	// The color multiplier is chosen to work with both dark and light editor themes,
+	// and on both unselected and selected key icons.
+	draw_texture(
+			icon_to_draw,
+			ofs,
+			p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog")) : Color(1, 1, 1));
 }
 
 // Helper.
@@ -2935,6 +2960,59 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		const int previous_hovering_key_idx = hovering_key_idx;
+
+		// Hovering compressed keyframes for editing is not possible.
+		if (!animation->track_is_compressed(track)) {
+			const float scale = timeline->get_zoom_scale();
+			const int limit = timeline->get_name_limit();
+			const int limit_end = get_size().width - timeline->get_buttons_width();
+			// Left Border including space occupied by keyframes on t=0.
+			const int limit_start_hitbox = limit - type_icon->get_width();
+			const Point2 pos = mm->get_position();
+
+			if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
+				// Use the same logic as key selection to ensure that hovering accurately represents
+				// which key will be selected when clicking.
+				int key_idx = -1;
+				float key_distance = 1e20;
+
+				hovering_key_idx = -1;
+
+				// Hovering should happen in the opposite order of drawing for more accurate overlap hovering.
+				for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
+					Rect2 rect = get_key_rect(i, scale);
+					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					offset = offset * scale + limit;
+					rect.position.x += offset;
+
+					if (rect.has_point(pos)) {
+						if (is_key_selectable_by_distance()) {
+							const float distance = ABS(offset - pos.x);
+							if (key_idx == -1 || distance < key_distance) {
+								key_idx = i;
+								key_distance = distance;
+								hovering_key_idx = i;
+							}
+						} else {
+							// First one does it.
+							hovering_key_idx = i;
+							break;
+						}
+					}
+				}
+
+				print_line(hovering_key_idx);
+
+				if (hovering_key_idx != previous_hovering_key_idx) {
+					// Required to draw keyframe hover feedback on the correct keyframe.
+					update();
+				}
+			}
+		}
+	}
+
 	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;

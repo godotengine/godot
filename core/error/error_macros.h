@@ -58,7 +58,7 @@ struct ErrorHandlerList {
 };
 
 void add_error_handler(ErrorHandlerList *p_handler);
-void remove_error_handler(ErrorHandlerList *p_handler);
+void remove_error_handler(const ErrorHandlerList *p_handler);
 
 // Functions used by the error macros.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);

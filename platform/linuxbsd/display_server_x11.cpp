@@ -3052,7 +3052,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 }
 
 void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
-	((DisplayServerX11 *)(get_singleton()))->_dispatch_input_event(p_event);
+	static_cast<DisplayServerX11 *>(get_singleton())->_dispatch_input_event(p_event);
 }
 
 void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
@@ -3062,7 +3062,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	Callable::CallError ce;
 
 	{
-		List<WindowID>::Element *E = popup_list.front();
+		List<WindowID>::Element *E = popup_list.back();
 		if (E && Object::cast_to<InputEventKey>(*p_event)) {
 			// Redirect keyboard input to active popup.
 			if (windows.has(E->get())) {
@@ -3106,7 +3106,7 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 }
 
 void DisplayServerX11::_poll_events_thread(void *ud) {
-	DisplayServerX11 *display_server = (DisplayServerX11 *)ud;
+	DisplayServerX11 *display_server = static_cast<DisplayServerX11 *>(ud);
 	display_server->_poll_events();
 }
 
@@ -3208,19 +3208,23 @@ Rect2i DisplayServerX11::window_get_popup_safe_rect(WindowID p_window) const {
 }
 
 void DisplayServerX11::popup_open(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	WindowData &wd = windows[p_window];
 	if (wd.is_popup) {
-		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		// Find current popup parent, or root popup if new window is not transient.
+		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();
 		while (E) {
 			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
-				_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
-				List<WindowID>::Element *F = E->prev();
-				popup_list.erase(E);
-				E = F;
+				C = E;
+				E = E->prev();
 			} else {
 				break;
 			}
+		}
+		if (C) {
+			_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 
 		time_since_popup = OS::get_singleton()->get_ticks_msec();
@@ -3229,16 +3233,22 @@ void DisplayServerX11::popup_open(WindowID p_window) {
 }
 
 void DisplayServerX11::popup_close(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
 	List<WindowID>::Element *E = popup_list.find(p_window);
 	while (E) {
-		_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 		List<WindowID>::Element *F = E->next();
+		WindowID win_id = E->get();
 		popup_list.erase(E);
+
+		_send_window_event(windows[win_id], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 		E = F;
 	}
 }
 
 void DisplayServerX11::mouse_process_popups() {
+	_THREAD_SAFE_METHOD_
+
 	if (popup_list.is_empty()) {
 		return;
 	}
@@ -3259,7 +3269,9 @@ void DisplayServerX11::mouse_process_popups() {
 			Vector2i pos = Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
 			if ((pos != last_mouse_monitor_pos) || (mask != last_mouse_monitor_mask)) {
 				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
+					List<WindowID>::Element *C = nullptr;
 					List<WindowID>::Element *E = popup_list.back();
+					// Find top popup to close.
 					while (E) {
 						// Popup window area.
 						Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
@@ -3270,11 +3282,12 @@ void DisplayServerX11::mouse_process_popups() {
 						} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 							break;
 						} else {
-							_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
-							List<WindowID>::Element *F = E->prev();
-							popup_list.erase(E);
-							E = F;
+							C = E;
+							E = E->prev();
 						}
+					}
+					if (C) {
+						_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
 					}
 				}
 			}

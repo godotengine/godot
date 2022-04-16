@@ -79,7 +79,7 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void SceneTreeDock::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
@@ -2012,7 +2012,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	bool entire_scene = false;
 
-	for (Node *E : remove_list) {
+	for (const Node *E : remove_list) {
 		if (E == edited_scene) {
 			entire_scene = true;
 		}
@@ -3149,9 +3149,8 @@ void SceneTreeDock::_update_create_root_dialog() {
 			favorite_nodes->get_child(i)->queue_delete();
 		}
 
-		FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites.Node"), FileAccess::READ);
-
-		if (f) {
+		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites.Node"), FileAccess::READ);
+		if (f.is_valid()) {
 			while (!f->eof_reached()) {
 				String l = f->get_line().strip_edges();
 
@@ -3168,8 +3167,6 @@ void SceneTreeDock::_update_create_root_dialog() {
 					button->connect("pressed", callable_mp(this, &SceneTreeDock::_favorite_root_selected), make_binds(l));
 				}
 			}
-
-			memdelete(f);
 		}
 
 		if (!favorite_nodes->is_visible_in_tree()) {
@@ -3476,7 +3473,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	add_child(quick_open);
 	quick_open->connect("quick_open", callable_mp(this, &SceneTreeDock::_quick_open));
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);

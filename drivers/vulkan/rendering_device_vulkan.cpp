@@ -1484,7 +1484,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 			//this is an old block, which was already processed, let's reuse
 			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
 			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
-		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
+		} else {
 			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
 			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 				//we are still allowed to create a new block, so let's do that and insert it for current pos
@@ -4875,9 +4875,8 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining push constants.");
 #if 0
 				if (pconstants[0] == nullptr) {
-					FileAccess *f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
+					Ref<FileAccess> f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
 					f->store_buffer((const uint8_t *)&SpirV[0], SpirV.size() * sizeof(uint32_t));
-					memdelete(f);
 				}
 #endif
 
@@ -4965,8 +4964,8 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 
 	Vector<uint8_t> ret;
 	ret.resize(total_size);
-	uint32_t offset = 0;
 	{
+		uint32_t offset = 0;
 		uint8_t *binptr = ret.ptrw();
 		binptr[0] = 'G';
 		binptr[1] = 'V';
@@ -5039,7 +5038,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	uint32_t bin_data_size = decode_uint32(binptr + 8);
 
-	const RenderingDeviceVulkanShaderBinaryData &binary_data = *(const RenderingDeviceVulkanShaderBinaryData *)(binptr + 12);
+	const RenderingDeviceVulkanShaderBinaryData &binary_data = *(reinterpret_cast<const RenderingDeviceVulkanShaderBinaryData *>(binptr + 12));
 
 	Shader::PushConstant push_constant;
 	push_constant.push_constant_size = binary_data.push_constant_size;
@@ -5051,7 +5050,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	bool is_compute = binary_data.is_compute;
 
-	uint32_t compute_local_size[3] = { binary_data.compute_local_size[0], binary_data.compute_local_size[1], binary_data.compute_local_size[2] };
+	const uint32_t compute_local_size[3] = { binary_data.compute_local_size[0], binary_data.compute_local_size[1], binary_data.compute_local_size[2] };
 
 	read_offset += sizeof(uint32_t) * 3 + bin_data_size;
 
@@ -5075,7 +5074,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) >= binsize, RID());
 		uint32_t set_count = decode_uint32(binptr + read_offset);
 		read_offset += sizeof(uint32_t);
-		const RenderingDeviceVulkanShaderBinaryDataBinding *set_ptr = (const RenderingDeviceVulkanShaderBinaryDataBinding *)(binptr + read_offset);
+		const RenderingDeviceVulkanShaderBinaryDataBinding *set_ptr = reinterpret_cast<const RenderingDeviceVulkanShaderBinaryDataBinding *>(binptr + read_offset);
 		uint32_t set_size = set_count * sizeof(RenderingDeviceVulkanShaderBinaryDataBinding);
 		ERR_FAIL_COND_V(read_offset + set_size >= binsize, RID());
 
@@ -5147,7 +5146,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	Vector<Shader::SpecializationConstant> specialization_constants;
 
 	for (uint32_t i = 0; i < binary_data.specialization_constant_count; i++) {
-		const RenderingDeviceVulkanShaderBinarySpecializationConstant &src_sc = *(const RenderingDeviceVulkanShaderBinarySpecializationConstant *)(binptr + read_offset);
+		const RenderingDeviceVulkanShaderBinarySpecializationConstant &src_sc = *(reinterpret_cast<const RenderingDeviceVulkanShaderBinarySpecializationConstant *>(binptr + read_offset));
 		Shader::SpecializationConstant sc;
 		sc.constant.int_value = src_sc.int_value;
 		sc.constant.type = PipelineSpecializationConstantType(src_sc.type);
@@ -6334,7 +6333,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	rasterization_state_create_info.depthClampEnable = p_rasterization_state.enable_depth_clamp;
 	rasterization_state_create_info.rasterizerDiscardEnable = p_rasterization_state.discard_primitives;
 	rasterization_state_create_info.polygonMode = (p_rasterization_state.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL);
-	static VkCullModeFlags cull_mode[3] = {
+	static const VkCullModeFlags cull_mode[3] = {
 		VK_CULL_MODE_NONE,
 		VK_CULL_MODE_FRONT_BIT,
 		VK_CULL_MODE_BACK_BIT
@@ -6361,7 +6360,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	Vector<VkSampleMask> sample_mask;
 	if (p_multisample_state.sample_mask.size()) {
 		//use sample mask
-		int rasterization_sample_mask_expected_size[TEXTURE_SAMPLES_MAX] = {
+		const int rasterization_sample_mask_expected_size[TEXTURE_SAMPLES_MAX] = {
 			1, 2, 4, 8, 16, 32, 64
 		};
 		ERR_FAIL_COND_V(rasterization_sample_mask_expected_size[p_multisample_state.sample_count] != p_multisample_state.sample_mask.size(), RID());

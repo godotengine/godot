@@ -511,6 +511,7 @@ public:
 	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
+	static void sub(const Variant &a, const Variant &b, Variant &r_dst);
 
 	/* Built-In Methods */
 

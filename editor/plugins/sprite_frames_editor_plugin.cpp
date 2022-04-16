@@ -43,6 +43,11 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 
+static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const Size2 &p_size, const Size2 &p_shadow_offset, Color p_color, Color p_shadow_color) {
+	p_control->draw_line(p_from, p_from + p_size, p_color);
+	p_control->draw_line(p_from + p_shadow_offset, p_from + p_size + p_shadow_offset, p_shadow_color);
+}
+
 void SpriteFramesEditor::gui_input(const Ref<InputEvent> &p_event) {
 }
 
@@ -58,46 +63,62 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 }
 
 int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_position) {
-	if (p_position.x < 0 || p_position.y < 0) {
-		return -1;
+	const Size2i offset = _get_offset();
+	const Size2i frame_size = _get_frame_size();
+	const Size2i separation = _get_separation();
+	const Size2i block_size = frame_size + separation;
+	const Point2i position = p_position / sheet_zoom - offset;
+
+	if (position.x % block_size.x > frame_size.x || position.y % block_size.y > frame_size.y) {
+		return -1; // Gap between frames.
 	}
 
-	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
-	int h = split_sheet_h->get_value();
-	int v = split_sheet_v->get_value();
-	if (h > texture_size.width || v > texture_size.height) {
-		return -1;
+	const Point2i frame = position / block_size;
+	const Size2i frame_count = _get_frame_count();
+	if (frame.x < 0 || frame.y < 0 || frame.x >= frame_count.x || frame.y >= frame_count.y) {
+		return -1; // Out of bound.
 	}
 
-	int x = int(p_position.x / sheet_zoom) / (texture_size.width / h);
-	int y = int(p_position.y / sheet_zoom) / (texture_size.height / v);
-	if (x >= h || y >= v) {
-		return -1;
-	}
-	return h * y + x;
+	return frame_count.x * frame.y + frame.x;
 }
 
 void SpriteFramesEditor::_sheet_preview_draw() {
-	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
-	int h = split_sheet_h->get_value();
-	int v = split_sheet_v->get_value();
+	const Size2i frame_count = _get_frame_count();
+	const Size2i separation = _get_separation();
 
-	real_t width = (texture_size.width / h) * sheet_zoom;
-	real_t height = (texture_size.height / v) * sheet_zoom;
-	const float a = 0.3;
+	const Size2 draw_offset = Size2(_get_offset()) * sheet_zoom;
+	const Size2 draw_sep = Size2(separation) * sheet_zoom;
+	const Size2 draw_frame_size = Size2(_get_frame_size()) * sheet_zoom;
+	const Size2 draw_size = draw_frame_size * frame_count + draw_sep * (frame_count - Size2i(1, 1));
 
-	real_t y_end = v * height;
-	for (int i = 0; i <= h; i++) {
-		real_t x = i * width;
-		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, y_end), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, y_end), Color(0, 0, 0, a));
+	const Color line_color = Color(1, 1, 1, 0.3);
+	const Color shadow_color = Color(0, 0, 0, 0.3);
+
+	// Vertical lines.
+	_draw_shadowed_line(split_sheet_preview, draw_offset, Vector2(0, draw_size.y), Vector2(1, 0), line_color, shadow_color);
+	for (int i = 0; i < frame_count.x - 1; i++) {
+		const Point2 start = draw_offset + Vector2(i * draw_sep.x + (i + 1) * draw_frame_size.x, 0);
+		if (separation.x == 0) {
+			_draw_shadowed_line(split_sheet_preview, start, Vector2(0, draw_size.y), Vector2(1, 0), line_color, shadow_color);
+		} else {
+			const Size2 size = Size2(draw_sep.x, draw_size.y);
+			split_sheet_preview->draw_rect(Rect2(start, size), line_color);
+		}
 	}
-	real_t x_end = h * width;
-	for (int i = 0; i <= v; i++) {
-		real_t y = i * height;
-		split_sheet_preview->draw_line(Point2(0, y), Point2(x_end, y), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(x_end, y + 1), Color(0, 0, 0, a));
+	_draw_shadowed_line(split_sheet_preview, draw_offset + Vector2(draw_size.x, 0), Vector2(0, draw_size.y), Vector2(1, 0), line_color, shadow_color);
+
+	// Horizontal lines.
+	_draw_shadowed_line(split_sheet_preview, draw_offset, Vector2(draw_size.x, 0), Vector2(0, 1), line_color, shadow_color);
+	for (int i = 0; i < frame_count.y - 1; i++) {
+		const Point2 start = draw_offset + Vector2(0, i * draw_sep.y + (i + 1) * draw_frame_size.y);
+		if (separation.y == 0) {
+			_draw_shadowed_line(split_sheet_preview, start, Vector2(draw_size.x, 0), Vector2(0, 1), line_color, shadow_color);
+		} else {
+			const Size2 size = Size2(draw_size.x, draw_sep.y);
+			split_sheet_preview->draw_rect(Rect2(start, size), line_color);
+		}
 	}
+	_draw_shadowed_line(split_sheet_preview, draw_offset + Vector2(0, draw_size.y), Vector2(draw_size.x, 0), Vector2(0, 1), line_color, shadow_color);
 
 	if (frames_selected.size() == 0) {
 		split_sheet_dialog->get_ok_button()->set_disabled(true);
@@ -105,22 +126,20 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		return;
 	}
 
-	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color accent = get_theme_color("accent_color", "Editor");
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		int idx = E->get();
-		int xp = idx % h;
-		int yp = idx / h;
-		real_t x = xp * width;
-		real_t y = yp * height;
-
-		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 0.35), true);
-		split_sheet_preview->draw_rect(Rect2(x + 0, y + 0, width - 0, height - 0), Color(0, 0, 0, 1), false);
-		split_sheet_preview->draw_rect(Rect2(x + 1, y + 1, width - 2, height - 2), Color(0, 0, 0, 1), false);
-		split_sheet_preview->draw_rect(Rect2(x + 2, y + 2, width - 4, height - 4), accent, false);
-		split_sheet_preview->draw_rect(Rect2(x + 3, y + 3, width - 6, height - 6), accent, false);
-		split_sheet_preview->draw_rect(Rect2(x + 4, y + 4, width - 8, height - 8), Color(0, 0, 0, 1), false);
-		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 1), false);
+		const int idx = E->get();
+		const int x = idx % frame_count.x;
+		const int y = idx / frame_count.x;
+		const Point2 pos = draw_offset + Point2(x, y) * (draw_frame_size + draw_sep);
+		split_sheet_preview->draw_rect(Rect2(pos + Size2(5, 5), draw_frame_size - Size2(10, 10)), Color(0, 0, 0, 0.35), true);
+		split_sheet_preview->draw_rect(Rect2(pos, draw_frame_size), Color(0, 0, 0, 1), false);
+		split_sheet_preview->draw_rect(Rect2(pos + Size2(1, 1), draw_frame_size - Size2(2, 2)), Color(0, 0, 0, 1), false);
+		split_sheet_preview->draw_rect(Rect2(pos + Size2(2, 2), draw_frame_size - Size2(4, 4)), accent, false);
+		split_sheet_preview->draw_rect(Rect2(pos + Size2(3, 3), draw_frame_size - Size2(6, 6)), accent, false);
+		split_sheet_preview->draw_rect(Rect2(pos + Size2(4, 4), draw_frame_size - Size2(8, 8)), Color(0, 0, 0, 1), false);
+		split_sheet_preview->draw_rect(Rect2(pos + Size2(5, 5), draw_frame_size - Size2(10, 10)), Color(0, 0, 0, 1), false);
 	}
 
 	split_sheet_dialog->get_ok_button()->set_disabled(false);
@@ -223,10 +242,10 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpriteFramesEditor::_sheet_add_frames() {
-	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
-	int frame_count_x = split_sheet_h->get_value();
-	int frame_count_y = split_sheet_v->get_value();
-	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
+	const Size2i frame_count = _get_frame_count();
+	const Size2i frame_size = _get_frame_size();
+	const Size2i offset = _get_offset();
+	const Size2i separation = _get_separation();
 
 	undo_redo->create_action(TTR("Add Frame"));
 
@@ -234,12 +253,12 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
+		const Point2 frame_coords(idx % frame_count.x, idx / frame_count.x);
 
 		Ref<AtlasTexture> at;
 		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
-		at->set_region(Rect2(frame_coords * frame_size, frame_size));
+		at->set_region(Rect2(offset + frame_coords * (frame_size + separation), frame_size));
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
@@ -293,7 +312,57 @@ void SpriteFramesEditor::_sheet_select_clear_all_frames() {
 	split_sheet_preview->update();
 }
 
-void SpriteFramesEditor::_sheet_spin_changed(double) {
+void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_param) {
+	if (updating_split_settings) {
+		return;
+	}
+	updating_split_settings = true;
+
+	if (p_dominant_param != PARAM_USE_CURRENT) {
+		dominant_param = p_dominant_param;
+	}
+
+	const Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	const Size2i size = texture_size - _get_offset();
+
+	switch (dominant_param) {
+		case PARAM_SIZE: {
+			const Size2i frame_size = _get_frame_size();
+
+			const Size2i offset_max = texture_size - frame_size;
+			split_sheet_offset_x->set_max(offset_max.x);
+			split_sheet_offset_y->set_max(offset_max.y);
+
+			const Size2i sep_max = size - frame_size * 2;
+			split_sheet_sep_x->set_max(sep_max.x);
+			split_sheet_sep_y->set_max(sep_max.y);
+
+			const Size2i separation = _get_separation();
+			const Size2i count = (size + separation) / (frame_size + separation);
+			split_sheet_h->set_value(count.x);
+			split_sheet_v->set_value(count.y);
+		} break;
+
+		case PARAM_FRAME_COUNT: {
+			const Size2i count = _get_frame_count();
+
+			const Size2i offset_max = texture_size - count;
+			split_sheet_offset_x->set_max(offset_max.x);
+			split_sheet_offset_y->set_max(offset_max.y);
+
+			const Size2i gap_count = count - Size2i(1, 1);
+			split_sheet_sep_x->set_max(gap_count.x == 0 ? size.x : (size.x - count.x) / gap_count.x);
+			split_sheet_sep_y->set_max(gap_count.y == 0 ? size.y : (size.y - count.y) / gap_count.y);
+
+			const Size2i separation = _get_separation();
+			const Size2i frame_size = (size - separation * gap_count) / count;
+			split_sheet_size_x->set_value(frame_size.x);
+			split_sheet_size_y->set_value(frame_size.y);
+		} break;
+	}
+
+	updating_split_settings = false;
+
 	frames_selected.clear();
 	last_frame_selected = -1;
 	split_sheet_preview->update();
@@ -311,10 +380,29 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 	bool new_texture = texture != split_sheet_preview->get_texture();
 	split_sheet_preview->set_texture(texture);
 	if (new_texture) {
-		//different texture, reset to 4x4
+		// Reset spin max.
+		const Size2i size = texture->get_size();
+		split_sheet_size_x->set_max(size.x);
+		split_sheet_size_y->set_max(size.y);
+		split_sheet_sep_x->set_max(size.x);
+		split_sheet_sep_y->set_max(size.y);
+		split_sheet_offset_x->set_max(size.x);
+		split_sheet_offset_y->set_max(size.y);
+
+		// Different texture, reset to 4x4.
+		dominant_param = PARAM_FRAME_COUNT;
+		updating_split_settings = true;
 		split_sheet_h->set_value(4);
 		split_sheet_v->set_value(4);
-		//reset zoom
+		split_sheet_size_x->set_value(size.x / 4);
+		split_sheet_size_y->set_value(size.y / 4);
+		split_sheet_sep_x->set_value(0);
+		split_sheet_sep_y->set_value(0);
+		split_sheet_offset_x->set_value(0);
+		split_sheet_offset_y->set_value(0);
+		updating_split_settings = false;
+
+		// Reset zoom.
 		_sheet_zoom_reset();
 	}
 	split_sheet_dialog->popup_centered_ratio(0.65);
@@ -390,6 +478,22 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 	undo_redo->add_undo_method(this, "_update_library");
 
 	undo_redo->commit_action();
+}
+
+Size2i SpriteFramesEditor::_get_frame_count() const {
+	return Size2i(split_sheet_h->get_value(), split_sheet_v->get_value());
+}
+
+Size2i SpriteFramesEditor::_get_frame_size() const {
+	return Size2i(split_sheet_size_x->get_value(), split_sheet_size_y->get_value());
+}
+
+Size2i SpriteFramesEditor::_get_offset() const {
+	return Size2i(split_sheet_offset_x->get_value(), split_sheet_offset_y->get_value());
+}
+
+Size2i SpriteFramesEditor::_get_separation() const {
+	return Size2i(split_sheet_sep_x->get_value(), split_sheet_sep_y->get_value());
 }
 
 void SpriteFramesEditor::_load_pressed() {
@@ -1210,23 +1314,66 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
 
-	Label *ss_label = memnew(Label(TTR("Horizontal:")));
-	split_sheet_hb->add_child(ss_label);
+	split_sheet_hb->add_child(memnew(Label(TTR("Horizontal:"))));
 	split_sheet_h = memnew(SpinBox);
 	split_sheet_h->set_min(1);
 	split_sheet_h->set_max(128);
 	split_sheet_h->set_step(1);
 	split_sheet_hb->add_child(split_sheet_h);
-	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed));
+	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_FRAME_COUNT));
 
-	ss_label = memnew(Label(TTR("Vertical:")));
-	split_sheet_hb->add_child(ss_label);
+	split_sheet_hb->add_child(memnew(Label(TTR("Vertical:"))));
 	split_sheet_v = memnew(SpinBox);
 	split_sheet_v->set_min(1);
 	split_sheet_v->set_max(128);
 	split_sheet_v->set_step(1);
 	split_sheet_hb->add_child(split_sheet_v);
-	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed));
+	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_FRAME_COUNT));
+
+	split_sheet_hb->add_child(memnew(VSeparator));
+	split_sheet_hb->add_child(memnew(Label(TTR("Size:"))));
+	split_sheet_size_x = memnew(SpinBox);
+	split_sheet_size_x->set_min(1);
+	split_sheet_size_x->set_step(1);
+	split_sheet_size_x->set_suffix("px");
+	split_sheet_size_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_SIZE));
+	split_sheet_hb->add_child(split_sheet_size_x);
+	split_sheet_size_y = memnew(SpinBox);
+	split_sheet_size_y->set_min(1);
+	split_sheet_size_y->set_step(1);
+	split_sheet_size_y->set_suffix("px");
+	split_sheet_size_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_SIZE));
+	split_sheet_hb->add_child(split_sheet_size_y);
+
+	split_sheet_hb->add_child(memnew(VSeparator));
+	split_sheet_hb->add_child(memnew(Label(TTR("Separation:"))));
+	split_sheet_sep_x = memnew(SpinBox);
+	split_sheet_sep_x->set_min(0);
+	split_sheet_sep_x->set_step(1);
+	split_sheet_sep_x->set_suffix("px");
+	split_sheet_sep_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_hb->add_child(split_sheet_sep_x);
+	split_sheet_sep_y = memnew(SpinBox);
+	split_sheet_sep_y->set_min(0);
+	split_sheet_sep_y->set_step(1);
+	split_sheet_sep_y->set_suffix("px");
+	split_sheet_sep_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_hb->add_child(split_sheet_sep_y);
+
+	split_sheet_hb->add_child(memnew(VSeparator));
+	split_sheet_hb->add_child(memnew(Label(TTR("Offset:"))));
+	split_sheet_offset_x = memnew(SpinBox);
+	split_sheet_offset_x->set_min(0);
+	split_sheet_offset_x->set_step(1);
+	split_sheet_offset_x->set_suffix("px");
+	split_sheet_offset_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_hb->add_child(split_sheet_offset_x);
+	split_sheet_offset_y = memnew(SpinBox);
+	split_sheet_offset_y->set_min(0);
+	split_sheet_offset_y->set_step(1);
+	split_sheet_offset_y->set_suffix("px");
+	split_sheet_offset_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed), varray(PARAM_USE_CURRENT));
+	split_sheet_hb->add_child(split_sheet_offset_y);
 
 	split_sheet_hb->add_spacer();
 

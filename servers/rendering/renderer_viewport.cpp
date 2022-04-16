@@ -77,23 +77,21 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			RSG::scene->free(p_viewport->render_buffers);
 			p_viewport->render_buffers = RID();
 		} else {
-			float scaling_3d_scale = p_viewport->scaling_3d_scale;
-
+			const float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
 			bool scaling_enabled = true;
 
 			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && (scaling_3d_scale > 1.0)) {
-				// FSR is not design for downsampling.
-				// Throw a warning and fallback to VIEWPORT_SCALING_3D_MODE_BILINEAR
-				WARN_PRINT_ONCE("FSR 3D resolution scaling does not support supersampling. Falling back to bilinear scaling.");
+				// FSR is not designed for downsampling.
+				// Fall back to bilinear scaling.
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
 			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && !p_viewport->fsr_enabled) {
 				// FSR is not actually available.
-				// Throw a warning and fallback to disable scaling
-				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Disabling 3D resolution scaling.");
-				scaling_enabled = false;
+				// Fall back to bilinear scaling.
+				WARN_PRINT_ONCE("FSR 1.0 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
 			if (scaling_3d_scale == 1.0) {

@@ -2813,7 +2813,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 								bool error = false;
 								if (p_func->arguments[arg]->type == Node::TYPE_VARIABLE) {
-									const VariableNode *vn = (VariableNode *)p_func->arguments[arg];
+									const VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg]);
 
 									bool is_const = false;
 									ConstantNode::Value value;
@@ -2825,7 +2825,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 									}
 								} else {
 									if (p_func->arguments[arg]->type == Node::TYPE_CONSTANT) {
-										ConstantNode *cn = (ConstantNode *)p_func->arguments[arg];
+										const ConstantNode *cn = static_cast<ConstantNode *>(p_func->arguments[arg]);
 
 										if (cn->get_datatype() == TYPE_INT && cn->values.size() == 1) {
 											int value = cn->values[0].sint;
@@ -4132,7 +4132,7 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 	switch (p_node->type) {
 		case Node::TYPE_OPERATOR: {
-			OperatorNode *op_node = (OperatorNode *)p_node;
+			const OperatorNode *op_node = static_cast<const OperatorNode *>(p_node);
 			for (int i = int(op_node->op == OP_CALL); i < op_node->arguments.size(); i++) {
 				if (!_check_node_constness(op_node->arguments[i])) {
 					return false;
@@ -4142,13 +4142,13 @@ bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 		case Node::TYPE_CONSTANT:
 			break;
 		case Node::TYPE_VARIABLE: {
-			VariableNode *varn = (VariableNode *)p_node;
+			const VariableNode *varn = static_cast<const VariableNode *>(p_node);
 			if (!varn->is_const) {
 				return false;
 			}
 		} break;
 		case Node::TYPE_ARRAY: {
-			ArrayNode *arrn = (ArrayNode *)p_node;
+			const ArrayNode *arrn = static_cast<const ArrayNode *>(p_node);
 			if (!arrn->is_const) {
 				return false;
 			}
@@ -5144,7 +5144,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (!call_expression) {
 							return nullptr;
 						}
-						data_type = call_expression->get_datatype();
 					} else if (tk.type == TK_BRACKET_OPEN) { // indexing
 						index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
@@ -5157,7 +5156,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 
 						if (index_expression->type == Node::TYPE_CONSTANT) {
-							ConstantNode *cnode = (ConstantNode *)index_expression;
+							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -5598,15 +5597,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (p_block != nullptr) {
 							p_block->block_tag = SubClassTag::TAG_ARRAY;
 						}
-						Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
+						mn->call_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (p_block != nullptr) {
 							p_block->block_tag = SubClassTag::TAG_GLOBAL;
 						}
-						if (!call_expression) {
+						if (!mn->call_expression) {
 							return nullptr;
 						}
-						mn->datatype = call_expression->get_datatype();
-						mn->call_expression = call_expression;
 					} else if (tk.type == TK_BRACKET_OPEN) {
 						Node *index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
@@ -5619,7 +5616,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 
 						if (index_expression->type == Node::TYPE_CONSTANT) {
-							ConstantNode *cnode = (ConstantNode *)index_expression;
+							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -6702,7 +6699,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 
-									if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+									if (is_const && n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
 										_set_error(RTR("Expected a constant expression."));
 										return ERR_PARSE_ERROR;
 									}
@@ -6758,8 +6755,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
-					if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
-						OperatorNode *op = ((OperatorNode *)n);
+					if (is_const && n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
+						OperatorNode *op = static_cast<OperatorNode *>(n);
 						for (int i = 1; i < op->arguments.size(); i++) {
 							if (!_check_node_constness(op->arguments[i])) {
 								_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
@@ -6803,7 +6800,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} while (tk.type == TK_COMMA); //another variable
 
-			p_block->statements.push_back((Node *)vdnode);
+			p_block->statements.push_back(static_cast<Node *>(vdnode));
 		} else if (tk.type == TK_CURLY_BRACKET_OPEN) {
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
@@ -6925,7 +6922,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				} else {
 					Set<int> constants;
 					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
-						ControlFlowNode *flow = (ControlFlowNode *)switch_block->statements[i];
+						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::TYPE_CONSTANT) {
@@ -8467,7 +8464,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 											return ERR_PARSE_ERROR;
 										}
 
-										if (n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+										if (n->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(n)->op == OP_CALL) {
 											_set_error(RTR("Expected constant expression."));
 											return ERR_PARSE_ERROR;
 										}
@@ -8523,8 +8520,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								if (!expr) {
 									return ERR_PARSE_ERROR;
 								}
-								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
-									OperatorNode *op = ((OperatorNode *)expr);
+								if (expr->type == Node::TYPE_OPERATOR && static_cast<OperatorNode *>(expr)->op == OP_CALL) {
+									OperatorNode *op = static_cast<OperatorNode *>(expr);
 									for (int i = 1; i < op->arguments.size(); i++) {
 										if (!_check_node_constness(op->arguments[i])) {
 											_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
@@ -8861,7 +8858,7 @@ Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOper
 
 	for (int i = p_flow->blocks.size() - 1; i >= 0; i--) {
 		if (p_flow->blocks[i]->type == Node::TYPE_BLOCK) {
-			BlockNode *last_block = (BlockNode *)p_flow->blocks[i];
+			BlockNode *last_block = static_cast<BlockNode *>(p_flow->blocks[i]);
 			if (_find_last_flow_op_in_block(last_block, p_op) == OK) {
 				found = true;
 				break;
@@ -8879,7 +8876,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 
 	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
 		if (p_block->statements[i]->type == Node::TYPE_CONTROL_FLOW) {
-			ControlFlowNode *flow = (ControlFlowNode *)p_block->statements[i];
+			ControlFlowNode *flow = static_cast<ControlFlowNode *>(p_block->statements[i]);
 			if (flow->flow_op == p_op) {
 				found = true;
 				break;
@@ -8890,7 +8887,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 				}
 			}
 		} else if (p_block->statements[i]->type == Node::TYPE_BLOCK) {
-			BlockNode *block = (BlockNode *)p_block->statements[i];
+			BlockNode *block = static_cast<BlockNode *>(p_block->statements[i]);
 			if (_find_last_flow_op_in_block(block, p_op) == OK) {
 				found = true;
 				break;

@@ -646,7 +646,7 @@ PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 
 //////////////////////////////////////////
 
-Ref<Image> CompressedTexture2D::load_image_from_file(FileAccess *f, int p_size_limit) {
+Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_size_limit) {
 	uint32_t data_format = f->get_32();
 	uint32_t w = f->get_16();
 	uint32_t h = f->get_16();
@@ -821,20 +821,18 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != '2') {
-		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is corrupt (Bad header).");
 	}
 
 	uint32_t version = f->get_32();
 
 	if (version > FORMAT_VERSION) {
-		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 	r_width = f->get_32();
@@ -866,8 +864,6 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	}
 
 	image = load_image_from_file(f, p_size_limit);
-
-	memdelete(f);
 
 	if (image.is_null() || image->is_empty()) {
 		return ERR_CANT_OPEN;
@@ -1142,7 +1138,7 @@ bool Texture3D::has_mipmaps() const {
 	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
 		return ret;
 	}
-	return 0;
+	return false;
 }
 
 Vector<Ref<Image>> Texture3D::get_data() const {
@@ -1272,8 +1268,8 @@ Image::Format CompressedTexture3D::get_format() const {
 }
 
 Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
@@ -3092,8 +3088,8 @@ Image::Format CompressedTextureLayered::get_format() const {
 Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit) {
 	ERR_FAIL_COND_V(images.size() != 0, ERR_INVALID_PARAMETER);
 
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
