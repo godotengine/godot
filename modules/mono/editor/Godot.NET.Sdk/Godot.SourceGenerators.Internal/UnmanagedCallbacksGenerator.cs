@@ -2,8 +2,8 @@ using System.Text;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
@@ -12,26 +12,88 @@ namespace Godot.SourceGenerators
     {
         public void Initialize(GeneratorInitializationContext context)
         {
+            context.RegisterForPostInitialization(context =>
+            {
+                GenerateAttribute(context);
+            });
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.IsGodotToolsProject())
-                return;
+            INamedTypeSymbol[] unmanagedCallbacksClasses = context
+                .Compilation.SyntaxTrees
+                .SelectMany(tree =>
+                    tree.GetRoot().DescendantNodes()
+                        .OfType<ClassDeclarationSyntax>()
+                        .SelectUnmanagedCallbacksClasses(context.Compilation)
+                        // Report and skip non-partial classes
+                        .Where(x =>
+                        {
+                            if (x.cds.IsPartial())
+                            {
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                {
+                                    Common.ReportNonPartialUnmanagedCallbacksOuterClass(context, typeMissingPartial!);
+                                    return false;
+                                }
 
-            var nativeFuncsSymbol = context.Compilation.GetTypeByMetadataName("Godot.NativeInterop.NativeFuncs");
-            if (nativeFuncsSymbol == null)
-                return;
+                                return true;
+                            }
 
-            IMethodSymbol[] callbacks = nativeFuncsSymbol.GetMembers()
-                .Where(symbol => symbol is IMethodSymbol mds && mds.IsPartialDefinition)
-                .Cast<IMethodSymbol>().ToArray();
+                            Common.ReportNonPartialUnmanagedCallbacksClass(context, x.cds, x.symbol);
+                            return false;
+                        })
+                        .Select(x => x.symbol)
+                )
+                .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
+                .ToArray();
 
-            GenerateNativeFuncsImplementation(context, callbacks);
-            GenerateUnmanagedCallbacks(context, callbacks);
+            foreach (var symbol in unmanagedCallbacksClasses)
+            {
+                var attr = symbol.GetGenerateUnmanagedCallbacksAttribute();
+                if (attr == null || attr.ConstructorArguments.Length != 1)
+                {
+                    // TODO: Report error or throw exception, this is an invalid case and should never be reached
+                    System.Diagnostics.Debug.Fail("FAILED!");
+                    continue;
+                }
+
+                var funcStructType = (INamedTypeSymbol?)attr.ConstructorArguments[0].Value;
+                if (funcStructType == null)
+                {
+                    // TODO: Report error or throw exception, this is an invalid case and should never be reached
+                    System.Diagnostics.Debug.Fail("FAILED!");
+                    continue;
+                }
+
+                var data = new CallbacksData(symbol, funcStructType);
+                GenerateInteropMethodImplementations(context, data);
+                GenerateUnmanagedCallbacksStruct(context, data);
+            }
         }
 
-        private void GenerateNativeFuncsImplementation(GeneratorExecutionContext context, IEnumerable<IMethodSymbol> callbacks)
+        private void GenerateAttribute(GeneratorPostInitializationContext context)
+        {
+            string source = @"using System;
+
+namespace Godot.SourceGenerators
+{
+    public class GenerateUnmanagedCallbacksAttribute : Attribute
+    {
+        public Type FuncStructType { get; }
+
+        public GenerateUnmanagedCallbacksAttribute(Type funcStructType)
+        {
+            FuncStructType = funcStructType;
+        }
+    }
+}";
+
+            context.AddSource("GenerateUnmanagedCallbacksAttribute.generated",
+                SourceText.From(source, Encoding.UTF8));
+        }
+
+        private void GenerateInteropMethodImplementations(GeneratorExecutionContext context, CallbacksData data)
         {
             var source = new StringBuilder();
             var methodSource = new StringBuilder();
@@ -39,22 +101,29 @@ namespace Godot.SourceGenerators
             var methodSourceAfterCall = new StringBuilder();
 
             source.Append(
-                @"using System;
+                @$"using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
+using Godot.NativeInterop;
 
 #pragma warning disable CA1707 // Disable warning: Identifiers should not contain underscores
 
-namespace Godot.NativeInterop
-{
-    unsafe partial class NativeFuncs
-    {
-        internal static UnmanagedCallbacks _unmanagedCallbacks;
 ");
 
-            foreach (var callback in callbacks)
+            if (data.NativeTypeSymbol.ContainingNamespace != null)
+            {
+                source.Append(@$"namespace {data.NativeTypeSymbol.ContainingNamespace.FullQualifiedName()}
+{{");
+            }
+            source.Append(@$"
+    unsafe partial class {data.NativeTypeSymbol.Name}
+    {{
+        internal static {data.FuncStructSymbol.FullQualifiedName()} _unmanagedCallbacks;
+");
+
+            foreach (var callback in data.Methods)
             {
                 methodSource.Clear();
                 methodCallArguments.Clear();
@@ -164,17 +233,22 @@ namespace Godot.NativeInterop
             }
 
             source.Append(@"
-    }
-}
+    }");
+            if (data.NativeTypeSymbol.ContainingNamespace != null)
+            {
+                source.Append(@"
+}");
+            }
+            source.Append(@"
 
 #pragma warning restore CA1707
 ");
 
-            context.AddSource("NativeFuncs.generated",
+            context.AddSource($"{data.NativeTypeSymbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()}.generated",
                 SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
-        private void GenerateUnmanagedCallbacks(GeneratorExecutionContext context, IEnumerable<IMethodSymbol> callbacks)
+        private void GenerateUnmanagedCallbacksStruct(GeneratorExecutionContext context, CallbacksData data)
         {
             var source = new StringBuilder();
 
@@ -184,16 +258,29 @@ using Godot.NativeInterop;
 
 #pragma warning disable CA1707 // Disable warning: Identifiers should not contain underscores
 
-namespace Godot.Bridge
-{
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct UnmanagedCallbacks
-    {");
-
-            foreach (var callback in callbacks)
+");
+            if (data.FuncStructSymbol.ContainingNamespace != null)
             {
-                source.Append(@$"
-        {SyntaxFacts.GetText(callback.DeclaredAccessibility)} ");
+                source.Append(@$"namespace {data.FuncStructSymbol.ContainingNamespace.FullQualifiedName()}
+{{");
+            }
+            source.Append(@$"
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe partial struct {data.FuncStructSymbol.Name}
+    {{");
+
+            foreach (var callback in data.Methods)
+            {
+                source.Append(@"
+        ");
+                if (callback.DeclaredAccessibility == Accessibility.Public)
+                {
+                    source.Append("public ");
+                }
+                else
+                {
+                    source.Append("internal ");
+                }
                 source.Append("delegate* unmanaged<");
                 foreach (var parameter in callback.Parameters)
                 {
@@ -223,13 +310,17 @@ namespace Godot.Bridge
             }
 
             source.Append(@"
-    }
-}
-
+    }");
+            if (data.NativeTypeSymbol.ContainingNamespace != null)
+            {
+                source.Append(@"
+}");
+            }
+            source.Append(@"
 #pragma warning restore CA1707
 ");
 
-            context.AddSource("UnmanagedCallbacks.generated",
+            context.AddSource($"{data.FuncStructSymbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()}.generated",
                 SourceText.From(source.ToString(), Encoding.UTF8));
         }
 

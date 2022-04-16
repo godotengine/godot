@@ -1,16 +1,22 @@
 using System;
 using System.Runtime.InteropServices;
+using Godot.Bridge;
+using Godot.SourceGenerators;
 
 // ReSharper disable InconsistentNaming
+
+namespace Godot.Bridge
+{
+    public partial struct UnmanagedCallbacks { }
+}
 
 namespace Godot.NativeInterop
 {
     // The order of the methods defined in NativeFuncs must match the order
-    // in the UnmanagedCallbacks struct defined in gd_unmanaged_callbacks.h
+    // in the UnmanagedCallbacks struct defined in glue/runtime_interop.h
+    [GenerateUnmanagedCallbacks(typeof(UnmanagedCallbacks))]
     public static unsafe partial class NativeFuncs
     {
-        private const string GodotDllName = "__Internal";
-
         // Custom functions
 
         public static partial IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,

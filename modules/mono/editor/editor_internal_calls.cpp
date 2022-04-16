@@ -30,43 +30,6 @@
 
 #include "editor_internal_calls.h"
 
-#ifdef UNIX_ENABLED
-#include <unistd.h> // access
-#endif
-
-#include "core/os/os.h"
-#include "core/version.h"
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_node.h"
-#include "editor/editor_scale.h"
-#include "editor/plugins/script_editor_plugin.h"
-#include "main/main.h"
-
-#include "../csharp_script.h"
-#include "../godotsharp_dirs.h"
-#include "../utils/osx_utils.h"
-#include "code_completion.h"
-
-#include <gdnative/gdnative.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef __cplusplus
-#define MAYBE_UNUSED [[maybe_unused]]
-#else
-#define MAYBE_UNUSED
-#endif
-
-#ifdef __GNUC__
-#define GD_PINVOKE_EXPORT MAYBE_UNUSED __attribute__((visibility("default")))
-#elif defined(_WIN32)
-#define GD_PINVOKE_EXPORT MAYBE_UNUSED __declspec(dllexport)
-#else
-#define GD_PINVOKE_EXPORT MAYBE_UNUSED
-#endif
-
 void godot_icall_GodotSharpDirs_ResMetadataDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_res_metadata_dir()));
 }
@@ -246,39 +209,43 @@ bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const godot_string *p_file
 #endif
 }
 
-#ifdef __cplusplus
-}
-#endif
+InternalUnmanagedCallbacks InternalUnmanagedCallbacks::create() {
+	InternalUnmanagedCallbacks unmanaged_callbacks;
 
-void *godotsharp_editor_pinvoke_funcs[30] = {
-	(void *)godot_icall_GodotSharpDirs_ResMetadataDir,
-	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
-	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
-	(void *)godot_icall_GodotSharpDirs_ProjectSlnPath,
-	(void *)godot_icall_GodotSharpDirs_ProjectCsProjPath,
-	(void *)godot_icall_GodotSharpDirs_DataEditorToolsDir,
-	(void *)godot_icall_EditorProgress_Create,
-	(void *)godot_icall_EditorProgress_Dispose,
-	(void *)godot_icall_EditorProgress_Step,
-	(void *)godot_icall_Internal_FullTemplatesDir,
-	(void *)godot_icall_Internal_IsOsxAppBundleInstalled,
-	(void *)godot_icall_Internal_GodotIs32Bits,
-	(void *)godot_icall_Internal_GodotIsRealTDouble,
-	(void *)godot_icall_Internal_GodotMainIteration,
-	(void *)godot_icall_Internal_IsAssembliesReloadingNeeded,
-	(void *)godot_icall_Internal_ReloadAssemblies,
-	(void *)godot_icall_Internal_EditorDebuggerNodeReloadScripts,
-	(void *)godot_icall_Internal_ScriptEditorEdit,
-	(void *)godot_icall_Internal_EditorNodeShowScriptScreen,
-	(void *)godot_icall_Internal_EditorRunPlay,
-	(void *)godot_icall_Internal_EditorRunStop,
-	(void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts,
-	(void *)godot_icall_Internal_CodeCompletionRequest,
-	(void *)godot_icall_Globals_EditorScale,
-	(void *)godot_icall_Globals_GlobalDef,
-	(void *)godot_icall_Globals_EditorDef,
-	(void *)godot_icall_Globals_EditorShortcut,
-	(void *)godot_icall_Globals_TTR,
-	(void *)godot_icall_Utils_OS_GetPlatformName,
-	(void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess,
-};
+#define REGISTER_CALLBACK(m_method) unmanaged_callbacks.m_method = ::m_method
+
+	REGISTER_CALLBACK(godot_icall_GodotSharpDirs_ResMetadataDir);
+	REGISTER_CALLBACK(godot_icall_GodotSharpDirs_MonoUserDir);
+	REGISTER_CALLBACK(godot_icall_GodotSharpDirs_BuildLogsDirs);
+	REGISTER_CALLBACK(godot_icall_GodotSharpDirs_ProjectSlnPath);
+	REGISTER_CALLBACK(godot_icall_GodotSharpDirs_ProjectCsProjPath);
+	REGISTER_CALLBACK(godot_icall_GodotSharpDirs_DataEditorToolsDir);
+	REGISTER_CALLBACK(godot_icall_EditorProgress_Create);
+	REGISTER_CALLBACK(godot_icall_EditorProgress_Dispose);
+	REGISTER_CALLBACK(godot_icall_EditorProgress_Step);
+	REGISTER_CALLBACK(godot_icall_Internal_FullTemplatesDir);
+	REGISTER_CALLBACK(godot_icall_Internal_IsOsxAppBundleInstalled);
+	REGISTER_CALLBACK(godot_icall_Internal_GodotIs32Bits);
+	REGISTER_CALLBACK(godot_icall_Internal_GodotIsRealTDouble);
+	REGISTER_CALLBACK(godot_icall_Internal_GodotMainIteration);
+	REGISTER_CALLBACK(godot_icall_Internal_IsAssembliesReloadingNeeded);
+	REGISTER_CALLBACK(godot_icall_Internal_ReloadAssemblies);
+	REGISTER_CALLBACK(godot_icall_Internal_EditorDebuggerNodeReloadScripts);
+	REGISTER_CALLBACK(godot_icall_Internal_ScriptEditorEdit);
+	REGISTER_CALLBACK(godot_icall_Internal_EditorNodeShowScriptScreen);
+	REGISTER_CALLBACK(godot_icall_Internal_EditorRunPlay);
+	REGISTER_CALLBACK(godot_icall_Internal_EditorRunStop);
+	REGISTER_CALLBACK(godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
+	REGISTER_CALLBACK(godot_icall_Internal_CodeCompletionRequest);
+	REGISTER_CALLBACK(godot_icall_Globals_EditorScale);
+	REGISTER_CALLBACK(godot_icall_Globals_GlobalDef);
+	REGISTER_CALLBACK(godot_icall_Globals_EditorDef);
+	REGISTER_CALLBACK(godot_icall_Globals_EditorShortcut);
+	REGISTER_CALLBACK(godot_icall_Globals_TTR);
+	REGISTER_CALLBACK(godot_icall_Utils_OS_GetPlatformName);
+	REGISTER_CALLBACK(godot_icall_Utils_OS_UnixFileHasExecutableAccess);
+
+#undef REGISTER_CALLBACK
+
+	return unmanaged_callbacks;
+}

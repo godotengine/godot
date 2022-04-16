@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_unmanaged_callbacks.cpp                                           */
+/*  runtime_interop.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gd_unmanaged_callbacks.h"
+#include "runtime_interop.h"
 
 MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
 	return ClassDB::get_method(*p_classname, *p_methodname);

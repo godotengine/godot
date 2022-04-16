@@ -47,7 +47,7 @@
     <None Include="GenerateGodotCustomUnsafe.targets" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Godot.SourceGenerators/Godot.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\editor\Godot.NET.Sdk\Godot.SourceGenerators.Internal\Godot.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <!-- Sources -->
   <ItemGroup>

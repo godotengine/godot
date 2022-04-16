@@ -28,6 +28,6 @@
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
     <!-- Package the props file -->
-    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true" />
+    <None Include="Godot.SourceGenerators.Internal.props" Pack="true" PackagePath="build" Visible="true" />
   </ItemGroup>
 </Project>

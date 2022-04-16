@@ -41,7 +41,8 @@
 #include "../godotsharp_dirs.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
-#include "gd_unmanaged_callbacks.h"
+
+#include "../glue/runtime_interop.h"
 
 #ifdef TOOLS_ENABLED
 #include <nethost.h>

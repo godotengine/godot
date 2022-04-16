@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_unmanaged_callbacks.h                                             */
+/*  runtime_interop.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_UNMANAGED_CALLBACKS_H
-#define GD_UNMANAGED_CALLBACKS_H
+#ifndef RUNTIME_INTEROP_H
+#define RUNTIME_INTEROP_H
 
 #include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
@@ -58,7 +58,7 @@ static_assert(sizeof(SafeRefCount) == sizeof(uint32_t));
 typedef Object *(*godotsharp_class_creation_func)();
 
 // The order of the fields defined in UnmanagedCallbacks must match the order
-// of the defined methods in NativeFuncs.cs
+// of the defined methods in GodotSharp/Core/NativeInterop/NativeFuncs.cs
 struct UnmanagedCallbacks {
 	using Func_godotsharp_method_bind_get_method = MethodBind *(GD_CLR_STDCALL *)(const StringName *, const StringName *);
 	using Func_godotsharp_get_class_constructor = godotsharp_class_creation_func(GD_CLR_STDCALL *)(const StringName *);
@@ -423,4 +423,4 @@ struct UnmanagedCallbacks {
 	static UnmanagedCallbacks create();
 };
 
-#endif // GD_UNMANAGED_CALLBACKS_H
+#endif // RUNTIME_INTEROP_H

@@ -64,7 +64,7 @@ namespace GodotPlugins
         private struct PluginsCallbacks
         {
             public unsafe delegate* unmanaged<char*, godot_bool> LoadProjectAssemblyCallback;
-            public unsafe delegate* unmanaged<char*, IntPtr> LoadToolsAssemblyCallback;
+            public unsafe delegate* unmanaged<char*, void*, IntPtr> LoadToolsAssemblyCallback;
         }
 
         [UnmanagedCallersOnly]
@@ -91,7 +91,7 @@ namespace GodotPlugins
         }
 
         [UnmanagedCallersOnly]
-        private static unsafe IntPtr LoadToolsAssembly(char* nAssemblyPath)
+        private static unsafe IntPtr LoadToolsAssembly(char* nAssemblyPath, void* callbacks)
         {
             try
             {
@@ -103,6 +103,17 @@ namespace GodotPlugins
                 var assembly = LoadPlugin(assemblyPath);
 
                 NativeLibrary.SetDllImportResolver(assembly, _dllImportResolver!);
+
+                var callbacksField = assembly.GetType("GodotTools.Internals.Internal")?
+                    .GetField("_unmanagedCallbacks",
+                        BindingFlags.Static | BindingFlags.NonPublic);
+
+                if (callbacksField != null)
+                {
+                    // TODO: Set the field value, we don't have a reference to InternalUnmanagedCallbacks
+                    // defined in the GodotTools assembly which is loaded dynamically
+                    // callbacksField.SetValue(null, *callbacks);
+                }
 
                 var method = assembly.GetType("GodotTools.GodotSharpEditor")?
                     .GetMethod("InternalCreateInstance",
