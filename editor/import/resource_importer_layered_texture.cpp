@@ -391,7 +391,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->bptc_ldr = bptc_ldr;
 	texture_import->mipmaps = mipmaps;
 	texture_import->used_channels = used_channels;
-	_check_compress_ctex(texture_import);
+	_check_compress_ctex(p_source_file, texture_import);
 	if (r_metadata) {
 		Dictionary metadata;
 		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
@@ -472,7 +472,7 @@ ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
 }
 
-void ResourceImporterLayeredTexture::_check_compress_ctex(Ref<LayeredTextureImport> r_texture_import) {
+void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source_file, Ref<LayeredTextureImport> r_texture_import) {
 	String extension = get_save_extension();
 	ERR_FAIL_NULL(r_texture_import->csource);
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
@@ -542,5 +542,5 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(Ref<LayeredTextureImpo
 		}
 		return;
 	}
-	EditorNode::add_io_error(TTR("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC."));
+	EditorNode::add_io_error(vformat(TTR("%s: No suitable PC VRAM compression algorithm enabled in Project Settings (S3TC or BPTC). This texture may not display correctly on desktop platforms."), p_source_file));
 }
