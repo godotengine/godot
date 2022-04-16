@@ -238,6 +238,17 @@ void OSIPhone::pencil_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p
 	perform_event(ev);
 };
 
+void OSIPhone::pencil_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_force, Vector2 tilt) {
+	Ref<InputEventMouseMotion> ev;
+	ev.instance();
+	ev->set_pressure(p_force);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_global_position(Vector2(p_x, p_y));
+	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	ev->set_tilt(tilt);
+	perform_event(ev);
+};
+
 void OSIPhone::pencil_cancelled(int p_idx) {
 	pencil_press(p_idx, -1, -1, false, false);
 }

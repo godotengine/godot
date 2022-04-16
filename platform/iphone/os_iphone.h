@@ -135,6 +135,7 @@ public:
 	void pencil_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
 	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
 	void pencil_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_force);
+	void pencil_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_force, Vector2 tilt);
 	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y);
 	void touches_cancelled(int p_idx);
 	void pencil_cancelled(int p_idx);
