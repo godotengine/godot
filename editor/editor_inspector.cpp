@@ -3583,7 +3583,11 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 }
 
 void EditorInspector::set_property_prefix(const String &p_prefix) {
+	if (property_prefix == p_prefix) {
+		return;
+	}
 	property_prefix = p_prefix;
+	update_tree();
 }
 
 String EditorInspector::get_property_prefix() const {
