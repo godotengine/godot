@@ -266,7 +266,7 @@
 				- Greater than 1.0 (exclusive): Ease in
 				[/codeblock]
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
-				See also [method smoothstep]. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
+				See also [method smoothstep]. If you need to perform more advanced transitions, use [method Tween.interpolate_value].
 			</description>
 		</method>
 		<method name="error_string">
