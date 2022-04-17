@@ -49,6 +49,7 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
+#include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 
 #include "modules/openxr/openxr_interface.h"
@@ -1742,6 +1743,7 @@ OpenXRAPI::OpenXRAPI() {
 
 	// register our other extensions
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
+	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {
