@@ -51,7 +51,7 @@ class Time : public Object {
 public:
 	static Time *get_singleton();
 
-	enum Month : uint8_t {
+	enum Month {
 		/// Start at 1 to follow Windows SYSTEMTIME structure
 		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
 		MONTH_JANUARY = 1,
