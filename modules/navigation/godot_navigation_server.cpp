@@ -505,9 +505,10 @@ void GodotNavigationServer::set_active(bool p_active) const {
 void GodotNavigationServer::flush_queries() {
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
-	MutexLock lock(commands_mutex);
-	MutexLock lock2(operations_mutex);
 	for (size_t i(0); i < commands.size(); i++) {
+		// lock inside the for-loop to ensure a lock for every iteration
+		MutexLock lock(commands_mutex);
+		MutexLock lock2(operations_mutex);
 		commands[i]->exec(this);
 		memdelete(commands[i]);
 	}
@@ -523,8 +524,9 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
-	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
+		// lock inside the for-loop to ensure a lock for every iteration
+		MutexLock lock(operations_mutex);
 		active_maps[i]->sync();
 		active_maps[i]->step(p_delta_time);
 		active_maps[i]->dispatch_callbacks();
