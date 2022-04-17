@@ -509,6 +509,7 @@ void Skeleton3D::add_bone(const String &p_name) {
 	bones.push_back(b);
 	process_order_dirty = true;
 	version++;
+	rest_dirty = true;
 	_make_dirty();
 	update_gizmos();
 }
@@ -567,6 +568,7 @@ void Skeleton3D::set_bone_parent(int p_bone, int p_parent) {
 
 	bones.write[p_bone].parent = p_parent;
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -585,6 +587,7 @@ void Skeleton3D::unparent_bone_and_rest(int p_bone) {
 	bones.write[p_bone].parent = -1;
 	process_order_dirty = true;
 
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -607,6 +610,7 @@ void Skeleton3D::set_bone_children(int p_bone, Vector<int> p_children) {
 	bones.write[p_bone].child_bones = p_children;
 
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -616,6 +620,7 @@ void Skeleton3D::add_bone_child(int p_bone, int p_child) {
 	bones.write[p_bone].child_bones.push_back(p_child);
 
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -631,6 +636,7 @@ void Skeleton3D::remove_bone_child(int p_bone, int p_child) {
 	}
 
 	process_order_dirty = true;
+	rest_dirty = true;
 	_make_dirty();
 }
 
@@ -643,6 +649,7 @@ void Skeleton3D::set_bone_rest(int p_bone, const Transform3D &p_rest) {
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
 	bones.write[p_bone].rest = p_rest;
+	rest_dirty = true;
 	_make_dirty();
 }
 Transform3D Skeleton3D::get_bone_rest(int p_bone) const {
@@ -650,6 +657,14 @@ Transform3D Skeleton3D::get_bone_rest(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 
 	return bones[p_bone].rest;
+}
+Transform3D Skeleton3D::get_bone_global_rest(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
+	if (rest_dirty) {
+		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	}
+	return bones[p_bone].global_rest;
 }
 
 void Skeleton3D::set_bone_enabled(int p_bone, bool p_enabled) {
@@ -1058,6 +1073,9 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 				b.pose_global_no_override = b.pose_global;
 			}
 		}
+		if (rest_dirty) {
+			b.global_rest = b.parent >= 0 ? bonesptr[b.parent].global_rest * b.rest : b.rest;
+		}
 
 		if (b.local_pose_override_amount >= CMP_EPSILON) {
 			Transform3D override_local_pose;
@@ -1088,6 +1106,7 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 		emit_signal(SceneStringNames::get_singleton()->bone_pose_changed, current_bone_idx);
 	}
+	rest_dirty = false;
 }
 
 // Helper functions
@@ -1206,6 +1225,7 @@ void Skeleton3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_rest", "bone_idx"), &Skeleton3D::get_bone_rest);
 	ClassDB::bind_method(D_METHOD("set_bone_rest", "bone_idx", "rest"), &Skeleton3D::set_bone_rest);
+	ClassDB::bind_method(D_METHOD("get_bone_global_rest", "bone_idx"), &Skeleton3D::get_bone_global_rest);
 
 	ClassDB::bind_method(D_METHOD("create_skin_from_rest_transforms"), &Skeleton3D::create_skin_from_rest_transforms);
 	ClassDB::bind_method(D_METHOD("register_skin", "skin"), &Skeleton3D::register_skin);
