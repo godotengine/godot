@@ -1849,6 +1849,10 @@
 		<member name="rendering/shadows/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/shadows/directional_shadow/use_pcss" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables percentage-closer soft shadows for [DirectionalLight3D]s whose [member Light3D.light_angular_distance] is greater than [code]0.0[/code] (exclusive). PCSS makes shadows progressively blurrier as the distance between the object casting the shadow and the one receiving the shadow increases, which results in more realistic shadow appearance. However, PCSS has a significant cost on the GPU.
+			[b]Note:[/b] Disabling PCSS does not disable other effects related to [member Light3D.light_angular_distance] (such as the size of the sun increasing in the default sky materials).
+		</member>
 		<member name="rendering/shadows/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
@@ -1876,6 +1880,10 @@
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/shadows/shadows/use_pcss" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables percentage-closer soft shadows for [OmniLight3D]s and [SpotLight3D]s whose [member Light3D.light_size] is greater than [code]0.0[/code] (exclusive). PCSS makes shadows progressively blurrier as the distance between the object casting the shadow and the one receiving the shadow increases, which results in more realistic shadow appearance. However, PCSS has a significant cost on the GPU.
+			[b]Note:[/b] Disabling PCSS does not disable other effects related to [member Light3D.light_size] (such as the size of point lights increasing).
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 		</member>

@@ -896,6 +896,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="directional_shadow_set_use_pcss">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				If [code]enable[/code] is [code]true[/code], enables percentage-closer soft shadows for [DirectionalLight3D]s whose [member Light3D.light_angular_distance] is greater than [code]0.0[/code] (exclusive). PCSS makes shadows progressively blurrier as the distance between the object casting the shadow and the one receiving the shadow increases, which results in more realistic shadow appearance. However, PCSS has a significant cost on the GPU.
+				[b]Note:[/b] Disabling PCSS does not disable other effects related to [member Light3D.light_angular_distance] (such as the size of the sun increasing in the default sky materials).
+			</description>
+		</method>
 		<method name="environment_bake_panorama">
 			<return type="Image" />
 			<argument index="0" name="environment" type="RID" />
@@ -2750,6 +2758,14 @@
 			<return type="void" />
 			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
 			<description>
+			</description>
+		</method>
+		<method name="shadows_set_use_pcss">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				If [code]enable[/code] is [code]true[/code], enables percentage-closer soft shadows for [OmniLight3D]s and [SpotLight3D]s whose [member Light3D.light_size] is greater than [code]0.0[/code] (exclusive). PCSS makes shadows progressively blurrier as the distance between the object casting the shadow and the one receiving the shadow increases, which results in more realistic shadow appearance. However, PCSS has a significant cost on the GPU.
+				[b]Note:[/b] Disabling PCSS does not disable other effects related to [member Light3D.light_size] (such as the size of point lights increasing).
 			</description>
 		</method>
 		<method name="skeleton_allocate_data">

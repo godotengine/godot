@@ -184,7 +184,9 @@ public:
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
 	virtual void shadows_quality_set(RS::ShadowQuality p_quality) = 0;
+	virtual void shadows_set_use_pcss(bool p_enable) = 0;
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
+	virtual void directional_shadow_set_use_pcss(bool p_enable) = 0;
 
 	virtual RID shadow_atlas_create() = 0;
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;

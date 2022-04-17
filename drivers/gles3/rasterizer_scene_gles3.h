@@ -156,7 +156,9 @@ public:
 	void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
 
 	void shadows_quality_set(RS::ShadowQuality p_quality) override;
+	void shadows_set_use_pcss(bool p_enable) override;
 	void directional_shadow_quality_set(RS::ShadowQuality p_quality) override;
+	void directional_shadow_set_use_pcss(bool p_enable) override;
 
 	RID light_instance_create(RID p_light) override;
 	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
