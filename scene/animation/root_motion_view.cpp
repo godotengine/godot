@@ -110,9 +110,8 @@ void RootMotionView::_notification(int p_what) {
 		first = false;
 
 		transform.orthonormalize(); //don't want scale, too imprecise
-		transform.affine_invert();
 
-		accumulated = transform * accumulated;
+		accumulated = accumulated * transform;
 		accumulated.origin.x = Math::fposmod(accumulated.origin.x, cell_size);
 		if (zero_y) {
 			accumulated.origin.y = 0;
@@ -129,9 +128,9 @@ void RootMotionView::_notification(int p_what) {
 				Vector3 from(i * cell_size, 0, j * cell_size);
 				Vector3 from_i((i + 1) * cell_size, 0, j * cell_size);
 				Vector3 from_j(i * cell_size, 0, (j + 1) * cell_size);
-				from = accumulated.xform(from);
-				from_i = accumulated.xform(from_i);
-				from_j = accumulated.xform(from_j);
+				from = accumulated.xform_inv(from);
+				from_i = accumulated.xform_inv(from_i);
+				from_j = accumulated.xform_inv(from_j);
 
 				Color c = color, c_i = color, c_j = color;
 				c.a *= MAX(0, 1.0 - from.length() / radius);
