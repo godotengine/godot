@@ -212,6 +212,7 @@ private:
 	void _update_render_thread();
 
 	void _set_redraw(bool p_redraw);
+	void _set_particles_processing(bool p_enable);
 	void _refresh_interpolation_state();
 
 	void _fill_particle_data(const ParticleBase &p_source, float *r_dest, bool p_active) const {
