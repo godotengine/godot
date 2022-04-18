@@ -322,26 +322,23 @@ def configure_mingw(env):
 
     if env["target"] == "release":
         env.Append(CCFLAGS=["-msse2"])
-
         if env["optimize"] == "speed":  # optimize for speed (default)
-            if env["bits"] == "64":
-                env.Append(CCFLAGS=["-O3"])
-            else:
-                env.Append(CCFLAGS=["-O2"])
+            env.Append(CCFLAGS=["-O3"])
         else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
+            env.Append(CCFLAGS=["-Os"])
 
         if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
+            env.Append(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["-O2"])
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
         if env["optimize"] == "speed":  # optimize for speed (default)
+            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces.
             env.Append(CCFLAGS=["-O2"])
         else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
+            env.Append(CCFLAGS=["-Os"])
+
+        if env["debug_symbols"]:
+            env.Append(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])

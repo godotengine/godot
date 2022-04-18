@@ -169,12 +169,6 @@ def templateExcludedBuildTask() {
         logger.lifecycle("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
             for (String buildType : supportedTargetsMap.keySet()) {
-                if (buildType == "release" && flavor == "editor") {
-                    // The editor can't be used with target=release as debugging tools are then not
-                    // included, and it would crash on errors instead of reporting them.
-                    continue
-                }
-
                 for (String abi : selectedAbis) {
                     excludedTasks += ":lib:" + getSconsTaskName(flavor, buildType, abi)
                 }
@@ -214,11 +208,18 @@ def isAndroidStudio() {
     return sysProps != null && sysProps['idea.platform.prefix'] != null
 }
 
+task copyEditorReleaseBinaryToBin(type: Copy) {
+    dependsOn ':editor:assembleRelease'
+    from('editor/build/outputs/apk/release')
+    into(binDir)
+    include('android_editor_release.apk')
+}
+
 task copyEditorDebugBinaryToBin(type: Copy) {
     dependsOn ':editor:assembleDebug'
     from('editor/build/outputs/apk/debug')
     into(binDir)
-    include('android_editor.apk')
+    include('android_editor_debug.apk')
 }
 
 task copyEditorDevBinaryToBin(type: Copy) {
@@ -241,11 +242,6 @@ task generateGodotEditor {
     def tasks = []
 
     for (String target : supportedTargetsMap.keySet()) {
-        if (target == "release") {
-            // The editor can't be used with target=release as debugging tools are then not
-            // included, and it would crash on errors instead of reporting them.
-            continue
-        }
         File targetLibs = new File("lib/libs/tools/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()
@@ -295,7 +291,8 @@ task cleanGodotEditor(type: Delete) {
     delete("editor/build/outputs/apk")
 
     // Delete the Godot editor apks in the Godot bin directory
-    delete("$binDir/android_editor.apk")
+    delete("$binDir/android_editor_release.apk")
+    delete("$binDir/android_editor_debug.apk")
     delete("$binDir/android_editor_dev.apk")
 
     finalizedBy getTasksByName("clean", true)

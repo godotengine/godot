@@ -103,6 +103,7 @@ def configure(env):
 
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
+            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces.
             env.Prepend(CCFLAGS=["-O2"])
         elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])

@@ -83,15 +83,7 @@ android {
         // Editor jni library
         editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
         editorDev.jniLibs.srcDirs = ['libs/tools/dev']
-    }
-
-    // Disable 'editorRelease'.
-    // The editor can't be used with target=release as debugging tools are then not
-    // included, and it would crash on errors instead of reporting them.
-    variantFilter { variant ->
-        if (variant.name == "editorRelease") {
-            setIgnore(true)
-        }
+        editorRelease.jniLibs.srcDirs = ['libs/tools/release']
     }
 
     libraryVariants.all { variant ->

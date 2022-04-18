@@ -356,7 +356,11 @@ env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
 # Build type defines - more platform-specific ones can be in detect.py.
-if env_base["target"] == "release_debug" or env_base["target"] == "debug":
+if (
+    (env_base["tools"] and env_base["target"] == "release")
+    or env_base["target"] == "release_debug"
+    or env_base["target"] == "debug"
+):
     # DEBUG_ENABLED enables debugging *features* and debug-only code, which is intended
     # to give *users* extra debugging information for their game development.
     env_base.Append(CPPDEFINES=["DEBUG_ENABLED"])
@@ -632,14 +636,16 @@ if selected_platform in platform_list:
 
     if env["target"] == "release":
         if env["tools"]:
-            print("ERROR: The editor can only be built with `target=debug` or `target=release_debug`.")
-            print("       Use `tools=no target=release` to build a release export template.")
-            Exit(255)
-        suffix += ".opt"
-        env.Append(CPPDEFINES=["NDEBUG"])
+            suffix += ".opt.tools"
+        else:
+            suffix += ".opt"
+            # Debugging functionality is required for editor builds.
+            # `target=release` will still use more aggressive optimization compared to `target=release_debug`,
+            # but the optimization won't be as aggressive as in non-editor builds.
+            env.Append(CPPDEFINES=["NDEBUG"])
     elif env["target"] == "release_debug":
         if env["tools"]:
-            suffix += ".opt.tools"
+            suffix += ".opt.debug.tools"
         else:
             suffix += ".opt.debug"
     else:

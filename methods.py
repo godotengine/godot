@@ -652,7 +652,7 @@ def generate_vs_project(env, num_jobs):
             PLATFORMS = ["Win32", "x64"]
             PLATFORM_IDS = ["32", "64"]
             CONFIGURATIONS = ["debug", "release", "release_debug"]
-            CONFIGURATION_IDS = ["tools", "opt", "opt.tools"]
+            CONFIGURATION_IDS = ["tools", "opt", "opt.debug.tools"]
 
             @staticmethod
             def for_every_variant(value):

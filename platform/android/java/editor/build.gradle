@@ -44,16 +44,13 @@ android {
         }
 
         debug {
-            initWith release
-
             // Need to swap with the release signing config when this is ready for public release.
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
         }
 
         release {
-            // This buildtype is disabled below.
-            // The editor can't be used with target=release only, as debugging tools are then not
-            // included, and it would crash on errors instead of reporting them.
+            initWith release
         }
     }
 
@@ -64,18 +61,9 @@ android {
         }
     }
 
-    // Disable 'release' buildtype.
-    // The editor can't be used with target=release only, as debugging tools are then not
-    // included, and it would crash on errors instead of reporting them.
-    variantFilter { variant ->
-        if (variant.buildType.name == "release") {
-            setIgnore(true)
-        }
-    }
-
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def suffix = variant.name == "dev" ? "_dev" : ""
+            def suffix = "_" + variant.name
             output.outputFileName = "android_editor${suffix}.apk"
         }
     }
