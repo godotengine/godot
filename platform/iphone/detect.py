@@ -51,8 +51,11 @@ def configure(env):
     if env["target"].startswith("release"):
         env.Append(CPPDEFINES=["NDEBUG", ("NS_BLOCK_ASSERTIONS", 1)])
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["-O2", "-ftree-vectorize", "-fomit-frame-pointer"])
-            env.Append(LINKFLAGS=["-O2"])
+            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
+            # when using `target=release_debug`.
+            opt = "-O3" if env["target"] == "release" else "-O2"
+            env.Append(CCFLAGS=[opt, "-ftree-vectorize", "-fomit-frame-pointer"])
+            env.Append(LINKFLAGS=[opt])
         elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["-Os", "-ftree-vectorize"])
             env.Append(LINKFLAGS=["-Os"])
