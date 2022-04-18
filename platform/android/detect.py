@@ -188,8 +188,11 @@ def configure(env):
 
     if env["target"].startswith("release"):
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(LINKFLAGS=["-O2"])
-            env.Append(CCFLAGS=["-O2", "-fomit-frame-pointer"])
+            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
+            # when using `target=release_debug`.
+            opt = "-O3" if env["target"] == "release" else "-O2"
+            env.Append(LINKFLAGS=[opt])
+            env.Append(CCFLAGS=[opt, "-fomit-frame-pointer"])
         elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["-Os"])
             env.Append(LINKFLAGS=["-Os"])
