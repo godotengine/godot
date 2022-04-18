@@ -277,7 +277,17 @@ void Control::_update_minimum_size() {
 	Size2 minsize = get_combined_minimum_size();
 	data.updating_last_minimum_size = false;
 
-	if (minsize != data.last_minimum_size) {
+	bool x_equal = minsize.x == data.last_minimum_size.x;
+	bool y_equal = minsize.y == data.last_minimum_size.y;
+
+	if (isnan(minsize.x) && isnan(data.last_minimum_size.x)) {
+		x_equal = true;
+	}
+	if (isnan(minsize.y) && isnan(data.last_minimum_size.y)) {
+		y_equal = true;
+	}
+
+	if (!x_equal || !y_equal) {
 		data.last_minimum_size = minsize;
 		_size_changed();
 		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
