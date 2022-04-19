@@ -102,10 +102,10 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	texture_storage->frame.count++;
 	texture_storage->frame.delta = frame_step;
 
-	storage.update_dirty_resources();
+	storage->update_dirty_resources();
 
-	storage.info.render_final = storage.info.render;
-	storage.info.render.reset();
+	storage->info.render_final = storage->info.render;
+	storage->info.render.reset();
 
 	//scene->iteration();
 }
@@ -196,10 +196,14 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 void RasterizerGLES3::initialize() {
-	print_verbose("Using OpenGL video driver");
+	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
 
-	texture_storage.set_main_thread_id(Thread::get_caller_id());
+	texture_storage->set_main_thread_id(Thread::get_caller_id());
+	// make sure the OS knows to only access the renderer from the main thread
+	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
+}
 
+RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
@@ -251,21 +255,28 @@ void RasterizerGLES3::initialize() {
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
-	storage.initialize();
-	canvas.initialize();
-	//	scene.initialize();
-
-	// make sure the OS knows to only access the renderer from the main thread
-	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
+	// OpenGL needs to be initialized before initializing the Rasterizers
+	config = memnew(GLES3::Config);
+	texture_storage = memnew(GLES3::TextureStorage);
+	material_storage = memnew(GLES3::MaterialStorage);
+	mesh_storage = memnew(GLES3::MeshStorage);
+	particles_storage = memnew(GLES3::ParticlesStorage);
+	light_storage = memnew(GLES3::LightStorage);
+	storage = memnew(RasterizerStorageGLES3);
+	canvas = memnew(RasterizerCanvasGLES3(storage));
+	scene = memnew(RasterizerSceneGLES3);
 }
 
-RasterizerGLES3::RasterizerGLES3() {
-	canvas.storage = &storage;
-	canvas.scene_render = &scene;
-	//storage.canvas = &canvas;
-	//scene.storage = &storage;
-	//storage.scene = &scene;
+RasterizerGLES3::~RasterizerGLES3() {
+	memdelete(scene);
+	memdelete(canvas);
+	memdelete(storage);
+	memdelete(light_storage);
+	memdelete(particles_storage);
+	memdelete(mesh_storage);
+	memdelete(material_storage);
+	memdelete(texture_storage);
+	memdelete(config);
 }
 
 void RasterizerGLES3::prepare_for_blitting_render_targets() {
@@ -327,12 +338,12 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	}
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	canvas.canvas_begin();
+	canvas->canvas_begin();
 
-	RID texture = texture_storage.texture_create();
+	RID texture = texture_storage->texture_create();
 	//texture_storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
-	texture_storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
-	texture_storage.texture_set_data(texture, p_image);
+	texture_storage->_texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
+	texture_storage->texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
@@ -354,13 +365,13 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
 	}
 
-	GLES3::Texture *t = texture_storage.get_texture(texture);
-	glActiveTexture(GL_TEXTURE0 + config.max_texture_image_units - 1);
+	GLES3::Texture *t = texture_storage->get_texture(texture);
+	glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	canvas.canvas_end();
+	canvas->canvas_end();
 
-	texture_storage.texture_free(texture);
+	texture_storage->texture_free(texture);
 
 	end_frame(true);
 }

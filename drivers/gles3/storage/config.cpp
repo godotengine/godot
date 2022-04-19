@@ -39,18 +39,7 @@ Config *Config::singleton = nullptr;
 
 Config::Config() {
 	singleton = this;
-	should_orphan = true;
 
-	// If this is to early we need to change our code similar to what we're doing in RendererRD,
-	// and instantiate our storage classes when we are ready to do so in the order we want.
-	initialize();
-}
-
-Config::~Config() {
-	singleton = nullptr;
-}
-
-void Config::initialize() {
 	{
 		const GLubyte *extension_string = glGetString(GL_EXTENSIONS);
 
@@ -155,6 +144,10 @@ void Config::initialize() {
 	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	use_fast_texture_filter = false; //GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
 	// should_orphan = GLOBAL_GET("rendering/options/api_usage_legacy/orphan_buffers");
+}
+
+Config::~Config() {
+	singleton = nullptr;
 }
 
 #endif // GLES3_ENABLED

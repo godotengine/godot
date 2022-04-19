@@ -103,7 +103,6 @@ public:
 
 	Config();
 	~Config();
-	void initialize();
 };
 
 } // namespace GLES3
