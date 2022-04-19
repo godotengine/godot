@@ -2300,8 +2300,10 @@ void ProjectManager::_files_dropped(PoolStringArray p_files, int p_screen) {
 }
 
 void ProjectManager::_scan_multiple_folders(PoolStringArray p_files) {
-	for (int i = 0; i < p_files.size(); i++) {
-		_scan_begin(p_files.get(i));
+	PoolStringArray::Read files_r = p_files.read();
+
+	for (int i = 0; i < files_r.size(); i++) {
+		_scan_begin(files_r.get(i));
 	}
 }
 

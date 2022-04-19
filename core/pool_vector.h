@@ -270,6 +270,12 @@ public:
 			return this->_alloc ? this->_alloc->vector.ptr() : nullptr;
 		}
 
+		inline T get(int p_index) const {
+			DEV_ASSERT(this->_alloc);
+			CRASH_BAD_INDEX(p_index, this->size());
+			return (*this)[p_index];
+		}
+
 		String join(String delimiter) {
 			DEV_ASSERT(this->_alloc);
 			String rs = "";
@@ -516,8 +522,7 @@ public:
 
 	inline T operator[](int p_index) const {
 		Read r = read();
-		CRASH_BAD_INDEX(p_index, size());
-		return r[p_index];
+		return r.get(p_index);
 	}
 
 	Error resize(int p_size) {

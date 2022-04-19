@@ -51,9 +51,11 @@ void ResourcePreloader::_set_resources(const Array &p_data) {
 
 Array ResourcePreloader::_get_resources() const {
 	PoolVector<String> names;
+	PoolVector<String>::Write names_w = names.write();
+
 	Array arr;
 	arr.resize(resources.size());
-	names.resize(resources.size());
+	names_w.resize(resources.size());
 
 	Set<String> sorted_names;
 
@@ -63,7 +65,7 @@ Array ResourcePreloader::_get_resources() const {
 
 	int i = 0;
 	for (Set<String>::Element *E = sorted_names.front(); E; E = E->next()) {
-		names.set(i, E->get());
+		names_w.set(i, E->get());
 		arr[i] = resources[E->get()];
 		i++;
 	}
@@ -119,10 +121,12 @@ RES ResourcePreloader::get_resource(const StringName &p_name) const {
 
 PoolVector<String> ResourcePreloader::_get_resource_list() const {
 	PoolVector<String> res;
-	res.resize(resources.size());
+	PoolVector<String>::Write res_w = res.write();
+
+	res_w.resize(resources.size());
 	int i = 0;
 	for (Map<StringName, RES>::Element *E = resources.front(); E; E = E->next(), i++) {
-		res.set(i, E->key());
+		res_w.set(i, E->key());
 	}
 
 	return res;

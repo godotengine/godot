@@ -5876,6 +5876,16 @@ void SpatialEditor::_init_grid() {
 	PoolVector<Vector3> grid_points[3];
 	PoolVector<Vector3> grid_normals[3];
 
+	PoolVector<Color>::Write grid_colors_w[3];
+	PoolVector<Vector3>::Write grid_points_w[3];
+	PoolVector<Vector3>::Write grid_normals_w[3];
+
+	for (int n = 0; n < 3; n++) {
+		grid_colors_w[n] = grid_colors[n].write();
+		grid_points_w[n] = grid_points[n].write();
+		grid_normals_w[n] = grid_normals[n].write();
+	}
+
 	Color primary_grid_color = EditorSettings::get_singleton()->get("editors/3d/primary_grid_color");
 	Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/3d/secondary_grid_color");
 	int grid_size = EditorSettings::get_singleton()->get("editors/3d/grid_size");
@@ -5972,12 +5982,12 @@ void SpatialEditor::_init_grid() {
 				line_end[a] = position_a;
 				line_bgn[b] = bgn_b;
 				line_end[b] = end_b;
-				grid_points[c].push_back(line_bgn);
-				grid_points[c].push_back(line_end);
-				grid_colors[c].push_back(line_color);
-				grid_colors[c].push_back(line_color);
-				grid_normals[c].push_back(normal);
-				grid_normals[c].push_back(normal);
+				grid_points_w[c].push_back(line_bgn);
+				grid_points_w[c].push_back(line_end);
+				grid_colors_w[c].push_back(line_color);
+				grid_colors_w[c].push_back(line_color);
+				grid_normals_w[c].push_back(normal);
+				grid_normals_w[c].push_back(normal);
 			}
 
 			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
@@ -5987,12 +5997,12 @@ void SpatialEditor::_init_grid() {
 				line_end[b] = position_b;
 				line_bgn[a] = bgn_a;
 				line_end[a] = end_a;
-				grid_points[c].push_back(line_bgn);
-				grid_points[c].push_back(line_end);
-				grid_colors[c].push_back(line_color);
-				grid_colors[c].push_back(line_color);
-				grid_normals[c].push_back(normal);
-				grid_normals[c].push_back(normal);
+				grid_points_w[c].push_back(line_bgn);
+				grid_points_w[c].push_back(line_end);
+				grid_colors_w[c].push_back(line_color);
+				grid_colors_w[c].push_back(line_color);
+				grid_normals_w[c].push_back(normal);
+				grid_normals_w[c].push_back(normal);
 			}
 		}
 

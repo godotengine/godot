@@ -436,12 +436,14 @@ BSP_Tree::operator Variant() const {
 	d["planes"] = plane_values;
 
 	PoolVector<int> dst_nodes;
-	dst_nodes.resize(nodes.size() * 3);
+	PoolVector<int>::Write dst_nodes_w = dst_nodes.write();
+
+	dst_nodes_w.resize(nodes.size() * 3);
 
 	for (int i = 0; i < nodes.size(); i++) {
-		dst_nodes.set(i * 3 + 0, nodes[i].over);
-		dst_nodes.set(i * 3 + 1, nodes[i].under);
-		dst_nodes.set(i * 3 + 2, nodes[i].plane);
+		dst_nodes_w.set(i * 3 + 0, nodes[i].over);
+		dst_nodes_w.set(i * 3 + 1, nodes[i].under);
+		dst_nodes_w.set(i * 3 + 2, nodes[i].plane);
 	}
 
 	d["nodes"] = dst_nodes;

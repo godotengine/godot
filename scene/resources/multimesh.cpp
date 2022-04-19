@@ -151,10 +151,12 @@ PoolVector<Color> MultiMesh::_get_color_array() const {
 	}
 
 	PoolVector<Color> colors;
-	colors.resize(instance_count);
+	PoolVector<Color>::Write colors_w = colors.write();
+
+	colors_w.resize(instance_count);
 
 	for (int i = 0; i < instance_count; i++) {
-		colors.set(i, get_instance_color(i));
+		colors_w.set(i, get_instance_color(i));
 	}
 
 	return colors;
@@ -181,10 +183,12 @@ PoolVector<Color> MultiMesh::_get_custom_data_array() const {
 	}
 
 	PoolVector<Color> custom_datas;
-	custom_datas.resize(instance_count);
+	PoolVector<Color>::Write custom_datas_w = custom_datas.write();
+
+	custom_datas_w.resize(instance_count);
 
 	for (int i = 0; i < instance_count; i++) {
-		custom_datas.set(i, get_instance_custom_data(i));
+		custom_datas_w.set(i, get_instance_custom_data(i));
 	}
 
 	return custom_datas;

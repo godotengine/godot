@@ -38,10 +38,12 @@ PoolStringArray ConfigFile::_get_sections() const {
 	List<String> s;
 	get_sections(&s);
 	PoolStringArray arr;
-	arr.resize(s.size());
+	PoolStringArray::Write arr_w = arr.write();
+
+	arr_w.resize(s.size());
 	int idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
-		arr.set(idx++, E->get());
+		arr_w.set(idx++, E->get());
 	}
 
 	return arr;

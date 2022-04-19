@@ -1233,13 +1233,18 @@ FaceShapeSW::FaceShapeSW() {
 
 PoolVector<Vector3> ConcavePolygonShapeSW::get_faces() const {
 	PoolVector<Vector3> rfaces;
-	rfaces.resize(faces.size() * 3);
+	PoolVector<Vector3>::Write rfaces_w = rfaces.write();
 
-	for (int i = 0; i < faces.size(); i++) {
-		Face f = faces.get(i);
+	PoolVector<Face>::Read faces_r = faces.read();
+	PoolVector<Vector3>::Read vertices_r = vertices.read();
+
+	rfaces_w.resize(faces_r.size() * 3);
+
+	for (int i = 0; i < faces_r.size(); i++) {
+		Face f = faces_r.get(i);
 
 		for (int j = 0; j < 3; j++) {
-			rfaces.set(i * 3 + j, vertices.get(f.indices[j]));
+			rfaces_w.set(i * 3 + j, vertices_r.get(f.indices[j]));
 		}
 	}
 

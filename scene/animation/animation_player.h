@@ -266,8 +266,10 @@ private:
 		List<StringName> animations;
 		get_animation_list(&animations);
 		PoolVector<String> ret;
+		PoolVector<String>::Write ret_w = ret.write();
+
 		while (animations.size()) {
-			ret.push_back(animations.front()->get());
+			ret_w.push_back(animations.front()->get());
 			animations.pop_front();
 		}
 		return ret;

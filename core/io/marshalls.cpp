@@ -541,8 +541,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			PoolVector<uint8_t> data;
 
 			if (count) {
-				data.resize(count);
 				PoolVector<uint8_t>::Write w = data.write();
+				w.resize(count);
 				for (int32_t i = 0; i < count; i++) {
 					w[i] = buf[i];
 				}
@@ -570,8 +570,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			if (count) {
 				//const int*rbuf=(const int*)buf;
-				data.resize(count);
 				PoolVector<int>::Write w = data.write();
+				w.resize(count);
 				for (int32_t i = 0; i < count; i++) {
 					w[i] = decode_uint32(&buf[i * 4]);
 				}
@@ -594,8 +594,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			if (count) {
 				//const float*rbuf=(const float*)buf;
-				data.resize(count);
 				PoolVector<float>::Write w = data.write();
+				w.resize(count);
 				for (int32_t i = 0; i < count; i++) {
 					w[i] = decode_float(&buf[i * 4]);
 				}
@@ -612,6 +612,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			int32_t count = decode_uint32(buf);
 
 			PoolVector<String> strings;
+			PoolVector<String>::Write strings_w = strings.write();
 			buf += 4;
 			len -= 4;
 
@@ -627,7 +628,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					return err;
 				}
 
-				strings.push_back(str);
+				strings_w.push_back(str);
 			}
 
 			r_variant = strings;
@@ -648,8 +649,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 			if (count) {
-				varray.resize(count);
 				PoolVector<Vector2>::Write w = varray.write();
+				w.resize(count);
 
 				for (int32_t i = 0; i < count; i++) {
 					w[i].x = decode_float(buf + i * 4 * 2 + 4 * 0);
@@ -682,8 +683,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 			if (count) {
-				varray.resize(count);
 				PoolVector<Vector3>::Write w = varray.write();
+				w.resize(count);
 
 				for (int32_t i = 0; i < count; i++) {
 					w[i].x = decode_float(buf + i * 4 * 3 + 4 * 0);
@@ -717,8 +718,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 			if (count) {
-				carray.resize(count);
 				PoolVector<Color>::Write w = carray.write();
+				w.resize(count);
 
 				for (int32_t i = 0; i < count; i++) {
 					w[i].r = decode_float(buf + i * 4 * 4 + 4 * 0);
@@ -1226,6 +1227,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::POOL_STRING_ARRAY: {
 			PoolVector<String> data = p_variant;
+			PoolVector<String>::Read data_r = data.read();
+
 			int len = data.size();
 
 			if (buf) {
@@ -1236,7 +1239,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4;
 
 			for (int i = 0; i < len; i++) {
-				CharString utf8 = data.get(i).utf8();
+				CharString utf8 = data_r.get(i).utf8();
 
 				if (buf) {
 					encode_uint32(utf8.length() + 1, buf);
@@ -1257,7 +1260,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::POOL_VECTOR2_ARRAY: {
 			PoolVector<Vector2> data = p_variant;
-			int len = data.size();
+			PoolVector<Vector2>::Read data_r = data.read();
+
+			int len = data_r.size();
 
 			if (buf) {
 				encode_uint32(len, buf);
@@ -1268,7 +1273,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			if (buf) {
 				for (int i = 0; i < len; i++) {
-					Vector2 v = data.get(i);
+					Vector2 v = data_r.get(i);
 
 					encode_float(v.x, &buf[0]);
 					encode_float(v.y, &buf[4]);
@@ -1281,7 +1286,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::POOL_VECTOR3_ARRAY: {
 			PoolVector<Vector3> data = p_variant;
-			int len = data.size();
+			PoolVector<Vector3>::Read data_r = data.read();
+
+			int len = data_r.size();
 
 			if (buf) {
 				encode_uint32(len, buf);
@@ -1292,7 +1299,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			if (buf) {
 				for (int i = 0; i < len; i++) {
-					Vector3 v = data.get(i);
+					Vector3 v = data_r.get(i);
 
 					encode_float(v.x, &buf[0]);
 					encode_float(v.y, &buf[4]);
@@ -1306,7 +1313,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::POOL_COLOR_ARRAY: {
 			PoolVector<Color> data = p_variant;
-			int len = data.size();
+			PoolVector<Color>::Read data_r = data.read();
+
+			int len = data_r.size();
 
 			if (buf) {
 				encode_uint32(len, buf);
@@ -1317,7 +1326,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			if (buf) {
 				for (int i = 0; i < len; i++) {
-					Color c = data.get(i);
+					Color c = data_r.get(i);
 
 					encode_float(c.r, &buf[0]);
 					encode_float(c.g, &buf[4]);

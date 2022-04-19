@@ -1099,11 +1099,12 @@ Array Object::_get_method_list_bind() const {
 
 PoolVector<String> Object::_get_meta_list_bind() const {
 	PoolVector<String> _metaret;
+	PoolVector<String>::Write _metaret_w = _metaret.write();
 
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
 	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		_metaret.push_back(E->get());
+		_metaret_w.push_back(E->get());
 	}
 
 	return _metaret;

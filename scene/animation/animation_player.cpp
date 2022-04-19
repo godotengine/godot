@@ -1110,8 +1110,10 @@ void AnimationPlayer::queue(const StringName &p_name) {
 
 PoolVector<String> AnimationPlayer::get_queue() {
 	PoolVector<String> ret;
+	PoolVector<String>::Write ret_w = ret.write();
+
 	for (List<StringName>::Element *E = queued.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+		ret_w.push_back(E->get());
 	}
 
 	return ret;
