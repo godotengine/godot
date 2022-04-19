@@ -55,17 +55,15 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 		ERR_FAIL_COND(al.is_null());
 		if (p_name == "") {
 			error = TTR("Animation name can't be empty.");
-
-		} else if (String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("[")) {
+		} else if (!AnimationLibrary::is_valid_name(p_name)) {
 			error = TTR("Animation name contains invalid characters: '/', ':', ',' or '['.");
 		} else if (al->has_animation(p_name)) {
 			error = TTR("Animation with the same name already exists.");
 		}
-
 	} else {
 		if (p_name == "" && bool(player->call("has_animation_library", ""))) {
 			error = TTR("Enter a library name.");
-		} else if (String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("[")) {
+		} else if (!AnimationLibrary::is_valid_name(p_name)) {
 			error = TTR("Library name contains invalid characters: '/', ':', ',' or '['.");
 		} else if (bool(player->call("has_animation_library", p_name))) {
 			error = TTR("Library with the same name already exists.");
@@ -258,7 +256,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 				}
 			}
 
-			String name = p_path.get_file().get_basename();
+			String name = AnimationLibrary::validate_name(p_path.get_file().get_basename());
 
 			int attempt = 1;
 

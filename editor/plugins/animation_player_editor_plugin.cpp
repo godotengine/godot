@@ -427,7 +427,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	player->stop();
 
 	String new_name = name->get_text();
-	if (new_name.is_empty() || new_name.contains(":") || new_name.contains("/")) {
+	if (!AnimationLibrary::is_valid_name(new_name)) {
 		error_dialog->set_text(TTR("Invalid animation name!"));
 		error_dialog->popup_centered();
 		return;
