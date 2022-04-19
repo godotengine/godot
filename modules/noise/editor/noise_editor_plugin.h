@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  noise_editor_plugin.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-
-#include "fastnoise_lite.h"
-#include "noise.h"
-#include "noise_texture.h"
+#ifndef NOISE_EDITOR_PLUGIN_H
+#define NOISE_EDITOR_PLUGIN_H
 
 #ifdef TOOLS_ENABLED
+
 #include "editor/editor_plugin.h"
-#include "editor/noise_editor_plugin.h"
-#endif
 
-void register_noise_types() {
-	GDREGISTER_CLASS(NoiseTexture);
-	GDREGISTER_ABSTRACT_CLASS(Noise);
-	GDREGISTER_CLASS(FastNoiseLite);
+class NoiseEditorPlugin : public EditorPlugin {
+	GDCLASS(NoiseEditorPlugin, EditorPlugin)
 
-#ifdef TOOLS_ENABLED
-	EditorPlugins::add_by_type<NoiseEditorPlugin>();
-#endif
-}
+public:
+	String get_name() const override;
 
-void unregister_noise_types() {
-}
+	NoiseEditorPlugin();
+};
+
+#endif // TOOLS_ENABLED
+
+#endif // NOISE_EDITOR_PLUGIN_H

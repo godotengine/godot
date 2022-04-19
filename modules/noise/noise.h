@@ -81,7 +81,7 @@ class Noise : public Resource {
 	};
 
 	template <typename T>
-	Ref<Image> _generate_seamless_image(Ref<Image> p_src, int p_width, int p_height, bool p_invert, real_t p_blend_skirt) {
+	Ref<Image> _generate_seamless_image(Ref<Image> p_src, int p_width, int p_height, bool p_invert, real_t p_blend_skirt) const {
 		/*
 		To make a seamless image, we swap the quadrants so the edges are perfect matches.
 		We initially get a 10% larger image so we have an overlap we can use to blend over the seams.
@@ -225,16 +225,16 @@ public:
 	// Virtual destructor so we can delete any Noise derived object when referenced as a Noise*.
 	virtual ~Noise() {}
 
-	virtual real_t get_noise_1d(real_t p_x) = 0;
+	virtual real_t get_noise_1d(real_t p_x) const = 0;
 
-	virtual real_t get_noise_2dv(Vector2 p_v) = 0;
-	virtual real_t get_noise_2d(real_t p_x, real_t p_y) = 0;
+	virtual real_t get_noise_2dv(Vector2 p_v) const = 0;
+	virtual real_t get_noise_2d(real_t p_x, real_t p_y) const = 0;
 
-	virtual real_t get_noise_3dv(Vector3 p_v) = 0;
-	virtual real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) = 0;
+	virtual real_t get_noise_3dv(Vector3 p_v) const = 0;
+	virtual real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const = 0;
 
-	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false) = 0;
-	virtual Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false, real_t p_blend_skirt = 0.1);
+	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false) const;
+	virtual Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, real_t p_blend_skirt = 0.1) const;
 };
 
 #endif // NOISE_H

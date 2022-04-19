@@ -51,14 +51,17 @@ private:
 	mutable RID texture;
 	uint32_t flags = 0;
 
-	Ref<Noise> noise;
+	Size2i size = Size2i(512, 512);
 	bool invert = false;
-	Vector2i size = Vector2i(512, 512);
-	Vector2 noise_offset;
+	bool in_3d_space = false;
+	bool generate_mipmaps = true;
 	bool seamless = false;
 	real_t seamless_blend_skirt = 0.1;
 	bool as_normal_map = false;
 	float bump_strength = 8.0;
+
+	Ref<Gradient> color_ramp;
+	Ref<Noise> noise;
 
 	void _thread_done(const Ref<Image> &p_image);
 	static void _thread_function(void *p_ud);
@@ -67,6 +70,8 @@ private:
 	Ref<Image> _generate_texture();
 	void _update_texture();
 	void _set_texture_image(const Ref<Image> &p_image);
+
+	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
 
 protected:
 	static void _bind_methods();
@@ -82,6 +87,12 @@ public:
 	void set_invert(bool p_invert);
 	bool get_invert() const;
 
+	void set_in_3d_space(bool p_enable);
+	bool is_in_3d_space() const;
+
+	void set_generate_mipmaps(bool p_enable);
+	bool is_generating_mipmaps() const;
+
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
 
@@ -93,6 +104,9 @@ public:
 
 	void set_bump_strength(float p_bump_strength);
 	float get_bump_strength();
+
+	void set_color_ramp(const Ref<Gradient> &p_gradient);
+	Ref<Gradient> get_color_ramp() const;
 
 	int get_width() const override;
 	int get_height() const override;

@@ -24,8 +24,19 @@
 		<member name="bump_strength" type="float" setter="set_bump_strength" getter="get_bump_strength" default="8.0">
 			Strength of the bump maps used in this texture. A higher value will make the bump maps appear larger while a lower value will make them appear softer.
 		</member>
+		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
+			A [Gradient] which is used to map the luminance of each pixel to a color value.
+		</member>
+		<member name="generate_mipmaps" type="bool" setter="set_generate_mipmaps" getter="is_generating_mipmaps" default="true">
+			Determines whether mipmaps are generated for this texture.
+			Enabling this results in less texture aliasing, but the noise texture generation may take longer.
+			Requires (anisotropic) mipmap filtering to be enabled for a material to have an effect.
+		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="512">
 			Height of the generated texture.
+		</member>
+		<member name="in_3d_space" type="bool" setter="set_in_3d_space" getter="is_in_3d_space" default="false">
+			Determines whether the noise image is calculated in 3D space. May result in reduced contrast.
 		</member>
 		<member name="invert" type="bool" setter="set_invert" getter="get_invert" default="false">
 			If [code]true[/code], inverts the noise texture. White becomes black, black becomes white.
