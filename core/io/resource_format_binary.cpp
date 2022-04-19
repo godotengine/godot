@@ -1449,11 +1449,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::VECTOR4: {
 			f->store_32(VARIANT_VECTOR4);
 			Vector4 val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
-			f->store_32(val.z);
-			f->store_32(val.w);
-
+			f->store_real(val.x);
+			f->store_real(val.y);
+			f->store_real(val.z);
+			f->store_real(val.w);
 		} break;
 		case Variant::PLANE: {
 			f->store_32(VARIANT_PLANE);
