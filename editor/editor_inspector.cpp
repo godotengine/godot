@@ -3515,7 +3515,9 @@ void EditorInspector::_notification(int p_what) {
 				get_v_scroll_bar()->call_deferred(SNAME("set_value"), update_scroll_request);
 				update_scroll_request = -1;
 			}
-			if (refresh_countdown > 0) {
+			if (update_tree_pending) {
+				refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+			} else if (refresh_countdown > 0) {
 				refresh_countdown -= get_process_delta_time();
 				if (refresh_countdown <= 0) {
 					for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
