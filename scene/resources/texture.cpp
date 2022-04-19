@@ -2278,6 +2278,8 @@ Ref<Image> GradientTexture1D::get_image() const {
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
 
+//////////////////
+
 GradientTexture2D::GradientTexture2D() {
 	_queue_update();
 }
@@ -2299,7 +2301,8 @@ void GradientTexture2D::set_gradient(Ref<Gradient> p_gradient) {
 	if (gradient.is_valid()) {
 		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture2D::_queue_update));
 	}
-	_queue_update();
+	_update();
+	emit_changed();
 }
 
 Ref<Gradient> GradientTexture2D::get_gradient() const {
