@@ -52,6 +52,20 @@ public:
 
 	virtual bool can_create_resources_async() const override { return false; }
 
+	/* Canvas Texture API */
+
+	virtual RID canvas_texture_allocate() override { return RID(); };
+	virtual void canvas_texture_initialize(RID p_rid) override{};
+	virtual void canvas_texture_free(RID p_rid) override{};
+
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override{};
+	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override{};
+
+	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override{};
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override{};
+
+	/* Texture API */
+
 	DummyTexture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
 
@@ -109,6 +123,48 @@ public:
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override{};
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
+
+	/* DECAL API */
+	virtual RID decal_allocate() override { return RID(); }
+	virtual void decal_initialize(RID p_rid) override {}
+	virtual void decal_free(RID p_rid) override{};
+
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
+	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override {}
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override {}
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) override {}
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) override {}
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) override {}
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) override {}
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override {}
+
+	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+
+	/* RENDER TARGET */
+
+	virtual RID render_target_create() override { return RID(); }
+	virtual void render_target_free(RID p_rid) override {}
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override {}
+	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override {}
+	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override {}
+	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override {}
+	virtual bool render_target_was_used(RID p_render_target) override { return false; }
+	virtual void render_target_set_as_unused(RID p_render_target) override {}
+
+	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
+	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }
+	virtual Color render_target_get_clear_request_color(RID p_render_target) override { return Color(); }
+	virtual void render_target_disable_clear_request(RID p_render_target) override {}
+	virtual void render_target_do_clear_request(RID p_render_target) override {}
+
+	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override {}
+	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
+	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override {}
 };
 
 } // namespace RendererDummy

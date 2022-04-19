@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "storage/texture_storage.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -87,6 +88,8 @@
 #endif
 
 void RasterizerGLES3::begin_frame(double frame_step) {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+
 	frame++;
 	delta = frame_step;
 
@@ -95,9 +98,9 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	time_total = Math::fmod(time_total, time_roll_over);
 
-	storage.frame.time = time_total;
-	storage.frame.count++;
-	storage.frame.delta = frame_step;
+	texture_storage->frame.time = time_total;
+	texture_storage->frame.count++;
+	texture_storage->frame.delta = frame_step;
 
 	storage.update_dirty_resources();
 
@@ -269,9 +272,10 @@ void RasterizerGLES3::prepare_for_blitting_render_targets() {
 }
 
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect) {
-	ERR_FAIL_COND(storage.frame.current_rt);
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	ERR_FAIL_COND(texture_storage->frame.current_rt);
 
-	GLES3::RenderTarget *rt = storage.render_target_owner.get_or_null(p_render_target);
+	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 	ERR_FAIL_COND(!rt);
 
 	// TODO: do we need a keep 3d linear option?
@@ -282,16 +286,17 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
 	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glBlitFramebuffer(0, 0, rt->width, rt->height, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 // is this p_screen useless in a multi window environment?
 void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	// do this once off for all blits
-	storage.bind_framebuffer_system();
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
-	storage.frame.current_rt = nullptr;
+	texture_storage->frame.current_rt = nullptr;
 
 	for (int i = 0; i < p_amount; i++) {
 		const BlitToScreen &blit = p_render_targets[i];

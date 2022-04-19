@@ -40,6 +40,10 @@ Config *Config::singleton = nullptr;
 Config::Config() {
 	singleton = this;
 	should_orphan = true;
+
+	// If this is to early we need to change our code similar to what we're doing in RendererRD,
+	// and instantiate our storage classes when we are ready to do so in the order we want.
+	initialize();
 }
 
 Config::~Config() {
