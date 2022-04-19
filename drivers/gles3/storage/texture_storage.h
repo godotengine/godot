@@ -33,12 +33,19 @@
 
 #ifdef GLES3_ENABLED
 
-#include "canvas_texture_storage.h"
 #include "config.h"
 #include "core/os/os.h"
 #include "core/templates/rid_owner.h"
-#include "render_target_storage.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
+
+// This must come first to avoid windows.h mess
+#include "platform_config.h"
+#ifndef OPENGL_INCLUDE_H
+#include <GLES3/gl3.h>
+#else
+#include OPENGL_INCLUDE_H
+#endif
 
 namespace GLES3 {
 
@@ -89,6 +96,24 @@ enum OpenGLTextureFlags {
 	TEXTURE_FLAG_USED_FOR_STREAMING = 2048,
 	TEXTURE_FLAGS_DEFAULT = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_FILTER
 };
+
+struct CanvasTexture {
+	RID diffuse;
+	RID normal_map;
+	RID specular;
+	Color specular_color = Color(1, 1, 1, 1);
+	float shininess = 1.0;
+
+	RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+	RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+
+	Size2i size_cache = Size2i(1, 1);
+	bool use_normal_cache = false;
+	bool use_specular_cache = false;
+	bool cleared_cache = true;
+};
+
+struct RenderTarget;
 
 struct Texture {
 	RID self;
@@ -296,12 +321,93 @@ private:
 	RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 };
 
+struct RenderTarget {
+	RID self;
+	GLuint fbo = 0;
+	GLuint color = 0;
+	GLuint depth = 0;
+
+	GLuint multisample_fbo = 0;
+	GLuint multisample_color = 0;
+	GLuint multisample_depth = 0;
+	bool multisample_active = false;
+
+	struct Effect {
+		GLuint fbo = 0;
+		int width = 0;
+		int height = 0;
+
+		GLuint color = 0;
+	};
+
+	Effect copy_screen_effect;
+
+	struct MipMaps {
+		struct Size {
+			GLuint fbo = 0;
+			GLuint color = 0;
+			int width = 0;
+			int height = 0;
+		};
+
+		Vector<Size> sizes;
+		GLuint color = 0;
+		int levels = 0;
+	};
+
+	MipMaps mip_maps[2];
+
+	struct External {
+		GLuint fbo = 0;
+		GLuint color = 0;
+		GLuint depth = 0;
+		RID texture;
+	} external;
+
+	int x = 0;
+	int y = 0;
+	int width = 0;
+	int height = 0;
+
+	bool flags[RendererTextureStorage::RENDER_TARGET_FLAG_MAX] = {};
+
+	// instead of allocating sized render targets immediately,
+	// defer this for faster startup
+	bool allocate_is_dirty = false;
+	bool used_in_frame = false;
+	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+
+	bool use_fxaa = false;
+	bool use_debanding = false;
+
+	RID texture;
+
+	bool used_dof_blur_near = false;
+	bool mip_maps_allocated = false;
+
+	Color clear_color = Color(1, 1, 1, 1);
+	bool clear_requested = false;
+
+	RenderTarget() {
+		for (int i = 0; i < RendererTextureStorage::RENDER_TARGET_FLAG_MAX; ++i) {
+			flags[i] = false;
+		}
+		external.fbo = 0;
+	}
+};
+
 class TextureStorage : public RendererTextureStorage {
 private:
 	static TextureStorage *singleton;
 
 	Thread::ID _main_thread_id = 0;
 	bool _is_main_thread();
+
+	/* Canvas Texture API */
+
+	RID_Owner<CanvasTexture, true> canvas_texture_owner;
+
+	/* Texture API */
 
 	mutable RID_PtrOwner<Texture> texture_owner;
 
@@ -310,11 +416,49 @@ private:
 
 	void texture_set_proxy(RID p_texture, RID p_proxy);
 
+	/* Render Target API */
+
+	mutable RID_PtrOwner<RenderTarget> render_target_owner;
+
+	// make access easier to these
+	struct Dimensions {
+		// render target
+		int rt_width;
+		int rt_height;
+
+		// window
+		int win_width;
+		int win_height;
+		Dimensions() {
+			rt_width = 0;
+			rt_height = 0;
+			win_width = 0;
+			win_height = 0;
+		}
+	} _dims;
+
 public:
 	static TextureStorage *get_singleton();
 
 	TextureStorage();
 	virtual ~TextureStorage();
+
+	/* Canvas Texture API */
+
+	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); };
+	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
+
+	virtual RID canvas_texture_allocate() override;
+	virtual void canvas_texture_initialize(RID p_rid) override;
+	virtual void canvas_texture_free(RID p_rid) override;
+
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override;
+	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override;
+
+	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
+
+	/* Texture API */
 
 	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
@@ -380,6 +524,86 @@ public:
 	void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
 	void textures_keep_original(bool p_enable);
+
+	/* DECAL API */
+
+	virtual RID decal_allocate() override;
+	virtual void decal_initialize(RID p_rid) override;
+	virtual void decal_free(RID p_rid) override{};
+
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override;
+	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override;
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override;
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) override;
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) override;
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) override;
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) override;
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
+
+	virtual AABB decal_get_aabb(RID p_decal) const override;
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+
+	/* RENDER TARGET API */
+
+	static GLuint system_fbo;
+
+	struct Frame {
+		GLES3::RenderTarget *current_rt;
+
+		// these 2 may have been superseded by the equivalents in the render target.
+		// these may be able to be removed.
+		bool clear_request;
+		Color clear_request_color;
+
+		float time;
+		float delta;
+		uint64_t count;
+
+		Frame() {
+			//			current_rt = nullptr;
+			//			clear_request = false;
+		}
+	} frame;
+
+	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
+	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+
+	void _render_target_clear(RenderTarget *rt);
+	void _render_target_allocate(RenderTarget *rt);
+	void _set_current_render_target(RID p_render_target);
+
+	virtual RID render_target_create() override;
+	virtual void render_target_free(RID p_rid) override;
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
+	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
+	Size2i render_target_get_size(RID p_render_target);
+	virtual RID render_target_get_texture(RID p_render_target) override;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
+
+	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override;
+	virtual bool render_target_was_used(RID p_render_target) override;
+	void render_target_clear_used(RID p_render_target);
+	void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa);
+	void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
+	void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
+
+	// new
+	void render_target_set_as_unused(RID p_render_target) override {
+		render_target_clear_used(p_render_target);
+	}
+
+	void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override;
+	bool render_target_is_clear_requested(RID p_render_target) override;
+	Color render_target_get_clear_request_color(RID p_render_target) override;
+	void render_target_disable_clear_request(RID p_render_target) override;
+	void render_target_do_clear_request(RID p_render_target) override;
+
+	void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override;
+	Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
+	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
 };
 
 } // namespace GLES3

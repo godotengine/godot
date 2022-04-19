@@ -39,10 +39,10 @@
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
-#include "servers/rendering/renderer_rd/storage_rd/canvas_texture_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/decal_atlas_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
@@ -50,11 +50,11 @@ class RendererCompositorRD : public RendererCompositor {
 protected:
 	UniformSetCacheRD *uniform_set_cache = nullptr;
 	RendererCanvasRenderRD *canvas = nullptr;
-	RendererRD::CanvasTextureStorage *canvas_texture_storage;
+	RendererRD::LightStorage *light_storage;
 	RendererRD::MaterialStorage *material_storage;
 	RendererRD::MeshStorage *mesh_storage;
+	RendererRD::ParticlesStorage *particles_storage;
 	RendererRD::TextureStorage *texture_storage;
-	RendererRD::DecalAtlasStorage *decal_atlas_storage;
 	RendererStorageRD *storage = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
@@ -98,10 +98,10 @@ protected:
 	static uint64_t frame;
 
 public:
-	RendererCanvasTextureStorage *get_canvas_texture_storage() { return canvas_texture_storage; }
-	RendererDecalAtlasStorage *get_decal_atlas_storage() { return decal_atlas_storage; }
+	RendererLightStorage *get_light_storage() { return light_storage; };
 	RendererMaterialStorage *get_material_storage() { return material_storage; };
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; };
+	RendererParticlesStorage *get_particles_storage() { return particles_storage; };
 	RendererTextureStorage *get_texture_storage() { return texture_storage; };
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }

@@ -84,7 +84,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
-	RSG::storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
+	RSG::particles_storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
 	RSG::scene->render_probes();
 
@@ -398,10 +398,10 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RendererSceneCull *sr = memnew(RendererSceneCull);
 	RSG::scene = sr;
 	RSG::rasterizer = RendererCompositor::create();
-	RSG::canvas_texture_storage = RSG::rasterizer->get_canvas_texture_storage();
-	RSG::decal_atlas_storage = RSG::rasterizer->get_decal_atlas_storage();
+	RSG::light_storage = RSG::rasterizer->get_light_storage();
 	RSG::material_storage = RSG::rasterizer->get_material_storage();
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
+	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
