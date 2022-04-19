@@ -68,7 +68,6 @@ void ColorPicker::_notification(int p_what) {
 			uv_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("sv_width")), get_theme_constant(SNAME("sv_height"))));
 			w_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("h_width")), 0));
 			wheel_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("sv_width")), get_theme_constant(SNAME("sv_height"))));
-			
 			for (int i = 0; i < 4; i++) {
 				labels[i]->set_custom_minimum_size(Size2(get_theme_constant(SNAME("label_width")), 0));
 				set_offset((Side)i, get_offset((Side)i) + get_theme_constant(SNAME("margin")));
