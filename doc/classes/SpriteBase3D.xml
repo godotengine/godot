@@ -53,6 +53,9 @@
 		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
 		</member>
+		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the label is rendered at the same size regardless of distance.
+		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
 		</member>
@@ -63,6 +66,9 @@
 			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of light.
 			[b]Note:[/b] If a [member GeometryInstance3D.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the color defined in [member modulate] will be ignored. For a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function.
 		</member>
+		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
@@ -71,6 +77,9 @@
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
 			If [code]true[/code], the [Light3D] in the [Environment] has effects on the sprite.
+		</member>
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+			Filter flags for the texture. See [enum BaseMaterial3D.TextureFilter] for options.
 		</member>
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
@@ -86,7 +95,13 @@
 		<constant name="FLAG_DOUBLE_SIDED" value="2" enum="DrawFlags">
 			If set, texture can be seen from the back as well. If not, the texture is invisible when looking at it from behind.
 		</constant>
-		<constant name="FLAG_MAX" value="3" enum="DrawFlags">
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="3" enum="DrawFlags">
+			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+		</constant>
+		<constant name="FLAG_FIXED_SIZE" value="4" enum="DrawFlags">
+			Label is scaled by depth so that it always appears the same size on screen.
+		</constant>
+		<constant name="FLAG_MAX" value="5" enum="DrawFlags">
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">

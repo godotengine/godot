@@ -321,6 +321,19 @@ public:
 	Sprite3DGizmoPlugin();
 };
 
+class Label3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Label3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	bool can_be_hidden() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	Label3DGizmoPlugin();
+};
+
 class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Position3DGizmoPlugin, EditorNode3DGizmoPlugin);
 

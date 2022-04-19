@@ -146,6 +146,16 @@ public:
 		FONT_FIXED_WIDTH = 1 << 2,
 	};
 
+	enum StructuredTextParser {
+		STRUCTURED_TEXT_DEFAULT,
+		STRUCTURED_TEXT_URI,
+		STRUCTURED_TEXT_FILE,
+		STRUCTURED_TEXT_EMAIL,
+		STRUCTURED_TEXT_LIST,
+		STRUCTURED_TEXT_NONE,
+		STRUCTURED_TEXT_CUSTOM
+	};
+
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -190,6 +200,9 @@ public:
 
 	virtual void font_set_antialiased(const RID &p_font_rid, bool p_antialiased) = 0;
 	virtual bool font_is_antialiased(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
+	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) = 0;
 	virtual bool font_is_multichannel_signed_distance_field(const RID &p_font_rid) const = 0;
@@ -274,6 +287,8 @@ public:
 
 	virtual int64_t font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const = 0;
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) = 0;
+	virtual RID font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const = 0;
+	virtual Size2 font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const = 0;
 
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const = 0;
 
@@ -422,6 +437,8 @@ public:
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
+	Array parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+
 	TextServer();
 	~TextServer();
 };
@@ -509,6 +526,7 @@ VARIANT_ENUM_CAST(TextServer::Feature);
 VARIANT_ENUM_CAST(TextServer::ContourPointTag);
 VARIANT_ENUM_CAST(TextServer::SpacingType);
 VARIANT_ENUM_CAST(TextServer::FontStyle);
+VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);

@@ -242,6 +242,7 @@ public:
 		FLAG_INVERT_HEIGHTMAP,
 		FLAG_SUBSURFACE_MODE_SKIN,
 		FLAG_PARTICLE_TRAILS_MODE,
+		FLAG_ALBEDO_TEXTURE_MSDF,
 		FLAG_MAX
 	};
 
@@ -412,6 +413,8 @@ private:
 		StringName uv2_blend_sharpness;
 		StringName grow;
 		StringName proximity_fade_distance;
+		StringName msdf_pixel_range;
+		StringName msdf_outline_size;
 		StringName distance_fade_min;
 		StringName distance_fade_max;
 		StringName ao_light_affect;
@@ -500,6 +503,9 @@ private:
 	bool proximity_fade_enabled = false;
 	float proximity_fade_distance;
 
+	float msdf_pixel_range = 4.f;
+	float msdf_outline_size = 0.f;
+
 	DistanceFadeMode distance_fade = DISTANCE_FADE_DISABLED;
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
@@ -527,9 +533,7 @@ private:
 
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
-	static const int MAX_MATERIALS_FOR_2D = 128;
-
-	static Ref<StandardMaterial3D> materials_for_2d[MAX_MATERIALS_FOR_2D]; //used by Sprite3D and other stuff
+	static HashMap<uint64_t, Ref<StandardMaterial3D>> materials_for_2d; //used by Sprite3D, Label3D and other stuff
 
 	void _validate_high_end(const String &text, PropertyInfo &property) const;
 
@@ -714,6 +718,12 @@ public:
 	void set_proximity_fade_distance(float p_distance);
 	float get_proximity_fade_distance() const;
 
+	void set_msdf_pixel_range(float p_range);
+	float get_msdf_pixel_range() const;
+
+	void set_msdf_outline_size(float p_size);
+	float get_msdf_outline_size() const;
+
 	void set_distance_fade(DistanceFadeMode p_mode);
 	DistanceFadeMode get_distance_fade() const;
 
@@ -739,7 +749,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RID *r_shader_rid = nullptr);
 
 	virtual RID get_shader_rid() const override;
 

@@ -65,7 +65,7 @@ private:
 		Ref<TextLine> text_buf;
 		Dictionary opentype_features;
 		String language;
-		Control::StructuredTextParser st_parser = Control::STRUCTURED_TEXT_DEFAULT;
+		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		Array st_args;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		bool dirty = true;
@@ -220,8 +220,8 @@ public:
 	int get_opentype_feature(int p_column, const String &p_name) const;
 	void clear_opentype_features(int p_column);
 
-	void set_structured_text_bidi_override(int p_column, Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
+	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 
 	void set_structured_text_bidi_override_options(int p_column, Array p_args);
 	Array get_structured_text_bidi_override_options(int p_column) const;

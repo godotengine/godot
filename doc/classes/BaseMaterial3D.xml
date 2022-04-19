@@ -63,6 +63,9 @@
 		<member name="albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
 			Forces a conversion of the [member albedo_texture] from sRGB space to linear space.
 		</member>
+		<member name="albedo_tex_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF paramenters.
+		</member>
 		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
 		</member>
@@ -242,6 +245,12 @@
 		</member>
 		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="msdf_outline_size" type="float" setter="set_msdf_outline_size" getter="get_msdf_outline_size" default="0.0">
+			The width of the shape outine.
+		</member>
+		<member name="msdf_pixel_range" type="float" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="4.0">
+			The width of the range around the shape between the minimum and maximum representable signed distance.
 		</member>
 		<member name="no_depth_test" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
@@ -647,7 +656,10 @@
 		</constant>
 		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="20" enum="Flags">
+		<constant name="FLAG_ALBEDO_TEXTURE_MSDF" value="20" enum="Flags">
+			Enables multichannel signed distance field rendering shader.
+		</constant>
+		<constant name="FLAG_MAX" value="21" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

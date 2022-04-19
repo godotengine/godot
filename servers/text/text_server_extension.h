@@ -104,6 +104,11 @@ public:
 	GDVIRTUAL2(font_set_antialiased, RID, bool);
 	GDVIRTUAL1RC(bool, font_is_antialiased, RID);
 
+	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) override;
+	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const override;
+	GDVIRTUAL2(font_set_generate_mipmaps, RID, bool);
+	GDVIRTUAL1RC(bool, font_get_generate_mipmaps, RID);
+
 	virtual void font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) override;
 	virtual bool font_is_multichannel_signed_distance_field(const RID &p_font_rid) const override;
 	GDVIRTUAL2(font_set_multichannel_signed_distance_field, RID, bool);
@@ -244,6 +249,12 @@ public:
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) override;
 	GDVIRTUAL3RC(int64_t, font_get_glyph_texture_idx, RID, const Vector2i &, int64_t);
 	GDVIRTUAL4(font_set_glyph_texture_idx, RID, const Vector2i &, int64_t, int64_t);
+
+	virtual RID font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
+	GDVIRTUAL3RC(RID, font_get_glyph_texture_rid, RID, const Vector2i &, int64_t);
+
+	virtual Size2 font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
+	GDVIRTUAL3RC(Size2, font_get_glyph_texture_size, RID, const Vector2i &, int64_t);
 
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const override;
 	GDVIRTUAL3RC(Dictionary, font_get_glyph_contours, RID, int64_t, int64_t);
@@ -478,6 +489,9 @@ public:
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 	GDVIRTUAL2RC(String, string_to_upper, const String &, const String &);
 	GDVIRTUAL2RC(String, string_to_lower, const String &, const String &);
+
+	Array parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	GDVIRTUAL3RC(Array, parse_structured_text, StructuredTextParser, const Array &, const String &);
 
 	TextServerExtension();
 	~TextServerExtension();
