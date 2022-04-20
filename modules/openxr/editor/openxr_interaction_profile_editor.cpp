@@ -209,6 +209,8 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 }
 
 void OpenXRInteractionProfileEditor::_update_interaction_profile() {
+	ERR_FAIL_NULL(profile_def);
+
 	// out with the old...
 	while (main_hb->get_child_count() > 0) {
 		memdelete(main_hb->get_child(0));

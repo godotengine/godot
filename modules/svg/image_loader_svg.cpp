@@ -136,7 +136,7 @@ void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const
 	p_extensions->push_back("svg");
 }
 
-Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *p_fileaccess, bool p_force_linear, float p_scale) {
+Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, bool p_force_linear, float p_scale) {
 	String svg = p_fileaccess->get_as_utf8_string();
 	create_image_from_string(p_image, svg, p_scale, false, false);
 	ERR_FAIL_COND_V(p_image->is_empty(), FAILED);

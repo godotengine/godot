@@ -855,6 +855,8 @@ void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, co
 		return;
 	}
 
+	ERR_FAIL_INDEX(p_shape, CursorShape::CURSOR_MAX);
+
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 

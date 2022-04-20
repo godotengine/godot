@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  canvas_texture_storage.h                                             */
+/*  animation_library_editor.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,92 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CANVAS_TEXTURE_STORAGE_GLES3_H
-#define CANVAS_TEXTURE_STORAGE_GLES3_H
+#ifndef ANIMATION_LIBRARY_EDITOR_H
+#define ANIMATION_LIBRARY_EDITOR_H
 
-#ifdef GLES3_ENABLED
+#include "editor/animation_track_editor.h"
+#include "editor/editor_plugin.h"
+#include "scene/animation/animation_player.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
 
-#include "core/templates/rid_owner.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
+class EditorFileDialog;
 
-namespace GLES3 {
+class AnimationLibraryEditor : public AcceptDialog {
+	GDCLASS(AnimationLibraryEditor, AcceptDialog)
 
-struct CanvasTexture {
-	RID diffuse;
-	RID normal_map;
-	RID specular;
-	Color specular_color = Color(1, 1, 1, 1);
-	float shininess = 1.0;
+	enum {
+		LIB_BUTTON_ADD,
+		LIB_BUTTON_LOAD,
+		LIB_BUTTON_PASTE,
+		LIB_BUTTON_FILE,
+		LIB_BUTTON_DELETE,
+	};
+	enum {
+		ANIM_BUTTON_COPY,
+		ANIM_BUTTON_FILE,
+		ANIM_BUTTON_DELETE,
+	};
 
-	RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-	RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+	enum FileMenuAction {
+		FILE_MENU_SAVE_LIBRARY,
+		FILE_MENU_SAVE_AS_LIBRARY,
+		FILE_MENU_MAKE_LIBRARY_UNIQUE,
+		FILE_MENU_EDIT_LIBRARY,
 
-	Size2i size_cache = Size2i(1, 1);
-	bool use_normal_cache = false;
-	bool use_specular_cache = false;
-	bool cleared_cache = true;
-};
+		FILE_MENU_SAVE_ANIMATION,
+		FILE_MENU_SAVE_AS_ANIMATION,
+		FILE_MENU_MAKE_ANIMATION_UNIQUE,
+		FILE_MENU_EDIT_ANIMATION,
+	};
 
-class CanvasTextureStorage : public RendererCanvasTextureStorage {
-private:
-	static CanvasTextureStorage *singleton;
+	enum FileDialogAction {
+		FILE_DIALOG_ACTION_OPEN_LIBRARY,
+		FILE_DIALOG_ACTION_SAVE_LIBRARY,
+		FILE_DIALOG_ACTION_OPEN_ANIMATION,
+		FILE_DIALOG_ACTION_SAVE_ANIMATION,
+	};
 
-	RID_Owner<CanvasTexture, true> canvas_texture_owner;
+	FileDialogAction file_dialog_action = FILE_DIALOG_ACTION_OPEN_ANIMATION;
+
+	StringName file_dialog_animation;
+	StringName file_dialog_library;
+
+	AcceptDialog *error_dialog = nullptr;
+	bool adding_animation = false;
+	StringName adding_animation_to_library;
+	EditorFileDialog *file_dialog = nullptr;
+	ConfirmationDialog *add_library_dialog = nullptr;
+	LineEdit *add_library_name = nullptr;
+	Label *add_library_validate = nullptr;
+	PopupMenu *file_popup = nullptr;
+
+	Tree *tree = nullptr;
+
+	Object *player = nullptr;
+
+	void _add_library();
+	void _add_library_validate(const String &p_name);
+	void _add_library_confirm();
+	void _load_library();
+	void _load_file(String p_path);
+
+	void _item_renamed();
+	void _button_pressed(TreeItem *p_item, int p_column, int p_button);
+
+	void _file_popup_selected(int p_id);
+
+	bool updating = false;
+
+protected:
+	void _update_editor(Object *p_player);
+	static void _bind_methods();
 
 public:
-	static CanvasTextureStorage *get_singleton();
-
-	CanvasTextureStorage();
-	virtual ~CanvasTextureStorage();
-
-	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); };
-	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
-
-	virtual RID canvas_texture_allocate() override;
-	virtual void canvas_texture_initialize(RID p_rid) override;
-	virtual void canvas_texture_free(RID p_rid) override;
-
-	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override;
-	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override;
-
-	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
-	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
+	void set_animation_player(Object *p_player);
+	void show_dialog();
+	void update_tree();
+	AnimationLibraryEditor();
 };
 
-} // namespace GLES3
-
-#endif // !GLES3_ENABLED
-
-#endif // !CANVAS_TEXTURE_STORAGE_GLES3_H
+#endif // ANIMATIONPLAYERLIBRARYEDITOR_H

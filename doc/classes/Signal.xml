@@ -6,6 +6,8 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="Using Signals">$DOCS_URL/getting_started/step_by_step/signals.html</link>
+		<link title="GDScript Basics">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#signals</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Signal">

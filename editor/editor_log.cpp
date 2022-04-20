@@ -168,7 +168,7 @@ void EditorLog::_copy_request() {
 	String text = log->get_selected_text();
 
 	if (text.is_empty()) {
-		text = log->get_text();
+		text = log->get_parsed_text();
 	}
 
 	if (!text.is_empty()) {

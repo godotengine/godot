@@ -349,6 +349,15 @@
 			<argument index="0" name="files" type="PackedStringArray" />
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
+				Note that this method only works with non-embedded windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+				Example usage:
+				[codeblock]
+				func _ready():
+				    get_viewport().files_dropped.connect(on_files_dropped)
+
+				func on_files_dropped(files):
+				    print(files)
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="focus_entered">

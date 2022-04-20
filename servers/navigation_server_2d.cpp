@@ -193,7 +193,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer2D::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &NavigationServer2D::agent_set_callback, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("free", "object"), &NavigationServer2D::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer2D::free);
 
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 }

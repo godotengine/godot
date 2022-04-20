@@ -56,7 +56,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	Image::Format format = Image::Format::FORMAT_L8;
 	Vector<uint8_t> frame_data;
 	int frames_pending = 0;
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 	String file_name;
 	int audio_frames_wrote = 0;
 	Point2i size;

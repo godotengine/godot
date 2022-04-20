@@ -110,11 +110,11 @@
 				Sets the current velocity of the agent.
 			</description>
 		</method>
-		<method name="free" qualifiers="const">
+		<method name="free_rid" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="object" type="RID" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
-				Destroy the RID
+				Destroys the given RID.
 			</description>
 		</method>
 		<method name="map_create" qualifiers="const">

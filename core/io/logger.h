@@ -81,9 +81,8 @@ class RotatedFileLogger : public Logger {
 	String base_path;
 	int max_files;
 
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 
-	void close_file();
 	void clear_old_backups();
 	void rotate_file();
 
@@ -91,8 +90,6 @@ public:
 	RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0;
-
-	virtual ~RotatedFileLogger();
 };
 
 class CompositeLogger : public Logger {

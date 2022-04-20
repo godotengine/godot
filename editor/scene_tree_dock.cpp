@@ -3149,9 +3149,8 @@ void SceneTreeDock::_update_create_root_dialog() {
 			favorite_nodes->get_child(i)->queue_delete();
 		}
 
-		FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites.Node"), FileAccess::READ);
-
-		if (f) {
+		Ref<FileAccess> f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites.Node"), FileAccess::READ);
+		if (f.is_valid()) {
 			while (!f->eof_reached()) {
 				String l = f->get_line().strip_edges();
 
@@ -3168,8 +3167,6 @@ void SceneTreeDock::_update_create_root_dialog() {
 					button->connect("pressed", callable_mp(this, &SceneTreeDock::_favorite_root_selected), make_binds(l));
 				}
 			}
-
-			memdelete(f);
 		}
 
 		if (!favorite_nodes->is_visible_in_tree()) {

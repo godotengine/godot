@@ -231,14 +231,14 @@ Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 			}
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.left | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.right | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_DONE_BIT: {
@@ -331,14 +331,14 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 			}
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.left | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.right | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_DONE_BIT: {
@@ -431,14 +431,14 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 			}
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.left | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.right | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_DONE_BIT: {
@@ -551,14 +551,14 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 			}
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.left | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.right | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_DONE_BIT: {
@@ -644,14 +644,14 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 			}
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.left | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
 				level++;
+				stack[level] = b.right | TEST_AABB_BIT;
 				continue;
 			}
 			case VISIT_DONE_BIT: {

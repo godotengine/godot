@@ -87,6 +87,7 @@ class PopupMenu : public Popup {
 	};
 
 	bool close_allowed = false;
+	bool activated_by_keyboard = false;
 
 	Timer *minimum_lifetime_timer = nullptr;
 	Timer *submenu_timer = nullptr;
@@ -107,7 +108,7 @@ class PopupMenu : public Popup {
 	void _shape_item(int p_item);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
-	void _activate_submenu(int p_over);
+	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
 	uint64_t popup_time_msec = 0;

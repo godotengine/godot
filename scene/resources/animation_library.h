@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  decal_atlas_storage.h                                                */
+/*  animation_library.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,35 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DECAL_ATLAS_STORAGE_DUMMY_H
-#define DECAL_ATLAS_STORAGE_DUMMY_H
+#ifndef ANIMATION_LIBRARY_H
+#define ANIMATION_LIBRARY_H
 
-#include "servers/rendering/storage/decal_atlas_storage.h"
+#include "core/variant/typed_array.h"
+#include "scene/resources/animation.h"
 
-namespace RendererDummy {
+class AnimationLibrary : public Resource {
+	GDCLASS(AnimationLibrary, Resource)
 
-class DecalAtlasStorage : public RendererDecalAtlasStorage {
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
+
+	TypedArray<StringName> _get_animation_list() const;
+
+	friend class AnimationPlayer; //for faster access
+	Map<StringName, Ref<Animation>> animations;
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual RID decal_allocate() override { return RID(); }
-	virtual void decal_initialize(RID p_rid) override {}
-	virtual void decal_free(RID p_rid) override{};
+	Error add_animation(const StringName &p_name, const Ref<Animation> &p_animation);
+	void remove_animation(const StringName &p_name);
+	void rename_animation(const StringName &p_name, const StringName &p_new_name);
+	bool has_animation(const StringName &p_name) const;
+	Ref<Animation> get_animation(const StringName &p_name) const;
+	void get_animation_list(List<StringName> *p_animations) const;
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
-	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
-	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override {}
-	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override {}
-	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) override {}
-	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) override {}
-	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) override {}
-	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) override {}
-	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override {}
-
-	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
-
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	AnimationLibrary();
 };
 
-} // namespace RendererDummy
-
-#endif // !DECAL_ATLAS_STORAGE_DUMMY_H
+#endif // ANIMATIONLIBRARY_H

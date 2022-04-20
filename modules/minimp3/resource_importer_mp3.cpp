@@ -75,9 +75,8 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
 
-	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
-
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
+	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
 
 	uint64_t len = f->get_length();
 
@@ -86,8 +85,6 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	uint8_t *w = data.ptrw();
 
 	f->get_buffer(w, len);
-
-	memdelete(f);
 
 	Ref<AudioStreamMP3> mp3_stream;
 	mp3_stream.instantiate();

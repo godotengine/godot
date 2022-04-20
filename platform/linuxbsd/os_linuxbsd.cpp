@@ -131,20 +131,19 @@ void OS_LinuxBSD::initialize_joypads() {
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
 	if (machine_id.is_empty()) {
-		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
+		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
+		if (f.is_valid()) {
 			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
-			f->close();
-			memdelete(f);
 		}
 	}
 	return machine_id;
 }
 
 String OS_LinuxBSD::get_processor_name() const {
-	FileAccessRef f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
+	Ref<FileAccess> f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
 
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
@@ -465,7 +464,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 
 	// Create needed directories for decided trash can location.
 	{
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		Error err = dir_access->make_dir_recursive(trash_path);
 
 		// Issue an error if trash can is not created properly.
@@ -512,13 +511,14 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String trash_info = "[Trash Info]\nPath=" + path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;
-		FileAccessRef file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file: \"" + trash_path + "/info/" + file_name + ".trashinfo\"");
-		file->store_string(trash_info);
-		file->close();
+		{
+			Ref<FileAccess> file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file: \"" + trash_path + "/info/" + file_name + ".trashinfo\"");
+			file->store_string(trash_info);
+		}
 
 		// Rename our resource before moving it to the trash can.
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		err = dir_access->rename(path, renamed_path);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't rename file \"" + path + "\" to \"" + renamed_path + "\"");
 	}
@@ -535,7 +535,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		// Issue an error if "mv" failed to move the given resource to the trash can.
 		if (err != OK || retval != 0) {
 			ERR_PRINT("move_to_trash: Could not move the resource \"" + path + "\" to the trash can \"" + trash_path + "/files\"");
-			DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			err = dir_access->rename(renamed_path, path);
 			ERR_FAIL_COND_V_MSG(err != OK, err, "Could not rename \"" + renamed_path + "\" back to its original name: \"" + path + "\"");
 			return FAILED;

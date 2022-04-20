@@ -105,12 +105,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 	return gltf->generate_scene(state, p_bake_fps);
 }
 
-Ref<Animation> EditorSceneFormatImporterFBX::import_animation(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	return Ref<Animation>();
-}
-
-Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path,
+Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path, bool p_for_animation,
 		const String &p_option, const Map<StringName, Variant> &p_options) {
 	return true;
 }

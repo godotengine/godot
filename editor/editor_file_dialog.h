@@ -111,7 +111,7 @@ private:
 	LineEdit *file = nullptr;
 	OptionButton *filter = nullptr;
 	AcceptDialog *error_dialog = nullptr;
-	DirAccess *dir_access = nullptr;
+	Ref<DirAccess> dir_access;
 	ConfirmationDialog *confirm_save = nullptr;
 	DependencyRemoveDialog *dep_remove_dialog = nullptr;
 	ConfirmationDialog *global_remove_dialog = nullptr;

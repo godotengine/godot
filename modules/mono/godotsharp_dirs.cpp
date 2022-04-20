@@ -76,7 +76,7 @@ String _get_mono_user_dir() {
 			exe_dir = exe_dir.plus_file("../../..").simplify_path();
 		}
 
-		DirAccessRef d = DirAccess::create_for_path(exe_dir);
+		Ref<DirAccess> d = DirAccess::create_for_path(exe_dir);
 
 		if (d->file_exists("._sc_") || d->file_exists("_sc_")) {
 			// contain yourself

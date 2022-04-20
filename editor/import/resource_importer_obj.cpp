@@ -44,8 +44,8 @@ uint32_t EditorOBJImporter::get_import_flags() const {
 }
 
 static Error _parse_material_library(const String &p_path, Map<String, Ref<StandardMaterial3D>> &material_map, List<String> *r_missing_deps) {
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 
 	Ref<StandardMaterial3D> current;
 	String current_name;
@@ -203,8 +203,8 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 }
 
 static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, List<String> *r_missing_deps) {
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
@@ -455,10 +455,6 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 	}
 
 	return scene;
-}
-
-Ref<Animation> EditorOBJImporter::import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	return Ref<Animation>();
 }
 
 void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {

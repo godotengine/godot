@@ -204,8 +204,8 @@ void test(TestType p_type) {
 		return;
 	}
 
-	FileAccessRef fa = FileAccess::open(test, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!fa, "Could not open file: " + test);
+	Ref<FileAccess> fa = FileAccess::open(test, FileAccess::READ);
+	ERR_FAIL_COND_MSG(fa.is_null(), "Could not open file: " + test);
 
 	// Initialize the language for the test routine.
 	init_language(fa->get_path_absolute().get_base_dir());

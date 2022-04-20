@@ -1220,10 +1220,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
 	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
-	// H/VSplitContainer
-	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon(SNAME("GuiVsplitBg"), SNAME("EditorIcons")), 1, 1, 1, 1));
-	theme->set_stylebox("bg", "HSplitContainer", make_stylebox(theme->get_icon(SNAME("GuiHsplitBg"), SNAME("EditorIcons")), 1, 1, 1, 1));
-
 	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 

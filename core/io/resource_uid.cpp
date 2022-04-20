@@ -135,12 +135,12 @@ void ResourceUID::remove_id(ID p_id) {
 Error ResourceUID::save_to_cache() {
 	String cache_file = get_cache_file();
 	if (!FileAccess::exists(cache_file)) {
-		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		d->make_dir_recursive(String(cache_file).get_base_dir()); //ensure base dir exists
 	}
 
-	FileAccessRef f = FileAccess::open(cache_file, FileAccess::WRITE);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(cache_file, FileAccess::WRITE);
+	if (f.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -163,8 +163,8 @@ Error ResourceUID::save_to_cache() {
 }
 
 Error ResourceUID::load_from_cache() {
-	FileAccessRef f = FileAccess::open(get_cache_file(), FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(get_cache_file(), FileAccess::READ);
+	if (f.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
@@ -201,12 +201,12 @@ Error ResourceUID::update_cache() {
 	}
 	MutexLock l(mutex);
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	for (OrderedHashMap<ID, Cache>::Element E = unique_ids.front(); E; E = E.next()) {
 		if (!E.get().saved_to_cache) {
-			if (f == nullptr) {
+			if (f.is_null()) {
 				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); //append
-				if (!f) {
+				if (f.is_null()) {
 					return ERR_CANT_OPEN;
 				}
 				f->seek_end();
@@ -220,11 +220,9 @@ Error ResourceUID::update_cache() {
 		}
 	}
 
-	if (f != nullptr) {
+	if (f.is_valid()) {
 		f->seek(0);
 		f->store_32(cache_entries); //update amount of entries
-		f->close();
-		memdelete(f);
 	}
 
 	changed = false;

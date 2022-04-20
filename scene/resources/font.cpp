@@ -740,8 +740,8 @@ Error FontData::load_bitmap_font(const String &p_path) {
 	hinting = TextServer::HINTING_NONE;
 	oversampling = 1.0f;
 
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, vformat(RTR("Cannot open font from file: %s."), p_path));
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, vformat(RTR("Cannot open font from file: %s."), p_path));
 
 	int base_size = 16;
 	int height = 0;

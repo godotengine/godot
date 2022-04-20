@@ -1035,8 +1035,8 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 
 Error DocTools::load_classes(const String &p_dir) {
 	Error err;
-	DirAccessRef da = DirAccess::open(p_dir, &err);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(p_dir, &err);
+	if (da.is_null()) {
 		return err;
 	}
 
@@ -1063,8 +1063,8 @@ Error DocTools::load_classes(const String &p_dir) {
 
 Error DocTools::erase_classes(const String &p_dir) {
 	Error err;
-	DirAccessRef da = DirAccess::open(p_dir, &err);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(p_dir, &err);
+	if (da.is_null()) {
 		return err;
 	}
 
@@ -1273,7 +1273,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 	return OK;
 }
 
-static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
+static void _write_string(Ref<FileAccess> f, int p_tablevel, const String &p_string) {
 	if (p_string.is_empty()) {
 		return;
 	}
@@ -1284,7 +1284,7 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
-static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
+static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
 	if (!p_method_docs.is_empty()) {
 		p_method_docs.sort();
 		_write_string(f, 1, "<" + p_name + "s>");
@@ -1350,7 +1350,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 
 		Error err;
 		String save_file = save_path.plus_file(c.name + ".xml");
-		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
+		Ref<FileAccess> f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");
 
