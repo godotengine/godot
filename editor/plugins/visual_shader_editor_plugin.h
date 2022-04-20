@@ -85,7 +85,7 @@ private:
 	List<VisualShader::Connection> connections;
 	bool dirty = false;
 
-	Color vector_expanded_color[3];
+	Color vector_expanded_color[4];
 
 protected:
 	static void _bind_methods();

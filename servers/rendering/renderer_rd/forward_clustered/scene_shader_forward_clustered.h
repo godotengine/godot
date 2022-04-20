@@ -171,6 +171,7 @@ public:
 		bool uses_time;
 		bool writes_modelview_or_projection;
 		bool uses_world_coordinates;
+		Cull cull_mode;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;

@@ -26,13 +26,16 @@
 		<constant name="OP_TYPE_VECTOR_3D" value="3" enum="OpType">
 			A 3D vector type.
 		</constant>
-		<constant name="OP_TYPE_BOOLEAN" value="4" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_4D" value="4" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_BOOLEAN" value="5" enum="OpType">
 			A boolean type.
 		</constant>
-		<constant name="OP_TYPE_TRANSFORM" value="5" enum="OpType">
+		<constant name="OP_TYPE_TRANSFORM" value="6" enum="OpType">
 			A transform type.
 		</constant>
-		<constant name="OP_TYPE_MAX" value="6" enum="OpType">
+		<constant name="OP_TYPE_MAX" value="7" enum="OpType">
 			Represents the size of the [enum OpType] enum.
 		</constant>
 	</constants>
