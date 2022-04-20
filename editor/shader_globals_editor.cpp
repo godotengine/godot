@@ -183,7 +183,7 @@ protected:
 					pinfo.type = Variant::VECTOR3;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_VEC4: {
-					pinfo.type = Variant::PLANE;
+					pinfo.type = Variant::QUATERNION;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_RECT2: {
 					pinfo.type = Variant::RECT2;
@@ -304,7 +304,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return Vector3();
 		}
 		case RS::GLOBAL_VAR_TYPE_VEC4: {
-			return Plane();
+			return Quaternion();
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2: {
 			return Rect2();

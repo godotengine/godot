@@ -308,7 +308,7 @@ void MaterialStorage::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 					pi.type = Variant::COLOR;
 				} else {
-					pi.type = Variant::PLANE;
+					pi.type = Variant::QUATERNION;
 				}
 			} break;
 
