@@ -136,6 +136,11 @@ double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode 
 	return t;
 }
 
+AnimationTree *AnimationNode::get_animation_tree() const {
+	ERR_FAIL_COND_V(!state, nullptr);
+	return state->tree;
+}
+
 void AnimationNode::make_invalid(const String &p_reason) {
 	ERR_FAIL_COND(!state);
 	state->valid = false;
@@ -1704,6 +1709,14 @@ NodePath AnimationTree::get_animation_player() const {
 	return animation_player;
 }
 
+void AnimationTree::set_advance_expression_base_node(const NodePath &p_advance_expression_base_node) {
+	advance_expression_base_node = p_advance_expression_base_node;
+}
+
+NodePath AnimationTree::get_advance_expression_base_node() const {
+	return advance_expression_base_node;
+}
+
 bool AnimationTree::is_state_invalid() const {
 	return !state.valid;
 }
@@ -1899,6 +1912,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "root"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
+	ClassDB::bind_method(D_METHOD("set_advance_expression_base_node", "node"), &AnimationTree::set_advance_expression_base_node);
+	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationTree::get_advance_expression_base_node);
+
 	ClassDB::bind_method(D_METHOD("set_root_motion_track", "path"), &AnimationTree::set_root_motion_track);
 	ClassDB::bind_method(D_METHOD("get_root_motion_track"), &AnimationTree::get_root_motion_track);
 
@@ -1912,6 +1928,8 @@ void AnimationTree::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_GROUP("Root Motion", "root_motion_");
