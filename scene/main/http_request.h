@@ -94,7 +94,7 @@ private:
 
 	int max_redirects;
 
-	int timeout;
+	double timeout;
 
 	void _redirect_request(const String &p_new_url);
 
@@ -138,8 +138,8 @@ public:
 
 	Timer *timer;
 
-	void set_timeout(int p_timeout);
-	int get_timeout();
+	void set_timeout(double p_timeout);
+	double get_timeout();
 
 	void _timeout();
 
