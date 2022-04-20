@@ -422,7 +422,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 						if (i < s) {
 							Color color = a[i];
 							if (p_linear_color) {
-								color = color.to_linear();
+								color = color.srgb_to_linear();
 							}
 							gui[j] = color.r;
 							gui[j + 1] = color.g;
@@ -459,7 +459,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 					Color v = value;
 
 					if (p_linear_color) {
-						v = v.to_linear();
+						v = v.srgb_to_linear();
 					}
 
 					gui[0] = v.r;
@@ -1298,6 +1298,94 @@ MaterialStorage *MaterialStorage::get_singleton() {
 MaterialStorage::MaterialStorage() {
 	singleton = this;
 
+	//default samplers
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::SamplerState sampler_state;
+			switch (i) {
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+
+				} break;
+				default: {
+				}
+			}
+			switch (j) {
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				} break;
+				default: {
+				}
+			}
+
+			default_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
+		}
+	}
+
+	//custom sampler
+	sampler_rd_configure_custom(0.0f);
+
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		shader_data_request_func[i] = nullptr;
 	}
@@ -1319,7 +1407,119 @@ MaterialStorage::~MaterialStorage() {
 	memdelete_arr(global_variables.buffer_dirty_regions);
 	RD::get_singleton()->free(global_variables.buffer);
 
+	//def samplers
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::get_singleton()->free(default_rd_samplers[i][j]);
+		}
+	}
+
+	//custom samplers
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 0; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			if (custom_rd_samplers[i][j].is_valid()) {
+				RD::get_singleton()->free(custom_rd_samplers[i][j]);
+			}
+		}
+	}
+
 	singleton = nullptr;
+}
+
+/* Samplers */
+
+void MaterialStorage::sampler_rd_configure_custom(float p_mipmap_bias) {
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::SamplerState sampler_state;
+			switch (i) {
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.max_lod = 0;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					if (GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter")) {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+					} else {
+						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					}
+					sampler_state.lod_bias = p_mipmap_bias;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+
+				} break;
+				default: {
+				}
+			}
+			switch (j) {
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				} break;
+				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				} break;
+				default: {
+				}
+			}
+
+			if (custom_rd_samplers[i][j].is_valid()) {
+				RD::get_singleton()->free(custom_rd_samplers[i][j]);
+			}
+
+			custom_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
+		}
+	}
 }
 
 /* GLOBAL VARIABLE API */
@@ -1498,7 +1698,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.a;
 
 			GlobalVariables::Value &bv_linear = global_variables.buffer_values[p_index + 1];
-			v = v.to_linear();
+			v = v.srgb_to_linear();
 			bv_linear.x = v.r;
 			bv_linear.y = v.g;
 			bv_linear.z = v.b;

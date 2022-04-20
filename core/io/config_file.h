@@ -43,8 +43,8 @@ class ConfigFile : public RefCounted {
 
 	PackedStringArray _get_sections() const;
 	PackedStringArray _get_section_keys(const String &p_section) const;
-	Error _internal_load(const String &p_path, FileAccess *f);
-	Error _internal_save(FileAccess *file);
+	Error _internal_load(const String &p_path, Ref<FileAccess> f);
+	Error _internal_save(Ref<FileAccess> file);
 
 	Error _parse(const String &p_path, VariantParser::Stream *p_stream);
 

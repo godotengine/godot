@@ -49,7 +49,7 @@
 #include <mntent.h>
 #endif
 
-DirAccess *DirAccessUnix::create_fs() {
+Ref<DirAccess> DirAccessUnix::create_fs() {
 	return memnew(DirAccessUnix);
 }
 
@@ -374,7 +374,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessUnix::get_current_dir(bool p_include_drive) {
+String DirAccessUnix::get_current_dir(bool p_include_drive) const {
 	String base = _get_root_path();
 	if (!base.is_empty()) {
 		String bd = current_dir.replace_first(base, "");

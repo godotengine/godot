@@ -145,8 +145,11 @@ void OpenTypeFeaturesAdd::setup(Object *p_object) {
 
 void OpenTypeFeaturesAdd::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
+			connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
 			set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
 	}
@@ -173,7 +176,6 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 	menu_cu->set_name("CUMenu");
 	menu->add_child(menu_cu);
 
-	connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
 	menu->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_cv->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_ss->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));

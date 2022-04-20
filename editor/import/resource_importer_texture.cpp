@@ -229,7 +229,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	}
 }
 
-void ResourceImporterTexture::save_to_ctex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
+void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
 			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png") ||
@@ -322,8 +322,8 @@ void ResourceImporterTexture::save_to_ctex_format(FileAccess *f, const Ref<Image
 }
 
 void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
-	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	ERR_FAIL_NULL(f);
+	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	ERR_FAIL_COND(f.is_null());
 	f->store_8('G');
 	f->store_8('S');
 	f->store_8('T');
@@ -399,8 +399,6 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	Image::UsedChannels used_channels = image->detect_used_channels(csource);
 
 	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality);
-
-	memdelete(f);
 }
 
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

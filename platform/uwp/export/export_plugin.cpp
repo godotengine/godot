@@ -295,14 +295,13 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	Error err = OK;
 
-	FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	AppxPackager packager;
 	packager.init(fa_pack);
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 
 	if (ep.step("Creating package...", 0)) {
 		return ERR_SKIP;

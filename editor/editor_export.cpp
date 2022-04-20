@@ -327,12 +327,12 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 		}
 	}
 
-	FileAccessEncrypted *fae = nullptr;
-	FileAccess *ftmp = pd->f;
+	Ref<FileAccessEncrypted> fae;
+	Ref<FileAccess> ftmp = pd->f;
 
 	if (sd.encrypted) {
-		fae = memnew(FileAccessEncrypted);
-		ERR_FAIL_COND_V(!fae, ERR_SKIP);
+		fae.instantiate();
+		ERR_FAIL_COND_V(fae.is_null(), ERR_SKIP);
 
 		Error err = fae->open_and_parse(ftmp, p_key, FileAccessEncrypted::MODE_WRITE_AES256, false);
 		ERR_FAIL_COND_V(err != OK, ERR_SKIP);
@@ -342,9 +342,9 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	// Store file content.
 	ftmp->store_buffer(p_data.ptr(), p_data.size());
 
-	if (fae) {
-		fae->release();
-		memdelete(fae);
+	if (fae.is_valid()) {
+		ftmp.unref();
+		fae.unref();
 	}
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
@@ -480,7 +480,7 @@ void EditorExportPlatform::_export_find_dependencies(const String &p_path, Set<S
 	}
 }
 
-void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude) {
+void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude) {
 	da->list_dir_begin();
 	String cur_dir = da->get_current_dir().replace("\\", "/");
 	if (!cur_dir.ends_with("/")) {
@@ -542,10 +542,9 @@ void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &
 		filters.push_back(f);
 	}
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	ERR_FAIL_NULL(da);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND(da.is_null());
 	_edit_files_with_filter(da, filters, r_list, exclude);
-	memdelete(da);
 }
 
 void EditorExportPlugin::set_export_preset(const Ref<EditorExportPreset> &p_preset) {
@@ -1130,12 +1129,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	EditorProgress ep("savepack", TTR("Packing"), 102, true);
 
 	// Create the temporary export directory if it doesn't exist.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir());
 
 	String tmppath = EditorPaths::get_singleton()->get_cache_dir().plus_file("packtmp");
-	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!ftmp, ERR_CANT_CREATE, "Cannot create file '" + tmppath + "'.");
+	Ref<FileAccess> ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(ftmp.is_null(), ERR_CANT_CREATE, "Cannot create file '" + tmppath + "'.");
 
 	PackData pd;
 	pd.ep = &ep;
@@ -1144,7 +1143,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	Error err = export_project_files(p_preset, p_debug, _save_pack_file, &pd, _add_shared_object);
 
-	memdelete(ftmp); //close tmp file
+	// Close temp file.
+	pd.f.unref();
+	ftmp.unref();
 
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmppath);
@@ -1154,19 +1155,19 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
-	FileAccess *f;
+	Ref<FileAccess> f;
 	int64_t embed_pos = 0;
 	if (!p_embed) {
 		// Regular output to separate PCK file
 		f = FileAccess::open(p_path, FileAccess::WRITE);
-		if (!f) {
+		if (f.is_null()) {
 			DirAccess::remove_file_or_error(tmppath);
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 	} else {
 		// Append to executable
 		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
-		if (!f) {
+		if (f.is_null()) {
 			DirAccess::remove_file_or_error(tmppath);
 			ERR_FAIL_V(ERR_FILE_CANT_OPEN);
 		}
@@ -1211,8 +1212,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	f->store_32(pd.file_ofs.size()); //amount of files
 
-	FileAccessEncrypted *fae = nullptr;
-	FileAccess *fhead = f;
+	Ref<FileAccessEncrypted> fae;
+	Ref<FileAccess> fhead = f;
 
 	if (enc_pck && enc_directory) {
 		String script_key = p_preset->get_script_encryption_key().to_lower();
@@ -1243,8 +1244,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 				key.write[i] = v;
 			}
 		}
-		fae = memnew(FileAccessEncrypted);
-		ERR_FAIL_COND_V(!fae, ERR_SKIP);
+		fae.instantiate();
+		ERR_FAIL_COND_V(fae.is_null(), ERR_SKIP);
 
 		err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_WRITE_AES256, false);
 		ERR_FAIL_COND_V(err != OK, ERR_SKIP);
@@ -1272,9 +1273,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		fhead->store_32(flags);
 	}
 
-	if (fae) {
-		fae->release();
-		memdelete(fae);
+	if (fae.is_valid()) {
+		fhead.unref();
+		fae.unref();
 	}
 
 	int header_padding = _get_pad(PCK_PADDING, f->get_position());
@@ -1290,8 +1291,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	// Save the rest of the data.
 
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
-	if (!ftmp) {
-		memdelete(f);
+	if (ftmp.is_null()) {
 		DirAccess::remove_file_or_error(tmppath);
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't open file to read from path '" + String(tmppath) + "'.");
 	}
@@ -1307,7 +1307,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		f->store_buffer(buf, got);
 	}
 
-	memdelete(ftmp);
+	ftmp.unref(); // Close temp file.
 
 	if (p_embed) {
 		// Ensure embedded data ends at a 64-bit multiple
@@ -1326,7 +1326,6 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		}
 	}
 
-	memdelete(f);
 	DirAccess::remove_file_or_error(tmppath);
 
 	return OK;
@@ -1335,8 +1334,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	EditorProgress ep("savezip", TTR("Packing"), 102, true);
 
-	FileAccess *src_f;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zlib_filefunc_def io = zipio_create_io();
 	zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 
 	ZipData zd;
@@ -1839,7 +1837,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
 

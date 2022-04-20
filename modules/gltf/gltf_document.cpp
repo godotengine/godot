@@ -256,8 +256,8 @@ Error GLTFDocument::_serialize_scenes(Ref<GLTFState> state) {
 
 Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	Error err;
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (f.is_null()) {
 		return err;
 	}
 
@@ -278,7 +278,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	return OK;
 }
 
-Error GLTFDocument::_parse_glb(FileAccess *f, Ref<GLTFState> state) {
+Error GLTFDocument::_parse_glb(Ref<FileAccess> f, Ref<GLTFState> state) {
 	ERR_FAIL_NULL_V(f, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(f->get_position() != 0, ERR_FILE_CANT_READ);
@@ -696,8 +696,8 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> state, const String &p_pat
 		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
 		String path = p_path.get_base_dir() + "/" + filename;
 		Error err;
-		FileAccessRef f = FileAccess::open(path, FileAccess::WRITE, &err);
-		if (!f) {
+		Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &err);
+		if (f.is_null()) {
 			return err;
 		}
 		if (buffer_data.size() == 0) {
@@ -705,7 +705,6 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> state, const String &p_pat
 		}
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_buffer(buffer_data.ptr(), buffer_data.size());
-		f->close();
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
@@ -729,8 +728,8 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> state, const String &p_pa
 		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
 		String path = p_path.get_base_dir() + "/" + filename;
 		Error err;
-		FileAccessRef f = FileAccess::open(path, FileAccess::WRITE, &err);
-		if (!f) {
+		Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &err);
+		if (f.is_null()) {
 			return err;
 		}
 		if (buffer_data.size() == 0) {
@@ -738,7 +737,6 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> state, const String &p_pa
 		}
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_buffer(buffer_data.ptr(), buffer_data.size());
-		f->close();
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
@@ -3021,7 +3019,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			String texture_dir = "textures";
 			String path = p_path.get_base_dir();
 			String new_texture_dir = path + "/" + texture_dir;
-			DirAccessRef da = DirAccess::open(path);
+			Ref<DirAccess> da = DirAccess::open(path);
 			if (!da->dir_exists(new_texture_dir)) {
 				da->make_dir(new_texture_dir);
 			}
@@ -3274,7 +3272,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			Dictionary mr;
 			{
 				Array arr;
-				const Color c = material->get_albedo().to_linear();
+				const Color c = material->get_albedo().srgb_to_linear();
 				arr.push_back(c.r);
 				arr.push_back(c.g);
 				arr.push_back(c.b);
@@ -3475,7 +3473,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 		}
 
 		if (material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
-			const Color c = material->get_emission().to_srgb();
+			const Color c = material->get_emission().linear_to_srgb();
 			Array arr;
 			arr.push_back(c.r);
 			arr.push_back(c.g);
@@ -3557,7 +3555,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (sgm.has("diffuseFactor")) {
 				const Array &arr = sgm["diffuseFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
-				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).to_srgb();
+				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).linear_to_srgb();
 				spec_gloss->diffuse_factor = c;
 				material->set_albedo(spec_gloss->diffuse_factor);
 			}
@@ -3588,7 +3586,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (mr.has("baseColorFactor")) {
 				const Array &arr = mr["baseColorFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
-				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).to_srgb();
+				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).linear_to_srgb();
 				material->set_albedo(c);
 			}
 
@@ -3655,7 +3653,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 		if (d.has("emissiveFactor")) {
 			const Array &arr = d["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
-			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
+			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
 
 			material->set_emission(c);
@@ -3739,11 +3737,11 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	}
 	for (int32_t y = 0; y < r_spec_gloss->spec_gloss_img->get_height(); y++) {
 		for (int32_t x = 0; x < r_spec_gloss->spec_gloss_img->get_width(); x++) {
-			const Color specular_pixel = r_spec_gloss->spec_gloss_img->get_pixel(x, y).to_linear();
+			const Color specular_pixel = r_spec_gloss->spec_gloss_img->get_pixel(x, y).srgb_to_linear();
 			Color specular = Color(specular_pixel.r, specular_pixel.g, specular_pixel.b);
 			specular *= r_spec_gloss->specular_factor;
 			Color diffuse = Color(1.0f, 1.0f, 1.0f);
-			diffuse *= r_spec_gloss->diffuse_img->get_pixel(x, y).to_linear();
+			diffuse *= r_spec_gloss->diffuse_img->get_pixel(x, y).srgb_to_linear();
 			float metallic = 0.0f;
 			Color base_color;
 			spec_gloss_to_metal_base_color(specular, diffuse, base_color, metallic);
@@ -3760,7 +3758,7 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 			mr.g = 1.0f - mr.g;
 			rm_img->set_pixel(x, y, mr);
 			if (r_spec_gloss->diffuse_img.is_valid()) {
-				r_spec_gloss->diffuse_img->set_pixel(x, y, base_color.to_srgb());
+				r_spec_gloss->diffuse_img->set_pixel(x, y, base_color.linear_to_srgb());
 			}
 		}
 	}
@@ -4628,7 +4626,7 @@ Error GLTFDocument::_parse_lights(Ref<GLTFState> state) {
 		if (d.has("color")) {
 			const Array &arr = d["color"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
-			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
+			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
 			light->color = c;
 		}
 		if (d.has("intensity")) {
@@ -6097,7 +6095,14 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 	animation->set_length(length);
 
-	ap->add_animation(name, animation);
+	Ref<AnimationLibrary> library;
+	if (!ap->has_animation_library("")) {
+		library.instantiate();
+		ap->add_animation_library("", library);
+	} else {
+		library = ap->get_animation_library("");
+	}
+	library->add_animation(name, animation);
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
@@ -6588,9 +6593,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 	}
 }
 
-Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, FileAccess *f, int p_bake_fps) {
+Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps) {
 	Error err;
-	if (!f) {
+	if (f.is_null()) {
 		return FAILED;
 	}
 	f->seek(0);
@@ -6614,7 +6619,6 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, FileAccess *f, i
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 		state->json = json.get_data();
 	}
-	f->close();
 
 	if (!state->json.has("asset")) {
 		return ERR_PARSE_ERROR;
@@ -6703,8 +6707,8 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 	if (p_path.to_lower().ends_with("glb")) {
 		err = _encode_buffer_glb(state, p_path);
 		ERR_FAIL_COND_V(err != OK, err);
-		FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(!f, FAILED);
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+		ERR_FAIL_COND_V(f.is_null(), FAILED);
 
 		String json = Variant(state->json).to_json_string();
 
@@ -6741,18 +6745,15 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
 			f->store_8(0);
 		}
-
-		f->close();
 	} else {
 		err = _encode_buffer_bins(state, p_path);
 		ERR_FAIL_COND_V(err != OK, err);
-		FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(!f, FAILED);
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+		ERR_FAIL_COND_V(f.is_null(), FAILED);
 
 		f->create(FileAccess::ACCESS_RESOURCES);
 		String json = Variant(state->json).to_json_string();
 		f->store_string(json);
-		f->close();
 	}
 	return err;
 }
@@ -6927,9 +6928,10 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
-	state->use_named_skin_binds =
-			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	FileAccessMemory *file_access = memnew(FileAccessMemory);
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+
+	Ref<FileAccessMemory> file_access;
+	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	err = _parse(state, p_base_path.get_base_dir(), file_access, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, FAILED);
@@ -7032,7 +7034,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	r_state->filename = p_path.get_file().get_basename();
 	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 	ERR_FAIL_NULL_V(f, ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;

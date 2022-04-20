@@ -48,6 +48,13 @@ class EditorFileDialog;
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
+	enum {
+		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
+		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertial" values.
+		PARAM_SIZE, // Keep "Size" values.
+	};
+	int dominant_param = PARAM_FRAME_COUNT;
+
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
 	Button *_delete = nullptr;
@@ -86,6 +93,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	TextureRect *split_sheet_preview = nullptr;
 	SpinBox *split_sheet_h = nullptr;
 	SpinBox *split_sheet_v = nullptr;
+	SpinBox *split_sheet_size_x = nullptr;
+	SpinBox *split_sheet_size_y = nullptr;
+	SpinBox *split_sheet_sep_x = nullptr;
+	SpinBox *split_sheet_sep_y = nullptr;
+	SpinBox *split_sheet_offset_x = nullptr;
+	SpinBox *split_sheet_offset_y = nullptr;
 	Button *split_sheet_zoom_out = nullptr;
 	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
@@ -102,6 +115,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	float sheet_zoom;
 	float max_sheet_zoom;
 	float min_sheet_zoom;
+
+	Size2i _get_frame_count() const;
+	Size2i _get_frame_size() const;
+	Size2i _get_offset() const;
+	Size2i _get_separation() const;
 
 	void _load_pressed();
 	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
@@ -128,6 +146,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _zoom_reset();
 
 	bool updating;
+	bool updating_split_settings = false; // Skip SpinBox/Range callback when setting value by code.
 
 	UndoRedo *undo_redo = nullptr;
 
@@ -139,7 +158,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
-	void _sheet_spin_changed(double);
+	void _sheet_spin_changed(double p_value, int p_dominant_param);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();

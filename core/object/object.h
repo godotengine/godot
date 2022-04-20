@@ -633,6 +633,7 @@ public:
 
 	bool _is_gpl_reversed() const { return false; }
 
+	void detach_from_objectdb();
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
 	template <class T>

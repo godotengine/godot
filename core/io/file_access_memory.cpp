@@ -60,7 +60,7 @@ void FileAccessMemory::cleanup() {
 	memdelete(files);
 }
 
-FileAccess *FileAccessMemory::create() {
+Ref<FileAccess> FileAccessMemory::create() {
 	return memnew(FileAccessMemory);
 }
 
@@ -92,10 +92,6 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 	pos = 0;
 
 	return OK;
-}
-
-void FileAccessMemory::close() {
-	data = nullptr;
 }
 
 bool FileAccessMemory::is_open() const {

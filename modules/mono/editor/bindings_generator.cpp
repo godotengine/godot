@@ -1035,8 +1035,8 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 
 	if (!DirAccess::exists(p_proj_dir)) {
 		Error err = da->make_dir_recursive(p_proj_dir);
@@ -1170,8 +1170,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 
 	if (!DirAccess::exists(p_proj_dir)) {
 		Error err = da->make_dir_recursive(p_proj_dir);
@@ -1280,8 +1280,8 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	String output_dir = path::abspath(path::realpath(p_output_dir));
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 
 	if (!DirAccess::exists(output_dir)) {
 		Error err = da->make_dir_recursive(output_dir);
@@ -2255,12 +2255,10 @@ uint32_t BindingsGenerator::get_version() {
 }
 
 Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p_content) {
-	FileAccessRef file = FileAccess::open(p_path, FileAccess::WRITE);
-
-	ERR_FAIL_COND_V_MSG(!file, ERR_FILE_CANT_WRITE, "Cannot open file: '" + p_path + "'.");
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_FILE_CANT_WRITE, "Cannot open file: '" + p_path + "'.");
 
 	file->store_string(p_content.as_string());
-	file->close();
 
 	return OK;
 }

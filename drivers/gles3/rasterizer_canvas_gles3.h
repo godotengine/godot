@@ -37,7 +37,6 @@
 #include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "storage/canvas_texture_storage.h"
 #include "storage/material_storage.h"
 #include "storage/texture_storage.h"
 
@@ -220,8 +219,6 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES3 *scene_render = nullptr;
-
 	RasterizerStorageGLES3 *storage = nullptr;
 
 	void _set_uniforms();
@@ -280,7 +277,7 @@ public:
 	void finalize();
 
 	static RasterizerCanvasGLES3 *get_singleton();
-	RasterizerCanvasGLES3();
+	RasterizerCanvasGLES3(RasterizerStorageGLES3 *storage);
 	~RasterizerCanvasGLES3();
 };
 

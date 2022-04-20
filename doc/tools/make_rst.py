@@ -58,7 +58,7 @@ strings_l10n = {}
 
 def print_error(error, state):  # type: (str, State) -> None
     print("ERROR: {}".format(error))
-    state.errored = True
+    state.num_errors += 1
 
 
 class TypeName:
@@ -163,8 +163,7 @@ class ClassDef:
 
 class State:
     def __init__(self):  # type: () -> None
-        # Has any error been reported?
-        self.errored = False
+        self.num_errors = 0
         self.classes = OrderedDict()  # type: OrderedDict[str, ClassDef]
         self.current_class = ""  # type: str
 
@@ -194,7 +193,7 @@ class State:
 
                 property_name = property.attrib["name"]
                 if property_name in class_def.properties:
-                    print_error("Duplicate property '{}', file: {}".format(property_name, class_name), self)
+                    print_error('{}.xml: Duplicate property "{}".'.format(class_name, property_name), self)
                     continue
 
                 type_name = TypeName.from_element(property)
@@ -305,7 +304,7 @@ class State:
                 constant_def = ConstantDef(constant_name, value, constant.text)
                 if enum is None:
                     if constant_name in class_def.constants:
-                        print_error("Duplicate constant '{}', file: {}".format(constant_name, class_name), self)
+                        print_error('{}.xml: Duplicate constant "{}".'.format(class_name, constant_name), self)
                         continue
 
                     class_def.constants[constant_name] = constant_def
@@ -328,7 +327,7 @@ class State:
                 signal_name = signal.attrib["name"]
 
                 if signal_name in class_def.signals:
-                    print_error("Duplicate signal '{}', file: {}".format(signal_name, class_name), self)
+                    print_error('{}.xml: Duplicate signal "{}".'.format(class_name, signal_name), self)
                     continue
 
                 params = parse_arguments(signal)
@@ -351,8 +350,8 @@ class State:
                 theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
                 if theme_item_id in class_def.theme_items:
                     print_error(
-                        "Duplicate theme property '{}' of type '{}', file: {}".format(
-                            theme_item_name, theme_item_data_name, class_name
+                        '{}.xml: Duplicate theme item "{}" of type "{}".'.format(
+                            class_name, theme_item_name, theme_item_data_name
                         ),
                         self,
                     )
@@ -430,7 +429,7 @@ def main():  # type: () -> None
                 if entry.msgid in BASE_STRINGS:
                     strings_l10n[entry.msgid] = entry.msgstr
         else:
-            print("No PO file at '{}' for language '{}'.".format(lang_file, args.lang))
+            print('No PO file at "{}" for language "{}".'.format(lang_file, args.lang))
 
     print("Checking for errors in the XML class reference...")
 
@@ -453,7 +452,7 @@ def main():  # type: () -> None
 
         elif os.path.isfile(path):
             if not path.endswith(".xml"):
-                print("Got non-.xml file '{}' in input, skipping.".format(path))
+                print('Got non-.xml file "{}" in input, skipping.'.format(path))
                 continue
 
             file_list.append(path)
@@ -465,17 +464,17 @@ def main():  # type: () -> None
         try:
             tree = ET.parse(cur_file)
         except ET.ParseError as e:
-            print_error("Parse error reading file '{}': {}".format(cur_file, e), state)
+            print_error("{}.xml: Parse error while reading the file: {}".format(cur_file, e), state)
             continue
         doc = tree.getroot()
 
         if "version" not in doc.attrib:
-            print_error("Version missing from 'doc', file: {}".format(cur_file), state)
+            print_error('{}.xml: "version" attribute missing from "doc".'.format(cur_file), state)
             continue
 
         name = doc.attrib["name"]
         if name in classes:
-            print_error("Duplicate class '{}'".format(name), state)
+            print_error('{}.xml: Duplicate class "{}".'.format(cur_file, name), state)
             continue
 
         classes[name] = (doc, cur_file)
@@ -484,7 +483,7 @@ def main():  # type: () -> None
         try:
             state.parse_class(data[0], data[1])
         except Exception as e:
-            print_error("Exception while parsing class '{}': {}".format(name, e), state)
+            print_error("{}.xml: Exception while parsing class: {}".format(name, e), state)
 
     state.sort_classes()
 
@@ -499,12 +498,17 @@ def main():  # type: () -> None
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
-    if not state.errored:
-        print("No errors found.")
+    if state.num_errors == 0:
+        print("No errors found in the class reference XML.")
         if not args.dry_run:
             print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
-        print("Errors were found in the class reference XML. Please check the messages above.")
+        if state.num_errors >= 2:
+            print(
+                "%d errors were found in the class reference XML. Please check the messages above." % state.num_errors
+            )
+        else:
+            print("1 error was found in the class reference XML. Please check the messages above.")
         exit(1)
 
 
@@ -856,7 +860,7 @@ def escape_rst(text, until_pos=-1):  # type: (str) -> str
 def format_codeblock(code_type, post_text, indent_level, state):  # types: str, str, int, state
     end_pos = post_text.find("[/" + code_type + "]")
     if end_pos == -1:
-        print_error("[" + code_type + "] without a closing tag, file: {}".format(state.current_class), state)
+        print_error("{}.xml: [" + code_type + "] without a closing tag.".format(state.current_class), state)
         return None
 
     code_text = post_text[len("[" + code_type + "]") : end_pos]
@@ -875,9 +879,9 @@ def format_codeblock(code_type, post_text, indent_level, state):  # types: str, 
 
         if to_skip > indent_level:
             print_error(
-                "Four spaces should be used for indentation within ["
+                "{}.xml: Four spaces should be used for indentation within ["
                 + code_type
-                + "], file: {}".format(state.current_class),
+                + "].".format(state.current_class),
                 state,
             )
 
@@ -987,7 +991,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 if param.find(".") != -1:
                     ss = param.split(".")
                     if len(ss) > 2:
-                        print_error("Bad reference: '{}', file: {}".format(param, state.current_class), state)
+                        print_error('{}.xml: Bad reference: "{}".'.format(state.current_class, param), state)
                     class_param, method_param = ss
 
                 else:
@@ -1000,33 +1004,31 @@ def rstize_text(text, state):  # type: (str, State) -> str
                     if cmd.startswith("constructor"):
                         if method_param not in class_def.constructors:
                             print_error(
-                                "Unresolved constructor '{}', file: {}".format(param, state.current_class), state
+                                '{}.xml: Unresolved constructor "{}".'.format(state.current_class, param), state
                             )
                         ref_type = "_constructor"
                     if cmd.startswith("method"):
                         if method_param not in class_def.methods:
-                            print_error("Unresolved method '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved method "{}".'.format(state.current_class, param), state)
                         ref_type = "_method"
                     if cmd.startswith("operator"):
                         if method_param not in class_def.operators:
-                            print_error("Unresolved operator '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved operator "{}".'.format(state.current_class, param), state)
                         ref_type = "_operator"
 
                     elif cmd.startswith("member"):
                         if method_param not in class_def.properties:
-                            print_error("Unresolved member '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved member "{}".'.format(state.current_class, param), state)
                         ref_type = "_property"
 
                     elif cmd.startswith("theme_item"):
                         if method_param not in class_def.theme_items:
-                            print_error(
-                                "Unresolved theme item '{}', file: {}".format(param, state.current_class), state
-                            )
+                            print_error('{}.xml: Unresolved theme item "{}".'.format(state.current_class, param), state)
                         ref_type = "_theme_{}".format(class_def.theme_items[method_param].data_name)
 
                     elif cmd.startswith("signal"):
                         if method_param not in class_def.signals:
-                            print_error("Unresolved signal '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved signal "{}".'.format(state.current_class, param), state)
                         ref_type = "_signal"
 
                     elif cmd.startswith("constant"):
@@ -1052,13 +1054,13 @@ def rstize_text(text, state):  # type: (str, State) -> str
                                         break
 
                         if not found:
-                            print_error("Unresolved constant '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved constant "{}".'.format(state.current_class, param), state)
                         ref_type = "_constant"
 
                 else:
                     print_error(
-                        "Unresolved type reference '{}' in method reference '{}', file: {}".format(
-                            class_param, param, state.current_class
+                        '{}.xml: Unresolved type reference "{}" in method reference "{}".'.format(
+                            state.current_class, class_param, param
                         ),
                         state,
                     )
@@ -1078,7 +1080,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 endurl_pos = text.find("[/url]", endq_pos + 1)
                 if endurl_pos == -1:
                     print_error(
-                        "Tag depth mismatch for [url]: no closing [/url], file: {}".format(state.current_class), state
+                        "{}.xml: Tag depth mismatch for [url]: no closing [/url]".format(state.current_class), state
                     )
                     break
                 link_title = text[endq_pos + 1 : endurl_pos]
@@ -1203,7 +1205,9 @@ def rstize_text(text, state):  # type: (str, State) -> str
         previous_pos = pos
 
     if tag_depth > 0:
-        print_error("Tag depth mismatch: too many/little open/close tags, file: {}".format(state.current_class), state)
+        print_error(
+            "{}.xml: Tag depth mismatch: too many (or too little) open/close tags.".format(state.current_class), state
+        )
 
     return text
 
@@ -1247,7 +1251,7 @@ def make_type(klass, state):  # type: (str, State) -> str
         link_type = link_type[:-2]
     if link_type in state.classes:
         return ":ref:`{}<class_{}>`".format(klass, link_type)
-    print_error("Unresolved type '{}', file: {}".format(klass, state.current_class), state)
+    print_error('{}.xml: Unresolved type "{}".'.format(state.current_class, klass), state)
     return klass
 
 
@@ -1271,7 +1275,7 @@ def make_enum(t, state):  # type: (str, State) -> str
 
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if "{}.{}".format(c, e) != "Vector3.Axis":
-        print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+        print_error('{}.xml: Unresolved enum "{}".'.format(state.current_class, t), state)
 
     return t
 
@@ -1429,7 +1433,7 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
 
     else:
         clear_name = "xxx"
-        print_error("Unsupported operator type '{}', please add the missing rule.".format(dirty_name), state)
+        print_error('Unsupported operator type "{}", please add the missing rule.'.format(dirty_name), state)
 
     return clear_name
 

@@ -1868,6 +1868,110 @@ Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
 	}
 }
 
+void Variant::sub(const Variant &a, const Variant &b, Variant &r_dst) {
+	if (a.type != b.type) {
+		return;
+	}
+
+	switch (a.type) {
+		case NIL: {
+			r_dst = Variant();
+		}
+			return;
+		case INT: {
+			int64_t va = a._data._int;
+			int64_t vb = b._data._int;
+			r_dst = int(va - vb);
+		}
+			return;
+		case FLOAT: {
+			double ra = a._data._float;
+			double rb = b._data._float;
+			r_dst = ra - rb;
+		}
+			return;
+		case VECTOR2: {
+			r_dst = *reinterpret_cast<const Vector2 *>(a._data._mem) - *reinterpret_cast<const Vector2 *>(b._data._mem);
+		}
+			return;
+		case VECTOR2I: {
+			int32_t vax = reinterpret_cast<const Vector2i *>(a._data._mem)->x;
+			int32_t vbx = reinterpret_cast<const Vector2i *>(b._data._mem)->x;
+			int32_t vay = reinterpret_cast<const Vector2i *>(a._data._mem)->y;
+			int32_t vby = reinterpret_cast<const Vector2i *>(b._data._mem)->y;
+			r_dst = Vector2i(int32_t(vax - vbx), int32_t(vay - vby));
+		}
+			return;
+		case RECT2: {
+			const Rect2 *ra = reinterpret_cast<const Rect2 *>(a._data._mem);
+			const Rect2 *rb = reinterpret_cast<const Rect2 *>(b._data._mem);
+			r_dst = Rect2(ra->position - rb->position, ra->size - rb->size);
+		}
+			return;
+		case RECT2I: {
+			const Rect2i *ra = reinterpret_cast<const Rect2i *>(a._data._mem);
+			const Rect2i *rb = reinterpret_cast<const Rect2i *>(b._data._mem);
+
+			int32_t vax = ra->position.x;
+			int32_t vay = ra->position.y;
+			int32_t vbx = ra->size.x;
+			int32_t vby = ra->size.y;
+			int32_t vcx = rb->position.x;
+			int32_t vcy = rb->position.y;
+			int32_t vdx = rb->size.x;
+			int32_t vdy = rb->size.y;
+
+			r_dst = Rect2i(int32_t(vax - vbx), int32_t(vay - vby), int32_t(vcx - vdx), int32_t(vcy - vdy));
+		}
+			return;
+		case VECTOR3: {
+			r_dst = *reinterpret_cast<const Vector3 *>(a._data._mem) - *reinterpret_cast<const Vector3 *>(b._data._mem);
+		}
+			return;
+		case VECTOR3I: {
+			int32_t vax = reinterpret_cast<const Vector3i *>(a._data._mem)->x;
+			int32_t vbx = reinterpret_cast<const Vector3i *>(b._data._mem)->x;
+			int32_t vay = reinterpret_cast<const Vector3i *>(a._data._mem)->y;
+			int32_t vby = reinterpret_cast<const Vector3i *>(b._data._mem)->y;
+			int32_t vaz = reinterpret_cast<const Vector3i *>(a._data._mem)->z;
+			int32_t vbz = reinterpret_cast<const Vector3i *>(b._data._mem)->z;
+			r_dst = Vector3i(int32_t(vax - vbx), int32_t(vay - vby), int32_t(vaz - vbz));
+		}
+			return;
+		case AABB: {
+			const ::AABB *ra = reinterpret_cast<const ::AABB *>(a._data._mem);
+			const ::AABB *rb = reinterpret_cast<const ::AABB *>(b._data._mem);
+			r_dst = ::AABB(ra->position - rb->position, ra->size - rb->size);
+		}
+			return;
+		case QUATERNION: {
+			Quaternion empty_rot;
+			const Quaternion *qa = reinterpret_cast<const Quaternion *>(a._data._mem);
+			const Quaternion *qb = reinterpret_cast<const Quaternion *>(b._data._mem);
+			r_dst = (*qb).inverse() * *qa;
+		}
+			return;
+		case COLOR: {
+			const Color *ca = reinterpret_cast<const Color *>(a._data._mem);
+			const Color *cb = reinterpret_cast<const Color *>(b._data._mem);
+			float new_r = ca->r - cb->r;
+			float new_g = ca->g - cb->g;
+			float new_b = ca->b - cb->b;
+			float new_a = ca->a - cb->a;
+			new_r = new_r > 1.0 ? 1.0 : new_r;
+			new_g = new_g > 1.0 ? 1.0 : new_g;
+			new_b = new_b > 1.0 ? 1.0 : new_b;
+			new_a = new_a > 1.0 ? 1.0 : new_a;
+			r_dst = Color(new_r, new_g, new_b, new_a);
+		}
+			return;
+		default: {
+			r_dst = a;
+		}
+			return;
+	}
+}
+
 void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst) {
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {

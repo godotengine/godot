@@ -42,10 +42,10 @@ FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
 bool FileAccess::backup_save = false;
 
-FileAccess *FileAccess::create(AccessType p_access) {
+Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
 
-	FileAccess *ret = create_func[p_access]();
+	Ref<FileAccess> ret = create_func[p_access]();
 	ret->_set_access_type(p_access);
 	return ret;
 }
@@ -55,11 +55,10 @@ bool FileAccess::exists(const String &p_name) {
 		return true;
 	}
 
-	FileAccess *f = open(p_name, READ);
-	if (!f) {
+	Ref<FileAccess> f = open(p_name, READ);
+	if (f.is_null()) {
 		return false;
 	}
-	memdelete(f);
 	return true;
 }
 
@@ -67,8 +66,8 @@ void FileAccess::_set_access_type(AccessType p_access) {
 	_access_type = p_access;
 }
 
-FileAccess *FileAccess::create_for_path(const String &p_path) {
-	FileAccess *ret = nullptr;
+Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
+	Ref<FileAccess> ret;
 	if (p_path.begins_with("res://")) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
@@ -85,13 +84,13 @@ Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 	return _open(p_path, p_mode_flags);
 }
 
-FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
+Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
 	//try packed data first
 
-	FileAccess *ret = nullptr;
+	Ref<FileAccess> ret;
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
-		if (ret) {
+		if (ret.is_valid()) {
 			if (r_error) {
 				*r_error = OK;
 			}
@@ -106,8 +105,7 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 		*r_error = err;
 	}
 	if (err != OK) {
-		memdelete(ret);
-		ret = nullptr;
+		ret.unref();
 	}
 
 	return ret;
@@ -463,11 +461,10 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 		return 0;
 	}
 
-	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint64_t mt = fa->_get_modified_time(p_file);
-	memdelete(fa);
 	return mt;
 }
 
@@ -476,11 +473,10 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 		return 0;
 	}
 
-	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint32_t mt = fa->_get_unix_permissions(p_file);
-	memdelete(fa);
 	return mt;
 }
 
@@ -489,11 +485,10 @@ Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissi
 		return ERR_UNAVAILABLE;
 	}
 
-	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
-	memdelete(fa);
 	return err;
 }
 
@@ -559,8 +554,8 @@ void FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 }
 
 Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_error) {
-	FileAccess *f = FileAccess::open(p_path, READ, r_error);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, READ, r_error);
+	if (f.is_null()) {
 		if (r_error) { // if error requested, do not throw error
 			return Vector<uint8_t>();
 		}
@@ -569,7 +564,6 @@ Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_err
 	Vector<uint8_t> data;
 	data.resize(f->get_length());
 	f->get_buffer(data.ptrw(), data.size());
-	memdelete(f);
 	return data;
 }
 
@@ -592,8 +586,8 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 }
 
 String FileAccess::get_md5(const String &p_file) {
-	FileAccess *f = FileAccess::open(p_file, READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_file, READ);
+	if (f.is_null()) {
 		return String();
 	}
 
@@ -615,8 +609,6 @@ String FileAccess::get_md5(const String &p_file) {
 	unsigned char hash[16];
 	ctx.finish(hash);
 
-	memdelete(f);
-
 	return String::md5(hash);
 }
 
@@ -625,8 +617,8 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 	ctx.start();
 
 	for (int i = 0; i < p_file.size(); i++) {
-		FileAccess *f = FileAccess::open(p_file[i], READ);
-		ERR_CONTINUE(!f);
+		Ref<FileAccess> f = FileAccess::open(p_file[i], READ);
+		ERR_CONTINUE(f.is_null());
 
 		unsigned char step[32768];
 
@@ -639,7 +631,6 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 				break;
 			}
 		}
-		memdelete(f);
 	}
 
 	unsigned char hash[16];
@@ -649,8 +640,8 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 }
 
 String FileAccess::get_sha256(const String &p_file) {
-	FileAccess *f = FileAccess::open(p_file, READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_file, READ);
+	if (f.is_null()) {
 		return String();
 	}
 
@@ -672,6 +663,5 @@ String FileAccess::get_sha256(const String &p_file) {
 	unsigned char hash[32];
 	ctx.finish(hash);
 
-	memdelete(f);
 	return String::hex_encode_buffer(hash, 32);
 }

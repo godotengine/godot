@@ -257,7 +257,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 		}
 	}
 
-	FileAccessRef f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
 	f->store_8('S');
 	f->store_8('T');
@@ -280,8 +280,6 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	for (int i = 0; i < mipmap_images.size(); i++) {
 		ResourceImporterTexture::save_to_ctex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
-
-	f->close();
 }
 
 Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

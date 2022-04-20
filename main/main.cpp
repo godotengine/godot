@@ -2112,8 +2112,8 @@ bool Main::start() {
 		}
 
 		{
-			DirAccessRef da = DirAccess::open(doc_tool_path);
-			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a valid directory path.");
+			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
+			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
 #ifndef MODULE_MONO_ENABLED
@@ -2149,7 +2149,7 @@ bool Main::start() {
 				checked_paths.insert(path);
 
 				// Create the module documentation directory if it doesn't exist
-				DirAccessRef da = DirAccess::create_for_path(path);
+				Ref<DirAccess> da = DirAccess::create_for_path(path);
 				err = da->make_dir_recursive(path);
 				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
@@ -2161,7 +2161,7 @@ bool Main::start() {
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
-		DirAccessRef da = DirAccess::create_for_path(index_path);
+		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
 		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
@@ -2501,11 +2501,11 @@ bool Main::start() {
 						int sep = local_game_path.rfind("/");
 
 						if (sep == -1) {
-							DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							local_game_path = da->get_current_dir().plus_file(local_game_path);
 						} else {
-							DirAccessRef da = DirAccess::open(local_game_path.substr(0, sep));
-							if (da) {
+							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
+							if (da.is_valid()) {
 								local_game_path = da->get_current_dir().plus_file(
 										local_game_path.substr(sep + 1, local_game_path.length()));
 							}

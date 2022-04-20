@@ -82,7 +82,7 @@ private:
 	OptionButton *filter = nullptr;
 	AcceptDialog *mkdirerr = nullptr;
 	AcceptDialog *exterr = nullptr;
-	DirAccess *dir_access = nullptr;
+	Ref<DirAccess> dir_access;
 	ConfirmationDialog *confirm_save = nullptr;
 
 	Label *message = nullptr;

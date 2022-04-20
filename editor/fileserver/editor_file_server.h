@@ -49,7 +49,7 @@ class EditorFileServer : public Object {
 	struct ClientData {
 		Thread *thread = nullptr;
 		Ref<StreamPeerTCP> connection;
-		Map<int, FileAccess *> files;
+		Map<int, Ref<FileAccess>> files;
 		EditorFileServer *efs = nullptr;
 		bool quit = false;
 	};

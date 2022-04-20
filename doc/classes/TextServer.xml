@@ -1249,9 +1249,9 @@
 		<method name="shaped_text_get_word_breaks" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="grapheme_flags" type="int" />
+			<argument index="1" name="grapheme_flags" type="int" default="264" />
 			<description>
-				Breaks text into words and returns array of character ranges.
+				Breaks text into words and returns array of character ranges. Use [code]grapheme_flags[/code] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>
 		</method>
 		<method name="shaped_text_hit_test_grapheme" qualifiers="const">

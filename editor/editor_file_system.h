@@ -213,7 +213,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _save_filesystem_cache();
-	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file);
+	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file);
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
@@ -225,7 +225,7 @@ class EditorFileSystem : public Node {
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
 	bool scanning_changes = false;

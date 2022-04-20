@@ -93,7 +93,7 @@ void POTGenerator::generate_pot(const String &p_file) {
 
 void POTGenerator::_write_to_pot(const String &p_file) {
 	Error err;
-	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 		ERR_PRINT("Failed to open " + p_file);
 		return;
@@ -155,11 +155,9 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			}
 		}
 	}
-
-	file->close();
 }
 
-void POTGenerator::_write_msgid(FileAccess *r_file, const String &p_id, bool p_plural) {
+void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural) {
 	// Split \\n and \n.
 	Vector<String> temp = p_id.split("\\n");
 	Vector<String> msg_lines;

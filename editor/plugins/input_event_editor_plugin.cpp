@@ -33,6 +33,15 @@
 void InputEventConfigContainer::_bind_methods() {
 }
 
+void InputEventConfigContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			open_config_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+		} break;
+	}
+}
+
 void InputEventConfigContainer::_configure_pressed() {
 	config_dialog->popup_and_configure(input_event);
 }
@@ -45,12 +54,6 @@ void InputEventConfigContainer::_config_dialog_confirmed() {
 	Ref<InputEvent> ie = config_dialog->get_event();
 	input_event->copy_from(ie);
 	_event_changed();
-}
-
-Size2 InputEventConfigContainer::get_minimum_size() const {
-	// Don't bother with a minimum x size for the control - we don't want the inspector
-	// to jump in size if a long text is placed in the label (e.g. Joypad Axis description)
-	return Size2(0, HBoxContainer::get_minimum_size().y);
 }
 
 void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
@@ -75,28 +78,25 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 }
 
 InputEventConfigContainer::InputEventConfigContainer() {
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 10);
-	mc->add_theme_constant_override("margin_right", 10);
-	mc->add_theme_constant_override("margin_top", 10);
-	mc->add_theme_constant_override("margin_bottom", 10);
-	add_child(mc);
-
-	HBoxContainer *hb = memnew(HBoxContainer);
-	mc->add_child(hb);
+	input_event_text = memnew(Label);
+	input_event_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	input_event_text->set_autowrap_mode(Label::AutowrapMode::AUTOWRAP_WORD_SMART);
+	input_event_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	add_child(input_event_text);
 
 	open_config_button = memnew(Button);
 	open_config_button->set_text(TTR("Configure"));
 	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
-	hb->add_child(open_config_button);
+	add_child(open_config_button);
 
-	input_event_text = memnew(Label);
-	hb->add_child(input_event_text);
+	add_child(memnew(Control));
 
 	config_dialog = memnew(InputEventConfigurationDialog);
 	config_dialog->connect("confirmed", callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
 	add_child(config_dialog);
 }
+
+///////////////////////
 
 bool EditorInspectorPluginInputEvent::can_handle(Object *p_object) {
 	Ref<InputEventKey> k = Ref<InputEventKey>(p_object);
@@ -114,6 +114,8 @@ void EditorInspectorPluginInputEvent::parse_begin(Object *p_object) {
 	picker_controls->set_event(ie);
 	add_custom_control(picker_controls);
 }
+
+///////////////////////
 
 InputEventEditorPlugin::InputEventEditorPlugin() {
 	Ref<EditorInspectorPluginInputEvent> plugin;

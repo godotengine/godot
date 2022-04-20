@@ -83,8 +83,31 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 		set_current_animation(p_value);
 
 	} else if (name.begins_with("anims/")) {
+		// Backwards compatibility with 3.x, add them to "default" library.
 		String which = name.get_slicec('/', 1);
-		add_animation(which, p_value);
+
+		Ref<Animation> anim = p_value;
+		Ref<AnimationLibrary> al;
+		if (!has_animation_library(StringName())) {
+			al.instantiate();
+			add_animation_library(StringName(), al);
+		} else {
+			al = get_animation_library(StringName());
+		}
+		al->add_animation(which, anim);
+
+	} else if (name.begins_with("libraries")) {
+		Dictionary d = p_value;
+		while (animation_libraries.size()) {
+			remove_animation_library(animation_libraries[0].name);
+		}
+		List<Variant> keys;
+		d.get_key_list(&keys);
+		for (const Variant &K : keys) {
+			StringName lib_name = K;
+			Ref<AnimationLibrary> lib = d[lib_name];
+			add_animation_library(lib_name, lib);
+		}
 
 	} else if (name.begins_with("next/")) {
 		String which = name.get_slicec('/', 1);
@@ -117,9 +140,13 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 		r_ret = get_current_animation();
 
-	} else if (name.begins_with("anims/")) {
-		String which = name.get_slicec('/', 1);
-		r_ret = get_animation(which);
+	} else if (name.begins_with("libraries")) {
+		Dictionary d;
+		for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+			d[animation_libraries[i].name] = animation_libraries[i].library;
+		}
+
+		r_ret = d;
 
 	} else if (name.begins_with("next/")) {
 		String which = name.get_slicec('/', 1);
@@ -173,8 +200,9 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> anim_names;
 
+	anim_names.push_back(PropertyInfo(Variant::DICTIONARY, "libraries"));
+
 	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
-		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E.key), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 		if (E.value.next != StringName()) {
 			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
@@ -1155,71 +1183,106 @@ void AnimationPlayer::_animation_process(double p_delta) {
 	}
 }
 
-Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("["), ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
-#endif
+void AnimationPlayer::_animation_set_cache_update() {
+	// Relatively fast function to update all animations.
 
-	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
+	animation_set_update_pass++;
+	bool clear_cache_needed = false;
 
-	if (animation_set.has(p_name)) {
-		_unref_anim(animation_set[p_name].animation);
-		animation_set[p_name].animation = p_animation;
-		clear_caches();
-	} else {
-		AnimationData ad;
-		ad.animation = p_animation;
-		ad.name = p_name;
-		animation_set[p_name] = ad;
+	// Update changed and add otherwise
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
+			StringName key = animation_libraries[i].name == StringName() ? K.key : StringName(String(animation_libraries[i].name) + "/" + String(K.key));
+			if (!animation_set.has(key)) {
+				AnimationData ad;
+				ad.animation = K.value;
+				ad.animation_library = animation_libraries[i].name;
+				ad.name = key;
+				ad.last_update = animation_set_update_pass;
+				animation_set.insert(ad.name, ad);
+			} else {
+				AnimationData &ad = animation_set[key];
+				if (ad.last_update != animation_set_update_pass) {
+					// Was not updated, update. If the animation is duplicated, the second one will be ignored.
+					if (ad.animation != K.value || ad.animation_library != animation_libraries[i].name) {
+						// Animation changed, update and clear caches.
+						clear_cache_needed = true;
+						ad.animation = K.value;
+						ad.animation_library = animation_libraries[i].name;
+					}
+
+					ad.last_update = animation_set_update_pass;
+				}
+			}
+		}
 	}
 
-	_ref_anim(p_animation);
-	notify_property_list_changed();
-	return OK;
+	// Check removed
+	List<StringName> to_erase;
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		if (E.value.last_update != animation_set_update_pass) {
+			// Was not updated, must be erased
+			to_erase.push_back(E.key);
+			clear_cache_needed = true;
+		}
+	}
+
+	while (to_erase.size()) {
+		animation_set.erase(to_erase.front()->get());
+		to_erase.pop_front();
+	}
+
+	if (clear_cache_needed) {
+		// If something was modified or removed, caches need to be cleared
+		clear_caches();
+	}
 }
 
-void AnimationPlayer::remove_animation(const StringName &p_name) {
-	ERR_FAIL_COND(!animation_set.has(p_name));
+void AnimationPlayer::_animation_added(const StringName &p_name, const StringName &p_library) {
+	_animation_set_cache_update();
 
-	stop();
-	_unref_anim(animation_set[p_name].animation);
-	animation_set.erase(p_name);
-
-	clear_caches();
-	notify_property_list_changed();
+	update_configuration_warnings();
 }
 
-void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), varray(), CONNECT_REFERENCE_COUNTED);
+void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {
+	StringName name = p_library == StringName() ? p_name : StringName(String(p_library) + "/" + String(p_name));
+
+	if (!animation_set.has(name)) {
+		return; // No need to update because not the one from the library being used.
+	}
+	_animation_set_cache_update();
+
+	// Erase blends if needed
+	List<BlendKey> to_erase;
+	for (const KeyValue<BlendKey, float> &E : blend_times) {
+		BlendKey bk = E.key;
+		if (bk.from == name || bk.to == name) {
+			to_erase.push_back(bk);
+		}
+	}
+
+	while (to_erase.size()) {
+		blend_times.erase(to_erase.front()->get());
+		to_erase.pop_front();
+	}
+
+	update_configuration_warnings();
 }
 
-void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
-	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed));
-}
-
-void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {
-	ERR_FAIL_COND(!animation_set.has(p_name));
-	ERR_FAIL_COND(String(p_new_name).contains("/") || String(p_new_name).contains(":"));
-	ERR_FAIL_COND(animation_set.has(p_new_name));
-
-	stop();
-	AnimationData ad = animation_set[p_name];
-	ad.name = p_new_name;
-	animation_set.erase(p_name);
-	animation_set[p_new_name] = ad;
-
+void AnimationPlayer::_rename_animation(const StringName &p_from_name, const StringName &p_to_name) {
+	// Rename autoplay or blends if needed.
 	List<BlendKey> to_erase;
 	Map<BlendKey, float> to_insert;
 	for (const KeyValue<BlendKey, float> &E : blend_times) {
 		BlendKey bk = E.key;
 		BlendKey new_bk = bk;
 		bool erase = false;
-		if (bk.from == p_name) {
-			new_bk.from = p_new_name;
+		if (bk.from == p_from_name) {
+			new_bk.from = p_to_name;
 			erase = true;
 		}
-		if (bk.to == p_name) {
-			new_bk.to = p_new_name;
+		if (bk.to == p_from_name) {
+			new_bk.to = p_to_name;
 			erase = true;
 		}
 
@@ -1239,12 +1302,184 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 		to_insert.erase(to_insert.front());
 	}
 
-	if (autoplay == p_name) {
-		autoplay = p_new_name;
+	if (autoplay == p_from_name) {
+		autoplay = p_to_name;
+	}
+}
+
+void AnimationPlayer::_animation_renamed(const StringName &p_name, const StringName &p_to_name, const StringName &p_library) {
+	StringName from_name = p_library == StringName() ? p_name : StringName(String(p_library) + "/" + String(p_name));
+	StringName to_name = p_library == StringName() ? p_to_name : StringName(String(p_library) + "/" + String(p_to_name));
+
+	if (!animation_set.has(from_name)) {
+		return; // No need to update because not the one from the library being used.
+	}
+	_animation_set_cache_update();
+
+	_rename_animation(from_name, to_name);
+	update_configuration_warnings();
+}
+
+Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library) {
+	ERR_FAIL_COND_V(p_animation_library.is_null(), ERR_INVALID_PARAMETER);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("["), ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
+#endif
+
+	int insert_pos = 0;
+
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		ERR_FAIL_COND_V_MSG(animation_libraries[i].name == p_name, ERR_ALREADY_EXISTS, "Can't add animation library twice with name: " + String(p_name));
+		ERR_FAIL_COND_V_MSG(animation_libraries[i].library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.operator String() + "', exists as '" + animation_libraries[i].name.operator String() + "'.");
+
+		if (animation_libraries[i].name.operator String() >= p_name.operator String()) {
+			break;
+		}
+
+		insert_pos++;
 	}
 
-	clear_caches();
+	AnimationLibraryData ald;
+	ald.name = p_name;
+	ald.library = p_animation_library;
+
+	animation_libraries.insert(insert_pos, ald);
+
+	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_name));
+	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_name));
+	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed), varray(p_name));
+
+	_animation_set_cache_update();
+
 	notify_property_list_changed();
+
+	update_configuration_warnings();
+	return OK;
+}
+
+void AnimationPlayer::remove_animation_library(const StringName &p_name) {
+	int at_pos = -1;
+
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		if (animation_libraries[i].name == p_name) {
+			at_pos = i;
+			break;
+		}
+	}
+
+	ERR_FAIL_COND(at_pos == -1);
+
+	animation_libraries[at_pos].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added));
+	animation_libraries[at_pos].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added));
+	animation_libraries[at_pos].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
+
+	stop();
+
+	for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[at_pos].library->animations) {
+		_unref_anim(K.value);
+	}
+
+	animation_libraries.remove_at(at_pos);
+	_animation_set_cache_update();
+
+	notify_property_list_changed();
+	update_configuration_warnings();
+}
+
+void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
+	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), varray(), CONNECT_REFERENCE_COUNTED);
+}
+
+void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
+	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed));
+}
+
+void AnimationPlayer::rename_animation_library(const StringName &p_name, const StringName &p_new_name) {
+	if (p_name == p_new_name) {
+		return;
+	}
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(String(p_new_name).contains("/") || String(p_new_name).contains(":") || String(p_new_name).contains(",") || String(p_new_name).contains("["), "Invalid animation library name: " + String(p_new_name) + ".");
+#endif
+
+	bool found = false;
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		ERR_FAIL_COND_MSG(animation_libraries[i].name == p_new_name, "Can't rename animation library to another existing name: " + String(p_new_name));
+		if (animation_libraries[i].name == p_name) {
+			found = true;
+			animation_libraries[i].name = p_new_name;
+			// rename connections
+			animation_libraries[i].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added));
+			animation_libraries[i].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added));
+			animation_libraries[i].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
+
+			animation_libraries[i].library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added), varray(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed), varray(p_new_name));
+
+			for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
+				StringName old_name = p_name == StringName() ? K.key : StringName(String(p_name) + "/" + String(K.key));
+				StringName new_name = p_new_name == StringName() ? K.key : StringName(String(p_new_name) + "/" + String(K.key));
+				_rename_animation(old_name, new_name);
+			}
+		}
+	}
+
+	ERR_FAIL_COND(!found);
+
+	stop();
+
+	animation_libraries.sort(); // Must keep alphabetical order.
+
+	_animation_set_cache_update(); // Update cache.
+
+	notify_property_list_changed();
+}
+
+bool AnimationPlayer::has_animation_library(const StringName &p_name) const {
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		if (animation_libraries[i].name == p_name) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Ref<AnimationLibrary> AnimationPlayer::get_animation_library(const StringName &p_name) const {
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		if (animation_libraries[i].name == p_name) {
+			return animation_libraries[i].library;
+		}
+	}
+	ERR_FAIL_V(Ref<AnimationLibrary>());
+}
+
+TypedArray<StringName> AnimationPlayer::_get_animation_library_list() const {
+	TypedArray<StringName> ret;
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		ret.push_back(animation_libraries[i].name);
+	}
+	return ret;
+}
+
+void AnimationPlayer::get_animation_library_list(List<StringName> *p_libraries) const {
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		p_libraries->push_back(animation_libraries[i].name);
+	}
+}
+
+TypedArray<String> AnimationPlayer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
+			if (animation_set.has(K.key) && animation_set[K.key].animation_library != animation_libraries[i].name) {
+				warnings.push_back(vformat(RTR("Animation '%s' in library '%s' is unused because another animation with the same name exists in library '%s'."), K.key, animation_libraries[i].name, animation_set[K.key].animation_library));
+			}
+		}
+	}
+	return warnings;
 }
 
 bool AnimationPlayer::has_animation(const StringName &p_name) const {
@@ -1585,7 +1820,16 @@ StringName AnimationPlayer::find_animation(const Ref<Animation> &p_animation) co
 		}
 	}
 
-	return "";
+	return StringName();
+}
+
+StringName AnimationPlayer::find_animation_library(const Ref<Animation> &p_animation) const {
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		if (E.value.animation == p_animation) {
+			return E.value.animation_library;
+		}
+	}
+	return StringName();
 }
 
 void AnimationPlayer::set_autoplay(const String &p_name) {
@@ -1764,7 +2008,10 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
 	EditorNode::get_singleton()->add_child(aux_player);
-	aux_player->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	Ref<AnimationLibrary> al;
+	al.instantiate();
+	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	aux_player->add_animation_library("default", al);
 	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Node *root = get_node(get_root());
@@ -1792,9 +2039,13 @@ bool AnimationPlayer::can_apply_reset() const {
 #endif // TOOLS_ENABLED
 
 void AnimationPlayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);
-	ClassDB::bind_method(D_METHOD("remove_animation", "name"), &AnimationPlayer::remove_animation);
-	ClassDB::bind_method(D_METHOD("rename_animation", "name", "newname"), &AnimationPlayer::rename_animation);
+	ClassDB::bind_method(D_METHOD("add_animation_library", "name", "library"), &AnimationPlayer::add_animation_library);
+	ClassDB::bind_method(D_METHOD("remove_animation_library", "name"), &AnimationPlayer::remove_animation_library);
+	ClassDB::bind_method(D_METHOD("rename_animation_library", "name", "newname"), &AnimationPlayer::rename_animation_library);
+	ClassDB::bind_method(D_METHOD("has_animation_library", "name"), &AnimationPlayer::has_animation_library);
+	ClassDB::bind_method(D_METHOD("get_animation_library", "name"), &AnimationPlayer::get_animation_library);
+	ClassDB::bind_method(D_METHOD("get_animation_library_list"), &AnimationPlayer::_get_animation_library_list);
+
 	ClassDB::bind_method(D_METHOD("has_animation", "name"), &AnimationPlayer::has_animation);
 	ClassDB::bind_method(D_METHOD("get_animation", "name"), &AnimationPlayer::get_animation);
 	ClassDB::bind_method(D_METHOD("get_animation_list"), &AnimationPlayer::_get_animation_list);
@@ -1838,6 +2089,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &AnimationPlayer::get_root);
 
 	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationPlayer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation_library", "animation"), &AnimationPlayer::find_animation_library);
 
 	ClassDB::bind_method(D_METHOD("clear_caches"), &AnimationPlayer::clear_caches);
 

@@ -217,17 +217,14 @@ Error ResourceFormatSaverShader::save(const String &p_path, const RES &p_resourc
 	String source = shader->get_code();
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		memdelete(file);
 		return ERR_CANT_CREATE;
 	}
-	file->close();
-	memdelete(file);
 
 	return OK;
 }

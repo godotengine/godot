@@ -38,9 +38,9 @@
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "storage/canvas_texture_storage.h"
 #include "storage/config.h"
 #include "storage/material_storage.h"
+#include "storage/texture_storage.h"
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
@@ -116,9 +116,11 @@ void RasterizerCanvasGLES3::_update_transform_to_mat4(const Transform3D &p_trans
 }
 
 void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) {
-	storage->frame.current_rt = nullptr;
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
-	storage->_set_current_render_target(p_to_render_target);
+	texture_storage->frame.current_rt = nullptr;
+
+	texture_storage->_set_current_render_target(p_to_render_target);
 
 	Transform2D canvas_transform_inverse = p_canvas_transform.affine_inverse();
 
@@ -130,7 +132,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		//update canvas state uniform buffer
 		StateBuffer state_buffer;
 
-		Size2i ssize = storage->render_target_get_size(p_to_render_target);
+		Size2i ssize = texture_storage->render_target_get_size(p_to_render_target);
 
 		Transform3D screen_transform;
 		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
@@ -149,11 +151,11 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		state_buffer.canvas_modulate[2] = p_modulate.b;
 		state_buffer.canvas_modulate[3] = p_modulate.a;
 
-		Size2 render_target_size = storage->render_target_get_size(p_to_render_target);
+		Size2 render_target_size = texture_storage->render_target_get_size(p_to_render_target);
 		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;
 		state_buffer.screen_pixel_size[1] = 1.0 / render_target_size.y;
 
-		state_buffer.time = storage->frame.time;
+		state_buffer.time = texture_storage->frame.time;
 		state_buffer.use_pixel_snap = p_snap_2d_vertices_to_pixel;
 
 		state_buffer.directional_light_count = 0; //directional_light_count;
@@ -166,7 +168,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		state_buffer.screen_to_sdf[0] = 1.0 / state_buffer.sdf_to_screen[0];
 		state_buffer.screen_to_sdf[1] = 1.0 / state_buffer.sdf_to_screen[1];
 
-		Rect2 sdf_rect = storage->render_target_get_sdf_rect(p_to_render_target);
+		Rect2 sdf_rect = texture_storage->render_target_get_sdf_rect(p_to_render_target);
 		Rect2 sdf_tex_rect(sdf_rect.position / canvas_scale, sdf_rect.size / canvas_scale);
 
 		state_buffer.sdf_to_tex[0] = 1.0 / sdf_tex_rect.size.width;
@@ -881,19 +883,21 @@ void RasterizerCanvasGLES3::update() {
 }
 
 void RasterizerCanvasGLES3::canvas_begin() {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+
 	state.using_transparent_rt = false;
 
-	if (storage->frame.current_rt) {
-		storage->bind_framebuffer(storage->frame.current_rt->fbo);
-		state.using_transparent_rt = storage->frame.current_rt->flags[RendererStorage::RENDER_TARGET_TRANSPARENT];
+	if (texture_storage->frame.current_rt) {
+		glBindFramebuffer(GL_FRAMEBUFFER, texture_storage->frame.current_rt->fbo);
+		state.using_transparent_rt = texture_storage->frame.current_rt->flags[GLES3::TextureStorage::RENDER_TARGET_TRANSPARENT];
 	}
 
-	if (storage->frame.current_rt && storage->frame.current_rt->clear_requested) {
-		const Color &col = storage->frame.current_rt->clear_color;
+	if (texture_storage->frame.current_rt && texture_storage->frame.current_rt->clear_requested) {
+		const Color &col = texture_storage->frame.current_rt->clear_color;
 		glClearColor(col.r, col.g, col.b, col.a);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		storage->frame.current_rt->clear_requested = false;
+		texture_storage->frame.current_rt->clear_requested = false;
 	}
 
 	reset_canvas();
@@ -934,7 +938,7 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 
 		ct = t->canvas_texture;
 	} else {
-		ct = GLES3::CanvasTextureStorage::get_singleton()->get_canvas_texture(p_texture);
+		ct = GLES3::TextureStorage::get_singleton()->get_canvas_texture(p_texture);
 	}
 
 	if (!ct) {
@@ -1041,6 +1045,8 @@ void RasterizerCanvasGLES3::_set_uniforms() {
 }
 
 void RasterizerCanvasGLES3::reset_canvas() {
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
@@ -1049,7 +1055,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 
 	// Default to Mix.
 	glBlendEquation(GL_FUNC_ADD);
-	if (storage->frame.current_rt && storage->frame.current_rt->flags[RendererStorage::RENDER_TARGET_TRANSPARENT]) {
+	if (texture_storage->frame.current_rt && texture_storage->frame.current_rt->flags[GLES3::TextureStorage::RENDER_TARGET_TRANSPARENT]) {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	} else {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
@@ -1255,7 +1261,7 @@ void RasterizerCanvasGLES3::_allocate_instance_data_buffer() {
 }
 
 void RasterizerCanvasGLES3::initialize() {
-	GLES3::CanvasTextureStorage *canvas_texture_storage = GLES3::CanvasTextureStorage::get_singleton();
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
 	// quad buffer
@@ -1450,8 +1456,8 @@ void fragment() {
 		material_storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 
-	default_canvas_texture = canvas_texture_storage->canvas_texture_allocate();
-	canvas_texture_storage->canvas_texture_initialize(default_canvas_texture);
+	default_canvas_texture = texture_storage->canvas_texture_allocate();
+	texture_storage->canvas_texture_initialize(default_canvas_texture);
 
 	state.using_light = nullptr;
 	state.using_transparent_rt = false;
@@ -1465,18 +1471,20 @@ RasterizerCanvasGLES3 *RasterizerCanvasGLES3::get_singleton() {
 	return singleton;
 }
 
-RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
+RasterizerCanvasGLES3::RasterizerCanvasGLES3(RasterizerStorageGLES3 *p_storage) {
 	singleton = this;
+	storage = p_storage;
+	initialize();
 }
 
 RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
-	GLES3::CanvasTextureStorage *canvas_texture_storage = GLES3::CanvasTextureStorage::get_singleton();
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
 	state.canvas_shader.version_free(state.canvas_shader_default_version);
 	material_storage->material_free(default_canvas_group_material);
 	material_storage->shader_free(default_canvas_group_shader);
-	canvas_texture_storage->canvas_texture_free(default_canvas_texture);
+	texture_storage->canvas_texture_free(default_canvas_texture);
 	singleton = nullptr;
 }
 

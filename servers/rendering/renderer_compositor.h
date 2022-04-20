@@ -34,10 +34,10 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_storage.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/decal_atlas_storage.h"
+#include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering_server.h"
 
@@ -75,11 +75,11 @@ protected:
 public:
 	static RendererCompositor *create();
 
-	virtual RendererCanvasTextureStorage *get_canvas_texture_storage() = 0;
+	virtual RendererLightStorage *get_light_storage() = 0;
 	virtual RendererMaterialStorage *get_material_storage() = 0;
 	virtual RendererMeshStorage *get_mesh_storage() = 0;
+	virtual RendererParticlesStorage *get_particles_storage() = 0;
 	virtual RendererTextureStorage *get_texture_storage() = 0;
-	virtual RendererDecalAtlasStorage *get_decal_atlas_storage() = 0;
 	virtual RendererStorage *get_storage() = 0;
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;

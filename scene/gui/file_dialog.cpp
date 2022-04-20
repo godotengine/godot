@@ -798,7 +798,6 @@ void FileDialog::set_access(Access p_access) {
 	if (access == p_access) {
 		return;
 	}
-	memdelete(dir_access);
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1091,5 +1090,4 @@ FileDialog::~FileDialog() {
 	if (unregister_func) {
 		unregister_func(this);
 	}
-	memdelete(dir_access);
 }
