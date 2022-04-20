@@ -2498,12 +2498,17 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 
 		if (is_self && parser->current_function != nullptr && parser->current_function->is_static && !is_static) {
-			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call);
+			// Get the parent function above any lambda.
+			GDScriptParser::FunctionNode *parent_function = parser->current_function;
+			while (parent_function->source_lambda) {
+				parent_function = parent_function->source_lambda->parent_function;
+			}
+			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parent_function->identifier->name), p_call);
 		} else if (!is_self && base_type.is_meta_type && !is_static) {
 			base_type.is_meta_type = false; // For `to_string()`.
 			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call);
-		} else if (is_self && !is_static && !lambda_stack.is_empty()) {
-			push_error(vformat(R"*(Cannot call non-static function "%s()" from a lambda function.)*", p_call->function_name), p_call);
+		} else if (is_self && !is_static) {
+			mark_lambda_use_self();
 		}
 
 		call_type = return_type;
@@ -2636,9 +2641,9 @@ void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) 
 
 	if (!ClassDB::is_parent_class(parser->current_class->base_type.native_type, result.native_type)) {
 		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") on a class that isn't a node.)*", p_get_node);
-	} else if (!lambda_stack.is_empty()) {
-		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") inside a lambda. Use a captured variable instead.)*", p_get_node);
 	}
+
+	mark_lambda_use_self();
 
 	p_get_node->set_datatype(result);
 }
@@ -2854,21 +2859,25 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			MethodBind *getter = ClassDB::get_method(native, getter_name);
 			if (getter != nullptr) {
 				p_identifier->set_datatype(type_from_property(getter->get_return_info()));
+				p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			}
 			return;
 		}
 		if (ClassDB::get_method_info(native, name, &method_info)) {
 			// Method is callable.
 			p_identifier->set_datatype(make_callable_type(method_info));
+			p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			return;
 		}
 		if (ClassDB::get_signal(native, name, &method_info)) {
 			// Signal is a type too.
 			p_identifier->set_datatype(make_signal_type(method_info));
+			p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			return;
 		}
 		if (ClassDB::has_enum(native, name)) {
 			p_identifier->set_datatype(make_native_enum_type(native, name));
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 			return;
 		}
 		bool valid = false;
@@ -2877,6 +2886,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			p_identifier->is_constant = true;
 			p_identifier->reduced_value = int_constant;
 			p_identifier->set_datatype(type_from_variant(int_constant, p_identifier));
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 			return;
 		}
 	}
@@ -2927,7 +2937,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			p_identifier->reduced_value = p_identifier->constant_source->initializer->reduced_value;
 			found_source = true;
 			break;
+		case GDScriptParser::IdentifierNode::INHERITED_VARIABLE:
+			mark_lambda_use_self();
+			break;
 		case GDScriptParser::IdentifierNode::MEMBER_VARIABLE:
+			mark_lambda_use_self();
 			p_identifier->variable_source->usages++;
 			[[fallthrough]];
 		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
@@ -2958,18 +2972,37 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (found_source) {
-		// If the identifier is local, check if it's any kind of capture by comparing their source function.
-		// Only capture locals and members and enum values. Constants are still accessible from the lambda using the script reference.
-		if (p_identifier->source == GDScriptParser::IdentifierNode::UNDEFINED_SOURCE || p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_CONSTANT || lambda_stack.is_empty()) {
-			return;
+		if ((p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE) && parser->current_function && parser->current_function->is_static) {
+			// Get the parent function above any lambda.
+			GDScriptParser::FunctionNode *parent_function = parser->current_function;
+			while (parent_function->source_lambda) {
+				parent_function = parent_function->source_lambda->parent_function;
+			}
+			push_error(vformat(R"*(Cannot access instance variable "%s" from the static function "%s()".)*", p_identifier->name, parent_function->identifier->name), p_identifier);
 		}
 
-		GDScriptParser::FunctionNode *function_test = lambda_stack.back()->get()->function;
-		while (function_test != nullptr && function_test != p_identifier->source_function && function_test->source_lambda != nullptr && !function_test->source_lambda->captures_indices.has(p_identifier->name)) {
-			function_test->source_lambda->captures_indices[p_identifier->name] = function_test->source_lambda->captures.size();
-			function_test->source_lambda->captures.push_back(p_identifier);
-			function_test = function_test->source_lambda->parent_function;
+		if (!lambda_stack.is_empty()) {
+			// If the identifier is a member variable (including the native class properties), we consider the lambda to be using `self`, so we keep a reference to the current instance.
+			if (p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE) {
+				mark_lambda_use_self();
+				return; // No need to capture.
+			}
+			// If the identifier is local, check if it's any kind of capture by comparing their source function.
+			// Only capture locals and enum values. Constants are still accessible from the lambda using the script reference. If not, this method is done.
+			if (p_identifier->source == GDScriptParser::IdentifierNode::UNDEFINED_SOURCE || p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_CONSTANT) {
+				return;
+			}
+
+			GDScriptParser::FunctionNode *function_test = lambda_stack.back()->get()->function;
+			// Make sure we aren't capturing variable in the same lambda.
+			// This also add captures for nested lambdas.
+			while (function_test != nullptr && function_test != p_identifier->source_function && function_test->source_lambda != nullptr && !function_test->source_lambda->captures_indices.has(p_identifier->name)) {
+				function_test->source_lambda->captures_indices[p_identifier->name] = function_test->source_lambda->captures.size();
+				function_test->source_lambda->captures.push_back(p_identifier);
+				function_test = function_test->source_lambda->parent_function;
+			}
 		}
+
 		return;
 	}
 
@@ -3149,6 +3182,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 void GDScriptAnalyzer::reduce_self(GDScriptParser::SelfNode *p_self) {
 	p_self->is_constant = false;
 	p_self->set_datatype(type_from_metatype(parser->current_class->get_datatype()));
+	mark_lambda_use_self();
 }
 
 void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscript) {
@@ -4119,6 +4153,12 @@ void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) {
 		parser->unsafe_lines.insert(i);
 	}
 #endif
+}
+
+void GDScriptAnalyzer::mark_lambda_use_self() {
+	for (GDScriptParser::LambdaNode *lambda : lambda_stack) {
+		lambda->use_self = true;
+	}
 }
 
 bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {

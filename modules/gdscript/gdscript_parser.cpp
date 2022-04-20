@@ -2200,9 +2200,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_self(ExpressionNode *p_pre
 	if (current_function && current_function->is_static) {
 		push_error(R"(Cannot use "self" inside a static function.)");
 	}
-	if (in_lambda) {
-		push_error(R"(Cannot use "self" inside a lambda.)");
-	}
 	SelfNode *self = alloc_node<SelfNode>();
 	self->current_class = current_class;
 	return self;

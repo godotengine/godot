@@ -306,6 +306,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_AWAIT,                              \
 		&&OPCODE_AWAIT_RESUME,                       \
 		&&OPCODE_CREATE_LAMBDA,                      \
+		&&OPCODE_CREATE_SELF_LAMBDA,                 \
 		&&OPCODE_JUMP,                               \
 		&&OPCODE_JUMP_IF,                            \
 		&&OPCODE_JUMP_IF_NOT,                        \
@@ -2269,6 +2270,41 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 
 				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, captures));
+
+				GET_INSTRUCTION_ARG(result, captures_count);
+				*result = Callable(callable);
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CREATE_SELF_LAMBDA) {
+				CHECK_SPACE(2 + instr_arg_count);
+
+				GD_ERR_BREAK(p_instance == nullptr);
+
+				ip += instr_arg_count;
+
+				int captures_count = _code_ptr[ip + 1];
+				GD_ERR_BREAK(captures_count < 0);
+
+				int lambda_index = _code_ptr[ip + 2];
+				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
+				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
+
+				Vector<Variant> captures;
+				captures.resize(captures_count);
+				for (int i = 0; i < captures_count; i++) {
+					GET_INSTRUCTION_ARG(arg, i);
+					captures.write[i] = *arg;
+				}
+
+				GDScriptLambdaSelfCallable *callable;
+				if (Object::cast_to<RefCounted>(p_instance->owner)) {
+					callable = memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(Object::cast_to<RefCounted>(p_instance->owner)), lambda, captures));
+				} else {
+					callable = memnew(GDScriptLambdaSelfCallable(p_instance->owner, lambda, captures));
+				}
 
 				GET_INSTRUCTION_ARG(result, captures_count);
 				*result = Callable(callable);
