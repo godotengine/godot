@@ -2392,7 +2392,6 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	args.push_back("pass:" + password);
 	args.push_back("--ks-key-alias");
 	args.push_back(user);
-	
 	// Fix export or run program signature issues.
 	args.push_back("--key-pass");
 	if (user_password.is_empty()) {
