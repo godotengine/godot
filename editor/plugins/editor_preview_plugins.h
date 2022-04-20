@@ -182,4 +182,15 @@ public:
 	EditorTileMapPatternPreviewPlugin();
 	~EditorTileMapPatternPreviewPlugin();
 };
+
+class EditorGradientPreviewPlugin : public EditorResourcePreviewGenerator {
+	GDCLASS(EditorGradientPreviewPlugin, EditorResourcePreviewGenerator);
+
+public:
+	virtual bool handles(const String &p_type) const override;
+	virtual bool generate_small_preview_automatically() const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
+
+	EditorGradientPreviewPlugin();
+};
 #endif // EDITORPREVIEWPLUGINS_H
