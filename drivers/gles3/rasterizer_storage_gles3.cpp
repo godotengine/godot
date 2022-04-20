@@ -651,7 +651,6 @@ RenderingDevice::DeviceType RasterizerStorageGLES3::get_video_adapter_type() con
 
 void RasterizerStorageGLES3::initialize() {
 	config = GLES3::Config::get_singleton();
-	// config->initialize();
 
 	//picky requirements for these
 	config->support_shadow_cubemaps = config->support_depth_texture && config->support_write_depth && config->support_depth_cubemaps;
@@ -824,6 +823,7 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 }
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
+	initialize();
 }
 
 RasterizerStorageGLES3::~RasterizerStorageGLES3() {

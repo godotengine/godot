@@ -219,8 +219,6 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES3 *scene_render = nullptr;
-
 	RasterizerStorageGLES3 *storage = nullptr;
 
 	void _set_uniforms();
@@ -279,7 +277,7 @@ public:
 	void finalize();
 
 	static RasterizerCanvasGLES3 *get_singleton();
-	RasterizerCanvasGLES3();
+	RasterizerCanvasGLES3(RasterizerStorageGLES3 *storage);
 	~RasterizerCanvasGLES3();
 };
 
