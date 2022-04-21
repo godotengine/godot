@@ -43,7 +43,7 @@
 // Client code should strongly prefer to create either a Read or Write (depending on access),
 // and call functions (push back etc) through that rather than through PoolVector directly.
 // This is so that:
-// 1) A single lock and COW is done, for a section of client code that uses the PoolVector.
+// 1) A single lock and COW is done, for a section of client code (the scope of the Read or Write) that uses the PoolVector.
 // 2) The enclosing lock makes it impossible for race conditions to occur within the section.
 
 // Uncomment this to turn on leak reporting.
@@ -52,7 +52,7 @@
 // just work (TM), unless you for instance create a PoolVector and forget to delete it.
 // #define GODOT_POOL_VECTOR_REPORT_LEAKS
 
-// Aside from the global mutex, these are used purely for debug statistics
+// These are used purely for debug statistics
 struct MemoryPool {
 #ifdef GODOT_POOL_VECTOR_REPORT_LEAKS
 	static void report_alloc(void *p_alloc, int p_line);
@@ -113,8 +113,8 @@ class PoolVector {
 	// multiple PoolVectors using COW.
 	// It is thus reference counted and can be locked.
 	struct Alloc {
+		Mutex mutex; // may be 80 bytes or more
 		uint32_t refcount = 1;
-		Mutex mutex;
 		LocalVector<T> vector;
 
 		void lock() {
@@ -209,8 +209,14 @@ class PoolVector {
 			}
 		}
 
-		// We must prevent any other paths from increasing the ref count if it is at zero,
-		// as the lock will have been relinquished by this point.
+		// Perhaps the greatest multithread danger here of PoolVector is that something else
+		// gets a lock and tries to use the Alloc just prior to the memdelete call.
+		// However we cannot keep the lock as deleting a locked mutex is undefined behaviour.
+		// This may not logically happen in practice, but this area could possibly be improved in future.
+
+		// We must prevent any other threads from increasing the ref count if it is at zero,
+		// (or perhaps even prevent them managing to lock the alloc to read or write)
+		// as the previous lock will have been relinquished by this point.
 		if (destroy) {
 			size_t vec_size = _alloc->vector.size();
 			memdelete(_alloc);
