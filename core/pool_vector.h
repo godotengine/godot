@@ -491,7 +491,8 @@ public:
 	}
 
 	T get(int p_index) const {
-		return operator[](p_index);
+		Read r = read();
+		return r.get(p_index);
 	}
 
 	void set(int p_index, const T &p_val) {
@@ -526,9 +527,10 @@ public:
 		return r.join(delimiter);
 	}
 
+	// Add __attribute__((deprecated)) to the start of the following line to
+	// get the compiler to report all uses of the operator.
 	inline T operator[](int p_index) const {
-		Read r = read();
-		return r.get(p_index);
+		return get(p_index);
 	}
 
 	Error resize(int p_size) {

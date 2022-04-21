@@ -151,11 +151,12 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	}
 
 	PoolVector<Vector3> vertices = tm->get_vertices();
+	PoolVector<Vector3>::Read vertices_r = vertices.read();
 
-	int vertices_size = vertices.size();
+	int vertices_size = vertices_r.size();
 	r_points.resize(vertices_size);
 	for (int i = 0; i < vertices_size; ++i) {
-		r_points.write[i] = vertices[i];
+		r_points.write[i] = vertices_r[i];
 	}
 }
 

@@ -1761,10 +1761,11 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 			}
 
 			PoolVector<Vector3> vertices = arrays[VS::ARRAY_VERTEX];
+			PoolVector<Vector3>::Read vertices_r = vertices.read();
 
 			// convert to world space
-			for (int n = 0; n < vertices.size(); n++) {
-				Vector3 pt_world = trans.xform(vertices[n]);
+			for (int n = 0; n < vertices_r.size(); n++) {
+				Vector3 pt_world = trans.xform(vertices_r[n]);
 				r_room_pts.push_back(pt_world);
 
 				// keep the bound up to date
@@ -1805,12 +1806,13 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 			}
 
 			const PoolVector<Vector3> &vertices = arrays[VS::ARRAY_VERTEX];
+			PoolVector<Vector3>::Read vertices_r = vertices.read();
 
 			int count = local_verts.size();
 			local_verts.resize(local_verts.size() + vertices.size());
 
-			for (int n = 0; n < vertices.size(); n++) {
-				local_verts[count++] = vertices[n];
+			for (int n = 0; n < vertices_r.size(); n++) {
+				local_verts[count++] = vertices_r[n];
 			}
 		}
 
@@ -1903,10 +1905,11 @@ bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vec
 		success = true;
 
 		PoolVector<Vector3> vertices = arrays[VS::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vertices_r = vertices.read();
 
 		// convert to world space
-		for (int n = 0; n < vertices.size(); n++) {
-			Vector3 ptWorld = trans.xform(vertices[n]);
+		for (int n = 0; n < vertices_r.size(); n++) {
+			Vector3 ptWorld = trans.xform(vertices_r[n]);
 			r_room_pts.push_back(ptWorld);
 
 			// keep the bound up to date

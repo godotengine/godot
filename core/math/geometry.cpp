@@ -713,8 +713,11 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 #define SUBPLANE_SIZE 1024.0
 
 	real_t subplane_size = 1024.0; // Should compute this from the actual plane.
-	for (int i = 0; i < p_planes.size(); i++) {
-		Plane p = p_planes[i];
+
+	PoolVector<Plane>::Read planes_r = p_planes.read();
+
+	for (int i = 0; i < planes_r.size(); i++) {
+		Plane p = planes_r[i];
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
@@ -734,13 +737,13 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 		vertices.push_back(center + up * subplane_size - right * subplane_size);
 		vertices.push_back(center + up * subplane_size + right * subplane_size);
 
-		for (int j = 0; j < p_planes.size(); j++) {
+		for (int j = 0; j < planes_r.size(); j++) {
 			if (j == i) {
 				continue;
 			}
 
 			Vector<Vector3> new_vertices;
-			Plane clip = p_planes[j];
+			Plane clip = planes_r[j];
 
 			if (clip.normal.dot(p.normal) > 0.95f) {
 				continue;

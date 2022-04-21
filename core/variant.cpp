@@ -1907,52 +1907,62 @@ Variant::operator Vector<Variant>() const {
 
 Variant::operator Vector<uint8_t>() const {
 	PoolVector<uint8_t> from = operator PoolVector<uint8_t>();
+	PoolVector<uint8_t>::Read from_r = from.read();
+
 	Vector<uint8_t> to;
 	int len = from.size();
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
-		to.write[i] = from[i];
+		to.write[i] = from_r[i];
 	}
 	return to;
 }
 Variant::operator Vector<int>() const {
 	PoolVector<int> from = operator PoolVector<int>();
+	PoolVector<int>::Read from_r = from.read();
+
 	Vector<int> to;
 	int len = from.size();
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
-		to.write[i] = from[i];
+		to.write[i] = from_r[i];
 	}
 	return to;
 }
 Variant::operator Vector<real_t>() const {
 	PoolVector<real_t> from = operator PoolVector<real_t>();
+	PoolVector<real_t>::Read from_r = from.read();
+
 	Vector<real_t> to;
 	int len = from.size();
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
-		to.write[i] = from[i];
+		to.write[i] = from_r[i];
 	}
 	return to;
 }
 
 Variant::operator Vector<String>() const {
 	PoolVector<String> from = operator PoolVector<String>();
+	PoolVector<String>::Read from_r = from.read();
+
 	Vector<String> to;
 	int len = from.size();
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
-		to.write[i] = from[i];
+		to.write[i] = from_r[i];
 	}
 	return to;
 }
 Variant::operator Vector<StringName>() const {
 	PoolVector<String> from = operator PoolVector<String>();
+	PoolVector<String>::Read from_r = from.read();
+
 	Vector<StringName> to;
 	int len = from.size();
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
-		to.write[i] = from[i];
+		to.write[i] = from_r[i];
 	}
 	return to;
 }
@@ -2185,10 +2195,11 @@ Variant::Variant(const PoolVector<Plane> &p_array) {
 
 	Array *plane_array = memnew_placement(_data._mem, Array);
 
-	plane_array->resize(p_array.size());
+	PoolVector<Plane>::Read array_r = p_array.read();
+	plane_array->resize(array_r.size());
 
-	for (int i = 0; i < p_array.size(); i++) {
-		plane_array->operator[](i) = Variant(p_array[i]);
+	for (int i = 0; i < array_r.size(); i++) {
+		plane_array->operator[](i) = Variant(array_r[i]);
 	}
 }
 

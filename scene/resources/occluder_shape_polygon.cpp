@@ -74,9 +74,11 @@ AABB OccluderShapePolygon::get_fallback_gizmo_aabb() const {
 void OccluderShapePolygon::_sanitize_points_internal(const PoolVector<Vector2> &p_from, Vector<Vector2> &r_to) {
 	// remove duplicates? NYI maybe not necessary
 	Vector<Vector2> raw;
-	raw.resize(p_from.size());
-	for (int n = 0; n < p_from.size(); n++) {
-		raw.set(n, p_from[n]);
+	PoolVector<Vector2>::Read from_r = p_from.read();
+
+	raw.resize(from_r.size());
+	for (int n = 0; n < from_r.size(); n++) {
+		raw.set(n, from_r[n]);
 	}
 
 	// this function may get rid of some concave points due to user editing ..

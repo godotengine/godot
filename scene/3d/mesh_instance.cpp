@@ -962,11 +962,17 @@ void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, const Transfo
 	Array arrays = rmesh->surface_get_arrays(p_surface_id);
 
 	PoolVector<Vector3> verts = arrays[VS::ARRAY_VERTEX];
+	PoolVector<Vector3>::Read verts_r = verts.read();
 	PoolVector<Vector3> normals = arrays[VS::ARRAY_NORMAL];
+	PoolVector<Vector3>::Read normals_r = normals.read();
 	PoolVector<real_t> tangents = arrays[VS::ARRAY_TANGENT];
+	PoolVector<real_t>::Read tangents_r = tangents.read();
 	PoolVector<Color> colors = arrays[VS::ARRAY_COLOR];
+	PoolVector<Color>::Read colors_r = colors.read();
 	PoolVector<Vector2> uvs = arrays[VS::ARRAY_TEX_UV];
+	PoolVector<Vector2>::Read uvs_r = uvs.read();
 	PoolVector<Vector2> uv2s = arrays[VS::ARRAY_TEX_UV2];
+	PoolVector<Vector2>::Read uv2s_r = uv2s.read();
 	PoolVector<int> indices = arrays[VS::ARRAY_INDEX];
 
 	// The attributes present must match the first mesh for the attributes
@@ -977,19 +983,19 @@ void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, const Transfo
 	// Don't perform these checks on the first Mesh, the first Mesh is a master
 	// and determines the attributes we want to be present.
 	if (r_verts.size() != 0) {
-		if ((bool)r_norms.size() != (bool)normals.size()) {
+		if ((bool)r_norms.size() != (bool)normals_r.size()) {
 			ERR_FAIL_MSG("Attribute mismatch with first Mesh (Normals), ignoring surface.");
 		}
-		if ((bool)r_tangents.size() != (bool)tangents.size()) {
+		if ((bool)r_tangents.size() != (bool)tangents_r.size()) {
 			ERR_FAIL_MSG("Attribute mismatch with first Mesh (Tangents), ignoring surface.");
 		}
-		if ((bool)r_colors.size() != (bool)colors.size()) {
+		if ((bool)r_colors.size() != (bool)colors_r.size()) {
 			ERR_FAIL_MSG("Attribute mismatch with first Mesh (Colors), ignoring surface.");
 		}
-		if ((bool)r_uvs.size() != (bool)uvs.size()) {
+		if ((bool)r_uvs.size() != (bool)uvs_r.size()) {
 			ERR_FAIL_MSG("Attribute mismatch with first Mesh (UVs), ignoring surface.");
 		}
-		if ((bool)r_uv2s.size() != (bool)uv2s.size()) {
+		if ((bool)r_uv2s.size() != (bool)uv2s_r.size()) {
 			ERR_FAIL_MSG("Attribute mismatch with first Mesh (UV2s), ignoring surface.");
 		}
 	}
@@ -1018,20 +1024,20 @@ void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, const Transfo
 	Basis normal_basis = tr.basis.inverse();
 	normal_basis.transpose();
 
-	for (int n = 0; n < verts.size(); n++) {
-		Vector3 pt_world = tr.xform(verts[n]);
+	for (int n = 0; n < verts_r.size(); n++) {
+		Vector3 pt_world = tr.xform(verts_r[n]);
 		r_verts.push_back(pt_world);
 
-		if (normals.size()) {
-			Vector3 pt_norm = normal_basis.xform(normals[n]);
+		if (normals_r.size()) {
+			Vector3 pt_norm = normal_basis.xform(normals_r[n]);
 			pt_norm.normalize();
 			r_norms.push_back(pt_norm);
 		}
 
-		if (tangents.size()) {
+		if (tangents_r.size()) {
 			int tstart = n * 4;
-			Vector3 pt_tangent = Vector3(tangents[tstart], tangents[tstart + 1], tangents[tstart + 2]);
-			real_t fourth = tangents[tstart + 3];
+			Vector3 pt_tangent = Vector3(tangents_r[tstart], tangents_r[tstart + 1], tangents_r[tstart + 2]);
+			real_t fourth = tangents_r[tstart + 3];
 
 			pt_tangent = normal_basis.xform(pt_tangent);
 			pt_tangent.normalize();
@@ -1041,16 +1047,16 @@ void MeshInstance::_merge_into_mesh_data(const MeshInstance &p_mi, const Transfo
 			r_tangents.push_back(fourth);
 		}
 
-		if (colors.size()) {
-			r_colors.push_back(colors[n]);
+		if (colors_r.size()) {
+			r_colors.push_back(colors_r[n]);
 		}
 
-		if (uvs.size()) {
-			r_uvs.push_back(uvs[n]);
+		if (uvs_r.size()) {
+			r_uvs.push_back(uvs_r[n]);
 		}
 
-		if (uv2s.size()) {
-			r_uv2s.push_back(uv2s[n]);
+		if (uv2s_r.size()) {
+			r_uv2s.push_back(uv2s_r[n]);
 		}
 	}
 
@@ -1103,10 +1109,13 @@ bool MeshInstance::_check_for_valid_indices(const PoolVector<int> &p_inds, const
 	nTris /= 3;
 	int indCount = 0;
 
+	PoolVector<int>::Read inds_r = p_inds.read();
+	PoolVector<Vector3>::Read verts_r = p_verts.read();
+
 	for (int t = 0; t < nTris; t++) {
-		int i0 = p_inds[indCount++];
-		int i1 = p_inds[indCount++];
-		int i2 = p_inds[indCount++];
+		int i0 = inds_r[indCount++];
+		int i1 = inds_r[indCount++];
+		int i2 = inds_r[indCount++];
 
 		bool ok = true;
 
@@ -1124,9 +1133,9 @@ bool MeshInstance::_check_for_valid_indices(const PoolVector<int> &p_inds, const
 		// check positions
 		if (ok) {
 			// vertex positions
-			const Vector3 &p0 = p_verts[i0];
-			const Vector3 &p1 = p_verts[i1];
-			const Vector3 &p2 = p_verts[i2];
+			const Vector3 &p0 = verts_r[i0];
+			const Vector3 &p1 = verts_r[i1];
+			const Vector3 &p2 = verts_r[i2];
 
 			// if the area is zero, the triangle is invalid (and will crash xatlas if we use it)
 			if (_triangle_is_degenerate(p0, p1, p2, 0.00001)) {
@@ -1242,8 +1251,9 @@ bool MeshInstance::_merge_meshes(Vector<MeshInstance *> p_list, bool p_use_globa
 		}
 
 		// sanity check on the indices
-		for (int n = 0; n < inds.size(); n++) {
-			int i = inds[n];
+		PoolVector<int>::Read inds_r = inds.read();
+		for (int n = 0; n < inds_r.size(); n++) {
+			int i = inds_r[n];
 			if (i >= verts.size()) {
 				WARN_PRINT_ONCE("Mesh index out of range, invalid mesh, aborting");
 				return false;
