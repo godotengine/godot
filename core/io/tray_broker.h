@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_linuxbsd.h                                                        */
+/*  tray_broker.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,84 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_LINUXBSD_H
-#define OS_LINUXBSD_H
+#ifndef TRAY_BROKER_H
+#define TRAY_BROKER_H
 
-#include "core/input/input.h"
-#include "crash_handler_linuxbsd.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/midi_driver_alsamidi.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
-#include "servers/audio_server.h"
-#include "tray_broker_dbus.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
 
-class OS_LinuxBSD : public OS_Unix {
-	virtual void delete_main_loop() override;
-
-	bool force_quit;
-
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad = nullptr;
-#endif
-
-#ifdef DBUS_ENABLED
-	TrayBrokerDBus *tb = nullptr;
-#endif
-
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef ALSAMIDI_ENABLED
-	MIDIDriverALSAMidi driver_alsamidi;
-#endif
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
-
-	CrashHandler crash_handler;
-
-	MainLoop *main_loop = nullptr;
+class TrayBroker : public Object {
+	GDCLASS(TrayBroker, Object);
 
 protected:
-	virtual void initialize() override;
-	virtual void finalize() override;
+	static TrayBroker *singleton;
+	static void _bind_methods();
 
-	virtual void initialize_joypads() override;
-
-	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	static TrayBroker *(*_create)();
 
 public:
-	virtual String get_name() const override;
+	static TrayBroker *get_singleton();
 
-	virtual MainLoop *get_main_loop() const override;
+	static TrayBroker *create();
 
-	virtual String get_config_path() const override;
-	virtual String get_data_path() const override;
-	virtual String get_cache_path() const override;
+	virtual void request_notification_permission() = 0;
 
-	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
-
-	virtual Error shell_open(String p_uri) override;
-
-	virtual String get_unique_id() const override;
-	virtual String get_processor_name() const override;
-
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
-
-	virtual bool _check_internal_feature_support(const String &p_feature) override;
-
-	void run();
-
-	virtual void disable_crash_handler() override;
-	virtual bool is_disable_crash_handler() const override;
-
-	virtual Error move_to_trash(const String &p_path) override;
-
-	OS_LinuxBSD();
+	TrayBroker();
+	~TrayBroker();
 };
 
-#endif
+#endif // TRAY_BROKER_H

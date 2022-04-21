@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TrayBroker" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Broker agent for native communication with desktop.
+	</brief_description>
+	<description>
+		Desktop components such as native file picker dialogs and notifications need to communicate with the desktop so they can be used inside the engine.
+		This is a singleton tasked with doing communications with the desktop through the native methods (e.g. DBus for LinuxBSD and WinAPI for Windows platforms) and provides a broker end for engine classes (hence the name [TrayBroker]) so these use an unified and reusable interface.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
