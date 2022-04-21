@@ -209,46 +209,13 @@ void EditorPropertyArray::_object_id_selected(const StringName &p_property, Obje
 void EditorPropertyArray::update_property() {
 	Variant array = get_edited_object()->get(get_edited_property());
 
-	String arrtype = "";
-	switch (array_type) {
-		case Variant::ARRAY: {
-			arrtype = "Array";
-		} break;
-
-		// Arrays.
-		case Variant::PACKED_BYTE_ARRAY: {
-			arrtype = "PackedByteArray";
-		} break;
-		case Variant::PACKED_INT32_ARRAY: {
-			arrtype = "PackedInt32Array";
-		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
-			arrtype = "PackedFloat32Array";
-		} break;
-		case Variant::PACKED_INT64_ARRAY: {
-			arrtype = "PackedInt64Array";
-		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
-			arrtype = "PackedFloat64Array";
-		} break;
-		case Variant::PACKED_STRING_ARRAY: {
-			arrtype = "PackedStringArray";
-		} break;
-		case Variant::PACKED_VECTOR2_ARRAY: {
-			arrtype = "PackedVector2Array";
-		} break;
-		case Variant::PACKED_VECTOR3_ARRAY: {
-			arrtype = "PackedVector3Array";
-		} break;
-		case Variant::PACKED_COLOR_ARRAY: {
-			arrtype = "PackedColorArray";
-		} break;
-		default: {
-		}
+	String array_type_name = Variant::get_type_name(array_type);
+	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+		array_type_name = vformat("%s[%s]", array_type_name, Variant::get_type_name(subtype));
 	}
 
 	if (array.get_type() == Variant::NIL) {
-		edit->set_text(String("(Nil) ") + arrtype);
+		edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		edit->set_pressed(false);
 		if (vbox) {
 			set_bottom_editor(nullptr);
@@ -264,7 +231,7 @@ void EditorPropertyArray::update_property() {
 	page_index = MIN(page_index, max_page);
 	int offset = page_index * page_length;
 
-	edit->set_text(arrtype + " (size " + itos(size) + ")");
+	edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
