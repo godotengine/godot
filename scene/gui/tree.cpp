@@ -3269,7 +3269,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		bool rtl = is_layout_rtl();
 
 		if (!b->is_pressed()) {
-			if (b->get_button_index() == MouseButton::LEFT) {
+			if (b->get_button_index() == MouseButton::LEFT || b->get_button_index() == MouseButton::RIGHT){
 				Point2 pos = b->get_position();
 				if (rtl) {
 					pos.x = get_size().width - pos.x;
@@ -3284,7 +3284,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 						for (int i = 0; i < columns.size(); i++) {
 							len += get_column_width(i);
 							if (pos.x < len) {
-								emit_signal(SNAME("column_title_pressed"), i);
+								if (b->get_button_index() == MouseButton::LEFT){
+									emit_signal(SNAME("column_title_pressed"), i);
+								} else {
+									emit_signal(SNAME("column_title_rmb_pressed"), i);
+								}
+								
 								break;
 							}
 						}
@@ -4982,6 +4987,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_pressed", PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("column_title_rmb_pressed", PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
