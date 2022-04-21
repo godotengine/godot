@@ -77,6 +77,7 @@
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
 				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
+				For a non-static, relative equivalent, use [method DirAccess.file_exists].
 			</description>
 		</method>
 		<method name="flush">
