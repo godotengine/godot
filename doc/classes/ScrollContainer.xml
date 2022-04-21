@@ -7,6 +7,7 @@
 		A ScrollContainer node meant to contain a [Control] child. ScrollContainers will automatically create a scrollbar child ([HScrollBar], [VScrollBar], or both) when needed and will only draw the Control within the ScrollContainer area. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.rect_min_size] of the Control relative to the ScrollContainer. Works great with a [Panel] control. You can set [code]EXPAND[/code] on the children's size flags, so they will upscale to the ScrollContainer's size if it's larger (scroll is invisible for the chosen dimension).
 	</description>
 	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
 		<method name="ensure_control_visible">
