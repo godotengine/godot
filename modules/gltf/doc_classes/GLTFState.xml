@@ -3,6 +3,7 @@
 	<brief_description>
 	</brief_description>
 	<description>
+		[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF loading and saving is [i]not[/i] available in exported projects. References to [GLTFState] within a script will cause an error in an exported project.
 	</description>
 	<tutorials>
 	</tutorials>
