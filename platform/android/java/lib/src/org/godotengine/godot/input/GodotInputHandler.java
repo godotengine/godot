@@ -34,8 +34,9 @@ import static org.godotengine.godot.utils.GLUtils.DEBUG;
 
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.GodotView;
-import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
+import android.content.Context;
+import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
@@ -53,18 +54,18 @@ import java.util.Set;
 /**
  * Handles input related events for the {@link GodotView} view.
  */
-public class GodotInputHandler implements InputDeviceListener {
+public class GodotInputHandler implements InputManager.InputDeviceListener {
 	private final String tag = this.getClass().getSimpleName();
 
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
 	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
 
 	private final GodotView godotView;
-	private final InputManagerCompat inputManager;
+	private final InputManager inputManager;
 
 	public GodotInputHandler(GodotView godotView) {
 		this.godotView = godotView;
-		this.inputManager = InputManagerCompat.Factory.getInputManager(godotView.getContext());
+		this.inputManager = (InputManager)godotView.getContext().getSystemService(Context.INPUT_SERVICE);
 		this.inputManager.registerInputDeviceListener(this, null);
 	}
 
