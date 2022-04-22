@@ -156,10 +156,10 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	while (found_route == false) {
 		{
-			gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
-
 			// Takes the current least_cost_poly neighbors and compute the traveled_distance of each
 			for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
+				gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
+
 				const gd::Edge &edge = least_cost_poly->poly->edges[i];
 				if (!edge.other_polygon)
 					continue;
