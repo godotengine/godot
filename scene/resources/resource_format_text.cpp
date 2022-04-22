@@ -898,6 +898,8 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 		return ERR_CANT_CREATE;
 	}
 
+	fw.unref();
+
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	da->remove(p_path);
 	da->rename(p_path + ".depren", p_path);
