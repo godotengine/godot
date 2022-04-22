@@ -1032,7 +1032,13 @@ Error GDScript::load_source_code(const String &p_path) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
-		ERR_FAIL_COND_V(err, err);
+		const char *err_name;
+		if (err < 0 || err >= ERR_MAX) {
+			err_name = "(invalid error code)";
+		} else {
+			err_name = error_names[err];
+		}
+		ERR_FAIL_COND_V_MSG(err, err, "Attempt to open script '" + p_path + "' resulted in error '" + err_name + "'.");
 	}
 
 	uint64_t len = f->get_length();
