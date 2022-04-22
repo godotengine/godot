@@ -179,6 +179,12 @@ public:
 		return data[p_index];
 	}
 
+	void fill(T p_val) {
+		for (U i = 0; i < count; i++) {
+			data[i] = p_val;
+		}
+	}
+
 	void insert(U p_pos, T p_val) {
 		ERR_FAIL_UNSIGNED_INDEX(p_pos, count + 1);
 		if (p_pos == count) {
