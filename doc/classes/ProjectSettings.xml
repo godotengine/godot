@@ -578,8 +578,18 @@
 		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
 			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontData.antialiased].
 		</member>
+		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
+			Enabling [member gui/theme/default_font_generate_mipmaps] increases font generation time and memory usage. Only enable this setting if you actually need it.
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
+		</member>
 		<member name="gui/theme/default_font_hinting" type="int" setter="" getter="" default="1">
 			Default font hinting mode. See [member FontData.hinting].
+		</member>
+		<member name="gui/theme/default_font_multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], the default font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
+			MSDF font rendering can be combined with [member gui/theme/default_font_generate_mipmaps] to further improve font rendering quality when scaled down.
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
 			Default font glyph sub-pixel positioning mode. See [member FontData.subpixel_positioning].

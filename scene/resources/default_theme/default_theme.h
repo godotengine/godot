@@ -36,7 +36,7 @@
 const int default_font_size = 16;
 
 void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &bold_font, const Ref<Font> &bold_italics_font, const Ref<Font> &italics_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale);
-void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_subpixel, TextServer::Hinting p_hinting, bool p_aa);
+void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel = TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::Hinting p_font_hinting = TextServer::HINTING_LIGHT, bool p_font_antialiased = true, bool p_font_msdf = false, bool p_font_generate_mipmaps = false);
 void clear_default_theme();
 
 #endif
