@@ -177,6 +177,17 @@
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 			</description>
 		</method>
+		<method name="fill">
+			<argument index="0" name="value" type="Variant" />
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements:
+				[codeblock]
+				var array = []
+				array.resize(10)
+				array.fill(0) # Initialize the 10 elements to 0.
+				[/codeblock]
+			</description>
+		</method>
 		<method name="find">
 			<return type="int" />
 			<argument index="0" name="what" type="Variant" />

@@ -377,6 +377,7 @@ public:
 	inline bool empty() const;
 	T get(int p_index) const;
 	void set(int p_index, const T &p_val);
+	void fill(const T &p_val);
 	void push_back(const T &p_val);
 	void append(const T &p_val) { push_back(p_val); }
 	void append_array(const PoolVector<T> &p_arr) {
@@ -480,6 +481,14 @@ void PoolVector<T>::set(int p_index, const T &p_val) {
 
 	Write w = write();
 	w[p_index] = p_val;
+}
+
+template <class T>
+void PoolVector<T>::fill(const T &p_val) {
+	Write w = write();
+	for (int i = 0; i < size(); i++) {
+		w[i] = p_val;
+	}
 }
 
 template <class T>
