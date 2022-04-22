@@ -142,10 +142,10 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	bool is_reachable = true;
 
 	while (true) {
-		gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
-
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
-		for (size_t i = 0; i < least_cost_poly->poly->edges.size(); i++) {
+		for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
+			gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
+
 			const gd::Edge &edge = least_cost_poly->poly->edges[i];
 
 			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
