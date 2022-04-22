@@ -3534,31 +3534,75 @@ void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag, bool 
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
-	if (animation->track_is_compressed(p_track)) {
+	_animation_track_remove_request(p_track, animation);
+}
+
+void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Animation> p_from_animation) {
+	if (p_from_animation->track_is_compressed(p_track)) {
 		EditorNode::get_singleton()->show_warning(TTR("Compressed tracks can't be edited or removed. Re-import the animation with compression disabled in order to edit."));
 		return;
 	}
 	int idx = p_track;
-	if (idx >= 0 && idx < animation->get_track_count()) {
+	if (idx >= 0 && idx < p_from_animation->get_track_count()) {
 		undo_redo->create_action(TTR("Remove Anim Track"));
-		undo_redo->add_do_method(this, "_clear_selection", false);
-		undo_redo->add_do_method(animation.ptr(), "remove_track", idx);
-		undo_redo->add_undo_method(animation.ptr(), "add_track", animation->track_get_type(idx), idx);
-		undo_redo->add_undo_method(animation.ptr(), "track_set_path", idx, animation->track_get_path(idx));
 
-		// TODO interpolation.
-		for (int i = 0; i < animation->track_get_key_count(idx); i++) {
-			Variant v = animation->track_get_key_value(idx, i);
-			float time = animation->track_get_key_time(idx, i);
-			float trans = animation->track_get_key_transition(idx, i);
+		// Remove corresponding reset tracks if they are no longer needed.
+		AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+		if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
+			Ref<Animation> reset = player->get_animation(SceneStringNames::get_singleton()->RESET);
+			if (reset != p_from_animation) {
+				for (int i = 0; i < reset->get_track_count(); i++) {
+					if (reset->track_get_path(i) == p_from_animation->track_get_path(p_track)) {
+						// Check if the reset track isn't used by other animations.
+						bool used = false;
+						List<StringName> animation_list;
+						player->get_animation_list(&animation_list);
 
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", idx, time, v);
-			undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", idx, i, trans);
+						for (const StringName &anim_name : animation_list) {
+							Ref<Animation> anim = player->get_animation(anim_name);
+							if (anim == p_from_animation || anim == reset) {
+								continue;
+							}
+
+							for (int j = 0; j < anim->get_track_count(); j++) {
+								if (anim->track_get_path(j) == reset->track_get_path(i)) {
+									used = true;
+									break;
+								}
+							}
+
+							if (used) {
+								break;
+							}
+						}
+
+						if (!used) {
+							_animation_track_remove_request(i, reset);
+						}
+						break;
+					}
+				}
+			}
 		}
 
-		undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", idx, animation->track_get_interpolation_type(idx));
-		if (animation->track_get_type(idx) == Animation::TYPE_VALUE) {
-			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", idx, animation->value_track_get_update_mode(idx));
+		undo_redo->add_do_method(this, "_clear_selection", false);
+		undo_redo->add_do_method(p_from_animation.ptr(), "remove_track", idx);
+		undo_redo->add_undo_method(p_from_animation.ptr(), "add_track", p_from_animation->track_get_type(idx), idx);
+		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_path", idx, p_from_animation->track_get_path(idx));
+
+		// TODO interpolation.
+		for (int i = 0; i < p_from_animation->track_get_key_count(idx); i++) {
+			Variant v = p_from_animation->track_get_key_value(idx, i);
+			float time = p_from_animation->track_get_key_time(idx, i);
+			float trans = p_from_animation->track_get_key_transition(idx, i);
+
+			undo_redo->add_undo_method(p_from_animation.ptr(), "track_insert_key", idx, time, v);
+			undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_key_transition", idx, i, trans);
+		}
+
+		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_interpolation_type", idx, p_from_animation->track_get_interpolation_type(idx));
+		if (p_from_animation->track_get_type(idx) == Animation::TYPE_VALUE) {
+			undo_redo->add_undo_method(p_from_animation.ptr(), "value_track_set_update_mode", idx, p_from_animation->value_track_get_update_mode(idx));
 		}
 
 		undo_redo->commit_action();

@@ -46,7 +46,6 @@
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
-class AnimationPlayer;
 class AnimationTrackEdit;
 class ViewPanner;
 
@@ -323,6 +322,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
 	void _track_remove_request(int p_track);
+	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
 
 	UndoRedo *undo_redo = nullptr;
