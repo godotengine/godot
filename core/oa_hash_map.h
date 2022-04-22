@@ -237,6 +237,26 @@ public:
 		return false;
 	}
 
+	const TValue *lookup_ptr(const TKey &p_key) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return nullptr;
+	}
+
+	TValue *lookup_ptr(const TKey &p_key) {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return nullptr;
+	}
+
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _pos = 0;
 		return _lookup_pos(p_key, _pos);
