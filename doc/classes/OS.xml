@@ -278,7 +278,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the host OS.
-				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] (Universal Windows Platform) if exported thereon.
+				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] if exported on Universal Windows Platform.
 				On macOS, this is [code]"macOS"[/code].
 				On Linux-based operating systems, this is [code]"Linux"[/code].
 				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
