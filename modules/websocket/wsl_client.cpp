@@ -103,13 +103,14 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 	String s = (char *)_resp_buf;
 	Vector<String> psa = s.split("\r\n");
 	int len = psa.size();
-	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
+	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers. Got: " + itos(len) + ", expected >= 4.");
 
 	Vector<String> req = psa[0].split(" ", false);
-	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code.");
+	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code. Got '" + psa[0] + "', expected 'HTTP/1.1 101'.");
 
 	// Wrong protocol
-	ERR_FAIL_COND_V_MSG(req[0] != "HTTP/1.1" || req[1] != "101", false, "Invalid protocol or status code.");
+	ERR_FAIL_COND_V_MSG(req[0] != "HTTP/1.1", false, "Invalid protocol. Got: '" + req[0] + "', expected 'HTTP/1.1'.");
+	ERR_FAIL_COND_V_MSG(req[1] != "101", false, "Invalid status code. Got: '" + req[1] + "', expected '101'.");
 
 	Map<String, String> headers;
 	for (int i = 1; i < len; i++) {
@@ -137,9 +138,11 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 #undef WSL_CHECK
 	if (_protocols.size() == 0) {
 		// We didn't request a custom protocol
-		ERR_FAIL_COND_V(headers.has("sec-websocket-protocol"), false);
+		ERR_FAIL_COND_V_MSG(headers.has("sec-websocket-protocol"), false, "Received unrequested sub-protocol -> " + headers["sec-websocket-protocol"]);
 	} else {
-		ERR_FAIL_COND_V(!headers.has("sec-websocket-protocol"), false);
+		// We requested at least one custom protocol but didn't receive one
+		ERR_FAIL_COND_V_MSG(!headers.has("sec-websocket-protocol"), false, "Requested sub-protocol(s) but received none.");
+		// Check received sub-protocol was one of those requested.
 		r_protocol = headers["sec-websocket-protocol"];
 		bool valid = false;
 		for (int i = 0; i < _protocols.size(); i++) {
@@ -150,6 +153,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 			break;
 		}
 		if (!valid) {
+			ERR_FAIL_V_MSG(false, "Received unrequested sub-protocol -> " + r_protocol);
 			return false;
 		}
 	}
