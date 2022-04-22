@@ -629,17 +629,14 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				translucent = true;
 			} else if (command_line[i].equals("--use_immersive")) {
 				use_immersive = true;
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
-					window.getDecorView().setSystemUiVisibility(
-							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | // hide nav bar
-							View.SYSTEM_UI_FLAG_FULLSCREEN | // hide status bar
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-
-					UiChangeListener();
-				}
+				window.getDecorView().setSystemUiVisibility(
+						View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+						View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+						View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | // hide nav bar
+						View.SYSTEM_UI_FLAG_FULLSCREEN | // hide status bar
+						View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+				UiChangeListener();
 			} else if (command_line[i].equals("--use_apk_expansion")) {
 				use_apk_expansion = true;
 			} else if (has_extra && command_line[i].equals("--apk_expansion_md5")) {
@@ -825,7 +822,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
-		if (use_immersive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
+		if (use_immersive) {
 			Window window = getActivity().getWindow();
 			window.getDecorView().setSystemUiVisibility(
 					View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
@@ -848,15 +845,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final View decorView = getActivity().getWindow().getDecorView();
 		decorView.setOnSystemUiVisibilityChangeListener(visibility -> {
 			if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-					decorView.setSystemUiVisibility(
-							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-				}
+				decorView.setSystemUiVisibility(
+						View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+						View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+						View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+						View.SYSTEM_UI_FLAG_FULLSCREEN |
+						View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 			}
 		});
 	}
