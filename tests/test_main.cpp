@@ -175,6 +175,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
 
+			memnew(Input);
+
 			Error err = OK;
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
@@ -242,6 +244,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			physics_2d_server->finish();
 			memdelete(physics_2d_server);
 			physics_2d_server = nullptr;
+		}
+
+		if (Input::get_singleton()) {
+			memdelete(Input::get_singleton());
 		}
 
 		if (RenderingServer::get_singleton()) {

@@ -40,6 +40,7 @@ namespace TestCodeEdit {
 TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	SUBCASE("[CodeEdit] breakpoints") {
 		SIGNAL_WATCH(code_edit, "breakpoint_toggled");
@@ -881,6 +882,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	const Point2 OUTSIDE_DELIMETER = Point2(-1, -1);
 
@@ -1759,6 +1761,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 TEST_CASE("[SceneTree][CodeEdit] indent") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	SUBCASE("[CodeEdit] indent settings") {
 		code_edit->set_indent_size(10);
@@ -2288,6 +2291,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 TEST_CASE("[SceneTree][CodeEdit] folding") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	SUBCASE("[CodeEdit] folding settings") {
 		code_edit->set_line_folding_enabled(true);
@@ -2672,6 +2676,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 TEST_CASE("[SceneTree][CodeEdit] completion") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	SUBCASE("[CodeEdit] auto brace completion") {
 		code_edit->set_auto_brace_completion_enabled(true);
@@ -2991,18 +2996,18 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
 			caret_pos.y -= code_edit->get_line_height();
-			SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::WHEEL_DOWN, MouseButton::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::WHEEL_DOWN, MouseButton::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
-			SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::WHEEL_UP, MouseButton::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::WHEEL_UP, MouseButton::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */
-			SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::LEFT, MouseButton::MASK_LEFT);
+			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
 			/* Double click inserts. */
-			SEND_GUI_DOUBLE_CLICK(code_edit, caret_pos);
+			SEND_GUI_DOUBLE_CLICK(code_edit, caret_pos, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
 			CHECK(code_edit->get_line(0) == "item_2");
 
@@ -3196,6 +3201,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	code_edit->set_symbol_lookup_on_click_enabled(true);
 	CHECK(code_edit->is_symbol_lookup_on_click_enabled());
@@ -3208,7 +3214,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 
 		Point2 caret_pos = code_edit->get_caret_draw_pos();
 		caret_pos.x += 58;
-		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::NONE, MouseButton::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::NONE, MouseButton::NONE, Key::NONE);
 		CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
 
 		SIGNAL_WATCH(code_edit, "symbol_validate");
@@ -3234,6 +3240,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 TEST_CASE("[SceneTree][CodeEdit] line length guidelines") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	TypedArray<int> guide_lines;
 
@@ -3254,6 +3261,7 @@ TEST_CASE("[SceneTree][CodeEdit] line length guidelines") {
 TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	/* Backspace with selection on first line. */
 	code_edit->set_text("");
@@ -3301,6 +3309,7 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
 
 	/* Add a new line. */
 	code_edit->set_text("");
