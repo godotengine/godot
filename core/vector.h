@@ -123,6 +123,41 @@ public:
 		return *this;
 	}
 
+	Vector<uint8_t> to_byte_array() const {
+		Vector<uint8_t> ret;
+		ret.resize(size() * sizeof(T));
+		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
+		return ret;
+	}
+
+	Vector<T> slice(int p_begin, int p_end = INT32_MAX) const {
+		Vector<T> result;
+
+		const int s = size();
+
+		int begin = CLAMP(p_begin, -s, s);
+		if (begin < 0) {
+			begin += s;
+		}
+		int end = CLAMP(p_end, -s, s);
+		if (end < 0) {
+			end += s;
+		}
+
+		ERR_FAIL_COND_V(begin > end, result);
+
+		int result_size = end - begin;
+		result.resize(result_size);
+
+		const T *const r = ptr();
+		T *const w = result.ptrw();
+		for (int i = 0; i < result_size; ++i) {
+			w[i] = r[begin + i];
+		}
+
+		return result;
+	}
+
 	_FORCE_INLINE_ ~Vector() {}
 };
 
