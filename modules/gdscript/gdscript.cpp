@@ -1524,7 +1524,6 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : sptr->member_functions) {
 			MethodInfo mi;
 			mi.name = E.key;
-			mi.flags |= METHOD_FLAG_FROM_SCRIPT;
 			for (int i = 0; i < E.value->get_argument_count(); i++) {
 				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
 			}

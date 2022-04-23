@@ -2515,72 +2515,66 @@
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
 			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
 		</constant>
-		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
-			Deprecated hint, unused.
-		</constant>
-		<constant name="PROPERTY_HINT_LINK" value="6" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
 			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7" enum="PropertyHint">
-			Deprecated hint, unused.
-		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="8" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="8" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="9" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="13" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
 			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="17" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
 			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_EXPRESSION" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
 			Hints that a string property is an [Expression].
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="20" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="23" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="21" enum="PropertyHint">
 			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="22" enum="PropertyHint">
 			Hints that an image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
@@ -2590,128 +2584,122 @@
 			[/codeblock]
 			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="35" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="33" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_TYPE" value="46" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="44" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR" value="2" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
 			The property is shown in the editor inspector (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_NETWORK" value="4" enum="PropertyUsageFlags">
-			Deprecated usage flag, unused.
-		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_HELPER" value="8" enum="PropertyUsageFlags">
-			Deprecated usage flag, unused.
-		</constant>
-		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
 			The property can be checked in the editor inspector.
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKED" value="32" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
 			The property is checked in the editor inspector.
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="64" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
 			The property is a translatable string.
 		</constant>
-		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags">
 			Used to group properties together in the editor. See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SUBGROUP" value="512" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags">
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags">
 			The property does not save its state in [PackedScene].
 		</constant>
-		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="2048" enum="PropertyUsageFlags">
 			Editing the property prompts the user for restarting the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags">
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="16384" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="32768" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="65536" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="262144" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="131072" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="524288" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="262144" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="1048576" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="524288" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="2097152" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="1048576" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="4194304" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="8388608" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="16777216" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="33554432" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="67108864" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="134217728" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="268435456" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="1073741824" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="38" enum="PropertyUsageFlags">
 			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_EDITOR" value="5" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
@@ -2720,26 +2708,17 @@
 		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags">
 			Flag for an editor method.
 		</constant>
-		<constant name="METHOD_FLAG_NOSCRIPT" value="4" enum="MethodFlags">
-			Deprecated method flag, unused.
-		</constant>
-		<constant name="METHOD_FLAG_CONST" value="8" enum="MethodFlags">
+		<constant name="METHOD_FLAG_CONST" value="4" enum="MethodFlags">
 			Flag for a constant method.
 		</constant>
-		<constant name="METHOD_FLAG_REVERSE" value="16" enum="MethodFlags">
-			Deprecated method flag, unused.
-		</constant>
-		<constant name="METHOD_FLAG_VIRTUAL" value="32" enum="MethodFlags">
+		<constant name="METHOD_FLAG_VIRTUAL" value="8" enum="MethodFlags">
 			Flag for a virtual method.
 		</constant>
-		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64" enum="MethodFlags">
-			Deprecated method flag, unused.
+		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags">
 		</constant>
-		<constant name="METHOD_FLAG_VARARG" value="128" enum="MethodFlags">
+		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags">
 		</constant>
-		<constant name="METHOD_FLAG_STATIC" value="256" enum="MethodFlags">
-		</constant>
-		<constant name="METHOD_FLAG_OBJECT_CORE" value="512" enum="MethodFlags">
+		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags">
 			Used internally. Allows to not dump core virtuals such as [code]_notification[/code] to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">

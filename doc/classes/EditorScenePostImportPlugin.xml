@@ -88,7 +88,7 @@
 			<argument index="2" name="default_value" type="Variant" />
 			<argument index="3" name="hint" type="int" enum="PropertyHint" default="0" />
 			<argument index="4" name="hint_string" type="String" default="&quot;&quot;" />
-			<argument index="5" name="usage_flags" type="int" default="7" />
+			<argument index="5" name="usage_flags" type="int" default="6" />
 			<description>
 				Add a specific import option. This function can only be called from [method _get_import_options] and [method _get_internal_import_options].
 			</description>
