@@ -260,6 +260,64 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	return triangle_mesh;
 }
 
+Ref<TriangleMesh> Mesh::generate_surface_triangle_mesh(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, get_surface_count(), Ref<TriangleMesh>());
+
+	if (surface_triangle_meshes.size() != get_surface_count()) {
+		surface_triangle_meshes.resize(get_surface_count());
+	}
+
+	if (surface_triangle_meshes[p_surface].is_valid()) {
+		return surface_triangle_meshes[p_surface];
+	}
+
+	int facecount = 0;
+
+	if (surface_get_primitive_type(p_surface) != PRIMITIVE_TRIANGLES) {
+		return Ref<TriangleMesh>();
+	}
+
+	if (surface_get_format(p_surface) & ARRAY_FORMAT_INDEX) {
+		facecount += surface_get_array_index_len(p_surface);
+	} else {
+		facecount += surface_get_array_len(p_surface);
+	}
+
+	Vector<Vector3> faces;
+	faces.resize(facecount);
+	Vector3 *facesw = faces.ptrw();
+
+	Array a = surface_get_arrays(p_surface);
+	ERR_FAIL_COND_V(a.is_empty(), Ref<TriangleMesh>());
+
+	int vc = surface_get_array_len(p_surface);
+	Vector<Vector3> vertices = a[ARRAY_VERTEX];
+	const Vector3 *vr = vertices.ptr();
+	int widx = 0;
+
+	if (surface_get_format(p_surface) & ARRAY_FORMAT_INDEX) {
+		int ic = surface_get_array_index_len(p_surface);
+		Vector<int> indices = a[ARRAY_INDEX];
+		const int *ir = indices.ptr();
+
+		for (int j = 0; j < ic; j++) {
+			int index = ir[j];
+			facesw[widx++] = vr[index];
+		}
+
+	} else {
+		for (int j = 0; j < vc; j++) {
+			facesw[widx++] = vr[j];
+		}
+	}
+
+	Ref<TriangleMesh> triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh->create(faces);
+	surface_triangle_meshes.set(p_surface, triangle_mesh);
+
+	return triangle_mesh;
+}
+
 void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 	if (debug_lines.size() > 0) {
 		r_lines = debug_lines;
@@ -314,6 +372,14 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 
 Vector<Face3> Mesh::get_faces() const {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
+	if (tm.is_valid()) {
+		return tm->get_faces();
+	}
+	return Vector<Face3>();
+}
+
+Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
+	Ref<TriangleMesh> tm = generate_surface_triangle_mesh(p_surface);
 	if (tm.is_valid()) {
 		return tm->get_faces();
 	}
