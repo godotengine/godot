@@ -350,13 +350,13 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = data.font_override.has(name) ? Variant(data.font_override[name]) : Variant();
 	} else if (sname.begins_with("theme_override_font_sizes/")) {
 		String name = sname.get_slicec('/', 1);
-		r_ret = data.font_size_override.has(name) ? Variant(data.font_size_override[name]) : Variant();
+		r_ret = data.font_size_override.has(name) ? Variant(data.font_size_override[name]) : Variant(0);
 	} else if (sname.begins_with("theme_override_colors/")) {
 		String name = sname.get_slicec('/', 1);
-		r_ret = data.color_override.has(name) ? Variant(data.color_override[name]) : Variant();
+		r_ret = data.color_override.has(name) ? Variant(data.color_override[name]) : Variant(Color());
 	} else if (sname.begins_with("theme_override_constants/")) {
 		String name = sname.get_slicec('/', 1);
-		r_ret = data.constant_override.has(name) ? Variant(data.constant_override[name]) : Variant();
+		r_ret = data.constant_override.has(name) ? Variant(data.constant_override[name]) : Variant(0);
 	} else {
 		return false;
 	}
