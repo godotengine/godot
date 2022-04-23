@@ -508,7 +508,8 @@
 		<method name="is_drag_successful" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if drag operation is successful.
+				Returns [code]true[/code] if a drag operation is successful. Alternative to [method Viewport.gui_is_drag_successful].
+				Best used with [constant Node.NOTIFICATION_DRAG_END].
 			</description>
 		</method>
 		<method name="minimum_size_changed">
