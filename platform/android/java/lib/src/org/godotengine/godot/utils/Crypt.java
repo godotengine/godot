@@ -43,8 +43,8 @@ public class Crypt {
 
 			// Create Hex String
 			StringBuilder hexString = new StringBuilder();
-			for (int i = 0; i < messageDigest.length; i++)
-				hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+			for (byte b : messageDigest)
+				hexString.append(Integer.toHexString(0xFF & b));
 			return hexString.toString();
 
 		} catch (Exception e) {
