@@ -1019,9 +1019,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 			// Create Hex String
 			StringBuilder hexString = new StringBuilder();
-			for (int i = 0; i < messageDigest.length; i++) {
-				String s = Integer.toHexString(0xFF & messageDigest[i]);
-
+			for (byte b : messageDigest) {
+				String s = Integer.toHexString(0xFF & b);
 				if (s.length() == 1) {
 					s = "0" + s;
 				}
