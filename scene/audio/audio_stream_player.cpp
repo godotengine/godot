@@ -560,6 +560,7 @@ void AudioStreamPlayer::_bind_methods() {
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {
+	add_send(0);
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer::_bus_layout_changed));
 }
 

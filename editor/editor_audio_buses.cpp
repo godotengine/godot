@@ -208,6 +208,21 @@ void EditorAudioBus::update_send() {
 	}
 }
 
+void EditorAudioBus::update_type() {
+	type->clear();
+	type->set_disabled(false);
+	AudioServer::BusType current_type = AudioServer::get_singleton()->get_bus_type(get_index());
+
+	type->add_item("Non-spatial");
+	type->add_item("Spatial 3D");
+
+	if (current_type == AudioServer::CONVENTIONAL) {
+		type->select(0);
+	} else {
+		type->select(1);
+	}
+}
+
 void EditorAudioBus::update_bus() {
 	if (updating_bus) {
 		return;
@@ -249,6 +264,7 @@ void EditorAudioBus::update_bus() {
 	add->set_text(0, TTR("Add Effect"));
 
 	update_send();
+	update_type();
 
 	updating_bus = false;
 }
@@ -460,6 +476,20 @@ void EditorAudioBus::_send_selected(int p_which) {
 	ur->create_action(TTR("Select Audio Bus Send"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_send", get_index(), send->get_item_text(p_which));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send", get_index(), AudioServer::get_singleton()->get_bus_send(get_index()));
+	ur->add_do_method(buses, "_update_bus", get_index());
+	ur->add_undo_method(buses, "_update_bus", get_index());
+	ur->commit_action();
+
+	updating_bus = false;
+}
+
+void EditorAudioBus::_type_selected(int p_which) {
+	updating_bus = true;
+
+	UndoRedo *ur = EditorNode::get_undo_redo();
+	ur->create_action(TTR("Select Audio Bus Type"));
+	ur->add_do_method(AudioServer::get_singleton(), "set_bus_type", get_index(), p_which);
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_type", get_index(), AudioServer::get_singleton()->get_bus_type(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
 	ur->add_undo_method(buses, "_update_bus", get_index());
 	ur->commit_action();
@@ -757,6 +787,7 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
+	ClassDB::bind_method("update_type", &EditorAudioBus::update_type);
 
 	ClassDB::bind_method("_get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
 	ClassDB::bind_method("_can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
@@ -784,6 +815,11 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	track_name->connect("text_submitted", callable_mp(this, &EditorAudioBus::_name_changed));
 	track_name->connect("focus_exited", callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
+
+	type = memnew(OptionButton);
+	type->set_clip_text(true);
+	type->connect("item_selected", callable_mp(this, &EditorAudioBus::_type_selected));
+	vb->add_child(type);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vb->add_child(hbc);
@@ -1098,6 +1134,7 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", index, AudioServer::get_singleton()->get_bus_name(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_volume_db", index, AudioServer::get_singleton()->get_bus_volume_db(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send", index, AudioServer::get_singleton()->get_bus_send(index));
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_type", index, AudioServer::get_singleton()->get_bus_type(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_solo", index, AudioServer::get_singleton()->is_bus_solo(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_mute", index, AudioServer::get_singleton()->is_bus_mute(index));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_bypass_effects", index, AudioServer::get_singleton()->is_bus_bypassing_effects(index));
@@ -1118,6 +1155,7 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_name", add_at_pos, AudioServer::get_singleton()->get_bus_name(p_which) + " Copy");
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_volume_db", add_at_pos, AudioServer::get_singleton()->get_bus_volume_db(p_which));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_send", add_at_pos, AudioServer::get_singleton()->get_bus_send(p_which));
+	ur->add_do_method(AudioServer::get_singleton(), "set_bus_type", add_at_pos, AudioServer::get_singleton()->get_bus_type(p_which));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_solo", add_at_pos, AudioServer::get_singleton()->is_bus_solo(p_which));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_mute", add_at_pos, AudioServer::get_singleton()->is_bus_mute(p_which));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_bypass_effects", add_at_pos, AudioServer::get_singleton()->is_bus_bypassing_effects(p_which));

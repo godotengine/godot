@@ -71,6 +71,8 @@ class EditorAudioBus : public PanelContainer {
 
 	OptionButton *send = nullptr;
 
+	OptionButton *type = nullptr;
+
 	PopupMenu *effect_options = nullptr;
 	PopupMenu *bus_popup = nullptr;
 	PopupMenu *delete_effect_popup = nullptr;
@@ -104,6 +106,7 @@ class EditorAudioBus : public PanelContainer {
 	void _mute_toggled();
 	void _bypass_toggled();
 	void _send_selected(int p_which);
+	void _type_selected(int p_which);
 	void _effect_edited();
 	void _effect_add(int p_which);
 	void _effect_selected();
@@ -130,6 +133,7 @@ protected:
 public:
 	void update_bus();
 	void update_send();
+	void update_type();
 
 	EditorAudioBus(EditorAudioBuses *p_buses = nullptr, bool p_is_master = false);
 };

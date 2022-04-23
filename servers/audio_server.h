@@ -159,11 +159,22 @@ public:
 		SPEAKER_SURROUND_71,
 	};
 
+	// These are used as indices in the bus editor plugin, keep them stable and zero-based or refactor plugin.
+	enum BusType {
+		CONVENTIONAL = 0,
+		SPATIAL_3D = 1,
+	};
+
 	enum {
 		AUDIO_DATA_INVALID_ID = -1,
 		MAX_CHANNELS_PER_BUS = 4,
 		MAX_BUSES_PER_PLAYBACK = 6,
 		LOOKAHEAD_BUFFER_SIZE = 64,
+	};
+
+	struct SpatialPlaybackInfo3D {
+		Transform3D listener_relative_transform;
+		Transform3D last_mix_listener_relative_transform;
 	};
 
 	typedef void (*AudioCallback)(void *p_userdata);
@@ -187,6 +198,8 @@ private:
 
 	float playback_speed_scale;
 
+	Mutex pre_mix_effects_modification_lock;
+
 	struct Bus {
 		StringName name;
 		bool solo;
@@ -194,6 +207,8 @@ private:
 		bool bypass;
 
 		bool soloed;
+
+		AudioServer::BusType type = AudioServer::BusType::CONVENTIONAL;
 
 		//Each channel is a stereo pair.
 		struct Channel {
@@ -228,9 +243,13 @@ private:
 	};
 
 	struct AudioStreamPlaybackBusDetails {
+		Ref<AudioStreamPlayback> stream_playback;
 		bool bus_active[MAX_BUSES_PER_PLAYBACK] = { false, false, false, false, false, false };
 		StringName bus[MAX_BUSES_PER_PLAYBACK];
 		AudioFrame volume[MAX_BUSES_PER_PLAYBACK][MAX_CHANNELS_PER_BUS];
+		Vector<Ref<AudioEffectInstance>> pre_mix_effect_chain[MAX_BUSES_PER_PLAYBACK][MAX_CHANNELS_PER_BUS];
+		bool used = false;
+		short mixes_since_use = 0;
 	};
 
 	struct AudioStreamPlaybackListNode {
@@ -244,26 +263,18 @@ private:
 		// If zero or positive, a place in the stream to seek to during the next mix.
 		SafeNumeric<float> setseek;
 		SafeNumeric<float> pitch_scale;
-		SafeNumeric<float> highshelf_gain;
-		SafeNumeric<float> attenuation_filter_cutoff_hz; // This isn't used unless highshelf_gain is nonzero.
-		AudioFilterSW::Processor filter_process[8];
 		// Updating this ref after the list node is created breaks consistency guarantees, don't do it!
 		Ref<AudioStreamPlayback> stream_playback;
 		// Playback state determines the fate of a particular AudioStreamListNode during the mix step. Must be atomically replaced.
 		std::atomic<PlaybackState> state = AWAITING_DELETION;
-		// This data should only ever be modified by an atomic replacement of the pointer.
-		std::atomic<AudioStreamPlaybackBusDetails *> bus_details = nullptr;
-		// Previous bus details should only be accessed on the audio thread.
-		AudioStreamPlaybackBusDetails *prev_bus_details = nullptr;
 		// The next few samples are stored here so we have some time to fade audio out if it ends abruptly at the beginning of the next mix.
 		AudioFrame lookahead[LOOKAHEAD_BUFFER_SIZE];
 	};
 
+	// Stores a list of bus details pointers. Updating the bus details involves pushing a new one to the
+	// head of the list. The audio thread marks stale pointers for deletion/cleanup on main thread.
+	SafeList<AudioStreamPlaybackBusDetails *> playback_bus_details;
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
-	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
-
-	// TODO document if this is necessary.
-	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
 
 	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
 	Vector<AudioFrame> mix_buffer;
@@ -277,7 +288,7 @@ private:
 	void init_channels_and_buffers();
 
 	void _mix_step();
-	void _mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_source_buf, AudioFrame p_vol_start, AudioFrame p_vol_final, float p_attenuation_filter_cutoff_hz, float p_highshelf_gain, AudioFilterSW::Processor *p_processor_l, AudioFilterSW::Processor *p_processor_r);
+	void _mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_source_buf, AudioFrame p_vol_start, AudioFrame p_vol_final, Vector<Ref<AudioEffectInstance>> p_effect_chain);
 
 	// Should only be called on the main thread.
 	AudioStreamPlaybackListNode *_find_playback_list_node(Ref<AudioStreamPlayback> p_playback);
@@ -330,6 +341,9 @@ public:
 	String get_bus_name(int p_bus) const;
 	int get_bus_index(const StringName &p_bus_name) const;
 
+	void set_bus_type(int p_bus, BusType p_type);
+	BusType get_bus_type(int p_bus) const;
+
 	int get_bus_channels(int p_bus) const;
 
 	void set_bus_volume_db(int p_bus, float p_volume_db);
@@ -374,10 +388,9 @@ public:
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
 	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes);
-	void set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes);
 	void set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale);
 	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused);
-	void set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playback, float p_gain, float p_attenuation_cutoff_hz);
+	void set_playback_spatial_info(Ref<AudioStreamPlayback> p_playback, SpatialPlaybackInfo3D);
 
 	bool is_playback_active(Ref<AudioStreamPlayback> p_playback);
 	float get_playback_position(Ref<AudioStreamPlayback> p_playback);
@@ -433,6 +446,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
+VARIANT_ENUM_CAST(AudioServer::BusType)
 
 class AudioBusLayout : public Resource {
 	GDCLASS(AudioBusLayout, Resource);
@@ -444,6 +458,8 @@ class AudioBusLayout : public Resource {
 		bool solo;
 		bool mute;
 		bool bypass;
+
+		AudioServer::BusType type = AudioServer::BusType::CONVENTIONAL;
 
 		struct Effect {
 			Ref<AudioEffect> effect;

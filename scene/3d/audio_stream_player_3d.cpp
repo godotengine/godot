@@ -323,9 +323,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 
 		linear_attenuation = Math::db2linear(db_att);
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
-		}
+		// for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		// 	AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
+		// }
 		//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
 		//      speakers not facing the source) - this could be made distance dependent.
 		_calc_output_vol(local_pos.normalized(), 4.0, output_volume_vector);
