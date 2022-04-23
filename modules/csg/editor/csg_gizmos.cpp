@@ -32,6 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -401,7 +402,13 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			handles.push_back(h);
 		}
 
-		p_gizmo->add_handles(handles, handles_material);
+		const Vector<Color> colors = {
+			EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_x_color"), SNAME("Editor")),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_y_color"), SNAME("Editor")),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_z_color"), SNAME("Editor")),
+		};
+
+		p_gizmo->add_handles(handles, handles_material, Vector<int>(), false, false, colors);
 	}
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {

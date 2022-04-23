@@ -127,9 +127,11 @@
 			<argument index="2" name="ids" type="PackedInt32Array" />
 			<argument index="3" name="billboard" type="bool" default="false" />
 			<argument index="4" name="secondary" type="bool" default="false" />
+			<argument index="5" name="handle_colors" type="PackedColorArray" default="PackedColorArray()" />
 			<description>
 				Adds a list of handles (points) which can be used to edit the properties of the gizmo's Node3D. The [code]ids[/code] argument can be used to specify a custom identifier for each handle, if an empty [code]Array[/code] is passed, the ids will be assigned automatically from the [code]handles[/code] argument order.
 				The [code]secondary[/code] argument marks the added handles as secondary, meaning they will normally have less selection priority than regular handles. When the user is holding the shift key secondary handles will switch to have higher priority than regular handles. This change in priority can be used to place multiple handles at the same point while still giving the user control on their selection.
+				If [code]handle_colors[/code] is not empty, it will be used to modulate the handle material's color on a per-handle basis. This is only effective if the [code]material[/code] has the [constant BaseMaterial3D.FLAG_ALBEDO_FROM_VERTEX_COLOR] flag enabled. If [code]handle_colors[/code] is not empty, the size of the [code]handle_colors[/code] array [i]must[/i] match the size of the [code]handles[/code] array.
 				There are virtual methods which will be called upon editing of these handles. Call this method during [method _redraw].
 			</description>
 		</method>
