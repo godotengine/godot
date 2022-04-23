@@ -667,6 +667,11 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
 			ERR_FAIL_COND(!is_valid_revert);
 			emit_changed(property, revert_value);
+
+			// Revert the GUI theme item override status as well,
+			// so that the revert button actually reverts to the true default state of the property.
+			checked = false;
+
 			update_property();
 		}
 
