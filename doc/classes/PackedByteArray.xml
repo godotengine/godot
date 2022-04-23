@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedByteArray" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of bytes.
+		A packed array of bytes.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 	</description>
 	<tutorials>
 	</tutorials>

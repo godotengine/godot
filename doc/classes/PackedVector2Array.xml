@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedVector2Array" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of [Vector2]s.
+		A packed array of [Vector2]s.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold [Vector2]. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold [Vector2]. Packs data tightly, so it saves memory for large array sizes.
 	</description>
 	<tutorials>
 		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
