@@ -412,9 +412,9 @@ struct M_Basis {
 
 	static _FORCE_INLINE_ M_Basis convert_from(const Basis &p_from) {
 		M_Basis ret = {
-			M_Vector3::convert_from(p_from.elements[0]),
-			M_Vector3::convert_from(p_from.elements[1]),
-			M_Vector3::convert_from(p_from.elements[2])
+			M_Vector3::convert_from(p_from.rows[0]),
+			M_Vector3::convert_from(p_from.rows[1]),
+			M_Vector3::convert_from(p_from.rows[2])
 		};
 		return ret;
 	}
