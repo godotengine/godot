@@ -5406,12 +5406,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("VectorCompose", "Vector", "Common", "VisualShaderNodeVectorCompose", TTR("Composes vector from scalars.")));
 	add_options.push_back(AddOption("VectorDecompose", "Vector", "Common", "VisualShaderNodeVectorDecompose", TTR("Decomposes vector to scalars.")));
 
-	add_options.push_back(AddOption("Vector2Compose", "Vector", "Composition", "VisualShaderNodeVectorCompose", TTR("Composes 2D vector from three scalars."), { VisualShaderNodeVectorCompose::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption("Vector2Decompose", "Vector", "Composition", "VisualShaderNodeVectorDecompose", TTR("Decomposes 2D vector to three scalars."), { VisualShaderNodeVectorDecompose::OP_TYPE_VECTOR_2D }));
+	add_options.push_back(AddOption("Vector2Compose", "Vector", "Composition", "VisualShaderNodeVectorCompose", TTR("Composes 2D vector from two scalars."), { VisualShaderNodeVectorCompose::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("Vector2Decompose", "Vector", "Composition", "VisualShaderNodeVectorDecompose", TTR("Decomposes 2D vector to two scalars."), { VisualShaderNodeVectorDecompose::OP_TYPE_VECTOR_2D }));
 	add_options.push_back(AddOption("Vector3Compose", "Vector", "Composition", "VisualShaderNodeVectorCompose", TTR("Composes 3D vector from three scalars."), { VisualShaderNodeVectorCompose::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Vector3Decompose", "Vector", "Composition", "VisualShaderNodeVectorDecompose", TTR("Decomposes 3D vector to three scalars."), { VisualShaderNodeVectorDecompose::OP_TYPE_VECTOR_3D }));
-	add_options.push_back(AddOption("Vector4DCompose", "Vector", "Composition", "VisualShaderNodeVectorCompose", TTR("Composes 4D vector from three scalars."), { VisualShaderNodeVectorCompose::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption("Vector4DDecompose", "Vector", "Composition", "VisualShaderNodeVectorDecompose", TTR("Decomposes 4D vector to three scalars."), { VisualShaderNodeVectorDecompose::OP_TYPE_VECTOR_4D }));
+	add_options.push_back(AddOption("Vector4Compose", "Vector", "Composition", "VisualShaderNodeVectorCompose", TTR("Composes 4D vector from four scalars."), { VisualShaderNodeVectorCompose::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("Vector4Decompose", "Vector", "Composition", "VisualShaderNodeVectorDecompose", TTR("Decomposes 4D vector to four scalars."), { VisualShaderNodeVectorDecompose::OP_TYPE_VECTOR_4D }));
 
 	add_options.push_back(AddOption("Abs", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("Returns the absolute value of the parameter."), { VisualShaderNodeVectorFunc::FUNC_ABS, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("Abs", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("Returns the absolute value of the parameter."), { VisualShaderNodeVectorFunc::FUNC_ABS, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
