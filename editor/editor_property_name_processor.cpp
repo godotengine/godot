@@ -110,6 +110,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["arm64-v8a"] = "arm64-v8a";
 	capitalize_string_remaps["armeabi-v7a"] = "armeabi-v7a";
 	capitalize_string_remaps["arvr"] = "ARVR";
+	capitalize_string_remaps["bidi"] = "BiDi";
 	capitalize_string_remaps["bg"] = "BG";
 	capitalize_string_remaps["bp"] = "BP";
 	capitalize_string_remaps["bpc"] = "BPC";
@@ -127,6 +128,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["erp"] = "ERP";
 	capitalize_string_remaps["etc"] = "ETC";
 	capitalize_string_remaps["etc2"] = "ETC2";
+	capitalize_string_remaps["filesystem"] = "FileSystem";
 	capitalize_string_remaps["fbx"] = "FBX";
 	capitalize_string_remaps["fbx2gltf"] = "FBX2glTF";
 	capitalize_string_remaps["fft"] = "FFT";
@@ -180,6 +182,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["msaa"] = "MSAA";
 	capitalize_string_remaps["nfc"] = "NFC";
+	capitalize_string_remaps["navmesh"] = "NavMesh";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
 	capitalize_string_remaps["opentype"] = "OpenType";
