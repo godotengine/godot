@@ -281,6 +281,12 @@ void Button::_notification(int p_what) {
 					icon_region = Rect2(style_offset + Point2(icon_ofs_region + size.x - icon_size.x, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				}
 
+				if (_update_scale) {
+					_update_scale = false;
+					print_line("Resizing icon", icon_scale->get_value());
+					icon_region.set_size(Vector2(icon_region.get_size().x + icon_scale->get_value(), icon_region.get_size().y + icon_scale->get_value()));
+				}
+
 				if (icon_region.size.width > 0) {
 					draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
 				}
@@ -496,6 +502,16 @@ HorizontalAlignment Button::get_icon_alignment() const {
 	return icon_alignment;
 }
 
+void Button::set_icon_scale(float p_value) {
+	icon_scale->set_value(double(p_value) );
+	update();
+	update_minimum_size();
+}
+
+float Button::get_icon_scale() {
+	return float(icon_scale->get_value());
+}
+
 bool Button::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 	if (str.begins_with("opentype_features/")) {
@@ -546,6 +562,11 @@ void Button::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 }
 
+void Button::_icon_scale_changed(float p_value) {
+	_update_scale = true;
+	print_line("Updateing via signal: ", p_value);
+}
+
 void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
@@ -568,6 +589,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_icon_alignment"), &Button::get_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_icon_scale", "icon_scale"), &Button::set_icon_scale);
+	ClassDB::bind_method(D_METHOD("get_icon_scale"), &Button::get_icon_scale);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -578,6 +601,7 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "icon_scale", PROPERTY_HINT_RANGE, "-2,2,0.01,or_greater"),"set_icon_scale","get_icon_scale");
 }
 
 Button::Button(const String &p_text) {
@@ -586,6 +610,14 @@ Button::Button(const String &p_text) {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	set_text(p_text);
+
+	icon_scale = memnew(HSlider);
+	icon_scale->set_step(0.01);
+	icon_scale->set_min(-2.0);
+	icon_scale->set_max(2.0);
+	icon_scale->set_value(0.0);
+	icon_scale->set_v_size_flags(SIZE_SHRINK_CENTER);
+	icon_scale->connect("value_changed", callable_mp(this, &Button::_icon_scale_changed));
 }
 
 Button::~Button() {

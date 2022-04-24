@@ -33,6 +33,7 @@
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/text_paragraph.h"
+#include "scene/gui/slider.h"
 
 class Button : public BaseButton {
 	GDCLASS(Button, BaseButton);
@@ -49,12 +50,15 @@ private:
 
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
+	HSlider *icon_scale = nullptr;
+	bool _update_scale = false;
 	bool clip_text = false;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	HorizontalAlignment icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	float _internal_margin[4] = {};
 
 	void _shape();
+	void _icon_scale_changed(float p_value);
 
 protected:
 	void _set_internal_margin(Side p_side, float p_value);
@@ -70,6 +74,9 @@ public:
 
 	void set_text(const String &p_text);
 	String get_text() const;
+
+	void set_icon_scale(float p_value);
+	float get_icon_scale();
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
