@@ -2,6 +2,9 @@
 
 Import("env")
 
+env.Depends("#drivers/gles3/shaders/copy.glsl.gen.h", "#core/math/basis.h")
+env.Depends("#drivers/gles3/shaders/copy.glsl.gen.h", "#core/math/transform_2d.h")
+
 if "GLES3_GLSL" in env["BUILDERS"]:
     env.GLES3_GLSL("canvas.glsl")
     env.GLES3_GLSL("copy.glsl")

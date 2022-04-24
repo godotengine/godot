@@ -524,13 +524,13 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				Transform2D v = value;
 
 				//in std140 members of mat2 are treated as vec4s
-				gui[0] = v.elements[0][0];
-				gui[1] = v.elements[0][1];
+				gui[0] = v.columns[0][0];
+				gui[1] = v.columns[0][1];
 				gui[2] = 0; // ignored
 				gui[3] = 0; // ignored
 
-				gui[4] = v.elements[1][0];
-				gui[5] = v.elements[1][1];
+				gui[4] = v.columns[1][0];
+				gui[5] = v.columns[1][1];
 				gui[6] = 0; // ignored
 				gui[7] = 0; // ignored
 			}
@@ -1922,18 +1922,18 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
 			Transform2D v = p_value;
-			bv[0].x = v.elements[0][0];
-			bv[0].y = v.elements[0][1];
+			bv[0].x = v.columns[0][0];
+			bv[0].y = v.columns[0][1];
 			bv[0].z = 0;
 			bv[0].w = 0;
 
-			bv[1].x = v.elements[1][0];
-			bv[1].y = v.elements[1][1];
+			bv[1].x = v.columns[1][0];
+			bv[1].y = v.columns[1][1];
 			bv[1].z = 0;
 			bv[1].w = 0;
 
-			bv[2].x = v.elements[2][0];
-			bv[2].y = v.elements[2][1];
+			bv[2].x = v.columns[2][0];
+			bv[2].y = v.columns[2][1];
 			bv[2].z = 1;
 			bv[2].w = 0;
 

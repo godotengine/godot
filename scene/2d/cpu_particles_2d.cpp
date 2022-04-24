@@ -969,13 +969,13 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
-				p.transform.elements[1] = p.velocity.normalized();
-				p.transform.elements[0] = p.transform.elements[1].orthogonal();
+				p.transform.columns[1] = p.velocity.normalized();
+				p.transform.columns[0] = p.transform.columns[1].orthogonal();
 			}
 
 		} else {
-			p.transform.elements[0] = Vector2(Math::cos(p.rotation), -Math::sin(p.rotation));
-			p.transform.elements[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));
+			p.transform.columns[0] = Vector2(Math::cos(p.rotation), -Math::sin(p.rotation));
+			p.transform.columns[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));
 		}
 
 		//scale by scale
@@ -986,8 +986,8 @@ void CPUParticles2D::_particles_process(double p_delta) {
 		if (base_scale.y < 0.00001) {
 			base_scale.y = 0.00001;
 		}
-		p.transform.elements[0] *= base_scale.x;
-		p.transform.elements[1] *= base_scale.y;
+		p.transform.columns[0] *= base_scale.x;
+		p.transform.columns[1] *= base_scale.y;
 
 		p.transform[2] += p.velocity * local_delta;
 	}
@@ -1029,14 +1029,14 @@ void CPUParticles2D::_update_particle_data_buffer() {
 		}
 
 		if (r[idx].active) {
-			ptr[0] = t.elements[0][0];
-			ptr[1] = t.elements[1][0];
+			ptr[0] = t.columns[0][0];
+			ptr[1] = t.columns[1][0];
 			ptr[2] = 0;
-			ptr[3] = t.elements[2][0];
-			ptr[4] = t.elements[0][1];
-			ptr[5] = t.elements[1][1];
+			ptr[3] = t.columns[2][0];
+			ptr[4] = t.columns[0][1];
+			ptr[5] = t.columns[1][1];
 			ptr[6] = 0;
-			ptr[7] = t.elements[2][1];
+			ptr[7] = t.columns[2][1];
 
 		} else {
 			memset(ptr, 0, sizeof(float) * 8);
@@ -1137,14 +1137,14 @@ void CPUParticles2D::_notification(int p_what) {
 					Transform2D t = inv_emission_transform * r[i].transform;
 
 					if (r[i].active) {
-						ptr[0] = t.elements[0][0];
-						ptr[1] = t.elements[1][0];
+						ptr[0] = t.columns[0][0];
+						ptr[1] = t.columns[1][0];
 						ptr[2] = 0;
-						ptr[3] = t.elements[2][0];
-						ptr[4] = t.elements[0][1];
-						ptr[5] = t.elements[1][1];
+						ptr[3] = t.columns[2][0];
+						ptr[4] = t.columns[0][1];
+						ptr[5] = t.columns[1][1];
 						ptr[6] = 0;
-						ptr[7] = t.elements[2][1];
+						ptr[7] = t.columns[2][1];
 
 					} else {
 						memset(ptr, 0, sizeof(float) * 8);

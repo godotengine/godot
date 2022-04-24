@@ -1051,14 +1051,14 @@ void MeshStorage::multimesh_instance_set_transform_2d(RID p_multimesh, int p_ind
 
 		float *dataptr = w + p_index * multimesh->stride_cache;
 
-		dataptr[0] = p_transform.elements[0][0];
-		dataptr[1] = p_transform.elements[1][0];
+		dataptr[0] = p_transform.columns[0][0];
+		dataptr[1] = p_transform.columns[1][0];
 		dataptr[2] = 0;
-		dataptr[3] = p_transform.elements[2][0];
-		dataptr[4] = p_transform.elements[0][1];
-		dataptr[5] = p_transform.elements[1][1];
+		dataptr[3] = p_transform.columns[2][0];
+		dataptr[4] = p_transform.columns[0][1];
+		dataptr[5] = p_transform.columns[1][1];
 		dataptr[6] = 0;
-		dataptr[7] = p_transform.elements[2][1];
+		dataptr[7] = p_transform.columns[2][1];
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, true);
@@ -1169,12 +1169,12 @@ Transform2D MeshStorage::multimesh_instance_get_transform_2d(RID p_multimesh, in
 
 		const float *dataptr = r + p_index * multimesh->stride_cache;
 
-		t.elements[0][0] = dataptr[0];
-		t.elements[1][0] = dataptr[1];
-		t.elements[2][0] = dataptr[3];
-		t.elements[0][1] = dataptr[4];
-		t.elements[1][1] = dataptr[5];
-		t.elements[2][1] = dataptr[7];
+		t.columns[0][0] = dataptr[0];
+		t.columns[1][0] = dataptr[1];
+		t.columns[2][0] = dataptr[3];
+		t.columns[0][1] = dataptr[4];
+		t.columns[1][1] = dataptr[5];
+		t.columns[2][1] = dataptr[7];
 	}
 
 	return t;

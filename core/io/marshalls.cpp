@@ -291,7 +291,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 6, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						val.elements[i][j] = decode_double(&buf[(i * 2 + j) * sizeof(double)]);
+						val.columns[i][j] = decode_double(&buf[(i * 2 + j) * sizeof(double)]);
 					}
 				}
 
@@ -302,7 +302,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 6, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						val.elements[i][j] = decode_float(&buf[(i * 2 + j) * sizeof(float)]);
+						val.columns[i][j] = decode_float(&buf[(i * 2 + j) * sizeof(float)]);
 					}
 				}
 
@@ -1261,7 +1261,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Transform2D val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
-						memcpy(&buf[(i * 2 + j) * sizeof(real_t)], &val.elements[i][j], sizeof(real_t));
+						memcpy(&buf[(i * 2 + j) * sizeof(real_t)], &val.columns[i][j], sizeof(real_t));
 					}
 				}
 			}

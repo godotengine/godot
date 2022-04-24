@@ -1555,7 +1555,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.elements[i][j]);
+					s += rtos_fix(m3.columns[i][j]);
 				}
 			}
 

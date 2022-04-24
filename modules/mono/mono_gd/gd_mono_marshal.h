@@ -367,9 +367,9 @@ struct M_Transform2D {
 
 	static _FORCE_INLINE_ M_Transform2D convert_from(const Transform2D &p_from) {
 		M_Transform2D ret = {
-			M_Vector2::convert_from(p_from.elements[0]),
-			M_Vector2::convert_from(p_from.elements[1]),
-			M_Vector2::convert_from(p_from.elements[2])
+			M_Vector2::convert_from(p_from.columns[0]),
+			M_Vector2::convert_from(p_from.columns[1]),
+			M_Vector2::convert_from(p_from.columns[2])
 		};
 		return ret;
 	}

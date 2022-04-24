@@ -521,9 +521,9 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
 
 	Transform2D xf;
-	xf.elements[0] = (p_to - p_from).normalized();
-	xf.elements[1] = xf.elements[0].orthogonal();
-	xf.elements[2] = (p_from + p_to) * 0.5 - xf.elements[1] * icon->get_height() * 0.5 - xf.elements[0] * icon->get_height() * 0.5;
+	xf.columns[0] = (p_to - p_from).normalized();
+	xf.columns[1] = xf.columns[0].orthogonal();
+	xf.columns[2] = (p_from + p_to) * 0.5 - xf.columns[1] * icon->get_height() * 0.5 - xf.columns[0] * icon->get_height() * 0.5;
 
 	state_machine_draw->draw_set_transform_matrix(xf);
 	state_machine_draw->draw_texture(icon, Vector2(), icon_color);

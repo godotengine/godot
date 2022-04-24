@@ -115,12 +115,12 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		case Variant::TRANSFORM2D: {
 			SETUP_TYPE(Transform2D)
 
-			/**/ TRY_TRANSFER_FIELD("xx", elements[0][0])
-			else TRY_TRANSFER_FIELD("xy", elements[0][1])
-			else TRY_TRANSFER_FIELD("yx", elements[1][0])
-			else TRY_TRANSFER_FIELD("yy", elements[1][1])
-			else TRY_TRANSFER_FIELD("ox", elements[2][0])
-			else TRY_TRANSFER_FIELD("oy", elements[2][1])
+			/**/ TRY_TRANSFER_FIELD("xx", columns[0][0])
+			else TRY_TRANSFER_FIELD("xy", columns[0][1])
+			else TRY_TRANSFER_FIELD("yx", columns[1][0])
+			else TRY_TRANSFER_FIELD("yy", columns[1][1])
+			else TRY_TRANSFER_FIELD("ox", columns[2][0])
+			else TRY_TRANSFER_FIELD("oy", columns[2][1])
 
 			return target;
 		}

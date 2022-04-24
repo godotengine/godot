@@ -3675,7 +3675,7 @@ void CanvasItemEditor::_draw_viewport() {
 	// Update the transform
 	transform = Transform2D();
 	transform.scale_basis(Size2(zoom, zoom));
-	transform.elements[2] = -view_offset * zoom;
+	transform.columns[2] = -view_offset * zoom;
 	EditorNode::get_singleton()->get_scene_root()->set_global_canvas_transform(transform);
 
 	// hide/show buttons depending on the selection

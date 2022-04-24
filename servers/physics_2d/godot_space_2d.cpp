@@ -710,7 +710,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				break;
 			}
 
-			body_transform.elements[2] += recover_motion;
+			body_transform.columns[2] += recover_motion;
 			body_aabb.position += recover_motion;
 
 			recover_attempts--;
@@ -881,7 +881,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform2D ugt = body_transform;
-		ugt.elements[2] += p_parameters.motion * unsafe;
+		ugt.columns[2] += p_parameters.motion * unsafe;
 
 		_RestCallbackData2D rcd;
 
