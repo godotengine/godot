@@ -105,7 +105,7 @@ void MaterialStorage::global_variables_instance_update(RID p_instance, int p_ind
 
 /* SHADER API */
 
-void MaterialStorage::_shader_make_dirty(Shader *p_shader) {
+void MaterialStorage::_shader_make_dirty(GLES3::Shader *p_shader) {
 	if (p_shader->dirty_list.in_list()) {
 		return;
 	}
@@ -114,7 +114,7 @@ void MaterialStorage::_shader_make_dirty(Shader *p_shader) {
 }
 
 RID MaterialStorage::shader_allocate() {
-	Shader *shader = memnew(Shader);
+	GLES3::Shader *shader = memnew(GLES3::Shader);
 	shader->mode = RS::SHADER_CANVAS_ITEM;
 	//shader->shader = &scene->state.scene_shader;
 	RID rid = shader_owner.make_rid(shader);
@@ -129,7 +129,7 @@ void MaterialStorage::shader_initialize(RID p_rid) {
 }
 
 //RID MaterialStorage::shader_create() {
-//	Shader *shader = memnew(Shader);
+//	GLES3::Shader *shader = memnew(GLES3::Shader);
 //	shader->mode = RS::SHADER_SPATIAL;
 //	shader->shader = &scene->state.scene_shader;
 //	RID rid = shader_owner.make_rid(shader);
@@ -140,7 +140,7 @@ void MaterialStorage::shader_initialize(RID p_rid) {
 //}
 
 void MaterialStorage::shader_free(RID p_rid) {
-	Shader *shader = shader_owner.get_or_null(p_rid);
+	GLES3::Shader *shader = shader_owner.get_or_null(p_rid);
 
 	if (shader->shader && shader->version.is_valid()) {
 		shader->shader->version_free(shader->version);
@@ -151,7 +151,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 	}
 
 	while (shader->materials.first()) {
-		Material *m = shader->materials.first()->self();
+		GLES3::Material *m = shader->materials.first()->self();
 
 		m->shader = nullptr;
 		_material_make_dirty(m);
@@ -164,7 +164,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 }
 
 void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
-	Shader *shader = shader_owner.get_or_null(p_shader);
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 
 	shader->code = p_code;
@@ -211,14 +211,14 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 }
 
 String MaterialStorage::shader_get_code(RID p_shader) const {
-	const Shader *shader = shader_owner.get_or_null(p_shader);
+	const GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, "");
 
 	return shader->code;
 }
 
 void MaterialStorage::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
-	Shader *shader = shader_owner.get_or_null(p_shader);
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 
 	if (shader->dirty_list.in_list()) {
@@ -359,7 +359,7 @@ void MaterialStorage::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_
 }
 
 void MaterialStorage::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) {
-	Shader *shader = shader_owner.get_or_null(p_shader);
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 	ERR_FAIL_COND(p_texture.is_valid() && !TextureStorage::get_singleton()->owns_texture(p_texture));
 
@@ -382,7 +382,7 @@ void MaterialStorage::shader_set_default_texture_param(RID p_shader, const Strin
 }
 
 RID MaterialStorage::shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const {
-	const Shader *shader = shader_owner.get_or_null(p_shader);
+	const GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 
 	if (shader->default_textures.has(p_name) && shader->default_textures[p_name].has(p_index)) {
@@ -392,7 +392,7 @@ RID MaterialStorage::shader_get_default_texture_param(RID p_shader, const String
 	return RID();
 }
 
-void MaterialStorage::_update_shader(Shader *p_shader) const {
+void MaterialStorage::_update_shader(GLES3::Shader *p_shader) const {
 	_shader_dirty_list.remove(&p_shader->dirty_list);
 
 	p_shader->valid = false;
@@ -408,8 +408,8 @@ void MaterialStorage::_update_shader(Shader *p_shader) const {
 
 	switch (p_shader->mode) {
 		case RS::SHADER_CANVAS_ITEM: {
-			p_shader->canvas_item.light_mode = Shader::CanvasItem::LIGHT_MODE_NORMAL;
-			p_shader->canvas_item.blend_mode = Shader::CanvasItem::BLEND_MODE_MIX;
+			p_shader->canvas_item.light_mode = GLES3::Shader::CanvasItem::LIGHT_MODE_NORMAL;
+			p_shader->canvas_item.blend_mode = GLES3::Shader::CanvasItem::BLEND_MODE_MIX;
 
 			p_shader->canvas_item.uses_screen_texture = false;
 			p_shader->canvas_item.uses_screen_uv = false;
@@ -423,14 +423,14 @@ void MaterialStorage::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_projection_matrix = false;
 			p_shader->canvas_item.uses_instance_custom = false;
 
-			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
-			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
-			shaders.actions_canvas.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_SUB);
-			shaders.actions_canvas.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MUL);
-			shaders.actions_canvas.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_PMALPHA);
+			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, GLES3::Shader::CanvasItem::BLEND_MODE_ADD);
+			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, GLES3::Shader::CanvasItem::BLEND_MODE_MIX);
+			shaders.actions_canvas.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, GLES3::Shader::CanvasItem::BLEND_MODE_SUB);
+			shaders.actions_canvas.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, GLES3::Shader::CanvasItem::BLEND_MODE_MUL);
+			shaders.actions_canvas.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, GLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA);
 
-			shaders.actions_canvas.render_mode_values["unshaded"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_UNSHADED);
-			shaders.actions_canvas.render_mode_values["light_only"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY);
+			shaders.actions_canvas.render_mode_values["unshaded"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, GLES3::Shader::CanvasItem::LIGHT_MODE_UNSHADED);
+			shaders.actions_canvas.render_mode_values["light_only"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, GLES3::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY);
 
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_UV"] = &p_shader->canvas_item.uses_screen_uv;
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_PIXEL_SIZE"] = &p_shader->canvas_item.uses_screen_uv;
@@ -453,9 +453,9 @@ void MaterialStorage::_update_shader(Shader *p_shader) const {
 		case RS::SHADER_SPATIAL: {
 			// TODO remove once 3D is added back
 			return;
-			p_shader->spatial.blend_mode = Shader::Spatial::BLEND_MODE_MIX;
-			p_shader->spatial.depth_draw_mode = Shader::Spatial::DEPTH_DRAW_OPAQUE;
-			p_shader->spatial.cull_mode = Shader::Spatial::CULL_MODE_BACK;
+			p_shader->spatial.blend_mode = GLES3::Shader::Spatial::BLEND_MODE_MIX;
+			p_shader->spatial.depth_draw_mode = GLES3::Shader::Spatial::DEPTH_DRAW_OPAQUE;
+			p_shader->spatial.cull_mode = GLES3::Shader::Spatial::CULL_MODE_BACK;
 			p_shader->spatial.uses_alpha = false;
 			p_shader->spatial.uses_alpha_scissor = false;
 			p_shader->spatial.uses_discard = false;
@@ -472,19 +472,19 @@ void MaterialStorage::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.writes_modelview_or_projection = false;
 			p_shader->spatial.uses_world_coordinates = false;
 
-			shaders.actions_scene.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_ADD);
-			shaders.actions_scene.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_MIX);
-			shaders.actions_scene.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_SUB);
-			shaders.actions_scene.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_MUL);
+			shaders.actions_scene.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->spatial.blend_mode, GLES3::Shader::Spatial::BLEND_MODE_ADD);
+			shaders.actions_scene.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->spatial.blend_mode, GLES3::Shader::Spatial::BLEND_MODE_MIX);
+			shaders.actions_scene.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->spatial.blend_mode, GLES3::Shader::Spatial::BLEND_MODE_SUB);
+			shaders.actions_scene.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->spatial.blend_mode, GLES3::Shader::Spatial::BLEND_MODE_MUL);
 
-			shaders.actions_scene.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_OPAQUE);
-			shaders.actions_scene.render_mode_values["depth_draw_always"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALWAYS);
-			shaders.actions_scene.render_mode_values["depth_draw_never"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_NEVER);
-			shaders.actions_scene.render_mode_values["depth_draw_alpha_prepass"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS);
+			shaders.actions_scene.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, GLES3::Shader::Spatial::DEPTH_DRAW_OPAQUE);
+			shaders.actions_scene.render_mode_values["depth_draw_always"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, GLES3::Shader::Spatial::DEPTH_DRAW_ALWAYS);
+			shaders.actions_scene.render_mode_values["depth_draw_never"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, GLES3::Shader::Spatial::DEPTH_DRAW_NEVER);
+			shaders.actions_scene.render_mode_values["depth_draw_alpha_prepass"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, GLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS);
 
-			shaders.actions_scene.render_mode_values["cull_front"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_FRONT);
-			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_BACK);
-			shaders.actions_scene.render_mode_values["cull_disabled"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_DISABLED);
+			shaders.actions_scene.render_mode_values["cull_front"] = Pair<int *, int>(&p_shader->spatial.cull_mode, GLES3::Shader::Spatial::CULL_MODE_FRONT);
+			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, GLES3::Shader::Spatial::CULL_MODE_BACK);
+			shaders.actions_scene.render_mode_values["cull_disabled"] = Pair<int *, int>(&p_shader->spatial.cull_mode, GLES3::Shader::Spatial::CULL_MODE_DISABLED);
 
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;
@@ -539,7 +539,7 @@ void MaterialStorage::_update_shader(Shader *p_shader) const {
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
 
-	for (SelfList<Material> *E = p_shader->materials.first(); E; E = E->next()) {
+	for (SelfList<GLES3::Material> *E = p_shader->materials.first(); E; E = E->next()) {
 		_material_make_dirty(E->self());
 	}
 
@@ -554,7 +554,7 @@ void MaterialStorage::update_dirty_shaders() {
 
 /* MATERIAL API */
 
-void MaterialStorage::_material_make_dirty(Material *p_material) const {
+void MaterialStorage::_material_make_dirty(GLES3::Material *p_material) const {
 	if (p_material->dirty_list.in_list()) {
 		return;
 	}
@@ -562,7 +562,7 @@ void MaterialStorage::_material_make_dirty(Material *p_material) const {
 	_material_dirty_list.add(&p_material->dirty_list);
 }
 
-void MaterialStorage::_update_material(Material *p_material) {
+void MaterialStorage::_update_material(GLES3::Material *p_material) {
 	if (p_material->dirty_list.in_list()) {
 		_material_dirty_list.remove(&p_material->dirty_list);
 	}
@@ -580,7 +580,8 @@ void MaterialStorage::_update_material(Material *p_material) {
 			bool can_cast_shadow = false;
 			bool is_animated = false;
 
-			if (p_material->shader->spatial.blend_mode == Shader::Spatial::BLEND_MODE_MIX &&
+			if (p_material->shader->spatial.blend_mode == GLES3::Shader::Spatial::BLEND_MODE_MIX &&
+
 					(!p_material->shader->spatial.uses_alpha || p_material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 				can_cast_shadow = true;
 			}
@@ -645,7 +646,7 @@ void MaterialStorage::_update_material(Material *p_material) {
 }
 
 RID MaterialStorage::material_allocate() {
-	Material *material = memnew(Material);
+	GLES3::Material *material = memnew(GLES3::Material);
 	return material_owner.make_rid(material);
 }
 
@@ -659,7 +660,7 @@ void MaterialStorage::material_initialize(RID p_rid) {
 //}
 
 void MaterialStorage::material_free(RID p_rid) {
-	Material *m = material_owner.get_or_null(p_rid);
+	GLES3::Material *m = material_owner.get_or_null(p_rid);
 
 	if (m->shader) {
 		m->shader->materials.remove(&m->list);
@@ -691,10 +692,10 @@ void MaterialStorage::material_free(RID p_rid) {
 }
 
 void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
-	Shader *shader = get_shader(p_shader);
+	GLES3::Shader *shader = get_shader(p_shader);
 
 	if (material->shader) {
 		// if a shader is present, remove the old shader
@@ -711,7 +712,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 }
 
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	if (p_value.get_type() == Variant::NIL) {
@@ -724,7 +725,7 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 }
 
 Variant MaterialStorage::material_get_param(RID p_material, const StringName &p_param) const {
-	const Material *material = material_owner.get_or_null(p_material);
+	const GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, RID());
 
 	if (material->params.has(p_param)) {
@@ -735,7 +736,7 @@ Variant MaterialStorage::material_get_param(RID p_material, const StringName &p_
 }
 
 void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	material->next_pass = p_next_material;
@@ -745,14 +746,14 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	ERR_FAIL_COND(priority < RS::MATERIAL_RENDER_PRIORITY_MIN);
 	ERR_FAIL_COND(priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
 
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	material->render_priority = priority;
 }
 
 bool MaterialStorage::material_is_animated(RID p_material) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, false);
 	if (material->dirty_list.in_list()) {
 		_update_material(material);
@@ -766,7 +767,7 @@ bool MaterialStorage::material_is_animated(RID p_material) {
 }
 
 bool MaterialStorage::material_casts_shadows(RID p_material) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, false);
 	if (material->dirty_list.in_list()) {
 		_update_material(material);
@@ -782,7 +783,7 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 }
 
 Variant MaterialStorage::material_get_param_default(RID p_material, const StringName &p_param) const {
-	const Material *material = material_owner.get_or_null(p_material);
+	const GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, Variant());
 
 	if (material->shader) {
@@ -797,14 +798,14 @@ Variant MaterialStorage::material_get_param_default(RID p_material, const String
 
 void MaterialStorage::update_dirty_materials() {
 	while (_material_dirty_list.first()) {
-		Material *material = _material_dirty_list.first()->self();
+		GLES3::Material *material = _material_dirty_list.first()->self();
 		_update_material(material);
 	}
 }
 
 /* are these still used? */
 RID MaterialStorage::material_get_shader(RID p_material) const {
-	const Material *material = material_owner.get_or_null(p_material);
+	const GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, RID());
 
 	if (material->shader) {
@@ -815,14 +816,14 @@ RID MaterialStorage::material_get_shader(RID p_material) const {
 }
 
 void MaterialStorage::material_set_line_width(RID p_material, float p_width) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	material->line_width = p_width;
 }
 
 bool MaterialStorage::material_uses_tangents(RID p_material) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, false);
 
 	if (!material->shader) {
@@ -837,7 +838,7 @@ bool MaterialStorage::material_uses_tangents(RID p_material) {
 }
 
 bool MaterialStorage::material_uses_ensure_correct_normals(RID p_material) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND_V(!material, false);
 
 	if (!material->shader) {
@@ -853,7 +854,7 @@ bool MaterialStorage::material_uses_ensure_correct_normals(RID p_material) {
 
 void MaterialStorage::material_add_instance_owner(RID p_material, RendererStorage::DependencyTracker *p_instance) {
 	/*
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	Map<InstanceBaseDependency *, int>::Element *E = material->instance_owners.find(p_instance);
@@ -867,7 +868,7 @@ void MaterialStorage::material_add_instance_owner(RID p_material, RendererStorag
 
 void MaterialStorage::material_remove_instance_owner(RID p_material, RendererStorage::DependencyTracker *p_instance) {
 	/*
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	Map<InstanceBaseDependency *, int>::Element *E = material->instance_owners.find(p_instance);
@@ -883,7 +884,7 @@ void MaterialStorage::material_remove_instance_owner(RID p_material, RendererSto
 
 /*
 void MaterialStorage::_material_add_geometry(RID p_material, Geometry *p_geometry) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	Map<Geometry *, int>::Element *I = material->geometry_owners.find(p_geometry);
@@ -896,7 +897,7 @@ void MaterialStorage::_material_add_geometry(RID p_material, Geometry *p_geometr
 }
 
 void MaterialStorage::_material_remove_geometry(RID p_material, Geometry *p_geometry) {
-	Material *material = material_owner.get_or_null(p_material);
+	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 
 	Map<Geometry *, int>::Element *I = material->geometry_owners.find(p_geometry);
