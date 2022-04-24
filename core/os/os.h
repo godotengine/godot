@@ -275,6 +275,7 @@ public:
 		Size2 window_size = get_window_size();
 		return Rect2(0, 0, window_size.width, window_size.height);
 	}
+	virtual Array get_display_cutouts() const { return Array(); }
 
 	virtual void set_borderless_window(bool p_borderless) {}
 	virtual bool get_borderless_window() { return false; }

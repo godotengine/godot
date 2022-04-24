@@ -48,6 +48,7 @@ private:
 	jmethodID _open_URI = 0;
 	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
+	jmethodID _get_display_cutouts = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
@@ -75,6 +76,7 @@ public:
 	int get_screen_dpi();
 	float get_scaled_density();
 	void get_window_safe_area(int (&p_rect_xywh)[4]);
+	Array get_display_cutouts();
 	float get_screen_refresh_rate(float p_fallback);
 	String get_unique_id();
 	bool has_vk();
