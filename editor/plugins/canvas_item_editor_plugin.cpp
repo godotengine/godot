@@ -3681,10 +3681,13 @@ void CanvasItemEditor::_draw_viewport() {
 	// hide/show buttons depending on the selection
 	bool all_locked = true;
 	bool all_group = true;
+	bool all_editor_only = true;
+	bool contains_root_node = false;
 	List<Node *> selection = editor_selection->get_selected_node_list();
 	if (selection.is_empty()) {
 		all_locked = false;
 		all_group = false;
+		all_editor_only = false;
 	} else {
 		for (Node *E : selection) {
 			if (Object::cast_to<CanvasItem>(E) && !Object::cast_to<CanvasItem>(E)->has_meta("_edit_lock_")) {
@@ -3698,14 +3701,30 @@ void CanvasItemEditor::_draw_viewport() {
 				break;
 			}
 		}
+		for (Node *E : selection) {
+			if (!E->has_meta(SNAME("_editor_only_"))) {
+				all_editor_only = false;
+				break;
+			}
+		}
+		for (Node *E : selection) {
+			if (!E->get_owner()) {
+				contains_root_node = true;
+				break;
+			}
+		}
 	}
 
 	lock_button->set_visible(!all_locked);
 	lock_button->set_disabled(selection.is_empty());
 	unlock_button->set_visible(all_locked);
+
 	group_button->set_visible(!all_group);
 	group_button->set_disabled(selection.is_empty());
 	ungroup_button->set_visible(all_group);
+
+	toggle_editor_only_button->set_pressed(all_editor_only);
+	toggle_editor_only_button->set_disabled(selection.is_empty() || contains_root_node);
 
 	_draw_grid();
 	_draw_ruler_tool();
@@ -3768,6 +3787,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	unlock_button->set_icon(get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons")));
 	group_button->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
 	ungroup_button->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
+	toggle_editor_only_button->set_icon(get_theme_icon(SNAME("EditorOnly"), SNAME("EditorIcons")));
 	key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
 	key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
 	key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
@@ -3895,6 +3915,7 @@ void CanvasItemEditor::_notification(int p_what) {
 				debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
 				override_camera_button->set_pressed(false);
 			}
+
 		} break;
 	}
 }
@@ -4392,7 +4413,33 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->add_undo_method(viewport, "update");
 			undo_redo->commit_action();
 		} break;
+		case TOGGLE_EDITOR_ONLY_SELECTED: {
+			undo_redo->create_action(TTR("Toggle Editor Only Flag"));
 
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			bool all_editor_only = true;
+			for (Node *E : selection) {
+				if (!E->has_meta(SNAME("_editor_only_"))) {
+					all_editor_only = false;
+					break;
+				}
+			}
+			for (Node *node : selection) {
+				if (all_editor_only) {
+					undo_redo->add_do_method(node, "remove_meta", "_editor_only_");
+					undo_redo->add_undo_method(node, "set_meta", "_editor_only_", true);
+				} else {
+					undo_redo->add_do_method(node, "set_meta", "_editor_only_", true);
+					undo_redo->add_undo_method(node, "remove_meta", "_editor_only_");
+				}
+
+				undo_redo->add_do_method(this, "emit_signal", "item_editor_only_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_editor_only_status_changed");
+			}
+			undo_redo->add_do_method(viewport, "update", Variant());
+			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->commit_action();
+		} break;
 		case ANIM_INSERT_KEY:
 		case ANIM_INSERT_KEY_EXISTING: {
 			bool existing = p_op == ANIM_INSERT_KEY_EXISTING;
@@ -4642,6 +4689,7 @@ void CanvasItemEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
+	ADD_SIGNAL(MethodInfo("item_editor_only_status_changed"));
 }
 
 Dictionary CanvasItemEditor::get_state() const {
@@ -5139,6 +5187,15 @@ CanvasItemEditor::CanvasItemEditor() {
 	ungroup_button->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	ungroup_button->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::G));
+
+	toggle_editor_only_button = memnew(Button);
+	toggle_editor_only_button->set_flat(true);
+	toggle_editor_only_button->set_toggle_mode(true);
+	hb->add_child(toggle_editor_only_button);
+	toggle_editor_only_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(TOGGLE_EDITOR_ONLY_SELECTED));
+	toggle_editor_only_button->set_tooltip(TTR("Editor-only nodes will not be loaded in the scene tree when the project is run or exported."));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	toggle_editor_only_button->set_shortcut(ED_SHORTCUT("editor/toggle_editor_only_selected_nodes", TTR("Toggle Editor Only Flag For Selected Node(s)"), KeyModifierMask::CMD | Key::E));
 
 	hb->add_child(memnew(VSeparator));
 

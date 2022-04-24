@@ -30,9 +30,6 @@
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			The Light2D's [Color].
 		</member>
-		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
-			If [code]true[/code], Light2D will only appear when editing the scene.
-		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], Light2D will emit light.
 		</member>

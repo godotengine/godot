@@ -148,6 +148,17 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		TabContainer *tab_container = Object::cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
 		NodeDock::get_singleton()->get_parent()->call("set_current_tab", tab_container->get_tab_idx_from_control(NodeDock::get_singleton()));
 		NodeDock::get_singleton()->show_groups();
+	} else if (p_id == BUTTON_EDITOR_ONLY) {
+		undo_redo->create_action(TTR("Remove editor-only flag"));
+
+		undo_redo->add_do_method(n, "remove_meta", "_editor_only_");
+		undo_redo->add_undo_method(n, "set_meta", "_editor_only_", true);
+		undo_redo->add_do_method(this, "_update_tree");
+		undo_redo->add_undo_method(this, "_update_tree");
+		undo_redo->add_do_method(this, "emit_signal", "node_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+
+		undo_redo->commit_action();
 	}
 }
 
@@ -333,6 +344,16 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 
 		if (!p_node->is_connected("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed))) {
 			p_node->connect("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed), varray(p_node));
+		}
+
+		bool editor_only = p_node->has_meta("_editor_only_");
+		if (editor_only) {
+			item->add_button(0, get_theme_icon(SNAME("EditorOnly"), SNAME("EditorIcons")), BUTTON_EDITOR_ONLY, false, TTR("Node is editor only.\nClick to remove this flag."));
+		}
+
+		if (p_node->is_editor_only()) {
+			Color editor_only_font_color = get_theme_color(SNAME("font_editor_only_color"), SNAME("Tree"));
+			item->set_custom_color(0, editor_only_font_color);
 		}
 
 		Ref<Script> script = p_node->get_script();

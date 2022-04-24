@@ -53,7 +53,6 @@ public:
 private:
 	RID canvas_light;
 	bool enabled = true;
-	bool editor_only = false;
 	bool shadow = false;
 	Color color = Color(1, 1, 1);
 	Color shadow_color = Color(0, 0, 0, 0);
@@ -82,9 +81,6 @@ protected:
 public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
-
-	void set_editor_only(bool p_editor_only);
-	bool is_editor_only() const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;
