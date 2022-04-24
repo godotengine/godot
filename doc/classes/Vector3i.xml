@@ -161,7 +161,7 @@
 			<description>
 				Gets the remainder of each component of the [Vector3i] with the the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
-				print(Vector2i(10, -20, 30) % 7) # Prints "(3, -6, 2)"
+				print(Vector3i(10, -20, 30) % 7) # Prints "(3, -6, 2)"
 				[/codeblock]
 			</description>
 		</operator>

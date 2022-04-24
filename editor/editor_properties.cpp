@@ -2085,7 +2085,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 	}
 }
 
-///////////////////// VECTOR3i /////////////////////////
+///////////////////// VECTOR3I /////////////////////////
 
 void EditorPropertyVector3i::_set_read_only(bool p_read_only) {
 	for (int i = 0; i < 3; i++) {
@@ -2618,7 +2618,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	set_bottom_editor(g);
 }
 
-///////////////////// TRANSFORM /////////////////////////
+///////////////////// TRANSFORM3D /////////////////////////
 
 void EditorPropertyTransform3D::_set_read_only(bool p_read_only) {
 	for (int i = 0; i < 12; i++) {
