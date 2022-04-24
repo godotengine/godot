@@ -37,6 +37,7 @@
 #include <android/log.h>
 #include <jni.h>
 
+#include "core/variant/array.h"
 #include "string_android.h"
 
 // Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
@@ -48,6 +49,7 @@ private:
 	jmethodID _open_URI = 0;
 	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
+	jmethodID _get_display_cutouts = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
@@ -76,6 +78,7 @@ public:
 	float get_scaled_density();
 	float get_screen_refresh_rate(float fallback);
 	void screen_get_usable_rect(int (&p_rect_xywh)[4]);
+	Array get_display_cutouts();
 	String get_unique_id();
 	bool has_vk();
 	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);
