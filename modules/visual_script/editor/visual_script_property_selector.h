@@ -62,6 +62,15 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
 	};
 
+	enum ScopeCombo {
+		COMBO_RELATED,
+		COMBO_SEPARATOR,
+		COMBO_BASE,
+		COMBO_INHERITERS,
+		COMBO_UNRELATED,
+		COMBO_ALL,
+	};
+
 	LineEdit *search_box = nullptr;
 
 	Button *case_sensitive_button = nullptr;
@@ -88,6 +97,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_results_i(int p_int);
 	void _update_results_s(String p_string);
+	void _update_results_search_all();
 	void _update_results();
 
 	void _confirmed();
