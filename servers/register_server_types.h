@@ -37,4 +37,7 @@ void unregister_server_types();
 
 void register_server_singletons();
 
+void extensions_initialize_ready();
+void extensions_deinitialize_ready();
+
 #endif // REGISTER_SERVER_TYPES_H

@@ -428,15 +428,17 @@ Error Main::test_setup() {
 	register_scene_types();
 	register_driver_types();
 
+	register_platform_apis();
+
+	register_module_types();
+	extensions_initialize_ready();
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
-	register_platform_apis();
-
-	register_module_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -482,6 +484,7 @@ void Main::test_cleanup() {
 	EditorNode::unregister_editor_types();
 #endif
 
+	extensions_deinitialize_ready();
 	unregister_module_types();
 	unregister_platform_apis();
 	unregister_driver_types();
@@ -1930,6 +1933,21 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_driver_types();
 
+	MAIN_PRINT("Main: Load Modules");
+
+	register_platform_apis();
+	register_module_types();
+
+	camera_server = CameraServer::create();
+
+	MAIN_PRINT("Main: Load Physics");
+
+	initialize_physics();
+	initialize_navigation_server();
+	register_server_singletons();
+
+	extensions_initialize_ready();
+
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
@@ -1937,11 +1955,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
 #endif
-
-	MAIN_PRINT("Main: Load Modules");
-
-	register_platform_apis();
-	register_module_types();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	initialize_theme();
@@ -1962,14 +1975,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
-
-	camera_server = CameraServer::create();
-
-	MAIN_PRINT("Main: Load Physics");
-
-	initialize_physics();
-	initialize_navigation_server();
-	register_server_singletons();
 
 	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
@@ -2857,6 +2862,7 @@ void Main::cleanup(bool p_force) {
 
 	ImageLoader::cleanup();
 
+	extensions_deinitialize_ready();
 	unregister_module_types();
 	unregister_platform_apis();
 	unregister_driver_types();
