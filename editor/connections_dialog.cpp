@@ -180,59 +180,11 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
+	Variant::Type type = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
-
-	switch (vt) {
-		case Variant::BOOL:
-			value = false;
-			break;
-		case Variant::INT:
-			value = 0;
-			break;
-		case Variant::FLOAT:
-			value = 0.0;
-			break;
-		case Variant::STRING:
-			value = "";
-			break;
-		case Variant::STRING_NAME:
-			value = "";
-			break;
-		case Variant::VECTOR2:
-			value = Vector2();
-			break;
-		case Variant::RECT2:
-			value = Rect2();
-			break;
-		case Variant::VECTOR3:
-			value = Vector3();
-			break;
-		case Variant::PLANE:
-			value = Plane();
-			break;
-		case Variant::QUATERNION:
-			value = Quaternion();
-			break;
-		case Variant::AABB:
-			value = AABB();
-			break;
-		case Variant::BASIS:
-			value = Basis();
-			break;
-		case Variant::TRANSFORM3D:
-			value = Transform3D();
-			break;
-		case Variant::COLOR:
-			value = Color();
-			break;
-		default: {
-			ERR_FAIL();
-		} break;
-	}
-
-	ERR_FAIL_COND(value.get_type() == Variant::NIL);
+	Callable::CallError error;
+	Variant::construct(type, value, nullptr, 0, error);
 
 	cdbinds->params.push_back(value);
 	cdbinds->notify_changed();
@@ -277,6 +229,14 @@ void ConnectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			bind_editor->edit(cdbinds);
+
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			for (int i = 0; i < type_list->get_item_count(); i++) {
+				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
+				type_list->set_item_icon(i, get_theme_icon(type_name, SNAME("EditorIcons")));
+			}
 		} break;
 	}
 }
@@ -469,21 +429,14 @@ ConnectDialog::ConnectDialog() {
 	type_list = memnew(OptionButton);
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_bind_hb->add_child(type_list);
-	type_list->add_item("bool", Variant::BOOL);
-	type_list->add_item("int", Variant::INT);
-	type_list->add_item("real", Variant::FLOAT);
-	type_list->add_item("String", Variant::STRING);
-	type_list->add_item("StringName", Variant::STRING_NAME);
-	type_list->add_item("Vector2", Variant::VECTOR2);
-	type_list->add_item("Rect2", Variant::RECT2);
-	type_list->add_item("Vector3", Variant::VECTOR3);
-	type_list->add_item("Plane", Variant::PLANE);
-	type_list->add_item("Quaternion", Variant::QUATERNION);
-	type_list->add_item("AABB", Variant::AABB);
-	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform3D", Variant::TRANSFORM3D);
-	type_list->add_item("Color", Variant::COLOR);
-	type_list->select(0);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+			// These types can't be constructed or serialized properly, so skip them.
+			continue;
+		}
+
+		type_list->add_item(Variant::get_type_name(Variant::Type(i)), i);
+	}
 	bind_controls.push_back(type_list);
 
 	Button *add_bind = memnew(Button);
