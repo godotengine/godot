@@ -29,7 +29,13 @@
 		<constant name="OP_TYPE_VECTOR_3D_SCALAR" value="4" enum="OpType">
 			The [code]a[/code] and [code]b[/code] ports use a 3D vector type. The [code]weight[/code] port uses a scalar type.
 		</constant>
-		<constant name="OP_TYPE_MAX" value="5" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_4D" value="5" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D_SCALAR" value="6" enum="OpType">
+			The [code]a[/code] and [code]b[/code] ports use a 4D vector type. The [code]weight[/code] port uses a scalar type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="7" enum="OpType">
 			Represents the size of the [enum OpType] enum.
 		</constant>
 	</constants>

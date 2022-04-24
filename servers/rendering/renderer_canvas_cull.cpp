@@ -34,7 +34,7 @@
 #include "renderer_viewport.h"
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
+#include "servers/rendering/storage/texture_storage.h"
 
 static const int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
 
@@ -1338,7 +1338,7 @@ void RendererCanvasCull::canvas_item_add_particles(RID p_item, RID p_particles, 
 	part->texture = p_texture;
 
 	//take the chance and request processing for them, at least once until they become visible again
-	RSG::storage->particles_request_process(p_particles);
+	RSG::particles_storage->particles_request_process(p_particles);
 }
 
 void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture) {
@@ -1851,26 +1851,26 @@ void RendererCanvasCull::canvas_set_shadow_texture_size(int p_size) {
 }
 
 RID RendererCanvasCull::canvas_texture_allocate() {
-	return RSG::canvas_texture_storage->canvas_texture_allocate();
+	return RSG::texture_storage->canvas_texture_allocate();
 }
 void RendererCanvasCull::canvas_texture_initialize(RID p_rid) {
-	RSG::canvas_texture_storage->canvas_texture_initialize(p_rid);
+	RSG::texture_storage->canvas_texture_initialize(p_rid);
 }
 
 void RendererCanvasCull::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
-	RSG::canvas_texture_storage->canvas_texture_set_channel(p_canvas_texture, p_channel, p_texture);
+	RSG::texture_storage->canvas_texture_set_channel(p_canvas_texture, p_channel, p_texture);
 }
 
 void RendererCanvasCull::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) {
-	RSG::canvas_texture_storage->canvas_texture_set_shading_parameters(p_canvas_texture, p_base_color, p_shininess);
+	RSG::texture_storage->canvas_texture_set_shading_parameters(p_canvas_texture, p_base_color, p_shininess);
 }
 
 void RendererCanvasCull::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
-	RSG::canvas_texture_storage->canvas_texture_set_texture_filter(p_canvas_texture, p_filter);
+	RSG::texture_storage->canvas_texture_set_texture_filter(p_canvas_texture, p_filter);
 }
 
 void RendererCanvasCull::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
-	RSG::canvas_texture_storage->canvas_texture_set_texture_repeat(p_canvas_texture, p_repeat);
+	RSG::texture_storage->canvas_texture_set_texture_repeat(p_canvas_texture, p_repeat);
 }
 
 void RendererCanvasCull::canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) {

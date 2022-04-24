@@ -34,6 +34,7 @@
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
+#include "storage/texture_storage.h"
 
 static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport, RendererCanvasCull::Canvas *p_canvas, RendererViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
 	Transform2D xf = p_viewport->global_transform;
@@ -222,7 +223,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_configure_3d_render_buffers(p_viewport);
 	}
 
-	RSG::storage->render_target_request_clear(p_viewport->render_target, bgcolor);
+	RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
 
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
 		_draw_3d(p_viewport);
@@ -243,7 +244,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		if (p_viewport->sdf_active) {
 			//process SDF
 
-			Rect2 sdf_rect = RSG::storage->render_target_get_sdf_rect(p_viewport->render_target);
+			Rect2 sdf_rect = RSG::texture_storage->render_target_get_sdf_rect(p_viewport->render_target);
 
 			RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
 
@@ -266,11 +267,11 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			}
 
 			RSG::canvas_render->render_sdf(p_viewport->render_target, occluders);
-			RSG::storage->render_target_mark_sdf_enabled(p_viewport->render_target, true);
+			RSG::texture_storage->render_target_mark_sdf_enabled(p_viewport->render_target, true);
 
 			p_viewport->sdf_active = false; // if used, gets set active again
 		} else {
-			RSG::storage->render_target_mark_sdf_enabled(p_viewport->render_target, false);
+			RSG::texture_storage->render_target_mark_sdf_enabled(p_viewport->render_target, false);
 		}
 
 		Rect2 shadow_rect;
@@ -529,9 +530,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	if (RSG::storage->render_target_is_clear_requested(p_viewport->render_target)) {
+	if (RSG::texture_storage->render_target_is_clear_requested(p_viewport->render_target)) {
 		//was never cleared in the end, force clear it
-		RSG::storage->render_target_do_clear_request(p_viewport->render_target);
+		RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 	}
 
 	if (p_viewport->measure_render_time) {
@@ -595,7 +596,7 @@ void RendererViewport::draw_viewports() {
 				vp->occlusion_buffer_dirty = vp->occlusion_buffer_dirty || (vp->size != xr_size);
 				vp->size = xr_size;
 				uint32_t view_count = xr_interface->get_view_count();
-				RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
+				RSG::texture_storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
 
 				// Inform xr interface we're about to render its viewport, if this returns false we don't render
 				visible = xr_interface->pre_draw_viewport(vp->render_target);
@@ -610,7 +611,7 @@ void RendererViewport::draw_viewports() {
 			visible = true;
 		}
 
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_VISIBLE && RSG::storage->render_target_was_used(vp->render_target)) {
+		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_VISIBLE && RSG::texture_storage->render_target_was_used(vp->render_target)) {
 			visible = true;
 		}
 
@@ -641,11 +642,11 @@ void RendererViewport::draw_viewports() {
 
 		RENDER_TIMESTAMP("> Render Viewport " + itos(i));
 
-		RSG::storage->render_target_set_as_unused(vp->render_target);
+		RSG::texture_storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
 			// check for an external texture destination (disabled for now, not yet supported)
-			// RSG::storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
-			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
+			// RSG::texture_storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
+			RSG::texture_storage->render_target_set_external_texture(vp->render_target, 0);
 
 			// render...
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
@@ -667,7 +668,7 @@ void RendererViewport::draw_viewports() {
 				}
 			}
 		} else {
-			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
+			RSG::texture_storage->render_target_set_external_texture(vp->render_target, 0);
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
@@ -726,7 +727,7 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport_owner.initialize_rid(p_rid);
 	Viewport *viewport = viewport_owner.get_or_null(p_rid);
 	viewport->self = p_rid;
-	viewport->render_target = RSG::storage->render_target_create();
+	viewport->render_target = RSG::texture_storage->render_target_create();
 	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
 
@@ -808,7 +809,7 @@ void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_heig
 	viewport->size = Size2(p_width, p_height);
 
 	uint32_t view_count = viewport->get_view_count();
-	RSG::storage->render_target_set_size(viewport->render_target, p_width, p_height, view_count);
+	RSG::texture_storage->render_target_set_size(viewport->render_target, p_width, p_height, view_count);
 	_configure_3d_render_buffers(viewport);
 
 	viewport->occlusion_buffer_dirty = true;
@@ -849,8 +850,8 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		// If using OpenGL we can optimize this operation by rendering directly to system_fbo
 		// instead of rendering to fbo and copying to system_fbo after
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
-			RSG::storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->get_view_count());
-			RSG::storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
+			RSG::texture_storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->get_view_count());
+			RSG::texture_storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
 		}
 
 		viewport->viewport_to_screen_rect = p_rect;
@@ -858,8 +859,8 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 	} else {
 		// if render_direct_to_screen was used, reset size and position
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
-			RSG::storage->render_target_set_position(viewport->render_target, 0, 0);
-			RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
+			RSG::texture_storage->render_target_set_position(viewport->render_target, 0, 0);
+			RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
 		}
 
 		viewport->viewport_to_screen_rect = Rect2();
@@ -877,17 +878,17 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 
 	// if disabled, reset render_target size and position
 	if (!p_enable) {
-		RSG::storage->render_target_set_position(viewport->render_target, 0, 0);
-		RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
+		RSG::texture_storage->render_target_set_position(viewport->render_target, 0, 0);
+		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
 	}
 
-	RSG::storage->render_target_set_flag(viewport->render_target, RendererStorage::RENDER_TARGET_DIRECT_TO_SCREEN, p_enable);
+	RSG::texture_storage->render_target_set_flag(viewport->render_target, RendererTextureStorage::RENDER_TARGET_DIRECT_TO_SCREEN, p_enable);
 	viewport->viewport_render_direct_to_screen = p_enable;
 
 	// if attached to screen already, setup screen size and position, this needs to happen after setting flag to avoid an unnecessary buffer allocation
 	if (RSG::rasterizer->is_low_end() && viewport->viewport_to_screen_rect != Rect2() && p_enable) {
-		RSG::storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y, viewport->get_view_count());
-		RSG::storage->render_target_set_position(viewport->render_target, viewport->viewport_to_screen_rect.position.x, viewport->viewport_to_screen_rect.position.y);
+		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y, viewport->get_view_count());
+		RSG::texture_storage->render_target_set_position(viewport->render_target, viewport->viewport_to_screen_rect.position.x, viewport->viewport_to_screen_rect.position.y);
 	}
 }
 
@@ -902,7 +903,7 @@ RID RendererViewport::viewport_get_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND_V(!viewport, RID());
 
-	return RSG::storage->render_target_get_texture(viewport->render_target);
+	return RSG::texture_storage->render_target_get_texture(viewport->render_target);
 }
 
 RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const {
@@ -995,7 +996,7 @@ void RendererViewport::viewport_set_transparent_background(RID p_viewport, bool 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	RSG::storage->render_target_set_flag(viewport->render_target, RendererStorage::RENDER_TARGET_TRANSPARENT, p_enabled);
+	RSG::texture_storage->render_target_set_flag(viewport->render_target, RendererTextureStorage::RENDER_TARGET_TRANSPARENT, p_enabled);
 	viewport->transparent_bg = p_enabled;
 }
 
@@ -1178,14 +1179,14 @@ void RendererViewport::viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::V
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	RSG::storage->render_target_set_sdf_size_and_scale(viewport->render_target, p_size, p_scale);
+	RSG::texture_storage->render_target_set_sdf_size_and_scale(viewport->render_target, p_size, p_scale);
 }
 
 bool RendererViewport::free(RID p_rid) {
 	if (viewport_owner.owns(p_rid)) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);
 
-		RSG::storage->free(viewport->render_target);
+		RSG::texture_storage->render_target_free(viewport->render_target);
 		RSG::scene->free(viewport->shadow_atlas);
 		if (viewport->render_buffers.is_valid()) {
 			RSG::scene->free(viewport->render_buffers);

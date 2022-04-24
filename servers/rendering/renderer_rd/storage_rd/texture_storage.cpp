@@ -29,9 +29,32 @@
 /*************************************************************************/
 
 #include "texture_storage.h"
-#include "decal_atlas_storage.h"
+
+#include "../renderer_storage_rd.h"
 
 using namespace RendererRD;
+
+///////////////////////////////////////////////////////////////////////////
+// CanvasTexture
+
+void CanvasTexture::clear_sets() {
+	if (cleared_cache) {
+		return;
+	}
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j])) {
+				RD::get_singleton()->free(uniform_sets[i][j]);
+				uniform_sets[i][j] = RID();
+			}
+		}
+	}
+	cleared_cache = true;
+}
+
+CanvasTexture::~CanvasTexture() {
+	clear_sets();
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // Texture
@@ -315,9 +338,64 @@ TextureStorage::TextureStorage() {
 			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 	}
+
+	{ // default atlas texture
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			//take the chance and initialize decal atlas to something
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+			decal_atlas.texture_srgb = decal_atlas.texture;
+		}
+	}
+
+	{
+		Vector<String> sdf_modes;
+		sdf_modes.push_back("\n#define MODE_LOAD\n");
+		sdf_modes.push_back("\n#define MODE_LOAD_SHRINK\n");
+		sdf_modes.push_back("\n#define MODE_PROCESS\n");
+		sdf_modes.push_back("\n#define MODE_PROCESS_OPTIMIZED\n");
+		sdf_modes.push_back("\n#define MODE_STORE\n");
+		sdf_modes.push_back("\n#define MODE_STORE_SHRINK\n");
+
+		rt_sdf.shader.initialize(sdf_modes);
+
+		rt_sdf.shader_version = rt_sdf.shader.version_create();
+
+		for (int i = 0; i < RenderTargetSDF::SHADER_MAX; i++) {
+			rt_sdf.pipelines[i] = RD::get_singleton()->compute_pipeline_create(rt_sdf.shader.version_get_shader(rt_sdf.shader_version, i));
+		}
+	}
 }
 
 TextureStorage::~TextureStorage() {
+	rt_sdf.shader.version_free(rt_sdf.shader_version);
+
+	if (decal_atlas.textures.size()) {
+		ERR_PRINT("Decal Atlas: " + itos(decal_atlas.textures.size()) + " textures were not removed from the atlas.");
+	}
+
+	if (decal_atlas.texture.is_valid()) {
+		RD::get_singleton()->free(decal_atlas.texture);
+	}
+
 	//def textures
 	for (int i = 0; i < DEFAULT_RD_TEXTURE_MAX; i++) {
 		if (default_rd_textures[i].is_valid()) {
@@ -331,6 +409,168 @@ TextureStorage::~TextureStorage() {
 bool TextureStorage::can_create_resources_async() const {
 	return true;
 }
+
+/* Canvas Texture API */
+
+RID TextureStorage::canvas_texture_allocate() {
+	return canvas_texture_owner.allocate_rid();
+}
+
+void TextureStorage::canvas_texture_initialize(RID p_rid) {
+	canvas_texture_owner.initialize_rid(p_rid);
+}
+
+void TextureStorage::canvas_texture_free(RID p_rid) {
+	canvas_texture_owner.free(p_rid);
+}
+
+void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
+	switch (p_channel) {
+		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
+			ct->diffuse = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
+			ct->normal_map = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
+			ct->specular = p_texture;
+		} break;
+	}
+
+	ct->clear_sets();
+}
+
+void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
+	ct->specular_color.r = p_specular_color.r;
+	ct->specular_color.g = p_specular_color.g;
+	ct->specular_color.b = p_specular_color.b;
+	ct->specular_color.a = p_shininess;
+	ct->clear_sets();
+}
+
+void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+
+	ct->texture_filter = p_filter;
+	ct->clear_sets();
+}
+
+void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	ERR_FAIL_NULL(ct);
+	ct->texture_repeat = p_repeat;
+	ct->clear_sets();
+}
+
+bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+	CanvasTexture *ct = nullptr;
+	Texture *t = get_texture(p_texture);
+
+	// TODO once we have our texture storage split off we'll look into moving this code into canvas_texture
+
+	if (t) {
+		//regular texture
+		if (!t->canvas_texture) {
+			t->canvas_texture = memnew(CanvasTexture);
+			t->canvas_texture->diffuse = p_texture;
+		}
+
+		ct = t->canvas_texture;
+	} else {
+		ct = get_canvas_texture(p_texture);
+	}
+
+	if (!ct) {
+		return false; //invalid texture RID
+	}
+
+	RS::CanvasItemTextureFilter filter = ct->texture_filter != RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? ct->texture_filter : p_base_filter;
+	ERR_FAIL_COND_V(filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, false);
+
+	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
+	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, false);
+
+	RID uniform_set = ct->uniform_sets[filter][repeat];
+	if (!RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		//create and update
+		Vector<RD::Uniform> uniforms;
+		{ //diffuse
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 0;
+
+			t = get_texture(ct->diffuse);
+			if (!t) {
+				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ct->size_cache = Size2i(1, 1);
+			} else {
+				u.append_id(t->rd_texture);
+				ct->size_cache = Size2i(t->width_2d, t->height_2d);
+			}
+			uniforms.push_back(u);
+		}
+		{ //normal
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1;
+
+			t = get_texture(ct->normal_map);
+			if (!t) {
+				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
+				ct->use_normal_cache = false;
+			} else {
+				u.append_id(t->rd_texture);
+				ct->use_normal_cache = true;
+			}
+			uniforms.push_back(u);
+		}
+		{ //specular
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 2;
+
+			t = get_texture(ct->specular);
+			if (!t) {
+				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ct->use_specular_cache = false;
+			} else {
+				u.append_id(t->rd_texture);
+				ct->use_specular_cache = true;
+			}
+			uniforms.push_back(u);
+		}
+		{ //sampler
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 3;
+			u.append_id(material_storage->sampler_rd_get_default(filter, repeat));
+			uniforms.push_back(u);
+		}
+
+		uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, p_base_set);
+		ct->uniform_sets[filter][repeat] = uniform_set;
+		ct->cleared_cache = false;
+	}
+
+	r_uniform_set = uniform_set;
+	r_size = ct->size_cache;
+	r_specular_shininess = ct->specular_color;
+	r_use_normal = ct->use_normal_cache;
+	r_use_specular = ct->use_specular_cache;
+
+	return true;
+}
+
+/* Texture API */
 
 RID TextureStorage::texture_allocate() {
 	return texture_owner.allocate_rid();
@@ -350,7 +590,7 @@ void TextureStorage::texture_free(RID p_texture) {
 		}
 	}
 
-	DecalAtlasStorage::get_singleton()->decal_atlas_remove_texture(p_texture);
+	decal_atlas_remove_texture(p_texture);
 
 	for (int i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
@@ -949,7 +1189,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	//delete last, so proxies can be updated
 	texture_owner.free(p_by_texture);
 
-	DecalAtlasStorage::get_singleton()->decal_atlas_mark_dirty_on_texture(p_texture);
+	decal_atlas_mark_dirty_on_texture(p_texture);
 }
 
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
@@ -1437,4 +1677,1076 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 	}
 
 	return image;
+}
+
+/* DECAL API */
+
+RID TextureStorage::decal_atlas_get_texture() const {
+	return decal_atlas.texture;
+}
+
+RID TextureStorage::decal_atlas_get_texture_srgb() const {
+	return decal_atlas.texture_srgb;
+}
+
+RID TextureStorage::decal_allocate() {
+	return decal_owner.allocate_rid();
+}
+
+void TextureStorage::decal_initialize(RID p_decal) {
+	decal_owner.initialize_rid(p_decal, Decal());
+}
+
+void TextureStorage::decal_free(RID p_rid) {
+	Decal *decal = decal_owner.get_or_null(p_rid);
+	for (int i = 0; i < RS::DECAL_TEXTURE_MAX; i++) {
+		if (decal->textures[i].is_valid() && owns_texture(decal->textures[i])) {
+			texture_remove_from_decal_atlas(decal->textures[i]);
+		}
+	}
+	decal->dependency.deleted_notify(p_rid);
+	decal_owner.free(p_rid);
+}
+
+void TextureStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->extents = p_extents;
+	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+}
+
+void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	ERR_FAIL_INDEX(p_type, RS::DECAL_TEXTURE_MAX);
+
+	if (decal->textures[p_type] == p_texture) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_texture.is_valid() && !owns_texture(p_texture));
+
+	if (decal->textures[p_type].is_valid() && owns_texture(decal->textures[p_type])) {
+		texture_remove_from_decal_atlas(decal->textures[p_type]);
+	}
+
+	decal->textures[p_type] = p_texture;
+
+	if (decal->textures[p_type].is_valid()) {
+		texture_add_to_decal_atlas(decal->textures[p_type]);
+	}
+
+	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_DECAL);
+}
+
+void TextureStorage::decal_set_emission_energy(RID p_decal, float p_energy) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->emission_energy = p_energy;
+}
+
+void TextureStorage::decal_set_albedo_mix(RID p_decal, float p_mix) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->albedo_mix = p_mix;
+}
+
+void TextureStorage::decal_set_modulate(RID p_decal, const Color &p_modulate) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->modulate = p_modulate;
+}
+
+void TextureStorage::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->cull_mask = p_layers;
+	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+}
+
+void TextureStorage::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->distance_fade = p_enabled;
+	decal->distance_fade_begin = p_begin;
+	decal->distance_fade_length = p_length;
+}
+
+void TextureStorage::decal_set_fade(RID p_decal, float p_above, float p_below) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->upper_fade = p_above;
+	decal->lower_fade = p_below;
+}
+
+void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND(!decal);
+	decal->normal_fade = p_fade;
+}
+
+void TextureStorage::decal_atlas_mark_dirty_on_texture(RID p_texture) {
+	if (decal_atlas.textures.has(p_texture)) {
+		//belongs to decal atlas..
+
+		decal_atlas.dirty = true; //mark it dirty since it was most likely modified
+	}
+}
+
+void TextureStorage::decal_atlas_remove_texture(RID p_texture) {
+	if (decal_atlas.textures.has(p_texture)) {
+		decal_atlas.textures.erase(p_texture);
+		//there is not much a point of making it dirty, just let it be.
+	}
+}
+
+AABB TextureStorage::decal_get_aabb(RID p_decal) const {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND_V(!decal, AABB());
+
+	return AABB(-decal->extents, decal->extents * 2.0);
+}
+
+void TextureStorage::update_decal_atlas() {
+	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
+	ERR_FAIL_NULL(effects);
+
+	if (!decal_atlas.dirty) {
+		return; //nothing to do
+	}
+
+	decal_atlas.dirty = false;
+
+	if (decal_atlas.texture.is_valid()) {
+		RD::get_singleton()->free(decal_atlas.texture);
+		decal_atlas.texture = RID();
+		decal_atlas.texture_srgb = RID();
+		decal_atlas.texture_mipmaps.clear();
+	}
+
+	int border = 1 << decal_atlas.mipmaps;
+
+	if (decal_atlas.textures.size()) {
+		//generate atlas
+		Vector<DecalAtlas::SortItem> itemsv;
+		itemsv.resize(decal_atlas.textures.size());
+		int base_size = 8;
+		const RID *K = nullptr;
+
+		int idx = 0;
+		while ((K = decal_atlas.textures.next(K))) {
+			DecalAtlas::SortItem &si = itemsv.write[idx];
+
+			Texture *src_tex = get_texture(*K);
+
+			si.size.width = (src_tex->width / border) + 1;
+			si.size.height = (src_tex->height / border) + 1;
+			si.pixel_size = Size2i(src_tex->width, src_tex->height);
+
+			if (base_size < si.size.width) {
+				base_size = nearest_power_of_2_templated(si.size.width);
+			}
+
+			si.texture = *K;
+			idx++;
+		}
+
+		//sort items by size
+		itemsv.sort();
+
+		//attempt to create atlas
+		int item_count = itemsv.size();
+		DecalAtlas::SortItem *items = itemsv.ptrw();
+
+		int atlas_height = 0;
+
+		while (true) {
+			Vector<int> v_offsetsv;
+			v_offsetsv.resize(base_size);
+
+			int *v_offsets = v_offsetsv.ptrw();
+			memset(v_offsets, 0, sizeof(int) * base_size);
+
+			int max_height = 0;
+
+			for (int i = 0; i < item_count; i++) {
+				//best fit
+				DecalAtlas::SortItem &si = items[i];
+				int best_idx = -1;
+				int best_height = 0x7FFFFFFF;
+				for (int j = 0; j <= base_size - si.size.width; j++) {
+					int height = 0;
+					for (int k = 0; k < si.size.width; k++) {
+						int h = v_offsets[k + j];
+						if (h > height) {
+							height = h;
+							if (height > best_height) {
+								break; //already bad
+							}
+						}
+					}
+
+					if (height < best_height) {
+						best_height = height;
+						best_idx = j;
+					}
+				}
+
+				//update
+				for (int k = 0; k < si.size.width; k++) {
+					v_offsets[k + best_idx] = best_height + si.size.height;
+				}
+
+				si.pos.x = best_idx;
+				si.pos.y = best_height;
+
+				if (si.pos.y + si.size.height > max_height) {
+					max_height = si.pos.y + si.size.height;
+				}
+			}
+
+			if (max_height <= base_size * 2) {
+				atlas_height = max_height;
+				break; //good ratio, break;
+			}
+
+			base_size *= 2;
+		}
+
+		decal_atlas.size.width = base_size * border;
+		decal_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+
+		for (int i = 0; i < item_count; i++) {
+			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
+			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.size = items[i].pixel_size;
+
+			t->uv_rect.position /= Size2(decal_atlas.size);
+			t->uv_rect.size /= Size2(decal_atlas.size);
+		}
+	} else {
+		//use border as size, so it at least has enough mipmaps
+		decal_atlas.size.width = border;
+		decal_atlas.size.height = border;
+	}
+
+	//blit textures
+
+	RD::TextureFormat tformat;
+	tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	tformat.width = decal_atlas.size.width;
+	tformat.height = decal_atlas.size.height;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tformat.texture_type = RD::TEXTURE_TYPE_2D;
+	tformat.mipmaps = decal_atlas.mipmaps;
+	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
+	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
+
+	decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	RD::get_singleton()->texture_clear(decal_atlas.texture, Color(0, 0, 0, 0), 0, decal_atlas.mipmaps, 0, 1);
+
+	{
+		//create the framebuffer
+
+		Size2i s = decal_atlas.size;
+
+		for (int i = 0; i < decal_atlas.mipmaps; i++) {
+			DecalAtlas::MipMap mm;
+			mm.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), decal_atlas.texture, 0, i);
+			Vector<RID> fb;
+			fb.push_back(mm.texture);
+			mm.fb = RD::get_singleton()->framebuffer_create(fb);
+			mm.size = s;
+			decal_atlas.texture_mipmaps.push_back(mm);
+
+			s.width = MAX(1, s.width >> 1);
+			s.height = MAX(1, s.height >> 1);
+		}
+		{
+			//create the SRGB variant
+			RD::TextureView rd_view;
+			rd_view.format_override = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+			decal_atlas.texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, decal_atlas.texture);
+		}
+	}
+
+	RID prev_texture;
+	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
+		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
+
+		Color clear_color(0, 0, 0, 0);
+
+		if (decal_atlas.textures.size()) {
+			if (i == 0) {
+				Vector<Color> cc;
+				cc.push_back(clear_color);
+
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, cc);
+
+				const RID *K = nullptr;
+				while ((K = decal_atlas.textures.next(K))) {
+					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
+					Texture *src_tex = get_texture(*K);
+					effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+				}
+
+				RD::get_singleton()->draw_list_end();
+
+				prev_texture = mm.texture;
+			} else {
+				effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
+				prev_texture = mm.texture;
+			}
+		} else {
+			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
+		}
+	}
+}
+
+void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
+	if (!decal_atlas.textures.has(p_texture)) {
+		DecalAtlas::Texture t;
+		t.users = 1;
+		t.panorama_to_dp_users = p_panorama_to_dp ? 1 : 0;
+		decal_atlas.textures[p_texture] = t;
+		decal_atlas.dirty = true;
+	} else {
+		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
+		t->users++;
+		if (p_panorama_to_dp) {
+			t->panorama_to_dp_users++;
+		}
+	}
+}
+
+void TextureStorage::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
+	DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
+	ERR_FAIL_COND(!t);
+	t->users--;
+	if (p_panorama_to_dp) {
+		ERR_FAIL_COND(t->panorama_to_dp_users == 0);
+		t->panorama_to_dp_users--;
+	}
+	if (t->users == 0) {
+		decal_atlas.textures.erase(p_texture);
+		//do not mark it dirty, there is no need to since it remains working
+	}
+}
+
+/* RENDER TARGET API */
+
+void TextureStorage::_clear_render_target(RenderTarget *rt) {
+	//free in reverse dependency order
+	if (rt->framebuffer.is_valid()) {
+		RD::get_singleton()->free(rt->framebuffer);
+		rt->framebuffer_uniform_set = RID(); //chain deleted
+	}
+
+	if (rt->color.is_valid()) {
+		RD::get_singleton()->free(rt->color);
+	}
+
+	if (rt->backbuffer.is_valid()) {
+		RD::get_singleton()->free(rt->backbuffer);
+		rt->backbuffer = RID();
+		rt->backbuffer_mipmaps.clear();
+		rt->backbuffer_uniform_set = RID(); //chain deleted
+	}
+
+	_render_target_clear_sdf(rt);
+
+	rt->framebuffer = RID();
+	rt->color = RID();
+}
+
+void TextureStorage::_update_render_target(RenderTarget *rt) {
+	if (rt->texture.is_null()) {
+		//create a placeholder until updated
+		rt->texture = texture_allocate();
+		texture_2d_placeholder_initialize(rt->texture);
+		Texture *tex = get_texture(rt->texture);
+		tex->is_render_target = true;
+	}
+
+	_clear_render_target(rt);
+
+	if (rt->size.width == 0 || rt->size.height == 0) {
+		return;
+	}
+	//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
+	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+	rt->image_format = rt->flags[RENDER_TARGET_TRANSPARENT] ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = rt->color_format;
+		rd_format.width = rt->size.width;
+		rd_format.height = rt->size.height;
+		rd_format.depth = 1;
+		rd_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
+		rd_format.mipmaps = 1;
+		if (rd_format.array_layers > 1) { // why are we not using rt->texture_type ??
+			rd_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		} else {
+			rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+		}
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		rd_format.shareable_formats.push_back(rt->color_format);
+		rd_format.shareable_formats.push_back(rt->color_format_srgb);
+	}
+
+	rt->color = RD::get_singleton()->texture_create(rd_format, rd_view);
+	ERR_FAIL_COND(rt->color.is_null());
+
+	Vector<RID> fb_textures;
+	fb_textures.push_back(rt->color);
+	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
+	if (rt->framebuffer.is_null()) {
+		_clear_render_target(rt);
+		ERR_FAIL_COND(rt->framebuffer.is_null());
+	}
+
+	{ //update texture
+
+		Texture *tex = get_texture(rt->texture);
+
+		//free existing textures
+		if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
+			RD::get_singleton()->free(tex->rd_texture);
+		}
+		if (RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
+			RD::get_singleton()->free(tex->rd_texture_srgb);
+		}
+
+		tex->rd_texture = RID();
+		tex->rd_texture_srgb = RID();
+
+		//create shared textures to the color buffer,
+		//so transparent can be supported
+		RD::TextureView view;
+		view.format_override = rt->color_format;
+		if (!rt->flags[RENDER_TARGET_TRANSPARENT]) {
+			view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		}
+		tex->rd_texture = RD::get_singleton()->texture_create_shared(view, rt->color);
+		if (rt->color_format_srgb != RD::DATA_FORMAT_MAX) {
+			view.format_override = rt->color_format_srgb;
+			tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(view, rt->color);
+		}
+		tex->rd_view = view;
+		tex->width = rt->size.width;
+		tex->height = rt->size.height;
+		tex->width_2d = rt->size.width;
+		tex->height_2d = rt->size.height;
+		tex->rd_format = rt->color_format;
+		tex->rd_format_srgb = rt->color_format_srgb;
+		tex->format = rt->image_format;
+
+		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
+		for (int i = 0; i < proxies.size(); i++) {
+			texture_proxy_update(proxies[i], rt->texture);
+		}
+	}
+}
+
+void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
+	ERR_FAIL_COND(rt->backbuffer.is_valid());
+
+	uint32_t mipmaps_required = Image::get_image_required_mipmaps(rt->size.width, rt->size.height, Image::FORMAT_RGBA8);
+	RD::TextureFormat tf;
+	tf.format = rt->color_format;
+	tf.width = rt->size.width;
+	tf.height = rt->size.height;
+	tf.texture_type = RD::TEXTURE_TYPE_2D;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.mipmaps = mipmaps_required;
+
+	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	RD::get_singleton()->set_resource_name(rt->backbuffer, "Render Target Back Buffer");
+	rt->backbuffer_mipmap0 = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
+	RD::get_singleton()->set_resource_name(rt->backbuffer_mipmap0, "Back Buffer slice mipmap 0");
+
+	{
+		Vector<RID> fb_tex;
+		fb_tex.push_back(rt->backbuffer_mipmap0);
+		rt->backbuffer_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+	}
+
+	if (rt->framebuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->framebuffer_uniform_set)) {
+		//the new one will require the backbuffer.
+		RD::get_singleton()->free(rt->framebuffer_uniform_set);
+		rt->framebuffer_uniform_set = RID();
+	}
+	//create mipmaps
+	for (uint32_t i = 1; i < mipmaps_required; i++) {
+		RID mipmap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, i);
+		RD::get_singleton()->set_resource_name(mipmap, "Back Buffer slice mip: " + itos(i));
+
+		rt->backbuffer_mipmaps.push_back(mipmap);
+	}
+}
+
+RID TextureStorage::render_target_create() {
+	RenderTarget render_target;
+
+	render_target.was_used = false;
+	render_target.clear_requested = false;
+
+	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
+		render_target.flags[i] = false;
+	}
+	_update_render_target(&render_target);
+	return render_target_owner.make_rid(render_target);
+}
+
+void TextureStorage::render_target_free(RID p_rid) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_rid);
+
+	_clear_render_target(rt);
+
+	if (rt->texture.is_valid()) {
+		Texture *tex = get_texture(rt->texture);
+		tex->is_render_target = false;
+		texture_free(rt->texture);
+	}
+
+	render_target_owner.free(p_rid);
+}
+
+void TextureStorage::render_target_set_position(RID p_render_target, int p_x, int p_y) {
+	//unused for this render target
+}
+
+void TextureStorage::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (rt->size.x != p_width || rt->size.y != p_height || rt->view_count != p_view_count) {
+		rt->size.x = p_width;
+		rt->size.y = p_height;
+		rt->view_count = p_view_count;
+		_update_render_target(rt);
+	}
+}
+
+RID TextureStorage::render_target_get_texture(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->texture;
+}
+
+void TextureStorage::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+}
+
+void TextureStorage::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->flags[p_flag] = p_value;
+	_update_render_target(rt);
+}
+
+bool TextureStorage::render_target_was_used(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+	return rt->was_used;
+}
+
+void TextureStorage::render_target_set_as_unused(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->was_used = false;
+}
+
+Size2 TextureStorage::render_target_get_size(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, Size2());
+
+	return rt->size;
+}
+
+RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->framebuffer;
+}
+
+RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->color;
+}
+
+RID TextureStorage::render_target_get_rd_backbuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	return rt->backbuffer;
+}
+
+RID TextureStorage::render_target_get_rd_backbuffer_framebuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	return rt->backbuffer_fb;
+}
+
+void TextureStorage::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->clear_requested = true;
+	rt->clear_color = p_clear_color;
+}
+
+bool TextureStorage::render_target_is_clear_requested(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+	return rt->clear_requested;
+}
+
+Color TextureStorage::render_target_get_clear_request_color(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, Color());
+	return rt->clear_color;
+}
+
+void TextureStorage::render_target_disable_clear_request(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->clear_requested = false;
+}
+
+void TextureStorage::render_target_do_clear_request(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (!rt->clear_requested) {
+		return;
+	}
+	Vector<Color> clear_colors;
+	clear_colors.push_back(rt->clear_color);
+	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
+	RD::get_singleton()->draw_list_end();
+	rt->clear_requested = false;
+}
+
+void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (rt->sdf_oversize == p_size && rt->sdf_scale == p_scale) {
+		return;
+	}
+
+	rt->sdf_oversize = p_size;
+	rt->sdf_scale = p_scale;
+
+	_render_target_clear_sdf(rt);
+}
+
+Rect2i TextureStorage::_render_target_get_sdf_rect(const RenderTarget *rt) const {
+	Size2i margin;
+	int scale;
+	switch (rt->sdf_oversize) {
+		case RS::VIEWPORT_SDF_OVERSIZE_100_PERCENT: {
+			scale = 100;
+		} break;
+		case RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT: {
+			scale = 120;
+		} break;
+		case RS::VIEWPORT_SDF_OVERSIZE_150_PERCENT: {
+			scale = 150;
+		} break;
+		case RS::VIEWPORT_SDF_OVERSIZE_200_PERCENT: {
+			scale = 200;
+		} break;
+		default: {
+		}
+	}
+
+	margin = (rt->size * scale / 100) - rt->size;
+
+	Rect2i r(Vector2i(), rt->size);
+	r.position -= margin;
+	r.size += margin * 2;
+
+	return r;
+}
+
+Rect2i TextureStorage::render_target_get_sdf_rect(RID p_render_target) const {
+	const RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, Rect2i());
+
+	return _render_target_get_sdf_rect(rt);
+}
+
+void TextureStorage::render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->sdf_enabled = p_enabled;
+}
+
+bool TextureStorage::render_target_is_sdf_enabled(RID p_render_target) const {
+	const RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->sdf_enabled;
+}
+
+RID TextureStorage::render_target_get_sdf_texture(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	if (rt->sdf_buffer_read.is_null()) {
+		// no texture, create a dummy one for the 2D uniform set
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		memset(pv.ptrw(), 0, 16 * 4);
+		Vector<Vector<uint8_t>> vpv;
+
+		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+	}
+
+	return rt->sdf_buffer_read;
+}
+
+void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
+	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_valid());
+	if (rt->sdf_buffer_read.is_valid()) {
+		RD::get_singleton()->free(rt->sdf_buffer_read);
+		rt->sdf_buffer_read = RID();
+	}
+
+	Size2i size = _render_target_get_sdf_rect(rt).size;
+
+	RD::TextureFormat tformat;
+	tformat.format = RD::DATA_FORMAT_R8_UNORM;
+	tformat.width = size.width;
+	tformat.height = size.height;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	tformat.texture_type = RD::TEXTURE_TYPE_2D;
+
+	rt->sdf_buffer_write = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+	{
+		Vector<RID> write_fb;
+		write_fb.push_back(rt->sdf_buffer_write);
+		rt->sdf_buffer_write_fb = RD::get_singleton()->framebuffer_create(write_fb);
+	}
+
+	int scale;
+	switch (rt->sdf_scale) {
+		case RS::VIEWPORT_SDF_SCALE_100_PERCENT: {
+			scale = 100;
+		} break;
+		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
+			scale = 50;
+		} break;
+		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
+			scale = 25;
+		} break;
+		default: {
+			scale = 100;
+		} break;
+	}
+
+	rt->process_size = size * scale / 100;
+	rt->process_size.x = MAX(rt->process_size.x, 1);
+	rt->process_size.y = MAX(rt->process_size.y, 1);
+
+	tformat.format = RD::DATA_FORMAT_R16G16_SINT;
+	tformat.width = rt->process_size.width;
+	tformat.height = rt->process_size.height;
+	tformat.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+
+	rt->sdf_buffer_process[0] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	rt->sdf_buffer_process[1] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+	tformat.format = RD::DATA_FORMAT_R16_SNORM;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+	rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+	{
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 1;
+			u.append_id(rt->sdf_buffer_write);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 2;
+			u.append_id(rt->sdf_buffer_read);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 3;
+			u.append_id(rt->sdf_buffer_process[0]);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 4;
+			u.append_id(rt->sdf_buffer_process[1]);
+			uniforms.push_back(u);
+		}
+
+		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
+		RID aux2 = uniforms.write[2].get_id(0);
+		RID aux3 = uniforms.write[3].get_id(0);
+		uniforms.write[2].set_id(0, aux3);
+		uniforms.write[3].set_id(0, aux2);
+		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
+	}
+}
+
+void TextureStorage::_render_target_clear_sdf(RenderTarget *rt) {
+	if (rt->sdf_buffer_read.is_valid()) {
+		RD::get_singleton()->free(rt->sdf_buffer_read);
+		rt->sdf_buffer_read = RID();
+	}
+	if (rt->sdf_buffer_write_fb.is_valid()) {
+		RD::get_singleton()->free(rt->sdf_buffer_write);
+		RD::get_singleton()->free(rt->sdf_buffer_process[0]);
+		RD::get_singleton()->free(rt->sdf_buffer_process[1]);
+		rt->sdf_buffer_write = RID();
+		rt->sdf_buffer_write_fb = RID();
+		rt->sdf_buffer_process[0] = RID();
+		rt->sdf_buffer_process[1] = RID();
+		rt->sdf_buffer_process_uniform_sets[0] = RID();
+		rt->sdf_buffer_process_uniform_sets[1] = RID();
+	}
+}
+
+RID TextureStorage::render_target_get_sdf_framebuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (rt->sdf_buffer_write_fb.is_null()) {
+		_render_target_allocate_sdf(rt);
+	}
+
+	return rt->sdf_buffer_write_fb;
+}
+void TextureStorage::render_target_sdf_process(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_null());
+
+	RenderTargetSDF::PushConstant push_constant;
+
+	Rect2i r = _render_target_get_sdf_rect(rt);
+
+	push_constant.size[0] = r.size.width;
+	push_constant.size[1] = r.size.height;
+	push_constant.stride = 0;
+	push_constant.shift = 0;
+	push_constant.base_size[0] = r.size.width;
+	push_constant.base_size[1] = r.size.height;
+
+	bool shrink = false;
+
+	switch (rt->sdf_scale) {
+		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
+			push_constant.size[0] >>= 1;
+			push_constant.size[1] >>= 1;
+			push_constant.shift = 1;
+			shrink = true;
+		} break;
+		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
+			push_constant.size[0] >>= 2;
+			push_constant.size[1] >>= 2;
+			push_constant.shift = 2;
+			shrink = true;
+		} break;
+		default: {
+		};
+	}
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	/* Load */
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_LOAD_SHRINK : RenderTargetSDF::SHADER_LOAD]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[1], 0); //fill [0]
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
+
+	/* Process */
+
+	int stride = nearest_power_of_2_templated(MAX(push_constant.size[0], push_constant.size[1]) / 2);
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[RenderTargetSDF::SHADER_PROCESS]);
+
+	RD::get_singleton()->compute_list_add_barrier(compute_list);
+	bool swap = false;
+
+	//jumpflood
+	while (stride > 0) {
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
+		push_constant.stride = stride;
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
+		stride /= 2;
+		swap = !swap;
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+
+	/* Store */
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_STORE_SHRINK : RenderTargetSDF::SHADER_STORE]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
+	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
+	ERR_FAIL_NULL(effects);
+
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	//single texture copy for backbuffer
+	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
+	effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+
+	if (!p_gen_mipmaps) {
+		return;
+	}
+	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps");
+	//then mipmap blur
+	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
+
+	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+		region.position.x >>= 1;
+		region.position.y >>= 1;
+		region.size.x = MAX(1, region.size.x >> 1);
+		region.size.y = MAX(1, region.size.y >> 1);
+
+		RID mipmap = rt->backbuffer_mipmaps[i];
+		effects->gaussian_blur(prev_texture, mipmap, region, true);
+		prev_texture = mipmap;
+	}
+	RD::get_singleton()->draw_command_end_label();
+}
+
+void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
+	ERR_FAIL_NULL(effects);
+
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	//single texture copy for backbuffer
+	effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+}
+
+void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
+	ERR_FAIL_NULL(effects);
+
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).intersection(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps2");
+	//then mipmap blur
+	RID prev_texture = rt->backbuffer_mipmap0;
+
+	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+		region.position.x >>= 1;
+		region.position.y >>= 1;
+		region.size.x = MAX(1, region.size.x >> 1);
+		region.size.y = MAX(1, region.size.y >> 1);
+
+		RID mipmap = rt->backbuffer_mipmaps[i];
+		effects->gaussian_blur(prev_texture, mipmap, region, true);
+		prev_texture = mipmap;
+	}
+	RD::get_singleton()->draw_command_end_label();
+}
+
+RID TextureStorage::render_target_get_framebuffer_uniform_set(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	return rt->framebuffer_uniform_set;
+}
+RID TextureStorage::render_target_get_backbuffer_uniform_set(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	return rt->backbuffer_uniform_set;
+}
+
+void TextureStorage::render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->framebuffer_uniform_set = p_uniform_set;
+}
+
+void TextureStorage::render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->backbuffer_uniform_set = p_uniform_set;
 }

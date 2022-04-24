@@ -3390,6 +3390,8 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
 				n->set_base_path(drop_path);
 			}
+		} else {
+			n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
 		}
 		if (drop_node) {
 			n->set_base_type(drop_node->get_class());
@@ -3702,8 +3704,13 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		Object::cast_to<VisualScriptTypeCast>(vnode.ptr())->set_base_type(base_type);
 		Object::cast_to<VisualScriptTypeCast>(vnode.ptr())->set_base_script(base_script);
 	} else if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())) {
-		Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_base_type(base_type);
-		Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_base_script(base_script);
+		if (base_type_map.has(base_type)) {
+			Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_basic_type(base_type_map[base_type]);
+			Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_call_mode(VisualScriptFunctionCall::CALL_MODE_BASIC_TYPE);
+		} else {
+			Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_base_type(base_type);
+			Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_base_script(base_script);
+		}
 	} else if (Object::cast_to<VisualScriptPropertySet>(vnode.ptr())) {
 		Object::cast_to<VisualScriptPropertySet>(vnode.ptr())->set_base_type(base_type);
 		Object::cast_to<VisualScriptPropertySet>(vnode.ptr())->set_base_script(base_script);
@@ -4751,6 +4758,35 @@ VisualScriptEditor::VisualScriptEditor() {
 	popup_menu->add_item(TTR("Duplicate"), EDIT_DUPLICATE_NODES);
 	popup_menu->add_item(TTR("Clear Copy Buffer"), EDIT_CLEAR_COPY_BUFFER);
 	popup_menu->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_menu_option));
+
+	base_type_map.insert("String", Variant::STRING);
+	base_type_map.insert("Vector2", Variant::VECTOR2);
+	base_type_map.insert("Vector2i", Variant::VECTOR2I);
+	base_type_map.insert("Rect2", Variant::RECT2);
+	base_type_map.insert("Rect2i", Variant::RECT2I);
+	base_type_map.insert("Vector3", Variant::VECTOR3);
+	base_type_map.insert("Vector3i", Variant::VECTOR3I);
+	base_type_map.insert("Transform2D", Variant::TRANSFORM2D);
+	base_type_map.insert("Plane", Variant::PLANE);
+	base_type_map.insert("Quaternion", Variant::QUATERNION);
+	base_type_map.insert("AABB", Variant::AABB);
+	base_type_map.insert("Basis", Variant::BASIS);
+	base_type_map.insert("Transform3D", Variant::TRANSFORM3D);
+	base_type_map.insert("Color", Variant::COLOR);
+	base_type_map.insert("NodePath", Variant::NODE_PATH);
+	base_type_map.insert("RID", Variant::RID);
+	base_type_map.insert("Callable", Variant::CALLABLE);
+	base_type_map.insert("Dictionary", Variant::DICTIONARY);
+	base_type_map.insert("Array", Variant::ARRAY);
+	base_type_map.insert("PackedByteArray", Variant::PACKED_BYTE_ARRAY);
+	base_type_map.insert("PackedInt32Array", Variant::PACKED_INT32_ARRAY);
+	base_type_map.insert("PackedFloat32Array", Variant::PACKED_FLOAT32_ARRAY);
+	base_type_map.insert("PackedInt64Array", Variant::PACKED_INT64_ARRAY);
+	base_type_map.insert("PackedFloat64Array", Variant::PACKED_FLOAT64_ARRAY);
+	base_type_map.insert("PackedStringArray", Variant::PACKED_STRING_ARRAY);
+	base_type_map.insert("PackedVector2Array", Variant::PACKED_VECTOR2_ARRAY);
+	base_type_map.insert("PackedVector3Array", Variant::PACKED_VECTOR3_ARRAY);
+	base_type_map.insert("PackedColorArray", Variant::PACKED_COLOR_ARRAY);
 }
 
 VisualScriptEditor::~VisualScriptEditor() {

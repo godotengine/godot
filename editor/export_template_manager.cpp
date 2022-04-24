@@ -404,9 +404,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			// Read.
 			unzOpenCurrentFile(pkg);
 			ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
-			if (ret != UNZ_OK) {
-				break;
-			}
+			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 			unzCloseCurrentFile(pkg);
 
 			String data_str;
@@ -478,9 +476,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		// Read
 		unzOpenCurrentFile(pkg);
 		ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
-		if (ret != UNZ_OK) {
-			break;
-		}
+		ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 		unzCloseCurrentFile(pkg);
 
 		String base_dir = file_path.get_base_dir().trim_suffix("/");

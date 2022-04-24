@@ -557,9 +557,7 @@ private:
 							//read
 							unzOpenCurrentFile(pkg);
 							ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
-							if (ret != UNZ_OK) {
-								break;
-							}
+							ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
 							unzCloseCurrentFile(pkg);
 
 							Ref<FileAccess> f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);

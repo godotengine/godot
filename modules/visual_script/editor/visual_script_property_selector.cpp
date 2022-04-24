@@ -86,6 +86,13 @@ void VisualScriptPropertySelector::_update_results_s(String p_string) {
 	_update_results();
 }
 
+void VisualScriptPropertySelector::_update_results_search_all() {
+	if (search_classes->is_pressed()) {
+		scope_combo->select(COMBO_ALL);
+	}
+	_update_results();
+}
+
 void VisualScriptPropertySelector::_update_results() {
 	_update_icons();
 	search_runner = Ref<SearchRunner>(memnew(SearchRunner(this, results_tree)));
@@ -167,7 +174,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -201,8 +208,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	// When class is Input only show inheritors
-	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+	scope_combo->select(COMBO_RELATED);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -234,7 +240,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -264,7 +270,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -294,7 +300,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_RELATED);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -330,7 +336,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -363,7 +369,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(COMBO_BASE);
 
 	results_tree->clear();
 	show_window(.5f);
@@ -418,7 +424,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_classes = memnew(Button);
 	search_classes->set_flat(true);
 	search_classes->set_tooltip(TTR("Search Classes"));
-	search_classes->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_classes->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results_search_all));
 	search_classes->set_toggle_mode(true);
 	search_classes->set_pressed(true);
 	search_classes->set_focus_mode(Control::FOCUS_NONE);
@@ -739,49 +745,46 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_build() {
 	if (vs_nodes.is_empty()) {
 		return true;
 	}
-	String registerd_node_name = vs_nodes[0];
+	String registered_node_name = vs_nodes[0];
 	vs_nodes.pop_front();
 
-	Vector<String> path = registerd_node_name.split("/");
+	Vector<String> path = registered_node_name.split("/");
 	if (path[0] == "constants") {
-		_add_class_doc(registerd_node_name, "", "constants");
+		_add_class_doc(registered_node_name, "", "constants");
 	} else if (path[0] == "custom") {
-		_add_class_doc(registerd_node_name, "", "custom");
+		_add_class_doc(registered_node_name, "", "custom");
 	} else if (path[0] == "data") {
-		_add_class_doc(registerd_node_name, "", "data");
+		_add_class_doc(registered_node_name, "", "data");
 	} else if (path[0] == "flow_control") {
-		_add_class_doc(registerd_node_name, "", "flow_control");
+		_add_class_doc(registered_node_name, "", "flow_control");
 	} else if (path[0] == "functions") {
 		if (path[1] == "built_in") {
-			_add_class_doc(registerd_node_name, "functions", "built_in");
+			_add_class_doc(registered_node_name, "functions", "built_in");
 		} else if (path[1] == "by_type") {
-			if (search_flags & SEARCH_CLASSES) {
-				_add_class_doc(registerd_node_name, path[2], "by_type_class");
-			}
+			// No action is required.
+			// Using function references from ClassDB to remove confusion for users.
 		} else if (path[1] == "constructors") {
-			if (search_flags & SEARCH_CLASSES) {
-				_add_class_doc(registerd_node_name, path[2].substr(0, path[2].find_char('(')), "constructors_class");
-			}
+			_add_class_doc(registered_node_name, "", "constructors");
 		} else if (path[1] == "deconstruct") {
-			_add_class_doc(registerd_node_name, "", "deconstruct");
+			_add_class_doc(registered_node_name, "", "deconstruct");
 		} else if (path[1] == "wait") {
-			_add_class_doc(registerd_node_name, "functions", "yield");
+			_add_class_doc(registered_node_name, "functions", "yield");
 		} else {
-			_add_class_doc(registerd_node_name, "functions", "");
+			_add_class_doc(registered_node_name, "functions", "");
 		}
 	} else if (path[0] == "index") {
-		_add_class_doc(registerd_node_name, "", "index");
+		_add_class_doc(registered_node_name, "", "index");
 	} else if (path[0] == "operators") {
 		if (path[1] == "bitwise") {
-			_add_class_doc(registerd_node_name, "operators", "bitwise");
+			_add_class_doc(registered_node_name, "operators", "bitwise");
 		} else if (path[1] == "compare") {
-			_add_class_doc(registerd_node_name, "operators", "compare");
+			_add_class_doc(registered_node_name, "operators", "compare");
 		} else if (path[1] == "logic") {
-			_add_class_doc(registerd_node_name, "operators", "logic");
+			_add_class_doc(registered_node_name, "operators", "logic");
 		} else if (path[1] == "math") {
-			_add_class_doc(registerd_node_name, "operators", "math");
+			_add_class_doc(registered_node_name, "operators", "math");
 		} else {
-			_add_class_doc(registerd_node_name, "operators", "");
+			_add_class_doc(registered_node_name, "operators", "");
 		}
 	}
 	return false;

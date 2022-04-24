@@ -34,10 +34,10 @@
 #include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/storage/canvas_texture_storage.h"
-#include "servers/rendering/storage/decal_atlas_storage.h"
+#include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 class RendererCanvasCull;
@@ -48,11 +48,11 @@ class RenderingServerGlobals {
 public:
 	static bool threaded;
 
-	static RendererCanvasTextureStorage *canvas_texture_storage;
+	static RendererLightStorage *light_storage;
 	static RendererMaterialStorage *material_storage;
 	static RendererMeshStorage *mesh_storage;
+	static RendererParticlesStorage *particles_storage;
 	static RendererTextureStorage *texture_storage;
-	static RendererDecalAtlasStorage *decal_atlas_storage;
 	static RendererStorage *storage;
 	static RendererCanvasRender *canvas_render;
 	static RendererCompositor *rasterizer;

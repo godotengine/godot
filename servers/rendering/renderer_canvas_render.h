@@ -32,6 +32,7 @@
 #define RENDERINGSERVERCANVASRENDER_H
 
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_storage.h"
 
 class RendererCanvasRender {
@@ -419,7 +420,7 @@ public:
 					case Item::Command::TYPE_PARTICLES: {
 						const Item::CommandParticles *particles_cmd = static_cast<const Item::CommandParticles *>(c);
 						if (particles_cmd->particles.is_valid()) {
-							AABB aabb = RendererStorage::base_singleton->particles_get_aabb(particles_cmd->particles);
+							AABB aabb = RendererRD::ParticlesStorage::get_singleton()->particles_get_aabb(particles_cmd->particles);
 							r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 						}
 

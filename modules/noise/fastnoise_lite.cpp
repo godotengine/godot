@@ -445,7 +445,7 @@ void FastNoiseLite::_bind_methods() {
 	ADD_GROUP("Fractal", "fractal_");
 	ClassDB::bind_method(D_METHOD("set_fractal_type", "type"), &FastNoiseLite::set_fractal_type);
 	ClassDB::bind_method(D_METHOD("get_fractal_type"), &FastNoiseLite::get_fractal_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_type", PROPERTY_HINT_ENUM, "None,FBM,Ridged,PingPong"), "set_fractal_type", "get_fractal_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_type", PROPERTY_HINT_ENUM, "None,FBM,Ridged,Ping-Pong"), "set_fractal_type", "get_fractal_type");
 
 	ClassDB::bind_method(D_METHOD("set_fractal_octaves", "octave_count"), &FastNoiseLite::set_fractal_octaves);
 	ClassDB::bind_method(D_METHOD("get_fractal_octaves"), &FastNoiseLite::get_fractal_octaves);
@@ -472,7 +472,7 @@ void FastNoiseLite::_bind_methods() {
 	ADD_GROUP("Cellular", "cellular_");
 	ClassDB::bind_method(D_METHOD("set_cellular_distance_function", "func"), &FastNoiseLite::set_cellular_distance_function);
 	ClassDB::bind_method(D_METHOD("get_cellular_distance_function"), &FastNoiseLite::get_cellular_distance_function);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_distance_function", PROPERTY_HINT_ENUM, "Euclidean,EuclideanSquared,Manhattan,Hybrid"), "set_cellular_distance_function", "get_cellular_distance_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_distance_function", PROPERTY_HINT_ENUM, "Euclidean,Euclidean Squared,Manhattan,Hybrid"), "set_cellular_distance_function", "get_cellular_distance_function");
 
 	ClassDB::bind_method(D_METHOD("set_cellular_jitter", "jitter"), &FastNoiseLite::set_cellular_jitter);
 	ClassDB::bind_method(D_METHOD("get_cellular_jitter"), &FastNoiseLite::get_cellular_jitter);
@@ -480,7 +480,7 @@ void FastNoiseLite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cellular_return_type", "ret"), &FastNoiseLite::set_cellular_return_type);
 	ClassDB::bind_method(D_METHOD("get_cellular_return_type"), &FastNoiseLite::get_cellular_return_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "CellValue,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "Cell Value,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
 
 	// Domain warp.
 
@@ -492,7 +492,7 @@ void FastNoiseLite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_type", "domain_warp_type"), &FastNoiseLite::set_domain_warp_type);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_type"), &FastNoiseLite::get_domain_warp_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,SimplexReduced,BasicGrid"), "set_domain_warp_type", "get_domain_warp_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Reduced,Basic Grid"), "set_domain_warp_type", "get_domain_warp_type");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_amplitude", "domain_warp_amplitude"), &FastNoiseLite::set_domain_warp_amplitude);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_amplitude"), &FastNoiseLite::get_domain_warp_amplitude);
