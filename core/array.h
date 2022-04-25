@@ -69,6 +69,7 @@ public:
 
 	void insert(int p_pos, const Variant &p_value);
 	void remove(int p_pos);
+	void fill(const Variant &p_value);
 
 	Variant front() const;
 	Variant back() const;
