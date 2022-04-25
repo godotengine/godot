@@ -247,6 +247,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.

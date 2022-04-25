@@ -35,6 +35,7 @@
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "core/string/translation.h"
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
@@ -4357,7 +4358,7 @@ String String::property_name_encode() const {
 }
 
 // Changes made to the set of invalid characters must also be reflected in the String documentation.
-const String String::invalid_node_name_characters = ". : @ / \"";
+const String String::invalid_node_name_characters = ". : @ / \" " UNIQUE_NODE_PREFIX;
 
 String String::validate_node_name() const {
 	Vector<String> chars = String::invalid_node_name_characters.split(" ");
