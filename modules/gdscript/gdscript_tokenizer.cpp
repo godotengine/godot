@@ -1493,7 +1493,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			}
 
 		default:
-			return make_error(vformat(R"(Unknown character "%s".")", String(&c, 1)));
+			return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
 	}
 }
 
