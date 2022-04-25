@@ -65,10 +65,6 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		} else {
 			Log.v(TAG, "Creating new Godot fragment instance.");
 			godotFragment = initGodotInstance();
-			if (godotFragment == null) {
-				throw new IllegalStateException("Godot instance must be non-null.");
-			}
-
 			getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
 		}
 	}
