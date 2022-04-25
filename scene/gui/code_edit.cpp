@@ -994,7 +994,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 			}
 
 			/* Make sure this is the last char, trailing whitespace or comments are okay. */
-			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, cc) == -1)) {
+			/* Increment column for comments because the delimiter (#) should be ignored. */
+			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, line_col + 1) == -1)) {
 				should_indent = false;
 			}
 		}
