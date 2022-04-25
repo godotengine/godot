@@ -991,6 +991,10 @@ void AnimationTree::_process_graph(double p_delta) {
 
 				real_t blend = (*as.track_blends)[blend_idx] * weight;
 
+				if (!a->track_is_enabled(i)) {
+					continue; // do nothing if the track is disabled
+				}
+
 				switch (ttype) {
 					case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
