@@ -25,7 +25,7 @@ check:
 # First number can be 0, second and third numbers are only present if non-zero.
 include-list:
 	@list=""; \
-	threshold=0.30; \
+	threshold=0.20; \
 	exclude_ctl="ar bn fa he hi ml si ta te ur"; \
 	for po in $(POFILES); do \
 	  lang=`basename $$po .po`; \
