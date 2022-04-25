@@ -134,8 +134,10 @@ int register_test_command(String p_command, TestFunc p_function);
 // Requires Message Queue and InputMap to be setup.
 // SEND_GUI_ACTION    - takes an object and a input map key. e.g SEND_GUI_ACTION(code_edit, "ui_text_newline").
 // SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, Key::A | KeyModifierMask::CMD).
-// SEND_GUI_MOUSE_EVENT - takes an object, position, mouse button and mouse mask e.g SEND_GUI_MOUSE_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE);
-// SEND_GUI_DOUBLE_CLICK - takes an object and a position. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50));
+// SEND_GUI_MOUSE_BUTTON_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
+// SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
+// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButton::MASK_LEFT, KeyModifierMask::CMD);
+// SEND_GUI_DOUBLE_CLICK - takes an object, position and modifiers. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50), KeyModifierMask::CMD);
 
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
 	{                                                                                                 \
@@ -143,7 +145,7 @@ int register_test_command(String p_command, TestFunc p_function);
 		const List<Ref<InputEvent>>::Element *first_event = events->front();                          \
 		Ref<InputEventKey> event = first_event->get();                                                \
 		event->set_pressed(true);                                                                     \
-		m_object->gui_input(event);                                                                   \
+		m_object->get_viewport()->push_input(event);                                                  \
 		MessageQueue::get_singleton()->flush();                                                       \
 	}
 
@@ -151,31 +153,64 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                        \
 		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
 		event->set_pressed(true);                                            \
-		m_object->gui_input(event);                                          \
+		m_object->get_viewport()->push_input(event);                         \
 		MessageQueue::get_singleton()->flush();                              \
 	}
 
-#define _CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask) \
-	Ref<InputEventMouseButton> event;                                   \
-	event.instantiate();                                                \
-	event->set_position(m_local_pos);                                   \
-	event->set_button_index(m_input);                                   \
-	event->set_button_mask(m_mask);                                     \
+#define _UPDATE_EVENT_MODIFERS(m_event, m_modifers)                                 \
+	m_event->set_shift_pressed(((m_modifers)&KeyModifierMask::SHIFT) != Key::NONE); \
+	m_event->set_alt_pressed(((m_modifers)&KeyModifierMask::ALT) != Key::NONE);     \
+	m_event->set_ctrl_pressed(((m_modifers)&KeyModifierMask::CTRL) != Key::NONE);   \
+	m_event->set_command_pressed(((m_modifers)&KeyModifierMask::CMD) != Key::NONE); \
+	m_event->set_meta_pressed(((m_modifers)&KeyModifierMask::META) != Key::NONE);
+
+#define _CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers) \
+	Ref<InputEventMouseButton> event;                                               \
+	event.instantiate();                                                            \
+	event->set_position(m_local_pos);                                               \
+	event->set_button_index(m_input);                                               \
+	event->set_button_mask(m_mask);                                                 \
+	event->set_factor(1);                                                           \
+	_UPDATE_EVENT_MODIFERS(event, m_modifers);                                      \
 	event->set_pressed(true);
 
-#define SEND_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask)     \
-	{                                                                    \
-		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask); \
-		m_object->get_viewport()->push_input(event);                     \
-		MessageQueue::get_singleton()->flush();                          \
+#define SEND_GUI_MOUSE_BUTTON_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers) \
+	{                                                                                   \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers);    \
+		m_object->get_viewport()->push_input(event);                                    \
+		MessageQueue::get_singleton()->flush();                                         \
 	}
 
-#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos)                                          \
-	{                                                                                         \
-		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, MouseButton::LEFT); \
-		event->set_double_click(true);                                                        \
-		m_object->get_viewport()->push_input(event);                                          \
-		MessageQueue::get_singleton()->flush();                                               \
+#define SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers) \
+	{                                                                                            \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers);             \
+		event->set_pressed(false);                                                               \
+		m_object->get_viewport()->push_input(event);                                             \
+		MessageQueue::get_singleton()->flush();                                                  \
+	}
+
+#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos, m_modifers)                                          \
+	{                                                                                                     \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, MouseButton::LEFT, m_modifers); \
+		event->set_double_click(true);                                                                    \
+		m_object->get_viewport()->push_input(event);                                                      \
+		MessageQueue::get_singleton()->flush();                                                           \
+	}
+
+// We toogle _print_error_enabled to prevent display server not supported warnings.
+#define SEND_GUI_MOUSE_MOTION_EVENT(m_object, m_local_pos, m_mask, m_modifers) \
+	{                                                                          \
+		bool errors_enabled = _print_error_enabled;                            \
+		_print_error_enabled = false;                                          \
+		Ref<InputEventMouseMotion> event;                                      \
+		event.instantiate();                                                   \
+		event->set_position(m_local_pos);                                      \
+		event->set_button_mask(m_mask);                                        \
+		event->set_relative(Vector2(10, 10));                                  \
+		_UPDATE_EVENT_MODIFERS(event, m_modifers);                             \
+		m_object->get_viewport()->push_input(event);                           \
+		MessageQueue::get_singleton()->flush();                                \
+		_print_error_enabled = errors_enabled;                                 \
 	}
 
 // Utility class / macros for testing signals
