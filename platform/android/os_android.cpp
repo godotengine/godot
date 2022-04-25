@@ -322,10 +322,11 @@ void OS_Android::main_loop_begin() {
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop)
 		return false;
+	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 
 	if (r_should_swap_buffers) {
-		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || _update_pending;
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || _update_pending || current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
 	}
 
 	return exit;
