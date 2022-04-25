@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-26 10:27+0000\n"
+"PO-Revision-Date: 2022-04-25 15:02+0000\n"
 "Last-Translator: IoeCmcomc <hopdaigia2004@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
@@ -34,30 +34,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Clipboard trống!"
+msgstr "Bảng tạm"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Cảnh Hiện tại"
+msgstr "Màn hình hiện tại"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Mã thoát"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Mở"
+msgstr "Sử dụng V-Sync"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -65,7 +62,7 @@ msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Làm mượt delta"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -77,65 +74,57 @@ msgid "Low Processor Usage Mode Sleep (µsec)"
 msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Keep Screen On"
-msgstr "Giữ Trình gỡ lỗi mở"
+msgstr "Giữ màn hình mở"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Kích cỡ viền:"
+msgstr "Cỡ cửa sổ tối thiểu"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Kích cỡ viền:"
+msgstr "Cỡ cửa sổ tối đa"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Screen Orientation"
-msgstr "Mở Hướng dẫn"
+msgstr "Hướng xoay màn hình"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
-msgstr "Cửa sổ mới"
+msgstr "Cửa sổ"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Borderless"
-msgstr "Điểm ảnh viền"
+msgstr "Tràn viền"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Bật độ trong suốt mỗi điểm ảnh"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Fullscreen"
-msgstr "Chế độ Toàn màn hình"
+msgstr "Toàn màn hình"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr ""
+msgstr "Đã cực đại hoá"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Minimized"
-msgstr "Khởi tạo"
+msgstr "Đã cực tiểu hoá"
 
 #: core/bind/core_bind.cpp main/main.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Đổi kích cỡ được"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
-#, fuzzy
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Position"
-msgstr "Vị trí Khung"
+msgstr "Vị trí"
 
 #: core/bind/core_bind.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/gdscript_editor.cpp modules/gridmap/grid_map.cpp
@@ -146,32 +135,28 @@ msgstr "Vị trí Khung"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Kích thước: "
+msgstr "Kích thước"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Editor Hint"
-msgstr "Trình chỉnh sửa"
+msgstr "Gợi ý của trình chỉnh sửa"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "In thông điệp lỗi"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "Nội suy"
+msgstr "Số lần lặp mỗi giây"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Target FPS"
-msgstr "Bề mặt mục tiêu:"
+msgstr "FPS mục tiêu:"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -188,23 +173,20 @@ msgid "Error"
 msgstr "Lỗi"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Lỗi Khi Lưu"
+msgstr "Xâu lỗi"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Lỗi Khi Lưu"
+msgstr "Dòng lỗi"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Result"
-msgstr "Kết quả tìm kiếm"
+msgstr "Kết quả"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Bộ nhớ"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -212,24 +194,23 @@ msgstr ""
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
+#: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Giới hạn"
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Command Queue"
-msgstr "Nút Command: Xoay"
+msgstr "Hàng chờ lệnh"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
-msgstr ""
+msgstr "Kích cỡ hàng chờ đa luồng (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
 msgstr "Hàm"
 
@@ -242,24 +223,22 @@ msgstr "Hàm"
 #: scene/resources/concave_polygon_shape.cpp scene/resources/curve.cpp
 #: scene/resources/polygon_path_finder.cpp scene/resources/texture.cpp
 msgid "Data"
-msgstr ""
+msgstr "Dữ liệu"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
+#: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 msgid "Network"
-msgstr "Xuất hồ sơ"
+msgstr "Mạng"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Xóa"
+msgstr "Hệ thống tệp từ xa"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Trang: "
+msgstr "Cỡ trang"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -270,7 +249,6 @@ msgid "Blocking Mode Enabled"
 msgstr ""
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
 msgstr "Kết nối"
 
@@ -280,16 +258,15 @@ msgstr ""
 
 #: core/io/marshalls.cpp
 msgid "Object ID"
-msgstr ""
+msgstr "ID đối tượng"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "Xem Khung hình Liên tiếp"
+msgstr "Cho phép giải mã đối tượng"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Từ chối những kết nối mạng mới"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 #, fuzzy
@@ -297,19 +274,16 @@ msgid "Network Peer"
 msgstr "Xuất hồ sơ"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Tên nút gốc"
+msgstr "Nút gốc"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Kết nối"
+msgstr "Từ chối kết nối mới"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Transfer Mode"
-msgstr "Kiểu biến đổi"
+msgstr "Chế độ truyền"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
@@ -333,7 +307,7 @@ msgstr ""
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Mảng dữ liệu"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
@@ -391,20 +365,19 @@ msgstr "Khi gọi đến '%s':"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Số nguồn"
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
 msgstr "Trạng thái"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Hàng chờ thông điệp"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Kích cỡ tối đa (KB)"
 
 #: core/os/input.cpp editor/editor_help.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -416,28 +389,26 @@ msgstr ""
 #: modules/mono/csharp_script.cpp scene/animation/animation_player.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp scene/main/node.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Text Editor"
-msgstr "Mở trình chỉnh sửa"
+msgstr "Trình soạn thảo"
 
 #: core/os/input.cpp editor/editor_settings.cpp
 #: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript.cpp
 #: modules/gdscript/gdscript_editor.cpp
 #: modules/gdscript/language_server/gdscript_text_document.cpp
 #: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
-#, fuzzy
+#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
+#: scene/resources/material.cpp
 msgid "Completion"
-msgstr "Sao chép lựa chọn"
+msgstr "Tự hoàn thành"
 
 #: core/os/input.cpp editor/editor_settings.cpp
 #: editor/plugins/script_text_editor.cpp modules/gdscript/gdscript_editor.cpp
 #: modules/gdscript/language_server/gdscript_text_document.cpp
 #: scene/animation/animation_player.cpp scene/gui/control.cpp
 #: scene/main/node.cpp scene/resources/material.cpp
-#, fuzzy
 msgid "Use Single Quotes"
-msgstr "Tạo Ô mới"
+msgstr "Dùng dấu nháy đơn"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -445,46 +416,42 @@ msgid "Device"
 msgstr "Thiết bị"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Tất cả"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Control"
-msgstr "Theo dõi phiên bản"
+msgstr "Control"
 
 #: core/os/input_event.cpp
 msgid "Meta"
-msgstr ""
+msgstr "Meta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Command"
-msgstr "Cộng đồng"
+msgstr "Command"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
-#, fuzzy
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Pressed"
-msgstr "Cài sẵn"
+msgstr "Được ấn"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Quét"
+msgstr "Mã quét"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
-msgstr ""
+msgstr "Mã quét vật lí"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -496,45 +463,40 @@ msgid "Button Mask"
 msgstr "Button (nút, phím)"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Hằng số"
+msgstr "Vị trí toàn cục"
 
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Factor"
-msgstr "Véc tơ"
+msgstr "Nhân tố"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Thụt lề Tự động"
+msgstr "Chỉ số của phím"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Nháy đúp"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Cài sẵn"
+msgstr "Áp lực"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Dính tương đối"
+msgstr "Tương đối"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Tốc độ:"
+msgstr "Tốc độ"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -542,40 +504,35 @@ msgid "Axis"
 msgstr "Trục"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "(giá trị)"
+msgstr "Giá trị trục"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Chỉ mục:"
+msgstr "Chỉ mục"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/touch_screen_button.cpp
-#, fuzzy
 msgid "Action"
-msgstr "Chọn tất cả"
+msgstr "Hành động"
 
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Độ mạnh"
 
 #: core/os/input_event.cpp
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Đổi"
+msgstr "Kênh"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Đổi"
+msgstr "Thông điệp"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -585,9 +542,8 @@ msgstr "Tỷ lệ:"
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Velocity"
-msgstr "Khởi tạo"
+msgstr "Vận tốc"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
@@ -605,19 +561,16 @@ msgstr ""
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Chọn tất cả"
+msgstr "Ứng dụng"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Cài đặt Dính"
+msgstr "Cấu hình"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Cài đặt Dự Án..."
+msgstr "Ghi đè thiết đặt dự án"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
@@ -634,7 +587,7 @@ msgstr "Tên"
 #: modules/visual_script/visual_script_nodes.cpp platform/uwp/export/export.cpp
 #: platform/windows/export/export.cpp
 msgid "Description"
-msgstr "Nội dung"
+msgstr "Mô tả"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
@@ -648,14 +601,12 @@ msgid "Main Scene"
 msgstr "Cảnh chính"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stdout"
-msgstr "Tắt"
+msgstr "Tắt stdout"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stderr"
-msgstr "Các mục tắt"
+msgstr "Tắt stderr"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
@@ -697,7 +648,7 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Đường dẫn tìm kiếm bản mẫu kịch bản"
 
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -706,32 +657,28 @@ msgstr "Theo dõi phiên bản"
 
 #: core/project_settings.cpp
 msgid "Autoload On Startup"
-msgstr ""
+msgstr "Tự nạp khi khởi động"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Plugin Name"
-msgstr "Tên Tiện ích:"
+msgstr "Tên trình cắm"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Thêm Input"
+msgstr "Đầu vào"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "UI Chấp nhận"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Chọn"
+msgstr "UI Lựa chọn"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "Huỷ bỏ"
+msgstr "UI Huỷ"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -744,23 +691,20 @@ msgid "UI Focus Prev"
 msgstr "Đường dẫn Tập trung"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "Góc trên trái"
+msgstr "UI Trái"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "Góc trên phải"
+msgstr "UI Phải"
 
 #: core/project_settings.cpp
 msgid "UI Up"
-msgstr ""
+msgstr "UI Lên"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Xuống"
+msgstr "UI Xuống"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -787,9 +731,8 @@ msgstr "Ở cuối"
 #: servers/physics/space_sw.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp
-#, fuzzy
 msgid "Physics"
-msgstr "Khung hình Vật lý %"
+msgstr "Vật lí"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/plugins/spatial_editor_plugin.cpp main/main.cpp
@@ -797,7 +740,7 @@ msgstr "Khung hình Vật lý %"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 msgid "Smooth Trimesh Collision"
@@ -812,9 +755,8 @@ msgstr ""
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "Trình kết xuất hình ảnh:"
+msgstr "Kết xuất"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -824,14 +766,13 @@ msgstr "Trình kết xuất hình ảnh:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Chất lượng"
 
 #: core/project_settings.cpp scene/animation/animation_tree.cpp
 #: scene/gui/file_dialog.cpp scene/main/scene_tree.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "Lọc:"
+msgstr "Bộ lọc"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
@@ -851,14 +792,13 @@ msgstr "Gỡ lỗi"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "Cài đặt:"
+msgstr "Thiết đặt"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Profiler"
-msgstr ""
+msgstr "Bộ phân tích hiệu suất"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -866,12 +806,10 @@ msgid "Max Functions"
 msgstr "Tạo Hàm"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "Đặt phép diễn đạt"
+msgstr "Nén"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Formats"
 msgstr "Định dạng"
 
@@ -885,7 +823,7 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Cấp độ nén"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
@@ -893,11 +831,11 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "G"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
@@ -905,7 +843,7 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Mô đun"
 
 #: core/register_core_types.cpp
 msgid "TCP"
@@ -929,9 +867,8 @@ msgid "SSL"
 msgstr ""
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Đỉnh"
+msgstr "Chứng chỉ"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -940,9 +877,8 @@ msgid "Resource"
 msgstr "Tài nguyên"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "Đóng Cảnh"
+msgstr "Cục bộ sang cảnh"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -952,23 +888,20 @@ msgid "Path"
 msgstr "Đường dẫn"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "Nguồn"
+msgstr "Mã nguồn"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Messages"
-msgstr "Đổi"
+msgstr "Thông điệp"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr "Vùng vị trí"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
-msgstr "Kiểm tra"
+msgstr "Kiểm thử"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
@@ -1008,7 +941,7 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "Bộ đệm"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1031,15 +964,13 @@ msgstr ""
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Snapping"
-msgstr "Dính thông minh"
+msgstr "Dính"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Use GPU Pixel Snap"
-msgstr "Dính điểm ảnh"
+msgstr "Sử dụng dính điểm ảnh CPU"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -1049,7 +980,7 @@ msgstr ""
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Lightmapping"
-msgstr ""
+msgstr "Ánh xạ ánh sáng"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
@@ -1086,9 +1017,8 @@ msgstr ""
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
 #: scene/main/canvas_layer.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Tỷ lệ:"
+msgstr "Tỷ lệ"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Follow Surface"
@@ -1104,7 +1034,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Chất lượng cao"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1241,11 +1171,11 @@ msgstr "Độ dài hoạt ảnh (giây)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr "Thêm Track Animation"
+msgstr "Thêm rãnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Vòng Lặp Hoạt Ảnh"
+msgstr "Lặp hoạt hình"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -1372,7 +1302,6 @@ msgstr "Xóa Anim Track"
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Editors"
 msgstr "Trình chỉnh sửa"
 
@@ -1384,12 +1313,11 @@ msgstr "Trình chỉnh sửa"
 #: scene/animation/animation_blend_tree.cpp
 #: scene/resources/particles_material.cpp
 msgid "Animation"
-msgstr "Hoạt ảnh"
+msgstr "Hoạt hình"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Confirm Insert Track"
-msgstr "Chèn Track & Key Anim"
+msgstr "Xác nhận chèn rãnh"
 
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
@@ -1424,9 +1352,8 @@ msgstr "nút '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Hoạt ảnh"
+msgstr "hoạt hình"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -1434,9 +1361,8 @@ msgstr "AnimationPlayer không thể tự tạo hoạt ảnh, phải nhờ các 
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Thuộc tính '%s' không tồn tại."
+msgstr "thuộc tính '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -1628,7 +1554,7 @@ msgstr "Chỉnh sửa"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "Thuộc tính hoạt cảnh."
+msgstr "Thuộc tính hoạt hình."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
@@ -1669,11 +1595,11 @@ msgstr "Áp dụng đặt lại"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr "Tối ưu Hoạt ảnh"
+msgstr "Tối ưu hoá hoạt hình"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Dọn dẹp Hoạt ảnh"
+msgstr "Dọn dẹp hoạt hình"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
@@ -1690,7 +1616,7 @@ msgstr "Dán Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Tối ưu hóa Animation"
+msgstr "Bộ tối ưu hóa hoạt hình"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -1821,7 +1747,7 @@ msgstr "Chuẩn"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr "Hiện/Ẩn bảng Tệp lệnh"
+msgstr "Hiện/Ẩn bảng tập lệnh"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1871,7 +1797,7 @@ msgstr "Kết nối đến Nút:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Script:"
-msgstr "Kết nối Tệp lệnh:"
+msgstr "Kết nối Tập lệnh:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
@@ -1879,10 +1805,12 @@ msgstr "Từ tín hiệu:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr "Cảnh không chứa tệp lệnh."
+msgstr "Cảnh không chứa tập lệnh nào cả."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
-#: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/groups_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
 msgstr "Thêm"
@@ -1947,6 +1875,7 @@ msgstr "Không thể kết nối tín hiệu"
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Close"
 msgstr "Đóng"
 
@@ -2232,10 +2161,9 @@ msgstr "Phát triển chính"
 
 #. TRANSLATORS: This refers to a job title.
 #: editor/editor_about.cpp
-#, fuzzy
 msgctxt "Job Title"
 msgid "Project Manager"
-msgstr "Trình quản lý Dự án"
+msgstr "Quán lí dự án"
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -2319,9 +2247,8 @@ msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Lỗi mở gói (không phải dạng ZIP)."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
-msgstr "%s (Đã tồn tại)"
+msgstr "%s (đã tồn tại)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
@@ -2361,7 +2288,7 @@ msgstr "Cài đặt"
 #: editor/editor_asset_installer.cpp
 #, fuzzy
 msgid "Asset Installer"
-msgstr "Gói cài đặt"
+msgstr "Trình cài"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -2542,7 +2469,7 @@ msgstr "Tên không hợp lệ."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Không được bắt đầu bằng một chữ số."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2574,7 +2501,7 @@ msgstr "Đổi tên Nạp tự động"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr ""
+msgstr "Bật tắt các AutoLoad toàn cục"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -2602,13 +2529,13 @@ msgid "Can't add autoload:"
 msgstr "Không thể thêm nạp tự động:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "Tệp không tồn tại."
+msgstr "Đường dẫn %s không hợp lệ. Tệp không tồn tại."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr ""
+"Đường dẫn %s không hợp lệ. Không nằm trong đường dẫn tài nguyên (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2692,7 +2619,7 @@ msgstr "Lưu trữ tệp tin:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr "Không thấy mẫu xuất nào ở đường dẫn mong đợi:"
+msgstr "Không thấy bản mẫu xuất nào ở đường dẫn mong đợi:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -2755,9 +2682,8 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom Template"
-msgstr "Chỉnh Tông màu"
+msgstr "Bản mẫu tuỳ chỉnh"
 
 #: editor/editor_export.cpp editor/project_export.cpp
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
@@ -2767,22 +2693,20 @@ msgid "Release"
 msgstr "Phát hành"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Binary Format"
-msgstr "Đổi Transform Animation"
+msgstr "Định dạng nhị phân"
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 bit"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
-msgstr ""
+msgstr "PCK nhúng"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Texture Format"
-msgstr "TextureRegion"
+msgstr "Định dạng hình kết cấu"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
@@ -2808,17 +2732,17 @@ msgstr ""
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr "Không tìm thấy mẫu gỡ lỗi tuỳ chỉnh."
+msgstr "Không tìm thấy bản mẫu gỡ lỗi tuỳ chỉnh."
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "Không tìm thấy mẫu phát hành tùy chỉnh."
+msgstr "Không tìm thấy bản mẫu phát hành tùy chỉnh."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
-msgstr "Không tìm thấy tệp tin mẫu:"
+msgstr "Không tìm thấy tệp bản mẫu:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -2826,7 +2750,7 @@ msgstr "Ở các bản xuất 32-bit thì PCK được nhúng vào không thể 
 
 #: editor/editor_export.cpp
 msgid "Convert Text Resources To Binary On Export"
-msgstr ""
+msgstr "Chuyển đổi các tài nguyên văn bản sang nhị phân khi xuất"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -2834,7 +2758,7 @@ msgstr "Trình chỉnh sửa 3D"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
-msgstr "Trình viết mã lệnh"
+msgstr "Trình soạn tập lệnh"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2859,11 +2783,11 @@ msgstr "Khung Nhập"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Cho phép xem và sửa các cảnh 3D."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
-msgstr ""
+msgstr "Cho phép sửa các tập lệnh bằng trình soạn tập lệnh được tích hợp sẵn."
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
@@ -2890,9 +2814,8 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
-msgstr "(Hiện tại)"
+msgstr "(hiện tại)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
@@ -2957,7 +2880,6 @@ msgid "Error saving profile to path: '%s'."
 msgstr "Lỗi khi lưu hồ sơ đến đường dẫn: '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
 msgstr "Đặt lại thành mặc định"
 
@@ -2984,6 +2906,7 @@ msgstr "Đặt làm hiện tại"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "Import"
 msgstr "Nhập"
 
@@ -3101,14 +3024,12 @@ msgid "Save a File"
 msgstr "Lưu thành tệp tin"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Access"
-msgstr "Thành công!"
+msgstr "Truy cập"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Mode"
-msgstr "Chế độ chơi:"
+msgstr "Chế độ hiển thị"
 
 #: editor/editor_file_dialog.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -3121,34 +3042,29 @@ msgstr "Chế độ chơi:"
 #: scene/gui/control.cpp scene/gui/file_dialog.cpp
 #: scene/resources/environment.cpp scene/resources/material.cpp
 #: servers/audio/effects/audio_effect_distortion.cpp
-#, fuzzy
 msgid "Mode"
-msgstr "Chế độ Xoay"
+msgstr "Chế đ"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current Dir"
-msgstr "Hiện tại:"
+msgstr "Thư mục hiện tại"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current File"
-msgstr "Hồ sơ hiện tại:"
+msgstr "Tệp hiện tại"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current Path"
-msgstr "Hiện tại:"
+msgstr "Đường dẫn hiện tại"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Show Hidden Files"
-msgstr "Bật tắt File ẩn"
+msgstr "Hiện các tệp ẩn"
 
 #: editor/editor_file_dialog.cpp
 msgid "Disable Overwrite Warning"
-msgstr ""
+msgstr "Tắt cảnh báo ghi đè"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -3251,7 +3167,7 @@ msgstr "Nhập lại tài nguyên"
 
 #: editor/editor_file_system.cpp
 msgid "Reimport Missing Imported Files"
-msgstr ""
+msgstr "Nhập lại các tệp đã được nhập bị thiếu"
 
 #: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
@@ -3281,9 +3197,8 @@ msgid "Properties"
 msgstr "Thuộc tính"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "overrides %s:"
-msgstr "Ghi đè:"
+msgstr "ghi đè %s:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -3296,7 +3211,6 @@ msgstr "Thuộc tính Chủ đề"
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/gradient.cpp
-#, fuzzy
 msgid "Colors"
 msgstr "Màu"
 
@@ -3305,20 +3219,17 @@ msgid "Constants"
 msgstr "Hằng"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Fonts"
 msgstr "Phông chữ"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Icons"
 msgstr "Biểu tượng"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "Kiểu"
+msgstr "Kiểu dáng"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -3326,7 +3237,7 @@ msgstr "Liệt kê"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Nội dung Thuộc tính"
+msgstr "Mô tả huộc tính"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -3359,7 +3270,7 @@ msgstr "Trợ giúp"
 
 #: editor/editor_help.cpp
 msgid "Sort Functions Alphabetically"
-msgstr ""
+msgstr "Sắp xếp các hàm theo bảng chữ cái"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -3439,24 +3350,21 @@ msgid "Property:"
 msgstr "Thuộc tính:"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Label"
-msgstr "Giá trị"
+msgstr "Nhãn"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
-#, fuzzy
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Read Only"
-msgstr "Chỉ tìm phương thức"
+msgstr "Chỉ đọc"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Checkable"
-msgstr "Đánh dấu mục"
+msgstr "Tích được"
 
-#: editor/editor_inspector.cpp
-#, fuzzy
+#: editor/editor_inspector.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Checked"
-msgstr "Mục đã đánh dấu"
+msgstr "Đã được tích"
 
 #: editor/editor_inspector.cpp
 #, fuzzy
@@ -3469,14 +3377,13 @@ msgid "Keying"
 msgstr "Chạy"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "(giá trị)"
+msgstr "Ghim giá trị"
 
 #: editor/editor_inspector.cpp
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
-msgstr ""
+msgstr "Ghim giá trị khiến nó phải được lưu dù nó bằng giá trị mặc định."
 
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
@@ -3497,26 +3404,23 @@ msgstr "Gán nhiều:"
 
 #: editor/editor_inspector.cpp
 msgid "Pinned %s"
-msgstr ""
+msgstr "Đã ghim %s"
 
 #: editor/editor_inspector.cpp
 msgid "Unpinned %s"
-msgstr ""
+msgstr "Đã bỏ ghim %s"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property"
-msgstr "Thuộc tính"
+msgstr "Sao chép thuộc tính"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Paste Property"
-msgstr "Thuộc tính"
+msgstr "Dán thuộc tính"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property Path"
-msgstr "Sao chép đường dẫn tệp lệnh"
+msgstr "Sao chép đường dẫn thuộc tính"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3532,7 +3436,7 @@ msgstr "Sao chép lựa chọn"
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: scene/gui/text_edit.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Clear"
 msgstr "Xoá"
 
@@ -3563,7 +3467,7 @@ msgid "Up"
 msgstr "Lên"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
-#: scene/main/node.cpp
+#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Node"
 msgstr "Nút"
 
@@ -3586,6 +3490,10 @@ msgstr "RSET đi"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Cửa sổ mới"
+
+#: editor/editor_node.cpp editor/project_manager.cpp
+msgid "Unnamed Project"
+msgstr "Dự án không tên"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3689,9 +3597,8 @@ msgstr ""
 "mãn."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Không thể bắt đầu quá trình phụ!"
+msgstr "Không thể lưu thêm một hay nhiều cảnh nữa!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -3818,17 +3725,15 @@ msgstr "Mở Nhanh Cảnh..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Mở Nhanh Tệp lệnh..."
+msgstr "Mở Nhanh Tập lệnh..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Reload"
-msgstr "Lưu & Khởi động lại"
+msgstr "Lưu & tải lại"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to '%s' before reloading?"
-msgstr "Lưu thay đổi vào '%s' trước khi đóng?"
+msgstr "Lưu thay đổi vào '%s' trước khi tải lại không?"
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -3840,7 +3745,7 @@ msgstr "Lưu thay đổi vào '%s' trước khi đóng?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s không còn tồn tại nữa! Hãy chỉ rõ vị trí lưu mới."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3889,12 +3794,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Không có gì để hoàn tác."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Hoàn tác"
+msgstr "Hoàn tác: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
@@ -3902,12 +3806,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Không có gì để làm lại."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Làm lại"
+msgstr "Làm lại: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3946,9 +3849,8 @@ msgid "Open Project Manager?"
 msgstr "Mở Quản lý Dự án?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to the following scene(s) before reloading?"
-msgstr "Lưu thay đổi trong các scene sau trước khi thoát?"
+msgstr "Lưu thay đổi trong các cảnh sau trước khi thoát không?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -3989,34 +3891,34 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Không thể tìm trường tập lệnh của plugin addon tại: '%s'."
+msgstr "Không thể tìm trường tập lệnh của trình cắm bổ trợ tại: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Không thể tải tệp addon từ đường dẫn: '%s'."
+msgstr "Không thể nạp tập lệnh bổ trợ từ đường dẫn: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Không thể nạp tệp lệnh bổ trợ từ đường dẫn: '%s' Có vẻ có lỗi trong mã, hãy "
-"kiểm tra lại cú pháp."
+"Không thể nạp tập lệnh bổ trợ từ đường dẫn: '%s'. Có vẻ có lỗi trong tập "
+"lệnh đó.\n"
+"Vô hiệu hoá phần bổ trợ tại '%s' để ngăn những lỗi về sau."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"Không thể tải tập lệnh addon từ đường dẫn: '%s' Kiểu gốc không phải "
+"Không thể tải tập lệnh bổ trợ từ đường dẫn: '%s' Kiểu cơ sở không phải "
 "EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"Không thể tải script addon từ đường dẫn: '%s' Script không ở trong \"trạng "
-"thái công cụ\"."
+"Không thể tải tập lệnh bổ trợ từ đường dẫn: '%s' Tập lệnh không ở trong chế "
+"độ công cụ."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4143,19 +4045,16 @@ msgstr "Đường dẫn Cảnh:"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
-#, fuzzy
 msgid "Interface"
-msgstr "Giao diện người dùng"
+msgstr "Giao diễn"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Scene Tabs"
-msgstr "Chuyển Cửa sổ cảnh"
+msgstr "Thẻ cảnh"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Always Show Close Button"
-msgstr "Luôn hiện lưới"
+msgstr "Luôn hiện nút đóng"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Resize If Many Tabs"
@@ -4163,7 +4062,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Minimum Width"
-msgstr ""
+msgstr "Chiều rộng tối thiểu"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Output"
@@ -4183,14 +4082,12 @@ msgid "Always Close Output On Stop"
 msgstr ""
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Auto Save"
-msgstr "Không Lưu"
+msgstr "Tự động lưu"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Before Running"
-msgstr "Lưu cảnh trước khi chạy..."
+msgstr "Lưu trược khi chạy"
 
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
@@ -4202,9 +4099,8 @@ msgid "Save Each Scene On Quit"
 msgstr "Lưu Nhánh thành Cảnh"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Quit Confirmation"
-msgstr "Xem thông tin"
+msgstr "Xác nhân thoát"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4221,9 +4117,8 @@ msgid "Update Vital Only"
 msgstr "Đối số đã thay đổi"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Localize Settings"
-msgstr "Bản địa hoá"
+msgstr "Thiết đặt địa phương hoá"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4248,9 +4143,8 @@ msgid "Default Float Step"
 msgstr ""
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
-#, fuzzy
 msgid "Disable Folding"
-msgstr "Tắt"
+msgstr "Tắt gập"
 
 #: editor/editor_node.cpp
 msgid "Auto Unfold Foreign Scenes"
@@ -4279,17 +4173,16 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Username"
-msgstr "Đổi tên"
+msgstr "Tên người dùng"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
-msgstr ""
+msgstr "Đường dẫn khoá SSH công khai"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Private Key Path"
-msgstr ""
+msgstr "Đường dẫn khoá SSH riêng tư"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
@@ -4513,7 +4406,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Script Changes"
-msgstr "Đồng bộ hóa thay đổi trong Tệp lệnh"
+msgstr "Đồng bộ hóa thay đổi trong tập lệnh"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4562,12 +4455,11 @@ msgstr "Quản lý tính năng trình chỉnh sửa..."
 
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
-msgstr "Quản lý Các Mẫu Xuất Bản ..."
+msgstr "Quản lí các bản mẫu xuất..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Online Documentation"
-msgstr "Mở Hướng dẫn"
+msgstr "Tài liệu trực tuyến"
 
 #: editor/editor_node.cpp
 msgid "Questions & Answers"
@@ -4579,7 +4471,7 @@ msgstr "Báo lỗi"
 
 #: editor/editor_node.cpp
 msgid "Suggest a Feature"
-msgstr ""
+msgstr "Gợi ý một tính năng"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -4595,7 +4487,7 @@ msgstr "Về Godot"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Hỗ trợ phát triển Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4644,14 +4536,12 @@ msgid "Save & Restart"
 msgstr "Lưu & Khởi động lại"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "Cập nhật khi có thay đổi"
+msgstr "Cập nhật tất cả thay đổi"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Vital Changes"
-msgstr "Đối số đã thay đổi"
+msgstr "Cập nhật thay đổi quan trọng"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -4671,21 +4561,19 @@ msgstr "Không Lưu"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr ""
-"Mẫu xuất bản cho Android bị thiếu, vui lòng cài các mẫu xuất bản liên quan."
+msgstr "Bản mẫu dựng cho Android bị thiếu, vui lòng cài các bản mẫu liên quan."
 
 #: editor/editor_node.cpp
 msgid "Manage Templates"
-msgstr "Quản lý Mẫu xuất bản"
+msgstr "Quản lý bản mẫu"
 
 #: editor/editor_node.cpp
 msgid "Install from file"
 msgstr "Cài đặt từ tệp"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select android sources file"
-msgstr "Chọn một lưới nguồn:"
+msgstr "Chọn tệp nguòn android"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4698,11 +4586,12 @@ msgid ""
 "preset."
 msgstr ""
 "Việc này sẽ thiết lập dự án của bạn cho các bản dựng Android tùy chỉnh bằng "
-"cách cài đặt nguồn mẫu thành \"res://android/build\".\n"
-"Bạn có thể áp dụng các sửa đổi và xây dựng APK tùy chỉnh khi xuất (thêm các "
-"mô-đun, thay đổi AndroidManifest.xml, ...).\n"
-"Lưu ý rằng để tạo các bản dựng tùy chỉnh, tùy chọn \"Sử dụng Bản dựng Tùy "
-"chỉnh\" phải được BẬT trong Cài đặt xuất Android."
+"cách cài đặt bản mẫu nguồn vào \"res://android/build\".\n"
+"Bạn có thể áp dụng các sửa đổi và dựng tệp APK tùy chỉnh khi xuất (thêm các "
+"mô đun, thay đổi AndroidManifest.xml, v.v.).\n"
+"Lưu ý rằng để tạo các bản dựng tùy chỉnh thay cho tệp APK dựng sẵn, tùy chọn "
+"\"Sử dụng bản dựng tùy chỉnh\" phải được bật trong thiết lập sẵn xuất sang "
+"Android."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4711,17 +4600,17 @@ msgid ""
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"Mẫu bản dựng cho Android đã được cài đặt trong dự án này sẽ không bị ghi "
+"Bản mẫu dựng cho Android đã được cài đặt trong dự án này và sẽ không bị ghi "
 "đè.\n"
 "Xóa thủ công thư mục \"res://android/build\" trước khi thử lại thao tác này."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "Nạp các mẫu xuất bản bằng tệp ZIP"
+msgstr "Nhập bản mẫu từ tệp ZIP"
 
 #: editor/editor_node.cpp
 msgid "Template Package"
-msgstr "Gói Ví Dụ"
+msgstr "Gói bản mẫu"
 
 #: editor/editor_node.cpp modules/gltf/editor_scene_exporter_gltf_plugin.cpp
 msgid "Export Library"
@@ -4738,7 +4627,7 @@ msgstr "Đổi Transform Animation"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr "Mở & Chạy mã lệnh"
+msgstr "Mở & chạy tập lệnh"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4750,6 +4639,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Reload"
 msgstr "Tải lại"
 
@@ -4786,7 +4676,7 @@ msgstr "Mở trình chỉnh sửa 3D"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr "Mở trình chỉnh sửa tập lệnh"
+msgstr "Mở trình soạn tập lệnh"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
@@ -4809,9 +4699,8 @@ msgid "No sub-resources found."
 msgstr "Không tìm thấy tài nguyên phụ."
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "Open a list of sub-resources."
-msgstr "Không tìm thấy tài nguyên phụ."
+msgstr "Mở danh sách các tài nguyên con."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -4823,7 +4712,7 @@ msgstr "Ảnh thu nhỏ..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Main Script:"
-msgstr "Mã lệnh chính:"
+msgstr "Tập lệnhchính:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -4845,7 +4734,6 @@ msgid "Version"
 msgstr "Phiên bản"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Author"
 msgstr "Tác giả"
 
@@ -4925,6 +4813,7 @@ msgid "Edit Text:"
 msgstr "Sửa văn bản:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "On"
 msgstr "Bật"
 
@@ -5009,7 +4898,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Nạp nhanh"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -5030,9 +4919,8 @@ msgid "Paste"
 msgstr "Dán"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Convert to %s"
-msgstr "Chuyển thành %s"
+msgstr "Chuyển đổi thành %s"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -5043,9 +4931,8 @@ msgstr "%s mới"
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "Thay đổi loại cơ sở"
+msgstr "loại cơ sở"
 
 #: editor/editor_resource_picker.cpp
 #, fuzzy
@@ -5054,22 +4941,20 @@ msgstr "Thêm tài nguyên"
 
 #: editor/editor_resource_picker.cpp scene/gui/line_edit.cpp
 #: scene/gui/slider.cpp scene/gui/spin_box.cpp
-#, fuzzy
 msgid "Editable"
-msgstr "Mục có thể chỉnh sửa"
+msgstr "Sửa được"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "New Script"
-msgstr "Mã lệnh mới"
+msgstr "Tập lệnh mới"
 
 #: editor/editor_resource_picker.cpp editor/scene_tree_dock.cpp
 msgid "Extend Script"
-msgstr "Mở rộng Script"
+msgstr "Mở rộng tập lệnh"
 
 #: editor/editor_resource_picker.cpp
-#, fuzzy
 msgid "Script Owner"
-msgstr "Tên Mã lệnh:"
+msgstr "Chủ tập lệnh:"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5096,55 +4981,51 @@ msgstr "Bạn quên từ khóa 'tool' à?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr "Không thể chạy tệp lệnh:"
+msgstr "Không thể chạy tập lệnh:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Bạn quên phương thức '_run' à?"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Editor Language"
-msgstr "Cài đặt Bố cục"
+msgstr "Ngôn ngữ trình chỉnh sửa"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Scale"
-msgstr "Hiển thị tất cả"
+msgstr "Tỉ lệ hiển thị"
 
 #: editor/editor_settings.cpp
 msgid "Custom Display Scale"
-msgstr ""
+msgstr "Tỉ lệ hiển thị tuỳ chỉnh"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Size"
-msgstr ""
+msgstr "Cỡ phông chính"
 
 #: editor/editor_settings.cpp
 msgid "Code Font Size"
-msgstr ""
+msgstr "Cỡ phông mã"
 
 #: editor/editor_settings.cpp
 msgid "Font Antialiased"
-msgstr ""
+msgstr "Khử rằng cưa cho phông"
 
 #: editor/editor_settings.cpp
 msgid "Font Hinting"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Main Font"
-msgstr "Cảnh chính"
+msgstr "Phông chính"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Bold"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Code Font"
-msgstr "Thêm điểm Nút"
+msgstr "Phông mã"
 
 #: editor/editor_settings.cpp
 msgid "Dim Editor On Dialog Popup"
@@ -5187,18 +5068,16 @@ msgid "Icon And Font Color"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Base Color"
-msgstr "Màu"
+msgstr "Màu cơ sở"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Accent Color"
-msgstr "Chọn màu"
+msgstr "Màu đặc trưng"
 
 #: editor/editor_settings.cpp scene/resources/environment.cpp
 msgid "Contrast"
-msgstr ""
+msgstr "Tương phản"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
@@ -5206,26 +5085,23 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Highlight Tabs"
-msgstr ""
+msgstr "Tô sáng tab"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Border Size"
-msgstr "Điểm ảnh viền"
+msgstr "Cỡ viền"
 
 #: editor/editor_settings.cpp
 msgid "Use Graph Node Headers"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Additional Spacing"
-msgstr "Vòng Lặp Hoạt Ảnh"
+msgstr "Khoảng cách bổ sung"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Custom Theme"
-msgstr "Chỉnh Tông màu"
+msgstr "Chủ đề tuỳ chỉnh"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5233,14 +5109,13 @@ msgid "Show Script Button"
 msgstr "Phím Lăn Phải"
 
 #: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
-#, fuzzy
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "Filesystem"
-msgstr "Hệ thống tệp tin"
+msgstr "Hệ thống tập tin"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Directories"
-msgstr "Hướng đi"
+msgstr "Thư mục"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5248,9 +5123,8 @@ msgid "Autoscan Project Path"
 msgstr "Đường dẫn Dự án:"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default Project Path"
-msgstr "Đường dẫn Dự án:"
+msgstr "Đường dẫn dự án mặc định:"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5258,9 +5132,8 @@ msgid "On Save"
 msgstr "Lưu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Compress Binary Resources"
-msgstr "Sao chép Tài nguyên"
+msgstr "Nén tài nguyên nhị phân"
 
 #: editor/editor_settings.cpp
 msgid "Safe Save On Backup Then Rename"
@@ -5268,35 +5141,31 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "File Dialog"
-msgstr ""
+msgstr "Hộp thoại tệp"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Thumbnail Size"
-msgstr "Ảnh thu nhỏ..."
+msgstr "Cỡ ảnh thu nhỏ"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Scene Tree"
-msgstr "Chỉnh sửa cảnh"
+msgstr "Cây chứa cảnh"
 
 #: editor/editor_settings.cpp
 msgid "Start Create Dialog Fully Expanded"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Always Show Folders"
-msgstr "Luôn hiện lưới"
+msgstr "Luôn hiện thư mục"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Property Editor"
-msgstr "Trình chỉnh sửa Nhóm"
+msgstr "Trình chỉnh sửa thuộc tính"
 
 #: editor/editor_settings.cpp
 msgid "Auto Refresh Interval"
@@ -5314,19 +5183,18 @@ msgstr "Chỉnh Tông màu"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: modules/gdscript/editor/gdscript_highlighter.cpp
-#, fuzzy
 msgid "Highlighting"
-msgstr "Hướng đi"
+msgstr "Tô sáng"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Syntax Highlighting"
-msgstr "Nổi màu cú pháp"
+msgstr "Tô sáng cú pháp"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight All Occurrences"
@@ -5342,9 +5210,8 @@ msgstr ""
 
 #: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
 #: modules/mono/csharp_script.cpp
-#, fuzzy
 msgid "Indent"
-msgstr "Thụt lề Trái"
+msgstr "Thụt lề"
 
 #: editor/editor_settings.cpp editor/script_editor_debugger.cpp
 #: modules/gdscript/gdscript_editor.cpp modules/gltf/gltf_accessor.cpp
@@ -5401,7 +5268,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
-msgstr ""
+msgstr "Ngoại hình"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 #, fuzzy
@@ -5428,11 +5295,11 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Code Folding"
-msgstr ""
+msgstr "Gập mã"
 
 #: editor/editor_settings.cpp
 msgid "Word Wrap"
-msgstr ""
+msgstr "Bọc văn bản"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
@@ -5447,9 +5314,8 @@ msgid "Line Length Guideline Hard Column"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Script List"
-msgstr "Trình viết mã lệnh"
+msgstr "Danh sách tập lệnh"
 
 #: editor/editor_settings.cpp
 msgid "Show Members Overview"
@@ -5472,7 +5338,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Restore Scripts On Load"
-msgstr ""
+msgstr "Phục hồi tập lệnh khi nạp"
 
 #: editor/editor_settings.cpp
 msgid "Create Signal Callbacks"
@@ -5483,8 +5349,9 @@ msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
 #: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
-msgstr ""
+msgstr "Con trỏ"
 
 #: editor/editor_settings.cpp
 msgid "Scroll Past End Of File"
@@ -5701,9 +5568,8 @@ msgid "Zoom Inertia"
 msgstr "Phóng to"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook"
-msgstr "Tự do"
+msgstr "Khoá tự do"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5895,8 +5761,9 @@ msgstr ""
 
 #: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Port"
-msgstr ""
+msgstr "Cổng"
 
 #: editor/editor_settings.cpp
 msgid "Project Manager"
@@ -5907,7 +5774,7 @@ msgstr "Trình quản lý Dự án"
 msgid "Sorting Order"
 msgstr "Đổi tên thư mục:"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
 msgstr ""
 
@@ -5943,29 +5810,30 @@ msgstr "Lưu trữ tệp tin:"
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
+#: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Background Color"
 msgstr "Màu nền không hợp lệ."
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Completion Background Color"
 msgstr "Màu nền không hợp lệ."
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Completion Selected Color"
 msgstr "Nhập cảnh"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Existing Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Scroll Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Font Color"
 msgstr ""
 
@@ -5974,21 +5842,21 @@ msgstr ""
 msgid "Text Color"
 msgstr "Tọa độ tiếp theo"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Line Number Color"
 msgstr "Dòng số:"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Safe Line Number Color"
 msgstr "Dòng số:"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Caret Background Color"
 msgstr "Màu nền không hợp lệ."
@@ -5998,16 +5866,16 @@ msgstr "Màu nền không hợp lệ."
 msgid "Text Selected Color"
 msgstr "Xoá lựa chọn"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Selection Color"
 msgstr "Chỉ chọn"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Brace Mismatch Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Current Line Color"
 msgstr "Cảnh Hiện tại"
@@ -6016,45 +5884,45 @@ msgstr "Cảnh Hiện tại"
 msgid "Line Length Guideline Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Word Highlighted Color"
 msgstr "Nổi màu cú pháp"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Number Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Function Color"
 msgstr "Hàm"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Member Variable Color"
 msgstr "Đổi tên Biến"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Mark Color"
 msgstr "Chọn màu"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Bookmark Color"
 msgstr "Dấu trang"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Breakpoint Color"
 msgstr "Điểm dừng"
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Executing Line Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Code Folding Color"
 msgstr ""
 
@@ -6101,11 +5969,11 @@ msgstr "Lỗi"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
-msgstr ""
+msgstr "Mở thư mục chứa các bản mẫu này."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall these templates."
-msgstr ""
+msgstr "Gỡ cài đặt các bản mẫu này."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -6162,7 +6030,7 @@ msgstr "Yêu cầu thất bại."
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
-msgstr ""
+msgstr "Đã tải xuống xong; đang trích xuất bản mẫu..."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -6173,8 +6041,8 @@ msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"Cài đặt các mẫu xuất bản thất bại.\n"
-"Các lưu trữ mẫu xuất bản có vấn đề có thể được tìm thấy tại '%s'."
+"Cài đặt bản mẫu thất bại.\n"
+"Các bản lưu bản mẫu có vấn đề có thể được tìm thấy tại '%s'."
 
 #: editor/export_template_manager.cpp
 msgid "Error getting the list of mirrors."
@@ -6241,37 +6109,32 @@ msgid "SSL Handshake Error"
 msgstr "Lỗi SSL Handshake"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't open the export templates file."
-msgstr "Không thể mở tệp zip các mẫu xuất bản."
+msgstr "Không thể mở tệp bản mẫu xuất."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside the export templates file: %s."
-msgstr "Định dạng version.txt không hợp lệ bên trong các mẫu xuất bản: %s."
+msgstr "Định dạng version.txt không hợp lệ bên trong các bản mẫu: %s."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No version.txt found inside the export templates file."
-msgstr "Không thấy version.txt trong các mẫu xuất bản."
+msgstr "Không thấy tệp version.txt trong tệp bản mẫu xuất."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for extracting templates:"
-msgstr "Lỗi tạo đường dẫn đến các mẫu xuất bản:"
+msgstr "Lỗi tạo đường dẫn để trích xuất bản mẫu:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
-msgstr "Trích xuất các Mẫu xuất bản"
+msgstr "Đang trích xuất bản mẫu xuất"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "Đang Nhập:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove templates for the version '%s'?"
-msgstr "Xóa template phiên bản '%s'?"
+msgstr "Xóa các bản mẫu của phiên bản '%s' không?"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
@@ -6279,7 +6142,7 @@ msgstr "Giải nén nguồn xây dựng Android"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
-msgstr "Trình quản lý Mẫu Xuất"
+msgstr "Trình quản lý bản mẫu xuất"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -6287,11 +6150,11 @@ msgstr "Phiên bản hiện tại:"
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
-msgstr ""
+msgstr "Không thấy bản mẫu xuất nào cả. Tải bản mẫu xuống hoặc cài từ tệp."
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
-msgstr ""
+msgstr "Bản mẫu xuất đã được cài đặt và sẵn sàng được sử dụng."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -6300,16 +6163,15 @@ msgstr "Mở tệp"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
-msgstr ""
+msgstr "Mở thư mục chứa các bản mẫu được cài đặt cho phiên bản hiện tại."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
 msgstr "Gỡ cài đặt"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall templates for the current version."
-msgstr "Giá trị đếm ban đầu"
+msgstr "Gỡ cài đặt các bản mẫu cho phiên bản hiện tại."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -6335,10 +6197,12 @@ msgid ""
 "Download and install templates for the current version from the best "
 "possible mirror."
 msgstr ""
+"Tải xuống và cài đặt các bản mẫu cho phiên bản hiện tại từ nguồn dự phòng "
+"tốt nhất có thể."
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
-msgstr "Các mẫu xuất bản chính thức không có sẵn cho các bản dựng phát triển."
+msgstr "Các bản mẫu xuất chính thức không có sẵn cho các bản dựng phát triển."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -6346,9 +6210,8 @@ msgid "Install from File"
 msgstr "Cài đặt từ File"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install templates from a local file."
-msgstr "Nạp các mẫu xuất bản bằng tệp ZIP"
+msgstr "Cài đặt bản mẫu từ một tệp trong máy."
 
 #: editor/export_template_manager.cpp editor/find_in_files.cpp
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -6366,9 +6229,8 @@ msgid "Other Installed Versions:"
 msgstr "Phiên bản đã cài:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall Template"
-msgstr "Gỡ cài đặt"
+msgstr "Gỡ cài đặt bản mẫu"
 
 #: editor/export_template_manager.cpp
 msgid "Select Template File"
@@ -6376,13 +6238,15 @@ msgstr "Chọn tệp bản mẫu"
 
 #: editor/export_template_manager.cpp
 msgid "Godot Export Templates"
-msgstr "Các mẫu xuất bản Godot"
+msgstr "Các bản mẫu xuất Godot"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "The templates will continue to download.\n"
 "You may experience a short editor freeze when they finish."
 msgstr ""
+"Bản mẫu sẽ tiếp tục được tải xuống.\n"
+"Bạn có thể thấy trình chỉnh sửa hơi bị đơ khi tải xong."
 
 #: editor/fileserver/editor_file_server.cpp
 msgid "File Server"
@@ -6392,7 +6256,7 @@ msgstr ""
 #: editor/plugins/version_control_editor_plugin.cpp
 #: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Password"
-msgstr ""
+msgstr "Mật khẩu"
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
@@ -6526,7 +6390,7 @@ msgstr "Tạo Cảnh Mới..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
-msgstr "Tạo Mã lệnh ..."
+msgstr "Tập lệnh mới..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
@@ -6636,7 +6500,7 @@ msgstr "Tạo Scene"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr "Tạo Mã lệnh"
+msgstr "Tạo tập lệnh"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
@@ -6923,7 +6787,6 @@ msgstr "Nhập nhiều Scene + Vật liệu"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 #: scene/3d/physics_joint.cpp
-#, fuzzy
 msgid "Nodes"
 msgstr "Nút"
 
@@ -6943,9 +6806,8 @@ msgid "Root Scale"
 msgstr "Tỷ lệ:"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Custom Script"
-msgstr "Cắt các nút"
+msgstr "Tập lệnh tuỳ chỉnh"
 
 #: editor/import/resource_importer_scene.cpp scene/resources/texture.cpp
 #, fuzzy
@@ -7010,9 +6872,8 @@ msgid "Store In Subdir"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Filter Script"
-msgstr "Lọc tệp lệnh"
+msgstr "Lọc tập lệnh"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7035,9 +6896,8 @@ msgstr "Tối ưu"
 #: scene/gui/graph_edit.cpp scene/gui/rich_text_label.cpp
 #: scene/resources/curve.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Enabled"
-msgstr "Mở"
+msgstr "Bật"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7090,15 +6950,15 @@ msgstr "Tạo cho lưới: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr "Chạy Tệp lệnh Tự chọn ..."
+msgstr "Chạy tập lệnh tuỳ chỉnh..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr "Không thể tải tệp lệnh sau nhập:"
+msgstr "Không thể nạp tập lệnh sau khi nhập:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
-msgstr "Tập lệnh sau nhập không hợp lệ/hỏng (hãy xem bảng điều khiển):"
+msgstr "Tập lệnh sau khi nhập không hợp lệ/bị hỏng (hãy xem bảng điều khiển):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
@@ -7470,7 +7330,7 @@ msgstr "Ngôn ngữ:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Script Name:"
-msgstr "Tên Mã lệnh:"
+msgstr "Tên tập lệnh:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
@@ -7524,7 +7384,7 @@ msgstr "Xóa đa giác và điểm"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr "Thêm Hoạt ảnh"
+msgstr "Thêm hoạt hình"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -7798,12 +7658,12 @@ msgstr "Đổi tên Hoạt ảnh:"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr "Xoá Hoạt ảnh?"
+msgstr "Xoá hoạt hình?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr "Xoá Hoạt ảnh"
+msgstr "Loại bỏ hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
@@ -7816,11 +7676,11 @@ msgstr "Tên Hoạt ảnh đã tồn tại!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr "Đổi tên Hoạt ảnh"
+msgstr "Đổi tên hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr "Nhân bản Hoạt ảnh"
+msgstr "Nhân đôi hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -7832,11 +7692,7 @@ msgstr "Đổi Thời gian Chuyển Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr "Nạp Hoạt ảnh"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "No animation to copy!"
-msgstr "Không có hoạt ảnh để sao chép!"
+msgstr "Nạp hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
@@ -7844,15 +7700,11 @@ msgstr "Không có hoạt ảnh trên Clipboard!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr "Đã dán Hoạt ảnh"
+msgstr "Đã dán hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr "Dán Hoạt ảnh"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "No animation to edit!"
-msgstr "Không có hoạt ảnh để chỉnh sửa!"
+msgstr "Dán hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
@@ -7884,12 +7736,17 @@ msgstr "Quy mô trình phát hoạt ảnh toàn cầu cho các nút."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr "Công cụ Hoạt ảnh"
+msgstr "Công cụ hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr "Mới"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Paste As Reference"
+msgstr "Tham khảo Lớp %s"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -7960,7 +7817,7 @@ msgstr "Kèm Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr "Đính AnimationPlayer"
+msgstr "Ghim AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -7968,7 +7825,7 @@ msgstr "Tạo Hoạt ảnh mới"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr "Tên Hoạt ảnh:"
+msgstr "Tên hoạt hình:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
@@ -8092,7 +7949,7 @@ msgstr "Chế độ chơi:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "Cây Hoạt ảnh"
+msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -8115,11 +7972,6 @@ msgstr "Giảm dần (s):"
 #: scene/resources/style_box.cpp
 msgid "Blend"
 msgstr "Hoà"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: servers/audio/effects/audio_effect_compressor.cpp
-msgid "Mix"
-msgstr "Trộn"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Auto Restart:"
@@ -8155,10 +8007,6 @@ msgid "X-Fade Time (s):"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
-msgid "Current:"
-msgstr "Hiện tại:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
@@ -8186,7 +8034,7 @@ msgstr "Animation tree vô hiệu."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Nút Hoạt ảnh"
+msgstr "Nút hoạt hình"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
@@ -8222,7 +8070,7 @@ msgstr "Nút Transition"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr "Nhập vào các hoạt ảnh ..."
+msgstr "Nhập hoạt hình..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -8423,7 +8271,7 @@ msgstr "Tất cả"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "Tìm kiếm bản mẫu, dự án và bản diễn thử"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
@@ -10177,6 +10025,7 @@ msgstr "Thiết lập lưới"
 #: editor/plugins/polygon_2d_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/animation/animation_blend_space_1d.cpp
 #: scene/animation/animation_blend_space_2d.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Snap"
 msgstr "Dính"
 
@@ -10311,7 +10160,7 @@ msgstr "Đóng và lưu thay đổi?"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Auto Reload Scripts On External Change"
-msgstr ""
+msgstr "Tự động nạp lại"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
@@ -10445,6 +10294,7 @@ msgstr "Tệp lệnh trước đó"
 #: editor/plugins/script_editor_plugin.cpp
 #: modules/gdnative/videodecoder/video_stream_gdnative.cpp
 #: modules/theora/video_stream_theora.cpp modules/webm/video_stream_webm.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "File"
 msgstr "Tệp"
 
@@ -10573,7 +10423,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "External"
-msgstr ""
+msgstr "Bên ngoài"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -10638,7 +10488,7 @@ msgstr "Nguồn"
 #: editor/plugins/script_text_editor.cpp platform/uwp/export/export.cpp
 #: scene/3d/interpolated_camera.cpp scene/animation/skeleton_ik.cpp
 msgid "Target"
-msgstr ""
+msgstr "Mục tiêu"
 
 #: editor/plugins/script_text_editor.cpp
 msgid ""
@@ -11024,6 +10874,7 @@ msgid "Yaw:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "Size:"
 msgstr "Kích thước: "
@@ -11624,11 +11475,11 @@ msgstr "Di chuyển Khung hình"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
-msgstr "Các hoạt ảnh:"
+msgstr "Các hoạt hình:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
-msgstr "Tạo Hoạt ảnh mới"
+msgstr "Hoạt hình mới"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -11645,7 +11496,7 @@ msgstr "Lặp"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
-msgstr "Khung hình Hoạt ảnh:"
+msgstr "Khung hình hoạt hình:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add a Texture from File"
@@ -11684,6 +11535,17 @@ msgid "Vertical:"
 msgstr "Dọc:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Separation:"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+msgid "Offset:"
+msgstr "Độ dời:"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select/Clear All Frames"
 msgstr "Chọn/Xóa Tất cả Khung hình"
 
@@ -11720,17 +11582,8 @@ msgid "Auto Slice"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Offset:"
-msgstr "Độ dời:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Step:"
 msgstr "Bước:"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
-msgid "Separation:"
-msgstr "Thu phóng (theo tỉ lệ):"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
@@ -11946,6 +11799,11 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Type"
+msgstr "Xóa Ô"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
@@ -11986,6 +11844,16 @@ msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
 msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Add Theme Type"
+msgstr "Thêm mục"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Theme Type"
+msgstr "Gõ bỏ Mục"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12300,6 +12168,7 @@ msgid "Named Separator"
 msgstr ""
 
 #: editor/plugins/theme_editor_preview.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Submenu"
 msgstr "Bảng chọn phụ"
 
@@ -12474,8 +12343,9 @@ msgid "Palette Min Width"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Palette Item Hseparation"
-msgstr ""
+#, fuzzy
+msgid "Palette Item H Separation"
+msgstr "Xoá lựa chọn"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -12561,7 +12431,7 @@ msgstr ""
 #: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/texture.cpp
 msgid "Region"
-msgstr ""
+msgstr "Khu vực"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: modules/gridmap/grid_map.cpp scene/2d/collision_object_2d.cpp
@@ -12907,9 +12777,8 @@ msgid "Do you want to remove the %s remote?"
 msgstr "Bạn chắc chắn mở nhiều hơn một dự án?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Apply"
-msgstr "Áp dụng đặt lại"
+msgstr "Áp dụng"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -12975,9 +12844,8 @@ msgid "Commit list size"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Phù hợp:"
+msgstr "Nhánh"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -12994,9 +12862,8 @@ msgid "Branch Name"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remotes"
-msgstr "Xóa"
+msgstr "Từ xa"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13024,11 +12891,11 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Pull"
-msgstr ""
+msgstr "Kéo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Push"
-msgstr ""
+msgstr "Đẩy"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13062,9 +12929,8 @@ msgid "View:"
 msgstr "Hiện thị"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Split"
-msgstr "Tách đường"
+msgstr "Tách"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -13912,7 +13778,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr ""
+msgstr "Chạy được"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -13923,8 +13789,8 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
-"Không thể xuất bản dự án cho nền tảng '%s'.\n"
-"Mẫu xuất bản dường như bị thiếu hoặc không hợp lệ."
+"Không thể xuất dự án cho nền tảng '%s'.\n"
+"Bản mẫu xuất dường như bị thiếu hoặc không hợp lệ."
 
 #: editor/project_export.cpp
 msgid ""
@@ -13938,7 +13804,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Exporting All"
-msgstr "Xuất tất cả"
+msgstr "Đang xuất tất cả"
 
 #: editor/project_export.cpp
 msgid "The given export path doesn't exist:"
@@ -13946,7 +13812,7 @@ msgstr "Đường dẫn xuất không tồn tại:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
-msgstr "Các mẫu xuất bản cho nền tảng này bị thiếu/hỏng:"
+msgstr "Các bản mẫu xuất cho nền tảng này bị thiếu/hỏng:"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -14092,7 +13958,7 @@ msgstr "Các mẫu xuất bản cho nền tảng này bị thiếu:"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr "Quản Lý Các Mẫu Xuất Bản"
+msgstr "Quản lí bản mẫu xuất"
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
@@ -14265,10 +14131,6 @@ msgstr ""
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
 "Trình kết xuất có thể đổi sau, nhưng có thể sẽ phải chỉnh lại các Cảnh."
-
-#: editor/project_manager.cpp
-msgid "Unnamed Project"
-msgstr "Dự án không tên"
 
 #: editor/project_manager.cpp
 msgid "Missing Project"
@@ -14616,6 +14478,7 @@ msgid "Add Event"
 msgstr "Thêm Sự kiện"
 
 #: editor/project_settings_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Button"
 msgstr "Button (nút, phím)"
 
@@ -14748,7 +14611,7 @@ msgstr "Hành động:"
 
 #: editor/project_settings_editor.cpp scene/gui/scroll_container.cpp
 msgid "Deadzone"
-msgstr ""
+msgstr "Vùng chết"
 
 #: editor/project_settings_editor.cpp
 msgid "Device:"
@@ -14801,7 +14664,7 @@ msgstr "Chế độ lọc:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales:"
-msgstr ""
+msgstr "Khu vực:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
@@ -14991,10 +14854,9 @@ msgstr "Hoa thành Thường"
 msgid "To Uppercase"
 msgstr "Thường thành Hoa"
 
-#: editor/rename_dialog.cpp
-#, fuzzy
+#: editor/rename_dialog.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Reset"
-msgstr "Đặt lại phóng"
+msgstr "Đặt lại"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -15352,7 +15214,7 @@ msgstr "Xoá tệp lệnh khỏi nút đã chọn."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
-msgstr ""
+msgstr "Từ xa"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -15517,7 +15379,7 @@ msgstr "Sai đuôi mở rộng."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"
-msgstr "Lỗi nạp mẫu '%s'"
+msgstr "Lỗi nạp bản mẫu '%s'"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
@@ -15528,7 +15390,6 @@ msgid "Error loading script from %s"
 msgstr "Lỗi nạp tệp lệnh từ %s"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Overrides"
 msgstr "Ghi đè"
 
@@ -15768,7 +15629,6 @@ msgid "Usage"
 msgstr "Sử dụng"
 
 #: editor/script_editor_debugger.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Misc"
 msgstr "Khác"
 
@@ -15830,6 +15690,7 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
 #: platform/osx/export/export.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Camera"
 msgstr ""
 
@@ -15854,7 +15715,7 @@ msgstr "Điểm"
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
-msgstr ""
+msgstr "Hình dạng"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
@@ -16124,7 +15985,7 @@ msgstr "Hiển thị tất cả"
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Chiều rộng"
 
 #: main/main.cpp modules/csg/csg_shape.cpp modules/gltf/gltf_node.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/light_2d.cpp
@@ -16132,9 +15993,8 @@ msgstr ""
 #: scene/resources/cylinder_shape.cpp scene/resources/font.cpp
 #: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Height"
-msgstr "Ánh sáng"
+msgstr "Chiều cao"
 
 #: main/main.cpp
 msgid "Always On Top"
@@ -16192,7 +16052,7 @@ msgstr "Lỗi Khi Lưu"
 
 #: main/main.cpp
 msgid "Threads"
-msgstr ""
+msgstr "Luồng"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_wrap_mt.h
 #, fuzzy
@@ -16209,9 +16069,8 @@ msgstr ""
 
 #: main/main.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Orientation"
-msgstr "Mở Hướng dẫn"
+msgstr "Hướng xoay"
 
 #: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
 #: scene/main/scene_tree.cpp scene/register_scene_types.cpp
@@ -16306,9 +16165,8 @@ msgstr ""
 #: main/main.cpp scene/3d/baked_lightmap.cpp scene/3d/camera.cpp
 #: scene/3d/world_environment.cpp scene/main/scene_tree.cpp
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Environment"
-msgstr "Xử lí môi trường"
+msgstr "Môi trường"
 
 #: main/main.cpp
 msgid "Default Clear Color"
@@ -16325,7 +16183,7 @@ msgstr "Hiển thị Xương"
 
 #: main/main.cpp
 msgid "Image"
-msgstr ""
+msgstr "Ảnh"
 
 #: main/main.cpp
 msgid "Fullsize"
@@ -16419,12 +16277,11 @@ msgstr "Tìm loại Node"
 #: main/main.cpp scene/gui/texture_progress.cpp
 #: scene/gui/viewport_container.cpp
 msgid "Stretch"
-msgstr ""
+msgstr "Kéo giãn"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Aspect"
-msgstr "Quan Sát Viên"
+msgstr "Tỉ lệ"
 
 #: main/main.cpp
 msgid "Shrink"
@@ -16477,9 +16334,8 @@ msgid "Change Torus Outer Radius"
 msgstr "Thay Đổi Bán Kính Ngoài Của Hình Xuyến"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Operation"
-msgstr "Tùy chọn"
+msgstr "Thao tác"
 
 #: modules/csg/csg_shape.cpp
 msgid "Calculate Tangents"
@@ -16521,9 +16377,8 @@ msgstr "Đối số đã thay đổi"
 #: scene/resources/cylinder_shape.cpp scene/resources/environment.cpp
 #: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/sphere_shape.cpp
-#, fuzzy
 msgid "Radius"
-msgstr "Bán kính:"
+msgstr "Bán kính"
 
 #: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -16655,6 +16510,14 @@ msgstr ""
 msgid "Use DTLS"
 msgstr "Sử dụng Dính"
 
+#: modules/fbx/editor_scene_importer_fbx.cpp
+msgid "FBX"
+msgstr ""
+
+#: modules/fbx/editor_scene_importer_fbx.cpp
+msgid "Use FBX"
+msgstr ""
+
 #: modules/gdnative/gdnative.cpp
 #, fuzzy
 msgid "Config File"
@@ -16757,9 +16620,8 @@ msgstr "GDNative"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 #: modules/gdscript/gdscript.cpp
-#, fuzzy
 msgid "GDScript"
-msgstr "Tệp lệnh"
+msgstr ""
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Function Definition Color"
@@ -17130,20 +16992,18 @@ msgstr "Tên nút gốc"
 #: modules/gltf/gltf_state.cpp scene/2d/particles_2d.cpp
 #: scene/gui/texture_button.cpp scene/gui/texture_progress.cpp
 #: scene/resources/font.cpp
-#, fuzzy
 msgid "Textures"
-msgstr "Tính năng"
+msgstr "Hình kết cấu"
 
 #: modules/gltf/gltf_state.cpp platform/uwp/export/export.cpp
 msgid "Images"
-msgstr ""
+msgstr "Ảnh"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Cameras"
 msgstr ""
 
 #: modules/gltf/gltf_state.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Lights"
 msgstr "Ánh sáng"
 
@@ -17153,7 +17013,6 @@ msgid "Unique Animation Names"
 msgstr "Tên hoạt ảnh mới:"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Skeletons"
 msgstr "Khung xương"
 
@@ -17163,9 +17022,8 @@ msgid "Skeleton To Node"
 msgstr "Chọn một Nút"
 
 #: modules/gltf/gltf_state.cpp scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid "Animations"
-msgstr "Các hoạt ảnh:"
+msgstr "Hoạt hình"
 
 #: modules/gltf/gltf_texture.cpp
 #, fuzzy
@@ -17545,11 +17403,11 @@ msgstr "Độ lệch lưới:"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Octaves"
-msgstr ""
+msgstr "Quãng tám"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Period"
-msgstr ""
+msgstr "Chu kì"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 #, fuzzy
@@ -17771,6 +17629,14 @@ msgid "Change Expression"
 msgstr "Thay đổi biểu thức"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't copy the function node."
+msgstr "Không thể sao chép nút chức năng."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste VisualScript Nodes"
+msgstr "Dán các nút VisualScript"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr "Xóa các nút VisualScript"
 
@@ -17870,14 +17736,6 @@ msgid "Resize Comment"
 msgstr "Thay đổi kích thước Nhận xét"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Can't copy the function node."
-msgstr "Không thể sao chép nút chức năng."
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Paste VisualScript Nodes"
-msgstr "Dán các nút VisualScript"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function with a function node."
 msgstr "Không thể tạo hàm với một nút chức năng."
 
@@ -17975,13 +17833,12 @@ msgstr ""
 
 #: modules/visual_script/visual_script_expression.cpp
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Expression"
-msgstr "Đặt phép diễn đạt"
+msgstr "Biểu thức"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return"
-msgstr ""
+msgstr "Trả lại"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
@@ -17995,9 +17852,8 @@ msgstr "Loại"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "Hoạt ảnh"
+msgstr "Điều kiện"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
@@ -18235,9 +18091,8 @@ msgid "VariableSet not found in script: "
 msgstr "Không tìm thấy VariableSet trong tệp lệnh: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Preload"
-msgstr "Tải lại"
+msgstr "Tải trước"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -18359,7 +18214,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "Chờ"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
@@ -18400,6 +18255,14 @@ msgstr "Thêm vào Cảnh"
 msgid "Write Mode"
 msgstr "Chế độ Ưu tiên"
 
+#: modules/webrtc/webrtc_data_channel.h
+msgid "WebRTC"
+msgstr ""
+
+#: modules/webrtc/webrtc_data_channel.h
+msgid "Max Channel In Buffer (KB)"
+msgstr ""
+
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
 msgstr ""
@@ -18407,6 +18270,34 @@ msgstr ""
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
 msgstr ""
+
+#: modules/websocket/websocket_macros.h
+#, fuzzy
+msgid "WebSocket Client"
+msgstr "Xuất hồ sơ"
+
+#: modules/websocket/websocket_macros.h
+#, fuzzy
+msgid "Max In Buffer (KB)"
+msgstr "Kích cỡ tối đa (KB)"
+
+#: modules/websocket/websocket_macros.h
+msgid "Max In Packets"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+#, fuzzy
+msgid "Max Out Buffer (KB)"
+msgstr "Kích cỡ tối đa (KB)"
+
+#: modules/websocket/websocket_macros.h
+msgid "Max Out Packets"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+#, fuzzy
+msgid "WebSocket Server"
+msgstr "Xuất hồ sơ"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Bind IP"
@@ -18460,6 +18351,11 @@ msgstr ""
 #, fuzzy
 msgid "Bounds Geometry"
 msgstr "Thử lại"
+
+#: modules/webxr/webxr_interface.cpp
+#, fuzzy
+msgid "XR Standard Mapping"
+msgstr "Dính thông minh"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
@@ -18705,19 +18601,16 @@ msgid "Running on %s"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exporting APK..."
-msgstr "Xuất tất cả"
+msgstr "Đang xuất APK..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Uninstalling..."
-msgstr "Gỡ cài đặt"
+msgstr "Đang gỡ cài đặt..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Installing to device, please wait..."
-msgstr "Đang tải, đợi xíu..."
+msgstr "Đang cài vào thiết bị, xin vui lòng chờ..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18744,7 +18637,7 @@ msgid ""
 "Project menu."
 msgstr ""
 "Bản mẫu dựng cho Android chưa được cài đặt trong dự án. Cài đặt nó từ bảng "
-"chọn Dự Án."
+"chọn Dự án."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18894,9 +18787,8 @@ msgid "'apksigner' verification of %s failed."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exporting for Android"
-msgstr "Xuất tất cả"
+msgstr "Đang xuất sang Android"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -18985,11 +18877,10 @@ msgid "Creating APK..."
 msgstr "Tạo đường viền ..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
-msgstr "Không thể mở bản mẫu để xuất:"
+msgstr "Không thể tìm APK bản mẫu để xuất:"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18998,6 +18889,9 @@ msgid ""
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
+"Thiếu thư viện trong bản mẫu xuất cho kiến trúc được lựa chọn: %s.\n"
+"Vui lòng dựng một bản mẫu với tất cả thư viện cần thiết, hoặc bỏ chọn những "
+"kiến trúc bị thiếu trong bộ thiết lập sẵn xuất ra."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19109,7 +19003,7 @@ msgid "Accessible From Files App"
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Accessible From Itunes Sharing"
+msgid "Accessible From iTunes Sharing"
 msgstr ""
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
@@ -19222,7 +19116,7 @@ msgstr "Không thể mở bản mẫu để xuất:"
 
 #: platform/javascript/export/export.cpp
 msgid "Invalid export template:"
-msgstr "Bản xuất mẫu không hợp lệ:"
+msgstr "Bản mẫu xuất không hợp lệ:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not write file:"
@@ -19257,7 +19151,7 @@ msgid "For Mobile"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-msgid "Html"
+msgid "HTML"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -19267,7 +19161,7 @@ msgstr "Mở rộng Tất cả"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
-msgid "Custom Html Shell"
+msgid "Custom HTML Shell"
 msgstr "Cắt các nút"
 
 #: platform/javascript/export/export.cpp
@@ -19569,7 +19463,7 @@ msgstr "Xuất hồ sơ"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
-msgid "Device Usb"
+msgid "Device USB"
 msgstr "Thiết bị"
 
 #: platform/osx/export/export.cpp
@@ -19662,6 +19556,8 @@ msgid ""
 "Requested template binary '%s' not found. It might be missing from your "
 "template archive."
 msgstr ""
+"Không thấy tệp nhị phân bản mẫu được yêu cầu '%s'. Nó có thể bị thiếu trong "
+"bản lưu bản mẫu của bạn."
 
 #: platform/osx/export/export.cpp
 msgid "Making PKG"
@@ -19836,12 +19732,13 @@ msgid "Publisher Display Name"
 msgstr "Gói có tên hiển thị của nhà phát hành không hợp lệ."
 
 #: platform/uwp/export/export.cpp
-msgid "Product Guid"
-msgstr ""
+#, fuzzy
+msgid "Product GUID"
+msgstr "GUID sản phẩm không hợp lệ."
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
-msgid "Publisher Guid"
+msgid "Publisher GUID"
 msgstr "Xóa hết đường căn"
 
 #: platform/uwp/export/export.cpp
@@ -20106,6 +20003,7 @@ msgstr ""
 "hình\" thì AnimatedSprite mới hiển thị các khung hình được."
 
 #: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Frame"
 msgstr "Khung hình %"
@@ -20380,9 +20278,8 @@ msgid "Light Mode"
 msgstr "Rộng bên phải"
 
 #: scene/2d/canvas_item.cpp
-#, fuzzy
 msgid "Particles Animation"
-msgstr "Hạt"
+msgstr "Hoạt hình hạt hiệu ứng"
 
 #: scene/2d/canvas_item.cpp
 msgid "Particles Anim H Frames"
@@ -20495,7 +20392,7 @@ msgstr "Chế độ thước"
 #: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
 #: scene/3d/collision_polygon.cpp scene/3d/collision_shape.cpp
 #: scene/animation/animation_node_state_machine.cpp scene/gui/base_button.cpp
-#: scene/gui/texture_button.cpp
+#: scene/gui/texture_button.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Disabled"
 msgstr "Các mục tắt"
@@ -20978,7 +20875,7 @@ msgstr ""
 msgid "Width Curve"
 msgstr "Chia đường Curve"
 
-#: scene/2d/line_2d.cpp
+#: scene/2d/line_2d.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Default Color"
 msgstr "Mặc định"
@@ -21153,6 +21050,7 @@ msgid "Z As Relative"
 msgstr "Dính tương đối"
 
 #: scene/2d/parallax_background.cpp scene/gui/scroll_container.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Scroll"
 msgstr ""
 
@@ -21403,6 +21301,7 @@ msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/2d/touch_screen_button.cpp
 #: scene/3d/physics_body.cpp scene/gui/texture_button.cpp
+#: scene/resources/default_theme/default_theme.cpp
 #: scene/resources/line_shape_2d.cpp scene/resources/material.cpp
 #, fuzzy
 msgid "Normal"
@@ -21644,9 +21543,8 @@ msgid ""
 msgstr ""
 
 #: scene/2d/visibility_notifier_2d.cpp scene/3d/visibility_notifier.cpp
-#, fuzzy
 msgid "Pause Animations"
-msgstr "Dán Hoạt ảnh"
+msgstr "Tạm dừng hoạt hình"
 
 #: scene/2d/visibility_notifier_2d.cpp scene/3d/visibility_notifier.cpp
 msgid "Freeze Bodies"
@@ -21972,9 +21870,10 @@ msgid "Far"
 msgstr ""
 
 #: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/3d/spring_arm.cpp
-#: scene/gui/control.cpp scene/resources/shape.cpp
-#: scene/resources/style_box.cpp scene/resources/texture.cpp
-#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#: scene/gui/control.cpp scene/resources/default_theme/default_theme.cpp
+#: scene/resources/shape.cpp scene/resources/style_box.cpp
+#: scene/resources/texture.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
 #, fuzzy
 msgid "Margin"
 msgstr "Đặt Lề"
@@ -22609,7 +22508,7 @@ msgid "Angular Limit X"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
-msgid "Erp"
+msgid "ERP"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
@@ -23307,9 +23206,8 @@ msgid "Anim Apply Reset"
 msgstr ""
 
 #: scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Current Animation"
-msgstr "Gán Hoạt ảnh"
+msgstr "Hoạt hình hiện tại"
 
 #: scene/animation/animation_player.cpp
 #, fuzzy
@@ -23394,9 +23292,8 @@ msgid "Root Motion"
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Track"
-msgstr "Thêm Track Animation"
+msgstr "Rãnh"
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -23418,9 +23315,8 @@ msgid "Base Path"
 msgstr "Đường dẫn xuất"
 
 #: scene/animation/root_motion_view.cpp
-#, fuzzy
 msgid "Animation Path"
-msgstr "Hoạt ảnh"
+msgstr "Đường dẫn hoạt hình"
 
 #: scene/animation/root_motion_view.cpp
 #, fuzzy
@@ -23607,6 +23503,11 @@ msgid ""
 msgstr ""
 
 #: scene/gui/control.cpp
+#, fuzzy
+msgid "Theme Overrides"
+msgstr "Ghi đè"
+
+#: scene/gui/control.cpp
 msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
@@ -23646,7 +23547,7 @@ msgstr ""
 msgid "Tooltip"
 msgstr "Công cụ"
 
-#: scene/gui/control.cpp
+#: scene/gui/control.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Focus"
 msgstr "Đường dẫn Tập trung"
@@ -23774,6 +23675,7 @@ msgid "Show Zoom Label"
 msgstr "Hiển thị Xương"
 
 #: scene/gui/graph_edit.cpp scene/gui/text_edit.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Minimap"
 msgstr ""
 
@@ -23787,11 +23689,12 @@ msgid "Show Close"
 msgstr "Hiển thị Xương"
 
 #: scene/gui/graph_node.cpp scene/gui/option_button.cpp
+#: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Selected"
 msgstr "Chọn"
 
-#: scene/gui/graph_node.cpp
+#: scene/gui/graph_node.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Comment"
 msgstr "Cộng đồng"
@@ -23857,8 +23760,9 @@ msgid "Fixed Icon Size"
 msgstr "Góc nhìn trực diện"
 
 #: scene/gui/label.cpp
-msgid "Valign"
-msgstr ""
+#, fuzzy
+msgid "V Align"
+msgstr "Gán"
 
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
 #, fuzzy
@@ -24317,7 +24221,7 @@ msgstr ""
 msgid "Text Edit Undo Stack Max Size"
 msgstr ""
 
-#: scene/gui/texture_button.cpp
+#: scene/gui/texture_button.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Hover"
 msgstr ""
 
@@ -24435,9 +24339,8 @@ msgid "Drop Mode Flags"
 msgstr ""
 
 #: scene/gui/video_player.cpp
-#, fuzzy
 msgid "Audio Track"
-msgstr "Thêm Track Animation"
+msgstr "Rãnh âm thanh"
 
 #: scene/gui/video_player.cpp scene/main/scene_tree.cpp scene/main/timer.cpp
 msgid "Paused"
@@ -24831,6 +24734,31 @@ msgid "Swap OK Cancel"
 msgstr "Huỷ bỏ"
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "Layer Names"
+msgstr "Tên"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Render"
+msgstr "Kết xuất"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Render"
+msgstr "Kết xuất"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Physics"
+msgstr "Vật lí"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Physics"
+msgstr "Vật lí"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr ""
 
@@ -24867,6 +24795,803 @@ msgstr "Nửa độ phân giải"
 #: scene/resources/curve.cpp
 msgid "Bake Interval"
 msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Panel"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#: scene/resources/dynamic_font.cpp
+#, fuzzy
+msgid "Font"
+msgstr "Phông chữ"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color"
+msgstr "Chọn màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Pressed"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Hover"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Focus"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Disabled"
+msgstr "(Đã tắt trình chỉnh sửa)"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "H Separation"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Underline Spacing"
+msgstr "Khoảng cách bổ sung"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Arrow"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Arrow Margin"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Hover Pressed"
+msgstr "Được ấn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Checked Disabled"
+msgstr "Tích được"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Unchecked"
+msgstr "Đã được tích"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Unchecked Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Radio Checked"
+msgstr "Đã được tích"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Radio Checked Disabled"
+msgstr "(Đã tắt trình chỉnh sửa)"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Radio Unchecked"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Radio Unchecked Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Hover Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Check V Adjust"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "On Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Off"
+msgstr "Độ dời:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Off Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Shadow"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Outline Modulate"
+msgstr "Bắt buộc Modulate trắng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Shadow Offset X"
+msgstr "Độ lệch X của Lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Shadow Offset Y"
+msgstr "Độ lệch Y của Lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Shadow As Outline"
+msgstr "Mặt phẳng trước đó"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Selected"
+msgstr "Mở khoá Lựa chọn"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Uneditable"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Cursor Color"
+msgstr "Cắt các nút"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Clear Button Color"
+msgstr "Lọc tín hiệu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Clear Button Color Pressed"
+msgstr "Lọc tín hiệu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Minimum Spaces"
+msgstr "Cảnh chính"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "BG"
+msgstr "B"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#: scene/resources/dynamic_font.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Space"
+msgstr "Cảnh chính"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Folded"
+msgstr "Thư mục:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Fold"
+msgstr "Thư mục:"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Readonly"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Completion Lines"
+msgstr "Tự hoàn thành"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Completion Max Width"
+msgstr "Tự hoàn thành"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Completion Scroll Width"
+msgstr "Nhập cảnh"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Scroll Focus"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Grabber Highlight"
+msgstr "Nổi màu cú pháp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Grabber Pressed"
+msgstr "Được ấn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Increment"
+msgstr "Môi trường"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Increment Highlight"
+msgstr "Nổi màu cú pháp"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Increment Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Decrement"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Decrement Highlight"
+msgstr "Nổi màu cú pháp"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Decrement Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Slider"
+msgstr "Chế độ va chạm"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Area"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Area Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Grabber Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tick"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Updown"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Scaleborder Size"
+msgstr "Cỡ viền"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Font"
+msgstr "Phông mã"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Color"
+msgstr "Tọa độ tiếp theo"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Height"
+msgstr "Kiểm tra"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Close Highlight"
+msgstr "Tô sáng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Close H Offset"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Close V Offset"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Parent Folder"
+msgstr "Tạo thư mục"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Toggle Hidden"
+msgstr "Bật tắt File ẩn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Panel Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Separator"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Labeled Separator Left"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Labeled Separator Right"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color Accel"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Separator"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "V Separation"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Selected Frame"
+msgstr "Chọn Khung hình"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Default Frame"
+msgstr "Mặc định"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Default Focus"
+msgstr "Mặc định"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Comment Focus"
+msgstr "Cộng đồng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Breakpoint"
+msgstr "Điểm dừng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Separation"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Resizer"
+msgstr "Đổi kích cỡ được"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Close Color"
+msgstr "Màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Resizer Color"
+msgstr "Màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Offset"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Close Offset"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Port Offset"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "BG Focus"
+msgstr "Đường dẫn Tập trung"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Selected Focus"
+msgstr "Chọn"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Cursor Unfocused"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Button Pressed"
+msgstr "Được ấn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Button Normal"
+msgstr "Bật tắt Chức năng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Button Pressed"
+msgstr "Bật tắt Chức năng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Button Hover"
+msgstr "Bật tắt Chức năng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Custom Button"
+msgstr "Cắt các nút"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Custom Button Pressed"
+msgstr "Tùy chọn Bus"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Custom Button Hover"
+msgstr "Cắt các nút"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Select Arrow"
+msgstr "Chọn Toàn Bộ"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Arrow Collapsed"
+msgstr "Thu gọn Tất cả"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Button Font"
+msgstr "Bật tắt Chức năng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Title Button Color"
+msgstr "Chỉ chọn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Guide Color"
+msgstr "Chọn màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Drop Position Color"
+msgstr "Vị trí Khung"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Relationship Line Color"
+msgstr "Cảnh Hiện tại"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Custom Button Font Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Item Margin"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Button Margin"
+msgstr "Button (nút, phím)"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Draw Relationship Lines"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Draw Guides"
+msgstr "Hiện đường căn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Scroll Border"
+msgstr "Dọc:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Scroll Speed"
+msgstr "Độ lệch lưới:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Icon Margin"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Line Separation"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Tab Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Menu"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Menu Highlight"
+msgstr "Tô sáng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color FG"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Font Color BG"
+msgstr "Xóa mục Lớp"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Side Margin"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Top Margin"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Label V Align FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Label V Align BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Large"
+msgstr "Mục tiêu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Folder"
+msgstr "Thư mục:"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Folder Icon Modulate"
+msgstr "Bắt buộc Modulate trắng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "File Icon Modulate"
+msgstr "Bật tắt Chức năng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Files Disabled"
+msgstr "Các mục tắt"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "SV Width"
+msgstr "Chiều rộng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "SV Height"
+msgstr "Chiều cao"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "H Width"
+msgstr "Chiều rộng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Label Width"
+msgstr "Rộng bên trái"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Screen Picker"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Add Preset"
+msgstr "Nạp cài đặt trước"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Color Hue"
+msgstr "Chỉnh Tông màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Color Sample"
+msgstr "Màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Preset BG"
+msgstr "Cài sẵn"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Overbright Indicator"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Preset FG"
+msgstr "Cài sẵn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Preset BG Icon"
+msgstr "Cài sẵn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Normal Font"
+msgstr "Định dạng"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Bold Font"
+msgstr "Phông mã"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Italics Font"
+msgstr "Phông chính"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Bold Italics Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Mono Font"
+msgstr "Phông chính"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Table H Separation"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Table V Separation"
+msgstr "Thu phóng (theo tỉ lệ):"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Margin Left"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Margin Top"
+msgstr "Đặt Lề"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Margin Right"
+msgstr "Thụt lề phải"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Margin Bottom"
+msgstr "Chế độ chọn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Autohide"
+msgstr "Thụt lề Tự động"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Minus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "More"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Grid Minor"
+msgstr "Chọn màu"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Grid Major"
+msgstr "Bản đồ Lưới"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Selection Fill"
+msgstr "Chỉ chọn"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Selection Stroke"
+msgstr "Chọn Thuộc tính"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Activity"
+msgstr "Chọn tất cả"
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Bezier Len Pos"
+msgstr "Di chuyển các điểm Bezier"
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Bezier Len Neg"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Port Grab Distance Horizontal"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#, fuzzy
+msgid "Port Grab Distance Vertical"
+msgstr "Thêm vào Cảnh"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Hinting"
@@ -24906,17 +25631,6 @@ msgstr "Tuỳ chọn bổ sung:"
 #, fuzzy
 msgid "Char"
 msgstr "Ký tự hợp lệ:"
-
-#: scene/resources/dynamic_font.cpp scene/resources/world.cpp
-#: scene/resources/world_2d.cpp
-#, fuzzy
-msgid "Space"
-msgstr "Cảnh chính"
-
-#: scene/resources/dynamic_font.cpp
-#, fuzzy
-msgid "Font"
-msgstr "Phông chữ"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -25609,9 +26323,8 @@ msgid "Custom AABB"
 msgstr ""
 
 #: scene/resources/multimesh.cpp
-#, fuzzy
 msgid "Color Format"
-msgstr "Đổi Transform Animation"
+msgstr "Định dạng màu"
 
 #: scene/resources/multimesh.cpp
 #, fuzzy
@@ -26201,6 +26914,10 @@ msgid "Release (ms)"
 msgstr "Phát hành"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Mix"
+msgstr "Trộn"
+
+#: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Sidechain"
 msgstr ""
 
@@ -26745,6 +27462,11 @@ msgstr ""
 #: servers/visual_server.cpp
 msgid "Disable Half Float"
 msgstr ""
+
+#: servers/visual_server.cpp
+#, fuzzy
+msgid "Enable High Float"
+msgstr "Kích hoạt lọc"
 
 #: servers/visual_server.cpp
 #, fuzzy
