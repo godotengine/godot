@@ -463,7 +463,7 @@ void RasterizerStorage::multimesh_set_physics_interpolation_quality(RID p_multim
 void RasterizerStorage::multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index) {
 	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
-		ERR_FAIL_COND(p_index >= mmi->_num_instances);
+		ERR_FAIL_INDEX(p_index, mmi->_num_instances);
 
 		PoolVector<float>::Write w = mmi->_data_prev.write();
 		PoolVector<float>::Read r = mmi->_data_curr.read();
