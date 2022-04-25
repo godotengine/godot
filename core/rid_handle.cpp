@@ -66,7 +66,7 @@ RID_Database::RID_Database() {
 RID_Database::~RID_Database() {
 }
 
-String RID_Database::_rid_to_string(const RID &p_rid, const PoolElement &p_pe) {
+String RID_Database::_rid_to_string(const RID &p_rid, const PoolElement &p_pe) const {
 	String s = "RID id=" + itos(p_rid._id);
 	s += " [ rev " + itos(p_rid._revision) + " ], ";
 
@@ -206,7 +206,7 @@ void RID_Database::handle_make_rid(RID &r_rid, RID_Data *p_data, RID_OwnerBase *
 	ERR_FAIL_COND_MSG(!data_was_empty, "RID_Database make_rid, previous data was not empty.");
 }
 
-RID_Data *RID_Database::handle_get(const RID &p_rid) {
+RID_Data *RID_Database::handle_get(const RID &p_rid) const {
 	RID_Data *data = handle_get_or_null(p_rid);
 #ifdef RID_HANDLE_FLAG_NULL_GETS
 	ERR_FAIL_COND_V_MSG(!data, nullptr, "RID_Database get is NULL");
@@ -214,7 +214,7 @@ RID_Data *RID_Database::handle_get(const RID &p_rid) {
 	return data;
 }
 
-RID_Data *RID_Database::handle_getptr(const RID &p_rid) {
+RID_Data *RID_Database::handle_getptr(const RID &p_rid) const {
 	RID_Data *data = handle_get_or_null(p_rid);
 #ifdef RID_HANDLE_FLAG_NULL_GETS
 	ERR_FAIL_COND_V_MSG(!data, nullptr, "RID_Database getptr is NULL");
@@ -222,17 +222,11 @@ RID_Data *RID_Database::handle_getptr(const RID &p_rid) {
 	return data;
 }
 
-// Note, no locks used in the getters.
-// Godot 4.x does use locks in the getters, but it is arguably overkill because even though
-// the pointer returned will be correct (i.e. it has not been replaced during this call),
-// it can be invalidated during the client code use. (There may also be an internal reason why
-// locks are needed in 4.x, as the database is different.)
-// An example of a "safer" way to do this kind of thing is object level locking,
-// (but that has complications of its own), or atomic object changes.
-
-RID_Data *RID_Database::handle_get_or_null(const RID &p_rid) {
+RID_Data *RID_Database::handle_get_or_null(const RID &p_rid) const {
 	if (p_rid.is_valid()) {
 		ERR_FAIL_COND_V_MSG(_shutdown, nullptr, "RID_Database get_or_null after shutdown.");
+
+		MutexLock lock(_mutex);
 
 		// The if statement is to allow breakpointing without a recompile.
 		if (p_rid._id >= _pool.pool_reserved_size()) {
@@ -249,46 +243,44 @@ RID_Data *RID_Database::handle_get_or_null(const RID &p_rid) {
 	return nullptr;
 }
 
-bool RID_Database::handle_owns(const RID &p_rid) const {
-	ERR_FAIL_COND_V_MSG(_shutdown, false, "RID_Database owns after shutdown.");
+bool RID_Database::handle_is_owner(const RID &p_rid, const RID_OwnerBase *p_owner) const {
+	if (p_rid.is_valid()) {
+		ERR_FAIL_COND_V_MSG(_shutdown, false, "RID_Database handle_is_owner after shutdown.");
 
-	if (!p_rid.is_valid()) {
-		return false;
+		MutexLock lock(_mutex);
+
+		// The if statement is to allow breakpointing without a recompile.
+		if (p_rid._id >= _pool.pool_reserved_size()) {
+			ERR_FAIL_COND_V_MSG(p_rid._id >= _pool.pool_reserved_size(), false, "RID_Database handle_is_owner, RID id was outside pool size.");
+		}
+
+		const PoolElement &pe = _pool[p_rid._id];
+		if (pe.revision != p_rid._revision) {
+			ERR_FAIL_COND_V_MSG(pe.revision != p_rid._revision, false, "RID handle_is_owner, revision is incorrect, possible dangling RID. " + _rid_to_string(p_rid, pe));
+		}
+
+		return pe.data->_owner == p_owner;
 	}
-
-	if (p_rid._id >= _pool.pool_reserved_size()) {
-		return false;
-	}
-
-	const PoolElement &pe = _pool[p_rid._id];
-	if (pe.revision != p_rid._revision) {
-		return false;
-	}
-
-	if (!pe.data) {
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 void RID_Database::handle_free(const RID &p_rid) {
 	ERR_FAIL_COND_MSG(_shutdown, "RID_Database free after shutdown.");
 	bool revision_correct = true;
 
-	ERR_FAIL_COND_MSG(p_rid._id >= _pool.pool_reserved_size(), "RID_Database free, RID id was outside pool size.");
-	_mutex.lock();
-	PoolElement &pe = _pool[p_rid._id];
-	revision_correct = pe.revision == p_rid._revision;
+	{
+		MutexLock lock(_mutex);
+		ERR_FAIL_COND_MSG(p_rid._id >= _pool.pool_reserved_size(), "RID_Database free, RID id was outside pool size.");
+		PoolElement &pe = _pool[p_rid._id];
+		revision_correct = pe.revision == p_rid._revision;
 
-	// mark the data as zero, which indicates unused element
-	if (revision_correct) {
-		pe.data->_owner = nullptr;
-		pe.data = nullptr;
-		_pool.free(p_rid._id);
+		// mark the data as zero, which indicates unused element
+		if (revision_correct) {
+			pe.data->_owner = nullptr;
+			pe.data = nullptr;
+			_pool.free(p_rid._id);
+		}
 	}
-
-	_mutex.unlock();
 
 	ERR_FAIL_COND_MSG(!revision_correct, "RID_Database free, revision is incorrect, object possibly freed more than once.");
 }
@@ -299,10 +291,11 @@ RID RID_Database::prime(const RID &p_rid, int p_line_number, const char *p_filen
 		ERR_FAIL_COND_V_MSG(_shutdown, p_rid, "RID_Database prime after shutdown.");
 		ERR_FAIL_COND_V_MSG(p_rid._id >= _pool.pool_reserved_size(), p_rid, "RID_Database prime, RID id was outside pool size.");
 
+		// We could also probably get away without using a lock here if purely for debugging, and not for release editor / templates.
+		MutexLock lock(_mutex);
 		PoolElement &pe = _pool[p_rid._id];
 		ERR_FAIL_COND_V_MSG(pe.revision != p_rid._revision, p_rid, "RID_Database prime, revision is incorrect, object possibly freed before use.");
 
-		// no threading checks as it the tracking info doesn't matter if there is a race condition
 		pe.line_number = p_line_number;
 		pe.filename = p_filename;
 	}
