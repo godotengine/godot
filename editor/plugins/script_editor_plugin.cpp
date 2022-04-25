@@ -1613,7 +1613,7 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			help_search->set_icon(get_theme_icon(SNAME("HelpSearch"), SNAME("EditorIcons")));
-			site_search->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			site_search->set_icon(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 
 			if (is_layout_rtl()) {
 				script_forward->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
