@@ -1496,7 +1496,26 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+
+		// Check if the "Open C++ Source on GitHub" option should be shown
+		bool source_present = false;
+		TreeItem *ti = error_tree->get_selected();
+		while (ti->get_parent() != error_tree->get_root()) {
+			ti = ti->get_parent();
+		}
+		// Start looking at the first child
+		TreeItem *ci = ti->get_first_child();
+		while (ci != nullptr) {
+			if (ci->get_text(0) == ("<" + TTR("C++ Source") + ">")) {
+				// Found the right field
+				source_present = true;
+				break;
+			}
+			ci = ci->get_next();
+		}
+		if (source_present) {
+			item_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		}
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1540,8 +1559,17 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ti = ti->get_parent();
 			}
 
-			// We only need the first child here (C++ source stack trace).
+			// Start looking at the first child
 			TreeItem *ci = ti->get_first_child();
+			while (ci != nullptr) {
+				if (ci->get_text(0) == ("<" + TTR("C++ Source") + ">")) {
+					// Found the right field
+					break;
+				}
+				ci = ci->get_next();
+			}
+			ERR_FAIL_NULL_MSG(ci, "Error C++ source stack trace is missing (please report).");
+
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
