@@ -193,28 +193,45 @@
 				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
 			</description>
 		</method>
-		<method name="find_nodes" qualifiers="const">
+		<method name="find_child" qualifiers="const">
+			<return type="Node" />
+			<argument index="0" name="pattern" type="String" />
+			<argument index="1" name="recursive" type="bool" default="true" />
+			<argument index="2" name="owned" type="bool" default="true" />
+			<description>
+				Finds the first descendant of this node whose name matches [code]pattern[/code] as in [method String.match].
+				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				Returns [code]null[/code] if no matching [Node] is found.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
+				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
+			</description>
+		</method>
+		<method name="find_children" qualifiers="const">
 			<return type="Node[]" />
-			<argument index="0" name="mask" type="String" />
+			<argument index="0" name="pattern" type="String" />
 			<argument index="1" name="type" type="String" default="&quot;&quot;" />
 			<argument index="2" name="recursive" type="bool" default="true" />
 			<argument index="3" name="owned" type="bool" default="true" />
 			<description>
-				Finds descendants of this node whose, name matches [code]mask[/code] as in [method String.match], and/or type matches [code]type[/code] as in [method Object.is_class].
-				[code]mask[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
-				[code]type[/code] will check equality or inheritance. It is case-sensitive, [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
-				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
-				Returns an empty array, if no matching nodes are found.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. To avoid using [method find_nodes] too often, consider caching the node references into variables.
+				Finds descendants of this node whose name matches [code]pattern[/code] as in [method String.match], and/or type matches [code]type[/code] as in [method Object.is_class].
+				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[code]type[/code] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
+				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				Returns an empty array if no matching nodes are found.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.
+				[b]Note:[/b] If you only want to find the first descendant node that matches a pattern, see [method find_child].
 			</description>
 		</method>
 		<method name="find_parent" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="mask" type="String" />
+			<argument index="0" name="pattern" type="String" />
 			<description>
-				Finds the first parent of the current node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]).
-				[b]Note:[/b] It does not match against the full path, just against individual node names.
-				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] instead. To avoid using [method find_parent] too often, consider caching the node reference into a variable.
+				Finds the first parent of the current node whose name matches [code]pattern[/code] as in [method String.match].
+				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 			</description>
 		</method>
 		<method name="get_child" qualifiers="const">
@@ -492,12 +509,6 @@
 				Returns [code]true[/code] if the node is processing unhandled key input (see [method set_process_unhandled_key_input]).
 			</description>
 		</method>
-		<method name="is_unique_name_in_owner" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns whether the node is an unique name for all the other nodes owned by its [member owner].
-			</description>
-		</method>
 		<method name="move_child">
 			<return type="void" />
 			<argument index="0" name="child_node" type="Node" />
@@ -725,13 +736,6 @@
 				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
 		</method>
-		<method name="set_unique_name_in_owner">
-			<return type="void" />
-			<argument index="0" name="enable" type="bool" />
-			<description>
-				Sets this node's name as the unique name in its [member owner]. This allows the node to be accessed as [code]%Name[/code] instead of the full path, from any node within that scene.
-			</description>
-		</method>
 		<method name="update_configuration_warnings">
 			<return type="void" />
 			<description>
@@ -766,6 +770,10 @@
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			If a scene is instantiated from a file, its topmost node contains the absolute file path from which it was loaded in [member scene_file_path] (e.g. [code]res://levels/1.tscn[/code]). Otherwise, [member scene_file_path] is set to an empty string.
+		</member>
+		<member name="unique_name_in_owner" type="bool" setter="set_unique_name_in_owner" getter="is_unique_name_in_owner" default="false">
+			Sets this node's name as a unique name in its [member owner]. This allows the node to be accessed as [code]%Name[/code] instead of the full path, from any node within that scene.
+			If another node with the same owner already had that name declared as unique, that other node's name will no longer be set as having a unique name.
 		</member>
 	</members>
 	<signals>

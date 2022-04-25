@@ -1373,9 +1373,39 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bool p_recursive, bool p_owned) const {
+// Finds the first child node (in tree order) whose name matches the given pattern.
+// Can be recursive or not, and limited to owned nodes.
+Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) const {
+	ERR_FAIL_COND_V(p_pattern.is_empty(), nullptr);
+
+	Node *const *cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner) {
+			continue;
+		}
+		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+			return cptr[i];
+		}
+
+		if (!p_recursive) {
+			continue;
+		}
+
+		Node *ret = cptr[i]->find_child(p_pattern, true, p_owned);
+		if (ret) {
+			return ret;
+		}
+	}
+	return nullptr;
+}
+
+// Finds child nodes based on their name using pattern matching, or class name,
+// or both (either pattern or type can be left empty).
+// Can be recursive or not, and limited to owned nodes.
+TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	TypedArray<Node> ret;
-	ERR_FAIL_COND_V(p_mask.is_empty() && p_type.is_empty(), ret);
+	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
 
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
@@ -1384,8 +1414,8 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 			continue;
 		}
 
-		if (!p_mask.is_empty()) {
-			if (!cptr[i]->data.name.operator String().match(p_mask)) {
+		if (!p_pattern.is_empty()) {
+			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
 				continue;
 			} else if (p_type.is_empty()) {
 				ret.append(cptr[i]);
@@ -1407,7 +1437,7 @@ TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bo
 		}
 
 		if (p_recursive) {
-			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
+			ret.append_array(cptr[i]->find_children(p_pattern, p_type, true, p_owned));
 		}
 	}
 
@@ -1418,10 +1448,10 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
-Node *Node::find_parent(const String &p_mask) const {
+Node *Node::find_parent(const String &p_pattern) const {
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_mask)) {
+		if (p->data.name.operator String().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -1542,7 +1572,9 @@ void Node::_acquire_unique_name_in_owner() {
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
-		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'. This node is no longer set unique."), get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which)));
+		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
+		WARN_PRINT(vformat(RTR("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name."),
+				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
 		data.unique_name_in_owner = false;
 		return;
 	}
@@ -2780,8 +2812,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_nodes", "mask", "type", "recursive", "owned"), &Node::find_nodes, DEFVAL(""), DEFVAL(true), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
+	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
@@ -2871,8 +2904,6 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_unique_name_in_owner", "is_unique_name_in_owner");
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
@@ -2964,6 +2995,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
