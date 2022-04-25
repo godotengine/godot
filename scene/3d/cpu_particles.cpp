@@ -637,6 +637,16 @@ void CPUParticles::_particles_process(float p_delta) {
 	bool streaky = _streaky && _interpolated && fractional_delta;
 	real_t streak_fraction = 1.0f;
 
+	PoolVector<Vector3>::Read emission_points_r;
+	PoolVector<Vector3>::Read emission_normals_r;
+	PoolVector<Color>::Read emission_colors_r;
+
+	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		emission_points_r = emission_points.read();
+		emission_normals_r = emission_normals.read();
+		emission_colors_r = emission_colors.read();
+	}
+
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
@@ -804,18 +814,18 @@ void CPUParticles::_particles_process(float p_delta) {
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
-					int pc = emission_points.size();
+					int pc = emission_points_r.size();
 					if (pc == 0) {
 						break;
 					}
 
 					int random_idx = Math::rand() % pc;
 
-					p.transform.origin = emission_points.get(random_idx);
+					p.transform.origin = emission_points_r.get(random_idx);
 
-					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
+					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals_r.size() == pc) {
 						if (flags[FLAG_DISABLE_Z]) {
-							Vector3 normal = emission_normals.get(random_idx);
+							Vector3 normal = emission_normals_r.get(random_idx);
 							Vector2 normal_2d(normal.x, normal.y);
 							Transform2D m2;
 							m2.set_axis(0, normal_2d);
@@ -825,7 +835,7 @@ void CPUParticles::_particles_process(float p_delta) {
 							p.velocity.x = velocity_2d.x;
 							p.velocity.y = velocity_2d.y;
 						} else {
-							Vector3 normal = emission_normals.get(random_idx);
+							Vector3 normal = emission_normals_r.get(random_idx);
 							Vector3 v0 = Math::abs(normal.z) < 0.999 ? Vector3(0.0, 0.0, 1.0) : Vector3(0, 1.0, 0.0);
 							Vector3 tangent = v0.cross(normal).normalized();
 							Vector3 bitangent = tangent.cross(normal).normalized();
@@ -837,8 +847,8 @@ void CPUParticles::_particles_process(float p_delta) {
 						}
 					}
 
-					if (emission_colors.size() == pc) {
-						p.base_color = emission_colors.get(random_idx);
+					if (emission_colors_r.size() == pc) {
+						p.base_color = emission_colors_r.get(random_idx);
 					}
 				} break;
 				case EMISSION_SHAPE_RING: {

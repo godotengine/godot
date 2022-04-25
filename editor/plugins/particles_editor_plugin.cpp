@@ -38,6 +38,9 @@
 bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
 	bool use_normals = emission_fill->get_selected() == 1;
 
+	PoolVector<Vector3>::Write points_w = points.write();
+	PoolVector<Vector3>::Write normals_w = normals.write();
+
 	if (emission_fill->get_selected() < 2) {
 		float area_accum = 0;
 		Map<float, int> triangle_area_map;
@@ -72,11 +75,11 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 			Vector3 pos = face.get_random_point_inside();
 
-			points.push_back(pos);
+			points_w.push_back(pos);
 
 			if (use_normals) {
 				Vector3 normal = face.get_plane().normal;
-				normals.push_back(normal);
+				normals_w.push_back(normal);
 			}
 		}
 	} else {
@@ -144,7 +147,7 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 				Vector3 point = ofs + dir * val;
 
-				points.push_back(point);
+				points_w.push_back(point);
 				break;
 			}
 		}

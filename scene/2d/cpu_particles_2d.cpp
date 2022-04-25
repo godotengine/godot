@@ -610,6 +610,16 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 	float system_phase = time / lifetime;
 
+	PoolVector<Vector2>::Read emission_points_r;
+	PoolVector<Vector2>::Read emission_normals_r;
+	PoolVector<Color>::Read emission_colors_r;
+
+	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		emission_points_r = emission_points.read();
+		emission_normals_r = emission_normals.read();
+		emission_colors_r = emission_colors.read();
+	}
+
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
@@ -735,25 +745,25 @@ void CPUParticles2D::_particles_process(float p_delta) {
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
-					int pc = emission_points.size();
+					int pc = emission_points_r.size();
 					if (pc == 0) {
 						break;
 					}
 
 					int random_idx = Math::rand() % pc;
 
-					p.transform[2] = emission_points.get(random_idx);
+					p.transform[2] = emission_points_r.get(random_idx);
 
-					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
-						Vector2 normal = emission_normals.get(random_idx);
+					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals_r.size() == pc) {
+						Vector2 normal = emission_normals_r.get(random_idx);
 						Transform2D m2;
 						m2.set_axis(0, normal);
 						m2.set_axis(1, normal.tangent());
 						p.velocity = m2.basis_xform(p.velocity);
 					}
 
-					if (emission_colors.size() == pc) {
-						p.base_color = emission_colors.get(random_idx);
+					if (emission_colors_r.size() == pc) {
+						p.base_color = emission_colors_r.get(random_idx);
 					}
 				} break;
 				case EMISSION_SHAPE_MAX: { // Max value for validity check.

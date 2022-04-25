@@ -30,35 +30,51 @@
 
 #include "pool_vector.h"
 
-Mutex pool_vector_lock;
+#ifdef GODOT_POOL_VECTOR_REPORT_LEAKS
+#include "core/print_string.h"
+#endif
 
-PoolAllocator *MemoryPool::memory_pool = nullptr;
-uint8_t *MemoryPool::pool_memory = nullptr;
-size_t *MemoryPool::pool_size = nullptr;
-
-MemoryPool::Alloc *MemoryPool::allocs = nullptr;
-MemoryPool::Alloc *MemoryPool::free_list = nullptr;
-uint32_t MemoryPool::alloc_count = 0;
+Mutex MemoryPool::counter_mutex;
 uint32_t MemoryPool::allocs_used = 0;
-Mutex MemoryPool::alloc_mutex;
-
 size_t MemoryPool::total_memory = 0;
 size_t MemoryPool::max_memory = 0;
 
-void MemoryPool::setup(uint32_t p_max_allocs) {
-	allocs = memnew_arr(Alloc, p_max_allocs);
-	alloc_count = p_max_allocs;
-	allocs_used = 0;
+#ifdef GODOT_POOL_VECTOR_REPORT_LEAKS
+struct PoolVector_AllocLog {
+	void *addr;
+	int line;
+};
 
-	for (uint32_t i = 0; i < alloc_count - 1; i++) {
-		allocs[i].free_list = &allocs[i + 1];
-	}
+LocalVector<PoolVector_AllocLog> g_pool_vector_alloc_list;
 
-	free_list = &allocs[0];
+void MemoryPool::report_alloc(void *p_alloc, int p_line) {
+	MemoryPool::counter_mutex.lock();
+	PoolVector_AllocLog l;
+	l.addr = p_alloc;
+	l.line = p_line;
+
+	g_pool_vector_alloc_list.push_back(l);
+	MemoryPool::counter_mutex.unlock();
 }
 
-void MemoryPool::cleanup() {
-	memdelete_arr(allocs);
+void MemoryPool::report_free(void *p_alloc) {
+	MemoryPool::counter_mutex.lock();
+	for (unsigned int n = 0; n < g_pool_vector_alloc_list.size(); n++) {
+		if (g_pool_vector_alloc_list[n].addr == p_alloc) {
+			g_pool_vector_alloc_list.remove_unordered(n);
+			MemoryPool::counter_mutex.unlock();
+			return;
+		}
+	}
+	MemoryPool::alloc_mutex.unlock();
 
-	ERR_FAIL_COND_MSG(allocs_used > 0, "There are still MemoryPool allocs in use at exit!");
+	ERR_PRINT("report_free alloc not found");
+}
+
+#endif // !GODOT_POOL_VECTOR_REPORT_LEAKS
+
+void MemoryPool::report_leaks() {
+#ifdef GODOT_POOL_VECTOR_REPORT_LEAKS
+	print_line("MemoryPool reports " + itos(g_pool_vector_alloc_list.size()) + " leaks.");
+#endif
 }

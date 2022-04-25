@@ -530,15 +530,16 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 	}
 
 	PoolStringArray autoloads;
+	PoolStringArray::Write autoloads_w = autoloads.write();
 
 	TreeItem *next = tree->get_next_selected(nullptr);
 
 	while (next) {
-		autoloads.push_back(next->get_text(0));
+		autoloads_w.push_back(next->get_text(0));
 		next = tree->get_next_selected(next);
 	}
 
-	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size()) {
+	if (autoloads_w.size() == 0 || autoloads_w.size() == autoload_cache.size()) {
 		return Variant();
 	}
 

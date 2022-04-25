@@ -117,4 +117,22 @@ using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
 
 #endif // !NO_THREADS
 
+template <class T>
+class LockGuard {
+	T &_mtx;
+
+public:
+	explicit LockGuard(T &p_mtx) :
+			_mtx(p_mtx) {
+		_mtx.lock();
+	}
+
+	~LockGuard() {
+		_mtx.unlock();
+	}
+
+	LockGuard(const LockGuard &) = delete;
+	LockGuard &operator=(const LockGuard &) = delete;
+};
+
 #endif // MUTEX_H

@@ -1567,10 +1567,12 @@ PoolVector<String> AnimationTreePlayer::_get_node_list() {
 	List<StringName> nl;
 	get_node_list(&nl);
 	PoolVector<String> ret;
-	ret.resize(nl.size());
+	PoolVector<String>::Write w = ret.write();
+
+	w.resize(nl.size());
 	int idx = 0;
 	for (List<StringName>::Element *E = nl.front(); E; E = E->next()) {
-		ret.set(idx++, E->get());
+		w.set(idx++, E->get());
 	}
 
 	return ret;

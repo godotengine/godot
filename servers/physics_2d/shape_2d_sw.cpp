@@ -645,11 +645,12 @@ void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
 
 Variant ConvexPolygonShape2DSW::get_data() const {
 	PoolVector<Vector2> dvr;
+	PoolVector<Vector2>::Write dvr_w = dvr.write();
 
-	dvr.resize(point_count);
+	dvr_w.resize(point_count);
 
 	for (int i = 0; i < point_count; i++) {
-		dvr.set(i, points[i].pos);
+		dvr_w.set(i, points[i].pos);
 	}
 
 	return dvr;

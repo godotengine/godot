@@ -922,10 +922,12 @@ PoolStringArray HTTPClient::_get_response_headers() {
 	List<String> rh;
 	get_response_headers(&rh);
 	PoolStringArray ret;
-	ret.resize(rh.size());
+	PoolStringArray::Write ret_w = ret.write();
+
+	ret_w.resize(rh.size());
 	int idx = 0;
 	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
-		ret.set(idx++, E->get());
+		ret_w.set(idx++, E->get());
 	}
 
 	return ret;

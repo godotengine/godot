@@ -489,6 +489,8 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 
 	};
 
+	PoolVector<Face3>::Write p_faces_w = p_faces.write();
+
 	for (int i = 0; i < 6; i++) {
 		Vector3 face_points[4];
 		int disp_x = x + ((i % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
@@ -519,13 +521,13 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 			face_points[j] = vert(indices[i][j]) + Vector3(x, y, z);
 		}
 
-		p_faces.push_back(
+		p_faces_w.push_back(
 				Face3(
 						face_points[0],
 						face_points[1],
 						face_points[2]));
 
-		p_faces.push_back(
+		p_faces_w.push_back(
 				Face3(
 						face_points[2],
 						face_points[3],
@@ -842,13 +844,14 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 
 PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
 	PoolVector<Plane> planes;
+	PoolVector<Plane>::Write planes_w = planes.write();
 
-	planes.push_back(Plane(Vector3(1, 0, 0), p_extents.x));
-	planes.push_back(Plane(Vector3(-1, 0, 0), p_extents.x));
-	planes.push_back(Plane(Vector3(0, 1, 0), p_extents.y));
-	planes.push_back(Plane(Vector3(0, -1, 0), p_extents.y));
-	planes.push_back(Plane(Vector3(0, 0, 1), p_extents.z));
-	planes.push_back(Plane(Vector3(0, 0, -1), p_extents.z));
+	planes_w.push_back(Plane(Vector3(1, 0, 0), p_extents.x));
+	planes_w.push_back(Plane(Vector3(-1, 0, 0), p_extents.x));
+	planes_w.push_back(Plane(Vector3(0, 1, 0), p_extents.y));
+	planes_w.push_back(Plane(Vector3(0, -1, 0), p_extents.y));
+	planes_w.push_back(Plane(Vector3(0, 0, 1), p_extents.z));
+	planes_w.push_back(Plane(Vector3(0, 0, -1), p_extents.z));
 
 	return planes;
 }
@@ -857,20 +860,21 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
+	PoolVector<Plane>::Write planes_w = planes.write();
 
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * (real_t)(2.0 * Math_PI) / p_sides);
 		normal[(p_axis + 2) % 3] = Math::sin(i * (real_t)(2.0 * Math_PI) / p_sides);
 
-		planes.push_back(Plane(normal, p_radius));
+		planes_w.push_back(Plane(normal, p_radius));
 	}
 
 	Vector3 axis;
 	axis[p_axis] = 1.0;
 
-	planes.push_back(Plane(axis, p_height * 0.5f));
-	planes.push_back(Plane(-axis, p_height * 0.5f));
+	planes_w.push_back(Plane(axis, p_height * 0.5f));
+	planes_w.push_back(Plane(-axis, p_height * 0.5f));
 
 	return planes;
 }
@@ -879,6 +883,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
+	PoolVector<Plane>::Write planes_w = planes.write();
 
 	Vector3 axis;
 	axis[p_axis] = 1;
@@ -893,14 +898,14 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 		normal[(p_axis + 1) % 3] = Math::cos(i * (real_t)(2.0 * Math_PI) / p_lons);
 		normal[(p_axis + 2) % 3] = Math::sin(i * (real_t)(2.0 * Math_PI) / p_lons);
 
-		planes.push_back(Plane(normal, p_radius));
+		planes_w.push_back(Plane(normal, p_radius));
 
 		for (int j = 1; j <= p_lats; j++) {
 			// FIXME: This is stupid.
 			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = angle * p_radius;
-			planes.push_back(Plane(pos, angle));
-			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
+			planes_w.push_back(Plane(pos, angle));
+			planes_w.push_back(Plane(pos * axis_neg, angle * axis_neg));
 		}
 	}
 
@@ -911,6 +916,7 @@ PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_heigh
 	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
+	PoolVector<Plane>::Write planes_w = planes.write();
 
 	Vector3 axis;
 	axis[p_axis] = 1;
@@ -925,13 +931,13 @@ PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_heigh
 		normal[(p_axis + 1) % 3] = Math::cos(i * (real_t)(2.0 * Math_PI) / p_sides);
 		normal[(p_axis + 2) % 3] = Math::sin(i * (real_t)(2.0 * Math_PI) / p_sides);
 
-		planes.push_back(Plane(normal, p_radius));
+		planes_w.push_back(Plane(normal, p_radius));
 
 		for (int j = 1; j <= p_lats; j++) {
 			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = axis * p_height * 0.5f + angle * p_radius;
-			planes.push_back(Plane(pos, angle));
-			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
+			planes_w.push_back(Plane(pos, angle));
+			planes_w.push_back(Plane(pos * axis_neg, angle * axis_neg));
 		}
 	}
 

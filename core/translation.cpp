@@ -818,11 +818,14 @@ static const char *locale_renames[][2] = {
 
 PoolVector<String> Translation::_get_messages() const {
 	PoolVector<String> msgs;
-	msgs.resize(translation_map.size() * 2);
+	PoolVector<String>::Write w = msgs.write();
+
+	w.resize(translation_map.size() * 2);
 	int idx = 0;
+
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx + 0, E->key());
-		msgs.set(idx + 1, E->get());
+		w.set(idx + 0, E->key());
+		w.set(idx + 1, E->get());
 		idx += 2;
 	}
 
@@ -831,10 +834,13 @@ PoolVector<String> Translation::_get_messages() const {
 
 PoolVector<String> Translation::_get_message_list() const {
 	PoolVector<String> msgs;
-	msgs.resize(translation_map.size());
+	PoolVector<String>::Write w = msgs.write();
+
+	w.resize(translation_map.size());
 	int idx = 0;
+
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx, E->key());
+		w.set(idx, E->key());
 		idx += 1;
 	}
 

@@ -1998,8 +1998,9 @@ Variant::operator Orientation() const {
 Variant::operator IP_Address() const {
 	if (type == POOL_REAL_ARRAY || type == POOL_INT_ARRAY || type == POOL_BYTE_ARRAY) {
 		PoolVector<int> addr = operator PoolVector<int>();
-		if (addr.size() == 4) {
-			return IP_Address(addr.get(0), addr.get(1), addr.get(2), addr.get(3));
+		PoolVector<int>::Read addr_r = addr.read();
+		if (addr_r.size() == 4) {
+			return IP_Address(addr_r.get(0), addr_r.get(1), addr_r.get(2), addr_r.get(3));
 		}
 	}
 
@@ -2299,9 +2300,11 @@ Variant::Variant(const Vector<uint8_t> &p_array) {
 	type = NIL;
 	PoolVector<uint8_t> v;
 	int len = p_array.size();
-	v.resize(len);
+
+	PoolVector<uint8_t>::Write w = v.write();
+	w.resize(len);
 	for (int i = 0; i < len; i++) {
-		v.set(i, p_array[i]);
+		w.set(i, p_array[i]);
 	}
 	*this = v;
 }
@@ -2310,9 +2313,11 @@ Variant::Variant(const Vector<int> &p_array) {
 	type = NIL;
 	PoolVector<int> v;
 	int len = p_array.size();
-	v.resize(len);
+
+	PoolVector<int>::Write w = v.write();
+	w.resize(len);
 	for (int i = 0; i < len; i++) {
-		v.set(i, p_array[i]);
+		w.set(i, p_array[i]);
 	}
 	*this = v;
 }
@@ -2321,9 +2326,11 @@ Variant::Variant(const Vector<real_t> &p_array) {
 	type = NIL;
 	PoolVector<real_t> v;
 	int len = p_array.size();
-	v.resize(len);
+
+	PoolVector<real_t>::Write w = v.write();
+	w.resize(len);
 	for (int i = 0; i < len; i++) {
-		v.set(i, p_array[i]);
+		w.set(i, p_array[i]);
 	}
 	*this = v;
 }
@@ -2332,9 +2339,11 @@ Variant::Variant(const Vector<String> &p_array) {
 	type = NIL;
 	PoolVector<String> v;
 	int len = p_array.size();
-	v.resize(len);
+
+	PoolVector<String>::Write w = v.write();
+	w.resize(len);
 	for (int i = 0; i < len; i++) {
-		v.set(i, p_array[i]);
+		w.set(i, p_array[i]);
 	}
 	*this = v;
 }
@@ -2343,9 +2352,11 @@ Variant::Variant(const Vector<StringName> &p_array) {
 	type = NIL;
 	PoolVector<String> v;
 	int len = p_array.size();
-	v.resize(len);
+
+	PoolVector<String>::Write w = v.write();
+	w.resize(len);
 	for (int i = 0; i < len; i++) {
-		v.set(i, p_array[i]);
+		w.set(i, p_array[i]);
 	}
 	*this = v;
 }
@@ -2355,8 +2366,8 @@ Variant::Variant(const Vector<Vector3> &p_array) {
 	PoolVector<Vector3> v;
 	int len = p_array.size();
 	if (len > 0) {
-		v.resize(len);
 		PoolVector<Vector3>::Write w = v.write();
+		w.resize(len);
 		const Vector3 *r = p_array.ptr();
 
 		for (int i = 0; i < len; i++) {
@@ -2370,9 +2381,11 @@ Variant::Variant(const Vector<Color> &p_array) {
 	type = NIL;
 	PoolVector<Color> v;
 	int len = p_array.size();
-	v.resize(len);
+
+	PoolVector<Color>::Write w = v.write();
+	w.resize(len);
 	for (int i = 0; i < len; i++) {
-		v.set(i, p_array[i]);
+		w.set(i, p_array[i]);
 	}
 	*this = v;
 }

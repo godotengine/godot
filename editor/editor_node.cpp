@@ -703,9 +703,11 @@ void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
 	List<Ref<Resource>> changed;
 
-	int rc = p_resources.size();
+	PoolVector<String>::Read resources_r = p_resources.read();
+
+	int rc = resources_r.size();
 	for (int i = 0; i < rc; i++) {
-		Ref<Resource> res(ResourceCache::get(p_resources.get(i)));
+		Ref<Resource> res(ResourceCache::get(resources_r.get(i)));
 		if (res.is_null()) {
 			continue;
 		}

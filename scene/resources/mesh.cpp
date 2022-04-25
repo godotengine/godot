@@ -215,18 +215,21 @@ Ref<Shape> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 
 Ref<Shape> Mesh::create_trimesh_shape() const {
 	PoolVector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	PoolVector<Face3>::Read faces_r = faces.read();
+
+	if (faces_r.size() == 0) {
 		return Ref<Shape>();
 	}
 
 	PoolVector<Vector3> face_points;
-	face_points.resize(faces.size() * 3);
+	PoolVector<Vector3>::Write face_points_w = face_points.write();
+	face_points_w.resize(faces.size() * 3);
 
-	for (int i = 0; i < face_points.size(); i += 3) {
-		Face3 f = faces.get(i / 3);
-		face_points.set(i, f.vertex[0]);
-		face_points.set(i + 1, f.vertex[1]);
-		face_points.set(i + 2, f.vertex[2]);
+	for (int i = 0; i < face_points_w.size(); i += 3) {
+		Face3 f = faces_r.get(i / 3);
+		face_points_w.set(i, f.vertex[0]);
+		face_points_w.set(i + 1, f.vertex[1]);
+		face_points_w.set(i + 2, f.vertex[2]);
 	}
 
 	Ref<ConcavePolygonShape> shape = memnew(ConcavePolygonShape);
