@@ -769,6 +769,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PrismMesh);
 	GDREGISTER_CLASS(QuadMesh);
 	GDREGISTER_CLASS(SphereMesh);
+	GDREGISTER_CLASS(TextMesh);
 	GDREGISTER_CLASS(TubeTrailMesh);
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
