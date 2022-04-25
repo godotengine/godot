@@ -208,7 +208,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), get_theme_color(SNAME("font_disabled_color")));
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), get_theme_color(SNAME("font_outline_color")));
 	tab_bar->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("font")));
-	tab_bar->add_theme_constant_override(SNAME("font_size"), get_theme_constant(SNAME("font_size")));
+	tab_bar->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("font_size")));
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), get_theme_constant(SNAME("icon_separation")));
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), get_theme_constant(SNAME("outline_size")));
 
