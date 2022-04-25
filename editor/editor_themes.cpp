@@ -489,6 +489,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("axis_x_color", "Editor", Color(0.96, 0.20, 0.32));
 	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
 	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
+	theme->set_color("axis_w_color", "Editor", Color(0.55, 0.55, 0.55));
 
 	const float prop_color_saturation = accent_color.get_s() * 0.75;
 	const float prop_color_value = accent_color.get_v();
