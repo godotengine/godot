@@ -146,7 +146,7 @@ public:
 	StringName get_edited_property();
 
 	virtual void update_property();
-	void update_revert_and_pin_status();
+	void update_editor_property_status();
 
 	virtual bool use_keying_next() const;
 

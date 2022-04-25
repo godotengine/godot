@@ -453,9 +453,19 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 	return PropertyUtils::is_property_value_different(current_value, revert_value);
 }
 
-void EditorProperty::update_revert_and_pin_status() {
+void EditorProperty::update_editor_property_status() {
 	if (property == StringName()) {
 		return; //no property, so nothing to do
+	}
+
+	bool new_checked = checked;
+	if (checkable) {
+		bool valid = false;
+		Variant value = object->get(property, &valid);
+		if (valid) {
+			bool value_is_null = value.get_type() == Variant::NIL || (value.get_type() == Variant::OBJECT && value.is_null());
+			new_checked = !value_is_null;
+		}
 	}
 
 	bool new_pinned = false;
@@ -466,9 +476,10 @@ void EditorProperty::update_revert_and_pin_status() {
 	}
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property) && !is_read_only();
 
-	if (new_can_revert != can_revert || new_pinned != pinned) {
+	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked) {
 		can_revert = new_can_revert;
 		pinned = new_pinned;
+		checked = new_checked;
 		update();
 	}
 }
@@ -959,7 +970,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
 	GDVIRTUAL_BIND(_update_property)
-	ClassDB::bind_method(D_METHOD("_update_revert_and_pin_status"), &EditorProperty::update_revert_and_pin_status);
+	ClassDB::bind_method(D_METHOD("_update_editor_property_status"), &EditorProperty::update_editor_property_status);
 }
 
 EditorProperty::EditorProperty() {
@@ -2350,7 +2361,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 			ep->set_read_only(read_only);
 			ep->update_property();
 			ep->_update_pin_flags();
-			ep->update_revert_and_pin_status();
+			ep->update_editor_property_status();
 			ep->set_deletable(deletable_properties);
 			ep->update_cache();
 		}
@@ -2963,7 +2974,7 @@ void EditorInspector::update_tree() {
 					}
 					ep->update_property();
 					ep->_update_pin_flags();
-					ep->update_revert_and_pin_status();
+					ep->update_editor_property_status();
 					ep->update_cache();
 
 					if (current_selected && ep->property == current_selected) {
@@ -3002,7 +3013,7 @@ void EditorInspector::update_property(const String &p_prop) {
 
 	for (EditorProperty *E : editor_property_map[p_prop]) {
 		E->update_property();
-		E->update_revert_and_pin_status();
+		E->update_editor_property_status();
 		E->update_cache();
 	}
 }
@@ -3212,14 +3223,6 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 }
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
-	if (autoclear && editor_property_map.has(p_name)) {
-		for (EditorProperty *E : editor_property_map[p_name]) {
-			if (E->is_checkable()) {
-				E->set_checked(true);
-			}
-		}
-	}
-
 	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
 		object->set(p_name, p_value);
 		if (p_refresh_all) {
@@ -3229,78 +3232,74 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 
 		emit_signal(_prop_edited, p_name);
+		return;
+	}
 
-	} else if (Object::cast_to<MultiNodeEdit>(object)) {
+	// Null (nil or nullptr) means not set/overridden.
+	bool value_is_null = p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && p_value.is_null());
+	bool valid = false;
+	Variant value = object->get(p_name, &valid);
+
+	if (Object::cast_to<MultiNodeEdit>(object)) {
+		undo_redo->create_action(vformat(value_is_null ? TTR("MultiNode Unset %s") : TTR("MultiNode Set %s"), p_name), UndoRedo::MERGE_ENDS);
 		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
-		_edit_request_change(object, p_name);
-		emit_signal(_prop_edited, p_name);
 	} else {
-		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(vformat(value_is_null ? TTR("Unset %s") : TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(object, p_name, p_value);
-		bool valid = false;
-		Variant value = object->get(p_name, &valid);
 		if (valid) {
 			undo_redo->add_undo_property(object, p_name, value);
 		}
 
-		PropertyInfo prop_info;
-		if (ClassDB::get_property_info(object->get_class_name(), p_name, &prop_info)) {
-			for (const String &linked_prop : prop_info.linked_properties) {
-				valid = false;
-				value = object->get(linked_prop, &valid);
-				if (valid) {
-					undo_redo->add_undo_property(object, linked_prop, value);
-				}
+		if (Object::cast_to<Resource>(object) && String(p_name) == "resource_local_to_scene") {
+			bool prev = value;
+			bool next = p_value;
+			if (next) {
+				undo_redo->add_do_method(object, "setup_local_to_scene");
+			}
+			if (prev) {
+				undo_redo->add_undo_method(object, "setup_local_to_scene");
 			}
 		}
-
-		Variant v_undo_redo = (Object *)undo_redo;
-		Variant v_object = object;
-		Variant v_name = p_name;
-		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
-			const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
-
-			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
-			Variant return_value;
-			Callable::CallError call_error;
-
-			callback.call(p_arguments, 4, return_value, call_error);
-			if (call_error.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT("Invalid UndoRedo callback.");
-			}
-		}
-
-		if (p_refresh_all) {
-			undo_redo->add_do_method(this, "_edit_request_change", object, "");
-			undo_redo->add_undo_method(this, "_edit_request_change", object, "");
-		} else {
-			undo_redo->add_do_method(this, "_edit_request_change", object, p_name);
-			undo_redo->add_undo_method(this, "_edit_request_change", object, p_name);
-		}
-
-		Resource *r = Object::cast_to<Resource>(object);
-		if (r) {
-			if (String(p_name) == "resource_local_to_scene") {
-				bool prev = object->get(p_name);
-				bool next = p_value;
-				if (next) {
-					undo_redo->add_do_method(r, "setup_local_to_scene");
-				}
-				if (prev) {
-					undo_redo->add_undo_method(r, "setup_local_to_scene");
-				}
-			}
-		}
-		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
-		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
-		undo_redo->commit_action();
 	}
 
-	if (editor_property_map.has(p_name)) {
-		for (EditorProperty *E : editor_property_map[p_name]) {
-			E->update_revert_and_pin_status();
+	PropertyInfo prop_info;
+	if (ClassDB::get_property_info(object->get_class_name(), p_name, &prop_info)) {
+		for (const String &linked_prop : prop_info.linked_properties) {
+			valid = false;
+			value = object->get(linked_prop, &valid);
+			if (valid) {
+				undo_redo->add_undo_property(object, linked_prop, value);
+			}
 		}
 	}
+
+	Variant v_undo_redo = (Object *)undo_redo;
+	Variant v_object = object;
+	Variant v_name = p_name;
+	for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
+		const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
+
+		const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
+		Variant return_value;
+		Callable::CallError call_error;
+
+		callback.call(p_arguments, 4, return_value, call_error);
+		if (call_error.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT("Invalid UndoRedo callback.");
+		}
+	}
+
+	if (p_refresh_all) {
+		undo_redo->add_do_method(this, "_edit_request_change", object, "");
+		undo_redo->add_undo_method(this, "_edit_request_change", object, "");
+	} else {
+		undo_redo->add_do_method(this, "_edit_request_change", object, p_name);
+		undo_redo->add_undo_method(this, "_edit_request_change", object, p_name);
+	}
+
+	undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
+	undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
+	undo_redo->commit_action();
 }
 
 void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing, bool p_update_all) {
@@ -3390,35 +3389,49 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 		return;
 	}
 
-	//property checked
-	if (autoclear) {
-		if (!p_checked) {
-			object->set(p_path, Variant());
-		} else {
-			Variant to_create;
-			List<PropertyInfo> pinfo;
-			object->get_property_list(&pinfo);
-			for (const PropertyInfo &E : pinfo) {
-				if (E.name == p_path) {
-					Callable::CallError ce;
-					Variant::construct(E.type, to_create, nullptr, 0, ce);
-					break;
-				}
-			}
-			object->set(p_path, to_create);
-		}
-
-		if (editor_property_map.has(p_path)) {
-			for (EditorProperty *E : editor_property_map[p_path]) {
-				E->update_property();
-				E->update_revert_and_pin_status();
-				E->update_cache();
-			}
-		}
-
-	} else {
+	if (!autoclear) {
 		emit_signal(SNAME("property_toggled"), p_path, p_checked);
+		return;
 	}
+
+	//property checked
+	Variant new_value = Variant();
+	if (p_checked) {
+		List<PropertyInfo> pinfo;
+		object->get_property_list(&pinfo);
+		for (const PropertyInfo &E : pinfo) {
+			if (E.name == p_path) {
+				Callable::CallError ce;
+				Variant::construct(E.type, new_value, nullptr, 0, ce);
+				break;
+			}
+		}
+	}
+
+	// undo_redo does not exist, or not need.
+	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
+		object->set(p_path, new_value);
+		_edit_request_change(object, p_path);
+		return;
+	}
+
+	// undo_redo exists, set values.
+	if (Object::cast_to<MultiNodeEdit>(object)) {
+		undo_redo->create_action(vformat(p_checked ? TTR("MultiNode Checked %s") : TTR("MultiNode Uchecked %s"), p_path), UndoRedo::MERGE_ENDS);
+		Object::cast_to<MultiNodeEdit>(object)->set(p_path, new_value);
+	} else {
+		undo_redo->create_action(vformat(p_checked ? TTR("Checked %s") : TTR("Uchecked %s"), p_path), UndoRedo::MERGE_ENDS);
+		undo_redo->add_do_method(object, "set", p_path, new_value);
+		bool valid = false;
+		Variant old_value = object->get(p_path, &valid);
+		if (valid) {
+			undo_redo->add_undo_method(object, "set", p_path, old_value);
+		}
+	}
+
+	undo_redo->add_do_method(this, "_edit_request_change", object, p_path);
+	undo_redo->add_undo_method(this, "_edit_request_change", object, p_path);
+	undo_redo->commit_action();
 }
 
 void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
@@ -3435,8 +3448,8 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 		undo_redo->add_undo_method(node, "_set_property_pinned", p_path, !p_pinned);
 		if (editor_property_map.has(p_path)) {
 			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				undo_redo->add_do_method(E->get(), "_update_revert_and_pin_status");
-				undo_redo->add_undo_method(E->get(), "_update_revert_and_pin_status");
+				undo_redo->add_do_method(E->get(), "_update_editor_property_status");
+				undo_redo->add_undo_method(E->get(), "_update_editor_property_status");
 			}
 		}
 		undo_redo->commit_action();
@@ -3444,7 +3457,7 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 		node->set_property_pinned(p_path, p_pinned);
 		if (editor_property_map.has(p_path)) {
 			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				E->get()->update_revert_and_pin_status();
+				E->get()->update_editor_property_status();
 			}
 		}
 	}
@@ -3525,7 +3538,7 @@ void EditorInspector::_notification(int p_what) {
 						for (EditorProperty *E : F.value) {
 							if (!E->is_cache_valid()) {
 								E->update_property();
-								E->update_revert_and_pin_status();
+								E->update_editor_property_status();
 								E->update_cache();
 							}
 						}
@@ -3547,7 +3560,7 @@ void EditorInspector::_notification(int p_what) {
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
-							E->update_revert_and_pin_status();
+							E->update_editor_property_status();
 							E->update_cache();
 						}
 					}

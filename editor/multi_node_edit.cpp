@@ -56,7 +56,10 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	UndoRedo *ur = EditorNode::get_undo_redo();
 
-	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
+	// Null (nil or nullptr) means not set/overridden.
+	bool value_is_null = p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && p_value.is_null());
+
+	ur->create_action(vformat(value_is_null ? TTR("MultiNode Unset %s") : TTR("MultiNode Set %s"), name), UndoRedo::MERGE_ENDS);
 	for (const NodePath &E : nodes) {
 		if (!es->has_node(E)) {
 			continue;
@@ -87,8 +90,13 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 		ur->add_undo_property(n, name, n->get(name));
 	}
-	ur->add_do_method(InspectorDock::get_inspector_singleton(), "refresh");
-	ur->add_undo_method(InspectorDock::get_inspector_singleton(), "refresh");
+	if (name == "script") {
+		ur->add_do_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, "scripts");
+		ur->add_undo_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, "scripts");
+	} else {
+		ur->add_do_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, name);
+		ur->add_undo_method(InspectorDock::get_inspector_singleton(), "_edit_request_change", this, name);
+	}
 
 	ur->commit_action();
 	return true;
