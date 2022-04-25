@@ -67,6 +67,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(font_set_antialiased, "font_rid", "antialiased");
 	GDVIRTUAL_BIND(font_is_antialiased, "font_rid");
 
+	GDVIRTUAL_BIND(font_set_generate_mipmaps, "font_rid", "generate_mipmaps");
+	GDVIRTUAL_BIND(font_get_generate_mipmaps, "font_rid");
+
 	GDVIRTUAL_BIND(font_set_multichannel_signed_distance_field, "font_rid", "msdf");
 	GDVIRTUAL_BIND(font_is_multichannel_signed_distance_field, "font_rid");
 
@@ -150,6 +153,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(font_get_glyph_texture_idx, "font_rid", "size", "glyph");
 	GDVIRTUAL_BIND(font_set_glyph_texture_idx, "font_rid", "size", "glyph", "texture_idx");
+
+	GDVIRTUAL_BIND(font_get_glyph_texture_rid, "font_rid", "size", "glyph");
+	GDVIRTUAL_BIND(font_get_glyph_texture_size, "font_rid", "size", "glyph");
 
 	GDVIRTUAL_BIND(font_get_glyph_contours, "font_rid", "size", "index");
 
@@ -289,6 +295,8 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(string_to_upper, "string", "language");
 	GDVIRTUAL_BIND(string_to_lower, "string", "language");
+
+	GDVIRTUAL_BIND(parse_structured_text, "parser_type", "args", "text");
 }
 
 bool TextServerExtension::has_feature(Feature p_feature) const {
@@ -446,6 +454,18 @@ void TextServerExtension::font_set_antialiased(const RID &p_font_rid, bool p_ant
 bool TextServerExtension::font_is_antialiased(const RID &p_font_rid) const {
 	bool ret;
 	if (GDVIRTUAL_CALL(font_is_antialiased, p_font_rid, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+void TextServerExtension::font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) {
+	GDVIRTUAL_CALL(font_set_generate_mipmaps, p_font_rid, p_generate_mipmaps);
+}
+
+bool TextServerExtension::font_get_generate_mipmaps(const RID &p_font_rid) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(font_get_generate_mipmaps, p_font_rid, ret)) {
 		return ret;
 	}
 	return false;
@@ -785,6 +805,22 @@ int64_t TextServerExtension::font_get_glyph_texture_idx(const RID &p_font_rid, c
 
 void TextServerExtension::font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) {
 	GDVIRTUAL_CALL(font_set_glyph_texture_idx, p_font_rid, p_size, p_glyph, p_texture_idx);
+}
+
+RID TextServerExtension::font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
+	RID ret;
+	if (GDVIRTUAL_CALL(font_get_glyph_texture_rid, p_font_rid, p_size, p_glyph, ret)) {
+		return ret;
+	}
+	return RID();
+}
+
+Size2 TextServerExtension::font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
+	Size2 ret;
+	if (GDVIRTUAL_CALL(font_get_glyph_texture_size, p_font_rid, p_size, p_glyph, ret)) {
+		return ret;
+	}
+	return Size2();
 }
 
 Dictionary TextServerExtension::font_get_glyph_contours(const RID &p_font_rid, int64_t p_size, int64_t p_index) const {
@@ -1457,6 +1493,14 @@ String TextServerExtension::string_to_lower(const String &p_string, const String
 		return ret;
 	}
 	return p_string;
+}
+
+Array TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	Array ret;
+	if (GDVIRTUAL_CALL(parse_structured_text, p_parser_type, p_args, p_text, ret)) {
+		return ret;
+	}
+	return Array();
 }
 
 TextServerExtension::TextServerExtension() {

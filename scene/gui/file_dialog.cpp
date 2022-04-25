@@ -988,7 +988,7 @@ FileDialog::FileDialog() {
 	hbc->add_child(drives);
 
 	dir = memnew(LineEdit);
-	dir->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	dir->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	hbc->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1029,7 +1029,7 @@ FileDialog::FileDialog() {
 	file_box = memnew(HBoxContainer);
 	file_box->add_child(memnew(Label(TTRC("File:"))));
 	file = memnew(LineEdit);
-	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	file->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
@@ -1063,7 +1063,7 @@ FileDialog::FileDialog() {
 	makedialog->add_child(makevb);
 
 	makedirname = memnew(LineEdit);
-	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	makedirname->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	makevb->add_margin_child(TTRC("Name:"), makedirname);
 	add_child(makedialog, false, INTERNAL_MODE_FRONT);
 	makedialog->register_text_enter(makedirname);

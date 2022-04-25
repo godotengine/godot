@@ -44,6 +44,8 @@ public:
 		FLAG_TRANSPARENT,
 		FLAG_SHADED,
 		FLAG_DOUBLE_SIDED,
+		FLAG_DISABLE_DEPTH_TEST,
+		FLAG_FIXED_SIZE,
 		FLAG_MAX
 
 	};
@@ -80,6 +82,7 @@ private:
 	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
+	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 	bool pending_update = false;
 	void _im_update();
 
@@ -131,8 +134,12 @@ public:
 
 	void set_alpha_cut_mode(AlphaCutMode p_mode);
 	AlphaCutMode get_alpha_cut_mode() const;
+
 	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
 	StandardMaterial3D::BillboardMode get_billboard_mode() const;
+
+	void set_texture_filter(StandardMaterial3D::TextureFilter p_filter);
+	StandardMaterial3D::TextureFilter get_texture_filter() const;
 
 	virtual Rect2 get_item_rect() const = 0;
 

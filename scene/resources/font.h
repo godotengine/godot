@@ -49,6 +49,7 @@ class FontData : public Resource {
 	PackedByteArray data;
 
 	bool antialiased = true;
+	bool mipmaps = false;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
@@ -102,6 +103,9 @@ public:
 
 	virtual void set_antialiased(bool p_antialiased);
 	virtual bool is_antialiased() const;
+
+	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
+	virtual bool get_generate_mipmaps() const;
 
 	virtual void set_multichannel_signed_distance_field(bool p_msdf);
 	virtual bool is_multichannel_signed_distance_field() const;

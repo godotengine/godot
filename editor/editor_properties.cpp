@@ -485,7 +485,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	add_child(path_hb);
 	path = memnew(LineEdit);
-	path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(path);
 	path->connect("text_submitted", callable_mp(this, &EditorPropertyPath::_path_selected));
 	path->connect("focus_exited", callable_mp(this, &EditorPropertyPath::_path_focus_exited));

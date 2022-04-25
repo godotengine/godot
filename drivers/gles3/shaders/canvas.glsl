@@ -478,10 +478,6 @@ float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
 }
 
-vec2 msdf_map(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
-	return out_min + (out_max - out_min) * (value - in_min) / (in_max - in_min);
-}
-
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;

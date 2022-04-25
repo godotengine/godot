@@ -102,6 +102,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	bool msdf = p_preset == PRESET_MSDF;
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (msdf) ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
@@ -179,6 +180,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	print_verbose("Importing dynamic font from: " + p_source_file);
 
 	bool antialiased = p_options["antialiased"];
+	bool generate_mipmaps = p_options["generate_mipmaps"];
 	bool msdf = p_options["multichannel_signed_distance_field"];
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
@@ -199,6 +201,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font.instantiate();
 	font->set_data(data);
 	font->set_antialiased(antialiased);
+	font->set_generate_mipmaps(generate_mipmaps);
 	font->set_multichannel_signed_distance_field(msdf);
 	font->set_msdf_pixel_range(px_range);
 	font->set_msdf_size(px_size);

@@ -1358,27 +1358,5 @@
 		<constant name="TEXT_DIRECTION_RTL" value="2" enum="TextDirection">
 			Right-to-left text writing direction.
 		</constant>
-		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
-			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
-		</constant>
-		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
-			BiDi override for URI.
-		</constant>
-		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
-			BiDi override for file path.
-		</constant>
-		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
-			BiDi override for email.
-		</constant>
-		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
-			BiDi override for lists.
-			Structured text options: list separator [code]String[/code].
-		</constant>
-		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
-			Use default Unicode BiDi algorithm.
-		</constant>
-		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
-			User defined structured text BiDi override function.
-		</constant>
 	</constants>
 </class>

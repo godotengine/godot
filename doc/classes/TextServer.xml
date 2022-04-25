@@ -80,6 +80,7 @@
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
 				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="const">
@@ -94,6 +95,7 @@
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
 				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
 		<method name="font_get_ascent" qualifiers="const">
@@ -124,6 +126,13 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
 				Returns bitmap font fixed size.
+			</description>
+		</method>
+		<method name="font_get_generate_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if font texture mipmap generation is enabled.
 			</description>
 		</method>
 		<method name="font_get_global_oversampling" qualifiers="const">
@@ -197,6 +206,26 @@
 			<argument index="2" name="glyph" type="int" />
 			<description>
 				Returns index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="font_get_glyph_texture_rid" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns resource id of the cache texture containing the glyph.
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+			</description>
+		</method>
+		<method name="font_get_glyph_texture_size" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="glyph" type="int" />
+			<description>
+				Returns size of the cache texture containing the glyph.
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
 		<method name="font_get_glyph_uv_rect" qualifiers="const">
@@ -580,6 +609,14 @@
 				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
+		<method name="font_set_generate_mipmaps">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="generate_mipmaps" type="bool" />
+			<description>
+				If set to [code]true[/code] font texture mipmap generation is enabled.
+			</description>
+		</method>
 		<method name="font_set_global_oversampling">
 			<return type="void" />
 			<argument index="0" name="oversampling" type="float" />
@@ -925,6 +962,15 @@
 			<argument index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Converts a number from the numeral systems used in [code]language[/code] to Western Arabic (0..9).
+			</description>
+		</method>
+		<method name="parse_structured_text" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="parser_type" type="int" enum="TextServer.StructuredTextParser" />
+			<argument index="1" name="args" type="Array" />
+			<argument index="2" name="text" type="String" />
+			<description>
+				Default implementation of the BiDi algorithm override function. See [enum StructuredTextParser] for more info.
 			</description>
 		</method>
 		<method name="percent_sign" qualifiers="const">
@@ -1629,6 +1675,28 @@
 		</constant>
 		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle">
 			Font have fixed-width characters.
+		</constant>
+		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
+			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
+		</constant>
+		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
+			BiDi override for URI.
+		</constant>
+		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
+			BiDi override for file path.
+		</constant>
+		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
+			BiDi override for email.
+		</constant>
+		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
+			BiDi override for lists.
+			Structured text options: list separator [code]String[/code].
+		</constant>
+		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
+			Use default Unicode BiDi algorithm.
+		</constant>
+		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
+			User defined structured text BiDi override function.
 		</constant>
 	</constants>
 </class>

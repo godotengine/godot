@@ -220,6 +220,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font_rid", "antialiased"), &TextServer::font_set_antialiased);
 	ClassDB::bind_method(D_METHOD("font_is_antialiased", "font_rid"), &TextServer::font_is_antialiased);
 
+	ClassDB::bind_method(D_METHOD("font_set_generate_mipmaps", "font_rid", "generate_mipmaps"), &TextServer::font_set_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("font_get_generate_mipmaps", "font_rid"), &TextServer::font_get_generate_mipmaps);
+
 	ClassDB::bind_method(D_METHOD("font_set_multichannel_signed_distance_field", "font_rid", "msdf"), &TextServer::font_set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("font_is_multichannel_signed_distance_field", "font_rid"), &TextServer::font_is_multichannel_signed_distance_field);
 
@@ -303,6 +306,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_idx", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_idx);
 	ClassDB::bind_method(D_METHOD("font_set_glyph_texture_idx", "font_rid", "size", "glyph", "texture_idx"), &TextServer::font_set_glyph_texture_idx);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_rid", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_rid);
+	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_size", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_size);
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::font_get_glyph_contours);
 
@@ -438,6 +444,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
 
+	ClassDB::bind_method(D_METHOD("parse_structured_text", "parser_type", "args", "text"), &TextServer::parse_structured_text);
+
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(DIRECTION_LTR);
@@ -526,6 +534,15 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FONT_BOLD);
 	BIND_ENUM_CONSTANT(FONT_ITALIC);
 	BIND_ENUM_CONSTANT(FONT_FIXED_WIDTH);
+
+	/* Structured text parser */
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_DEFAULT);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_URI);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
+	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
 }
 
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
@@ -1531,6 +1548,83 @@ String TextServer::strip_diacritics(const String &p_string) const {
 		}
 	}
 	return result;
+}
+
+Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	Array ret;
+	switch (p_parser_type) {
+		case STRUCTURED_TEXT_URI: {
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_FILE: {
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_EMAIL: {
+			bool local = true;
+			int prev = 0;
+			for (int i = 0; i < p_text.length(); i++) {
+				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
+					local = false;
+					ret.push_back(Vector2i(prev, i));
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, i));
+					}
+					ret.push_back(Vector2i(i, i + 1));
+					prev = i + 1;
+				}
+			}
+			if (prev != p_text.length()) {
+				ret.push_back(Vector2i(prev, p_text.length()));
+			}
+		} break;
+		case STRUCTURED_TEXT_LIST: {
+			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
+				Vector<String> tags = p_text.split(String(p_args[0]));
+				int prev = 0;
+				for (int i = 0; i < tags.size(); i++) {
+					if (prev != i) {
+						ret.push_back(Vector2i(prev, prev + tags[i].length()));
+					}
+					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
+					prev = prev + tags[i].length() + 1;
+				}
+			}
+		} break;
+		case STRUCTURED_TEXT_CUSTOM:
+		case STRUCTURED_TEXT_NONE:
+		case STRUCTURED_TEXT_DEFAULT:
+		default: {
+			ret.push_back(Vector2i(0, p_text.length()));
+		}
+	}
+	return ret;
 }
 
 Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {

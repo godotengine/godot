@@ -106,7 +106,7 @@ private:
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextDirection input_direction = TEXT_DIRECTION_LTR;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 	bool draw_control_chars = false;
 
@@ -253,8 +253,8 @@ public:
 	void set_draw_control_chars(bool p_draw_control_chars);
 	bool get_draw_control_chars() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;

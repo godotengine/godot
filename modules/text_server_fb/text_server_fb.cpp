@@ -438,8 +438,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		int w = (bounds.r - bounds.l);
 		int h = (bounds.t - bounds.b);
 
-		int mw = w + p_rect_margin * 2;
-		int mh = h + p_rect_margin * 2;
+		int mw = w + p_rect_margin * 4;
+		int mh = h + p_rect_margin * 4;
 
 		ERR_FAIL_COND_V(mw > 4096, FontGlyph());
 		ERR_FAIL_COND_V(mh > 4096, FontGlyph());
@@ -473,7 +473,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 
 			for (int i = 0; i < h; i++) {
 				for (int j = 0; j < w; j++) {
-					int ofs = ((i + tex_pos.y + p_rect_margin) * tex.texture_w + j + tex_pos.x + p_rect_margin) * 4;
+					int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * 4;
 					ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
 					wr[ofs + 0] = (uint8_t)(CLAMP(image(j, i)[0] * 256.f, 0.f, 255.f));
 					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
@@ -493,8 +493,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 
 		chr.texture_idx = tex_pos.index;
 
-		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
-		chr.rect.position = Vector2(bounds.l, -bounds.t);
+		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
+		chr.rect.position = Vector2(bounds.l - p_rect_margin, -bounds.t - p_rect_margin);
 		chr.rect.size = chr.uv_rect.size;
 	}
 	return chr;
@@ -506,8 +506,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	int w = bitmap.width;
 	int h = bitmap.rows;
 
-	int mw = w + p_rect_margin * 2;
-	int mh = h + p_rect_margin * 2;
+	int mw = w + p_rect_margin * 4;
+	int mh = h + p_rect_margin * 4;
 
 	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
 	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
@@ -527,7 +527,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
-				int ofs = ((i + tex_pos.y + p_rect_margin) * tex.texture_w + j + tex_pos.x + p_rect_margin) * color_size;
+				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
 				ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
 				switch (bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
@@ -568,8 +568,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	chr.texture_idx = tex_pos.index;
 	chr.found = true;
 
-	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
-	chr.rect.position = Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling;
+	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
+	chr.rect.position = Vector2(xofs - p_rect_margin, -yofs - p_rect_margin) * p_data->scale / p_data->oversampling;
 	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
 	return chr;
 }
@@ -957,6 +957,29 @@ bool TextServerFallback::font_is_antialiased(const RID &p_font_rid) const {
 
 	MutexLock lock(fd->mutex);
 	return fd->antialiased;
+}
+
+void TextServerFallback::font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->mipmaps != p_generate_mipmaps) {
+		for (KeyValue<Vector2i, FontDataForSizeFallback *> &E : fd->cache) {
+			for (int i = 0; i < E.value->textures.size(); i++) {
+				E.value->textures.write[i].dirty = true;
+			}
+		}
+		fd->mipmaps = p_generate_mipmaps;
+	}
+}
+
+bool TextServerFallback::font_get_generate_mipmaps(const RID &p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->mipmaps;
 }
 
 void TextServerFallback::font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) {
@@ -1439,6 +1462,9 @@ void TextServerFallback::font_set_texture_image(const RID &p_font_rid, const Vec
 	Ref<Image> img;
 	img.instantiate();
 	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+	if (fd->mipmaps) {
+		img->generate_mipmaps();
+	}
 
 	tex.texture = Ref<ImageTexture>();
 	tex.texture.instantiate();
@@ -1706,6 +1732,86 @@ void TextServerFallback::font_set_glyph_texture_idx(const RID &p_font_rid, const
 
 	gl[p_glyph].texture_idx = p_texture_idx;
 	gl[p_glyph].found = true;
+}
+
+RID TextServerFallback::font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, RID());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), RID());
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return RID(); // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+	ERR_FAIL_COND_V(gl[p_glyph].texture_idx < -1 || gl[p_glyph].texture_idx >= fd->cache[size]->textures.size(), RID());
+
+	if (RenderingServer::get_singleton() != nullptr) {
+		if (gl[p_glyph].texture_idx != -1) {
+			if (fd->cache[size]->textures[gl[p_glyph].texture_idx].dirty) {
+				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph].texture_idx];
+				Ref<Image> img;
+				img.instantiate();
+				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+				if (fd->mipmaps) {
+					img->generate_mipmaps();
+				}
+				if (tex.texture.is_null()) {
+					tex.texture.instantiate();
+					tex.texture->create_from_image(img);
+				} else {
+					tex.texture->update(img);
+				}
+				tex.dirty = false;
+			}
+			return fd->cache[size]->textures[gl[p_glyph].texture_idx].texture->get_rid();
+		}
+	}
+
+	return RID();
+}
+
+Size2 TextServerFallback::font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Size2());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size_outline(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Size2());
+	if (!_ensure_glyph(fd, size, p_glyph)) {
+		return Size2(); // Invalid or non graphicl glyph, do not display errors.
+	}
+
+	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
+	ERR_FAIL_COND_V(gl[p_glyph].texture_idx < -1 || gl[p_glyph].texture_idx >= fd->cache[size]->textures.size(), Size2());
+
+	if (RenderingServer::get_singleton() != nullptr) {
+		if (gl[p_glyph].texture_idx != -1) {
+			if (fd->cache[size]->textures[gl[p_glyph].texture_idx].dirty) {
+				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph].texture_idx];
+				Ref<Image> img;
+				img.instantiate();
+				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+				if (fd->mipmaps) {
+					img->generate_mipmaps();
+				}
+				if (tex.texture.is_null()) {
+					tex.texture.instantiate();
+					tex.texture->create_from_image(img);
+				} else {
+					tex.texture->update(img);
+				}
+				tex.dirty = false;
+			}
+			return fd->cache[size]->textures[gl[p_glyph].texture_idx].texture->get_size();
+		}
+	}
+
+	return Size2();
 }
 
 Dictionary TextServerFallback::font_get_glyph_contours(const RID &p_font_rid, int64_t p_size, int64_t p_index) const {
@@ -1996,6 +2102,9 @@ void TextServerFallback::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 					Ref<Image> img;
 					img.instantiate();
 					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					if (fd->mipmaps) {
+						img->generate_mipmaps();
+					}
 					if (tex.texture.is_null()) {
 						tex.texture.instantiate();
 						tex.texture->create_from_image(img);
@@ -2072,6 +2181,9 @@ void TextServerFallback::font_draw_glyph_outline(const RID &p_font_rid, const RI
 					Ref<Image> img;
 					img.instantiate();
 					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					if (fd->mipmaps) {
+						img->generate_mipmaps();
+					}
 					if (tex.texture.is_null()) {
 						tex.texture.instantiate();
 						tex.texture->create_from_image(img);

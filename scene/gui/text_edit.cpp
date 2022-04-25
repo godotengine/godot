@@ -2859,7 +2859,7 @@ String TextEdit::get_language() const {
 	return language;
 }
 
-void TextEdit::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void TextEdit::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		for (int i = 0; i < text.size(); i++) {
@@ -2869,7 +2869,7 @@ void TextEdit::set_structured_text_bidi_override(Control::StructuredTextParser p
 	}
 }
 
-Control::StructuredTextParser TextEdit::get_structured_text_bidi_override() const {
+TextServer::StructuredTextParser TextEdit::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 

@@ -334,7 +334,7 @@ int TreeItem::get_opentype_feature(int p_column, const String &p_name) const {
 	return cells[p_column].opentype_features[tag];
 }
 
-void TreeItem::set_structured_text_bidi_override(int p_column, Control::StructuredTextParser p_parser) {
+void TreeItem::set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
 	if (cells[p_column].st_parser != p_parser) {
@@ -346,8 +346,8 @@ void TreeItem::set_structured_text_bidi_override(int p_column, Control::Structur
 	}
 }
 
-Control::StructuredTextParser TreeItem::get_structured_text_bidi_override(int p_column) const {
-	ERR_FAIL_INDEX_V(p_column, cells.size(), Control::STRUCTURED_TEXT_NONE);
+TextServer::StructuredTextParser TreeItem::get_structured_text_bidi_override(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::STRUCTURED_TEXT_NONE);
 	return cells[p_column].st_parser;
 }
 
