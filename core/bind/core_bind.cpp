@@ -2613,6 +2613,10 @@ Error _Semaphore::wait() {
 	return OK; // Can't fail anymore; keep compat
 }
 
+Error _Semaphore::try_wait() {
+	return semaphore.try_wait() ? OK : ERR_BUSY;
+}
+
 Error _Semaphore::post() {
 	semaphore.post();
 	return OK; // Can't fail anymore; keep compat
@@ -2621,6 +2625,7 @@ Error _Semaphore::post() {
 void _Semaphore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait"), &_Semaphore::wait);
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
+	ClassDB::bind_method(D_METHOD("try_wait"), &_Semaphore::try_wait);
 }
 
 ///////////////

@@ -680,6 +680,7 @@ class _Semaphore : public Reference {
 
 public:
 	Error wait();
+	Error try_wait();
 	Error post();
 };
 
