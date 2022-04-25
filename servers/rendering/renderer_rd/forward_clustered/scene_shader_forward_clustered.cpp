@@ -555,10 +555,21 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 	}
 
 	valid_color_pass_pipelines.insert(0);
+
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT);
-	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR);
-	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
 
 	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_shader_funcs);
 	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_material_funcs);
