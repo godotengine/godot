@@ -13,13 +13,21 @@
 		<method name="post">
 			<return type="int" enum="Error" />
 			<description>
-				Lowers the [Semaphore], allowing one more thread in. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Lowers the [Semaphore], allowing one more thread in.
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
+			</description>
+		</method>
+		<method name="try_wait">
+			<return type="int" enum="Error" />
+			<description>
+				Like [method wait], but won't block, so if the value is zero, fails immediately and returns [constant ERR_BUSY]. If non-zero, it returns [constant OK] to report success.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error" />
 			<description>
-				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Waits for the [Semaphore], if its value is zero, blocks until non-zero.
+				[b]Note:[/b] This method internals' can't possibly fail, but an error code is returned for backwards compatibility, which will always be [constant OK].
 			</description>
 		</method>
 	</methods>
