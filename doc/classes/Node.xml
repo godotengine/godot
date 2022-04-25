@@ -843,10 +843,13 @@
 			Notification received when the node is instantiated.
 		</constant>
 		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
-			Notification received when a drag begins.
+			Notification received when a drag operation begins. All nodes receive this notification, not only the dragged one.
+			Can be triggered either by dragging a [Control] that provides drag data (see [method Control._get_drag_data]) or using [method Control.force_drag].
+			Use [method Viewport.gui_get_drag_data] to get the dragged data.
 		</constant>
 		<constant name="NOTIFICATION_DRAG_END" value="22">
-			Notification received when a drag ends.
+			Notification received when a drag operation ends.
+			Use [method Viewport.gui_is_drag_successful] to check if the drag succeeded.
 		</constant>
 		<constant name="NOTIFICATION_PATH_RENAMED" value="23">
 			Notification received when the node's name or one of its parents' name is changed. This notification is [i]not[/i] received when the node is removed from the scene tree to be added to another parent later on.
