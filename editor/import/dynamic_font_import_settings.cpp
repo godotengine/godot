@@ -1583,7 +1583,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	}
 	glyph_table->add_theme_style_override("selected", glyph_table->get_theme_stylebox(SNAME("bg")));
 	glyph_table->add_theme_style_override("selected_focus", glyph_table->get_theme_stylebox(SNAME("bg")));
-	glyph_table->add_theme_constant_override("hseparation", 0);
+	glyph_table->add_theme_constant_override("h_separation", 0);
 	glyph_table->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 

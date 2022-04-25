@@ -3118,12 +3118,12 @@ void EditorPropertyResource::_update_property_bg() {
 		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), SNAME("Editor")));
 
 		add_theme_constant_override("font_offset", get_theme_constant(SNAME("sub_inspector_font_offset"), SNAME("Editor")));
-		add_theme_constant_override("vseparation", 0);
+		add_theme_constant_override("v_separation", 0);
 	} else {
 		add_theme_color_override("property_color", get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 		add_theme_style_override("bg_selected", get_theme_stylebox(SNAME("bg_selected"), SNAME("EditorProperty")));
 		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("EditorProperty")));
-		add_theme_constant_override("vseparation", get_theme_constant(SNAME("vseparation"), SNAME("EditorProperty")));
+		add_theme_constant_override("v_separation", get_theme_constant(SNAME("v_separation"), SNAME("EditorProperty")));
 		add_theme_constant_override("font_offset", get_theme_constant(SNAME("font_offset"), SNAME("EditorProperty")));
 	}
 

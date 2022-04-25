@@ -1293,7 +1293,7 @@ void CanvasTexture::_bind_methods() {
 
 	ADD_GROUP("Diffuse", "diffuse_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "diffuse_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_diffuse_texture", "get_diffuse_texture");
-	ADD_GROUP("Normalmap", "normal_");
+	ADD_GROUP("NormalMap", "normal_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_texture", "get_normal_texture");
 	ADD_GROUP("Specular", "specular_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "specular_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_specular_texture", "get_specular_texture");

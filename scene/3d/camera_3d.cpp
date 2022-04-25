@@ -475,9 +475,9 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_near", "near"), &Camera3D::set_near);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera3D::get_projection);
 	ClassDB::bind_method(D_METHOD("set_projection", "mode"), &Camera3D::set_projection);
-	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera3D::set_h_offset);
+	ClassDB::bind_method(D_METHOD("set_h_offset", "offset"), &Camera3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera3D::get_h_offset);
-	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera3D::set_v_offset);
+	ClassDB::bind_method(D_METHOD("set_v_offset", "offset"), &Camera3D::set_v_offset);
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera3D::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera3D::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera3D::get_cull_mask);

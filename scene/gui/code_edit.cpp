@@ -106,7 +106,7 @@ void CodeEdit::_notification(int p_what) {
 
 				const int code_completion_options_count = code_completion_options.size();
 				const int lines = MIN(code_completion_options_count, code_completion_max_lines);
-				const int icon_hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+				const int icon_hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 				const Size2 icon_area_size(row_height, row_height);
 
 				code_completion_rect.size.width = code_completion_longest_line + icon_hsep + icon_area_size.width + 2;

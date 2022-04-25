@@ -47,8 +47,8 @@ String PopupMenu::_get_accel_text(const Item &p_item) const {
 }
 
 Size2 PopupMenu::_get_contents_minimum_size() const {
-	int vseparation = get_theme_constant(SNAME("vseparation"));
-	int hseparation = get_theme_constant(SNAME("hseparation"));
+	int vseparation = get_theme_constant(SNAME("v_separation"));
+	int hseparation = get_theme_constant(SNAME("h_separation"));
 
 	Size2 minsize = get_theme_stylebox(SNAME("panel"))->get_minimum_size(); // Accounts for margin in the margin container
 	minsize.x += scroll_container->get_v_scroll_bar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
@@ -129,7 +129,7 @@ int PopupMenu::_get_item_height(int p_item) const {
 }
 
 int PopupMenu::_get_items_total_height() const {
-	int vsep = get_theme_constant(SNAME("vseparation"));
+	int vsep = get_theme_constant(SNAME("v_separation"));
 
 	// Get total height of all items by taking max of icon height and font height
 	int items_total_height = 0;
@@ -148,7 +148,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel")); // Accounts for margin in the margin container
 
-	int vseparation = get_theme_constant(SNAME("vseparation"));
+	int vseparation = get_theme_constant(SNAME("v_separation"));
 
 	Point2 ofs = style->get_offset() + Point2(0, vseparation / 2);
 
@@ -179,7 +179,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	}
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
-	int vsep = get_theme_constant(SNAME("vseparation"));
+	int vsep = get_theme_constant(SNAME("v_separation"));
 
 	Point2 this_pos = get_position();
 	Rect2 this_rect(this_pos, get_size());
@@ -504,8 +504,8 @@ void PopupMenu::_draw_items() {
 	Ref<StyleBox> labeled_separator_left = get_theme_stylebox(SNAME("labeled_separator_left"));
 	Ref<StyleBox> labeled_separator_right = get_theme_stylebox(SNAME("labeled_separator_right"));
 
-	int vseparation = get_theme_constant(SNAME("vseparation"));
-	int hseparation = get_theme_constant(SNAME("hseparation"));
+	int vseparation = get_theme_constant(SNAME("v_separation"));
+	int hseparation = get_theme_constant(SNAME("h_separation"));
 	Color font_color = get_theme_color(SNAME("font_color"));
 	Color font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
 	Color font_accelerator_color = get_theme_color(SNAME("font_accelerator_color"));

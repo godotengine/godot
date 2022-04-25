@@ -667,10 +667,10 @@
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
 		</theme_item>
-		<theme_item name="table_hseparation" data_type="constant" type="int" default="3">
+		<theme_item name="table_h_separation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_vseparation" data_type="constant" type="int" default="3">
+		<theme_item name="table_v_separation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">

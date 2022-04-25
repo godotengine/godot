@@ -96,11 +96,11 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	if (checkable) {
 		Ref<Texture2D> check = get_theme_icon(SNAME("checked"), SNAME("CheckBox"));
-		ms.width += check->get_width() + get_theme_constant(SNAME("hseparation"), SNAME("CheckBox")) + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+		ms.width += check->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("CheckBox")) + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 	}
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
-		ms.height += get_theme_constant(SNAME("vseparation"));
+		ms.height += get_theme_constant(SNAME("v_separation"));
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
@@ -169,7 +169,7 @@ void EditorProperty::_notification(int p_what) {
 				if (bottom_editor) {
 					int m = 0; //get_constant("item_margin", "Tree");
 
-					bottom_rect = Rect2(m, rect.size.height + get_theme_constant(SNAME("vseparation")), size.width - m, bottom_editor->get_combined_minimum_size().height);
+					bottom_rect = Rect2(m, rect.size.height + get_theme_constant(SNAME("v_separation")), size.width - m, bottom_editor->get_combined_minimum_size().height);
 				}
 
 				if (keying) {
@@ -297,7 +297,7 @@ void EditorProperty::_notification(int p_what) {
 				} else {
 					draw_texture(checkbox, check_rect.position, color2);
 				}
-				int check_ofs = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("hseparation"), SNAME("CheckBox"));
+				int check_ofs = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("CheckBox"));
 				ofs += check_ofs;
 				text_limit -= check_ofs;
 			} else {
@@ -1083,7 +1083,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 
-			int hs = get_theme_constant(SNAME("hseparation"), SNAME("Tree"));
+			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 
 			int w = font->get_string_size(label, font_size).width;
 			if (icon.is_valid()) {
@@ -1118,7 +1118,7 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	if (icon.is_valid()) {
 		ms.height = MAX(icon->get_height(), ms.height);
 	}
-	ms.height += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
+	ms.height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 
 	return ms;
 }
@@ -1178,7 +1178,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (arrow.is_valid()) {
 				header_height = MAX(header_height, arrow->get_height());
 			}
-			header_height += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
+			header_height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 
 			int inspector_margin = get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
@@ -1231,7 +1231,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (arrow.is_valid()) {
 				header_height = MAX(header_height, arrow->get_height());
 			}
-			header_height += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
+			header_height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 
 			int section_indent = 0;
 			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
@@ -1360,7 +1360,7 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
+	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 	ms.width += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 
 	int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));

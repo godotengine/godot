@@ -610,8 +610,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// Theming.
-	tile_data_editors_tree->add_theme_constant_override("vseparation", 1);
-	tile_data_editors_tree->add_theme_constant_override("hseparation", 3);
+	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
+	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
 
 	Color group_color = get_theme_color(SNAME("prop_category"), SNAME("Editor"));
 

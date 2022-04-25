@@ -270,8 +270,8 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 		switch (it->type) {
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				int hseparation = get_theme_constant(SNAME("table_hseparation"));
-				int vseparation = get_theme_constant(SNAME("table_vseparation"));
+				int hseparation = get_theme_constant(SNAME("table_h_separation"));
+				int vseparation = get_theme_constant(SNAME("table_v_separation"));
 				int col_count = table->columns.size();
 
 				for (int i = 0; i < col_count; i++) {
@@ -518,8 +518,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 			} break;
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				int hseparation = get_theme_constant(SNAME("table_hseparation"));
-				int vseparation = get_theme_constant(SNAME("table_vseparation"));
+				int hseparation = get_theme_constant(SNAME("table_h_separation"));
+				int vseparation = get_theme_constant(SNAME("table_v_separation"));
 				int col_count = table->columns.size();
 				int t_char_count = 0;
 				// Set minimums to zero.
@@ -853,7 +853,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Color odd_row_bg = get_theme_color(SNAME("table_odd_row_bg"));
 						Color even_row_bg = get_theme_color(SNAME("table_even_row_bg"));
 						Color border = get_theme_color(SNAME("table_border"));
-						int hseparation = get_theme_constant(SNAME("table_hseparation"));
+						int hseparation = get_theme_constant(SNAME("table_h_separation"));
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
 
@@ -1390,8 +1390,8 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
 					switch (it->type) {
 						case ITEM_TABLE: {
-							int hseparation = get_theme_constant(SNAME("table_hseparation"));
-							int vseparation = get_theme_constant(SNAME("table_vseparation"));
+							int hseparation = get_theme_constant(SNAME("table_h_separation"));
+							int vseparation = get_theme_constant(SNAME("table_v_separation"));
 
 							ItemTable *table = static_cast<ItemTable *>(it);
 
@@ -1449,7 +1449,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)) - p_frame->padding.position, TS->shaped_text_get_size(rid) + p_frame->padding.position + p_frame->padding.size);
 		if (p_table) {
-			rect.size.y += get_theme_constant(SNAME("table_vseparation"));
+			rect.size.y += get_theme_constant(SNAME("table_v_separation"));
 		}
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {

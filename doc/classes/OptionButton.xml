@@ -238,7 +238,7 @@
 		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
 			The horizontal space between the arrow icon and the right edge of the button.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="2">
+		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal space between [OptionButton]'s icon and text.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">

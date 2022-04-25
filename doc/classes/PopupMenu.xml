@@ -571,7 +571,7 @@
 		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the labeled separator.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between the item's elements.
 		</theme_item>
 		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
@@ -584,7 +584,7 @@
 		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
 			The size of the labeled separator text outline.
 		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="4">
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical space between each menu item.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
