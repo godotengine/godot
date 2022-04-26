@@ -37,6 +37,7 @@
 #include <android/log.h>
 #include <jni.h>
 
+#include "core/math/rect2i.h"
 #include "core/variant/array.h"
 #include "string_android.h"
 
@@ -50,12 +51,12 @@ private:
 	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
 	jmethodID _get_display_cutouts = 0;
+	jmethodID _get_display_safe_area = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
 	jmethodID _get_scaled_density = 0;
 	jmethodID _get_screen_refresh_rate = 0;
-	jmethodID _screen_get_usable_rect = 0;
 	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
@@ -77,8 +78,8 @@ public:
 	int get_screen_dpi();
 	float get_scaled_density();
 	float get_screen_refresh_rate(float fallback);
-	void screen_get_usable_rect(int (&p_rect_xywh)[4]);
 	Array get_display_cutouts();
+	Rect2i get_display_safe_area();
 	String get_unique_id();
 	bool has_vk();
 	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);

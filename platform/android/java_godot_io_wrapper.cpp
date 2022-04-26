@@ -54,12 +54,12 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_cache_dir = p_env->GetMethodID(cls, "getCacheDir", "()Ljava/lang/String;");
 		_get_data_dir = p_env->GetMethodID(cls, "getDataDir", "()Ljava/lang/String;");
 		_get_display_cutouts = p_env->GetMethodID(cls, "getDisplayCutouts", "()[I"),
+		_get_display_safe_area = p_env->GetMethodID(cls, "getDisplaySafeArea", "()[I"),
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
 		_get_scaled_density = p_env->GetMethodID(cls, "getScaledDensity", "()F");
 		_get_screen_refresh_rate = p_env->GetMethodID(cls, "getScreenRefreshRate", "(D)D");
-		_screen_get_usable_rect = p_env->GetMethodID(cls, "screenGetUsableRect", "()[I"),
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;ZIII)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
@@ -165,20 +165,6 @@ float GodotIOJavaWrapper::get_screen_refresh_rate(float fallback) {
 	return fallback;
 }
 
-void GodotIOJavaWrapper::screen_get_usable_rect(int (&p_rect_xywh)[4]) {
-	if (_screen_get_usable_rect) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND(env == nullptr);
-		jintArray returnArray = (jintArray)env->CallObjectMethod(godot_io_instance, _screen_get_usable_rect);
-		ERR_FAIL_COND(env->GetArrayLength(returnArray) != 4);
-		jint *arrayBody = env->GetIntArrayElements(returnArray, JNI_FALSE);
-		for (int i = 0; i < 4; i++) {
-			p_rect_xywh[i] = arrayBody[i];
-		}
-		env->ReleaseIntArrayElements(returnArray, arrayBody, 0);
-	}
-}
-
 Array GodotIOJavaWrapper::get_display_cutouts() {
 	Array result;
 	ERR_FAIL_NULL_V(_get_display_cutouts, result);
@@ -196,6 +182,19 @@ Array GodotIOJavaWrapper::get_display_cutouts() {
 		Rect2 cutout(x, y, width, height);
 		result.append(cutout);
 	}
+	env->ReleaseIntArrayElements(returnArray, arrayBody, 0);
+	return result;
+}
+
+Rect2i GodotIOJavaWrapper::get_display_safe_area() {
+	Rect2i result;
+	ERR_FAIL_NULL_V(_get_display_safe_area, result);
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, result);
+	jintArray returnArray = (jintArray)env->CallObjectMethod(godot_io_instance, _get_display_safe_area);
+	ERR_FAIL_COND_V(env->GetArrayLength(returnArray) != 4, result);
+	jint *arrayBody = env->GetIntArrayElements(returnArray, JNI_FALSE);
+	result = Rect2i(arrayBody[0], arrayBody[1], arrayBody[2], arrayBody[3]);
 	env->ReleaseIntArrayElements(returnArray, arrayBody, 0);
 	return result;
 }

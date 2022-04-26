@@ -142,6 +142,12 @@ Array DisplayServerAndroid::get_display_cutouts() const {
 	return godot_io_java->get_display_cutouts();
 }
 
+Rect2i DisplayServerAndroid::get_display_safe_area() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, Rect2i());
+	return godot_io_java->get_display_safe_area();
+}
+
 void DisplayServerAndroid::screen_set_keep_on(bool p_enable) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_COND(!godot_java);
@@ -183,11 +189,8 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
-	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_COND_V(!godot_io_java, Rect2i());
-	int xywh[4];
-	godot_io_java->screen_get_usable_rect(xywh);
-	return Rect2i(xywh[0], xywh[1], xywh[2], xywh[3]);
+	Size2i display_size = OS_Android::get_singleton()->get_display_size();
+	return Rect2i(0, 0, display_size.width, display_size.height);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
