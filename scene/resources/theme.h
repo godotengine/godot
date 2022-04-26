@@ -122,6 +122,9 @@ public:
 	static void set_default_style(const Ref<StyleBox> &p_style);
 	static void set_default_font(const Ref<Font> &p_font);
 
+	static bool is_valid_type_name(const String &p_name);
+	static bool is_valid_item_name(const String &p_name);
+
 	void set_default_theme_font(const Ref<Font> &p_default_font);
 	Ref<Font> get_default_theme_font() const;
 	bool has_default_theme_font() const;
