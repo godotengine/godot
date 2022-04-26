@@ -414,6 +414,10 @@
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
 		</member>
+		<member name="debug/settings/physics_interpolation/enable_warnings" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings which can help pinpoint where nodes are being incorrectly updated, which will result in incorrect interpolation and visual glitches.
+			When a node is being interpolated, it is essential that the transform is set during [method Node._physics_process] (during a physics tick) rather than [method Node._process] (during a frame).
+		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum amount of functions per frame allowed when profiling.
 		</member>

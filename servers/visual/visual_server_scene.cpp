@@ -103,14 +103,37 @@ void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_tr
 
 	camera->transform = p_transform.orthonormalized();
 
-	if (_interpolation_data.interpolation_enabled && camera->interpolated) {
-		if (!camera->on_interpolate_transform_list) {
-			_interpolation_data.camera_transform_update_list_curr->push_back(p_camera);
-			camera->on_interpolate_transform_list = true;
-		}
+	if (_interpolation_data.interpolation_enabled) {
+		if (camera->interpolated) {
+			if (!camera->on_interpolate_transform_list) {
+				_interpolation_data.camera_transform_update_list_curr->push_back(p_camera);
+				camera->on_interpolate_transform_list = true;
+			}
 
-		// decide on the interpolation method .. slerp if possible
-		camera->interpolation_method = TransformInterpolator::find_method(camera->transform_prev.basis, camera->transform.basis);
+			// decide on the interpolation method .. slerp if possible
+			camera->interpolation_method = TransformInterpolator::find_method(camera->transform_prev.basis, camera->transform.basis);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			if (!Engine::get_singleton()->is_in_physics_frame()) {
+				// Effectively a WARN_PRINT_ONCE but after a certain number of occurrences.
+				static int32_t warn_count = -256;
+				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+					WARN_PRINT("Interpolated Camera transform should usually be set during physics process (possibly benign).");
+				}
+				warn_count++;
+			}
+#endif
+		} else {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			if (Engine::get_singleton()->is_in_physics_frame()) {
+				static int32_t warn_count = -256;
+				if ((warn_count == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+					WARN_PRINT("Non-interpolated Camera transform should not usually be set during physics process (possibly benign).");
+				}
+				warn_count++;
+			}
+#endif
+		}
 	}
 }
 
@@ -808,6 +831,30 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 #endif
 		instance->transform = p_transform;
 		_instance_queue_update(instance, true);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+		if ((_interpolation_data.interpolation_enabled && !instance->interpolated) && (Engine::get_singleton()->is_in_physics_frame())) {
+			static int32_t warn_count = 0;
+			warn_count++;
+			if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+				String node_name;
+				ObjectID id = instance->object_id;
+				if (id != 0) {
+					if (ObjectDB::get_instance(id)) {
+						Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+						if (node) {
+							node_name = "\"" + node->get_name() + "\"";
+						} else {
+							node_name = "\"unknown\"";
+						}
+					}
+				}
+
+				WARN_PRINT("Non-interpolated Instance " + node_name + " transform should usually not be set during physics process (possibly benign).");
+			}
+		}
+#endif
+
 		return;
 	}
 
@@ -861,6 +908,29 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 	}
 
 	_instance_queue_update(instance, true);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	if (!Engine::get_singleton()->is_in_physics_frame()) {
+		static int32_t warn_count = 0;
+		warn_count++;
+		if (((warn_count % 2048) == 0) && GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+			String node_name;
+			ObjectID id = instance->object_id;
+			if (id != 0) {
+				if (ObjectDB::get_instance(id)) {
+					Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+					if (node) {
+						node_name = "\"" + node->get_name() + "\"";
+					} else {
+						node_name = "\"unknown\"";
+					}
+				}
+			}
+
+			WARN_PRINT("Interpolated Instance " + node_name + " transform should usually be set during physics process (possibly benign).");
+		}
+	}
+#endif
 }
 
 void VisualServerScene::InterpolationData::notify_free_camera(RID p_rid, Camera &r_camera) {
