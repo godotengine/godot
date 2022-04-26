@@ -30,7 +30,6 @@
 
 #include "nav_map.h"
 
-#include "core/os/threaded_array_processor.h"
 #include "nav_region.h"
 #include "rvo_agent.h"
 
@@ -674,7 +673,7 @@ void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 	if (controlled_agents.size() > 0) {
-		thread_process_array(
+		step_work_pool.do_work(
 				controlled_agents.size(),
 				this,
 				&NavMap::compute_single_step,
@@ -718,4 +717,12 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 			}
 		}
 	}
+}
+
+NavMap::NavMap() {
+	step_work_pool.init();
+}
+
+NavMap::~NavMap() {
+	step_work_pool.finish();
 }
