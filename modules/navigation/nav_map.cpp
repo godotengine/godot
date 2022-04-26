@@ -673,6 +673,9 @@ void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 	if (controlled_agents.size() > 0) {
+		if (step_work_pool.get_thread_count() == 0) {
+			step_work_pool.init();
+		}
 		step_work_pool.do_work(
 				controlled_agents.size(),
 				this,
@@ -720,7 +723,6 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 }
 
 NavMap::NavMap() {
-	step_work_pool.init();
 }
 
 NavMap::~NavMap() {
