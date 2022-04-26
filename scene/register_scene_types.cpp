@@ -1109,6 +1109,9 @@ void initialize_theme() {
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
+	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
+	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
+
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
@@ -1119,7 +1122,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased, font_msdf, font_generate_mipmaps);
 	}
 
 	if (!theme_path.is_empty()) {
