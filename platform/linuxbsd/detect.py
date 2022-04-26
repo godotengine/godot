@@ -319,20 +319,21 @@ def configure(env):
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+        env.ParseConfig("pkg-config alsa --cflags")  # Only cflags, we dlopen the library.
     else:
         print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
     if env["pulseaudio"]:
         if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config --cflags libpulse")
+            env.ParseConfig("pkg-config libpulse --cflags")  # Only cflags, we dlopen the library.
         else:
             print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
 
     if env["dbus"]:
         if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
             env.Append(CPPDEFINES=["DBUS_ENABLED"])
-            env.ParseConfig("pkg-config --cflags --libs dbus-1")
+            env.ParseConfig("pkg-config dbus-1 --cflags --libs")
         else:
             print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
 
@@ -341,6 +342,7 @@ def configure(env):
         if env["udev"]:
             if os.system("pkg-config --exists libudev") == 0:  # 0 means found
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
+                env.ParseConfig("pkg-config libudev --cflags")  # Only cflags, we dlopen the library.
             else:
                 print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
@@ -366,11 +368,11 @@ def configure(env):
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
-            # No pkgconfig file for glslang so far
+            # No pkgconfig file so far, hardcode expected lib name.
             env.Append(LIBS=["glslang", "SPIRV"])
 
     env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    env.Append(LIBS=["GL"])
+    env.ParseConfig("pkg-config gl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 
