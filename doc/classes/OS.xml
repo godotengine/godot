@@ -455,6 +455,14 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="move_to_trash" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Moves the file or directory to the system's recycle bin. See also [method Directory.remove].
+				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
+			</description>
+		</method>
 		<method name="open_midi_inputs">
 			<return type="void" />
 			<description>
