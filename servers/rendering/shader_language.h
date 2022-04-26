@@ -1038,6 +1038,7 @@ private:
 
 	static bool is_const_suffix_lut_initialized;
 
+	Error _validate_precision(DataType p_type, DataPrecision p_precision);
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b);
