@@ -745,14 +745,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
-			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
-		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 			Add a custom description to a node. It will be displayed in a tooltip when hovered in editor's scene tree.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
-			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
+			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.

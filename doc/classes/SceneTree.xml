@@ -99,6 +99,13 @@
 				Returns the current frame number, i.e. the total frame count since the application started.
 			</description>
 		</method>
+		<method name="get_multiplayer" qualifiers="const">
+			<return type="MultiplayerAPI" />
+			<argument index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<description>
+				Return the [MultiplayerAPI] configured for the given path, or the default one if [code]for_path[/code] is empty.
+			</description>
+		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -193,6 +200,14 @@
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
+		<method name="set_multiplayer">
+			<return type="void" />
+			<argument index="0" name="multiplayer" type="MultiplayerAPI" />
+			<argument index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<description>
+				Sets a custom [MultiplayerAPI] with the given [code]root_path[/code] (controlling also the relative subpaths), or override the default one if [code]root_path[/code] is empty.
+			</description>
+		</method>
 		<method name="set_quit_on_go_back">
 			<return type="void" />
 			<argument index="0" name="enabled" type="bool" />
@@ -214,9 +229,6 @@
 		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.
-		</member>
-		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
-			The default [MultiplayerAPI] instance for this [SceneTree].
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled" default="true">
 			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal process_frame].
