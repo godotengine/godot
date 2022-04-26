@@ -3171,7 +3171,11 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 		if (((1 << ins->base_type) & VS::INSTANCE_GEOMETRY_MASK) && ins->visible && ins->cast_shadows != VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
 			Vector3 aabb_center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
-			ins->depth = near_plane.distance_to(aabb_center);
+			if (p_cam_orthogonal) {
+				ins->depth = near_plane.distance_to(aabb_center);
+			} else {
+				ins->depth = p_cam_transform.origin.distance_to(aabb_center);
+			}
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}
 	}
