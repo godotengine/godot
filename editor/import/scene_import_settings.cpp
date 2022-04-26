@@ -423,7 +423,7 @@ void SceneImportSettings::_update_view_gizmos() {
 			continue;
 		}
 
-		TypedArray<Node> descendants = mesh_node->find_nodes("collider_view", "MeshInstance3D");
+		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D");
 
 		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
 
