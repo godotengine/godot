@@ -49,6 +49,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static bool is_valid_name(const String &p_name);
+	static String validate_name(const String &p_name);
+
 	Error add_animation(const StringName &p_name, const Ref<Animation> &p_animation);
 	void remove_animation(const StringName &p_name);
 	void rename_animation(const StringName &p_name, const StringName &p_new_name);
