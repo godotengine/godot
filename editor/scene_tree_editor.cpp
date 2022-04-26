@@ -145,6 +145,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		NodeDock::singleton->get_parent()->call("set_current_tab", NodeDock::singleton->get_index());
 		NodeDock::singleton->show_groups();
+	} else if (p_id == BUTTON_UNIQUE) {
+		undo_redo->create_action(TTR("Disable Scene Unique Name"));
+		undo_redo->add_do_method(n, "set_unique_name_in_owner", false);
+		undo_redo->add_undo_method(n, "set_unique_name_in_owner", true);
+		undo_redo->add_do_method(this, "_update_tree");
+		undo_redo->add_undo_method(this, "_update_tree");
+		undo_redo->commit_action();
 	}
 }
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
@@ -261,6 +268,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		String warning = p_node->get_configuration_warning();
 		if (warning != String()) {
 			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
+		}
+
+		if (p_node->is_unique_name_in_owner()) {
+			item->add_button(0, get_icon("SceneUniqueName", "EditorIcons"), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -822,6 +833,13 @@ void SceneTreeEditor::_renamed() {
 
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
+
+	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
+		error->set_text(TTR("Another node already uses this unique name in the scene."));
+		error->popup_centered();
+		which->set_text(0, n->get_name());
+		return;
+	}
 
 	if (!undo_redo) {
 		n->set_name(new_name);

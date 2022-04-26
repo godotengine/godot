@@ -35,6 +35,8 @@
 #include "core/safe_refcount.h"
 #include "core/ustring.h"
 
+#define UNIQUE_NODE_PREFIX "%"
+
 struct StaticCString {
 	const char *ptr;
 	static StaticCString create(const char *p_ptr);
@@ -92,6 +94,17 @@ public:
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
+
+	_FORCE_INLINE_ bool is_node_unique_name() const {
+		if (!_data) {
+			return false;
+		}
+		if (_data->cname != nullptr) {
+			return (char32_t)_data->cname[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
+		} else {
+			return (char32_t)_data->name[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
+		}
+	}
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
 	}
