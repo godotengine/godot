@@ -297,8 +297,8 @@ void EditorFileServer::_thread_start(void *s) {
 
 void EditorFileServer::start() {
 	stop();
-	port = EDITOR_DEF("filesystem/file_server/port", 6010);
-	password = EDITOR_DEF("filesystem/file_server/password", "");
+	port = EDITOR_GET("filesystem/file_server/port");
+	password = EDITOR_GET("filesystem/file_server/password");
 	cmd = CMD_ACTIVATE;
 }
 
