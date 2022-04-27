@@ -132,9 +132,9 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 	buffers.resize(5);
 
 	{
-		const uint8_t *r = polygon_buffer.ptr();
-		float *fptr = (float *)r;
-		uint32_t *uptr = (uint32_t *)r;
+		uint8_t *r = polygon_buffer.ptrw();
+		float *fptr = reinterpret_cast<float *>(r);
+		uint32_t *uptr = reinterpret_cast<uint32_t *>(r);
 		uint32_t base_offset = 0;
 		{ //vertices
 			RD::VertexAttribute vd;
@@ -1843,7 +1843,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 
 		{
 			uint8_t *vw = geometry.ptrw();
-			float *vwptr = (float *)vw;
+			float *vwptr = reinterpret_cast<float *>(vw);
 			uint8_t *iw = indices.ptrw();
 			uint16_t *iwptr = (uint16_t *)iw;
 

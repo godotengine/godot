@@ -879,7 +879,7 @@ void RendererSceneGIRD::SDFGI::update_light() {
 			push_constant.process_offset = 0;
 			push_constant.process_increment = 1;
 		} else {
-			static uint32_t frames_to_update_table[RS::ENV_SDFGI_UPDATE_LIGHT_MAX] = {
+			static const uint32_t frames_to_update_table[RS::ENV_SDFGI_UPDATE_LIGHT_MAX] = {
 				1, 2, 4, 8, 16
 			};
 

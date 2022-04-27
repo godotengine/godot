@@ -119,7 +119,7 @@ void VisualShaderGraphPlugin::register_shader(VisualShader *p_shader) {
 	visual_shader = Ref<VisualShader>(p_shader);
 }
 
-void VisualShaderGraphPlugin::set_connections(List<VisualShader::Connection> &p_connections) {
+void VisualShaderGraphPlugin::set_connections(const List<VisualShader::Connection> &p_connections) {
 	connections = p_connections;
 }
 
@@ -2765,9 +2765,9 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		}
 		if (vsnode->get_output_port_count() > 0 || created_expression_port) {
 			int _from_node = id_to_use;
-			int _from_slot = 0;
 
 			if (created_expression_port) {
+				int _from_slot = 0;
 				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
@@ -2805,9 +2805,9 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 		if (vsnode->get_input_port_count() > 0 || created_expression_port) {
 			int _to_node = id_to_use;
-			int _to_slot = 0;
 
 			if (created_expression_port) {
+				int _to_slot = 0;
 				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_slot, _to_node, _to_slot);
 				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, from_node, from_slot, _to_node, _to_slot);
 				undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_slot, _to_node, _to_slot);

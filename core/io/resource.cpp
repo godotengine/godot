@@ -257,7 +257,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = (Resource *)ClassDB::instantiate(get_class());
+	Ref<Resource> r = static_cast<Resource *>(ClassDB::instantiate(get_class()));
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	for (const PropertyInfo &E : plist) {

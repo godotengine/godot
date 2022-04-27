@@ -1209,8 +1209,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	t.basis = to_local * p_transform.get_basis();
 
 	// Origin.
-	Vector3 orig = Vector3();
-	orig = skeleton->get_bone_pose(p_id).origin;
+	Vector3 orig = skeleton->get_bone_pose(p_id).origin;
 	Vector3 sub = p_transform.origin - skeleton->get_bone_global_pose(p_id).origin;
 	t.origin = orig + to_local.xform(sub);
 

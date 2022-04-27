@@ -2013,7 +2013,7 @@
 		<constant name="KEY_CODE_MASK" value="33554431" enum="KeyModifierMask">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="-16777216" enum="KeyModifierMask">
+		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask">
 			Modifier key mask.
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">

@@ -823,24 +823,24 @@ void RasterizerCanvasGLES3::_render_batch(uint32_t &r_index) {
 }
 
 // TODO maybe dont use
-void RasterizerCanvasGLES3::_end_batch(uint32_t &r_index) {
+void RasterizerCanvasGLES3::_end_batch(uint32_t p_index) {
 	for (int i = 0; i < 4; i++) {
-		state.instance_data_array[r_index].modulation[i] = 0.0;
-		state.instance_data_array[r_index].ninepatch_margins[i] = 0.0;
-		state.instance_data_array[r_index].src_rect[i] = 0.0;
-		state.instance_data_array[r_index].dst_rect[i] = 0.0;
+		state.instance_data_array[p_index].modulation[i] = 0.0;
+		state.instance_data_array[p_index].ninepatch_margins[i] = 0.0;
+		state.instance_data_array[p_index].src_rect[i] = 0.0;
+		state.instance_data_array[p_index].dst_rect[i] = 0.0;
 	}
-	state.instance_data_array[r_index].flags = uint32_t(0);
-	state.instance_data_array[r_index].color_texture_pixel_size[0] = 0.0;
-	state.instance_data_array[r_index].color_texture_pixel_size[1] = 0.0;
+	state.instance_data_array[p_index].flags = uint32_t(0);
+	state.instance_data_array[p_index].color_texture_pixel_size[0] = 0.0;
+	state.instance_data_array[p_index].color_texture_pixel_size[1] = 0.0;
 
-	state.instance_data_array[r_index].pad[0] = 0.0;
-	state.instance_data_array[r_index].pad[1] = 0.0;
+	state.instance_data_array[p_index].pad[0] = 0.0;
+	state.instance_data_array[p_index].pad[1] = 0.0;
 
-	state.instance_data_array[r_index].lights[0] = uint32_t(0);
-	state.instance_data_array[r_index].lights[1] = uint32_t(0);
-	state.instance_data_array[r_index].lights[2] = uint32_t(0);
-	state.instance_data_array[r_index].lights[3] = uint32_t(0);
+	state.instance_data_array[p_index].lights[0] = uint32_t(0);
+	state.instance_data_array[p_index].lights[1] = uint32_t(0);
+	state.instance_data_array[p_index].lights[2] = uint32_t(0);
+	state.instance_data_array[p_index].lights[3] = uint32_t(0);
 }
 
 RID RasterizerCanvasGLES3::light_create() {
@@ -1102,8 +1102,8 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, pb.vertex_buffer);
 		glBufferData(GL_ARRAY_BUFFER, stride * vertex_count * sizeof(float), nullptr, GL_STATIC_DRAW); // TODO may not be necessary
-		const uint8_t *r = polygon_buffer.ptr();
-		float *fptr = (float *)r;
+		uint8_t *r = polygon_buffer.ptrw();
+		float *fptr = reinterpret_cast<float *>(r);
 		uint32_t *uptr = (uint32_t *)r;
 		uint32_t base_offset = 0;
 		{

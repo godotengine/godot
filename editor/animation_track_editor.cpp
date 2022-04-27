@@ -586,20 +586,20 @@ public:
 					pi.name = "value";
 					p_list->push_back(pi);
 				} else {
-					PropertyHint hint = PROPERTY_HINT_NONE;
-					String hint_string;
+					PropertyHint val_hint = PROPERTY_HINT_NONE;
+					String val_hint_string;
 
 					if (v.get_type() == Variant::OBJECT) {
 						// Could actually check the object property if exists..? Yes I will!
 						Ref<Resource> res = v;
 						if (res.is_valid()) {
-							hint = PROPERTY_HINT_RESOURCE_TYPE;
-							hint_string = res->get_class();
+							val_hint = PROPERTY_HINT_RESOURCE_TYPE;
+							val_hint_string = res->get_class();
 						}
 					}
 
 					if (v.get_type() != Variant::NIL) {
-						p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+						p_list->push_back(PropertyInfo(v.get_type(), "value", val_hint, val_hint_string));
 					}
 				}
 
@@ -1264,20 +1264,20 @@ public:
 							pi.name = "value";
 							p_list->push_back(pi);
 						} else {
-							PropertyHint hint = PROPERTY_HINT_NONE;
-							String hint_string;
+							PropertyHint val_hint = PROPERTY_HINT_NONE;
+							String val_hint_string;
 
 							if (v.get_type() == Variant::OBJECT) {
 								// Could actually check the object property if exists..? Yes I will!
 								Ref<Resource> res = v;
 								if (res.is_valid()) {
-									hint = PROPERTY_HINT_RESOURCE_TYPE;
-									hint_string = res->get_class();
+									val_hint = PROPERTY_HINT_RESOURCE_TYPE;
+									val_hint_string = res->get_class();
 								}
 							}
 
 							if (v.get_type() != Variant::NIL) {
-								p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+								p_list->push_back(PropertyInfo(v.get_type(), "value", val_hint, val_hint_string));
 							}
 						}
 					}
@@ -1572,7 +1572,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			Color color_time_dec = color;
 			color_time_dec.a *= 0.5;
 #define SC_ADJ 100
-			int min = 30;
 			int dec = 1;
 			int step = 1;
 			int decimals = 2;
@@ -1588,7 +1587,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			const int max_sc_width = String::num(max_sc).length() * max_digit_width;
 
 			while (!step_found) {
-				min = max_sc_width;
+				int min = max_sc_width;
 				if (decimals > 0) {
 					min += period_width + max_digit_width * decimals;
 				}
@@ -2552,7 +2551,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
-	Ref<Texture2D> type_icons[9] = {
+	const Ref<Texture2D> type_icons[9] = {
 		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),

@@ -2057,7 +2057,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 							}
 							drag_last_pos = mb->get_position();
 						}
-					} else if (tile_data && tile_data->get_terrain_set() == terrain_set) {
+					} else if (tile_data->get_terrain_set() == terrain_set) {
 						if (mb->is_ctrl_pressed()) {
 							// Paint terrain set with rect.
 							drag_type = DRAG_TYPE_PAINT_TERRAIN_BITS_RECT;
@@ -2387,7 +2387,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 							tile_data->set_terrain_set(drag_painted_value);
 						}
 						drag_last_pos = mb->get_position();
-					} else if (tile_data && tile_data->get_terrain_set() == terrain_set) {
+					} else if (tile_data->get_terrain_set() == terrain_set) {
 						// Paint terrain bits.
 						drag_type = DRAG_TYPE_PAINT_TERRAIN_BITS;
 						drag_modified.clear();

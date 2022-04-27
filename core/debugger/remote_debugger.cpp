@@ -169,7 +169,7 @@ public:
 		EngineDebugger::get_singleton()->send_message("performance:profile_frame", arr);
 	}
 
-	PerformanceProfiler(Object *p_performance) {
+	explicit PerformanceProfiler(Object *p_performance) {
 		performance = p_performance;
 	}
 };

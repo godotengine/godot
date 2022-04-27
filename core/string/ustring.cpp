@@ -4124,15 +4124,11 @@ String String::path_to(const String &p_path) const {
 		dst += "/";
 	}
 
-	String base;
-
 	if (src.begins_with("res://") && dst.begins_with("res://")) {
-		base = "res:/";
 		src = src.replace("res://", "/");
 		dst = dst.replace("res://", "/");
 
 	} else if (src.begins_with("user://") && dst.begins_with("user://")) {
-		base = "user:/";
 		src = src.replace("user://", "/");
 		dst = dst.replace("user://", "/");
 
@@ -4147,7 +4143,6 @@ String String::path_to(const String &p_path) const {
 			return p_path; //impossible to do this
 		}
 
-		base = src_begin;
 		src = src.substr(src_begin.length(), src.length());
 		dst = dst.substr(dst_begin.length(), dst.length());
 	}

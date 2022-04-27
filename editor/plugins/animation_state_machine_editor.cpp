@@ -530,25 +530,25 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 	state_machine_draw->draw_set_transform_matrix(Transform2D());
 }
 
-void AnimationNodeStateMachineEditor::_clip_src_line_to_rect(Vector2 &r_from, Vector2 &r_to, const Rect2 &p_rect) {
-	if (r_to == r_from) {
+void AnimationNodeStateMachineEditor::_clip_src_line_to_rect(Vector2 &r_from, const Vector2 &p_to, const Rect2 &p_rect) {
+	if (p_to == r_from) {
 		return;
 	}
 
 	//this could be optimized...
-	Vector2 n = (r_to - r_from).normalized();
+	Vector2 n = (p_to - r_from).normalized();
 	while (p_rect.has_point(r_from)) {
 		r_from += n;
 	}
 }
 
-void AnimationNodeStateMachineEditor::_clip_dst_line_to_rect(Vector2 &r_from, Vector2 &r_to, const Rect2 &p_rect) {
-	if (r_to == r_from) {
+void AnimationNodeStateMachineEditor::_clip_dst_line_to_rect(const Vector2 &p_from, Vector2 &r_to, const Rect2 &p_rect) {
+	if (r_to == p_from) {
 		return;
 	}
 
 	//this could be optimized...
-	Vector2 n = (r_to - r_from).normalized();
+	Vector2 n = (r_to - p_from).normalized();
 	while (p_rect.has_point(r_to)) {
 		r_to -= n;
 	}

@@ -1722,7 +1722,7 @@ RID ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_part
 
 	if (particles_collision->heightfield_texture == RID()) {
 		//create
-		int resolutions[RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX] = { 256, 512, 1024, 2048, 4096, 8192 };
+		const int resolutions[RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX] = { 256, 512, 1024, 2048, 4096, 8192 };
 		Size2i size;
 		if (particles_collision->extents.x > particles_collision->extents.z) {
 			size.x = resolutions[particles_collision->heightfield_resolution];

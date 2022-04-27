@@ -49,10 +49,10 @@ class NativeExtensionMethodBind : public MethodBind {
 	bool vararg;
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		return Variant::Type(get_argument_type_func(method_userdata, p_arg));
 	}
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		GDNativePropertyInfo pinfo;
 		get_argument_info_func(method_userdata, p_arg, &pinfo);
 		PropertyInfo ret;
@@ -66,11 +66,13 @@ protected:
 	}
 
 public:
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+#ifdef DEBUG_METHODS_ENABLED
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return GodotTypeInfo::Metadata(get_argument_metadata_func(method_userdata, p_arg));
 	}
+#endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		Variant ret;
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
 		GDNativeCallError ce{ GDNATIVE_CALL_OK, 0, 0 };
@@ -80,16 +82,16 @@ public:
 		r_error.expected = ce.expected;
 		return ret;
 	}
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have ptrcall support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
 		ptrcall_func(method_userdata, extension_instance, (const GDNativeTypePtr *)p_args, (GDNativeTypePtr)r_ret);
 	}
 
-	virtual bool is_vararg() const {
+	virtual bool is_vararg() const override {
 		return false;
 	}
-	NativeExtensionMethodBind(const GDNativeExtensionClassMethodInfo *p_method_info) {
+	explicit NativeExtensionMethodBind(const GDNativeExtensionClassMethodInfo *p_method_info) {
 		method_userdata = p_method_info->method_userdata;
 		call_func = p_method_info->call_func;
 		ptrcall_func = p_method_info->ptrcall_func;

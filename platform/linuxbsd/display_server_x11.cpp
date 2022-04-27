@@ -2143,7 +2143,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 				unsigned char *data = nullptr;
 				if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 					if (data && (format == 32) && (len >= 5)) {
-						borderless = !((Hints *)data)->decorations;
+						borderless = !(reinterpret_cast<Hints *>(data)->decorations);
 					}
 					if (data) {
 						XFree(data);
@@ -2175,7 +2175,7 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	const WindowData &wd = windows[p_window];
 	// Using EWMH -- Extended Window Manager Hints
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
@@ -2201,7 +2201,7 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	const WindowData &wd = windows[p_window];
 
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
@@ -2547,10 +2547,9 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 	unsigned long bytes_after = 0;
 	unsigned char *ret = nullptr;
 
-	int read_bytes = 1024;
-
 	// Keep trying to read the property until there are no bytes unread.
 	if (p_property != None) {
+		int read_bytes = 1024;
 		do {
 			if (ret != nullptr) {
 				XFree(ret);
@@ -2570,7 +2569,7 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 	return p;
 }
 
-static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count) {
+static Atom pick_target_from_list(Display *p_display, const Atom *p_list, int p_count) {
 	static const char *target_type = "text/uri-list";
 
 	for (int i = 0; i < p_count; i++) {
