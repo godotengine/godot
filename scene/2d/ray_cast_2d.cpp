@@ -159,31 +159,7 @@ void RayCast2D::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
-			Transform2D xf;
-			xf.rotate(cast_to.angle());
-			xf.translate(Vector2(cast_to.length(), 0));
-
-			// Draw an arrow indicating where the RayCast is pointing to
-			Color draw_col = get_tree()->get_debug_collisions_color();
-			if (!enabled) {
-				float g = draw_col.get_v();
-				draw_col.r = g;
-				draw_col.g = g;
-				draw_col.b = g;
-			}
-			draw_line(Vector2(), cast_to, draw_col, 2, true);
-			Vector<Vector2> pts;
-			float tsize = 8;
-			pts.push_back(xf.xform(Vector2(tsize, 0)));
-			pts.push_back(xf.xform(Vector2(0, Math_SQRT12 * tsize)));
-			pts.push_back(xf.xform(Vector2(0, -Math_SQRT12 * tsize)));
-			Vector<Color> cols;
-			for (int i = 0; i < 3; i++) {
-				cols.push_back(draw_col);
-			}
-
-			draw_primitive(pts, cols, Vector<Vector2>());
-
+			_draw_debug_shape();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -212,7 +188,7 @@ void RayCast2D::_update_raycast_state() {
 	}
 
 	Physics2DDirectSpaceState::RayResult rr;
-
+	bool prev_collision_state = collided;
 	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 		collided = true;
 		against = rr.collider_id;
@@ -224,6 +200,49 @@ void RayCast2D::_update_raycast_state() {
 		against = 0;
 		against_shape = 0;
 	}
+
+	if (prev_collision_state != collided) {
+		update();
+	}
+}
+
+void RayCast2D::_draw_debug_shape() {
+	Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
+	if (!enabled) {
+		float g = draw_col.get_v();
+		draw_col.r = g;
+		draw_col.g = g;
+		draw_col.b = g;
+	}
+
+	// Draw an arrow indicating where the RayCast is pointing to.
+	const real_t max_arrow_size = 6;
+	const real_t line_width = 1.4;
+	const real_t line_length = cast_to.length();
+	bool no_line = line_length < line_width;
+	real_t arrow_size = CLAMP(line_length * 2 / 3, line_width, max_arrow_size);
+
+	if (no_line) {
+		arrow_size = line_length;
+	} else {
+		draw_line(Vector2(), cast_to - cast_to.normalized() * arrow_size, draw_col, line_width);
+	}
+
+	Transform2D xf;
+	xf.rotate(cast_to.angle());
+	xf.translate(Vector2(no_line ? 0 : line_length - arrow_size, 0));
+
+	Vector<Vector2> pts;
+	pts.push_back(xf.xform(Vector2(arrow_size, 0)));
+	pts.push_back(xf.xform(Vector2(0, 0.5 * arrow_size)));
+	pts.push_back(xf.xform(Vector2(0, -0.5 * arrow_size)));
+
+	Vector<Color> cols;
+	cols.push_back(draw_col);
+	cols.push_back(draw_col);
+	cols.push_back(draw_col);
+
+	draw_primitive(pts, cols, Vector<Vector2>());
 }
 
 void RayCast2D::force_raycast_update() {
