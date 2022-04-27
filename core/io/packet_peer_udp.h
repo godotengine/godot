@@ -79,7 +79,7 @@ public:
 	void disconnect_shared_socket(); // Used by UDPServer
 	Error store_packet(IPAddress p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
 	Error connect_to_host(const IPAddress &p_host, int p_port);
-	bool is_connected_to_host() const;
+	bool is_socket_connected() const;
 
 	IPAddress get_packet_address() const;
 	int get_packet_port() const;
