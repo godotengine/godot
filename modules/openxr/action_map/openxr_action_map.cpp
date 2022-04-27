@@ -55,7 +55,14 @@ void OpenXRActionMap::_bind_methods() {
 }
 
 void OpenXRActionMap::set_action_sets(Array p_action_sets) {
-	action_sets = p_action_sets;
+	action_sets.clear();
+
+	for (int i = 0; i < p_action_sets.size(); i++) {
+		Ref<OpenXRActionSet> action_set = p_action_sets[i];
+		if (action_set.is_valid() && action_sets.find(action_set) == -1) {
+			action_sets.push_back(action_set);
+		}
+	}
 }
 
 Array OpenXRActionMap::get_action_sets() const {
@@ -99,7 +106,14 @@ void OpenXRActionMap::remove_action_set(Ref<OpenXRActionSet> p_action_set) {
 }
 
 void OpenXRActionMap::set_interaction_profiles(Array p_interaction_profiles) {
-	interaction_profiles = p_interaction_profiles;
+	interaction_profiles.clear();
+
+	for (int i = 0; i < p_interaction_profiles.size(); i++) {
+		Ref<OpenXRInteractionProfile> interaction_profile = p_interaction_profiles[i];
+		if (interaction_profile.is_valid() && interaction_profiles.find(interaction_profile) == -1) {
+			interaction_profiles.push_back(interaction_profile);
+		}
+	}
 }
 
 Array OpenXRActionMap::get_interaction_profiles() const {
