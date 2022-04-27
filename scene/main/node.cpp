@@ -2728,7 +2728,7 @@ NodePath Node::get_import_path() const {
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif

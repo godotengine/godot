@@ -269,7 +269,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("search_result_border_color", search_result_border_color);
 	text_edit->add_color_override("symbol_color", symbol_color);
 
-	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
+	text_edit->add_constant_override("line_spacing", EDITOR_GET("text_editor/theme/line_spacing"));
 
 	colors_cache.symbol_color = symbol_color;
 	colors_cache.keyword_color = keyword_color;
@@ -1520,7 +1520,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;
@@ -1573,7 +1573,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
 
 		te->cursor_set_line(row);

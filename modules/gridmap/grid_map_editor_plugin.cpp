@@ -833,7 +833,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
-	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
 	mesh_library_palette->clear();
@@ -1314,8 +1314,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	size_slider->set_value(1.0f);
 	size_slider->connect("value_changed", this, "_icon_size_changed");
 	add_child(size_slider);
-
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	display_mode = DISPLAY_THUMBNAIL;
 
