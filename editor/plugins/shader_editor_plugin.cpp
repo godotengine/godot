@@ -353,7 +353,7 @@ void ShaderEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			PopupMenu *popup = help_menu->get_popup();
-			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_icon("Instance", "EditorIcons"));
+			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_icon("ExternalLink", "EditorIcons"));
 		} break;
 
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {

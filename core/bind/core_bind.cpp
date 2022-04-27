@@ -1102,6 +1102,10 @@ void _OS::dump_resources_to_file(const String &p_file) {
 	OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
 }
 
+Error _OS::move_to_trash(const String &p_path) const {
+	return OS::get_singleton()->move_to_trash(p_path);
+}
+
 String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
 };
@@ -1399,6 +1403,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
 	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
 
+	ClassDB::bind_method(D_METHOD("move_to_trash", "path"), &_OS::move_to_trash);
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir", "shared_storage"), &_OS::get_system_dir, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &_OS::get_config_dir);

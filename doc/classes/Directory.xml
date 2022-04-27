@@ -153,7 +153,8 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
+				Permanently deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
+				If you don't want to delete the file/directory permanently, use [method OS.move_to_trash] instead.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>

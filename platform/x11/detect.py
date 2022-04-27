@@ -114,7 +114,7 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2 ** 32
+    is64 = sys.maxsize > 2**32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 
@@ -336,13 +336,14 @@ def configure(env):
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+        env.ParseConfig("pkg-config alsa --cflags")  # Only cflags, we dlopen the library.
     else:
         print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
     if env["pulseaudio"]:
         if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config --cflags libpulse")
+            env.ParseConfig("pkg-config libpulse --cflags")  # Only cflags, we dlopen the library.
         else:
             print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
 
@@ -351,6 +352,7 @@ def configure(env):
         if env["udev"]:
             if os.system("pkg-config --exists libudev") == 0:  # 0 means found
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
+                env.ParseConfig("pkg-config libudev --cflags")  # Only cflags, we dlopen the library.
             else:
                 print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
@@ -362,7 +364,10 @@ def configure(env):
 
     env.Prepend(CPPPATH=["#platform/x11"])
     env.Append(CPPDEFINES=["X11_ENABLED", "UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", ("_FILE_OFFSET_BITS", 64)])
-    env.Append(LIBS=["GL", "pthread"])
+
+    env.ParseConfig("pkg-config gl --cflags --libs")
+
+    env.Append(LIBS=["pthread"])
 
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])
