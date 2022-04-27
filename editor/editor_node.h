@@ -323,6 +323,7 @@ private:
 	MenuButton *settings_menu = nullptr;
 	MenuButton *help_menu = nullptr;
 	PopupMenu *tool_menu = nullptr;
+	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
 	Button *prev_scene = nullptr;
 	Button *play_button = nullptr;
@@ -524,6 +525,7 @@ private:
 	void _save_screenshot(NodePath p_path);
 
 	void _tool_menu_option(int p_idx);
+	void _export_as_menu_option(int p_idx);
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
@@ -839,6 +841,8 @@ public:
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	PopupMenu *get_export_as_menu();
 
 	void save_all_scenes();
 	void save_scene_list(Vector<String> p_scene_filenames);

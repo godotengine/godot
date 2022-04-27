@@ -2660,25 +2660,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			project_export->popup_export();
 		} break;
 
-		case FILE_EXPORT_MESH_LIBRARY: {
-			if (!editor_data.get_edited_scene_root()) {
-				show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
-				break;
-			}
-
-			List<String> extensions;
-			Ref<MeshLibrary> ml(memnew(MeshLibrary));
-			ResourceSaver::get_recognized_extensions(ml, &extensions);
-			file_export_lib->clear_filters();
-			for (const String &E : extensions) {
-				file_export_lib->add_filter("*." + E);
-			}
-
-			file_export_lib->popup_file_dialog();
-			file_export_lib->set_title(TTR("Export Mesh Library"));
-
-		} break;
-
 		case FILE_EXTERNAL_OPEN_SCENE: {
 			if (unsaved_cache && !p_confirmed) {
 				confirmation->get_ok_button()->set_text(TTR("Open"));
@@ -3019,6 +3000,40 @@ void EditorNode::_tool_menu_option(int p_idx) {
 				}
 			} // Else it's a submenu so don't do anything.
 		} break;
+	}
+}
+
+void EditorNode::_export_as_menu_option(int p_idx) {
+	if (p_idx == 0) { // MeshLibrary
+		current_menu_option = FILE_EXPORT_MESH_LIBRARY;
+
+		if (!editor_data.get_edited_scene_root()) {
+			show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+			return;
+		}
+
+		List<String> extensions;
+		Ref<MeshLibrary> ml(memnew(MeshLibrary));
+		ResourceSaver::get_recognized_extensions(ml, &extensions);
+		file_export_lib->clear_filters();
+		for (const String &E : extensions) {
+			file_export_lib->add_filter("*." + E);
+		}
+
+		file_export_lib->popup_file_dialog();
+		file_export_lib->set_title(TTR("Export Mesh Library"));
+	} else { // Custom menu options added by plugins
+		if (export_as_menu->get_item_submenu(p_idx).is_empty()) { // If not a submenu
+			Callable callback = export_as_menu->get_item_metadata(p_idx);
+			Callable::CallError ce;
+			Variant result;
+			callback.call(nullptr, 0, result, ce);
+
+			if (ce.error != Callable::CallError::CALL_OK) {
+				String err = Variant::get_callable_error_text(callback, nullptr, 0, ce);
+				ERR_PRINT("Error calling function from export_as menu: " + err);
+			}
+		}
 	}
 }
 
@@ -5473,6 +5488,10 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 	}
 }
 
+PopupMenu *EditorNode::get_export_as_menu() {
+	return export_as_menu;
+}
+
 void EditorNode::_global_menu_scene(const Variant &p_tag) {
 	int idx = (int)p_tag;
 	scene_tabs->set_current_tab(idx);
@@ -6447,12 +6466,12 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/quick_open_script", TTR("Quick Open Script..."), KeyModifierMask::CMD + KeyModifierMask::ALT + Key::O), FILE_QUICK_OPEN_SCRIPT);
 
 	p->add_separator();
-	PopupMenu *pm_export = memnew(PopupMenu);
-	pm_export->set_name("Export");
-	p->add_child(pm_export);
-	p->add_submenu_item(TTR("Convert To..."), "Export");
-	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_MeshLibrary", TTR("MeshLibrary...")), FILE_EXPORT_MESH_LIBRARY);
-	pm_export->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
+	export_as_menu = memnew(PopupMenu);
+	export_as_menu->set_name("Export");
+	p->add_child(export_as_menu);
+	p->add_submenu_item(TTR("Export As..."), "Export");
+	export_as_menu->add_shortcut(ED_SHORTCUT("editor/export_as_mesh_library", TTR("MeshLibrary...")), FILE_EXPORT_MESH_LIBRARY);
+	export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 
 	p->add_separator();
 	p->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO, true);

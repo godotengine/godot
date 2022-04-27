@@ -470,6 +470,12 @@
 				Returns the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
 			</description>
 		</method>
+		<method name="get_export_as_menu">
+			<return type="PopupMenu" />
+			<description>
+				Returns the [PopupMenu] under [b]Scene &gt; Export As...[/b].
+			</description>
+		</method>
 		<method name="get_script_create_dialog">
 			<return type="ScriptCreateDialog" />
 			<description>
