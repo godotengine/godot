@@ -394,7 +394,7 @@ void EditorNode3DGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
 	}
 }
 
-void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, const Vector<int> &p_ids, bool p_billboard, bool p_secondary) {
+void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, const Vector<int> &p_ids, bool p_billboard, bool p_secondary, const Vector<Color> &p_handle_colors) {
 	billboard_handle = p_billboard;
 
 	if (!is_selected() || !is_editable()) {
@@ -407,6 +407,10 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		ERR_FAIL_COND_MSG((!handles.is_empty() && !handle_ids.is_empty()) || (!secondary_handles.is_empty() && !secondary_handle_ids.is_empty()), "Fail");
 	} else {
 		ERR_FAIL_COND_MSG(handles.size() != handle_ids.size() || secondary_handles.size() != secondary_handle_ids.size(), "Fail");
+	}
+
+	if (!p_handle_colors.is_empty()) {
+		ERR_FAIL_COND_MSG(p_handles.size() != p_handle_colors.size(), vformat("The size of the handle colors array (%d items) must match the size of the handles array (%d items), or it must be empty to disable per-handle coloring.", p_handle_colors.size(), p_handles.size()));
 	}
 
 	bool is_current_hover_gizmo = Node3DEditor::get_singleton()->get_current_hover_gizmo() == this;
@@ -424,14 +428,16 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		colors.resize(p_handles.size());
 		Color *w = colors.ptrw();
 		for (int i = 0; i < p_handles.size(); i++) {
-			Color col(1, 1, 1, 1);
-			if (is_handle_highlighted(i, p_secondary)) {
-				col = Color(0, 0, 1, 0.9);
+			Color col;
+			if (!p_handle_colors.is_empty()) {
+				col = Color(1, 1, 1, 0.9) * p_handle_colors[i];
+			} else {
+				col = Color(1, 1, 1, 0.9);
 			}
 
-			int id = p_ids.is_empty() ? i : p_ids[i];
-			if (!is_current_hover_gizmo || current_hover_handle != id || p_secondary != current_hover_handle_secondary) {
-				col.a = 0.8;
+			const int id = p_ids.is_empty() ? i : p_ids[i];
+			if ((is_current_hover_gizmo && current_hover_handle == id && p_secondary == current_hover_handle_secondary) || is_handle_highlighted(i, p_secondary)) {
+				col = col.from_hsv(col.get_h(), 0.25, 1.0, 1);
 			}
 
 			w[i] = col;
@@ -833,7 +839,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorNode3DGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorNode3DGizmo::add_collision_triangles);
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale", "modulate"), &EditorNode3DGizmo::add_unscaled_billboard, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "ids", "billboard", "secondary"), &EditorNode3DGizmo::add_handles, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "ids", "billboard", "secondary", "handle_colors"), &EditorNode3DGizmo::add_handles, DEFVAL(false), DEFVAL(false), DEFVAL(Vector<Color>()));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorNode3DGizmo::_set_spatial_node);
 	ClassDB::bind_method(D_METHOD("get_spatial_node"), &EditorNode3DGizmo::get_spatial_node);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorNode3DGizmo::get_plugin);
