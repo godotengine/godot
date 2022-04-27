@@ -792,6 +792,25 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 3 + captures_count;
 			} break;
+			case OPCODE_CREATE_SELF_LAMBDA: {
+				int captures_count = _code_ptr[ip + 1 + instr_var_args];
+				GDScriptFunction *lambda = _lambdas_ptr[_code_ptr[ip + 2 + instr_var_args]];
+
+				text += DADDR(1 + captures_count);
+				text += "create self lambda from ";
+				text += lambda->name.operator String();
+				text += "function, captures (";
+
+				for (int i = 0; i < captures_count; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 3 + captures_count;
+			} break;
 			case OPCODE_JUMP: {
 				text += "jump ";
 				text += itos(_code_ptr[ip + 1]);

@@ -1197,7 +1197,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				return GDScriptCodeGenerator::Address();
 			}
 
-			gen->write_lambda(result, function, captures);
+			gen->write_lambda(result, function, captures, lambda->use_self);
 
 			for (int i = 0; i < captures.size(); i++) {
 				if (captures[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
