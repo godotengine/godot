@@ -2877,17 +2877,15 @@ ProjectManager::ProjectManager() {
 		Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
 		Vector2i screen_position = DisplayServer::get_singleton()->screen_get_position();
 
-		// Consider the editor display scale.
-		window_size.x = round((float)window_size.x * scale_factor);
-		window_size.y = round((float)window_size.y * scale_factor);
-
-		// Make the window centered on the screen.
-		Vector2i window_position;
-		window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
-		window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
+		window_size *= scale_factor;
 
 		DisplayServer::get_singleton()->window_set_size(window_size);
-		DisplayServer::get_singleton()->window_set_position(window_position);
+		if (screen_size != Vector2i()) {
+			Vector2i window_position;
+			window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
+			window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
+			DisplayServer::get_singleton()->window_set_position(window_position);
+		}
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
