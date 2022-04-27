@@ -6,7 +6,7 @@
 	<description>
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them.
 		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a fire-and-forget manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
-		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid. They can't be used for tweening values, but you can do manual interpolation with [method interpolate_value].
+		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
 		A [Tween] animation is composed of a sequence of [Tweener]s, which by default are executed one after another. You can create a sequence by appending [Tweener]s to the [Tween]. Animating something with a [Tweener] is called tweening. Example tweening sequence looks like this:
 		[codeblock]
 		var tween = get_tree().create_tween()
@@ -79,7 +79,7 @@
 				[b]Note:[/code] As it results from accumulating frame deltas, the time returned after the [Tween] has finished animating will be slightly greater than the actual [Tween] duration.
 			</description>
 		</method>
-		<method name="interpolate_value">
+		<method name="interpolate_value" qualifiers="static">
 			<return type="Variant" />
 			<argument index="0" name="initial_value" type="Variant" />
 			<argument index="1" name="delta_value" type="Variant" />
@@ -105,7 +105,7 @@
 		<method name="is_valid">
 			<return type="bool" />
 			<description>
-				Returns whether the [Tween] is valid. A valid [Tween] is a [Tween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [Tween]). [Tween] might become invalid when it has finished tweening or was killed, also when created with [code]Tween.new()[/code]. Invalid [Tween] can't have [Tweener]s appended, because it can't animate them. You can however still use [method interpolate_value].
+				Returns whether the [Tween] is valid. A valid [Tween] is a [Tween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [Tween]). [Tween] might become invalid when it has finished tweening or was killed, also when created with [code]Tween.new()[/code]. Invalid [Tween] can't have [Tweener]s appended, because it can't animate them.
 			</description>
 		</method>
 		<method name="kill">

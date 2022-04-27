@@ -152,10 +152,6 @@ bool Tween::is_running() {
 	return running;
 }
 
-void Tween::set_valid(bool p_valid) {
-	valid = p_valid;
-}
-
 bool Tween::is_valid() {
 	return valid;
 }
@@ -648,7 +644,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
 
-	ClassDB::bind_method(D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
+	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
 	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
@@ -677,6 +673,14 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(EASE_OUT);
 	BIND_ENUM_CONSTANT(EASE_IN_OUT);
 	BIND_ENUM_CONSTANT(EASE_OUT_IN);
+}
+
+Tween::Tween() {
+	ERR_FAIL_MSG("Tween can't be created directly. Use create_tween() method.");
+}
+
+Tween::Tween(bool p_valid) {
+	valid = p_valid;
 }
 
 Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {

@@ -1117,9 +1117,7 @@ Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_a
 }
 
 Ref<Tween> SceneTree::create_tween() {
-	Ref<Tween> tween;
-	tween.instantiate();
-	tween->set_valid(true);
+	Ref<Tween> tween = memnew(Tween(true));
 	tweens.push_back(tween);
 	return tween;
 }
