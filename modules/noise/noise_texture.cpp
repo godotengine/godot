@@ -300,6 +300,8 @@ bool NoiseTexture::get_seamless() {
 }
 
 void NoiseTexture::set_seamless_blend_skirt(real_t p_blend_skirt) {
+	ERR_FAIL_COND(p_blend_skirt < 0.05 || p_blend_skirt > 1);
+
 	if (p_blend_skirt == seamless_blend_skirt) {
 		return;
 	}
