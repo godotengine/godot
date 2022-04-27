@@ -670,17 +670,17 @@ void DisplayServerX11::_clipboard_transfer_ownership(Atom p_source, Window x11_w
 
 int DisplayServerX11::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
+	int count = 0;
 
 	// Using Xinerama Extension
 	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return 0;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+		XFree(xsi);
+	} else {
+		count = XScreenCount(x11_display);
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	XFree(xsi);
 	return count;
 }
 
@@ -711,6 +711,19 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 
 		if (xsi) {
 			XFree(xsi);
+		}
+	} else {
+		int count = XScreenCount(x11_display);
+		if (p_screen < count) {
+			Window root = XRootWindow(x11_display, p_screen);
+			XWindowAttributes xwa;
+			XGetWindowAttributes(x11_display, root, &xwa);
+			rect.position.x = xwa.x;
+			rect.position.y = xwa.y;
+			rect.size.width = xwa.width;
+			rect.size.height = xwa.height;
+		} else {
+			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
 		}
 	}
 
