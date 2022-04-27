@@ -330,10 +330,10 @@
 			[b]Note:[/b] Enabling [code]collision_animatable[/code] may have a small performance impact, only do it if the TileMap is moving and has colliding tiles.
 		</member>
 		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
-			Show or hide the TileMap's collision shapes. If set to [code]VISIBILITY_MODE_DEFAULT[/code], this depends on the show collision debug settings.
+			Show or hide the TileMap's collision shapes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show collision debug settings.
 		</member>
 		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
-			Show or hide the TileMap's collision shapes. If set to [code]VISIBILITY_MODE_DEFAULT[/code], this depends on the show navigation debug settings.
+			Show or hide the TileMap's collision shapes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].
