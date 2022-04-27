@@ -99,36 +99,33 @@ private:
 	_FastNoiseLite _domain_warp_noise;
 
 	Vector3 offset;
-	NoiseType noise_type;
-	Ref<Gradient> color_ramp;
+	NoiseType noise_type = TYPE_SIMPLEX_SMOOTH;
 
-	int seed;
-	real_t frequency;
-	bool in_3d_space;
+	int seed = 0;
+	real_t frequency = 0.01;
 
 	// Fractal specific.
-	FractalType fractal_type;
-	int fractal_octaves;
-	real_t fractal_lacunarity;
-	real_t fractal_gain;
-	real_t fractal_weighted_strength;
-	real_t fractal_pinp_pong_strength;
+	FractalType fractal_type = FRACTAL_FBM;
+	int fractal_octaves = 5;
+	real_t fractal_lacunarity = 2;
+	real_t fractal_gain = 0.5;
+	real_t fractal_weighted_strength = 0;
+	real_t fractal_ping_pong_strength = 2;
 
 	// Cellular specific.
-	CellularDistanceFunction cellular_distance_function;
-	CellularReturnType cellular_return_type;
-	real_t cellular_jitter;
+	CellularDistanceFunction cellular_distance_function = DISTANCE_EUCLIDEAN;
+	CellularReturnType cellular_return_type = RETURN_DISTANCE;
+	real_t cellular_jitter = 0.45;
 
 	// Domain warp specific.
-	bool domain_warp_enabled;
-	DomainWarpType domain_warp_type;
-	real_t domain_warp_frequency;
-	real_t domain_warp_amplitude;
-
-	DomainWarpFractalType domain_warp_fractal_type;
-	int domain_warp_fractal_octaves;
-	real_t domain_warp_fractal_lacunarity;
-	real_t domain_warp_fractal_gain;
+	bool domain_warp_enabled = false;
+	DomainWarpType domain_warp_type = DOMAIN_WARP_SIMPLEX;
+	real_t domain_warp_amplitude = 30.0;
+	real_t domain_warp_frequency = 0.05;
+	DomainWarpFractalType domain_warp_fractal_type = DOMAIN_WARP_FRACTAL_PROGRESSIVE;
+	int domain_warp_fractal_octaves = 5;
+	real_t domain_warp_fractal_lacunarity = 6;
+	real_t domain_warp_fractal_gain = 0.5;
 
 public:
 	FastNoiseLite();
@@ -145,14 +142,8 @@ public:
 	void set_frequency(real_t p_freq);
 	real_t get_frequency() const;
 
-	void set_in_3d_space(bool p_enable);
-	bool is_in_3d_space() const;
-
 	void set_offset(Vector3 p_offset);
 	Vector3 get_offset() const;
-
-	void set_color_ramp(const Ref<Gradient> &p_gradient);
-	Ref<Gradient> get_color_ramp() const;
 
 	// Fractal specific.
 
@@ -212,17 +203,13 @@ public:
 	real_t get_domain_warp_fractal_gain() const;
 
 	// Interface methods.
+	real_t get_noise_1d(real_t p_x) const override;
 
-	Ref<Image> get_image(int p_width, int p_height, bool p_invert = false) override;
-	Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false, real_t p_blend_skirt = 0.1) override;
+	real_t get_noise_2dv(Vector2 p_v) const override;
+	real_t get_noise_2d(real_t p_x, real_t p_y) const override;
 
-	real_t get_noise_1d(real_t p_x) override;
-
-	real_t get_noise_2dv(Vector2 p_v) override;
-	real_t get_noise_2d(real_t p_x, real_t p_y) override;
-
-	real_t get_noise_3dv(Vector3 p_v) override;
-	real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) override;
+	real_t get_noise_3dv(Vector3 p_v) const override;
+	real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const override;
 
 	void _changed();
 };
