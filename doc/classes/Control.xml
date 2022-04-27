@@ -177,6 +177,15 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="can_drop_data_fw" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="data" type="Variant" />
+			<argument index="2" name="from_control" type="Control" />
+			<description>
+				When this control is the forward target of [code]from_control[/code], calls to that control's [method can_drop_data] will be forwarded to this method. See [method set_drag_forwarding].
+			</description>
+		</method>
 		<method name="drop_data" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="position" type="Vector2" />
@@ -190,6 +199,15 @@
 				func drop_data(position, data):
 				    color = data["color"]
 				[/codeblock]
+			</description>
+		</method>
+		<method name="drop_data_fw" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="data" type="Variant" />
+			<argument index="2" name="from_control" type="Control" />
+			<description>
+				When this control is the forward target of [code]from_control[/code], calls to that control's [method drop_data] will be forwarded to this method. See [method set_drag_forwarding].
 			</description>
 		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
@@ -276,6 +294,14 @@
 				    set_drag_preview(make_preview(mydata))
 				    return mydata
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_drag_data_fw" qualifiers="virtual">
+			<return type="Variant" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="from_control" type="Control" />
+			<description>
+				When this control is the forward target of [code]from_control[/code], calls to that control's [method get_drag_data] will be forwarded to this method. See [method set_drag_forwarding].
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -620,6 +646,7 @@
 				Forwarding can be implemented in the target control similar to the methods [method get_drag_data], [method can_drop_data], and [method drop_data] but with two differences:
 				1. The function name must be suffixed with [b]_fw[/b]
 				2. The function must take an extra argument that is the control doing the forwarding
+				See [method get_drag_data_fw], [method can_drop_data_fw], [method drop_data_fw].
 				[codeblock]
 				# ThisControl.gd
 				extends Control

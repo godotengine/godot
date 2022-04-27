@@ -2776,9 +2776,15 @@ void Control::_bind_methods() {
 	MethodInfo get_drag_data = MethodInfo("get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
 	get_drag_data.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(get_drag_data);
-
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+
+	MethodInfo get_drag_data_fw = MethodInfo("get_drag_data_fw", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::OBJECT, "from_control", PROPERTY_HINT_RESOURCE_TYPE, "Control"));
+	get_drag_data_fw.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	BIND_VMETHOD(get_drag_data_fw);
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data_fw", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data"), PropertyInfo(Variant::OBJECT, "from_control", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	BIND_VMETHOD(MethodInfo("drop_data_fw", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data"), PropertyInfo(Variant::OBJECT, "from_control", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+
 	BIND_VMETHOD(MethodInfo(
 			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
 			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
