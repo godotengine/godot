@@ -65,7 +65,6 @@
 #include "servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/tonemap.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
@@ -247,61 +246,6 @@ private:
 		RID compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} roughness;
-
-	enum TonemapMode {
-		TONEMAP_MODE_NORMAL,
-		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
-		TONEMAP_MODE_1D_LUT,
-		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT,
-		TONEMAP_MODE_SUBPASS,
-		TONEMAP_MODE_SUBPASS_1D_LUT,
-
-		TONEMAP_MODE_NORMAL_MULTIVIEW,
-		TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW,
-		TONEMAP_MODE_1D_LUT_MULTIVIEW,
-		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT_MULTIVIEW,
-		TONEMAP_MODE_SUBPASS_MULTIVIEW,
-		TONEMAP_MODE_SUBPASS_1D_LUT_MULTIVIEW,
-
-		TONEMAP_MODE_MAX
-	};
-
-	struct TonemapPushConstant {
-		float bcs[3]; // 12 - 12
-		uint32_t use_bcs; //  4 - 16
-
-		uint32_t use_glow; //  4 - 20
-		uint32_t use_auto_exposure; //  4 - 24
-		uint32_t use_color_correction; //  4 - 28
-		uint32_t tonemapper; //  4 - 32
-
-		uint32_t glow_texture_size[2]; //  8 - 40
-		float glow_intensity; //  4 - 44
-		float glow_map_strength; //  4 - 48
-
-		uint32_t glow_mode; //  4 - 52
-		float glow_levels[7]; // 28 - 80
-
-		float exposure; //  4 - 84
-		float white; //  4 - 88
-		float auto_exposure_grey; //  4 - 92
-		float luminance_multiplier; //  4 - 96
-
-		float pixel_size[2]; //  8 - 104
-		uint32_t use_fxaa; //  4 - 108
-		uint32_t use_debanding; //  4 - 112
-	};
-
-	/* tonemap actually writes to a framebuffer, which is
-	 * better to do using the raster pipeline rather than
-	 * compute, as that framebuffer might be in different formats
-	 */
-	struct Tonemap {
-		TonemapPushConstant push_constant;
-		TonemapShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];
-	} tonemap;
 
 	enum LuminanceReduceMode {
 		LUMINANCE_REDUCE_READ,
@@ -884,9 +828,7 @@ private:
 	Map<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
 
 	RID _get_uniform_set_from_image(RID p_texture);
-	RID _get_uniform_set_for_input(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
-	RID _get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture_and_sampler(RID p_texture, RID p_sampler);
 	RID _get_compute_uniform_set_from_texture_pair(RID p_texture, RID p_texture2, bool p_use_mipmaps = false);
@@ -936,49 +878,6 @@ public:
 	void bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 	void bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 
-	struct TonemapSettings {
-		bool use_glow = false;
-		enum GlowMode {
-			GLOW_MODE_ADD,
-			GLOW_MODE_SCREEN,
-			GLOW_MODE_SOFTLIGHT,
-			GLOW_MODE_REPLACE,
-			GLOW_MODE_MIX
-		};
-
-		GlowMode glow_mode = GLOW_MODE_ADD;
-		float glow_intensity = 1.0;
-		float glow_map_strength = 0.0f;
-		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
-		Vector2i glow_texture_size;
-		bool glow_use_bicubic_upscale = false;
-		RID glow_texture;
-		RID glow_map;
-
-		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
-		float exposure = 1.0;
-		float white = 1.0;
-
-		bool use_auto_exposure = false;
-		float auto_exposure_grey = 0.5;
-		RID exposure_texture;
-		float luminance_multiplier = 1.0;
-
-		bool use_bcs = false;
-		float brightness = 1.0;
-		float contrast = 1.0;
-		float saturation = 1.0;
-
-		bool use_color_correction = false;
-		bool use_1d_color_correction = false;
-		RID color_correction_texture;
-
-		bool use_fxaa = false;
-		bool use_debanding = false;
-		Vector2i texture_size;
-		uint32_t view_count = 1;
-	};
-
 	struct SSAOSettings {
 		float radius = 1.0;
 		float intensity = 2.0;
@@ -1016,9 +915,6 @@ public:
 		Size2i half_screen_size = Size2i();
 		Size2i quarter_screen_size = Size2i();
 	};
-
-	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
-	void tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings);
 
 	void downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_mipmaps, RS::EnvironmentSSAOQuality p_ssao_quality, RS::EnvironmentSSILQuality p_ssil_quality, bool p_invalidate_uniform_set, bool p_ssao_half_size, bool p_ssil_half_size, Size2i p_full_screen_size, const CameraMatrix &p_projection);
 
