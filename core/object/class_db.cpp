@@ -37,6 +37,8 @@
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
 
+#ifdef DEBUG_METHODS_ENABLED
+
 MethodDefinition D_METHOD(const char *p_name) {
 	MethodDefinition md;
 	md.name = StaticCString::create(p_name);
@@ -223,6 +225,8 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 	md.args.write[12] = StaticCString::create(p_arg13);
 	return md;
 }
+
+#endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
 
@@ -1420,8 +1424,13 @@ void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method
 	type->method_map[p_method->get_name()] = p_method;
 }
 
+#ifdef DEBUG_METHODS_ENABLED
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
+#else
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount) {
+	StringName mdname = StaticCString::create(method_name);
+#endif
 
 	OBJTYPE_WLOCK;
 	ERR_FAIL_COND_V(!p_bind, nullptr);
