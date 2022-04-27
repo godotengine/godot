@@ -3435,6 +3435,9 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_get_drag_data, "at_position");
 	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
 	GDVIRTUAL_BIND(_drop_data, "at_position", "data");
+	GDVIRTUAL_BIND(_get_drag_data_fw, "at_position", "from_control");
+	GDVIRTUAL_BIND(_can_drop_data_fw, "at_position", "data", "from_control");
+	GDVIRTUAL_BIND(_drop_data_fw, "at_position", "data", "from_control");
 	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
 
 	GDVIRTUAL_BIND(_gui_input, "event");

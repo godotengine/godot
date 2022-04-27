@@ -300,6 +300,9 @@ protected:
 	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
+	GDVIRTUAL2RC(Variant, _get_drag_data_fw, Vector2, Control *)
+	GDVIRTUAL3RC(bool, _can_drop_data_fw, Vector2, Variant, Control *)
+	GDVIRTUAL3(_drop_data_fw, Vector2, Variant, Control *)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
