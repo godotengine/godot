@@ -4076,12 +4076,20 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 	if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
 		return player->get_animation(SceneStringNames::get_singleton()->RESET);
 	} else {
+		Ref<AnimationLibrary> al;
+		if (!player->has_animation_library("")) {
+			al.instantiate();
+			player->add_animation_library("", al);
+		} else {
+			al = player->get_animation_library("");
+		}
+
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
-		undo_redo->add_do_method(player, "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
+		undo_redo->add_do_method(al.ptr(), "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
 		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
-		undo_redo->add_undo_method(player, "remove_animation", SceneStringNames::get_singleton()->RESET);
+		undo_redo->add_undo_method(al.ptr(), "remove_animation", SceneStringNames::get_singleton()->RESET);
 		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		return reset_anim;
 	}
