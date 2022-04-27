@@ -182,13 +182,13 @@ int ResourceImporterTexture::get_preset_count() const {
 }
 String ResourceImporterTexture::get_preset_name(int p_idx) const {
 	static const char *preset_names[] = {
-		"2D, Detect 3D",
-		"2D",
-		"2D Pixel",
-		"3D"
+		TTRC("2D, Detect 3D"),
+		TTRC("2D"),
+		TTRC("2D Pixel"),
+		TTRC("3D"),
 	};
 
-	return preset_names[p_idx];
+	return TTRGET(preset_names[p_idx]);
 }
 
 void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {

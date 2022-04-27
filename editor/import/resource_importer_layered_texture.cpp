@@ -65,12 +65,12 @@ int ResourceImporterLayeredTexture::get_preset_count() const {
 }
 String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 	static const char *preset_names[] = {
-		"3D",
-		"2D",
-		"ColorCorrect"
+		TTRC("3D"),
+		TTRC("2D"),
+		TTRC("ColorCorrect"),
 	};
 
-	return preset_names[p_idx];
+	return TTRGET(preset_names[p_idx]);
 }
 
 void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {
