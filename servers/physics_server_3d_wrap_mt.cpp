@@ -37,7 +37,7 @@ void PhysicsServer3DWrapMT::thread_exit() {
 }
 
 void PhysicsServer3DWrapMT::thread_step(real_t p_delta) {
-	physics_3d_server->step(p_delta);
+	physics_server_3d->step(p_delta);
 	step_sem.post();
 }
 
@@ -50,7 +50,7 @@ void PhysicsServer3DWrapMT::_thread_callback(void *_instance) {
 void PhysicsServer3DWrapMT::thread_loop() {
 	server_thread = Thread::get_caller_id();
 
-	physics_3d_server->init();
+	physics_server_3d->init();
 
 	exit = false;
 	step_thread_up = true;
@@ -61,7 +61,7 @@ void PhysicsServer3DWrapMT::thread_loop() {
 
 	command_queue.flush_all(); // flush all
 
-	physics_3d_server->finish();
+	physics_server_3d->finish();
 }
 
 /* EVENT QUEUING */
@@ -71,7 +71,7 @@ void PhysicsServer3DWrapMT::step(real_t p_step) {
 		command_queue.push(this, &PhysicsServer3DWrapMT::thread_step, p_step);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
-		physics_3d_server->step(p_step);
+		physics_server_3d->step(p_step);
 	}
 }
 
@@ -83,15 +83,15 @@ void PhysicsServer3DWrapMT::sync() {
 			step_sem.wait(); //must not wait if a step was not issued
 		}
 	}
-	physics_3d_server->sync();
+	physics_server_3d->sync();
 }
 
 void PhysicsServer3DWrapMT::flush_queries() {
-	physics_3d_server->flush_queries();
+	physics_server_3d->flush_queries();
 }
 
 void PhysicsServer3DWrapMT::end_sync() {
-	physics_3d_server->end_sync();
+	physics_server_3d->end_sync();
 }
 
 void PhysicsServer3DWrapMT::init() {
@@ -102,7 +102,7 @@ void PhysicsServer3DWrapMT::init() {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
-		physics_3d_server->init();
+		physics_server_3d->init();
 	}
 }
 
@@ -111,13 +111,13 @@ void PhysicsServer3DWrapMT::finish() {
 		command_queue.push(this, &PhysicsServer3DWrapMT::thread_exit);
 		thread.wait_to_finish();
 	} else {
-		physics_3d_server->finish();
+		physics_server_3d->finish();
 	}
 }
 
 PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
-	physics_3d_server = p_contained;
+	physics_server_3d = p_contained;
 	create_thread = p_create_thread;
 
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
@@ -132,6 +132,6 @@ PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool 
 }
 
 PhysicsServer3DWrapMT::~PhysicsServer3DWrapMT() {
-	memdelete(physics_3d_server);
+	memdelete(physics_server_3d);
 	//finish();
 }
