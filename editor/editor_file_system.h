@@ -61,7 +61,8 @@ class EditorFileSystemDirectory : public Object {
 		bool import_valid = false;
 		String import_group_file;
 		Vector<String> deps;
-		bool verified = false; //used for checking changes
+		bool verified = false;
+		String resource_script_path;
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
@@ -90,8 +91,11 @@ public:
 	int get_file_count() const;
 	String get_file(int p_idx) const;
 	String get_file_path(int p_idx) const;
+	String get_file_attached_script(int p_idx) const;
 	StringName get_file_type(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
+	String get_file_resource_script_path(int p_idx) const;
+	String get_file_resource_script_class_name(int p_idx) const;
 	bool get_file_import_is_valid(int p_idx) const;
 	uint64_t get_file_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
@@ -167,8 +171,12 @@ class EditorFileSystem : public Node {
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
+	// Serves as a temporary holding space for the filesystem that's currently being
+	// constructed by scan(). This is necessary to allow multithreaded construction of
+	// the new filesystem built from data collected in scan().
 	EditorFileSystemDirectory *new_filesystem = nullptr;
 
+	bool suppress_filesystem_changed_signal = false;
 	bool abort_scan = false;
 	bool scanning = false;
 	bool importing = false;
@@ -197,6 +205,7 @@ class EditorFileSystem : public Node {
 		Vector<String> deps;
 		bool import_valid = false;
 		String import_group_file;
+		String resource_script_path;
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
@@ -236,7 +245,8 @@ class EditorFileSystem : public Node {
 	List<String> sources_changed;
 	List<ItemAction> scan_actions;
 
-	bool _update_scan_actions();
+	void _update_scan_actions();
+	bool _update_scan_actions_helper();
 
 	void _update_extensions();
 
@@ -263,6 +273,7 @@ class EditorFileSystem : public Node {
 	SafeFlag update_script_classes_queued;
 	void _queue_update_script_classes();
 
+	String _get_resource_script_path(const String &p_path);
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
 	static Error _resource_import(const String &p_path);
@@ -290,6 +301,8 @@ class EditorFileSystem : public Node {
 	bool _scan_extensions();
 	bool _scan_import_support(Vector<String> reimports);
 
+	bool _try_emit_filesystem_changed();
+
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
 protected:
@@ -302,6 +315,7 @@ public:
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
 	bool is_importing() const { return importing; }
+	bool is_update_script_classes_queued() const;
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();

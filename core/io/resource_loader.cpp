@@ -37,6 +37,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
+#include <scene/resources/resource_format_text.h>
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -81,6 +82,15 @@ String ResourceFormatLoader::get_resource_type(const String &p_path) const {
 
 	if (GDVIRTUAL_CALL(_get_resource_type, p_path, ret)) {
 		return ret;
+	}
+
+	return "";
+}
+
+String ResourceFormatLoader::get_attached_script_path(const String &p_path) const {
+	String script_path;
+	if (GDVIRTUAL_CALL(_get_attached_script_path, p_path, script_path)) {
+		return script_path;
 	}
 
 	return "";
@@ -176,6 +186,7 @@ void ResourceFormatLoader::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_handles_type, "type");
 	GDVIRTUAL_BIND(_get_resource_type, "path");
+	GDVIRTUAL_BIND(_get_attached_script_path, "path");
 	GDVIRTUAL_BIND(_get_resource_uid, "path");
 	GDVIRTUAL_BIND(_get_dependencies, "path", "add_types");
 	GDVIRTUAL_BIND(_rename_dependencies, "path", "renames");
@@ -754,6 +765,19 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	}
 
 	return ResourceUID::INVALID_ID;
+}
+
+String ResourceLoader::get_attached_script_path(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		String path = loader[i]->get_attached_script_path(local_path);
+		if (path != "") {
+			return path;
+		}
+	}
+
+	return "";
 }
 
 String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_remapped) {

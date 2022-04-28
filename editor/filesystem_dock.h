@@ -193,7 +193,7 @@ private:
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
-	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
+	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type, EditorFileSystemDirectory *p_dir, int p_file_index);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	Vector<String> _compute_uncollapsed_paths();
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);

@@ -44,7 +44,7 @@
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache7"
+#define CACHE_FILE_NAME "filesystem_cache8"
 
 void EditorFileSystemDirectory::sort_files() {
 	files.sort_custom<FileInfoSort>();
@@ -115,6 +115,18 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	return "res://" + file;
 }
 
+String EditorFileSystemDirectory::get_file_attached_script(int p_idx) const {
+	Vector<String> deps = get_file_deps(p_idx);
+	for (int i = 0; i < deps.size(); i++) {
+		String resource_type = ResourceLoader::get_resource_type(deps[i]);
+		if (ClassDB::is_parent_class(resource_type, Script::get_class_static())) {
+			return deps[i];
+		}
+	}
+
+	return "";
+}
+
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), Vector<String>());
 	Vector<String> deps;
@@ -137,6 +149,39 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 		deps.push_back(dep);
 	}
 	return deps;
+}
+
+String EditorFileSystemDirectory::get_file_resource_script_path(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
+	return files[p_idx]->resource_script_path;
+}
+
+String EditorFileSystemDirectory::get_file_resource_script_class_name(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
+	String script_path = get_file_resource_script_path(p_idx);
+
+	if (script_path == "") {
+		return "";
+	}
+
+	String script_path_base_dir = script_path.get_base_dir();
+	String script_file = script_path.get_file();
+
+	if (script_path_base_dir == get_path()) {
+		// If our resource script path happens to be in the same directory as our
+		// resource, then we can directly fetch the script's FileInfo.
+		int file_idx = find_file_index(script_file);
+		ERR_FAIL_COND_V(file_idx < 0, "");
+		return files[file_idx]->script_class_name;
+	} else {
+		// If our resource script path is not in the same directory as our resource,
+		// we must fetch it's EditorFileSystemDirectory first, and then fetch the script's
+		// FileInfo from the newly fetched directory.
+		EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem_path(script_path_base_dir);
+		int file_idx = dir->find_file_index(script_file);
+		ERR_FAIL_COND_V(file_idx < 0, "");
+		return dir->files[file_idx]->script_class_name;
+	}
 }
 
 bool EditorFileSystemDirectory::get_file_import_is_valid(int p_idx) const {
@@ -206,6 +251,9 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 	}
 }
 
+// Helper method for scan()
+// Sets scanning = false when it's finished.
+// Can potentially scan new directorys, which accrues some ItemActions into scan_actions.
 void EditorFileSystem::_scan_filesystem() {
 	ERR_FAIL_COND(!scanning || new_filesystem);
 
@@ -271,6 +319,7 @@ void EditorFileSystem::_scan_filesystem() {
 					fc.script_class_name = split[7].get_slice("<>", 0);
 					fc.script_class_extends = split[7].get_slice("<>", 1);
 					fc.script_class_icon_path = split[7].get_slice("<>", 2);
+					fc.resource_script_path = split[7].get_slice("<>", 3);
 
 					String deps = split[8].strip_edges();
 					if (deps.length()) {
@@ -339,6 +388,7 @@ void EditorFileSystem::_save_filesystem_cache() {
 	_save_filesystem_cache(filesystem, f);
 }
 
+// Multithreaded helper method for scan()
 void EditorFileSystem::_thread_func(void *_userdata) {
 	EditorFileSystem *sd = (EditorFileSystem *)_userdata;
 	sd->_scan_filesystem();
@@ -549,7 +599,16 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 	return false;
 }
 
-bool EditorFileSystem::_update_scan_actions() {
+// Applies the accrued scan_actions to the existing filesystem directory tree.
+// Emits filesystem_changed if any accrued actions were applied.
+void EditorFileSystem::_update_scan_actions() {
+	if (_update_scan_actions_helper()) {
+		_try_emit_filesystem_changed();
+	}
+}
+
+// Returns whether the file system changed or not.
+bool EditorFileSystem::_update_scan_actions_helper() {
 	sources_changed.clear();
 
 	bool fs_changed = false;
@@ -585,6 +644,8 @@ bool EditorFileSystem::_update_scan_actions() {
 			} break;
 			case ItemAction::ACTION_FILE_ADD: {
 				int idx = 0;
+				// Inserts the new file into the correct place in the EditorFilesystemDirectory it's stored in.
+				// Note that files are stored in alphabetical order.
 				for (int i = 0; i < ia.dir->files.size(); i++) {
 					if (ia.new_file->file.naturalnocasecmp_to(ia.dir->files[i]->file) < 0) {
 						break;
@@ -677,12 +738,25 @@ bool EditorFileSystem::_update_scan_actions() {
 	return fs_changed;
 }
 
+bool EditorFileSystem::_try_emit_filesystem_changed() {
+	if (!suppress_filesystem_changed_signal) {
+		emit_signal(SNAME("filesystem_changed"));
+		return true;
+	}
+	return false;
+}
+
+// Rescans the filesystem, using the existing cache, to build a new filesystem directory tree. This is a hard reset of the filesystem directory tree, as it mallocs an entirely new tree and reconstructs the necessary branches on it.
+//
+// Calls _scan_filesystem(), with the appropriate setup for either a threaded or multithreaded call.
 void EditorFileSystem::scan() {
 	if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/) {
 		return;
 	}
 
 	if (scanning || scanning_changes || thread.is_started()) {
+		// Both scan() and scan_changes() cannot run at the same time.
+		// Note that scan() does not defer, and will just quit if this happens.
 		return;
 	}
 
@@ -699,9 +773,12 @@ void EditorFileSystem::scan() {
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
+		// Flush out the accrued ItemActions (if any) from _scan_filesystem(), and suppress any filesystem_changed signals.
+		suppress_filesystem_changed_signal = true;
 		_update_scan_actions();
 		scanning = false;
-		emit_signal(SNAME("filesystem_changed"));
+		suppress_filesystem_changed_signal = false;
+		_try_emit_filesystem_changed();
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		_queue_update_script_classes();
 		first_scan = false;
@@ -842,6 +919,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->import_valid = fc->import_valid;
 				fi->script_class_name = fc->script_class_name;
 				fi->import_group_file = fc->import_group_file;
+				fi->resource_script_path = fc->resource_script_path;
 				fi->script_class_extends = fc->script_class_extends;
 				fi->script_class_icon_path = fc->script_class_icon_path;
 
@@ -889,6 +967,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
 				fi->import_valid = true;
+				fi->resource_script_path = fc->resource_script_path;
 				fi->script_class_name = fc->script_class_name;
 				fi->script_class_extends = fc->script_class_extends;
 				fi->script_class_icon_path = fc->script_class_icon_path;
@@ -899,6 +978,10 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 					fi->type = "TextFile";
 				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
+
+				if (!ClassDB::is_parent_class(fi->type, Script::get_class_static()) && ClassDB::is_parent_class(fi->type, Resource::get_class_static())) {
+					fi->resource_script_path = ResourceLoader::get_attached_script_path(path);
+				}
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
 				fi->modified_time = mt;
@@ -934,6 +1017,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 	}
 }
 
+// Helper method for scan_changes(). Used in both threaded an un-threaded versions.
+// Recurses through the filesystem and accrues all "ItemAction" file changes.
+// _update_scan_actions() is responsible for actually applying these changes.
 void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress) {
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
@@ -1134,6 +1220,7 @@ void EditorFileSystem::_delete_internal_files(String p_file) {
 	}
 }
 
+// Multi-threaded threaded function for scan_changes()
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	EditorFileSystem *efs = (EditorFileSystem *)_userdata;
 	if (efs->filesystem) {
@@ -1147,9 +1234,14 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	efs->scanning_changes_done = true;
 }
 
+// This scans the file system, accrues all changes to the filesystem tree, and then applies those changes.
+//
+// Calls _scan_fs_changes(), with the appropriate setup for either a threaded or multithreaded call.
 void EditorFileSystem::scan_changes() {
 	if (first_scan || // Prevent a premature changes scan from inhibiting the first full scan
 			scanning || scanning_changes || thread.is_started()) {
+		// Both scan_changes() and scan() cannot occur at the same time. However scan_changes
+		// will defer it's call if something is already happening.
 		scan_changes_pending = true;
 		set_process(true);
 		return;
@@ -1170,10 +1262,10 @@ void EditorFileSystem::scan_changes() {
 			sp.hi = 1;
 			sp.low = 0;
 			scan_total = 0;
+			// Accrues changess
 			_scan_fs_changes(filesystem, sp);
-			if (_update_scan_actions()) {
-				emit_signal(SNAME("filesystem_changed"));
-			}
+			// Applies changes
+			_update_scan_actions();
 		}
 		scanning_changes = false;
 		scanning_changes_done = true;
@@ -1184,7 +1276,10 @@ void EditorFileSystem::scan_changes() {
 		scan_total = 0;
 		Thread::Settings s;
 		s.priority = Thread::PRIORITY_LOW;
+		// Accrues changes
 		thread_sources.start(_thread_func_sources, this, s);
+		// Because of multithreading, changes are applied in a check that occurs in the process loop.
+		// If the loop detects the multithread is done, then it applies the changes. See notification Process for more.
 	}
 }
 
@@ -1219,37 +1314,75 @@ void EditorFileSystem::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			// Process loop is being shared by scan_changes() and scan().
 			if (use_threads) {
 				if (scanning_changes) {
+					// FOR: scan_changes()
+					// If we are currently scanning for ItemAction changes
 					if (scanning_changes_done) {
+						// LABEL: Single frame boolean state desync
+						// The reason why we have scanning_changes_done and scanning_changes, is because
+						// scanning_changes can only be set to false AFTER we finish applying the changes
+						// we scanned.
+						//
+						// Therefore if we just used scanning_changes to indicate the state of
+						// the thread, there could be a few frames before the next process call where
+						// scanning_changes = false, but the changes haven't been applied.
 						scanning_changes = false;
+						scanning_changes_done = false;
 
 						set_process(false);
 
 						thread_sources.wait_to_finish();
-						if (_update_scan_actions()) {
-							emit_signal(SNAME("filesystem_changed"));
-						}
-						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 						_queue_update_script_classes();
+						_update_scan_actions();
+						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 						first_scan = false;
 					}
 				} else if (!scanning && thread.is_started()) {
+					// FOR: scan()
+					// If scanning is done. thread.is_started() returns true while the thread has started and hasn't
+					// been merged back into the main thread.
+					//
+					// QUESTION: What is thread.is_started() used for? Woudld'nt process be turned on only when the thread
+					//			 is active and shut down when the thread ends, meaning thread.is_started() is always true?
+
+					// Note that we don't run into the "Single frame boolean state desync" mentioned above, because
+					// we are building the new file system in "new_filesystem", and only injecting it into "filesystem"
+					// once we've finished building the filesystem. This means "filesystem" will always be a valid directory
+					// tree that isn't half baked.
+
 					set_process(false);
 
 					if (filesystem) {
 						memdelete(filesystem);
 					}
+					// new_filesystem is the temporary spot for constructing a brand new filesystem during scan().
+					// At the end of the scan, it replaces the filesystem.
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
+					// Sync the thread back to the main thread.
 					thread.wait_to_finish();
+					// Flush out the accrued ItemActions (if any) from _scan_filesystem(), and suppress any filesystem_changed signals.
+					suppress_filesystem_changed_signal = true;
 					_update_scan_actions();
-					emit_signal(SNAME("filesystem_changed"));
-					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
+					// filesystem should be up to date now, so this filesystem_changed call should invoke filesystem_dock.cpp's
+					// "filesystem_changed" listener and referesh the file dock.
+					// TODO: Figure out why the file dock is getting bad data -- despite the filesystem being new.
+					//		 I suspect it's likely due to the filesystem dock locking it's refresh to once per frame,
+					//		 and is getting refreshed before we emit "filesystem_changed", therefore the only refresh it
+					//		 ever gests is one with bad data.
+					suppress_filesystem_changed_signal = false;
 					_queue_update_script_classes();
+					_try_emit_filesystem_changed();
+					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					first_scan = false;
 				}
 
+				// For scan_changes()
+				// is_processing = false when we are done with the current scan.
+				// If we are finished with the current scan and we have another scan queued up (pending),
+				// we will then run the queued up scan.
 				if (!is_processing() && scan_changes_pending) {
 					scan_changes_pending = false;
 					scan_changes();
@@ -1261,6 +1394,10 @@ void EditorFileSystem::_notification(int p_what) {
 
 bool EditorFileSystem::is_scanning() const {
 	return scanning || scanning_changes;
+}
+
+bool EditorFileSystem::is_update_script_classes_queued() const {
+	return update_script_classes_queued.is_set();
 }
 
 float EditorFileSystem::get_scanning_progress() const {
@@ -1281,7 +1418,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		if (!p_dir->files[i]->import_group_file.is_empty()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
-		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
+		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path + "<>" + p_dir->files[i]->resource_script_path;
 		s += "::";
 		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
 			if (j > 0) {
@@ -1493,6 +1630,8 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 	return String();
 }
 
+// Scans for all the script files recursively in a directory, and registers them to
+// the ScriptServer and to EditorNode (for class icon purposes).
 void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 	int filecount = p_dir->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = p_dir->files.ptr();
@@ -1516,6 +1655,8 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 	}
 }
 
+// QUESTION: Can this only execute by _queue_update_script_classes()? That method seems to be the only location where
+//           update_script_classes_queued is set, thereby letting us run update_script_classes.
 void EditorFileSystem::update_script_classes() {
 	if (!update_script_classes_queued.is_set()) {
 		return;
@@ -1530,6 +1671,9 @@ void EditorFileSystem::update_script_classes() {
 	ScriptServer::save_global_classes();
 	EditorNode::get_editor_data().script_class_save_icon_paths();
 
+	// Custom loaders are written as scripta afterall, therefore we must reload them when we rescan all the scripts,
+	// in case new custom loader scripts have been added, or existing ones have been deleted.
+	//
 	// Rescan custom loaders and savers.
 	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.
 	// So I thought it's better to do this when script classes really get updated
@@ -1537,9 +1681,12 @@ void EditorFileSystem::update_script_classes() {
 	ResourceLoader::add_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 	ResourceSaver::add_custom_savers();
+
+	emit_signal(SNAME("script_classes_loaded"));
 }
 
 void EditorFileSystem::_queue_update_script_classes() {
+	// We can only queue a script-classes-update once.
 	if (update_script_classes_queued.is_set()) {
 		return;
 	}
@@ -1632,8 +1779,8 @@ void EditorFileSystem::update_file(const String &p_file) {
 	// Update preview
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 
-	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 	_queue_update_script_classes();
+	_try_emit_filesystem_changed();
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
@@ -2178,8 +2325,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	_save_filesystem_cache();
 	importing = false;
+	// NOTE: This only fires if we aren't scanning, I guess to not interefere with the filesystem_changed that fires from scanning?
+	//	     It looks like this is causing filesystem_dock to refresh too early.
 	if (!is_scanning()) {
-		emit_signal(SNAME("filesystem_changed"));
+		_try_emit_filesystem_changed();
 	}
 
 	emit_signal(SNAME("resources_reimported"), p_files);
@@ -2374,6 +2523,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
 
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
+	ADD_SIGNAL(MethodInfo("script_classes_loaded"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
 	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
