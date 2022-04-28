@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PropertyTweener" inherits="Tweener" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Interpolates an [Object]'s property over time.
+	</brief_description>
+	<description>
+		[PropertyTweener] is used to interpolate a property in an object. See [method SceneTreeTween.tween_property] for more usage information.
+		[b]Note:[/b] [method SceneTreeTween.tween_property] is the only correct way to create [PropertyTweener]. Any [PropertyTweener] created manually will not function correctly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="as_relative">
+			<return type="PropertyTweener" />
+			<description>
+				When called, the final value will be used as a relative value instead. Example:
+				[codeblock]
+				var tween = get_tree().create_tween()
+				tween.tween_property(self, "position", Vector2.RIGHT * 100, 1).as_relative() #the node will move by 100 pixels to the right
+				[/codeblock]
+			</description>
+		</method>
+		<method name="from">
+			<return type="PropertyTweener" />
+			<argument index="0" name="value" type="Variant" />
+			<description>
+				Sets a custom initial value to the [PropertyTweener]. Example:
+				[codeblock]
+				var tween = get_tree().create_tween()
+				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100) #this will move the node from position (100, 100) to (200, 100)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="from_current">
+			<return type="PropertyTweener" />
+			<description>
+				Makes the [PropertyTweener] use the current property value (i.e. at the time of creating this [PropertyTweener]) as a starting point. This is equivalent of using [method from] with the current value. These two calls will do the same:
+				[codeblock]
+				tween.tween_property(self, "position", Vector2(200, 100), 1).from(position)
+				tween.tween_property(self, "position", Vector2(200, 100), 1).from_current()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="set_delay">
+			<return type="PropertyTweener" />
+			<argument index="0" name="delay" type="float" />
+			<description>
+				Sets the time in seconds after which the [PropertyTweener] will start interpolating. By default there's no delay.
+			</description>
+		</method>
+		<method name="set_ease">
+			<return type="PropertyTweener" />
+			<argument index="0" name="ease" type="int" enum="Tween.EaseType" />
+			<description>
+				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [Tween] that contains this Tweener.
+			</description>
+		</method>
+		<method name="set_trans">
+			<return type="PropertyTweener" />
+			<argument index="0" name="trans" type="int" enum="Tween.TransitionType" />
+			<description>
+				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

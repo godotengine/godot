@@ -130,7 +130,6 @@ private:
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
 
-	real_t _run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
 	Variant &_get_delta_val(InterpolateData &p_data);
 	Variant _get_initial_val(const InterpolateData &p_data) const;
 	Variant _get_final_val(const InterpolateData &p_data) const;
@@ -152,6 +151,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static real_t run_equation(Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration);
+
 	bool is_active() const;
 	void set_active(bool p_active);
 

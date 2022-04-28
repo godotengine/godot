@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IntervalTweener" inherits="Tweener" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Creates an idle interval in a [SceneTreeTween] animation.
+	</brief_description>
+	<description>
+		[IntervalTweener] is used to make delays in a tweening sequence. See [method SceneTreeTween.tween_interval] for more usage information.
+		[b]Note:[/b] [method SceneTreeTween.tween_interval] is the only correct way to create [IntervalTweener]. Any [IntervalTweener] created manually will not function correctly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
