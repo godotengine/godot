@@ -38,11 +38,201 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/storage/mesh_storage.h"
 
+#include "platform_config.h"
+#ifndef OPENGL_INCLUDE_H
+#include <GLES3/gl3.h>
+#else
+#include OPENGL_INCLUDE_H
+#endif
+
 namespace GLES3 {
+
+struct MeshInstance;
+
+struct Mesh {
+	struct Surface {
+		struct Attrib {
+			bool enabled;
+			bool integer;
+			GLuint index;
+			GLint size;
+			GLenum type;
+			GLboolean normalized;
+			GLsizei stride;
+			uint32_t offset;
+		};
+		RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
+		uint32_t format = 0;
+
+		GLuint vertex_buffer = 0;
+		GLuint attribute_buffer = 0;
+		GLuint skin_buffer = 0;
+		uint32_t vertex_count = 0;
+		uint32_t vertex_buffer_size = 0;
+		uint32_t skin_buffer_size = 0;
+
+		// Cache vertex arrays so they can be created
+		struct Version {
+			uint32_t input_mask = 0;
+			GLuint vertex_array;
+
+			Attrib attribs[RS::ARRAY_MAX];
+		};
+
+		SpinLock version_lock; //needed to access versions
+		Version *versions = nullptr; //allocated on demand
+		uint32_t version_count = 0;
+
+		GLuint index_buffer = 0;
+		GLuint index_array = 0;
+		uint32_t index_count = 0;
+
+		struct LOD {
+			float edge_length = 0.0;
+			uint32_t index_count = 0;
+			GLuint index_buffer;
+		};
+
+		LOD *lods = nullptr;
+		uint32_t lod_count = 0;
+
+		AABB aabb;
+
+		Vector<AABB> bone_aabbs;
+
+		GLuint blend_shape_buffer = 0;
+
+		RID material;
+	};
+
+	uint32_t blend_shape_count = 0;
+	RS::BlendShapeMode blend_shape_mode = RS::BLEND_SHAPE_MODE_NORMALIZED;
+
+	Surface **surfaces = nullptr;
+	uint32_t surface_count = 0;
+
+	Vector<AABB> bone_aabbs;
+
+	bool has_bone_weights = false;
+
+	AABB aabb;
+	AABB custom_aabb;
+
+	Vector<RID> material_cache;
+
+	List<MeshInstance *> instances;
+
+	RID shadow_mesh;
+	Set<Mesh *> shadow_owners;
+
+	RendererStorage::Dependency dependency;
+};
+
+/* Mesh Instance */
+
+struct MeshInstance {
+	Mesh *mesh = nullptr;
+	RID skeleton;
+	struct Surface {
+		GLuint vertex_buffer = 0;
+
+		Mesh::Surface::Version *versions = nullptr; //allocated on demand
+		uint32_t version_count = 0;
+	};
+	LocalVector<Surface> surfaces;
+	LocalVector<float> blend_weights;
+
+	GLuint blend_weights_buffer = 0;
+	List<MeshInstance *>::Element *I = nullptr; //used to erase itself
+	uint64_t skeleton_version = 0;
+	bool dirty = false;
+	bool weights_dirty = false;
+	SelfList<MeshInstance> weight_update_list;
+	SelfList<MeshInstance> array_update_list;
+	MeshInstance() :
+			weight_update_list(this), array_update_list(this) {}
+};
+
+/* MultiMesh */
+
+struct MultiMesh {
+	RID mesh;
+	int instances = 0;
+	RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
+	bool uses_colors = false;
+	bool uses_custom_data = false;
+	int visible_instances = -1;
+	AABB aabb;
+	bool aabb_dirty = false;
+	bool buffer_set = false;
+	uint32_t stride_cache = 0;
+	uint32_t color_offset_cache = 0;
+	uint32_t custom_data_offset_cache = 0;
+
+	Vector<float> data_cache; //used if individual setting is used
+	bool *data_cache_dirty_regions = nullptr;
+	uint32_t data_cache_used_dirty_regions = 0;
+
+	GLuint buffer;
+
+	bool dirty = false;
+	MultiMesh *dirty_list = nullptr;
+
+	RendererStorage::Dependency dependency;
+};
+
+struct Skeleton {
+	bool use_2d = false;
+	int size = 0;
+	Vector<float> data;
+	GLuint buffer = 0;
+
+	bool dirty = false;
+	Skeleton *dirty_list = nullptr;
+	Transform2D base_transform_2d;
+
+	uint64_t version = 1;
+
+	RendererStorage::Dependency dependency;
+};
 
 class MeshStorage : public RendererMeshStorage {
 private:
 	static MeshStorage *singleton;
+
+	/* Mesh */
+
+	mutable RID_Owner<Mesh, true> mesh_owner;
+
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis = nullptr);
+
+	/* Mesh Instance API */
+
+	mutable RID_Owner<MeshInstance> mesh_instance_owner;
+
+	void _mesh_instance_clear(MeshInstance *mi);
+	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
+	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
+	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
+
+	/* MultiMesh */
+
+	mutable RID_Owner<MultiMesh, true> multimesh_owner;
+
+	MultiMesh *multimesh_dirty_list = nullptr;
+
+	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
+	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
+	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
+	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
+
+	/* Skeleton */
+
+	mutable RID_Owner<Skeleton, true> skeleton_owner;
+
+	Skeleton *skeleton_dirty_list = nullptr;
+
+	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
 
 public:
 	static MeshStorage *get_singleton();
@@ -51,6 +241,9 @@ public:
 	virtual ~MeshStorage();
 
 	/* MESH API */
+
+	Mesh *get_mesh(RID p_rid) { return mesh_owner.get_or_null(p_rid); };
+	bool owns_mesh(RID p_rid) { return mesh_owner.owns(p_rid); };
 
 	virtual RID mesh_allocate() override;
 	virtual void mesh_initialize(RID p_rid) override;
@@ -83,6 +276,116 @@ public:
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
 	virtual void mesh_clear(RID p_mesh) override;
 
+	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_COND_V(!mesh, nullptr);
+		r_surface_count = mesh->surface_count;
+		if (r_surface_count == 0) {
+			return nullptr;
+		}
+		if (mesh->material_cache.is_empty()) {
+			mesh->material_cache.resize(mesh->surface_count);
+			for (uint32_t i = 0; i < r_surface_count; i++) {
+				mesh->material_cache.write[i] = mesh->surfaces[i]->material;
+			}
+		}
+
+		return mesh->material_cache.ptr();
+	}
+
+	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_COND_V(!mesh, nullptr);
+		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
+
+		return mesh->surfaces[p_surface_index];
+	}
+
+	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_COND_V(!mesh, RID());
+
+		return mesh->shadow_mesh;
+	}
+
+	_FORCE_INLINE_ RS::PrimitiveType mesh_surface_get_primitive(void *p_surface) {
+		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return surface->primitive;
+	}
+
+	_FORCE_INLINE_ bool mesh_surface_has_lod(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->lod_count > 0;
+	}
+
+	_FORCE_INLINE_ uint32_t mesh_surface_get_vertices_drawn_count(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->index_count ? s->index_count : s->vertex_count;
+	}
+
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		int32_t current_lod = -1;
+		if (r_index_count) {
+			*r_index_count = s->index_count;
+		}
+		for (uint32_t i = 0; i < s->lod_count; i++) {
+			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
+			if (screen_size > p_mesh_lod_threshold) {
+				break;
+			}
+			current_lod = i;
+		}
+		if (current_lod == -1) {
+			return 0;
+		} else {
+			if (r_index_count) {
+				*r_index_count = s->lods[current_lod].index_count;
+			}
+			return current_lod + 1;
+		}
+	}
+
+	_FORCE_INLINE_ GLuint mesh_surface_get_index_buffer(void *p_surface, uint32_t p_lod) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		if (p_lod == 0) {
+			return s->index_buffer;
+		} else {
+			return s->lods[p_lod - 1].index_buffer;
+		}
+	}
+
+	// Use this to cache Vertex Array Objects so they are only generated once
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, GLuint &r_vertex_array_gl) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		s->version_lock.lock();
+
+		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
+
+		for (uint32_t i = 0; i < s->version_count; i++) {
+			if (s->versions[i].input_mask != p_input_mask) {
+				continue;
+			}
+			//we have this version, hooray
+			r_vertex_array_gl = s->versions[i].vertex_array;
+			s->version_lock.unlock();
+			return;
+		}
+
+		uint32_t version = s->version_count;
+		s->version_count++;
+		s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
+
+		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask);
+
+		r_vertex_array_gl = s->versions[version].vertex_array;
+
+		s->version_lock.unlock();
+	}
+
 	/* MESH INSTANCE API */
 
 	virtual RID mesh_instance_create(RID p_base) override;
@@ -92,45 +395,41 @@ public:
 	virtual void mesh_instance_check_for_update(RID p_mesh_instance) override;
 	virtual void update_mesh_instances() override;
 
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, GLuint &r_vertex_array_gl) {
+		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
+		ERR_FAIL_COND(!mi);
+		Mesh *mesh = mi->mesh;
+		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
+
+		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
+		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+
+		s->version_lock.lock();
+
+		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
+
+		for (uint32_t i = 0; i < mis->version_count; i++) {
+			if (mis->versions[i].input_mask != p_input_mask) {
+				continue;
+			}
+			//we have this version, hooray
+			r_vertex_array_gl = mis->versions[i].vertex_array;
+			s->version_lock.unlock();
+			return;
+		}
+
+		uint32_t version = mis->version_count;
+		mis->version_count++;
+		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
+
+		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, mis);
+
+		r_vertex_array_gl = mis->versions[version].vertex_array;
+
+		s->version_lock.unlock();
+	}
+
 	/* MULTIMESH API */
-
-	struct MultiMesh {
-		RID mesh;
-		int instances = 0;
-		RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
-		bool uses_colors = false;
-		bool uses_custom_data = false;
-		int visible_instances = -1;
-		AABB aabb;
-		bool aabb_dirty = false;
-		bool buffer_set = false;
-		uint32_t stride_cache = 0;
-		uint32_t color_offset_cache = 0;
-		uint32_t custom_data_offset_cache = 0;
-
-		Vector<float> data_cache; //used if individual setting is used
-		bool *data_cache_dirty_regions = nullptr;
-		uint32_t data_cache_used_dirty_regions = 0;
-
-		RID buffer; //storage buffer
-		RID uniform_set_3d;
-		RID uniform_set_2d;
-
-		bool dirty = false;
-		MultiMesh *dirty_list = nullptr;
-
-		RendererStorage::Dependency dependency;
-	};
-
-	mutable RID_Owner<MultiMesh, true> multimesh_owner;
-
-	MultiMesh *multimesh_dirty_list = nullptr;
-
-	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
-	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
-	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
-	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
-	void _update_dirty_multimeshes();
 
 	virtual RID multimesh_allocate() override;
 	virtual void multimesh_initialize(RID p_rid) override;
@@ -156,6 +455,8 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const override;
+
+	void _update_dirty_multimeshes();
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
