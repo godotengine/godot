@@ -76,7 +76,7 @@
 			<return type="float" />
 			<description>
 				Returns the total time in seconds the [Tween] has been animating (i.e. time since it started, not counting pauses etc.). The time is affected by [method set_speed_scale] and [method stop] will reset it to [code]0[/code].
-				[b]Note:[/code] As it results from accumulating frame deltas, the time returned after the [Tween] has finished animating will be slightly greater than the actual [Tween] duration.
+				[b]Note:[/b] As it results from accumulating frame deltas, the time returned after the [Tween] has finished animating will be slightly greater than the actual [Tween] duration.
 			</description>
 		</method>
 		<method name="interpolate_value" qualifiers="static">
@@ -231,10 +231,10 @@
 				Example: creating an object that moves back and forth and jumps every few seconds.
 				[codeblock]
 				var tween = create_tween().set_loops()
-				tween.tween_property("position:x", 200, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", 200.0, 1).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
-				tween.tween_property("position:x", -200, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", -200.0, 1).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
 				[/codeblock]
@@ -274,16 +274,16 @@
 				Creates and appends a [PropertyTweener]. This method tweens a [code]property[/code] of an [code]object[/code] between an initial value and [code]final_val[/code] in a span of time equal to [code]duration[/code], in seconds. The initial value by default is a value at the time the tweening of the [PropertyTweener] start. For example:
 				[codeblock]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2(100, 200)
-				tween.tween_property($Sprite, "position", Vector2(200, 300)
+				tween.tween_property($Sprite, "position", Vector2(100, 200), 1)
+				tween.tween_property($Sprite, "position", Vector2(200, 300), 1)
 				[/codeblock]
 				will move the sprite to position (100, 200) and then to (200, 300). If you use [method PropertyTweener.from] or [method PropertyTweener.from_current], the starting position will be overwritten by the given value instead. See other methods in [PropertyTweener] to see how the tweening can be tweaked further.
 				[b]Note:[/b] You can find the correct property name by hovering over the property in the Inspector. You can also provide the components of a property directly by using [code]"property:component"[/code] (eg. [code]position:x[/code]), where it would only apply to that particular component.
 				Example: moving object twice from the same position, with different transition types.
 				[codeblock]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300).as_relative().set_trans(Tween.TRANS_SINE)
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().set_trans(Tween.TRANS_SINE)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
 				[/codeblock]
 			</description>
 		</method>
