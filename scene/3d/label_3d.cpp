@@ -90,6 +90,9 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &Label3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &Label3D::get_pixel_size);
 
+	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Label3D::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"), &Label3D::get_offset);
+
 	ClassDB::bind_method(D_METHOD("set_draw_flag", "flag", "enabled"), &Label3D::set_draw_flag);
 	ClassDB::bind_method(D_METHOD("get_draw_flag", "flag"), &Label3D::get_draw_flag);
 
@@ -112,6 +115,7 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_im_update"), &Label3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
@@ -304,7 +308,7 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 		} break;
 	}
 
-	Rect2 final_rect = Rect2(offset, Size2(max_line_w, total_h));
+	Rect2 final_rect = Rect2(offset + lbl_offset, Size2(max_line_w, total_h));
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return Ref<TriangleMesh>();
@@ -551,7 +555,7 @@ void Label3D::_shape() {
 		} break;
 	}
 
-	Vector2 offset = Vector2(0, vbegin);
+	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
 	for (int i = 0; i < lines_rid.size(); i++) {
 		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
 		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
@@ -569,6 +573,7 @@ void Label3D::_shape() {
 				offset.x = -line_width;
 			} break;
 		}
+		offset.x += lbl_offset.x * pixel_size;
 		offset.y -= (TS->shaped_text_get_ascent(lines_rid[i]) + font->get_spacing(TextServer::SPACING_TOP)) * pixel_size;
 
 		if (outline_modulate.a != 0.0 && outline_size > 0) {
@@ -861,6 +866,17 @@ void Label3D::set_pixel_size(real_t p_amount) {
 
 real_t Label3D::get_pixel_size() const {
 	return pixel_size;
+}
+
+void Label3D::set_offset(const Point2 &p_offset) {
+	if (lbl_offset != p_offset) {
+		lbl_offset = p_offset;
+		_queue_update();
+	}
+}
+
+Point2 Label3D::get_offset() const {
+	return lbl_offset;
 }
 
 void Label3D::set_line_spacing(float p_line_spacing) {
