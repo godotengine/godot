@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
+#include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_gi_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
@@ -93,6 +94,7 @@ class RendererSceneRenderRD : public RendererSceneRender {
 
 protected:
 	RendererStorageRD *storage = nullptr;
+	RendererRD::ToneMapper *tone_mapper = nullptr;
 	double time;
 	double time_step = 0;
 
