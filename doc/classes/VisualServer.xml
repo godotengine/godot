@@ -2839,6 +2839,29 @@
 				Sets the texture's path.
 			</description>
 		</method>
+		<method name="texture_set_proxy">
+			<return type="void" />
+			<argument index="0" name="proxy" type="RID" />
+			<argument index="1" name="base" type="RID" />
+			<description>
+				Creates an update link between two textures, similar to how [ViewportTexture]s operate. When the base texture is the texture of a [Viewport], every time the viewport renders a new frame, the proxy texture automatically receives an update.
+				For example, this code links a generic [ImageTexture] to the texture output of the [Viewport] using the VisualServer API:
+				[codeblock]
+				func _ready():
+				    var viewport_rid = get_viewport().get_viewport_rid()
+				    var viewport_texture_rid = VisualServer.viewport_get_texture(viewport_rid)
+
+				    var proxy_texture = ImageTexture.new()
+				    var viewport_texture_image_data = VisualServer.texture_get_data(viewport_texture_rid)
+
+				    proxy_texture.create_from_image(viewport_texture_image_data)
+				    var proxy_texture_rid = proxy_texture.get_rid()
+				    VisualServer.texture_set_proxy(proxy_texture_rid, viewport_texture_rid)
+
+				    $TextureRect.texture = proxy_texture
+				[/codeblock]
+			</description>
+		</method>
 		<method name="texture_set_shrink_all_x2_on_set_data">
 			<return type="void" />
 			<argument index="0" name="shrink" type="bool" />
