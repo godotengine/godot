@@ -111,7 +111,7 @@ private:
 	void _clear_version(Version *p_version);
 	void _initialize_version(Version *p_version);
 
-	RID_Owner<Version> version_owner;
+	RID_Owner<Version, true> version_owner;
 
 	struct StageTemplate {
 		struct Chunk {

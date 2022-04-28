@@ -88,8 +88,6 @@
 #endif
 
 void RasterizerGLES3::begin_frame(double frame_step) {
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-
 	frame++;
 	delta = frame_step;
 
@@ -98,11 +96,8 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	time_total = Math::fmod(time_total, time_roll_over);
 
-	texture_storage->frame.time = time_total;
-	texture_storage->frame.count++;
-	texture_storage->frame.delta = frame_step;
-
-	storage->update_dirty_resources();
+	canvas->set_time(time_total);
+	scene->set_time(time_total, frame_step);
 
 	storage->info.render_final = storage->info.render;
 	storage->info.render.reset();
@@ -197,10 +192,18 @@ typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userP
 
 void RasterizerGLES3::initialize() {
 	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
+}
 
-	texture_storage->set_main_thread_id(Thread::get_caller_id());
-	// make sure the OS knows to only access the renderer from the main thread
-	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
+void RasterizerGLES3::finalize() {
+	memdelete(scene);
+	memdelete(canvas);
+	memdelete(storage);
+	memdelete(light_storage);
+	memdelete(particles_storage);
+	memdelete(mesh_storage);
+	memdelete(material_storage);
+	memdelete(texture_storage);
+	memdelete(config);
 }
 
 RasterizerGLES3::RasterizerGLES3() {
@@ -264,19 +267,14 @@ RasterizerGLES3::RasterizerGLES3() {
 	light_storage = memnew(GLES3::LightStorage);
 	storage = memnew(RasterizerStorageGLES3);
 	canvas = memnew(RasterizerCanvasGLES3(storage));
-	scene = memnew(RasterizerSceneGLES3);
+	scene = memnew(RasterizerSceneGLES3(storage));
+
+	texture_storage->set_main_thread_id(Thread::get_caller_id());
+	// make sure the OS knows to only access the renderer from the main thread
+	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
-	memdelete(scene);
-	memdelete(canvas);
-	memdelete(storage);
-	memdelete(light_storage);
-	memdelete(particles_storage);
-	memdelete(mesh_storage);
-	memdelete(material_storage);
-	memdelete(texture_storage);
-	memdelete(config);
 }
 
 void RasterizerGLES3::prepare_for_blitting_render_targets() {
@@ -298,7 +296,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-	glBlitFramebuffer(0, 0, rt->width, rt->height, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 // is this p_screen useless in a multi window environment?
@@ -340,10 +338,8 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	canvas->canvas_begin();
 
-	RID texture = texture_storage->texture_create();
-	//texture_storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
-	texture_storage->_texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
-	texture_storage->texture_set_data(texture, p_image);
+	RID texture = texture_storage->texture_allocate();
+	texture_storage->texture_2d_initialize(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;

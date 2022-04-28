@@ -36,15 +36,314 @@
 #include "core/math/camera_matrix.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "rasterizer_storage_gles3.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
+#include "shader_gles3.h"
+#include "shaders/sky.glsl.gen.h"
+
+// Copied from renderer_scene_render_rd
+struct RenderDataGLES3 {
+	RID render_buffers = RID();
+
+	Transform3D cam_transform = Transform3D();
+	CameraMatrix cam_projection = CameraMatrix();
+	bool cam_ortogonal = false;
+
+	// For stereo rendering
+	uint32_t view_count = 1;
+	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+
+	float z_near = 0.0;
+	float z_far = 0.0;
+
+	const PagedArray<RendererSceneRender::GeometryInstance *> *instances = nullptr;
+	const PagedArray<RID> *lights = nullptr;
+	const PagedArray<RID> *reflection_probes = nullptr;
+	//const PagedArray<RID> *voxel_gi_instances = nullptr;
+	//const PagedArray<RID> *decals = nullptr;
+	//const PagedArray<RID> *lightmaps = nullptr;
+	//const PagedArray<RID> *fog_volumes = nullptr;
+	RID environment = RID();
+	RID camera_effects = RID();
+	RID shadow_atlas = RID();
+	RID reflection_atlas = RID();
+	RID reflection_probe = RID();
+	int reflection_probe_pass = 0;
+
+	float lod_distance_multiplier = 0.0;
+	Plane lod_camera_plane = Plane();
+	float screen_mesh_lod_threshold = 0.0;
+
+	uint32_t directional_light_count = 0;
+
+	RendererScene::RenderInfo *render_info = nullptr;
+};
+
+class RasterizerStorageGLES3;
+class RasterizerCanvasGLES3;
 
 class RasterizerSceneGLES3 : public RendererSceneRender {
+private:
+	static RasterizerSceneGLES3 *singleton;
+	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
+	uint64_t scene_pass = 0;
+
+	/* Sky */
+	struct SkyGlobals {
+		RID shader_current_version;
+		RID shader_default_version;
+		RID default_material;
+		RID default_shader;
+		uint32_t max_directional_lights = 4;
+		uint32_t roughness_layers = 8;
+		uint32_t ggx_samples = 128;
+	} sky_globals;
+
+protected:
+	double time;
+	double time_step = 0;
+
+	struct RenderBuffers {
+		int internal_width = 0;
+		int internal_height = 0;
+		int width = 0;
+		int height = 0;
+		//float fsr_sharpness = 0.2f;
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+		//RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+		//bool use_debanding = false;
+		//uint32_t view_count = 1;
+
+		RID render_target;
+		GLuint internal_texture = 0; // Used for rendering when post effects are enabled
+		GLuint depth_texture = 0; // Main depth texture
+		GLuint framebuffer = 0; // Main framebuffer, contains internal_texture and depth_texture or render_target->color and depth_texture
+
+		//built-in textures used for ping pong image processing and blurring
+		struct Blur {
+			RID texture;
+
+			struct Mipmap {
+				RID texture;
+				int width;
+				int height;
+				GLuint fbo;
+			};
+
+			Vector<Mipmap> mipmaps;
+		};
+
+		Blur blur[2]; //the second one starts from the first mipmap
+
+		/*
+		GLuint fbo = 0;
+		GLuint color = 0;
+		GLuint depth = 0;
+
+		GLuint multisample_fbo = 0;
+		GLuint multisample_color = 0;
+		GLuint multisample_depth = 0;
+		bool multisample_active = false;
+
+		struct Effect {
+			GLuint fbo = 0;
+			int width = 0;
+			int height = 0;
+
+			GLuint color = 0;
+
+			Effect() {
+			}
+		};
+
+		Effect copy_screen_effect;
+
+		struct MipMaps {
+			struct Size {
+				GLuint fbo;
+				GLuint color;
+				int width;
+				int height;
+			};
+
+			Vector<Size> sizes;
+			GLuint color = 0;
+			int levels = 0;
+
+			MipMaps() {
+			}
+		};
+
+		MipMaps mip_maps[2];
+
+		*/
+	};
+
+	bool screen_space_roughness_limiter = false;
+	float screen_space_roughness_limiter_amount = 0.25;
+	float screen_space_roughness_limiter_limit = 0.18;
+
+	mutable RID_Owner<RenderBuffers, true> render_buffers_owner;
+
+	void _free_render_buffer_data(RenderBuffers *rb);
+	void _allocate_blur_textures(RenderBuffers *rb);
+	void _allocate_depth_backbuffer_textures(RenderBuffers *rb);
+
+	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
+
+	/* Environment */
+
+	struct Environment {
+		// BG
+		RS::EnvironmentBG background = RS::ENV_BG_CLEAR_COLOR;
+		RID sky;
+		float sky_custom_fov = 0.0;
+		Basis sky_orientation;
+		Color bg_color;
+		float bg_energy = 1.0;
+		int canvas_max_layer = 0;
+		RS::EnvironmentAmbientSource ambient_source = RS::ENV_AMBIENT_SOURCE_BG;
+		Color ambient_light;
+		float ambient_light_energy = 1.0;
+		float ambient_sky_contribution = 1.0;
+		RS::EnvironmentReflectionSource reflection_source = RS::ENV_REFLECTION_SOURCE_BG;
+		Color ao_color;
+
+		/// Tonemap
+
+		RS::EnvironmentToneMapper tone_mapper;
+		float exposure = 1.0;
+		float white = 1.0;
+		bool auto_exposure = false;
+		float min_luminance = 0.2;
+		float max_luminance = 8.0;
+		float auto_exp_speed = 0.2;
+		float auto_exp_scale = 0.5;
+		uint64_t auto_exposure_version = 0;
+
+		// Fog
+		bool fog_enabled = false;
+		Color fog_light_color = Color(0.5, 0.6, 0.7);
+		float fog_light_energy = 1.0;
+		float fog_sun_scatter = 0.0;
+		float fog_density = 0.001;
+		float fog_height = 0.0;
+		float fog_height_density = 0.0; //can be negative to invert effect
+		float fog_aerial_perspective = 0.0;
+
+		/// Glow
+		bool glow_enabled = false;
+		Vector<float> glow_levels;
+		float glow_intensity = 0.8;
+		float glow_strength = 1.0;
+		float glow_bloom = 0.0;
+		float glow_mix = 0.01;
+		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT;
+		float glow_hdr_bleed_threshold = 1.0;
+		float glow_hdr_luminance_cap = 12.0;
+		float glow_hdr_bleed_scale = 2.0;
+		float glow_map_strength = 1.0;
+		RID glow_map = RID();
+
+		/// SSAO
+		bool ssao_enabled = false;
+		float ssao_radius = 1.0;
+		float ssao_intensity = 2.0;
+		float ssao_power = 1.5;
+		float ssao_detail = 0.5;
+		float ssao_horizon = 0.06;
+		float ssao_sharpness = 0.98;
+		float ssao_direct_light_affect = 0.0;
+		float ssao_ao_channel_affect = 0.0;
+
+		/// SSR
+		bool ssr_enabled = false;
+		int ssr_max_steps = 64;
+		float ssr_fade_in = 0.15;
+		float ssr_fade_out = 2.0;
+		float ssr_depth_tolerance = 0.2;
+
+		/// Adjustments
+		bool adjustments_enabled = false;
+		float adjustments_brightness = 1.0f;
+		float adjustments_contrast = 1.0f;
+		float adjustments_saturation = 1.0f;
+		bool use_1d_color_correction = false;
+		RID color_correction = RID();
+	};
+
+	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
+	bool ssao_half_size = false;
+	bool ssao_using_half_size = false;
+	float ssao_adaptive_target = 0.5;
+	int ssao_blur_passes = 2;
+	float ssao_fadeout_from = 50.0;
+	float ssao_fadeout_to = 300.0;
+
+	bool glow_bicubic_upscale = false;
+	bool glow_high_quality = false;
+	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
+
+	static uint64_t auto_exposure_counter;
+
+	mutable RID_Owner<Environment, true> environment_owner;
+
+	/* Sky */
+
+	struct Sky {
+		// Screen Buffers
+		GLuint half_res_pass = 0;
+		GLuint half_res_framebuffer = 0;
+		GLuint quarter_res_pass = 0;
+		GLuint quarter_res_framebuffer = 0;
+		Size2i screen_size = Size2i(0, 0);
+
+		// Radiance Cubemap
+		GLuint radiance = 0;
+		GLuint radiance_framebuffer = 0;
+
+		RID material;
+		RID uniform_buffer;
+
+		int radiance_size = 256;
+
+		RS::SkyMode mode = RS::SKY_MODE_AUTOMATIC;
+
+		//ReflectionData reflection;
+		bool reflection_dirty = false;
+		bool dirty = false;
+		int processing_layer = 0;
+		Sky *dirty_list = nullptr;
+
+		//State to track when radiance cubemap needs updating
+		//SkyMaterialData *prev_material;
+		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
+		float prev_time = 0.0f;
+
+		void free();
+		bool set_radiance_size(int p_radiance_size);
+		bool set_mode(RS::SkyMode p_mode);
+		bool set_material(RID p_material);
+		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size);
+	};
+
+	Sky *dirty_sky_list = nullptr;
+	mutable RID_Owner<Sky, true> sky_owner;
+
+	void _invalidate_sky(Sky *p_sky);
+	void _update_dirty_skys();
+	void _draw_sky(Sky *p_sky, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
+
 public:
+	RasterizerStorageGLES3 *storage;
+	RasterizerCanvasGLES3 *canvas;
+
+	// References to shaders are needed in public space so they can be accessed in RasterizerStorageGLES3
 	struct State {
-		//SceneShaderGLES3 scene_shader;
+		SkyShaderGLES3 sky_shader;
 	} state;
 
 	GeometryInstance *geometry_instance_create(RID p_base) override;
@@ -88,17 +387,17 @@ public:
 
 	/* SDFGI UPDATE */
 
-	void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
-	int sdfgi_get_pending_region_count(RID p_render_buffers) const override;
-	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override;
-	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override;
+	void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
+	int sdfgi_get_pending_region_count(RID p_render_buffers) const override { return 0; }
+	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override { return AABB(); }
+	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override { return 0; }
 
 	/* SKY API */
 
 	RID sky_allocate() override;
 	void sky_initialize(RID p_rid) override;
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size) override;
-	void sky_set_mode(RID p_sky, RS::SkyMode p_samples) override;
+	void sky_set_mode(RID p_sky, RS::SkyMode p_mode) override;
 	void sky_set_material(RID p_sky, RID p_material) override;
 	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) override;
 
@@ -199,9 +498,19 @@ public:
 	void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
 
-	void set_scene_pass(uint64_t p_pass) override;
+	void set_scene_pass(uint64_t p_pass) override {
+		scene_pass = p_pass;
+	}
+
+	_FORCE_INLINE_ uint64_t get_scene_pass() {
+		return scene_pass;
+	}
+
 	void set_time(double p_time, double p_step) override;
 	void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) override;
+	_FORCE_INLINE_ RS::ViewportDebugDraw get_debug_draw_mode() const {
+		return debug_draw;
+	}
 
 	RID render_buffers_create() override;
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override;
@@ -222,7 +531,9 @@ public:
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 
-	RasterizerSceneGLES3();
+	static RasterizerSceneGLES3 *get_singleton();
+	RasterizerSceneGLES3(RasterizerStorageGLES3 *p_storage);
+	~RasterizerSceneGLES3();
 };
 
 #endif // GLES3_ENABLED

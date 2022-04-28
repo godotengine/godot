@@ -286,7 +286,7 @@ in vec2 pixel_size_interp;
 layout(location = 0) out vec4 frag_color;
 
 #ifdef MATERIAL_UNIFORMS_USED
-uniform MaterialUniforms{
+layout(std140) uniform MaterialUniforms{
 //ubo:4
 
 #MATERIAL_UNIFORMS

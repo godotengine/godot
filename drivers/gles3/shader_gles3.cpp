@@ -165,6 +165,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	builder.append("\n"); //make sure defines begin at newline
 	builder.append(general_defines.get_data());
 	builder.append(variant_defines[p_variant]);
+	builder.append("\n");
 	for (int j = 0; j < p_version->custom_defines.size(); j++) {
 		builder.append(p_version->custom_defines[j].get_data());
 	}
@@ -327,7 +328,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 			glDeleteProgram(spec.id);
 			spec.id = 0;
 
-			ERR_PRINT("No OpenGL program link log. What the frick?");
+			ERR_PRINT("No OpenGL program link log. Something is wrong.");
 			ERR_FAIL();
 		}
 
@@ -552,9 +553,11 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 	for (int i = 0; i < variant_count; i++) {
 		for (OAHashMap<uint64_t, Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
-			glDeleteShader(it.value->vert_id);
-			glDeleteShader(it.value->frag_id);
-			glDeleteProgram(it.value->id);
+			if (it.value->id != 0) {
+				glDeleteShader(it.value->vert_id);
+				glDeleteShader(it.value->frag_id);
+				glDeleteProgram(it.value->id);
+			}
 		}
 	}
 

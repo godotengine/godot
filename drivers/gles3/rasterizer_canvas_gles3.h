@@ -54,13 +54,6 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	enum {
-		BASE_UNIFORM_BUFFER_OBJECT = 0,
-		MATERIAL_UNIFORM_BUFFER_OBJECT = 1,
-		TRANSFORMS_UNIFORM_BUFFER_OBJECT = 2,
-		CANVAS_TEXTURE_UNIFORM_BUFFER_OBJECT = 3,
-	};
-
-	enum {
 
 		FLAGS_INSTANCING_MASK = 0x7F,
 		FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
@@ -104,6 +97,15 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	};
 
 public:
+	//TODO move to Material storage
+	enum {
+		BASE_UNIFORM_BUFFER_OBJECT = 0,
+		GLOBAL_UNIFORM_BUFFER_OBJECT = 1,
+		LIGHT_UNIFORM_BUFFER_OBJECT = 2,
+		INSTANCE_UNIFORM_BUFFER_OBJECT = 3,
+		MATERIAL_UNIFORM_BUFFER_OBJECT = 4,
+	};
+
 	struct StateBuffer {
 		float canvas_transform[16];
 		float screen_transform[16];
@@ -170,7 +172,7 @@ public:
 
 		InstanceData *instance_data_array = nullptr;
 		bool canvas_texscreen_used;
-		CanvasShaderGLES3 canvas_shader;
+		//CanvasShaderGLES3 canvas_shader;
 		RID canvas_shader_current_version;
 		RID canvas_shader_default_version;
 		//CanvasShadowShaderGLES3 canvas_shadow_shader;
@@ -202,6 +204,8 @@ public:
 		bool using_transparent_rt;
 
 		// FROM RD Renderer
+
+		double time = 0.0;
 
 		uint32_t max_lights_per_render;
 		uint32_t max_lights_per_item;
@@ -273,11 +277,10 @@ public:
 	void _end_batch(const uint32_t p_index);
 	void _allocate_instance_data_buffer();
 
-	void initialize();
-	void finalize();
+	void set_time(double p_time);
 
 	static RasterizerCanvasGLES3 *get_singleton();
-	RasterizerCanvasGLES3(RasterizerStorageGLES3 *storage);
+	RasterizerCanvasGLES3(RasterizerStorageGLES3 *p_storage);
 	~RasterizerCanvasGLES3();
 };
 
