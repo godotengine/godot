@@ -834,10 +834,10 @@ void PopupMenu::_notification(int p_what) {
 
 				// Set margin on the margin container
 				Ref<StyleBox> panel_style = get_theme_stylebox(SNAME("panel"));
-				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Side::SIDE_TOP));
-				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
 				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Side::SIDE_LEFT));
+				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Side::SIDE_TOP));
 				margin_container->add_theme_constant_override("margin_right", panel_style->get_margin(Side::SIDE_RIGHT));
+				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
 			}
 		} break;
 	}
