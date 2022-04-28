@@ -666,14 +666,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public String getClipboard() {
-		String copiedText = "";
-
-		if (mClipboard.hasPrimaryClip()) {
-			ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
-			copiedText = item.getText().toString();
-		}
-
-		return copiedText;
+		ClipData clipData = mClipboard.getPrimaryClip();
+		if (clipData == null)
+			return "";
+		CharSequence text = clipData.getItemAt(0).getText();
+		if (text == null)
+			return "";
+		return text.toString();
 	}
 
 	public void setClipboard(String p_text) {
