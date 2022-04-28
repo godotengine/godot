@@ -439,7 +439,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 
 		multimesh_allocate(p_rid, 0, RS::MULTIMESH_TRANSFORM_3D, RS::MULTIMESH_COLOR_NONE);
 
-		update_dirty_multimeshes();
+		_update_dirty_multimeshes();
 
 		multimesh_owner.free(p_rid);
 		memdelete(multimesh);
@@ -692,6 +692,8 @@ uint64_t RasterizerStorageGLES3::get_rendering_info(RS::RenderingInfo p_info) {
 void RasterizerStorageGLES3::update_dirty_resources() {
 	GLES3::MaterialStorage::get_singleton()->_update_global_variables();
 	GLES3::MaterialStorage::get_singleton()->_update_queued_materials();
+	//GLES3::MeshStorage::get_singleton()->_update_dirty_skeletons();
+	GLES3::MeshStorage::get_singleton()->_update_dirty_multimeshes();
 }
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {

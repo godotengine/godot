@@ -42,6 +42,7 @@
 #include "servers/rendering/shader_language.h"
 #include "storage/config.h"
 #include "storage/material_storage.h"
+#include "storage/mesh_storage.h"
 #include "storage/texture_storage.h"
 
 // class RasterizerCanvasGLES3;
