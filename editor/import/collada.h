@@ -348,7 +348,7 @@ public:
 
 		Node *parent = nullptr;
 
-		Transform3D compute_transform(Collada &state) const;
+		Transform3D compute_transform(const Collada &state) const;
 		Transform3D get_global_transform() const;
 		Transform3D get_transform() const;
 

@@ -138,11 +138,11 @@ static Object *obj_to_obj(Object *d) {
 	return d;
 }
 
-static StringName sn_to_sn(StringName &d) {
+static StringName sn_to_sn(const StringName &d) {
 	return d;
 }
 
-static Variant var_to_var(Variant &d) {
+static Variant var_to_var(const Variant &d) {
 	return d;
 }
 

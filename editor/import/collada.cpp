@@ -122,7 +122,7 @@ static Transform3D _read_transform_from_array(const Vector<float> &array, int of
 
 /* STRUCTURES */
 
-Transform3D Collada::Node::compute_transform(Collada &state) const {
+Transform3D Collada::Node::compute_transform(const Collada &state) const {
 	Transform3D xform;
 
 	for (int i = 0; i < xform_list.size(); i++) {

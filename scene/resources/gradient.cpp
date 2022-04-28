@@ -157,7 +157,7 @@ void Gradient::reverse() {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-void Gradient::set_points(Vector<Gradient::Point> &p_points) {
+void Gradient::set_points(const Vector<Gradient::Point> &p_points) {
 	points = p_points;
 	is_sorted = false;
 	emit_signal(CoreStringNames::get_singleton()->changed);

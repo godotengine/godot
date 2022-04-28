@@ -823,7 +823,7 @@ void RasterizerCanvasGLES3::_render_batch(uint32_t &r_index) {
 }
 
 // TODO maybe dont use
-void RasterizerCanvasGLES3::_end_batch(uint32_t p_index) {
+void RasterizerCanvasGLES3::_end_batch(const uint32_t p_index) {
 	for (int i = 0; i < 4; i++) {
 		state.instance_data_array[p_index].modulation[i] = 0.0;
 		state.instance_data_array[p_index].ninepatch_margins[i] = 0.0;
