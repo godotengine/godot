@@ -1398,6 +1398,62 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	return ResourceUID::INVALID_ID;
 }
 
+// Please call ResourceLoaderText::open() before calling this.
+// Returns empty string if the attached script could not be fetched.
+String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
+	f = p_f;
+	stream.f = f;
+
+	ignore_resource_parsing = true;
+
+	while (next_tag.name == "ext_resource") {
+		if (!next_tag.fields.has("path")) {
+			return "";
+		}
+
+		if (!next_tag.fields.has("type")) {
+			return "";
+		}
+
+		if (!next_tag.fields.has("id")) {
+			return "";
+		}
+
+		String type = next_tag.fields["type"];
+
+		// Skip the tags until we find the "Script" tag
+		if (type == "Script") {
+			String path = next_tag.fields["path"];
+			String id = next_tag.fields["id"];
+
+			if (!path.contains("://") && path.is_relative_path()) {
+				// path is relative to file being loaded, so convert to a resource path
+				path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			}
+
+			if (remaps.has(path)) {
+				path = remaps[path];
+			}
+
+			// Removed the parsed resources from the total
+			resources_total -= resource_current;
+			resource_current = 0;
+
+			return path;
+		}
+
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag);
+
+		if (error) {
+			_printerr();
+		}
+
+		resource_current++;
+	}
+
+	return "";
+}
+
 /////////////////////
 
 Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
@@ -1493,6 +1549,24 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
 	return loader.get_uid(f);
+}
+
+String ResourceFormatLoaderText::get_attached_script_path(const String &p_path) const {
+	String type = ResourceLoader::get_resource_type(p_path);
+
+	// We assume that only Resources can have attached scripts (excluding Scripts, which still extend Resource).
+	if (ClassDB::is_parent_class(type, Script::get_class_static()) || !ClassDB::is_parent_class(type, Resource::get_class_static())) {
+		return "";
+	}
+
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return "";
+	}
+
+	ResourceLoaderText loader;
+	loader.open(f);
+	return loader.get_attached_script_path(f);
 }
 
 void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
