@@ -111,10 +111,12 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	StringName start_request;
 	bool start_request_travel = false;
 	bool stop_request = false;
+	bool transitioning = false;
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 
 	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek);
+	void _update_current(const StringName next);
 
 protected:
 	static void _bind_methods();
