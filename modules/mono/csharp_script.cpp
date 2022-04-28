@@ -3602,7 +3602,7 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load C# script file '" + p_path + "'.");
 #endif
 
-	script->set_path(p_original_path);
+	script->set_path(p_original_path, (p_cache_mode == CacheMode::CACHE_MODE_IGNORE));
 
 	script->reload();
 
