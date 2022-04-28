@@ -1441,6 +1441,14 @@
 				Aligns shaped text to the given tab-stops.
 			</description>
 		</method>
+		<method name="string_get_word_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns array of the word break character offsets.
+			</description>
+		</method>
 		<method name="string_to_lower" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="string" type="String" />

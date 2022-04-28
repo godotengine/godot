@@ -36,6 +36,7 @@ import static android.content.Context.WINDOW_SERVICE;
 import org.godotengine.godot.input.GodotEditText;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
+import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
@@ -165,6 +166,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	public static GodotIO io;
 	public static GodotNetUtils netUtils;
+	public static GodotTTS tts;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -458,6 +460,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		io = new GodotIO(activity);
 		GodotLib.io = io;
 		netUtils = new GodotNetUtils(activity);
+		tts = new GodotTTS(activity);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);

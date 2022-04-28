@@ -814,6 +814,93 @@
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
+		<method name="tts_get_voices" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] of voice information dictionaries.
+				Each [Dictionary] contains two [String] entries:
+				- [code]name[/code] is voice name.
+				- [code]id[/code] is voice identifier.
+				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_get_voices_for_language" qualifiers="const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="language" type="String" />
+			<description>
+				Returns an [PackedStringArray] of voice identifiers for the [code]language[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_is_paused" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the synthesizer is in a paused state.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_is_speaking" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the synthesizer is generating speech, or have utterance waiting in the queue.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_pause">
+			<return type="void" />
+			<description>
+				Puts the synthesizer into a paused state.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_resume">
+			<return type="void" />
+			<description>
+				Resumes the synthesizer if it was paused.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_set_utterance_callback">
+			<return type="void" />
+			<argument index="0" name="event" type="int" enum="DisplayServer.TTSUtteranceEvent" />
+			<argument index="1" name="callable" type="Callable" />
+			<description>
+				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
+				- [code]TTS_UTTERANCE_STARTED[/code], [code]TTS_UTTERANCE_ENDED[/code], and [code]TTS_UTTERANCE_CANCELED[/code] callable's method should take one [int] parameter, the utterance id.
+				- [code]TTS_UTTERANCE_BOUNDARY[/code] callable's method should take two [int] parameters, the index of the character and the utterance id.
+				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_speak">
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<argument index="1" name="voice" type="String" />
+			<argument index="2" name="volume" type="int" default="50" />
+			<argument index="3" name="pitch" type="float" default="1.0" />
+			<argument index="4" name="rate" type="float" default="1.0" />
+			<argument index="5" name="utterance_id" type="int" default="0" />
+			<argument index="6" name="interrupt" type="bool" default="false" />
+			<description>
+				Adds an utterance to the queue. If [code]interrupt[/code] is [code]true[/code], the queue is cleared first.
+				- [code]voice[/code] identifier is one of the [code]"id"[/code] values returned by [method tts_get_voices] or one of the values returned by [method tts_get_voices_for_language].
+				- [code]volume[/code] ranges from [code]0[/code] (lowest) to [code]100[/code] (highest).
+				- [code]pitch[/code] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
+				- [code]rate[/code] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
+				- [code]utterance_id[/code] is passed as a parameter to the callback functions.
+				[b]Note:[/b] On Windows and Linux, utterance [code]text[/code] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
+				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="tts_stop">
+			<return type="void" />
+			<description>
+				Stops synthesis in progress and removes all utterances from the queue.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+			</description>
+		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -1184,6 +1271,9 @@
 		</constant>
 		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18" enum="Feature">
 		</constant>
+		<constant name="FEATURE_TEXT_TO_SPEECH" value="19" enum="Feature">
+			Display server supports text-to-speech. See [code]tts_*[/code] methods.
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -1334,6 +1424,18 @@
 			Window view:
 			- MacOS: [code]NSView*[/code] for the window main view.
 			- iOS: [code]UIView*[/code] for the window main view.
+		</constant>
+		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
+			Utterance has begun to be spoken.
+		</constant>
+		<constant name="TTS_UTTERANCE_ENDED" value="1" enum="TTSUtteranceEvent">
+			Utterance was successfully finished.
+		</constant>
+		<constant name="TTS_UTTERANCE_CANCELED" value="2" enum="TTSUtteranceEvent">
+			Utterance was canceled, or TTS service was unable to process it.
+		</constant>
+		<constant name="TTS_UTTERANCE_BOUNDARY" value="3" enum="TTSUtteranceEvent">
+			Utterance reached a word or sentence boundary.
 		</constant>
 	</constants>
 </class>

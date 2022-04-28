@@ -274,6 +274,90 @@ const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape
 	}
 }
 
+bool DisplayServerJavaScript::tts_is_speaking() const {
+	return godot_js_tts_is_speaking();
+}
+
+bool DisplayServerJavaScript::tts_is_paused() const {
+	return godot_js_tts_is_paused();
+}
+
+void DisplayServerJavaScript::update_voices_callback(int p_size, const char **p_voice) {
+	get_singleton()->voices.clear();
+	for (int i = 0; i < p_size; i++) {
+		Vector<String> tokens = String::utf8(p_voice[i]).split(";", true, 2);
+		if (tokens.size() == 2) {
+			Dictionary voice_d;
+			voice_d["name"] = tokens[1];
+			voice_d["id"] = tokens[1];
+			voice_d["language"] = tokens[0];
+			get_singleton()->voices.push_back(voice_d);
+		}
+	}
+}
+
+Array DisplayServerJavaScript::tts_get_voices() const {
+	godot_js_tts_get_voices(update_voices_callback);
+	return voices;
+}
+
+void DisplayServerJavaScript::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	if (p_interrupt) {
+		tts_stop();
+	}
+
+	if (p_text.is_empty()) {
+		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, p_utterance_id);
+		return;
+	}
+
+	CharString string = p_text.utf8();
+	utterance_ids[p_utterance_id] = string;
+
+	godot_js_tts_speak(string.get_data(), p_voice.utf8().get_data(), CLAMP(p_volume, 0, 100), CLAMP(p_pitch, 0.f, 2.f), CLAMP(p_rate, 0.1f, 10.f), p_utterance_id, DisplayServerJavaScript::_js_utterance_callback);
+}
+
+void DisplayServerJavaScript::tts_pause() {
+	godot_js_tts_pause();
+}
+
+void DisplayServerJavaScript::tts_resume() {
+	godot_js_tts_resume();
+}
+
+void DisplayServerJavaScript::tts_stop() {
+	for (Map<int, CharString>::Element *E = utterance_ids.front(); E; E = E->next()) {
+		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E->key());
+	}
+	utterance_ids.clear();
+	godot_js_tts_stop();
+}
+
+void DisplayServerJavaScript::_js_utterance_callback(int p_event, int p_id, int p_pos) {
+	DisplayServerJavaScript *ds = (DisplayServerJavaScript *)DisplayServer::get_singleton();
+	if (ds->utterance_ids.has(p_id)) {
+		int pos = 0;
+		if ((TTSUtteranceEvent)p_event == DisplayServer::TTS_UTTERANCE_BOUNDARY) {
+			// Convert position from UTF-8 to UTF-32.
+			const CharString &string = ds->utterance_ids[p_id];
+			for (int i = 0; i < MIN(p_pos, string.length()); i++) {
+				uint8_t c = string[i];
+				if ((c & 0xe0) == 0xc0) {
+					i += 1;
+				} else if ((c & 0xf0) == 0xe0) {
+					i += 2;
+				} else if ((c & 0xf8) == 0xf0) {
+					i += 3;
+				}
+				pos++;
+			}
+		} else if ((TTSUtteranceEvent)p_event != DisplayServer::TTS_UTTERANCE_STARTED) {
+			ds->utterance_ids.erase(p_id);
+		}
+		ds->tts_post_utterance_event((TTSUtteranceEvent)p_event, p_id, pos);
+	}
+}
+
 void DisplayServerJavaScript::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (cursor_shape == p_shape) {
@@ -755,6 +839,8 @@ bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 		//case FEATURE_ORIENTATION:
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
+		case FEATURE_TEXT_TO_SPEECH:
+			return godot_js_display_tts_available() != 0;
 		default:
 			return false;
 	}
