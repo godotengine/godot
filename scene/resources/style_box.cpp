@@ -466,6 +466,15 @@ bool StyleBoxFlat::is_draw_center_enabled() const {
 	return draw_center;
 }
 
+void StyleBoxFlat::set_skew(Vector2 p_skew) {
+	skew = p_skew;
+	emit_changed();
+}
+
+Vector2 StyleBoxFlat::get_skew() const {
+	return skew;
+}
+
 void StyleBoxFlat::set_shadow_color(const Color &p_color) {
 	shadow_color = p_color;
 	emit_changed();
@@ -546,7 +555,7 @@ inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_re
 }
 
 inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4],
-		const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, const int corner_detail, const bool fill_center = false) {
+		const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, const int corner_detail, const Vector2 &skew, bool fill_center = false) {
 	int vert_offset = verts.size();
 	if (!vert_offset) {
 		vert_offset = 0;
@@ -589,9 +598,12 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 					color = outer_color;
 					corner_point = outer_points[corner_index];
 				}
-				float x = radius * (float)cos((double)corner_index * Math_PI / 2.0 + (double)detail / (double)adapted_corner_detail * Math_PI / 2.0 + Math_PI) + corner_point.x;
-				float y = radius * (float)sin((double)corner_index * Math_PI / 2.0 + (double)detail / (double)adapted_corner_detail * Math_PI / 2.0 + Math_PI) + corner_point.y;
-				verts.push_back(Vector2(x, y));
+
+				const float x = radius * (float)cos((double)corner_index * Math_PI / 2.0 + (double)detail / (double)adapted_corner_detail * Math_PI / 2.0 + Math_PI) + corner_point.x;
+				const float y = radius * (float)sin((double)corner_index * Math_PI / 2.0 + (double)detail / (double)adapted_corner_detail * Math_PI / 2.0 + Math_PI) + corner_point.y;
+				const float x_skew = -skew.x * (y - ring_rect.get_center().y);
+				const float y_skew = -skew.y * (x - ring_rect.get_center().x);
+				verts.push_back(Vector2(x + x_skew, y + y_skew));
 				colors.push_back(color);
 			}
 		}
@@ -669,10 +681,12 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		return;
 	}
 
-	bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
-	bool aa_on = rounded_corners && anti_aliased;
+	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
+	// Only enable antialiasing if it is actually needed. This improve performances
+	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
+	const bool aa_on = (rounded_corners || !skew.is_equal_approx(Vector2())) && anti_aliased;
 
-	bool blend_on = blend_border && draw_border;
+	const bool blend_on = blend_border && draw_border;
 
 	Color border_color_alpha = Color(border_color.r, border_color.g, border_color.b, 0);
 	Color border_color_blend = (draw_center ? bg_color : border_color_alpha);
@@ -719,24 +733,24 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		Color shadow_color_transparent = Color(shadow_color.r, shadow_color.g, shadow_color.b, 0);
 
 		draw_ring(verts, indices, colors, shadow_inner_rect, adapted_corner,
-				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail);
+				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail, skew);
 
 		if (draw_center) {
 			draw_ring(verts, indices, colors, shadow_inner_rect, adapted_corner,
-					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, true);
+					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true);
 		}
 	}
 
 	// Create border (no AA).
 	if (draw_border && !aa_on) {
 		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail);
+				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail, skew);
 	}
 
 	// Create infill (no AA).
 	if (draw_center && (!aa_on || blend_on || !draw_border)) {
 		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-				infill_rect, infill_rect, bg_color, bg_color, corner_detail, true);
+				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true);
 	}
 
 	if (aa_on) {
@@ -768,7 +782,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 						aa_border_width[MARGIN_RIGHT], aa_border_width[MARGIN_BOTTOM]);
 				// Create infill within AA border.
 				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_inner_rect_aa, infill_inner_rect_aa, bg_color, bg_color, corner_detail, true);
+						infill_inner_rect_aa, infill_inner_rect_aa, bg_color, bg_color, corner_detail, skew, true);
 			}
 
 			if (!blend_on || !draw_border) {
@@ -779,7 +793,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 				// Create infill fake AA gradient.
 				draw_ring(verts, indices, colors, style_rect, adapted_corner,
-						infill_rect_aa, infill_rect, bg_color, alpha_bg, corner_detail);
+						infill_rect_aa, infill_rect, bg_color, alpha_bg, corner_detail, skew);
 			}
 		}
 
@@ -793,17 +807,17 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 			// Create border.
 			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					border_style_rect_aa, ((blend_on) ? infill_rect : infill_rect_aa), border_color_inner, border_color, corner_detail);
+					border_style_rect_aa, ((blend_on) ? infill_rect : infill_rect_aa), border_color_inner, border_color, corner_detail, skew);
 
 			if (!blend_on) {
 				// Create inner border fake AA gradient.
 				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa, infill_rect, border_color_blend, border_color, corner_detail);
+						infill_rect_aa, infill_rect, border_color_blend, border_color, corner_detail, skew);
 			}
 
 			// Create outer border fake AA gradient.
 			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					style_rect_aa, border_style_rect_aa, border_color, border_color_alpha, corner_detail);
+					style_rect_aa, border_style_rect_aa, border_color, border_color_alpha, corner_detail, skew);
 		}
 	}
 
@@ -854,6 +868,9 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &StyleBoxFlat::set_draw_center);
 	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &StyleBoxFlat::is_draw_center_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_skew", "skew"), &StyleBoxFlat::set_skew);
+	ClassDB::bind_method(D_METHOD("get_skew"), &StyleBoxFlat::get_skew);
+
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "color"), &StyleBoxFlat::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &StyleBoxFlat::get_shadow_color);
 
@@ -875,6 +892,7 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "bg_color"), "set_bg_color", "get_bg_color");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "skew"), "set_skew", "get_skew");
 
 	ADD_GROUP("Border Width", "border_width_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_left", PROPERTY_HINT_RANGE, "0,1024,1"), "set_border_width", "get_border_width", MARGIN_LEFT);
