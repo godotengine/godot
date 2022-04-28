@@ -612,7 +612,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.view_projection[0] = p_camera_data->main_projection;
-		render_data.cam_ortogonal = p_camera_data->is_ortogonal;
+		render_data.cam_ortogonal = p_camera_data->is_orthogonal;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
