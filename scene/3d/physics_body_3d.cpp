@@ -96,7 +96,11 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p
 	parameters.max_collisions = p_max_collisions;
 
 	PhysicsServer3D::MotionResult result;
-	if (move_and_collide(parameters, result, p_test_only)) {
+
+	bool collided = move_and_collide(parameters, result, p_test_only);
+
+	// Don't report collision when the whole motion is done.
+	if (collided && result.collision_safe_fraction < 1) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
