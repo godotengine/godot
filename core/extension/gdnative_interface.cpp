@@ -1069,4 +1069,6 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.classdb_register_extension_class_property_subgroup = nullptr;
 	gdni.classdb_register_extension_class_signal = nullptr;
 	gdni.classdb_unregister_extension_class = nullptr;
+
+	gdni.get_library_path = nullptr;
 }

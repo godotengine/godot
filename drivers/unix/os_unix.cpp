@@ -429,7 +429,7 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
-Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
 
 	if (FileAccess::exists(path) && path.is_relative_path()) {
@@ -450,6 +450,11 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
+	}
+
 	return OK;
 }
 

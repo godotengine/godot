@@ -261,8 +261,14 @@ void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLi
 	self->extension_classes.erase(class_name);
 }
 
+void NativeExtension::_get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path) {
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+
+	*(String *)r_path = self->library_path;
+}
+
 Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true);
+	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
 	if (err != OK) {
 		return err;
 	}
@@ -354,6 +360,7 @@ void NativeExtension::initialize_native_extensions() {
 	gdnative_interface.classdb_register_extension_class_property_subgroup = _register_extension_class_property_subgroup;
 	gdnative_interface.classdb_register_extension_class_signal = _register_extension_class_signal;
 	gdnative_interface.classdb_unregister_extension_class = _unregister_extension_class;
+	gdnative_interface.get_library_path = _get_library_path;
 }
 
 RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {

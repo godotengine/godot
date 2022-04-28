@@ -39,6 +39,7 @@ class NativeExtension : public Resource {
 	GDCLASS(NativeExtension, Resource)
 
 	void *library = nullptr; // pointer if valid,
+	String library_path;
 
 	struct Extension {
 		ObjectNativeExtension native_extension;
@@ -54,6 +55,7 @@ class NativeExtension : public Resource {
 	static void _register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
 	static void _register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
 	static void _unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name);
+	static void _get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
 
 	GDNativeInitialization initialization;
 	int32_t level_initialized = -1;

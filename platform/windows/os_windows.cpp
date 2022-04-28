@@ -202,7 +202,7 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	return OK;
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
@@ -228,6 +228,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	if (cookie) {
 		remove_dll_directory(cookie);
+	}
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
 	}
 
 	return OK;
