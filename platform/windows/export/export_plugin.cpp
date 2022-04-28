@@ -138,17 +138,13 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 
-	if (rcedit_path.is_empty()) {
-		WARN_PRINT("The rcedit tool is not configured in the Editor Settings (Export > Windows > Rcedit). No custom icon or app information data will be embedded in the exported executable.");
+	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
+		ERR_PRINT("Could not find rcedit executable at " + rcedit_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	if (!FileAccess::exists(rcedit_path)) {
-		ERR_PRINT("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
-		return ERR_FILE_NOT_FOUND;
-	}
-	if (rcedit_path.is_empty()) {
-		rcedit_path = "rcedit"; // try to run signtool from PATH
+	if (rcedit_path == String()) {
+		rcedit_path = "rcedit"; // try to run rcedit from PATH
 	}
 
 #ifndef WINDOWS_ENABLED
@@ -156,7 +152,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
 	if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
-		ERR_PRINT("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
+		ERR_PRINT("Could not find wine executable at " + wine_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -223,7 +219,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 	String str;
 	Error err = OS::get_singleton()->execute(rcedit_path, args, &str, nullptr, true);
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not start rcedit executable, configure rcedit path in the Editor Settings (Export > Windows > Rcedit).");
 	print_line("rcedit (" + p_path + "): " + str);
 
 	if (str.find("Fatal error") != -1) {
@@ -367,7 +363,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 	String str;
 	Error err = OS::get_singleton()->execute(signtool_path, args, &str, nullptr, true);
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not start signtool executable, configure signtool path in the Editor Settings (Export > Windows > Signtool).");
 
 	print_line("codesign (" + p_path + "): " + str);
 #ifndef WINDOWS_ENABLED
@@ -396,7 +392,7 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 	bool valid = EditorExportPlatformPC::can_export(p_preset, err, r_missing_templates);
 
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
-	if (rcedit_path.is_empty()) {
+	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {
 		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > Rcedit) to change the icon or app information data.") + "\n";
 	}
 
