@@ -73,6 +73,12 @@
 				The timer will be automatically freed after its time elapses.
 			</description>
 		</method>
+		<method name="create_tween">
+			<return type="SceneTreeTween" />
+			<description>
+				Creates and returns a new [SceneTreeTween].
+			</description>
+		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -102,6 +108,12 @@
 			<argument index="0" name="group" type="String" />
 			<description>
 				Returns a list of all nodes assigned to the given group.
+			</description>
+		</method>
+		<method name="get_processed_tweens">
+			<return type="Array" />
+			<description>
+				Returns an array of currently existing [SceneTreeTween]s in the [SceneTree] (both running and paused).
 			</description>
 		</method>
 		<method name="get_rpc_sender_id" qualifiers="const">

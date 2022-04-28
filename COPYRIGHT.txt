@@ -96,6 +96,13 @@ Copyright: 1997-2017, Sam Lantinga
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./scene/animation/easing_equations.h
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+ 2007-2022 Juan Linietsky, Ariel Manzur.
+ 2014-2022 Godot Engine contributors.
+License: Expat
+
 Files: ./servers/physics/collision_solver_sat.cpp
 Comment: Open Dynamics Engine
 Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
@@ -272,11 +279,6 @@ Files: ./thirdparty/misc/clipper.cpp
 Comment: Clipper
 Copyright: 2010-2017, Angus Johnson
 License: BSL-1.0
-
-Files: ./thirdparty/misc/easing_equations.cpp
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
 
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h

@@ -41,6 +41,8 @@
 
 class Viewport;
 class SceneState;
+class SceneTreeTween;
+
 class Node : public Object {
 	GDCLASS(Node, Object);
 	OBJ_CATEGORY("Nodes");
@@ -326,6 +328,8 @@ public:
 
 	void remove_and_skip();
 	int get_index() const;
+
+	Ref<SceneTreeTween> create_tween();
 
 	void print_tree();
 	void print_tree_pretty();
