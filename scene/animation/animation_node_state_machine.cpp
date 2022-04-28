@@ -30,6 +30,8 @@
 
 #include "animation_node_state_machine.h"
 
+#include "scene/scene_string_names.h"
+
 /////////////////////////////////////////////////
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {
@@ -323,6 +325,11 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				if (!_travel(p_state_machine, start_request)) {
 					// can't travel, then teleport
 					path.clear();
+					if (current != StringName()){
+                    	emit_signal(SNAME("state_exit"), current);
+                    	emit_signal(SNAME("state_changed"), current, start_request);	
+					}
+					emit_signal(SNAME("state_enter"), start_request);
 					current = start_request;
 				}
 				start_request = StringName(); //clear start request
@@ -331,6 +338,11 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			// teleport to start
 			if (p_state_machine->states.has(start_request)) {
 				path.clear();
+				if (current != StringName()){
+                    emit_signal(SNAME("state_exit"), current);
+                    emit_signal(SNAME("state_changed"), current, start_request);	
+				}
+				emit_signal(SNAME("state_enter"), start_request);
 				current = start_request;
 				playing = true;
 				play_start = true;
@@ -349,7 +361,6 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
 			current = p_state_machine->start_node;
 		}
-
 		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
 		pos_current = 0;
 		loops_current = 0;
@@ -452,7 +463,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 
 		if (goto_next) { //loops should be used because fade time may be too small or zero and animation may have looped
-
+			emit_signal(SNAME("state_exit"), current);
 			if (next_xfade) {
 				//time to fade, baby
 				fading_from = current;
@@ -466,7 +477,10 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			if (path.size()) { //if it came from path, remove path
 				path.remove_at(0);
 			}
+			emit_signal(SNAME("state_changed"), current, next);
+
 			current = next;
+			emit_signal(SNAME("state_enter"), current);
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
 				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = MIN(pos_current, len_current);
@@ -499,6 +513,10 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
+
+	ADD_SIGNAL(MethodInfo("state_enter", PropertyInfo(Variant::STRING, "state")));
+	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::STRING, "previous_state"), PropertyInfo(Variant::STRING, "next_state")));
+	ADD_SIGNAL(MethodInfo("state_exit", PropertyInfo(Variant::STRING, "state")));
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {

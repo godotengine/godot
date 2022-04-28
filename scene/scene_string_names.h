@@ -224,6 +224,7 @@ public:
 	StringName use_in_baked_light;
 	StringName use_dynamic_gi;
 #endif
+
 };
 
 #endif // SCENE_STRING_NAMES_H
