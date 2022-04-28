@@ -482,6 +482,8 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
+	virtual uint64_t get_embedded_pck_offset() const;
+
 	virtual String get_name() const;
 
 	virtual Date get_date(bool utc) const;

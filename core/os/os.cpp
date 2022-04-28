@@ -305,6 +305,11 @@ String OS::get_locale_language() const {
 	return get_locale().left(3).replace("_", "");
 }
 
+// Embedded PCK offset.
+uint64_t OS::get_embedded_pck_offset() const {
+	return 0;
+}
+
 // Helper function to ensure that a dir name/path will be valid on the OS
 String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
 	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");

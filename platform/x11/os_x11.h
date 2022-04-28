@@ -269,6 +269,8 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
+	virtual uint64_t get_embedded_pck_offset() const;
+
 	virtual bool can_draw() const;
 
 	virtual void set_clipboard(const String &p_text);

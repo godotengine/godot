@@ -3078,6 +3078,91 @@ MainLoop *OS_X11::get_main_loop() const {
 	return main_loop;
 }
 
+uint64_t OS_X11::get_embedded_pck_offset() const {
+	FileAccessRef f = FileAccess::open(get_executable_path(), FileAccess::READ);
+	if (!f) {
+		return 0;
+	}
+
+	// Read and check ELF magic number.
+	{
+		uint32_t magic = f->get_32();
+		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			return 0;
+		}
+	}
+
+	// Read program architecture bits from class field.
+	int bits = f->get_8() * 32;
+
+	// Get info about the section header table.
+	int64_t section_table_pos;
+	int64_t section_header_size;
+	if (bits == 32) {
+		section_header_size = 40;
+		f->seek(0x20);
+		section_table_pos = f->get_32();
+		f->seek(0x30);
+	} else { // 64
+		section_header_size = 64;
+		f->seek(0x28);
+		section_table_pos = f->get_64();
+		f->seek(0x3c);
+	}
+	int num_sections = f->get_16();
+	int string_section_idx = f->get_16();
+
+	// Load the strings table.
+	uint8_t *strings;
+	{
+		// Jump to the strings section header.
+		f->seek(section_table_pos + string_section_idx * section_header_size);
+
+		// Read strings data size and offset.
+		int64_t string_data_pos;
+		int64_t string_data_size;
+		if (bits == 32) {
+			f->seek(f->get_position() + 0x10);
+			string_data_pos = f->get_32();
+			string_data_size = f->get_32();
+		} else { // 64
+			f->seek(f->get_position() + 0x18);
+			string_data_pos = f->get_64();
+			string_data_size = f->get_64();
+		}
+
+		// Read strings data.
+		f->seek(string_data_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return 0;
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the "pck" section.
+	int64_t off = 0;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * section_header_size;
+		f->seek(section_header_pos);
+
+		uint32_t name_offset = f->get_32();
+		if (strcmp((char *)strings + name_offset, "pck") == 0) {
+			if (bits == 32) {
+				f->seek(section_header_pos + 0x10);
+				off = f->get_32();
+			} else { // 64
+				f->seek(section_header_pos + 0x18);
+				off = f->get_64();
+			}
+			break;
+		}
+	}
+	memfree(strings);
+
+	return off;
+}
+
 void OS_X11::delete_main_loop() {
 	// Send owned clipboard data to clipboard manager before exit.
 	// This has to be done here because the clipboard data is cleared before finalize().
