@@ -35,6 +35,7 @@
 #include "core/io/file_access_compressed.h"
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
+#include "core/io/missing_resource.h"
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)
@@ -728,13 +729,23 @@ Error ResourceLoaderBinary::load() {
 			}
 		}
 
+		MissingResource *missing_resource = nullptr;
+
 		if (res.is_null()) {
 			//did not replace
 
 			Object *obj = ClassDB::instantiate(t);
 			if (!obj) {
-				error = ERR_FILE_CORRUPT;
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+					//create a missing resource
+					missing_resource = memnew(MissingResource);
+					missing_resource->set_original_class(t);
+					missing_resource->set_recording_properties(true);
+					obj = missing_resource;
+				} else {
+					error = ERR_FILE_CORRUPT;
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+				}
 			}
 
 			Resource *r = Object::cast_to<Resource>(obj);
@@ -760,6 +771,8 @@ Error ResourceLoaderBinary::load() {
 
 		//set properties
 
+		Dictionary missing_resource_properties;
+
 		for (int j = 0; j < pc; j++) {
 			StringName name = _get_string();
 
@@ -775,8 +788,32 @@ Error ResourceLoaderBinary::load() {
 				return error;
 			}
 
-			res->set(name, value);
+			bool set_valid = true;
+			if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+				// If the property being set is a missing resource (and the parent is not),
+				// then setting it will most likely not work.
+				// Instead, save it as metadata.
+
+				Ref<MissingResource> mr = value;
+				if (mr.is_valid()) {
+					missing_resource_properties[name] = mr;
+					set_valid = false;
+				}
+			}
+
+			if (set_valid) {
+				res->set(name, value);
+			}
 		}
+
+		if (missing_resource) {
+			missing_resource->set_recording_properties(false);
+		}
+
+		if (!missing_resource_properties.is_empty()) {
+			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+		}
+
 #ifdef TOOLS_ENABLED
 		res->set_edited(false);
 #endif
@@ -1833,6 +1870,15 @@ int ResourceFormatSaverBinaryInstance::get_string_index(const String &p_string) 
 	return strings.size() - 1;
 }
 
+static String _resource_get_class(Ref<Resource> p_resource) {
+	Ref<MissingResource> missing_resource = p_resource;
+	if (missing_resource.is_valid()) {
+		return missing_resource->get_original_class();
+	} else {
+		return p_resource->get_class();
+	}
+}
+
 Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	Error err;
 	Ref<FileAccess> f;
@@ -1885,7 +1931,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		return ERR_CANT_CREATE;
 	}
 
-	save_unicode_string(f, p_resource->get_class());
+	save_unicode_string(f, _resource_get_class(p_resource));
 	f->store_64(0); //offset to import metadata
 	{
 		uint32_t format_flags = FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS;
@@ -1902,10 +1948,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	List<ResourceData> resources;
 
+	Dictionary missing_resource_properties = p_resource->get_meta(META_MISSING_RESOURCES, Dictionary());
+
 	{
 		for (const Ref<Resource> &E : saved_resources) {
 			ResourceData &rd = resources.push_back(ResourceData())->get();
-			rd.type = E->get_class();
+			rd.type = _resource_get_class(E);
 
 			List<PropertyInfo> property_list;
 			E->get_property_list(&property_list);
@@ -1914,6 +1962,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 				if (skip_editor && F.name.begins_with("__editor")) {
 					continue;
 				}
+				if (F.name == META_PROPERTY_MISSING_RESOURCES) {
+					continue;
+				}
+
 				if ((F.usage & PROPERTY_USAGE_STORAGE)) {
 					Property p;
 					p.name_idx = get_string_index(F.name);
@@ -1927,6 +1979,14 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						}
 					} else {
 						p.value = E->get(F.name);
+					}
+
+					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
+						// Was this missing resource overriden? If so do not save the old value.
+						Ref<Resource> res = p.value;
+						if (res.is_null()) {
+							p.value = missing_resource_properties[F.name];
+						}
 					}
 
 					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
@@ -1990,7 +2050,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 				String new_id;
 
 				while (true) {
-					new_id = r->get_class() + "_" + Resource::generate_scene_unique_id();
+					new_id = _resource_get_class(r) + "_" + Resource::generate_scene_unique_id();
 					if (!used_unique_ids.has(new_id)) {
 						break;
 					}

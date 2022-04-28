@@ -979,6 +979,10 @@ void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
 	}
 }
 
+void ResourceLoader::set_create_missing_resources_if_class_unavailable(bool p_enable) {
+	create_missing_resources_if_class_unavailable = p_enable;
+}
+
 void ResourceLoader::add_custom_loaders() {
 	// Custom loaders registration exploits global class names
 
@@ -1030,6 +1034,7 @@ void *ResourceLoader::err_notify_ud = nullptr;
 DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
 void *ResourceLoader::dep_err_notify_ud = nullptr;
 
+bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
 
