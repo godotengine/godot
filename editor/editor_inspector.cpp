@@ -1465,8 +1465,6 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
-	bool in_script_variables = false;
-
 	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
 		PropertyInfo &p = I->get();
 
@@ -1506,8 +1504,6 @@ void EditorInspector::update_tree() {
 			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
 			main_vbox->add_child(category);
 			category_vbox = nullptr; //reset
-
-			in_script_variables = p.name == "Script Variables";
 
 			String type = p.name;
 			category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
@@ -1577,9 +1573,9 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		// Don't localize properties in Script Variables category.
+		// Don't localize script variables.
 		EditorPropertyNameProcessor::Style name_style = property_name_style;
-		if (in_script_variables && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 		}
 		name = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
@@ -1617,9 +1613,15 @@ void EditorInspector::update_tree() {
 					String label;
 					String tooltip;
 
+					// Don't localize groups for script variables.
+					EditorPropertyNameProcessor::Style section_name_style = property_name_style;
+					if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+						section_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+					}
+
 					// Only process group label if this is not the group or subgroup.
 					if ((i == 0 && path_name == group)) {
-						if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+						if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 							label = TTRGET(path_name);
 							tooltip = path_name;
 						} else {
@@ -1627,8 +1629,8 @@ void EditorInspector::update_tree() {
 							tooltip = TTRGET(path_name);
 						}
 					} else {
-						label = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, property_name_style);
-						tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
+						label = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, section_name_style);
+						tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(path_name, EditorPropertyNameProcessor::get_tooltip_style(section_name_style));
 					}
 
 					Color c = sscolor;
