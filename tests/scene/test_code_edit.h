@@ -2179,7 +2179,23 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # string");
 			CHECK(code_edit->get_line(1) == "");
+			code_edit->remove_string_delimiter("#");
+
+			/* Non-whitespace prevents auto-indentation. */
+			code_edit->add_comment_delimiter("#", "");
+			code_edit->set_text("");
+			code_edit->insert_text_at_caret("test := 0 # comment");
+			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			CHECK(code_edit->get_line(0) == "test := 0 # comment");
+			CHECK(code_edit->get_line(1) == "");
 			code_edit->remove_comment_delimiter("#");
+
+			/* Even when there's no comments. */
+			code_edit->set_text("");
+			code_edit->insert_text_at_caret("test := 0");
+			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			CHECK(code_edit->get_line(0) == "test := 0");
+			CHECK(code_edit->get_line(1) == "");
 
 			/* If between brace pairs an extra line is added. */
 			code_edit->set_text("");
@@ -2256,7 +2272,23 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # string");
 			CHECK(code_edit->get_line(1) == "");
+			code_edit->remove_string_delimiter("#");
+
+			/* Non-whitespace prevents auto-indentation. */
+			code_edit->add_comment_delimiter("#", "");
+			code_edit->set_text("");
+			code_edit->insert_text_at_caret("test := 0 # comment");
+			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			CHECK(code_edit->get_line(0) == "test := 0 # comment");
+			CHECK(code_edit->get_line(1) == "");
 			code_edit->remove_comment_delimiter("#");
+
+			/* Even when there's no comments. */
+			code_edit->set_text("");
+			code_edit->insert_text_at_caret("test := 0");
+			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			CHECK(code_edit->get_line(0) == "test := 0");
+			CHECK(code_edit->get_line(1) == "");
 
 			/* If between brace pairs an extra line is added. */
 			code_edit->set_text("");
