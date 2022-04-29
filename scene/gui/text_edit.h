@@ -361,15 +361,30 @@ private:
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
 	/* Caret. */
+	struct Selection {
+		bool active = false;
+		bool shiftclick_left = false;
+
+		int selecting_line = 0;
+		int selecting_column = 0;
+		int selected_word_beg = 0;
+		int selected_word_end = 0;
+		int selected_word_origin = 0;
+
+		int from_line = 0;
+		int from_column = 0;
+		int to_line = 0;
+		int to_column = 0;
+	};
+
 	struct Caret {
+		Selection selection;
+
 		Point2 draw_pos;
 		bool visible = false;
 		int last_fit_x = 0;
 		int line = 0;
 		int column = 0;
-		int x_ofs = 0;
-		int line_ofs = 0;
-		int wrap_ofs = 0;
 	} caret;
 
 	bool setting_caret_line = false;
@@ -400,25 +415,7 @@ private:
 	int _get_column_x_offset_for_line(int p_char, int p_line) const;
 
 	/* Selection. */
-	struct Selection {
-		SelectionMode selecting_mode = SelectionMode::SELECTION_MODE_NONE;
-		int selecting_line = 0;
-		int selecting_column = 0;
-		int selected_word_beg = 0;
-		int selected_word_end = 0;
-		int selected_word_origin = 0;
-		bool selecting_text = false;
-
-		bool active = false;
-
-		int from_line = 0;
-		int from_column = 0;
-		int to_line = 0;
-		int to_column = 0;
-
-		bool shiftclick_left = false;
-		bool drag_attempt = false;
-	} selection;
+	SelectionMode selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
@@ -428,6 +425,7 @@ private:
 	Color selection_color = Color(1, 1, 1);
 	bool override_selected_font_color = false;
 
+	bool selection_drag_attempt = false;
 	bool dragging_selection = false;
 
 	Timer *click_select_held = nullptr;
@@ -450,8 +448,6 @@ private:
 
 	void _update_wrap_at_column(bool p_force = false);
 
-	void _update_caret_wrap_offset();
-
 	/* Viewport. */
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
@@ -466,6 +462,10 @@ private:
 	float v_scroll_speed = 80.0;
 
 	// Scrolling.
+	int first_visible_line = 0;
+	int first_visible_line_wrap_ofs = 0;
+	int first_visible_col = 0;
+
 	bool scrolling = false;
 	bool updating_scrolls = false;
 
