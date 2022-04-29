@@ -1115,6 +1115,7 @@ void RendererSceneGIRD::SDFGI::update_cascades() {
 void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
 
 	if (!debug_uniform_set.is_valid() || !RD::get_singleton()->uniform_set_is_valid(debug_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
@@ -1251,7 +1252,7 @@ void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, cons
 	RD::get_singleton()->compute_list_end();
 
 	Size2 rtsize = texture_storage->render_target_get_size(p_render_target);
-	storage->get_effects()->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2(Vector2(), rtsize), true);
+	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2(Vector2(), rtsize), true);
 }
 
 void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {
