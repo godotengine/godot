@@ -1033,9 +1033,9 @@ void GodotSpace2D::_broadphase_unpair(GodotCollisionObject2D *A, int p_subindex_
 		return;
 	}
 
-	GodotSpace2D *self = (GodotSpace2D *)p_self;
+	GodotSpace2D *self = static_cast<GodotSpace2D *>(p_self);
 	self->collision_pairs--;
-	GodotConstraint2D *c = (GodotConstraint2D *)p_data;
+	GodotConstraint2D *c = static_cast<GodotConstraint2D *>(p_data);
 	memdelete(c);
 }
 

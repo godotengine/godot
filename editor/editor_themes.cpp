@@ -489,6 +489,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("axis_x_color", "Editor", Color(0.96, 0.20, 0.32));
 	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
 	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
+	theme->set_color("axis_w_color", "Editor", Color(0.55, 0.55, 0.55));
 
 	const float prop_color_saturation = accent_color.get_s() * 0.75;
 	const float prop_color_value = accent_color.get_v();
@@ -762,7 +763,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("arrow", "OptionButton", theme->get_icon(SNAME("GuiOptionArrow"), SNAME("EditorIcons")));
 	theme->set_constant("arrow_margin", "OptionButton", widget_default_margin.x - 2 * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
-	theme->set_constant("hseparation", "OptionButton", 4 * EDSCALE);
+	theme->set_constant("h_separation", "OptionButton", 4 * EDSCALE);
 
 	// CheckButton
 	theme->set_stylebox("normal", "CheckButton", style_menu);
@@ -788,8 +789,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_hover_color", "CheckButton", icon_hover_color);
 	theme->set_color("icon_focus_color", "CheckButton", icon_focus_color);
 
-	theme->set_constant("hseparation", "CheckButton", 8 * EDSCALE);
-	theme->set_constant("check_vadjust", "CheckButton", 0 * EDSCALE);
+	theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
+	theme->set_constant("check_v_adjust", "CheckButton", 0 * EDSCALE);
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
@@ -819,8 +820,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_hover_color", "CheckBox", icon_hover_color);
 	theme->set_color("icon_focus_color", "CheckBox", icon_focus_color);
 
-	theme->set_constant("hseparation", "CheckBox", 8 * EDSCALE);
-	theme->set_constant("check_vadjust", "CheckBox", 0 * EDSCALE);
+	theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
+	theme->set_constant("check_v_adjust", "CheckBox", 0 * EDSCALE);
 
 	// PopupDialog
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
@@ -868,12 +869,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityXray"), SNAME("EditorIcons")));
 
-	// Force the vseparation to be even so that the spacing on top and bottom is even.
+	// Force the v_separation to be even so that the spacing on top and bottom is even.
 	// If the vsep is odd and cannot be split into 2 even groups (of pixels), then it will be lopsided.
 	// We add 2 to the vsep to give it some extra spacing which looks a bit more modern (see Windows, for example)
 	int vsep_base = extra_spacing + default_margin_size + 2;
 	int force_even_vsep = vsep_base + (vsep_base % 2);
-	theme->set_constant("vseparation", "PopupMenu", force_even_vsep * EDSCALE);
+	theme->set_constant("v_separation", "PopupMenu", force_even_vsep * EDSCALE);
 	theme->set_constant("item_start_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 	theme->set_constant("item_end_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
 
@@ -929,7 +930,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
 	theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 	theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
-	theme->set_constant("vseparation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("v_separation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_color("warning_color", "EditorProperty", warning_color);
 	theme->set_color("property_color", "EditorProperty", property_color);
 	theme->set_color("readonly_color", "EditorProperty", readonly_color);
@@ -977,8 +978,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_selected_color", "Tree", mono_color);
 	theme->set_color("title_button_color", "Tree", font_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
-	theme->set_constant("vseparation", "Tree", widget_default_margin.y - EDSCALE);
-	theme->set_constant("hseparation", "Tree", 6 * EDSCALE);
+	theme->set_constant("v_separation", "Tree", widget_default_margin.y - EDSCALE);
+	theme->set_constant("h_separation", "Tree", 6 * EDSCALE);
 	theme->set_constant("guide_width", "Tree", border_width);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
@@ -1068,8 +1069,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_selected_color", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("vseparation", "ItemList", widget_default_margin.y - EDSCALE);
-	theme->set_constant("hseparation", "ItemList", 6 * EDSCALE);
+	theme->set_constant("v_separation", "ItemList", widget_default_margin.y - EDSCALE);
+	theme->set_constant("h_separation", "ItemList", 6 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", 6 * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
@@ -1103,7 +1104,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
-	theme->set_constant("hseparation", "TabBar", 4 * EDSCALE);
+	theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
 
 	// Content of each tab
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
@@ -1234,14 +1235,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("margin_top", "MarginContainer", 0);
 	theme->set_constant("margin_right", "MarginContainer", 0);
 	theme->set_constant("margin_bottom", "MarginContainer", 0);
-	theme->set_constant("hseparation", "GridContainer", default_margin_size * EDSCALE);
-	theme->set_constant("vseparation", "GridContainer", default_margin_size * EDSCALE);
-	theme->set_constant("hseparation", "FlowContainer", default_margin_size * EDSCALE);
-	theme->set_constant("vseparation", "FlowContainer", default_margin_size * EDSCALE);
-	theme->set_constant("hseparation", "HFlowContainer", default_margin_size * EDSCALE);
-	theme->set_constant("vseparation", "HFlowContainer", default_margin_size * EDSCALE);
-	theme->set_constant("hseparation", "VFlowContainer", default_margin_size * EDSCALE);
-	theme->set_constant("vseparation", "VFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("h_separation", "GridContainer", default_margin_size * EDSCALE);
+	theme->set_constant("v_separation", "GridContainer", default_margin_size * EDSCALE);
+	theme->set_constant("h_separation", "FlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("v_separation", "FlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("h_separation", "HFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("v_separation", "HFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("h_separation", "VFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("v_separation", "VFlowContainer", default_margin_size * EDSCALE);
 
 	// Window
 
@@ -1261,8 +1262,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("title_color", "Window", font_color);
 	theme->set_icon("close", "Window", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
 	theme->set_icon("close_pressed", "Window", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
-	theme->set_constant("close_h_ofs", "Window", 22 * EDSCALE);
-	theme->set_constant("close_v_ofs", "Window", 20 * EDSCALE);
+	theme->set_constant("close_h_offset", "Window", 22 * EDSCALE);
+	theme->set_constant("close_v_offset", "Window", 20 * EDSCALE);
 	theme->set_constant("title_height", "Window", 24 * EDSCALE);
 	theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
 	theme->set_font("title_font", "Window", theme->get_font(SNAME("title"), SNAME("EditorFonts")));
@@ -1346,8 +1347,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("code_color", "EditorHelp", accent_color.lerp(mono_color, 0.6));
 	theme->set_color("kbd_color", "EditorHelp", accent_color.lerp(property_color, 0.6));
 	theme->set_constant("line_separation", "EditorHelp", Math::round(6 * EDSCALE));
-	theme->set_constant("table_hseparation", "EditorHelp", 16 * EDSCALE);
-	theme->set_constant("table_vseparation", "EditorHelp", 6 * EDSCALE);
+	theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);
+	theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4, corner_width));
@@ -1486,13 +1487,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphsbcommentselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
 
 	theme->set_stylebox("frame", "GraphNode", graphsb);
-	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
+	theme->set_stylebox("selected_frame", "GraphNode", graphsbselected);
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
-	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
+	theme->set_stylebox("comment_focus", "GraphNode", graphsbcommentselected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
 	theme->set_stylebox("position", "GraphNode", graphsbposition);
 	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
-	theme->set_stylebox("state_machine_selectedframe", "GraphNode", smgraphsbselected);
+	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
 
 	Color default_node_color = dark_color_1.inverted();
 	theme->set_color("title_color", "GraphNode", default_node_color);
@@ -1512,7 +1513,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("port", "GraphNode", theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons")));
 
 	// GridContainer
-	theme->set_constant("vseparation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
+	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
 
 	// FileDialog
 	theme->set_icon("folder", "FileDialog", theme->get_icon(SNAME("Folder"), SNAME("EditorIcons")));

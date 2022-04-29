@@ -32,8 +32,28 @@
 
 #include "core/config/project_settings.h"
 
-Error StreamPeerTCP::_poll_connection() {
-	ERR_FAIL_COND_V(status != STATUS_CONNECTING || !_sock.is_valid() || !_sock->is_open(), FAILED);
+Error StreamPeerTCP::poll() {
+	if (status == STATUS_CONNECTED) {
+		Error err;
+		err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
+		if (err == OK) {
+			// FIN received
+			if (_sock->get_available_bytes() == 0) {
+				disconnect_from_host();
+				return OK;
+			}
+		}
+		// Also poll write
+		err = _sock->poll(NetSocket::POLL_TYPE_IN_OUT, 0);
+		if (err != OK && err != ERR_BUSY) {
+			// Got an error
+			disconnect_from_host();
+			status = STATUS_ERROR;
+			return err;
+		}
+	} else if (status != STATUS_CONNECTING) {
+		return OK;
+	}
 
 	Error err = _sock->connect_to_host(peer_host, peer_port);
 
@@ -121,22 +141,7 @@ Error StreamPeerTCP::connect_to_host(const IPAddress &p_host, int p_port) {
 Error StreamPeerTCP::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 
-	if (status == STATUS_NONE || status == STATUS_ERROR) {
-		return FAILED;
-	}
-
 	if (status != STATUS_CONNECTED) {
-		if (_poll_connection() != OK) {
-			return FAILED;
-		}
-
-		if (status != STATUS_CONNECTED) {
-			r_sent = 0;
-			return OK;
-		}
-	}
-
-	if (!_sock->is_open()) {
 		return FAILED;
 	}
 
@@ -179,19 +184,8 @@ Error StreamPeerTCP::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool
 }
 
 Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block) {
-	if (!is_connected_to_host()) {
+	if (status != STATUS_CONNECTED) {
 		return FAILED;
-	}
-
-	if (status == STATUS_CONNECTING) {
-		if (_poll_connection() != OK) {
-			return FAILED;
-		}
-
-		if (status != STATUS_CONNECTED) {
-			r_received = 0;
-			return OK;
-		}
 	}
 
 	Error err;
@@ -243,36 +237,11 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 }
 
 void StreamPeerTCP::set_no_delay(bool p_enabled) {
-	ERR_FAIL_COND(!is_connected_to_host());
+	ERR_FAIL_COND(!_sock.is_valid() || !_sock->is_open());
 	_sock->set_tcp_no_delay_enabled(p_enabled);
 }
 
-bool StreamPeerTCP::is_connected_to_host() const {
-	return _sock.is_valid() && _sock->is_open() && (status == STATUS_CONNECTED || status == STATUS_CONNECTING);
-}
-
-StreamPeerTCP::Status StreamPeerTCP::get_status() {
-	if (status == STATUS_CONNECTING) {
-		_poll_connection();
-	} else if (status == STATUS_CONNECTED) {
-		Error err;
-		err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
-		if (err == OK) {
-			// FIN received
-			if (_sock->get_available_bytes() == 0) {
-				disconnect_from_host();
-				return status;
-			}
-		}
-		// Also poll write
-		err = _sock->poll(NetSocket::POLL_TYPE_IN_OUT, 0);
-		if (err != OK && err != ERR_BUSY) {
-			// Got an error
-			disconnect_from_host();
-			status = STATUS_ERROR;
-		}
-	}
-
+StreamPeerTCP::Status StreamPeerTCP::get_status() const {
 	return status;
 }
 
@@ -287,7 +256,7 @@ void StreamPeerTCP::disconnect_from_host() {
 	peer_port = 0;
 }
 
-Error StreamPeerTCP::poll(NetSocket::PollType p_type, int timeout) {
+Error StreamPeerTCP::wait(NetSocket::PollType p_type, int timeout) {
 	ERR_FAIL_COND_V(_sock.is_null() || !_sock->is_open(), ERR_UNAVAILABLE);
 	return _sock->poll(p_type, timeout);
 }
@@ -346,7 +315,7 @@ Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 void StreamPeerTCP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bind", "port", "host"), &StreamPeerTCP::bind, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
-	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &StreamPeerTCP::is_connected_to_host);
+	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerTCP::poll);
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTCP::get_status);
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);

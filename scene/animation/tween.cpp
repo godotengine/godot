@@ -152,10 +152,6 @@ bool Tween::is_running() {
 	return running;
 }
 
-void Tween::set_valid(bool p_valid) {
-	valid = p_valid;
-}
-
 bool Tween::is_valid() {
 	return valid;
 }
@@ -648,7 +644,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
 
-	ClassDB::bind_method(D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
+	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
 	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
@@ -677,6 +673,14 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(EASE_OUT);
 	BIND_ENUM_CONSTANT(EASE_IN_OUT);
 	BIND_ENUM_CONSTANT(EASE_OUT_IN);
+}
+
+Tween::Tween() {
+	ERR_FAIL_MSG("Tween can't be created directly. Use create_tween() method.");
+}
+
+Tween::Tween(bool p_valid) {
+	valid = p_valid;
 }
 
 Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {
@@ -846,7 +850,7 @@ bool CallbackTweener::step(float &r_delta) {
 		Callable::CallError ce;
 		callback.call(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_call_error_text(this, callback.get_method(), nullptr, 0, ce));
+			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_call_error_text(callback.get_object(), callback.get_method(), nullptr, 0, ce));
 		}
 
 		finished = true;
@@ -917,7 +921,7 @@ bool MethodTweener::step(float &r_delta) {
 	Callable::CallError ce;
 	callback.call(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_call_error_text(this, callback.get_method(), argptr, 1, ce));
+		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_call_error_text(callback.get_object(), callback.get_method(), argptr, 1, ce));
 	}
 
 	if (time < duration) {

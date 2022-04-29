@@ -111,6 +111,14 @@
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the global pose override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_bone_global_rest" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the global rest transform for [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override" qualifiers="const">

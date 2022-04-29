@@ -305,3 +305,11 @@ AnimationPlayer *GLTFState::get_animation_player(int idx) {
 	ERR_FAIL_INDEX_V(idx, animation_players.size(), nullptr);
 	return animation_players[idx];
 }
+
+void GLTFState::set_discard_meshes_and_materials(bool p_discard_meshes_and_materials) {
+	discard_meshes_and_materials = p_discard_meshes_and_materials;
+}
+
+bool GLTFState::get_discard_meshes_and_materials() {
+	return discard_meshes_and_materials;
+}

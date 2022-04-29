@@ -541,9 +541,9 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	player->get_animation_list(&sname);
 
 	Ref<Animation> reset_anim;
-	bool has_reset_anim = player->has_animation("RESET");
+	bool has_reset_anim = player->has_animation(SceneStringNames::get_singleton()->RESET);
 	if (has_reset_anim) {
-		reset_anim = player->get_animation("RESET");
+		reset_anim = player->get_animation(SceneStringNames::get_singleton()->RESET);
 	}
 	for (const StringName &E : sname) {
 		Ref<Animation> anim = player->get_animation(E);

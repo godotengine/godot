@@ -904,3 +904,34 @@ EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	RS::get_singleton()->free(canvas);
 	RS::get_singleton()->free(viewport);
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+static const real_t GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR = 4.0;
+
+bool EditorGradientPreviewPlugin::handles(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "Gradient");
+}
+
+bool EditorGradientPreviewPlugin::generate_small_preview_automatically() const {
+	return true;
+}
+
+Ref<Texture2D> EditorGradientPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+	Ref<Gradient> gradient = p_from;
+	if (gradient.is_valid()) {
+		Ref<GradientTexture1D> ptex;
+		ptex.instantiate();
+		ptex->set_width(p_size.width * GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR * EDSCALE);
+		ptex->set_gradient(gradient);
+
+		Ref<ImageTexture> itex;
+		itex.instantiate();
+		itex->create_from_image(ptex->get_image());
+		return itex;
+	}
+	return Ref<Texture2D>();
+}
+
+EditorGradientPreviewPlugin::EditorGradientPreviewPlugin() {
+}

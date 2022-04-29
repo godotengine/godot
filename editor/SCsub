@@ -71,12 +71,12 @@ if env["tools"]:
     # Editor interface and class reference translations incur a significant size
     # cost for the editor binary (see godot-proposals#3421).
     # To limit it, we only include translations with a high enough completion
-    # ratio (30% for the editor UI, 10% for the class reference).
+    # ratio (20% for the editor UI, 10% for the class reference).
     # Generated with `make include-list` for each resource.
 
     # Editor translations
     to_include = (
-        "ar,bg,bn,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,lv,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,sv,th,tl,tr,uk,vi,zh_CN,zh_TW"
+        "ar,bg,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,lv,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,th,tr,uk,vi,zh_CN,zh_TW"
     ).split(",")
     tlist = [env.Dir("#editor/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/editor_translations.gen.h", tlist)

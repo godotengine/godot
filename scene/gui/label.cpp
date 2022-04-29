@@ -648,21 +648,21 @@ void Label::set_text_direction(Control::TextDirection p_text_direction) {
 	}
 }
 
-void Label::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void Label::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
-		font_dirty = true;
+		dirty = true;
 		update();
 	}
 }
 
-Control::StructuredTextParser Label::get_structured_text_bidi_override() const {
+TextServer::StructuredTextParser Label::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 
 void Label::set_structured_text_bidi_override_options(Array p_args) {
 	st_args = p_args;
-	font_dirty = true;
+	dirty = true;
 	update();
 }
 

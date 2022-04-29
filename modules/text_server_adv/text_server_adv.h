@@ -216,6 +216,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Mutex mutex;
 
 		bool antialiased = true;
+		bool mipmaps = false;
 		bool msdf = false;
 		int msdf_range = 14;
 		int msdf_source_size = 48;
@@ -392,11 +393,13 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
 
 	void _realign(ShapedTextDataAdvanced *p_sd) const;
+	int64_t _convert_pos(const String &p_utf32, const Char16String &p_utf16, int64_t p_pos) const;
 	int64_t _convert_pos(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
 	int64_t _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_length) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, Array p_fonts, int64_t p_span, int64_t p_fb_index);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
+
 	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
 	// HarfBuzz bitmap font interface.
@@ -483,6 +486,9 @@ public:
 	virtual void font_set_antialiased(const RID &p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(const RID &p_font_rid) const override;
 
+	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) override;
+	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const override;
+
 	virtual void font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) override;
 	virtual bool font_is_multichannel_signed_distance_field(const RID &p_font_rid) const override;
 
@@ -566,6 +572,9 @@ public:
 
 	virtual int64_t font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) override;
+
+	virtual RID font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
+	virtual Size2 font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
 
 	virtual Dictionary font_get_glyph_contours(const RID &p_font, int64_t p_size, int64_t p_index) const override;
 
@@ -678,6 +687,8 @@ public:
 	virtual String format_number(const String &p_string, const String &p_language = "") const override;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const override;
 	virtual String percent_sign(const String &p_language = "") const override;
+
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
 
 	virtual String strip_diacritics(const String &p_string) const override;
 

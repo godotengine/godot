@@ -1190,8 +1190,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			asset_items->set_columns(2);
-			asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1502,8 +1502,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	asset_items = memnew(GridContainer);
 	asset_items->set_columns(2);
-	asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
-	asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 

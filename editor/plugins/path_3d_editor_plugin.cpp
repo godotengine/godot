@@ -320,14 +320,14 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
-			int idx = 0;
 			int rc = v3a.size();
 			int closest_seg = -1;
 			Vector3 closest_seg_point;
-			float closest_d = 1e20;
 
 			if (rc >= 2) {
+				int idx = 0;
 				const Vector3 *r = v3a.ptr();
+				float closest_d = 1e20;
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing

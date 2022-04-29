@@ -139,6 +139,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_KEEP_SCREEN_ON:
 #endif
 		case FEATURE_CLIPBOARD_PRIMARY:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default: {
 		}
@@ -306,6 +307,45 @@ void DisplayServerX11::_flush_mouse_motion() {
 	xi.relative_motion.x = 0;
 	xi.relative_motion.y = 0;
 }
+
+#ifdef SPEECHD_ENABLED
+
+bool DisplayServerX11::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_speaking();
+}
+
+bool DisplayServerX11::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_paused();
+}
+
+Array DisplayServerX11::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return tts->get_voices();
+}
+
+void DisplayServerX11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void DisplayServerX11::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	tts->pause();
+}
+
+void DisplayServerX11::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	tts->resume();
+}
+
+void DisplayServerX11::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	tts->stop();
+}
+
+#endif
 
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
@@ -670,17 +710,17 @@ void DisplayServerX11::_clipboard_transfer_ownership(Atom p_source, Window x11_w
 
 int DisplayServerX11::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
+	int count = 0;
 
 	// Using Xinerama Extension
 	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return 0;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+		XFree(xsi);
+	} else {
+		count = XScreenCount(x11_display);
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	XFree(xsi);
 	return count;
 }
 
@@ -711,6 +751,19 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 
 		if (xsi) {
 			XFree(xsi);
+		}
+	} else {
+		int count = XScreenCount(x11_display);
+		if (p_screen < count) {
+			Window root = XRootWindow(x11_display, p_screen);
+			XWindowAttributes xwa;
+			XGetWindowAttributes(x11_display, root, &xwa);
+			rect.position.x = xwa.x;
+			rect.position.y = xwa.y;
+			rect.size.width = xwa.width;
+			rect.size.height = xwa.height;
+		} else {
+			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
 		}
 	}
 
@@ -2130,7 +2183,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 				unsigned char *data = nullptr;
 				if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 					if (data && (format == 32) && (len >= 5)) {
-						borderless = !((Hints *)data)->decorations;
+						borderless = !(reinterpret_cast<Hints *>(data)->decorations);
 					}
 					if (data) {
 						XFree(data);
@@ -2162,7 +2215,7 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	const WindowData &wd = windows[p_window];
 	// Using EWMH -- Extended Window Manager Hints
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
@@ -2188,7 +2241,7 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	const WindowData &wd = windows[p_window];
 
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
@@ -2534,10 +2587,9 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 	unsigned long bytes_after = 0;
 	unsigned char *ret = nullptr;
 
-	int read_bytes = 1024;
-
 	// Keep trying to read the property until there are no bytes unread.
 	if (p_property != None) {
+		int read_bytes = 1024;
 		do {
 			if (ret != nullptr) {
 				XFree(ret);
@@ -2557,7 +2609,7 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 	return p;
 }
 
-static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count) {
+static Atom pick_target_from_list(Display *p_display, const Atom *p_list, int p_count) {
 	static const char *target_type = "text/uri-list";
 
 	for (int i = 0; i < p_count; i++) {
@@ -4621,6 +4673,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xdnd_finished = XInternAtom(x11_display, "XdndFinished", False);
 	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
 
+#ifdef SPEECHD_ENABLED
+	// Init TTS
+	tts = memnew(TTS_Linux);
+#endif
+
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
@@ -4972,6 +5029,10 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
+
+#ifdef SPEECHD_ENABLED
+	memdelete(tts);
+#endif
 
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);

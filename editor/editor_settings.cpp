@@ -1365,6 +1365,12 @@ float EditorSettings::get_auto_display_scale() const {
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+
+	if (DisplayServer::get_singleton()->screen_get_size(screen) == Vector2i()) {
+		// Invalid screen size, skip.
+		return 1.0;
+	}
+
 	// Use the smallest dimension to use a correct display scale on portrait displays.
 	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
 	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {

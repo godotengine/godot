@@ -42,6 +42,7 @@
 #include "servers/rendering/shader_language.h"
 #include "storage/config.h"
 #include "storage/material_storage.h"
+#include "storage/mesh_storage.h"
 #include "storage/texture_storage.h"
 
 // class RasterizerCanvasGLES3;
@@ -55,18 +56,11 @@ public:
 	GLES3::Config *config;
 
 	struct Resources {
-		GLuint white_tex;
-		GLuint black_tex;
-		GLuint normal_tex;
-		GLuint aniso_tex;
-
 		GLuint mipmap_blur_fbo;
 		GLuint mipmap_blur_color;
 
 		GLuint radical_inverse_vdc_cache_tex;
 		bool use_rgba_2d_shadows;
-
-		GLuint quadie;
 
 		size_t skeleton_transform_buffer_size;
 		GLuint skeleton_transform_buffer;
@@ -107,28 +101,12 @@ public:
 
 	} info;
 
-	void bind_quad_array() const;
-
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////API////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
 public:
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
-
-	/* SKY API */
-	// not sure if used in godot 4?
-	struct Sky {
-		RID self;
-		RID panorama;
-		GLuint radiance;
-		int radiance_size;
-	};
-
-	mutable RID_PtrOwner<Sky> sky_owner;
-
-	RID sky_create();
-	void sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size);
 
 	/* VOXEL GI API */
 
@@ -278,6 +256,9 @@ public:
 	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
 	bool safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const;
 
+	//bool validate_framebuffer(); // Validate currently bound framebuffer, does not touch global state
+	String get_framebuffer_error(GLenum p_status);
+
 	RasterizerStorageGLES3();
 	~RasterizerStorageGLES3();
 };
@@ -317,6 +298,21 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 #endif
 	}
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
+}
+
+inline String RasterizerStorageGLES3::get_framebuffer_error(GLenum p_status) {
+#ifdef DEBUG_ENABLED
+	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
+		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
+		return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
+		return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
+		return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+	}
+#endif
+	return itos(p_status);
 }
 
 #endif // GLES3_ENABLED

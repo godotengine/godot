@@ -152,7 +152,7 @@ protected:
 	MethodInfo method_info;
 
 public:
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg < 0) {
 			return _gen_return_type_info();
 		} else if (p_arg < method_info.arguments.size()) {
@@ -162,23 +162,23 @@ public:
 		}
 	}
 
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		return _gen_argument_type_info(p_arg).type;
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int) const override {
 		return GodotTypeInfo::METADATA_NONE;
 	}
 #endif
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 		ERR_FAIL(); // Can't call.
 	}
 
 	virtual bool is_const() const { return false; }
 
-	virtual bool is_vararg() const { return true; }
+	virtual bool is_vararg() const override { return true; }
 
 	MethodBindVarArgBase(
 			R (T::*p_method)(const Variant **, int, Callable::CallError &),
@@ -224,7 +224,7 @@ class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, v
 	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
 
 public:
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		(static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>::method)(p_args, p_arg_count, r_error);
 		return {};
 	}
@@ -255,7 +255,7 @@ class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>,
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
 public:
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
 
@@ -303,7 +303,7 @@ protected:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
 #endif
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -314,7 +314,7 @@ protected:
 #pragma GCC diagnostic pop
 #endif
 
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
 		call_get_argument_type_info<P...>(p_arg, pi);
 		return pi;
@@ -322,25 +322,25 @@ protected:
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return call_get_argument_metadata<P...>(p_arg);
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #else
-		call_with_variant_args_dv((MB_T *)(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
+		call_with_variant_args_dv(reinterpret_cast<MB_T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #endif
 		return Variant();
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args<T, P...>(static_cast<T *>(p_object), method, p_args);
 #else
-		call_with_ptr_args<MB_T, P...>((MB_T *)(p_object), method, p_args);
+		call_with_ptr_args<MB_T, P...>(reinterpret_cast<MB_T *>(p_object), method, p_args);
 #endif
 	}
 
@@ -378,7 +378,7 @@ protected:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
 #endif
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -389,7 +389,7 @@ protected:
 #pragma GCC diagnostic pop
 #endif
 
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
 		call_get_argument_type_info<P...>(p_arg, pi);
 		return pi;
@@ -397,25 +397,25 @@ protected:
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return call_get_argument_metadata<P...>(p_arg);
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_argsc_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #else
-		call_with_variant_argsc_dv((MB_T *)(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
+		call_with_variant_argsc_dv(reinterpret_cast<MB_T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #endif
 		return Variant();
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_argsc<T, P...>(static_cast<T *>(p_object), method, p_args);
 #else
-		call_with_ptr_argsc<MB_T, P...>((MB_T *)(p_object), method, p_args);
+		call_with_ptr_argsc<MB_T, P...>(reinterpret_cast<MB_T *>(p_object), method, p_args);
 #endif
 	}
 
@@ -455,7 +455,7 @@ protected:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
 #endif
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -463,7 +463,7 @@ protected:
 		}
 	}
 
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			PropertyInfo pi;
 			call_get_argument_type_info<P...>(p_arg, pi);
@@ -478,7 +478,7 @@ protected:
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
 			return call_get_argument_metadata<P...>(p_arg);
 		} else {
@@ -487,21 +487,21 @@ public:
 	}
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		Variant ret;
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_ret_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #else
-		call_with_variant_args_ret_dv((MB_T *)p_object, method, p_args, p_arg_count, ret, r_error, get_default_arguments());
+		call_with_variant_args_ret_dv(reinterpret_cast<MB_T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #endif
 		return ret;
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_ret<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
 #else
-		call_with_ptr_args_ret<MB_T, R, P...>((MB_T *)(p_object), method, p_args, r_ret);
+		call_with_ptr_args_ret<MB_T, R, P...>(reinterpret_cast<MB_T *>(p_object), method, p_args, r_ret);
 #endif
 	}
 
@@ -542,7 +542,7 @@ protected:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
 #endif
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -550,7 +550,7 @@ protected:
 		}
 	}
 
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			PropertyInfo pi;
 			call_get_argument_type_info<P...>(p_arg, pi);
@@ -565,7 +565,7 @@ protected:
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
 			return call_get_argument_metadata<P...>(p_arg);
 		} else {
@@ -574,21 +574,21 @@ public:
 	}
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		Variant ret;
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_retc_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #else
-		call_with_variant_args_retc_dv((MB_T *)(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
+		call_with_variant_args_retc_dv(reinterpret_cast<MB_T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #endif
 		return ret;
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_retc<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
 #else
-		call_with_ptr_args_retc<MB_T, R, P...>((MB_T *)(p_object), method, p_args, r_ret);
+		call_with_ptr_args_retc<MB_T, R, P...>(reinterpret_cast<MB_T *>(p_object), method, p_args, r_ret);
 #endif
 	}
 
@@ -626,7 +626,7 @@ protected:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
 #endif
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -637,7 +637,7 @@ protected:
 #pragma GCC diagnostic pop
 #endif
 
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
 		call_get_argument_type_info<P...>(p_arg, pi);
 		return pi;
@@ -645,18 +645,18 @@ protected:
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return call_get_argument_metadata<P...>(p_arg);
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		(void)p_object; // unused
 		call_with_variant_args_static_dv(function, p_args, p_arg_count, r_error, get_default_arguments());
 		return Variant();
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 		(void)p_object;
 		(void)r_ret;
 		call_with_ptr_args_static_method(function, p_args);
@@ -689,7 +689,7 @@ protected:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
 #endif
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
 		} else {
@@ -700,7 +700,7 @@ protected:
 #pragma GCC diagnostic pop
 #endif
 
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			PropertyInfo pi;
 			call_get_argument_type_info<P...>(p_arg, pi);
@@ -712,7 +712,7 @@ protected:
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
 			return call_get_argument_metadata<P...>(p_arg);
 		} else {
@@ -721,13 +721,13 @@ public:
 	}
 
 #endif
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		Variant ret;
 		call_with_variant_args_static_ret_dv(function, p_args, p_arg_count, ret, r_error, get_default_arguments());
 		return ret;
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 		(void)p_object;
 		call_with_ptr_args_static_method_ret(function, p_args, r_ret);
 	}

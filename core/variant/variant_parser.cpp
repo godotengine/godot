@@ -344,7 +344,6 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
 					r_token.value = StringName(str);
-					string_name = false; //reset
 				} else {
 					r_token.type = TK_STRING;
 					r_token.value = str;

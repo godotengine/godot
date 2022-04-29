@@ -1452,7 +1452,7 @@ bool LineEdit::get_draw_control_chars() const {
 	return draw_control_chars;
 }
 
-void LineEdit::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void LineEdit::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		_shape();
@@ -1460,7 +1460,7 @@ void LineEdit::set_structured_text_bidi_override(Control::StructuredTextParser p
 	}
 }
 
-Control::StructuredTextParser LineEdit::get_structured_text_bidi_override() const {
+TextServer::StructuredTextParser LineEdit::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 

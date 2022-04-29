@@ -158,7 +158,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		tf.array_layers = view_count; // create a layer for every view
 		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
-		RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
+		const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
 			RD::TEXTURE_SAMPLES_1,
 			RD::TEXTURE_SAMPLES_2,
 			RD::TEXTURE_SAMPLES_4,
@@ -977,7 +977,7 @@ void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
 
 /* */
 
-void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
@@ -1441,7 +1441,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					distance = -distance_max;
 				}
 
-				if (p_render_data->cam_ortogonal) {
+				if (p_render_data->cam_orthogonal) {
 					distance = 1.0;
 				}
 

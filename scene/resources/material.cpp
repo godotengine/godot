@@ -395,6 +395,9 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->distance_fade_min = "distance_fade_min";
 	shader_names->distance_fade_max = "distance_fade_max";
 
+	shader_names->msdf_pixel_range = "msdf_pixel_range";
+	shader_names->msdf_outline_size = "msdf_outline_size";
+
 	shader_names->metallic_texture_channel = "metallic_texture_channel";
 	shader_names->ao_texture_channel = "ao_texture_channel";
 	shader_names->clearcoat_texture_channel = "clearcoat_texture_channel";
@@ -432,12 +435,10 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->albedo_texture_size = "albedo_texture_size";
 }
 
-Ref<StandardMaterial3D> BaseMaterial3D::materials_for_2d[BaseMaterial3D::MAX_MATERIALS_FOR_2D];
+HashMap<uint64_t, Ref<StandardMaterial3D>> BaseMaterial3D::materials_for_2d;
 
 void BaseMaterial3D::finish_shaders() {
-	for (int i = 0; i < MAX_MATERIALS_FOR_2D; i++) {
-		materials_for_2d[i].unref();
-	}
+	materials_for_2d.clear();
 
 	memdelete(dirty_materials);
 	dirty_materials = nullptr;
@@ -642,6 +643,11 @@ void BaseMaterial3D::_update_shader() {
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
 		code += "uniform float distance_fade_min;\n";
 		code += "uniform float distance_fade_max;\n";
+	}
+
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		code += "uniform float msdf_pixel_range;\n";
+		code += "uniform float msdf_outline_size;\n";
 	}
 
 	// alpha scissor is only valid if there is not antialiasing edge
@@ -911,6 +917,12 @@ void BaseMaterial3D::_update_shader() {
 
 	code += "}\n";
 	code += "\n\n";
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		code += "float msdf_median(float r, float g, float b, float a) {\n";
+		code += "	return min(max(min(r, g), min(max(r, g), b)), a);\n";
+		code += "}\n";
+	}
+	code += "\n\n";
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
 		code += "vec4 triplanar_texture(sampler2D p_sampler,vec3 p_weights,vec3 p_triplanar_pos) {\n";
 		code += "	vec4 samp=vec4(0.0);\n";
@@ -1010,7 +1022,30 @@ void BaseMaterial3D::_update_shader() {
 		}
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		code += "	{\n";
+		code += "		albedo_tex.rgb = mix(vec3(1.0 + 0.055) * pow(albedo_tex.rgb, vec3(1.0 / 2.4)) - vec3(0.055), vec3(12.92) * albedo_tex.rgb.rgb, lessThan(albedo_tex.rgb, vec3(0.0031308)));\n";
+		code += "		vec2 msdf_size = vec2(msdf_pixel_range) / vec2(textureSize(texture_albedo, 0));\n";
+		if (flags[FLAG_USE_POINT_SIZE]) {
+			code += "		vec2 dest_size = vec2(1.0) / fwidth(POINT_COORD);\n";
+		} else {
+			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+				code += "		vec2 dest_size = vec2(1.0) / fwidth(uv1_triplanar_pos);\n";
+			} else {
+				code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
+			}
+		}
+		code += "		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);\n";
+		code += "		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b, albedo_tex.a) - 0.5;\n";
+		code += "		if (msdf_outline_size > 0.0) {\n";
+		code += "			float cr = clamp(msdf_outline_size, 0.0, msdf_pixel_range / 2.0) / msdf_pixel_range;\n";
+		code += "			albedo_tex.a = clamp((d + cr) * px_size, 0.0, 1.0);\n";
+		code += "		} else {\n";
+		code += "			albedo_tex.a = clamp(d * px_size + 0.5, 0.0, 1.0);\n";
+		code += "		}\n";
+		code += "		albedo_tex.rgb = vec3(1.0);\n";
+		code += "	}\n";
+	} else if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
 		code += "	albedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
 	}
 
@@ -1777,6 +1812,14 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
+	if (property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
 	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -2125,35 +2168,45 @@ BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() 
 	return refraction_texture_channel;
 }
 
-Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, RID *r_shader_rid) {
-	int version = 0;
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, RID *r_shader_rid) {
+	int64_t hash = 0;
 	if (p_shaded) {
-		version = 1;
+		hash |= 1 << 0;
 	}
 	if (p_transparent) {
-		version |= 2;
+		hash |= 1 << 1;
 	}
 	if (p_cut_alpha) {
-		version |= 4;
+		hash |= 1 << 2;
 	}
 	if (p_opaque_prepass) {
-		version |= 8;
+		hash |= 1 << 3;
 	}
 	if (p_double_sided) {
-		version |= 16;
+		hash |= 1 << 4;
 	}
 	if (p_billboard) {
-		version |= 32;
+		hash |= 1 << 5;
 	}
 	if (p_billboard_y) {
-		version |= 64;
+		hash |= 1 << 6;
 	}
+	if (p_msdf) {
+		hash |= 1 << 7;
+	}
+	if (p_no_depth) {
+		hash |= 1 << 8;
+	}
+	if (p_fixed_size) {
+		hash |= 1 << 9;
+	}
+	hash = hash_djb2_one_64(p_filter, hash);
 
-	if (materials_for_2d[version].is_valid()) {
+	if (materials_for_2d.has(hash)) {
 		if (r_shader_rid) {
-			*r_shader_rid = materials_for_2d[version]->get_shader_rid();
+			*r_shader_rid = materials_for_2d[hash]->get_shader_rid();
 		}
-		return materials_for_2d[version];
+		return materials_for_2d[hash];
 	}
 
 	Ref<StandardMaterial3D> material;
@@ -2164,18 +2217,22 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transpar
 	material->set_cull_mode(p_double_sided ? CULL_DISABLED : CULL_BACK);
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(FLAG_ALBEDO_TEXTURE_MSDF, p_msdf);
+	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth);
+	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
+	material->set_texture_filter(p_filter);
 	if (p_billboard || p_billboard_y) {
 		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
 		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
-	materials_for_2d[version] = material;
+	materials_for_2d[hash] = material;
 
 	if (r_shader_rid) {
-		*r_shader_rid = materials_for_2d[version]->get_shader_rid();
+		*r_shader_rid = materials_for_2d[hash]->get_shader_rid();
 	}
 
-	return materials_for_2d[version];
+	return materials_for_2d[hash];
 }
 
 void BaseMaterial3D::set_on_top_of_alpha() {
@@ -2201,6 +2258,24 @@ void BaseMaterial3D::set_proximity_fade_distance(float p_distance) {
 
 float BaseMaterial3D::get_proximity_fade_distance() const {
 	return proximity_fade_distance;
+}
+
+void BaseMaterial3D::set_msdf_pixel_range(float p_range) {
+	msdf_pixel_range = p_range;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->msdf_pixel_range, p_range);
+}
+
+float BaseMaterial3D::get_msdf_pixel_range() const {
+	return msdf_pixel_range;
+}
+
+void BaseMaterial3D::set_msdf_outline_size(float p_size) {
+	msdf_outline_size = p_size;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->msdf_outline_size, p_size);
+}
+
+float BaseMaterial3D::get_msdf_outline_size() const {
+	return msdf_outline_size;
 }
 
 void BaseMaterial3D::set_distance_fade(DistanceFadeMode p_mode) {
@@ -2445,6 +2520,12 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &BaseMaterial3D::set_proximity_fade_distance);
 	ClassDB::bind_method(D_METHOD("get_proximity_fade_distance"), &BaseMaterial3D::get_proximity_fade_distance);
 
+	ClassDB::bind_method(D_METHOD("set_msdf_pixel_range", "range"), &BaseMaterial3D::set_msdf_pixel_range);
+	ClassDB::bind_method(D_METHOD("get_msdf_pixel_range"), &BaseMaterial3D::get_msdf_pixel_range);
+
+	ClassDB::bind_method(D_METHOD("set_msdf_outline_size", "size"), &BaseMaterial3D::set_msdf_outline_size);
+	ClassDB::bind_method(D_METHOD("get_msdf_outline_size"), &BaseMaterial3D::get_msdf_outline_size);
+
 	ClassDB::bind_method(D_METHOD("set_distance_fade", "mode"), &BaseMaterial3D::set_distance_fade);
 	ClassDB::bind_method(D_METHOD("get_distance_fade"), &BaseMaterial3D::get_distance_fade);
 
@@ -2479,6 +2560,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo_color"), "set_albedo", "get_albedo");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "albedo_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "albedo_tex_force_srgb"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_FORCE_SRGB);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "albedo_tex_msdf"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_MSDF);
 
 	ADD_GROUP("ORM", "orm_");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orm_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
@@ -2616,6 +2698,9 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_GROUP("MSDF", "msdf_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "1,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
@@ -2715,6 +2800,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_INVERT_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(FLAG_SUBSURFACE_MODE_SKIN);
 	BIND_ENUM_CONSTANT(FLAG_PARTICLE_TRAILS_MODE);
+	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_MSDF);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -2804,6 +2890,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_heightmap_deep_parallax_max_layers(32);
 	set_heightmap_deep_parallax_flip_tangent(false); //also sets binormal
 
+	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
 	is_initialized = true;

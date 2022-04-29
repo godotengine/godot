@@ -1153,6 +1153,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	uint32_t ver_format = f->get_32();
 
 	if (ver_format < FORMAT_VERSION_CAN_RENAME_DEPS) {
+		fw.unref();
+
 		{
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			da->remove(p_path + ".depren");
@@ -1294,6 +1296,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	if (!all_ok) {
 		return ERR_CANT_CREATE;
 	}
+
+	fw.unref();
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	da->remove(p_path);

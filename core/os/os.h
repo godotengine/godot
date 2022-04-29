@@ -264,6 +264,8 @@ public:
 	virtual String get_locale() const;
 	String get_locale_language() const;
 
+	virtual uint64_t get_embedded_pck_offset() const;
+
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;
 

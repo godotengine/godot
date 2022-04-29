@@ -70,28 +70,6 @@ RID EffectsRD::_get_uniform_set_from_image(RID p_image) {
 	return uniform_set;
 }
 
-RID EffectsRD::_get_uniform_set_for_input(RID p_texture) {
-	if (input_to_uniform_set_cache.has(p_texture)) {
-		RID uniform_set = input_to_uniform_set_cache[p_texture];
-		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			return uniform_set;
-		}
-	}
-
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform u;
-	u.uniform_type = RD::UNIFORM_TYPE_INPUT_ATTACHMENT;
-	u.binding = 0;
-	u.append_id(p_texture);
-	uniforms.push_back(u);
-	// This is specific to our subpass shader
-	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, TONEMAP_MODE_SUBPASS), 0);
-
-	input_to_uniform_set_cache[p_texture] = uniform_set;
-
-	return uniform_set;
-}
-
 RID EffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) {
 	if (texture_to_uniform_set_cache.has(p_texture)) {
 		RID uniform_set = texture_to_uniform_set_cache[p_texture];
@@ -108,46 +86,9 @@ RID EffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) 
 	u.append_id(p_texture);
 	uniforms.push_back(u);
 	// anything with the same configuration (one texture in binding 0 for set 0), is good
-	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 0);
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, 0), 0);
 
 	texture_to_uniform_set_cache[p_texture] = uniform_set;
-
-	return uniform_set;
-}
-
-RID EffectsRD::_get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps) {
-	TexturePair tp;
-	tp.texture1 = p_texture1;
-	tp.texture2 = p_texture2;
-
-	if (texture_pair_to_uniform_set_cache.has(tp)) {
-		RID uniform_set = texture_pair_to_uniform_set_cache[tp];
-		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			return uniform_set;
-		}
-	}
-
-	Vector<RD::Uniform> uniforms;
-	{
-		RD::Uniform u;
-		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-		u.binding = 0;
-		u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-		u.append_id(p_texture1);
-		uniforms.push_back(u);
-	}
-	{
-		RD::Uniform u;
-		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-		u.binding = 1;
-		u.append_id(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
-		u.append_id(p_texture2);
-		uniforms.push_back(u);
-	}
-	// anything with the same configuration (one texture in binding 0 for set 0), is good
-	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 2);
-
-	texture_pair_to_uniform_set_cache[tp] = uniform_set;
 
 	return uniform_set;
 }
@@ -849,105 +790,6 @@ void EffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffe
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_TRANSFER);
-}
-
-void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings) {
-	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
-
-	tonemap.push_constant.use_bcs = p_settings.use_bcs;
-	tonemap.push_constant.bcs[0] = p_settings.brightness;
-	tonemap.push_constant.bcs[1] = p_settings.contrast;
-	tonemap.push_constant.bcs[2] = p_settings.saturation;
-
-	tonemap.push_constant.use_glow = p_settings.use_glow;
-	tonemap.push_constant.glow_intensity = p_settings.glow_intensity;
-	tonemap.push_constant.glow_map_strength = p_settings.glow_map_strength;
-	tonemap.push_constant.glow_levels[0] = p_settings.glow_levels[0]; // clean this up to just pass by pointer or something
-	tonemap.push_constant.glow_levels[1] = p_settings.glow_levels[1];
-	tonemap.push_constant.glow_levels[2] = p_settings.glow_levels[2];
-	tonemap.push_constant.glow_levels[3] = p_settings.glow_levels[3];
-	tonemap.push_constant.glow_levels[4] = p_settings.glow_levels[4];
-	tonemap.push_constant.glow_levels[5] = p_settings.glow_levels[5];
-	tonemap.push_constant.glow_levels[6] = p_settings.glow_levels[6];
-	tonemap.push_constant.glow_texture_size[0] = p_settings.glow_texture_size.x;
-	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
-	tonemap.push_constant.glow_mode = p_settings.glow_mode;
-
-	int mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
-	if (p_settings.use_1d_color_correction) {
-		mode += 2;
-	}
-
-	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
-	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
-	tonemap.push_constant.exposure = p_settings.exposure;
-	tonemap.push_constant.white = p_settings.white;
-	tonemap.push_constant.auto_exposure_grey = p_settings.auto_exposure_grey;
-	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
-
-	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
-
-	tonemap.push_constant.use_fxaa = p_settings.use_fxaa;
-	tonemap.push_constant.use_debanding = p_settings.use_debanding;
-	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
-	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
-
-	if (p_settings.view_count > 1) {
-		// Use MULTIVIEW versions
-		mode += 6;
-	}
-
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer), false, RD::get_singleton()->draw_list_get_current_pass()));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture_pair(p_settings.glow_texture, p_settings.glow_map, true), 2);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
-}
-
-void EffectsRD::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings) {
-	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
-
-	tonemap.push_constant.use_bcs = p_settings.use_bcs;
-	tonemap.push_constant.bcs[0] = p_settings.brightness;
-	tonemap.push_constant.bcs[1] = p_settings.contrast;
-	tonemap.push_constant.bcs[2] = p_settings.saturation;
-
-	ERR_FAIL_COND_MSG(p_settings.use_glow, "Glow is not supported when using subpasses.");
-	tonemap.push_constant.use_glow = p_settings.use_glow;
-
-	int mode = p_settings.use_1d_color_correction ? TONEMAP_MODE_SUBPASS_1D_LUT : TONEMAP_MODE_SUBPASS;
-	if (p_settings.view_count > 1) {
-		// Use MULTIVIEW versions
-		mode += 6;
-	}
-
-	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
-	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
-	tonemap.push_constant.exposure = p_settings.exposure;
-	tonemap.push_constant.white = p_settings.white;
-	tonemap.push_constant.auto_exposure_grey = p_settings.auto_exposure_grey;
-
-	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
-
-	tonemap.push_constant.use_debanding = p_settings.use_debanding;
-	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
-
-	RD::get_singleton()->draw_list_bind_render_pipeline(p_subpass_draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_dst_format_id, false, RD::get_singleton()->draw_list_get_current_pass()));
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_for_input(p_source_color), 0);
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1); // should be set to a default texture, it's ignored
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture_pair(p_settings.glow_texture, p_settings.glow_map, true), 2); // should be set to a default texture, it's ignored
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
-
-	RD::get_singleton()->draw_list_bind_index_array(p_subpass_draw_list, index_array);
-
-	RD::get_singleton()->draw_list_set_push_constant(p_subpass_draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
-	RD::get_singleton()->draw_list_draw(p_subpass_draw_list, true);
 }
 
 void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
@@ -2420,46 +2262,6 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	}
 
-	{
-		// Initialize tonemapper
-		Vector<String> tonemap_modes;
-		tonemap_modes.push_back("\n");
-		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n");
-		tonemap_modes.push_back("\n#define USE_1D_LUT\n");
-		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
-		tonemap_modes.push_back("\n#define SUBPASS\n");
-		tonemap_modes.push_back("\n#define SUBPASS\n#define USE_1D_LUT\n");
-
-		// multiview versions of our shaders
-		tonemap_modes.push_back("\n#define MULTIVIEW\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_1D_LUT\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define SUBPASS\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define SUBPASS\n#define USE_1D_LUT\n");
-
-		tonemap.shader.initialize(tonemap_modes);
-
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
-			tonemap.shader.set_variant_enabled(TONEMAP_MODE_NORMAL_MULTIVIEW, false);
-			tonemap.shader.set_variant_enabled(TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW, false);
-			tonemap.shader.set_variant_enabled(TONEMAP_MODE_1D_LUT_MULTIVIEW, false);
-			tonemap.shader.set_variant_enabled(TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT_MULTIVIEW, false);
-			tonemap.shader.set_variant_enabled(TONEMAP_MODE_SUBPASS_MULTIVIEW, false);
-			tonemap.shader.set_variant_enabled(TONEMAP_MODE_SUBPASS_1D_LUT_MULTIVIEW, false);
-		}
-
-		tonemap.shader_version = tonemap.shader.version_create();
-
-		for (int i = 0; i < TONEMAP_MODE_MAX; i++) {
-			if (tonemap.shader.is_variant_enabled(i)) {
-				tonemap.pipelines[i].setup(tonemap.shader.version_get_shader(tonemap.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
-			} else {
-				tonemap.pipelines[i].clear();
-			}
-		}
-	}
-
 	if (prefer_raster_effects) {
 		Vector<String> luminance_reduce_modes;
 		luminance_reduce_modes.push_back("\n#define FIRST_PASS\n"); // LUMINANCE_REDUCE_FRAGMENT_FIRST
@@ -3076,5 +2878,4 @@ EffectsRD::~EffectsRD() {
 	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
 	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
 	sort.shader.version_free(sort.shader_version);
-	tonemap.shader.version_free(tonemap.shader_version);
 }

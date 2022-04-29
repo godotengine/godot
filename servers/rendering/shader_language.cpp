@@ -4670,16 +4670,18 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expr = _parse_array_constructor(p_block, p_function_info);
 			} else {
 				DataType datatype;
-				DataPrecision precision;
-				bool precision_defined = false;
+				DataPrecision precision = PRECISION_DEFAULT;
 
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
-					precision_defined = true;
 					tk = _get_token();
 				}
 
 				datatype = get_token_datatype(tk.type);
+				if (precision != PRECISION_DEFAULT && _validate_precision(datatype, precision) != OK) {
+					return nullptr;
+				}
+
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
@@ -4697,7 +4699,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					OperatorNode *func = alloc_node<OperatorNode>();
 					func->op = OP_CONSTRUCT;
 
-					if (precision_defined) {
+					if (precision != PRECISION_DEFAULT) {
 						func->return_precision_cache = precision;
 					}
 
@@ -6426,10 +6428,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (!is_struct) {
 					is_struct = shader->structs.has(tk.text); // check again.
 				}
-				if (is_struct && precision != PRECISION_DEFAULT) {
-					_set_error(RTR("The precision modifier cannot be used on structs."));
-					return ERR_PARSE_ERROR;
-				}
 				if (!is_token_nonvoid_datatype(tk.type)) {
 					_set_error(RTR("Expected variable type after precision modifier."));
 					return ERR_PARSE_ERROR;
@@ -6446,6 +6444,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			DataType type = is_struct ? TYPE_STRUCT : get_token_datatype(tk.type);
 
 			if (_validate_datatype(type) != OK) {
+				return ERR_PARSE_ERROR;
+			}
+
+			if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6600,10 +6602,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 								if (is_token_precision(tk.type)) {
 									precision2 = get_token_precision(tk.type);
 									tk = _get_token();
-									if (shader->structs.has(tk.text)) {
-										_set_error(RTR("The precision modifier cannot be used on structs."));
-										return ERR_PARSE_ERROR;
-									}
 									if (!is_token_nonvoid_datatype(tk.type)) {
 										_set_error(RTR("Expected data type after precision modifier."));
 										return ERR_PARSE_ERROR;
@@ -6622,6 +6620,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 									type2 = get_token_datatype(tk.type);
+								}
+
+								if (precision2 != PRECISION_DEFAULT && _validate_precision(type2, precision2) != OK) {
+									return ERR_PARSE_ERROR;
 								}
 
 								int array_size2 = 0;
@@ -7427,6 +7429,25 @@ String ShaderLanguage::_get_qualifier_str(ArgumentQualifier p_qualifier) const {
 	return "";
 }
 
+Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_precision) {
+	switch (p_type) {
+		case TYPE_STRUCT: {
+			_set_error(RTR("The precision modifier cannot be used on structs."));
+			return FAILED;
+		} break;
+		case TYPE_BOOL:
+		case TYPE_BVEC2:
+		case TYPE_BVEC3:
+		case TYPE_BVEC4: {
+			_set_error(RTR("The precision modifier cannot be used on boolean types."));
+			return FAILED;
+		} break;
+		default:
+			break;
+	}
+	return OK;
+}
+
 Error ShaderLanguage::_validate_datatype(DataType p_type) {
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		bool invalid_type = false;
@@ -7608,8 +7629,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 					StringName struct_name = "";
 					bool struct_dt = false;
-					bool use_precision = false;
-					DataPrecision precision = DataPrecision::PRECISION_DEFAULT;
+					DataPrecision precision = PRECISION_DEFAULT;
 
 					if (tk.type == TK_STRUCT) {
 						_set_error(RTR("Nested structs are not allowed."));
@@ -7618,7 +7638,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (is_token_precision(tk.type)) {
 						precision = get_token_precision(tk.type);
-						use_precision = true;
 						tk = _get_token();
 					}
 
@@ -7630,10 +7649,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						}
 #endif // DEBUG_ENABLED
 						struct_dt = true;
-						if (use_precision) {
-							_set_error(RTR("The precision modifier cannot be used on structs."));
-							return ERR_PARSE_ERROR;
-						}
 					}
 
 					if (!is_token_datatype(tk.type) && !struct_dt) {
@@ -7641,6 +7656,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					} else {
 						type = struct_dt ? TYPE_STRUCT : get_token_datatype(tk.type);
+
+						if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+							return ERR_PARSE_ERROR;
+						}
 
 						if (type == TYPE_VOID || is_sampler_type(type)) {
 							_set_error(vformat(RTR("A '%s' data type is not allowed here."), get_datatype_name(type)));
@@ -7762,7 +7781,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 				}
 
-				bool precision_defined = false;
 				DataPrecision precision = PRECISION_DEFAULT;
 				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
 				DataType type;
@@ -7781,16 +7799,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
-					precision_defined = true;
 					tk = _get_token();
 				}
 
 				if (shader->structs.has(tk.text)) {
 					if (uniform) {
-						if (precision_defined) {
-							_set_error(RTR("The precision modifier cannot be used on structs."));
-							return ERR_PARSE_ERROR;
-						}
 						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
 						return ERR_PARSE_ERROR;
 					} else {
@@ -7805,6 +7818,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				type = get_token_datatype(tk.type);
+
+				if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+					return ERR_PARSE_ERROR;
+				}
 
 				if (type == TYPE_VOID) {
 					_set_error(vformat(RTR("The '%s' data type is not allowed here."), "void"));
@@ -8249,10 +8266,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (shader->structs.has(tk.text)) {
-					if (precision != PRECISION_DEFAULT) {
-						_set_error(RTR("The precision modifier cannot be used on structs."));
-						return ERR_PARSE_ERROR;
-					}
 					is_struct = true;
 					struct_name = tk.text;
 				} else {
@@ -8276,6 +8289,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				} else {
 					type = get_token_datatype(tk.type);
 				}
+
+				if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+					return ERR_PARSE_ERROR;
+				}
+
 				prev_pos = _get_tkpos();
 				tk = _get_token();
 
@@ -8652,44 +8670,41 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						break;
 					}
 
-					bool is_const = false;
+					bool param_is_const = false;
 					if (tk.type == TK_CONST) {
-						is_const = true;
+						param_is_const = true;
 						tk = _get_token();
 					}
 
-					ArgumentQualifier qualifier = ARGUMENT_QUALIFIER_IN;
-
+					ArgumentQualifier param_qualifier = ARGUMENT_QUALIFIER_IN;
 					if (tk.type == TK_ARG_IN) {
-						qualifier = ARGUMENT_QUALIFIER_IN;
+						param_qualifier = ARGUMENT_QUALIFIER_IN;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_OUT) {
-						if (is_const) {
+						if (param_is_const) {
 							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "out", "const"));
 							return ERR_PARSE_ERROR;
 						}
-						qualifier = ARGUMENT_QUALIFIER_OUT;
+						param_qualifier = ARGUMENT_QUALIFIER_OUT;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_INOUT) {
-						if (is_const) {
+						if (param_is_const) {
 							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "inout", "const"));
 							return ERR_PARSE_ERROR;
 						}
-						qualifier = ARGUMENT_QUALIFIER_INOUT;
+						param_qualifier = ARGUMENT_QUALIFIER_INOUT;
 						tk = _get_token();
 					}
 
-					DataType ptype;
-					StringName pname;
+					DataType param_type;
+					StringName param_name;
 					StringName param_struct_name;
-					DataPrecision pprecision = PRECISION_DEFAULT;
-					bool use_precision = false;
+					DataPrecision param_precision = PRECISION_DEFAULT;
 					int arg_array_size = 0;
 
 					if (is_token_precision(tk.type)) {
-						pprecision = get_token_precision(tk.type);
+						param_precision = get_token_precision(tk.type);
 						tk = _get_token();
-						use_precision = true;
 					}
 
 					is_struct = false;
@@ -8702,10 +8717,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							used_structs[param_struct_name].used = true;
 						}
 #endif // DEBUG_ENABLED
-						if (use_precision) {
-							_set_error(RTR("The precision modifier cannot be used on structs."));
-							return ERR_PARSE_ERROR;
-						}
 					}
 
 					if (!is_struct && !is_token_datatype(tk.type)) {
@@ -8713,7 +8724,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
-					if (qualifier == ARGUMENT_QUALIFIER_OUT || qualifier == ARGUMENT_QUALIFIER_INOUT) {
+					if (param_qualifier == ARGUMENT_QUALIFIER_OUT || param_qualifier == ARGUMENT_QUALIFIER_INOUT) {
 						if (is_sampler_type(get_token_datatype(tk.type))) {
 							_set_error(RTR("Opaque types cannot be output parameters."));
 							return ERR_PARSE_ERROR;
@@ -8721,16 +8732,20 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 
 					if (is_struct) {
-						ptype = TYPE_STRUCT;
+						param_type = TYPE_STRUCT;
 					} else {
-						ptype = get_token_datatype(tk.type);
-						if (_validate_datatype(ptype) != OK) {
+						param_type = get_token_datatype(tk.type);
+						if (_validate_datatype(param_type) != OK) {
 							return ERR_PARSE_ERROR;
 						}
-						if (ptype == TYPE_VOID) {
+						if (param_type == TYPE_VOID) {
 							_set_error(RTR("Void type not allowed as argument."));
 							return ERR_PARSE_ERROR;
 						}
+					}
+
+					if (param_precision != PRECISION_DEFAULT && _validate_precision(param_type, param_precision) != OK) {
+						return ERR_PARSE_ERROR;
 					}
 
 					tk = _get_token();
@@ -8747,32 +8762,32 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
-					pname = tk.text;
+					param_name = tk.text;
 
 					ShaderLanguage::IdentifierType itype;
-					if (_find_identifier(func_node->body, false, builtins, pname, (ShaderLanguage::DataType *)nullptr, &itype)) {
+					if (_find_identifier(func_node->body, false, builtins, param_name, (ShaderLanguage::DataType *)nullptr, &itype)) {
 						if (itype != IDENTIFIER_FUNCTION) {
-							_set_redefinition_error(String(pname));
+							_set_redefinition_error(String(param_name));
 							return ERR_PARSE_ERROR;
 						}
 					}
 
-					if (has_builtin(p_functions, pname)) {
-						_set_redefinition_error(String(pname));
+					if (has_builtin(p_functions, param_name)) {
+						_set_redefinition_error(String(param_name));
 						return ERR_PARSE_ERROR;
 					}
 
 					FunctionNode::Argument arg;
-					arg.type = ptype;
-					arg.name = pname;
+					arg.type = param_type;
+					arg.name = param_name;
 					arg.type_str = param_struct_name;
-					arg.precision = pprecision;
-					arg.qualifier = qualifier;
+					arg.precision = param_precision;
+					arg.qualifier = param_qualifier;
 					arg.tex_argument_check = false;
 					arg.tex_builtin_check = false;
 					arg.tex_argument_filter = FILTER_DEFAULT;
 					arg.tex_argument_repeat = REPEAT_DEFAULT;
-					arg.is_const = is_const;
+					arg.is_const = param_is_const;
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {

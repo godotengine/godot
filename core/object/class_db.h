@@ -45,6 +45,8 @@
 
 #define DEFVAL(m_defval) (m_defval)
 
+#ifdef DEBUG_METHODS_ENABLED
+
 struct MethodDefinition {
 	StringName name;
 	Vector<StringName> args;
@@ -69,6 +71,14 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11);
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12);
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12, const char *p_arg13);
+
+#else
+
+// When DEBUG_METHODS_ENABLED is set this will let the engine know
+// the argument names for easier debugging.
+#define D_METHOD(m_c, ...) m_c
+
+#endif
 
 class ClassDB {
 public:
@@ -134,7 +144,11 @@ public:
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
 
+#ifdef DEBUG_METHODS_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
+#else
+	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount);
+#endif
 
 	static APIType current_api;
 

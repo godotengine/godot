@@ -458,6 +458,10 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_antialiased(import_settings_data->get("antialiased"));
 		}
+	} else if (p_edited_property == "generate_mipmaps") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_generate_mipmaps(import_settings_data->get("generate_mipmaps"));
+		}
 	} else if (p_edited_property == "multichannel_signed_distance_field") {
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
@@ -926,6 +930,7 @@ void DynamicFontImportSettings::_re_import() {
 	Map<StringName, Variant> main_settings;
 
 	main_settings["antialiased"] = import_settings_data->get("antialiased");
+	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
 	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");
 	main_settings["msdf_pixel_range"] = import_settings_data->get("msdf_pixel_range");
 	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
@@ -1340,6 +1345,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	singleton = this;
 
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
@@ -1577,7 +1583,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	}
 	glyph_table->add_theme_style_override("selected", glyph_table->get_theme_stylebox(SNAME("bg")));
 	glyph_table->add_theme_style_override("selected_focus", glyph_table->get_theme_stylebox(SNAME("bg")));
-	glyph_table->add_theme_constant_override("hseparation", 0);
+	glyph_table->add_theme_constant_override("h_separation", 0);
 	glyph_table->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 

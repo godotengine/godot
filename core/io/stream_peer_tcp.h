@@ -55,7 +55,6 @@ protected:
 	uint16_t peer_port = 0;
 
 	Error _connect(const String &p_address, int p_port);
-	Error _poll_connection();
 	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
 	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
@@ -66,19 +65,21 @@ public:
 
 	Error bind(int p_port, const IPAddress &p_host);
 	Error connect_to_host(const IPAddress &p_host, int p_port);
-	bool is_connected_to_host() const;
 	IPAddress get_connected_host() const;
 	int get_connected_port() const;
 	int get_local_port() const;
 	void disconnect_from_host();
 
 	int get_available_bytes() const override;
-	Status get_status();
+	Status get_status() const;
 
 	void set_no_delay(bool p_enabled);
 
-	// Poll functions (wait or check for writable, readable)
-	Error poll(NetSocket::PollType p_type, int timeout = 0);
+	// Poll socket updating its state.
+	Error poll();
+
+	// Wait or check for writable, readable.
+	Error wait(NetSocket::PollType p_type, int timeout = 0);
 
 	// Read/Write from StreamPeer
 	Error put_data(const uint8_t *p_data, int p_bytes) override;

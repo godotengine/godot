@@ -54,6 +54,7 @@ _FORCE_INLINE_ void FontData::_ensure_rid(int p_cache_index) const {
 		cache.write[p_cache_index] = TS->create_font();
 		TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
 		TS->font_set_antialiased(cache[p_cache_index], antialiased);
+		TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
 		TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
 		TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
 		TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
@@ -76,6 +77,9 @@ void FontData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &FontData::set_antialiased);
 	ClassDB::bind_method(D_METHOD("is_antialiased"), &FontData::is_antialiased);
+
+	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &FontData::set_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &FontData::get_generate_mipmaps);
 
 	ClassDB::bind_method(D_METHOD("set_font_name", "name"), &FontData::set_font_name);
 	ClassDB::bind_method(D_METHOD("get_font_name"), &FontData::get_font_name);
@@ -212,6 +216,7 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &FontData::get_supported_variation_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_antialiased", "is_antialiased");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
@@ -442,6 +447,7 @@ void FontData::reset_state() {
 	cache.clear();
 
 	antialiased = true;
+	mipmaps = false;
 	msdf = false;
 	force_autohinter = false;
 	hinting = TextServer::HINTING_LIGHT;
@@ -735,6 +741,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 	reset_state();
 
 	antialiased = false;
+	mipmaps = false;
 	msdf = false;
 	force_autohinter = false;
 	hinting = TextServer::HINTING_NONE;
@@ -1288,6 +1295,21 @@ void FontData::set_antialiased(bool p_antialiased) {
 
 bool FontData::is_antialiased() const {
 	return antialiased;
+}
+
+void FontData::set_generate_mipmaps(bool p_generate_mipmaps) {
+	if (mipmaps != p_generate_mipmaps) {
+		mipmaps = p_generate_mipmaps;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_generate_mipmaps(cache[i], mipmaps);
+		}
+		emit_changed();
+	}
+}
+
+bool FontData::get_generate_mipmaps() const {
+	return mipmaps;
 }
 
 void FontData::set_multichannel_signed_distance_field(bool p_msdf) {

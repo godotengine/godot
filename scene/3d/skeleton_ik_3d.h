@@ -103,7 +103,7 @@ private:
 
 	static void solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos);
 	/// Special solvers that solve only chains with one end effector
-	static void solve_simple_backwards(Chain &r_chain, bool p_solve_magnet);
+	static void solve_simple_backwards(const Chain &r_chain, bool p_solve_magnet);
 	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos);
 
 public:

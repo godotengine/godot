@@ -294,7 +294,7 @@ enum class Key {
 
 enum class KeyModifierMask {
 	CODE_MASK = ((1 << 25) - 1), ///< Apply this mask to any keycode to remove modifiers.
-	MODIFIER_MASK = (0xFF << 24), ///< Apply this mask to isolate modifiers.
+	MODIFIER_MASK = (0x7F << 24), ///< Apply this mask to isolate modifiers.
 	SHIFT = (1 << 25),
 	ALT = (1 << 26),
 	META = (1 << 27),

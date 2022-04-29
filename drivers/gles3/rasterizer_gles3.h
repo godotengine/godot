@@ -84,7 +84,7 @@ public:
 
 	void end_frame(bool p_swap_buffers);
 
-	void finalize() {}
+	void finalize();
 
 	static RendererCompositor *_create_current() {
 		return memnew(RasterizerGLES3);

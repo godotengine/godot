@@ -31,31 +31,29 @@
 #include "fastnoise_lite.h"
 
 FastNoiseLite::FastNoiseLite() {
-	// Most defaults copied from the library.
-	set_noise_type(TYPE_SIMPLEX_SMOOTH);
-	set_seed(0);
-	set_frequency(0.01);
-	set_in_3d_space(false);
+	_noise.SetNoiseType((_FastNoiseLite::NoiseType)noise_type);
+	_noise.SetSeed(seed);
+	_noise.SetFrequency(frequency);
 
-	set_fractal_type(FRACTAL_FBM);
-	set_fractal_octaves(5);
-	set_fractal_lacunarity(2.0);
-	set_fractal_gain(0.5);
-	set_fractal_weighted_strength(0.0);
-	set_fractal_ping_pong_strength(2.0);
+	_noise.SetFractalType((_FastNoiseLite::FractalType)fractal_type);
+	_noise.SetFractalOctaves(fractal_octaves);
+	_noise.SetFractalLacunarity(fractal_lacunarity);
+	_noise.SetFractalGain(fractal_gain);
+	_noise.SetFractalWeightedStrength(fractal_weighted_strength);
+	_noise.SetFractalPingPongStrength(fractal_ping_pong_strength);
 
-	set_cellular_distance_function(DISTANCE_EUCLIDEAN);
-	set_cellular_return_type(RETURN_CELL_VALUE);
-	set_cellular_jitter(0.45);
+	_noise.SetCellularDistanceFunction((_FastNoiseLite::CellularDistanceFunction)cellular_distance_function);
+	_noise.SetCellularReturnType((_FastNoiseLite::CellularReturnType)cellular_return_type);
+	_noise.SetCellularJitter(cellular_jitter);
 
-	set_domain_warp_enabled(false);
-	set_domain_warp_type(DOMAIN_WARP_SIMPLEX);
-	set_domain_warp_amplitude(30.0);
-	set_domain_warp_frequency(0.05);
-	set_domain_warp_fractal_type(DOMAIN_WARP_FRACTAL_PROGRESSIVE);
-	set_domain_warp_fractal_octaves(5);
-	set_domain_warp_fractal_lacunarity(6);
-	set_domain_warp_fractal_gain(0.5);
+	_domain_warp_noise.SetDomainWarpType((_FastNoiseLite::DomainWarpType)domain_warp_type);
+	_domain_warp_noise.SetSeed(seed);
+	_domain_warp_noise.SetDomainWarpAmp(domain_warp_amplitude);
+	_domain_warp_noise.SetFrequency(domain_warp_frequency);
+	_domain_warp_noise.SetFractalType(_FastNoiseLite::FractalType_None);
+	_domain_warp_noise.SetFractalOctaves(domain_warp_fractal_octaves);
+	_domain_warp_noise.SetFractalLacunarity(domain_warp_fractal_lacunarity);
+	_domain_warp_noise.SetFractalGain(domain_warp_fractal_gain);
 }
 
 FastNoiseLite::~FastNoiseLite() {
@@ -77,6 +75,7 @@ FastNoiseLite::NoiseType FastNoiseLite::get_noise_type() const {
 void FastNoiseLite::set_seed(int p_seed) {
 	seed = p_seed;
 	_noise.SetSeed(p_seed);
+	_domain_warp_noise.SetSeed(p_seed);
 	emit_changed();
 }
 
@@ -94,14 +93,6 @@ real_t FastNoiseLite::get_frequency() const {
 	return frequency;
 }
 
-void FastNoiseLite::set_in_3d_space(bool p_enable) {
-	in_3d_space = p_enable;
-	emit_changed();
-}
-bool FastNoiseLite::is_in_3d_space() const {
-	return in_3d_space;
-}
-
 void FastNoiseLite::set_offset(Vector3 p_offset) {
 	offset = p_offset;
 	emit_changed();
@@ -109,46 +100,6 @@ void FastNoiseLite::set_offset(Vector3 p_offset) {
 
 Vector3 FastNoiseLite::get_offset() const {
 	return offset;
-}
-
-void FastNoiseLite::set_color_ramp(const Ref<Gradient> &p_gradient) {
-	color_ramp = p_gradient;
-	if (color_ramp.is_valid()) {
-		color_ramp->connect(SNAME("changed"), callable_mp(this, &FastNoiseLite::_changed));
-		emit_changed();
-	}
-}
-
-Ref<Gradient> FastNoiseLite::get_color_ramp() const {
-	return color_ramp;
-}
-
-// Noise functions.
-
-real_t FastNoiseLite::get_noise_1d(real_t p_x) {
-	return get_noise_2d(p_x, 0.0);
-}
-
-real_t FastNoiseLite::get_noise_2dv(Vector2 p_v) {
-	return get_noise_2d(p_v.x, p_v.y);
-}
-
-real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y) {
-	if (domain_warp_enabled) {
-		_domain_warp_noise.DomainWarp(p_x, p_y);
-	}
-	return _noise.GetNoise(p_x + offset.x, p_y + offset.y);
-}
-
-real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) {
-	return get_noise_3d(p_v.x, p_v.y, p_v.z);
-}
-
-real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z) {
-	if (domain_warp_enabled) {
-		_domain_warp_noise.DomainWarp(p_x, p_y, p_z);
-	}
-	return _noise.GetNoise(p_x + offset.x, p_y + offset.y, p_z + offset.z);
 }
 
 // Fractal.
@@ -204,12 +155,12 @@ real_t FastNoiseLite::get_fractal_weighted_strength() const {
 }
 
 void FastNoiseLite::set_fractal_ping_pong_strength(real_t p_ping_pong_strength) {
-	fractal_pinp_pong_strength = p_ping_pong_strength;
+	fractal_ping_pong_strength = p_ping_pong_strength;
 	_noise.SetFractalPingPongStrength(p_ping_pong_strength);
 	emit_changed();
 }
 real_t FastNoiseLite::get_fractal_ping_pong_strength() const {
-	return fractal_pinp_pong_strength;
+	return fractal_ping_pong_strength;
 }
 
 // Cellular.
@@ -237,7 +188,6 @@ real_t FastNoiseLite::get_cellular_jitter() const {
 void FastNoiseLite::set_cellular_return_type(CellularReturnType p_ret) {
 	cellular_return_type = p_ret;
 	_noise.SetCellularReturnType((_FastNoiseLite::CellularReturnType)p_ret);
-
 	emit_changed();
 }
 
@@ -345,68 +295,32 @@ real_t FastNoiseLite::get_domain_warp_fractal_gain() const {
 	return domain_warp_fractal_gain;
 }
 
-// Textures.
+// Noise interface functions.
 
-Ref<Image> FastNoiseLite::get_image(int p_width, int p_height, bool p_invert) {
-	bool grayscale = color_ramp.is_null();
-
-	Vector<uint8_t> data;
-	data.resize(p_width * p_height * (grayscale ? 1 : 4));
-
-	uint8_t *wd8 = data.ptrw();
-
-	// Get all values and identify min/max values.
-	Vector<real_t> values;
-	values.resize(p_width * p_height);
-	real_t min_val = 100;
-	real_t max_val = -100;
-
-	for (int y = 0, i = 0; y < p_height; y++) {
-		for (int x = 0; x < p_width; x++, i++) {
-			values.set(i, is_in_3d_space() ? get_noise_3d(x, y, 0.0) : get_noise_2d(x, y));
-			if (values[i] > max_val) {
-				max_val = values[i];
-			}
-			if (values[i] < min_val) {
-				min_val = values[i];
-			}
-		}
-	}
-
-	// Normalize values and write to texture.
-	uint8_t value;
-	for (int i = 0, x = 0; i < p_height; i++) {
-		for (int j = 0; j < p_width; j++, x++) {
-			if (max_val == min_val) {
-				value = 0;
-			} else {
-				value = uint8_t(CLAMP((values[x] - min_val) / (max_val - min_val) * 255.f, 0, 255));
-			}
-			if (p_invert) {
-				value = 255 - value;
-			}
-			if (grayscale) {
-				wd8[x] = value;
-			} else {
-				float luminance = value / 255.0;
-				Color ramp_color = color_ramp->get_color_at_offset(luminance);
-				wd8[x * 4 + 0] = uint8_t(CLAMP(ramp_color.r * 255, 0, 255));
-				wd8[x * 4 + 1] = uint8_t(CLAMP(ramp_color.g * 255, 0, 255));
-				wd8[x * 4 + 2] = uint8_t(CLAMP(ramp_color.b * 255, 0, 255));
-				wd8[x * 4 + 3] = uint8_t(CLAMP(ramp_color.a * 255, 0, 255));
-			}
-		}
-	}
-	if (grayscale) {
-		return memnew(Image(p_width, p_height, false, Image::FORMAT_L8, data));
-	} else {
-		return memnew(Image(p_width, p_height, false, Image::FORMAT_RGBA8, data));
-	}
+real_t FastNoiseLite::get_noise_1d(real_t p_x) const {
+	return get_noise_2d(p_x, 0.0);
 }
 
-Ref<Image> FastNoiseLite::get_seamless_image(int p_width, int p_height, bool p_invert, real_t p_blend_skirt) {
-	// Just return parent function. This is here only so Godot will properly document this function.
-	return Noise::get_seamless_image(p_width, p_height, p_invert, p_blend_skirt);
+real_t FastNoiseLite::get_noise_2dv(Vector2 p_v) const {
+	return get_noise_2d(p_v.x, p_v.y);
+}
+
+real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y) const {
+	if (domain_warp_enabled) {
+		_domain_warp_noise.DomainWarp(p_x, p_y);
+	}
+	return _noise.GetNoise(p_x + offset.x, p_y + offset.y);
+}
+
+real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) const {
+	return get_noise_3d(p_v.x, p_v.y, p_v.z);
+}
+
+real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const {
+	if (domain_warp_enabled) {
+		_domain_warp_noise.DomainWarp(p_x, p_y, p_z);
+	}
+	return _noise.GetNoise(p_x + offset.x, p_y + offset.y, p_z + offset.z);
 }
 
 void FastNoiseLite::_changed() {
@@ -418,107 +332,102 @@ void FastNoiseLite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_noise_type", "type"), &FastNoiseLite::set_noise_type);
 	ClassDB::bind_method(D_METHOD("get_noise_type"), &FastNoiseLite::get_noise_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "noise_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Smooth,Cellular,Perlin,Value Cubic,Value"), "set_noise_type", "get_noise_type");
 
 	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &FastNoiseLite::set_seed);
 	ClassDB::bind_method(D_METHOD("get_seed"), &FastNoiseLite::get_seed);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
 
 	ClassDB::bind_method(D_METHOD("set_frequency", "freq"), &FastNoiseLite::set_frequency);
 	ClassDB::bind_method(D_METHOD("get_frequency"), &FastNoiseLite::get_frequency);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frequency", PROPERTY_HINT_RANGE, ".001,1"), "set_frequency", "get_frequency");
-
-	ClassDB::bind_method(D_METHOD("set_in_3d_space", "enable"), &FastNoiseLite::set_in_3d_space);
-	ClassDB::bind_method(D_METHOD("is_in_3d_space"), &FastNoiseLite::is_in_3d_space);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
 
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &FastNoiseLite::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &FastNoiseLite::get_offset);
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "offset", PROPERTY_HINT_RANGE, "-999999999,999999999,1"), "set_offset", "get_offset");
-
-	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &FastNoiseLite::set_color_ramp);
-	ClassDB::bind_method(D_METHOD("get_color_ramp"), &FastNoiseLite::get_color_ramp);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 
 	// Fractal.
 
-	ADD_GROUP("Fractal", "fractal_");
 	ClassDB::bind_method(D_METHOD("set_fractal_type", "type"), &FastNoiseLite::set_fractal_type);
 	ClassDB::bind_method(D_METHOD("get_fractal_type"), &FastNoiseLite::get_fractal_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_type", PROPERTY_HINT_ENUM, "None,FBM,Ridged,Ping-Pong"), "set_fractal_type", "get_fractal_type");
 
 	ClassDB::bind_method(D_METHOD("set_fractal_octaves", "octave_count"), &FastNoiseLite::set_fractal_octaves);
 	ClassDB::bind_method(D_METHOD("get_fractal_octaves"), &FastNoiseLite::get_fractal_octaves);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_fractal_octaves", "get_fractal_octaves");
 
 	ClassDB::bind_method(D_METHOD("set_fractal_lacunarity", "lacunarity"), &FastNoiseLite::set_fractal_lacunarity);
 	ClassDB::bind_method(D_METHOD("get_fractal_lacunarity"), &FastNoiseLite::get_fractal_lacunarity);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_lacunarity"), "set_fractal_lacunarity", "get_fractal_lacunarity");
 
 	ClassDB::bind_method(D_METHOD("set_fractal_gain", "gain"), &FastNoiseLite::set_fractal_gain);
 	ClassDB::bind_method(D_METHOD("get_fractal_gain"), &FastNoiseLite::get_fractal_gain);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_gain"), "set_fractal_gain", "get_fractal_gain");
 
 	ClassDB::bind_method(D_METHOD("set_fractal_weighted_strength", "weighted_strength"), &FastNoiseLite::set_fractal_weighted_strength);
 	ClassDB::bind_method(D_METHOD("get_fractal_weighted_strength"), &FastNoiseLite::get_fractal_weighted_strength);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_weighted_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fractal_weighted_strength", "get_fractal_weighted_strength");
 
 	ClassDB::bind_method(D_METHOD("set_fractal_ping_pong_strength", "ping_pong_strength"), &FastNoiseLite::set_fractal_ping_pong_strength);
 	ClassDB::bind_method(D_METHOD("get_fractal_ping_pong_strength"), &FastNoiseLite::get_fractal_ping_pong_strength);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_ping_pong_strength"), "set_fractal_ping_pong_strength", "get_fractal_ping_pong_strength");
 
 	// Cellular.
 
-	ADD_GROUP("Cellular", "cellular_");
 	ClassDB::bind_method(D_METHOD("set_cellular_distance_function", "func"), &FastNoiseLite::set_cellular_distance_function);
 	ClassDB::bind_method(D_METHOD("get_cellular_distance_function"), &FastNoiseLite::get_cellular_distance_function);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_distance_function", PROPERTY_HINT_ENUM, "Euclidean,Euclidean Squared,Manhattan,Hybrid"), "set_cellular_distance_function", "get_cellular_distance_function");
 
 	ClassDB::bind_method(D_METHOD("set_cellular_jitter", "jitter"), &FastNoiseLite::set_cellular_jitter);
 	ClassDB::bind_method(D_METHOD("get_cellular_jitter"), &FastNoiseLite::get_cellular_jitter);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cellular_jitter"), "set_cellular_jitter", "get_cellular_jitter");
 
 	ClassDB::bind_method(D_METHOD("set_cellular_return_type", "ret"), &FastNoiseLite::set_cellular_return_type);
 	ClassDB::bind_method(D_METHOD("get_cellular_return_type"), &FastNoiseLite::get_cellular_return_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "Cell Value,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
 
 	// Domain warp.
 
-	ADD_GROUP("Domain Warp", "domain_warp_");
-
 	ClassDB::bind_method(D_METHOD("set_domain_warp_enabled", "domain_warp_enabled"), &FastNoiseLite::set_domain_warp_enabled);
 	ClassDB::bind_method(D_METHOD("is_domain_warp_enabled"), &FastNoiseLite::is_domain_warp_enabled);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "domain_warp_enabled"), "set_domain_warp_enabled", "is_domain_warp_enabled");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_type", "domain_warp_type"), &FastNoiseLite::set_domain_warp_type);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_type"), &FastNoiseLite::get_domain_warp_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Reduced,Basic Grid"), "set_domain_warp_type", "get_domain_warp_type");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_amplitude", "domain_warp_amplitude"), &FastNoiseLite::set_domain_warp_amplitude);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_amplitude"), &FastNoiseLite::get_domain_warp_amplitude);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_amplitude"), "set_domain_warp_amplitude", "get_domain_warp_amplitude");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_frequency", "domain_warp_frequency"), &FastNoiseLite::set_domain_warp_frequency);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_frequency"), &FastNoiseLite::get_domain_warp_frequency);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_frequency"), "set_domain_warp_frequency", "get_domain_warp_frequency");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_fractal_type", "domain_warp_fractal_type"), &FastNoiseLite::set_domain_warp_fractal_type);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_fractal_type"), &FastNoiseLite::get_domain_warp_fractal_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_fractal_type", PROPERTY_HINT_ENUM, "None,Progressive,Independent"), "set_domain_warp_fractal_type", "get_domain_warp_fractal_type");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_fractal_octaves", "domain_warp_octave_count"), &FastNoiseLite::set_domain_warp_fractal_octaves);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_fractal_octaves"), &FastNoiseLite::get_domain_warp_fractal_octaves);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_domain_warp_fractal_octaves", "get_domain_warp_fractal_octaves");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_fractal_lacunarity", "domain_warp_lacunarity"), &FastNoiseLite::set_domain_warp_fractal_lacunarity);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_fractal_lacunarity"), &FastNoiseLite::get_domain_warp_fractal_lacunarity);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_fractal_lacunarity"), "set_domain_warp_fractal_lacunarity", "get_domain_warp_fractal_lacunarity");
 
 	ClassDB::bind_method(D_METHOD("set_domain_warp_fractal_gain", "domain_warp_gain"), &FastNoiseLite::set_domain_warp_fractal_gain);
 	ClassDB::bind_method(D_METHOD("get_domain_warp_fractal_gain"), &FastNoiseLite::get_domain_warp_fractal_gain);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_fractal_gain"), "set_domain_warp_fractal_gain", "get_domain_warp_fractal_gain");
 
 	ClassDB::bind_method(D_METHOD("_changed"), &FastNoiseLite::_changed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "noise_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Smooth,Cellular,Perlin,Value Cubic,Value"), "set_noise_type", "get_noise_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frequency", PROPERTY_HINT_RANGE, ".001,1"), "set_frequency", "get_frequency");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "offset", PROPERTY_HINT_RANGE, "-999999999,999999999,0.01"), "set_offset", "get_offset");
+
+	ADD_GROUP("Fractal", "fractal_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_type", PROPERTY_HINT_ENUM, "None,FBM,Ridged,Ping-Pong"), "set_fractal_type", "get_fractal_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_fractal_octaves", "get_fractal_octaves");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_lacunarity"), "set_fractal_lacunarity", "get_fractal_lacunarity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_gain"), "set_fractal_gain", "get_fractal_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_weighted_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fractal_weighted_strength", "get_fractal_weighted_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fractal_ping_pong_strength"), "set_fractal_ping_pong_strength", "get_fractal_ping_pong_strength");
+
+	ADD_GROUP("Cellular", "cellular_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_distance_function", PROPERTY_HINT_ENUM, "Euclidean,Euclidean Squared,Manhattan,Hybrid"), "set_cellular_distance_function", "get_cellular_distance_function");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cellular_jitter"), "set_cellular_jitter", "get_cellular_jitter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "Cell Value,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
+
+	ADD_GROUP("Domain Warp", "domain_warp_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "domain_warp_enabled"), "set_domain_warp_enabled", "is_domain_warp_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Reduced,Basic Grid"), "set_domain_warp_type", "get_domain_warp_type");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_amplitude"), "set_domain_warp_amplitude", "get_domain_warp_amplitude");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_frequency"), "set_domain_warp_frequency", "get_domain_warp_frequency");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_fractal_type", PROPERTY_HINT_ENUM, "None,Progressive,Independent"), "set_domain_warp_fractal_type", "get_domain_warp_fractal_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_fractal_octaves", PROPERTY_HINT_RANGE, "1,10,1"), "set_domain_warp_fractal_octaves", "get_domain_warp_fractal_octaves");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_fractal_lacunarity"), "set_domain_warp_fractal_lacunarity", "get_domain_warp_fractal_lacunarity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_fractal_gain"), "set_domain_warp_fractal_gain", "get_domain_warp_fractal_gain");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_VALUE_CUBIC);

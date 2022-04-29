@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedInt64Array" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of 64-bit integers.
+		A packed array of 64-bit integers.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold 64-bit integer values. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 64-bit integer values. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type stores signed 64-bit integers, which means it can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around. If you only need to pack 32-bit integers tightly, see [PackedInt32Array] for a more memory-friendly alternative.
 	</description>
 	<tutorials>

@@ -91,7 +91,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_SCENE_CLEAR_INHERITANCE,
 		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
 		TOOL_SCENE_OPEN_INHERITED,
-
+		TOOL_TOGGLE_SCENE_UNIQUE_NAME,
 		TOOL_CREATE_2D_SCENE,
 		TOOL_CREATE_3D_SCENE,
 		TOOL_CREATE_USER_INTERFACE,
@@ -309,7 +309,7 @@ public:
 	void open_script_dialog(Node *p_for_node, bool p_extend);
 
 	void attach_shader_to_selected(int p_preferred_mode = -1);
-	void open_shader_dialog(Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
+	void open_shader_dialog(const Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();

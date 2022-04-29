@@ -585,6 +585,9 @@ Size2 ItemList::Item::get_icon_size() const {
 void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+#define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
+#define IS_SAME_ROW(i, row) (i / current_columns == row)
+
 	double prev_scroll = scroll_bar->get_value();
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -642,6 +645,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					SWAP(from, to);
 				}
 				for (int j = from; j <= to; j++) {
+					if (!CAN_SELECT(j)) {
+						continue;
+					}
 					bool selected = !items[j].selected;
 					select(j, false);
 					if (selected) {
@@ -650,6 +656,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (mb->get_button_index() == MouseButton::RIGHT) {
+					if (!CAN_SELECT(i)) {
+						return;
+					}
 					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
 				}
 			} else {
@@ -659,8 +668,15 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (items[i].selected && mb->get_button_index() == MouseButton::RIGHT) {
+					if (!CAN_SELECT(i)) {
+						return;
+					}
 					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
 				} else {
+					if (!CAN_SELECT(i)) {
+						return;
+					}
+
 					bool selected = items[i].selected;
 
 					select(i, select_mode == SELECT_SINGLE || !mb->is_command_pressed());
@@ -707,7 +723,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current - 1; i >= 0; i--) {
-						if (items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
@@ -723,7 +739,15 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (current >= current_columns) {
-				set_current(current - current_columns);
+				int next = current - current_columns;
+				while (next >= 0 && !CAN_SELECT(next)) {
+					next = next - current_columns;
+				}
+				if (next < 0) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -737,7 +761,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (diff < uint64_t(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current + 1; i < items.size(); i++) {
-						if (items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
@@ -752,7 +776,15 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (current < items.size() - current_columns) {
-				set_current(current + current_columns);
+				int next = current + current_columns;
+				while (next < items.size() && !CAN_SELECT(next)) {
+					next = next + current_columns;
+				}
+				if (next >= items.size()) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -763,7 +795,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current - current_columns * i >= 0) {
+				if (current - current_columns * i >= 0 && CAN_SELECT(current - current_columns * i)) {
 					set_current(current - current_columns * i);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
@@ -777,7 +809,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current + current_columns * i < items.size()) {
+				if (current + current_columns * i < items.size() && CAN_SELECT(current + current_columns * i)) {
 					set_current(current + current_columns * i);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
@@ -792,7 +824,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
-				set_current(current - 1);
+				int current_row = current / current_columns;
+				int next = current - 1;
+				while (!CAN_SELECT(next)) {
+					next = next - 1;
+				}
+				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -803,7 +844,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
-				set_current(current + 1);
+				int current_row = current / current_columns;
+				int next = current + 1;
+				while (!CAN_SELECT(next)) {
+					next = next + 1;
+				}
+				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
+					accept_event();
+					return;
+				}
+				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SNAME("item_selected"), current);
@@ -879,6 +929,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	if (scroll_bar->get_value() != prev_scroll) {
 		accept_event(); //accept event if scroll changed
 	}
+
+#undef CAN_SELECT
+#undef IS_SAME_ROW
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -937,8 +990,8 @@ void ItemList::_notification(int p_what) {
 
 			draw_style_box(bg, Rect2(Point2(), size));
 
-			int hseparation = get_theme_constant(SNAME("hseparation"));
-			int vseparation = get_theme_constant(SNAME("vseparation"));
+			int hseparation = get_theme_constant(SNAME("h_separation"));
+			int vseparation = get_theme_constant(SNAME("v_separation"));
 			int icon_margin = get_theme_constant(SNAME("icon_margin"));
 			int line_separation = get_theme_constant(SNAME("line_separation"));
 			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));

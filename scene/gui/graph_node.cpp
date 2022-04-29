@@ -351,10 +351,10 @@ void GraphNode::_notification(int p_what) {
 			Ref<StyleBox> sb;
 
 			if (comment) {
-				sb = get_theme_stylebox(selected ? "commentfocus" : "comment");
+				sb = get_theme_stylebox(selected ? "comment_focus" : "comment");
 
 			} else {
-				sb = get_theme_stylebox(selected ? "selectedframe" : "frame");
+				sb = get_theme_stylebox(selected ? "selected_frame" : "frame");
 			}
 
 			//sb=sb->duplicate();

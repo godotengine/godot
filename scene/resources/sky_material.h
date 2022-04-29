@@ -52,6 +52,7 @@ private:
 
 	float sun_angle_max;
 	float sun_curve;
+	float dither_strength;
 
 	static Mutex shader_mutex;
 	static RID shader;
@@ -97,6 +98,9 @@ public:
 
 	void set_sun_curve(float p_curve);
 	float get_sun_curve() const;
+
+	void set_dither_strength(float p_dither_strength);
+	float get_dither_strength() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;

@@ -350,7 +350,7 @@ void TileAtlasView::_draw_alternatives() {
 				bool transposed = tile_data->get_transpose();
 
 				// Update the y to max value.
-				Vector2i offset_pos = current_pos;
+				Vector2i offset_pos;
 				if (transposed) {
 					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
 					y_increment = MAX(y_increment, texture_region_size.x);

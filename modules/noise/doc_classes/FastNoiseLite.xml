@@ -16,11 +16,8 @@
 		<member name="cellular_jitter" type="float" setter="set_cellular_jitter" getter="get_cellular_jitter" default="0.45">
 			Maximum distance a point can move off of its grid position. Set to [code]0[/code] for an even grid.
 		</member>
-		<member name="cellular_return_type" type="int" setter="set_cellular_return_type" getter="get_cellular_return_type" enum="FastNoiseLite.CellularReturnType" default="0">
+		<member name="cellular_return_type" type="int" setter="set_cellular_return_type" getter="get_cellular_return_type" enum="FastNoiseLite.CellularReturnType" default="1">
 			Return type from cellular noise calculations. See [enum CellularReturnType].
-		</member>
-		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			A [Gradient] which is used to map the luminance of each pixel to a color value.
 		</member>
 		<member name="domain_warp_amplitude" type="float" setter="set_domain_warp_amplitude" getter="get_domain_warp_amplitude" default="30.0">
 			Sets the maximum warp distance from the origin.
@@ -68,9 +65,6 @@
 		</member>
 		<member name="frequency" type="float" setter="set_frequency" getter="get_frequency" default="0.01">
 			The frequency for all noise types. Low frequency results in smooth noise while high frequency results in rougher, more granular noise.
-		</member>
-		<member name="in_3d_space" type="bool" setter="set_in_3d_space" getter="is_in_3d_space" default="false">
-			Determines whether the noise image returned by [method Noise.get_image] is calculated in 3d space. May result in reduced contrast.
 		</member>
 		<member name="noise_type" type="int" setter="set_noise_type" getter="get_noise_type" enum="FastNoiseLite.NoiseType" default="1">
 			The noise algorithm used. See [enum NoiseType].

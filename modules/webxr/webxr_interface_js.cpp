@@ -59,7 +59,7 @@ void _emwebxr_on_session_started(char *p_reference_space_type) {
 	ERR_FAIL_COND(interface.is_null());
 
 	String reference_space_type = String(p_reference_space_type);
-	((WebXRInterfaceJS *)interface.ptr())->_set_reference_space_type(reference_space_type);
+	static_cast<WebXRInterfaceJS *>(interface.ptr())->_set_reference_space_type(reference_space_type);
 	interface->emit_signal(SNAME("session_started"));
 }
 
@@ -94,7 +94,7 @@ void _emwebxr_on_controller_changed() {
 	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
-	((WebXRInterfaceJS *)interface.ptr())->_on_controller_changed();
+	static_cast<WebXRInterfaceJS *>(interface.ptr())->_on_controller_changed();
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(char *p_signal_name, int p_input_source) {

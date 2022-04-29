@@ -110,6 +110,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["arm64-v8a"] = "arm64-v8a";
 	capitalize_string_remaps["armeabi-v7a"] = "armeabi-v7a";
 	capitalize_string_remaps["arvr"] = "ARVR";
+	capitalize_string_remaps["bidi"] = "BiDi";
 	capitalize_string_remaps["bg"] = "BG";
 	capitalize_string_remaps["bp"] = "BP";
 	capitalize_string_remaps["bpc"] = "BPC";
@@ -117,12 +118,9 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
 	capitalize_string_remaps["cd"] = "CD";
-	capitalize_string_remaps["commentfocus"] = "Comment Focus";
 	capitalize_string_remaps["cpu"] = "CPU";
 	capitalize_string_remaps["csg"] = "CSG";
 	capitalize_string_remaps["db"] = "dB";
-	capitalize_string_remaps["defaultfocus"] = "Default Focus";
-	capitalize_string_remaps["defaultframe"] = "Default Frame";
 	capitalize_string_remaps["dof"] = "DoF";
 	capitalize_string_remaps["dpi"] = "DPI";
 	capitalize_string_remaps["dtls"] = "DTLS";
@@ -130,6 +128,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["erp"] = "ERP";
 	capitalize_string_remaps["etc"] = "ETC";
 	capitalize_string_remaps["etc2"] = "ETC2";
+	capitalize_string_remaps["filesystem"] = "FileSystem";
 	capitalize_string_remaps["fbx"] = "FBX";
 	capitalize_string_remaps["fbx2gltf"] = "FBX2glTF";
 	capitalize_string_remaps["fft"] = "FFT";
@@ -152,7 +151,6 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["hidpi"] = "hiDPI";
 	capitalize_string_remaps["hipass"] = "High-pass";
 	capitalize_string_remaps["hl"] = "HL";
-	capitalize_string_remaps["hseparation"] = "H Separation";
 	capitalize_string_remaps["hsv"] = "HSV";
 	capitalize_string_remaps["html"] = "HTML";
 	capitalize_string_remaps["http"] = "HTTP";
@@ -184,8 +182,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["msaa"] = "MSAA";
 	capitalize_string_remaps["nfc"] = "NFC";
-	capitalize_string_remaps["normalmap"] = "Normal Map";
-	capitalize_string_remaps["ofs"] = "Offset";
+	capitalize_string_remaps["navmesh"] = "NavMesh";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
 	capitalize_string_remaps["opentype"] = "OpenType";
@@ -204,7 +201,6 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";
 	capitalize_string_remaps["sec"] = "(sec)"; // Unit.
-	capitalize_string_remaps["selectedframe"] = "Selected Frame";
 	capitalize_string_remaps["sms"] = "SMS";
 	capitalize_string_remaps["srgb"] = "sRGB";
 	capitalize_string_remaps["ssao"] = "SSAO";
@@ -227,11 +223,9 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["uv1"] = "UV1";
 	capitalize_string_remaps["uv2"] = "UV2";
 	capitalize_string_remaps["uwp"] = "UWP";
-	capitalize_string_remaps["vadjust"] = "V Adjust";
 	capitalize_string_remaps["vector2"] = "Vector2";
 	capitalize_string_remaps["vpn"] = "VPN";
 	capitalize_string_remaps["vram"] = "VRAM";
-	capitalize_string_remaps["vseparation"] = "V Separation";
 	capitalize_string_remaps["vsync"] = "V-Sync";
 	capitalize_string_remaps["wap"] = "WAP";
 	capitalize_string_remaps["webp"] = "WebP";

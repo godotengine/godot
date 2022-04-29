@@ -50,7 +50,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 3);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -62,7 +62,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 3);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 1.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -74,7 +74,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 1.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -87,7 +87,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 1.0;
 				fptr[1] = 1.0;
 				fptr[2] = 1.0;
@@ -100,7 +100,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 2);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 			}
@@ -110,7 +110,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 2);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 			}
@@ -121,7 +121,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -134,7 +134,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(uint32_t) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				uint32_t *fptr = (uint32_t *)w;
+				uint32_t *fptr = reinterpret_cast<uint32_t *>(w);
 				fptr[0] = 0;
 				fptr[1] = 0;
 				fptr[2] = 0;
@@ -147,7 +147,7 @@ MeshStorage::MeshStorage() {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
-				float *fptr = (float *)w;
+				float *fptr = reinterpret_cast<float *>(w);
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
@@ -284,9 +284,9 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 					case RS::ARRAY_CUSTOM2:
 					case RS::ARRAY_CUSTOM3: {
 						int idx = i - RS::ARRAY_CUSTOM0;
-						uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
+						const uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
 						uint32_t fmt = (p_surface.format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
-						uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+						const uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
 						attrib_stride += fmtsize[fmt];
 
 					} break;
@@ -1098,10 +1098,10 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					vd.offset = attribute_stride;
 
 					int idx = i - RS::ARRAY_CUSTOM0;
-					uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
+					const uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
 					uint32_t fmt = (s->format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
-					uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
-					RD::DataFormat fmtrd[RS::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
+					const uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+					const RD::DataFormat fmtrd[RS::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
 					vd.format = fmtrd[fmt];
 					attribute_stride += fmtsize[fmt];
 					buffer = s->attribute_buffer;
@@ -1238,7 +1238,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		if (multimesh->buffer_set) {
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			const uint8_t *r = buffer.ptr();
-			const float *data = (const float *)r;
+			const float *data = reinterpret_cast<const float *>(r);
 			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		}
 	}

@@ -76,6 +76,7 @@
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_path_3d.h"
+#include "tests/scene/test_text_edit.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
@@ -159,10 +160,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 	SignalWatcher *signal_watcher = nullptr;
 
-	PhysicsServer3D *physics_3d_server = nullptr;
-	PhysicsServer2D *physics_2d_server = nullptr;
-	NavigationServer3D *navigation_3d_server = nullptr;
-	NavigationServer2D *navigation_2d_server = nullptr;
+	PhysicsServer3D *physics_server_3d = nullptr;
+	PhysicsServer2D *physics_server_2d = nullptr;
+	NavigationServer3D *navigation_server_3d = nullptr;
+	NavigationServer2D *navigation_server_2d = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		SignalWatcher::get_singleton()->_clear_signals();
@@ -174,6 +175,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(MessageQueue);
 
 			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+
+			memnew(Input);
 
 			Error err = OK;
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
@@ -187,19 +190,19 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			RenderingServerDefault::get_singleton()->init();
 			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
 
-			physics_3d_server = PhysicsServer3DManager::new_default_server();
-			physics_3d_server->init();
+			physics_server_3d = PhysicsServer3DManager::new_default_server();
+			physics_server_3d->init();
 
-			physics_2d_server = PhysicsServer2DManager::new_default_server();
-			physics_2d_server->init();
+			physics_server_2d = PhysicsServer2DManager::new_default_server();
+			physics_server_2d->init();
 
-			navigation_3d_server = NavigationServer3DManager::new_default_server();
-			navigation_2d_server = memnew(NavigationServer2D);
+			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_2d = memnew(NavigationServer2D);
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
 
-			make_default_theme(1.0, Ref<Font>(), TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::HINTING_LIGHT, true);
+			make_default_theme(1.0, Ref<Font>());
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();
@@ -222,26 +225,30 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 		clear_default_theme();
 
-		if (navigation_3d_server) {
-			memdelete(navigation_3d_server);
-			navigation_3d_server = nullptr;
+		if (navigation_server_3d) {
+			memdelete(navigation_server_3d);
+			navigation_server_3d = nullptr;
 		}
 
-		if (navigation_2d_server) {
-			memdelete(navigation_2d_server);
-			navigation_2d_server = nullptr;
+		if (navigation_server_2d) {
+			memdelete(navigation_server_2d);
+			navigation_server_2d = nullptr;
 		}
 
-		if (physics_3d_server) {
-			physics_3d_server->finish();
-			memdelete(physics_3d_server);
-			physics_3d_server = nullptr;
+		if (physics_server_3d) {
+			physics_server_3d->finish();
+			memdelete(physics_server_3d);
+			physics_server_3d = nullptr;
 		}
 
-		if (physics_2d_server) {
-			physics_2d_server->finish();
-			memdelete(physics_2d_server);
-			physics_2d_server = nullptr;
+		if (physics_server_2d) {
+			physics_server_2d->finish();
+			memdelete(physics_server_2d);
+			physics_server_2d = nullptr;
+		}
+
+		if (Input::get_singleton()) {
+			memdelete(Input::get_singleton());
 		}
 
 		if (RenderingServer::get_singleton()) {

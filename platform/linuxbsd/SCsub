@@ -20,6 +20,9 @@ if "x11" in env and env["x11"]:
         "key_mapping_x11.cpp",
     ]
 
+if "speechd" in env and env["speechd"]:
+    common_linuxbsd.append(["speechd-so_wrap.c", "tts_linux.cpp"])
+
 if "vulkan" in env and env["vulkan"]:
     common_linuxbsd.append("vulkan_context_x11.cpp")
 

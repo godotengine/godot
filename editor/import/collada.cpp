@@ -58,7 +58,7 @@ Transform3D Collada::get_root_transform() const {
 	return unit_scale_transform;
 }
 
-void Collada::Vertex::fix_unit_scale(Collada &state) {
+void Collada::Vertex::fix_unit_scale(const Collada &state) {
 #ifdef COLLADA_IMPORT_SCALE_SCENE
 	vertex *= state.state.unit_scale;
 #endif
@@ -122,7 +122,7 @@ static Transform3D _read_transform_from_array(const Vector<float> &array, int of
 
 /* STRUCTURES */
 
-Transform3D Collada::Node::compute_transform(Collada &state) const {
+Transform3D Collada::Node::compute_transform(const Collada &state) const {
 	Transform3D xform;
 
 	for (int i = 0; i < xform_list.size(); i++) {

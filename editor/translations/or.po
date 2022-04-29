@@ -102,6 +102,7 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Position"
 msgstr ""
 
@@ -171,6 +172,7 @@ msgstr ""
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp main/main.cpp
+#: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
 msgstr ""
@@ -204,6 +206,7 @@ msgstr ""
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
+#: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 msgid "Network"
 msgstr ""
 
@@ -369,7 +372,8 @@ msgstr ""
 #: modules/gdscript/gdscript_editor.cpp
 #: modules/gdscript/language_server/gdscript_text_document.cpp
 #: scene/animation/animation_player.cpp scene/gui/control.cpp
-#: scene/main/node.cpp scene/resources/material.cpp
+#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
+#: scene/resources/material.cpp
 msgid "Completion"
 msgstr ""
 
@@ -408,6 +412,7 @@ msgstr ""
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Pressed"
 msgstr ""
 
@@ -1749,7 +1754,9 @@ msgid "Scene does not contain any script."
 msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
-#: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/groups_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
 msgstr ""
@@ -1813,6 +1820,7 @@ msgstr ""
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Close"
 msgstr ""
 
@@ -2807,6 +2815,7 @@ msgstr ""
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "Import"
 msgstr ""
 
@@ -3247,6 +3256,7 @@ msgid "Label"
 msgstr ""
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Read Only"
 msgstr ""
 
@@ -3254,7 +3264,7 @@ msgstr ""
 msgid "Checkable"
 msgstr ""
 
-#: editor/editor_inspector.cpp
+#: editor/editor_inspector.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Checked"
 msgstr ""
 
@@ -3326,7 +3336,7 @@ msgstr ""
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: scene/gui/text_edit.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Clear"
 msgstr ""
 
@@ -3357,7 +3367,7 @@ msgid "Up"
 msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
-#: scene/main/node.cpp
+#: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Node"
 msgstr ""
 
@@ -3379,6 +3389,10 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
+msgstr ""
+
+#: editor/editor_node.cpp editor/project_manager.cpp
+msgid "Unnamed Project"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -4442,6 +4456,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Reload"
 msgstr ""
 
@@ -4613,6 +4628,7 @@ msgid "Edit Text:"
 msgstr ""
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "On"
 msgstr ""
 
@@ -4902,6 +4918,7 @@ msgid "Show Script Button"
 msgstr ""
 
 #: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
+#: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "Filesystem"
 msgstr ""
 
@@ -4971,6 +4988,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
 msgstr ""
 
@@ -5127,6 +5145,7 @@ msgid "Sort Members Outline Alphabetically"
 msgstr ""
 
 #: editor/editor_settings.cpp scene/gui/line_edit.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr ""
 
@@ -5497,6 +5516,7 @@ msgstr ""
 
 #: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Port"
 msgstr ""
 
@@ -5508,7 +5528,7 @@ msgstr ""
 msgid "Sorting Order"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
 msgstr ""
 
@@ -5542,26 +5562,27 @@ msgstr ""
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Background Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Background Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Selected Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Existing Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Scroll Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Font Color"
 msgstr ""
 
@@ -5569,19 +5590,19 @@ msgstr ""
 msgid "Text Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Line Number Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Safe Line Number Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Background Color"
 msgstr ""
 
@@ -5589,15 +5610,15 @@ msgstr ""
 msgid "Text Selected Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Selection Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Brace Mismatch Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Current Line Color"
 msgstr ""
 
@@ -5605,39 +5626,39 @@ msgstr ""
 msgid "Line Length Guideline Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Word Highlighted Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Number Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Function Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Member Variable Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Mark Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Bookmark Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Breakpoint Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Executing Line Color"
 msgstr ""
 
-#: editor/editor_settings.cpp
+#: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Code Folding Color"
 msgstr ""
 
@@ -7299,10 +7320,6 @@ msgid "Load Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "No animation to copy!"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
 msgstr ""
 
@@ -7312,10 +7329,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "No animation to edit!"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -7353,6 +7366,10 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Paste As Reference"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -7575,11 +7592,6 @@ msgid "Blend"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: servers/audio/effects/audio_effect_compressor.cpp
-msgid "Mix"
-msgstr ""
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Auto Restart:"
 msgstr ""
 
@@ -7610,10 +7622,6 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr ""
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-msgid "Current:"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -9559,6 +9567,7 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/animation/animation_blend_space_1d.cpp
 #: scene/animation/animation_blend_space_2d.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Snap"
 msgstr ""
 
@@ -9819,6 +9828,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: modules/gdnative/videodecoder/video_stream_gdnative.cpp
 #: modules/theora/video_stream_theora.cpp modules/webm/video_stream_webm.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "File"
 msgstr ""
 
@@ -10366,6 +10376,7 @@ msgid "Yaw:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Size:"
 msgstr ""
 
@@ -11005,6 +11016,16 @@ msgid "Vertical:"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+msgid "Separation:"
+msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+msgid "Offset:"
+msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select/Clear All Frames"
 msgstr ""
 
@@ -11041,15 +11062,7 @@ msgid "Auto Slice"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Offset:"
-msgstr ""
-
-#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Step:"
-msgstr ""
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Separation:"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -11242,6 +11255,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
@@ -11275,6 +11292,14 @@ msgstr ""
 msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Theme Type"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Theme Type"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -11544,6 +11569,7 @@ msgid "Named Separator"
 msgstr ""
 
 #: editor/plugins/theme_editor_preview.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Submenu"
 msgstr ""
 
@@ -11714,7 +11740,7 @@ msgid "Palette Min Width"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Palette Item Hseparation"
+msgid "Palette Item H Separation"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
@@ -13409,10 +13435,6 @@ msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Unnamed Project"
-msgstr ""
-
-#: editor/project_manager.cpp
 msgid "Missing Project"
 msgstr ""
 
@@ -13712,6 +13734,7 @@ msgid "Add Event"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Button"
 msgstr ""
 
@@ -14079,7 +14102,7 @@ msgstr ""
 msgid "To Uppercase"
 msgstr ""
 
-#: editor/rename_dialog.cpp
+#: editor/rename_dialog.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Reset"
 msgstr ""
 
@@ -14860,6 +14883,7 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp modules/gltf/gltf_node.cpp
 #: platform/osx/export/export.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Camera"
 msgstr ""
 
@@ -15605,6 +15629,14 @@ msgstr ""
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "Use DTLS"
+msgstr ""
+
+#: modules/fbx/editor_scene_importer_fbx.cpp
+msgid "FBX"
+msgstr ""
+
+#: modules/fbx/editor_scene_importer_fbx.cpp
+msgid "Use FBX"
 msgstr ""
 
 #: modules/gdnative/gdnative.cpp
@@ -16629,6 +16661,14 @@ msgid "Change Expression"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't copy the function node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste VisualScript Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr ""
 
@@ -16724,14 +16764,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Resize Comment"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't copy the function node."
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Paste VisualScript Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -17202,12 +17234,44 @@ msgstr ""
 msgid "Write Mode"
 msgstr ""
 
+#: modules/webrtc/webrtc_data_channel.h
+msgid "WebRTC"
+msgstr ""
+
+#: modules/webrtc/webrtc_data_channel.h
+msgid "Max Channel In Buffer (KB)"
+msgstr ""
+
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
 msgstr ""
 
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+msgid "WebSocket Client"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+msgid "Max In Buffer (KB)"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+msgid "Max In Packets"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+msgid "Max Out Buffer (KB)"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+msgid "Max Out Packets"
+msgstr ""
+
+#: modules/websocket/websocket_macros.h
+msgid "WebSocket Server"
 msgstr ""
 
 #: modules/websocket/websocket_server.cpp
@@ -17256,6 +17320,10 @@ msgstr ""
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Bounds Geometry"
+msgstr ""
+
+#: modules/webxr/webxr_interface.cpp
+msgid "XR Standard Mapping"
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -17821,7 +17889,7 @@ msgid "Accessible From Files App"
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Accessible From Itunes Sharing"
+msgid "Accessible From iTunes Sharing"
 msgstr ""
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
@@ -17957,7 +18025,7 @@ msgid "For Mobile"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-msgid "Html"
+msgid "HTML"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -17965,7 +18033,7 @@ msgid "Export Icon"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-msgid "Custom Html Shell"
+msgid "Custom HTML Shell"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -18234,7 +18302,7 @@ msgid "Network Client"
 msgstr ""
 
 #: platform/osx/export/export.cpp
-msgid "Device Usb"
+msgid "Device USB"
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -18487,11 +18555,11 @@ msgid "Publisher Display Name"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-msgid "Product Guid"
+msgid "Product GUID"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-msgid "Publisher Guid"
+msgid "Publisher GUID"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -18732,6 +18800,7 @@ msgid ""
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Frame"
 msgstr ""
 
@@ -19062,7 +19131,7 @@ msgstr ""
 #: scene/2d/collision_polygon_2d.cpp scene/2d/collision_shape_2d.cpp
 #: scene/3d/collision_polygon.cpp scene/3d/collision_shape.cpp
 #: scene/animation/animation_node_state_machine.cpp scene/gui/base_button.cpp
-#: scene/gui/texture_button.cpp
+#: scene/gui/texture_button.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Disabled"
 msgstr ""
 
@@ -19488,7 +19557,7 @@ msgstr ""
 msgid "Width Curve"
 msgstr ""
 
-#: scene/2d/line_2d.cpp
+#: scene/2d/line_2d.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Default Color"
 msgstr ""
 
@@ -19639,6 +19708,7 @@ msgid "Z As Relative"
 msgstr ""
 
 #: scene/2d/parallax_background.cpp scene/gui/scroll_container.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Scroll"
 msgstr ""
 
@@ -19855,6 +19925,7 @@ msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/2d/touch_screen_button.cpp
 #: scene/3d/physics_body.cpp scene/gui/texture_button.cpp
+#: scene/resources/default_theme/default_theme.cpp
 #: scene/resources/line_shape_2d.cpp scene/resources/material.cpp
 msgid "Normal"
 msgstr ""
@@ -20353,9 +20424,10 @@ msgid "Far"
 msgstr ""
 
 #: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/3d/spring_arm.cpp
-#: scene/gui/control.cpp scene/resources/shape.cpp
-#: scene/resources/style_box.cpp scene/resources/texture.cpp
-#: servers/physics_2d_server.cpp servers/physics_server.cpp
+#: scene/gui/control.cpp scene/resources/default_theme/default_theme.cpp
+#: scene/resources/shape.cpp scene/resources/style_box.cpp
+#: scene/resources/texture.cpp servers/physics_2d_server.cpp
+#: servers/physics_server.cpp
 msgid "Margin"
 msgstr ""
 
@@ -20896,7 +20968,7 @@ msgid "Angular Limit X"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
-msgid "Erp"
+msgid "ERP"
 msgstr ""
 
 #: scene/3d/physics_joint.cpp
@@ -21785,6 +21857,10 @@ msgid ""
 msgstr ""
 
 #: scene/gui/control.cpp
+msgid "Theme Overrides"
+msgstr ""
+
+#: scene/gui/control.cpp
 msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
@@ -21818,7 +21894,7 @@ msgstr ""
 msgid "Tooltip"
 msgstr ""
 
-#: scene/gui/control.cpp
+#: scene/gui/control.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Focus"
 msgstr ""
 
@@ -21931,6 +22007,7 @@ msgid "Show Zoom Label"
 msgstr ""
 
 #: scene/gui/graph_edit.cpp scene/gui/text_edit.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Minimap"
 msgstr ""
 
@@ -21943,10 +22020,11 @@ msgid "Show Close"
 msgstr ""
 
 #: scene/gui/graph_node.cpp scene/gui/option_button.cpp
+#: scene/resources/default_theme/default_theme.cpp
 msgid "Selected"
 msgstr ""
 
-#: scene/gui/graph_node.cpp
+#: scene/gui/graph_node.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Comment"
 msgstr ""
 
@@ -22004,7 +22082,7 @@ msgid "Fixed Icon Size"
 msgstr ""
 
 #: scene/gui/label.cpp
-msgid "Valign"
+msgid "V Align"
 msgstr ""
 
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
@@ -22402,7 +22480,7 @@ msgstr ""
 msgid "Text Edit Undo Stack Max Size"
 msgstr ""
 
-#: scene/gui/texture_button.cpp
+#: scene/gui/texture_button.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Hover"
 msgstr ""
 
@@ -22848,6 +22926,26 @@ msgid "Swap OK Cancel"
 msgstr ""
 
 #: scene/register_scene_types.cpp
+msgid "Layer Names"
+msgstr ""
+
+#: scene/register_scene_types.cpp
+msgid "2D Render"
+msgstr ""
+
+#: scene/register_scene_types.cpp
+msgid "3D Render"
+msgstr ""
+
+#: scene/register_scene_types.cpp
+msgid "2D Physics"
+msgstr ""
+
+#: scene/register_scene_types.cpp
+msgid "3D Physics"
+msgstr ""
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr ""
 
@@ -22880,6 +22978,673 @@ msgstr ""
 msgid "Bake Interval"
 msgstr ""
 
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Panel"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Hover"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Focus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "H Separation"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Underline Spacing"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Arrow"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Arrow Margin"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Hover Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Checked Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Unchecked"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Unchecked Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Radio Checked"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Radio Checked Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Radio Unchecked"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Radio Unchecked Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Hover Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Check V Adjust"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "On Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Off"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Off Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Shadow"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Outline Modulate"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Shadow Offset X"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Shadow Offset Y"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Shadow As Outline"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Selected"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Uneditable"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Cursor Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Clear Button Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Clear Button Color Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Minimum Spaces"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+#: scene/resources/dynamic_font.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
+msgid "Space"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Folded"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Fold"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Readonly"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion Lines"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion Max Width"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Completion Scroll Width"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Scroll Focus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Increment"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Increment Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Increment Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Decrement"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Decrement Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Decrement Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Slider"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Area"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Area Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grabber Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tick"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Updown"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Scaleborder Size"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Height"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Close Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Close H Offset"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Close V Offset"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Parent Folder"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Toggle Hidden"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Panel Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Separator"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Labeled Separator Left"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Labeled Separator Right"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Accel"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color Separator"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "V Separation"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Selected Frame"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Default Frame"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Default Focus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Comment Focus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Breakpoint"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Separation"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Resizer"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Close Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Resizer Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Offset"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Close Offset"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Port Offset"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "BG Focus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Selected Focus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Cursor Unfocused"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Button Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Button Normal"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Button Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Button Hover"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Custom Button"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Custom Button Pressed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Custom Button Hover"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Select Arrow"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Arrow Collapsed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Button Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Title Button Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Guide Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Drop Position Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Relationship Line Color"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Custom Button Font Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Item Margin"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Button Margin"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Draw Relationship Lines"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Draw Guides"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Scroll Border"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Scroll Speed"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Icon Margin"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Line Separation"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Tab Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Menu"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Menu Highlight"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Font Color BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Side Margin"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Top Margin"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Label V Align FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Label V Align BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Large"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Folder"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Folder Icon Modulate"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "File Icon Modulate"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Files Disabled"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "SV Width"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "SV Height"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "H Width"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Label Width"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Screen Picker"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Add Preset"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Color Hue"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Color Sample"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Preset BG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Overbright Indicator"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Preset FG"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Preset BG Icon"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Normal Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Bold Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Italics Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Bold Italics Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Mono Font"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Table H Separation"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Table V Separation"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Margin Left"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Margin Top"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Margin Right"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Margin Bottom"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Autohide"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Minus"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "More"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grid Minor"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Grid Major"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Selection Fill"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Selection Stroke"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Activity"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Bezier Len Pos"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Bezier Len Neg"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Port Grab Distance Horizontal"
+msgstr ""
+
+#: scene/resources/default_theme/default_theme.cpp
+msgid "Port Grab Distance Vertical"
+msgstr ""
+
 #: scene/resources/dynamic_font.cpp
 msgid "Hinting"
 msgstr ""
@@ -22910,15 +23675,6 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Char"
-msgstr ""
-
-#: scene/resources/dynamic_font.cpp scene/resources/world.cpp
-#: scene/resources/world_2d.cpp
-msgid "Space"
-msgstr ""
-
-#: scene/resources/dynamic_font.cpp
-msgid "Font"
 msgstr ""
 
 #: scene/resources/dynamic_font.cpp
@@ -24051,6 +24807,10 @@ msgid "Release (ms)"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_compressor.cpp
+msgid "Mix"
+msgstr ""
+
+#: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Sidechain"
 msgstr ""
 
@@ -24547,6 +25307,10 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Disable Half Float"
+msgstr ""
+
+#: servers/visual_server.cpp
+msgid "Enable High Float"
 msgstr ""
 
 #: servers/visual_server.cpp

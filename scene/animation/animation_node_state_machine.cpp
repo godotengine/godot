@@ -185,8 +185,6 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 		return true; //nothing to do
 	}
 
-	loops_current = 0; // reset loops, so fade does not happen immediately
-
 	Vector2 current_pos = p_state_machine->states[current].position;
 	Vector2 target_pos = p_state_machine->states[p_travel].position;
 
@@ -352,7 +350,6 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 
 		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
 		pos_current = 0;
-		loops_current = 0;
 	}
 
 	if (!p_state_machine->states.has(current)) {
@@ -388,12 +385,8 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	}
 
 	{ //advance and loop check
-
 		float next_pos = len_current - rem;
-
-		if (next_pos < pos_current) {
-			loops_current++;
-		}
+		end_loop = next_pos < pos_current;
 		pos_current = next_pos; //looped
 	}
 
@@ -443,15 +436,15 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		bool goto_next = false;
 
 		if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
-			goto_next = next_xfade >= (len_current - pos_current) || loops_current > 0;
-			if (loops_current > 0) {
+			goto_next = next_xfade >= (len_current - pos_current) || end_loop;
+			if (end_loop) {
 				next_xfade = 0;
 			}
 		} else {
 			goto_next = fading_from == StringName();
 		}
 
-		if (goto_next) { //loops should be used because fade time may be too small or zero and animation may have looped
+		if (goto_next) { //end_loop should be used because fade time may be too small or zero and animation may have looped
 
 			if (next_xfade) {
 				//time to fade, baby
@@ -478,7 +471,6 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			}
 
 			rem = len_current; //so it does not show 0 on transition
-			loops_current = 0;
 		}
 	}
 

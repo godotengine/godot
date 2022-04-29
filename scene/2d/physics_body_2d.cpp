@@ -58,7 +58,11 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(parameters, result, p_test_only)) {
+
+	bool collided = move_and_collide(parameters, result, p_test_only);
+
+	// Don't report collision when the whole motion is done.
+	if (collided && result.collision_safe_fraction < 1) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -1253,7 +1257,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						set_global_transform(gt);
 					}
 					// Determines if you are on the ground.
-					_snap_on_floor(true, false);
+					_snap_on_floor(true, false, true);
 					velocity = Vector2();
 					last_motion = Vector2();
 					motion = Vector2();
@@ -1392,8 +1396,8 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 	}
 }
 
-void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) {
-	if (on_floor || !was_on_floor || vel_dir_facing_up) {
+void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor) {
+	if (on_floor || !p_was_on_floor || p_vel_dir_facing_up) {
 		return;
 	}
 
@@ -1405,7 +1409,8 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 
 	PhysicsServer2D::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
-		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+		if ((result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) ||
+				(p_wall_as_floor && result.get_angle(-up_direction) > floor_max_angle + FLOOR_ANGLE_THRESHOLD)) {
 			on_floor = true;
 			floor_normal = result.collision_normal;
 			_set_platform_data(result);
@@ -1426,8 +1431,8 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 	}
 }
 
-bool CharacterBody2D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up) {
-	if (up_direction == Vector2() || on_floor || !was_on_floor || vel_dir_facing_up) {
+bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up) {
+	if (up_direction == Vector2() || on_floor || !p_was_on_floor || p_vel_dir_facing_up) {
 		return false;
 	}
 

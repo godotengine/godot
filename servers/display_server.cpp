@@ -220,6 +220,81 @@ void DisplayServer::global_menu_clear(const String &p_menu_root) {
 	WARN_PRINT("Global menus not supported by this display server.");
 }
 
+bool DisplayServer::tts_is_speaking() const {
+	WARN_PRINT("TTS is not supported by this display server.");
+	return false;
+}
+
+bool DisplayServer::tts_is_paused() const {
+	WARN_PRINT("TTS is not supported by this display server.");
+	return false;
+}
+
+void DisplayServer::tts_pause() {
+	WARN_PRINT("TTS is not supported by this display server.");
+}
+
+void DisplayServer::tts_resume() {
+	WARN_PRINT("TTS is not supported by this display server.");
+}
+
+Array DisplayServer::tts_get_voices() const {
+	WARN_PRINT("TTS is not supported by this display server.");
+	return Array();
+}
+
+PackedStringArray DisplayServer::tts_get_voices_for_language(const String &p_language) const {
+	PackedStringArray ret;
+	Array voices = tts_get_voices();
+	for (int i = 0; i < voices.size(); i++) {
+		const Dictionary &voice = voices[i];
+		if (voice.has("id") && voice.has("language") && voice["language"].operator String().begins_with(p_language)) {
+			ret.push_back(voice["id"]);
+		}
+	}
+	return ret;
+}
+
+void DisplayServer::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	WARN_PRINT("TTS is not supported by this display server.");
+}
+
+void DisplayServer::tts_stop() {
+	WARN_PRINT("TTS is not supported by this display server.");
+}
+
+void DisplayServer::tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable) {
+	ERR_FAIL_INDEX(p_event, DisplayServer::TTS_UTTERANCE_MAX);
+	utterance_callback[p_event] = p_callable;
+}
+
+void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos) {
+	ERR_FAIL_INDEX(p_event, DisplayServer::TTS_UTTERANCE_MAX);
+	switch (p_event) {
+		case DisplayServer::TTS_UTTERANCE_STARTED:
+		case DisplayServer::TTS_UTTERANCE_ENDED:
+		case DisplayServer::TTS_UTTERANCE_CANCELED: {
+			if (utterance_callback[p_event].is_valid()) {
+				Variant args[1];
+				args[0] = p_id;
+				const Variant *argp[] = { &args[0] };
+				utterance_callback[p_event].call_deferred(argp, 1); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
+			}
+		} break;
+		case DisplayServer::TTS_UTTERANCE_BOUNDARY: {
+			if (utterance_callback[p_event].is_valid()) {
+				Variant args[2];
+				args[0] = p_pos;
+				args[1] = p_id;
+				const Variant *argp[] = { &args[0], &args[1] };
+				utterance_callback[p_event].call_deferred(argp, 2); // Should be deferred, on some platforms utterance events can be called from different threads in a rapid succession.
+			}
+		} break;
+		default:
+			break;
+	}
+}
+
 void DisplayServer::mouse_set_mode(MouseMode p_mode) {
 	WARN_PRINT("Mouse is not supported by this display server.");
 }
@@ -478,6 +553,19 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu_root", "idx"), &DisplayServer::global_menu_remove_item);
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
 
+	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &DisplayServer::tts_is_speaking);
+	ClassDB::bind_method(D_METHOD("tts_is_paused"), &DisplayServer::tts_is_paused);
+	ClassDB::bind_method(D_METHOD("tts_get_voices"), &DisplayServer::tts_get_voices);
+	ClassDB::bind_method(D_METHOD("tts_get_voices_for_language", "language"), &DisplayServer::tts_get_voices_for_language);
+
+	ClassDB::bind_method(D_METHOD("tts_speak", "text", "voice", "volume", "pitch", "rate", "utterance_id", "interrupt"), &DisplayServer::tts_speak, DEFVAL(50), DEFVAL(1.f), DEFVAL(1.f), DEFVAL(0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("tts_pause"), &DisplayServer::tts_pause);
+	ClassDB::bind_method(D_METHOD("tts_resume"), &DisplayServer::tts_resume);
+	ClassDB::bind_method(D_METHOD("tts_stop"), &DisplayServer::tts_stop);
+
+	ClassDB::bind_method(D_METHOD("tts_set_utterance_callback", "event", "callable"), &DisplayServer::tts_set_utterance_callback);
+	ClassDB::bind_method(D_METHOD("_tts_post_utterance_event", "event", "id", "char_pos"), &DisplayServer::tts_post_utterance_event);
+
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
 
@@ -621,6 +709,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_ORIENTATION);
 	BIND_ENUM_CONSTANT(FEATURE_SWAP_BUFFERS);
 	BIND_ENUM_CONSTANT(FEATURE_CLIPBOARD_PRIMARY);
+	BIND_ENUM_CONSTANT(FEATURE_TEXT_TO_SPEECH);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -689,6 +778,11 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DISPLAY_HANDLE);
 	BIND_ENUM_CONSTANT(WINDOW_HANDLE);
 	BIND_ENUM_CONSTANT(WINDOW_VIEW);
+
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_STARTED);
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_ENDED);
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_CANCELED);
+	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
 }
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {

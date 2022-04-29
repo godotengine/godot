@@ -2946,90 +2946,17 @@ bool Control::is_text_field() const {
 	return false;
 }
 
-Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const {
-	Array ret;
-	switch (p_theme_type) {
-		case STRUCTURED_TEXT_URI: {
-			int prev = 0;
-			for (int i = 0; i < p_text.length(); i++) {
-				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
-					}
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				}
-			}
-			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
-			}
-		} break;
-		case STRUCTURED_TEXT_FILE: {
-			int prev = 0;
-			for (int i = 0; i < p_text.length(); i++) {
-				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
-					}
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				}
-			}
-			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
-			}
-		} break;
-		case STRUCTURED_TEXT_EMAIL: {
-			bool local = true;
-			int prev = 0;
-			for (int i = 0; i < p_text.length(); i++) {
-				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
-					local = false;
-					ret.push_back(Vector2i(prev, i));
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
-					}
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				}
-			}
-			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
-			}
-		} break;
-		case STRUCTURED_TEXT_LIST: {
-			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
-				Vector<String> tags = p_text.split(String(p_args[0]));
-				int prev = 0;
-				for (int i = 0; i < tags.size(); i++) {
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, prev + tags[i].length()));
-					}
-					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
-					prev = prev + tags[i].length() + 1;
-				}
-			}
-		} break;
-		case STRUCTURED_TEXT_CUSTOM: {
-			Array r;
-			if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, r)) {
-				for (int i = 0; i < r.size(); i++) {
-					if (r[i].get_type() == Variant::VECTOR2I) {
-						ret.push_back(Vector2i(r[i]));
-					}
-				}
-			}
-		} break;
-		case STRUCTURED_TEXT_NONE:
-		case STRUCTURED_TEXT_DEFAULT:
-		default: {
-			ret.push_back(Vector2i(0, p_text.length()));
+Array Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
+		Array ret;
+		if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret)) {
+			return ret;
+		} else {
+			return Array();
 		}
+	} else {
+		return TS->parse_structured_text(p_parser_type, p_args, p_text);
 	}
-	return ret;
 }
 
 void Control::set_rotation(real_t p_radians) {
@@ -3490,14 +3417,6 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_RTL);
-
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_DEFAULT);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_URI);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
 
 	ADD_SIGNAL(MethodInfo("resized"));
 	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));

@@ -239,8 +239,8 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int font_size = p_window->get_theme_font_size(SNAME("title_font_size"));
 		Color title_color = p_window->get_theme_color(SNAME("title_color"));
 		int title_height = p_window->get_theme_constant(SNAME("title_height"));
-		int close_h_ofs = p_window->get_theme_constant(SNAME("close_h_ofs"));
-		int close_v_ofs = p_window->get_theme_constant(SNAME("close_v_ofs"));
+		int close_h_ofs = p_window->get_theme_constant(SNAME("close_h_offset"));
+		int close_v_ofs = p_window->get_theme_constant(SNAME("close_v_offset"));
 
 		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
@@ -2583,8 +2583,8 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				if (title_bar.has_point(mb->get_position())) {
 					click_on_window = true;
 
-					int close_h_ofs = sw.window->get_theme_constant(SNAME("close_h_ofs"));
-					int close_v_ofs = sw.window->get_theme_constant(SNAME("close_v_ofs"));
+					int close_h_ofs = sw.window->get_theme_constant(SNAME("close_h_offset"));
+					int close_v_ofs = sw.window->get_theme_constant(SNAME("close_v_offset"));
 					Ref<Texture2D> close_icon = sw.window->get_theme_icon(SNAME("close"));
 
 					Rect2 close_rect;
