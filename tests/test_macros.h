@@ -63,22 +63,22 @@
 // Stringify all `Variant` compatible types for doctest output by default.
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/stringification.md
 
-#define DOCTEST_STRINGIFY_VARIANT(m_type)                        \
-	template <>                                                  \
-	struct doctest::StringMaker<m_type> {                        \
-		static doctest::String convert(const m_type &p_val) {    \
-			const Variant val = p_val;                           \
-			return val.get_construct_string().utf8().get_data(); \
-		}                                                        \
+#define DOCTEST_STRINGIFY_VARIANT(m_type)                     \
+	template <>                                               \
+	struct doctest::StringMaker<m_type> {                     \
+		static doctest::String convert(const m_type &p_val) { \
+			const Variant val = p_val;                        \
+			return val.operator ::String().utf8().get_data(); \
+		}                                                     \
 	};
 
-#define DOCTEST_STRINGIFY_VARIANT_POINTER(m_type)                \
-	template <>                                                  \
-	struct doctest::StringMaker<m_type> {                        \
-		static doctest::String convert(const m_type *p_val) {    \
-			const Variant val = p_val;                           \
-			return val.get_construct_string().utf8().get_data(); \
-		}                                                        \
+#define DOCTEST_STRINGIFY_VARIANT_POINTER(m_type)             \
+	template <>                                               \
+	struct doctest::StringMaker<m_type> {                     \
+		static doctest::String convert(const m_type *p_val) { \
+			const Variant val = p_val;                        \
+			return val.operator ::String().utf8().get_data(); \
+		}                                                     \
 	};
 
 DOCTEST_STRINGIFY_VARIANT(Variant);
