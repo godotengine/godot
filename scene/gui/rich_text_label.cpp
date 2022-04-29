@@ -1699,18 +1699,23 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 	int size = p_item->subitems.size();
 	if (size == 0) {
 		p_item->parent->subitems.erase(p_item);
+
+		// If a newline was erased, all lines AFTER the newline need to be decremented.
 		if (p_item->type == ITEM_NEWLINE) {
 			current_frame->lines.remove(p_line);
-			for (int i = p_subitem_line; i < current->subitems.size(); i++) {
-				if (current->subitems[i]->line > 0) {
+			for (int i = 0; i < current->subitems.size(); i++) {
+				if (current->subitems[i]->line > p_subitem_line) {
 					current->subitems[i]->line--;
 				}
 			}
 		}
 	} else {
+		// First, remove all child items for the provided item.
 		for (int i = 0; i < size; i++) {
 			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
 		}
+		// Then remove the provided item itself.
+		p_item->parent->subitems.erase(p_item);
 	}
 	memdelete(p_item);
 }
@@ -1769,21 +1774,23 @@ bool RichTextLabel::remove_line(const int p_line) {
 		return false;
 	}
 
-	int i = 0;
-	while (i < current->subitems.size() && current->subitems[i]->line < p_line) {
-		i++;
-	}
-
-	bool was_newline = false;
-	while (i < current->subitems.size()) {
-		was_newline = current->subitems[i]->type == ITEM_NEWLINE;
-		_remove_item(current->subitems[i], current->subitems[i]->line, p_line);
-		if (was_newline) {
-			break;
+	// Remove all subitems with the same line as that provided.
+	Vector<int> subitem_indices_to_remove;
+	for (int i = 0; i < current->subitems.size(); i++) {
+		if (current->subitems[i]->line == p_line) {
+			subitem_indices_to_remove.push_back(i);
 		}
 	}
 
-	if (!was_newline) {
+	bool had_newline = false;
+	// Reverse for loop to remove items from the end first.
+	for (int i = subitem_indices_to_remove.size() - 1; i >= 0; i--) {
+		int subitem_idx = subitem_indices_to_remove[i];
+		had_newline = had_newline || current->subitems[subitem_idx]->type == ITEM_NEWLINE;
+		_remove_item(current->subitems[subitem_idx], current->subitems[subitem_idx]->line, p_line);
+	}
+
+	if (!had_newline) {
 		current_frame->lines.remove(p_line);
 		if (current_frame->lines.size() == 0) {
 			current_frame->lines.resize(1);
@@ -1794,7 +1801,8 @@ bool RichTextLabel::remove_line(const int p_line) {
 		main->lines.write[0].from = main;
 	}
 
-	main->first_invalid_line = 0;
+	main->first_invalid_line = 0; // p_line ???
+	update();
 
 	return true;
 }
