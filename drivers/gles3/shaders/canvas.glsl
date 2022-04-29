@@ -21,6 +21,15 @@ layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 
 #endif
+
+// This needs to be outside clang-format so the ubo comment is in the right place
+#ifdef MATERIAL_UNIFORMS_USED
+layout(std140) uniform MaterialUniforms{ //ubo:4
+
+#MATERIAL_UNIFORMS
+
+};
+#endif
 /* clang-format on */
 #include "canvas_uniforms_inc.glsl"
 #include "stdlib_inc.glsl"
@@ -36,15 +45,6 @@ flat out int draw_data_instance;
 
 out vec2 pixel_size_interp;
 
-#endif
-
-#ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:4
-
-#MATERIAL_UNIFORMS
-
-};
 #endif
 
 #GLOBALS

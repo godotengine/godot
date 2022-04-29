@@ -200,6 +200,55 @@ struct CanvasMaterialData : public MaterialData {
 
 MaterialData *_create_canvas_material_func(ShaderData *p_shader);
 
+/* Sky Materials */
+
+struct SkyShaderData : public ShaderData {
+	bool valid;
+	RID version;
+
+	Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size;
+
+	String path;
+	String code;
+	Map<StringName, Map<int, RID>> default_texture_params;
+
+	bool uses_time;
+	bool uses_position;
+	bool uses_half_res;
+	bool uses_quarter_res;
+	bool uses_light;
+
+	virtual void set_code(const String &p_Code);
+	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
+	virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
+	virtual bool is_param_texture(const StringName &p_param) const;
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual Variant get_default_parameter(const StringName &p_parameter) const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	SkyShaderData();
+	virtual ~SkyShaderData();
+};
+
+ShaderData *_create_sky_shader_func();
+
+struct SkyMaterialData : public MaterialData {
+	SkyShaderData *shader_data = nullptr;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~SkyMaterialData();
+};
+
+MaterialData *_create_sky_material_func(ShaderData *p_shader);
+
 /* Global variable structs */
 struct GlobalVariables {
 	enum {

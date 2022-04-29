@@ -321,11 +321,7 @@ void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 }
 
 bool RenderingServerDefault::is_low_end() const {
-	// FIXME: Commented out when rebasing vulkan branch on master,
-	// causes a crash, it seems rasterizer is not initialized yet the
-	// first time it's called.
-	//return RSG::rasterizer->is_low_end();
-	return false;
+	return RendererCompositor::is_low_end();
 }
 
 void RenderingServerDefault::_thread_exit() {

@@ -238,37 +238,81 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-void RasterizerSceneGLES3::_draw_sky(Sky *p_sky, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_custom_fov, float p_energy, const Basis &p_sky_orientation) {
-	ERR_FAIL_COND(!p_sky);
+void RasterizerSceneGLES3::_draw_sky(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform) {
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+	ERR_FAIL_COND(!p_env);
 
-	glDepthMask(GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
+	Sky *sky = sky_owner.get_or_null(p_env->sky);
+	ERR_FAIL_COND(!sky);
+
+	GLES3::SkyMaterialData *material_data = nullptr;
+	RID sky_material;
+
+	RS::EnvironmentBG background = p_env->background;
+
+	if (sky) {
+		ERR_FAIL_COND(!sky);
+		sky_material = sky->material;
+
+		if (sky_material.is_valid()) {
+			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
+			if (!material_data || !material_data->shader_data->valid) {
+				material_data = nullptr;
+			}
+		}
+
+		if (!material_data) {
+			sky_material = sky_globals.default_material;
+			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
+		}
+	} else if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+		sky_material = sky_globals.fog_material;
+		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
+	}
+
+	ERR_FAIL_COND(!material_data);
+	material_data->bind_uniforms();
+
+	GLES3::SkyShaderData *shader_data = material_data->shader_data;
+
+	ERR_FAIL_COND(!shader_data);
+
+	glDepthMask(GL_FALSE);
 	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
+	glDisable(GL_BLEND);
 
-	//state.sky_shader.version_bind_shader(sky_globals.default_shader, SkyShaderGLES3::MODE_BACKGROUND);
-	//glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.canvas_instance_data_buffers[state.current_buffer]); // Canvas data updated here
-	//glBindBufferBase(GL_UNIFORM_BUFFER, 1, state.canvas_instance_data_buffers[state.current_buffer]); // Global data
-	//glBindBufferBase(GL_UNIFORM_BUFFER, 2, state.canvas_instance_data_buffers[state.current_buffer]); // Directional light data
-	//glBindBufferBase(GL_UNIFORM_BUFFER, 3, state.canvas_instance_data_buffers[state.current_buffer]); // Material uniforms
+	//glBindBufferBase(GL_UNIFORM_BUFFER, 2, p_sky.directional light data); // Directional light data
 
 	// Camera
 	CameraMatrix camera;
 
-	if (p_custom_fov) {
+	if (p_env->sky_custom_fov) {
 		float near_plane = p_projection.get_z_near();
 		float far_plane = p_projection.get_z_far();
 		float aspect = p_projection.get_aspect();
 
-		camera.set_perspective(p_custom_fov, aspect, near_plane, far_plane);
-
+		camera.set_perspective(p_env->sky_custom_fov, aspect, near_plane, far_plane);
 	} else {
 		camera = p_projection;
 	}
+	Basis sky_transform = p_env->sky_orientation;
+	sky_transform.invert();
+	sky_transform = p_transform.basis * sky_transform;
 
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, sky_transform, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, camera.matrix[2][0], camera.matrix[0][0], camera.matrix[2][1], camera.matrix[1][1], shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::POSITION, p_transform.origin, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::EXPOSURE, p_env->exposure, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TONEMAPPER, p_env->tone_mapper, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::WHITE, p_env->white, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND);
+	// Bind a vertex array or else OpenGL complains. We won't actually use it
+	glBindVertexArray(sky_globals.quad_array);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	//glDepthMask(GL_FALSE); // Leave off for transparent pass
+	glDepthFunc(GL_LESS);
 }
 
 Ref<Image> RasterizerSceneGLES3::sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) {
@@ -674,12 +718,14 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 	Environment *env = environment_owner.get_or_null(p_environment);
 
 	bool fb_cleared = false;
-
-	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
 
 	/* Depth Prepass */
 
 	glBindFramebuffer(GL_FRAMEBUFFER, rb->framebuffer);
+	glViewport(0, 0, rb->width, rb->height);
 
 	if (!fb_cleared) {
 		glClearDepth(1.0f);
@@ -730,7 +776,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 	}
 
 	if (draw_sky) {
-		//_draw_sky(sky, render_data.cam_projection, render_data.cam_transform, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
+		_draw_sky(env, render_data.cam_projection, render_data.cam_transform);
 	}
 
 	if (p_render_buffers.is_valid()) {
@@ -1014,9 +1060,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3(RasterizerStorageGLES3 *p_storage) {
 		String global_defines;
 		global_defines += "#define MAX_GLOBAL_VARIABLES 256\n"; // TODO: this is arbitrary for now
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_globals.max_directional_lights) + "\n";
-		state.sky_shader.initialize(global_defines);
-		sky_globals.shader_default_version = state.sky_shader.version_create();
-		state.sky_shader.version_bind_shader(sky_globals.shader_default_version, SkyShaderGLES3::MODE_BACKGROUND);
+		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.initialize(global_defines);
+		sky_globals.shader_default_version = GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_create();
+		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_bind_shader(sky_globals.shader_default_version, SkyShaderGLES3::MODE_BACKGROUND);
 	}
 
 	{
@@ -1038,12 +1084,76 @@ void sky() {
 
 		material_storage->material_set_shader(sky_globals.default_material, sky_globals.default_shader);
 	}
+	{
+		sky_globals.fog_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(sky_globals.fog_shader);
+
+		material_storage->shader_set_code(sky_globals.fog_shader, R"(
+// Default clear color sky shader.
+
+shader_type sky;
+
+uniform vec4 clear_color;
+
+void sky() {
+	COLOR = clear_color.rgb;
+}
+)");
+		sky_globals.fog_material = material_storage->material_allocate();
+		material_storage->material_initialize(sky_globals.fog_material);
+
+		material_storage->material_set_shader(sky_globals.fog_material, sky_globals.fog_shader);
+	}
+	{
+		{
+			//quad buffers
+
+			glGenBuffers(1, &sky_globals.quad);
+			glBindBuffer(GL_ARRAY_BUFFER, sky_globals.quad);
+			{
+				const float qv[16] = {
+					-1,
+					-1,
+					0,
+					0,
+					-1,
+					1,
+					0,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					-1,
+					1,
+					0,
+				};
+
+				glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
+			}
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+			glGenVertexArrays(1, &sky_globals.quad_array);
+			glBindVertexArray(sky_globals.quad_array);
+			glBindBuffer(GL_ARRAY_BUFFER, sky_globals.quad);
+			glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+			glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+			glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
+			glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
+			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		}
+	}
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
-	state.sky_shader.version_free(sky_globals.shader_default_version);
+	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);
 	storage->free(sky_globals.default_material);
 	storage->free(sky_globals.default_shader);
+	storage->free(sky_globals.fog_material);
+	storage->free(sky_globals.fog_shader);
 }
 
 #endif // GLES3_ENABLED

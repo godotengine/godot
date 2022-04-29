@@ -95,9 +95,9 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
+		low_end = true;
 	}
 
-	bool is_low_end() const override { return true; }
 	uint64_t get_frame_number() const override { return frame; }
 	double get_frame_delta_time() const override { return delta; }
 

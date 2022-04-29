@@ -35,6 +35,7 @@
 #include "core/string/print_string.h"
 
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
+bool RendererCompositor::low_end = false;
 
 RendererCompositor *RendererCompositor::create() {
 	return _create_func();

@@ -97,6 +97,10 @@ private:
 		RID shader_default_version;
 		RID default_material;
 		RID default_shader;
+		RID fog_material;
+		RID fog_shader;
+		GLuint quad = 0;
+		GLuint quad_array = 0;
 		uint32_t max_directional_lights = 4;
 		uint32_t roughness_layers = 8;
 		uint32_t ggx_samples = 128;
@@ -319,7 +323,7 @@ protected:
 		Sky *dirty_list = nullptr;
 
 		//State to track when radiance cubemap needs updating
-		//SkyMaterialData *prev_material;
+		GLES3::SkyMaterialData *prev_material;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
 
@@ -335,16 +339,11 @@ protected:
 
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
-	void _draw_sky(Sky *p_sky, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
+	void _draw_sky(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform);
 
 public:
 	RasterizerStorageGLES3 *storage;
 	RasterizerCanvasGLES3 *canvas;
-
-	// References to shaders are needed in public space so they can be accessed in RasterizerStorageGLES3
-	struct State {
-		SkyShaderGLES3 sky_shader;
-	} state;
 
 	GeometryInstance *geometry_instance_create(RID p_base) override;
 	void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
