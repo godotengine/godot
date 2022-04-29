@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProximityGroup" inherits="Spatial" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		General-purpose proximity detection node.
+		General-purpose 3D proximity detection node.
 	</brief_description>
 	<description>
-		General-purpose proximity detection node.
+		General-purpose proximity detection node. [ProximityGroup] can be used for [i]approximate[/i] distance checks, which are faster than exact distance checks using [method Vector3.distance_to] or [method Vector3.distance_squared_to].
+		[ProximityGroup] nodes are automatically grouped together, as long as they share the same [member group_name] and intersect with each other. By calling the [method broadcast], you can invoke a specified method with various parameters to all intersecting members.
+		[ProximityGroup] is cuboid-shaped and consists of a cluster of [Vector3] coordinates. The coordinates are automatically calculated by calling [member grid_radius]. To allow [ProximityGroup] to find its peers (and perform automatic grouping), you need to define its [member group_name] to a non-empty [String]. As soon as this object's shape intersects with another [ProximityGroup] object' shape, and both share the same [member group_name], they will belong together for as long as they intersect.
+		Since [ProximityGroup] doesn't rely the physics engine, you don't need to add any other node as a child (unlike [PhysicsBody]).
+		The [ProximityGroup] uses the [SceneTree] groups in the background by calling the method [method Node.add_to_group] internally. The [SceneTree] group names are constructed by combining the [member group_name] with its coordinates, which are calculated using the [member grid_radius] you defined beforehand.
+		[b]Example:[/b] A [ProximityGroup] node named [code]"PlanetEarth"[/code] at position [code]Vector3(6, 6, 6)[/code] with a [member group_name] set to [code]"planets"[/code] and a [member grid_radius] of [code]Vector3(1, 2, 3)[/code] will create the following [SceneTree] group names:
+		[codeblock]
+		- "planets|5|4|3"
+		- "planets|5|4|4"
+		- "planets|5|4|5"
+		- "planets|5|4|6"
+		- "planets|5|4|7"
+		- "planets|5|4|8"
+		- "planets|5|4|9"
+		- ...
+		[/codeblock]
+		If there is another [ProximityGroup] named [code]"PlanetMars"[/code] with group name [code]"planets"[/code], and one of its coordinates is [code]Vector3(5, 4, 7)[/code], it would normally create the [SceneTree] group called [code]"planets|5|4|7"[/code]. However, since this group name already exists, this [ProximityGroup] object will be [i]added[/i] to the existing one. [code]"PlanetEarth"[/code] is already in this group. As long as both nodes don't change their transform and stop intersecting (or exit the scene tree), they are grouped together. As long as this intersection exists, any call to [method broadcast] will affect [i]both[/i] [ProximityGroup] nodes.
+		There are 3 caveats to keep in mind when using [ProximityGroup]:
+		- The larger the grid radius, the more coordinates and the more [SceneTree] groups are created. This can have a performance impact if too many groups are created.
+		- If the [ProximityGroup] node is transformed in any way (or is removed from the scene tree), the groupings will have to be recalculated. This can also have a performance impact.
+		- If your [member grid_radius] is smaller than [code]Vector3(1, 1, 1)[/code], it will be rounded up to [code]Vector3(1, 1, 1)[/code]. Therefore, small grid radius values may lead to unwanted groupings.
+		[/codeblock]
+		[b]Note:[/b] [ProximityGroup] will be removed in Godot 4.0 in favor of more effective and faster [VisibilityNotifier] functionality. For most use cases, [method Vector3.distance_to] or [method Vector3.distance_squared_to] are fast enough too, especially if you call them less often using a [Timer] node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,15 +36,21 @@
 			<argument index="0" name="method" type="String" />
 			<argument index="1" name="parameters" type="Variant" />
 			<description>
+				Calls on all intersecting [ProximityGroup] the given method and parameters.
+				If the [member dispatch_mode] is set to [constant MODE_PROXY] (the default), all calls are delegated to their respective parent [Node].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="dispatch_mode" type="int" setter="set_dispatch_mode" getter="get_dispatch_mode" enum="ProximityGroup.DispatchMode" default="0">
+			Specifies which node gets contacted on a call of method [method broadcast].
 		</member>
 		<member name="grid_radius" type="Vector3" setter="set_grid_radius" getter="get_grid_radius" default="Vector3( 1, 1, 1 )">
+			The size of the space in 3D units. This also sets the amount of coordinates required to calculate whether two [ProximityGroup] nodes are intersecting or not. Smaller [member grid_radius] values can be used for more precise proximity checks at the cost of performance, since more groups will be created.
 		</member>
 		<member name="group_name" type="String" setter="set_group_name" getter="get_group_name" default="&quot;&quot;">
+			Specify the common group name, to let other [ProximityGroup] nodes know, if they should be auto-grouped with this node in case they intersect with each other.
+			For example, if you have a [ProximityGroup] node named [code]"Earth"[/code] and another called [code]"Mars"[/code], with both nodes having [code]"planet"[/code] as their [member group_name]. Give both planets a significantly larger [member grid_radius] than their actual radius, position them close enough and they'll be automatically grouped.
 		</member>
 	</members>
 	<signals>
@@ -30,13 +58,18 @@
 			<argument index="0" name="method" type="String" />
 			<argument index="1" name="parameters" type="Array" />
 			<description>
+				Emitted when the user calls the [method broadcast] method and has set [member dispatch_mode] to [constant MODE_SIGNAL].
+				The given method and its parameters are passed on to the listeners who connected to this signal of this object, as well as any [ProximityGroup] node this node is grouped together with.
+				[b]Note:[/b] This signal is [i]not[/i] emitted by default, as the default [member dispatch_mode] is [constant MODE_PROXY].
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_PROXY" value="0" enum="DispatchMode">
+			This [ProximityGroup]'s parent will be target of [method broadcast].
 		</constant>
 		<constant name="MODE_SIGNAL" value="1" enum="DispatchMode">
+			This [ProximityGroup] will emit the [signal broadcast] [i]signal[/i] when calling the [method broadcast] [i]method[/i].
 		</constant>
 	</constants>
 </class>
