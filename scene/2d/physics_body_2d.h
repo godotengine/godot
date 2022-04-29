@@ -441,11 +441,11 @@ private:
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 	Ref<KinematicCollision2D> _get_last_slide_collision();
 	const Vector2 &get_up_direction() const;
-	bool _on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up);
+	bool _on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up);
 	void set_up_direction(const Vector2 &p_up_direction);
 	void _set_collision_direction(const PhysicsServer2D::MotionResult &p_result);
 	void _set_platform_data(const PhysicsServer2D::MotionResult &p_result);
-	void _snap_on_floor(bool was_on_floor, bool vel_dir_facing_up);
+	void _snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor = false);
 
 protected:
 	void _notification(int p_what);
