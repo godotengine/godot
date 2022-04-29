@@ -96,9 +96,6 @@ private:
 		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
 
-	RID index_buffer;
-	RID index_array;
-
 public:
 	ToneMapper();
 	~ToneMapper();

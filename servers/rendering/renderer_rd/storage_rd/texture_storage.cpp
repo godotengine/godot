@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "texture_storage.h"
-
-#include "../renderer_storage_rd.h"
+#include "../effects/copy_effects.h"
+#include "material_storage.h"
 
 using namespace RendererRD;
 
@@ -1808,8 +1808,8 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 }
 
 void TextureStorage::update_decal_atlas() {
-	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
-	ERR_FAIL_NULL(effects);
+	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
 
 	if (!decal_atlas.dirty) {
 		return; //nothing to do
@@ -1987,14 +1987,14 @@ void TextureStorage::update_decal_atlas() {
 				while ((K = decal_atlas.textures.next(K))) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
 					Texture *src_tex = get_texture(*K);
-					effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 				}
 
 				RD::get_singleton()->draw_list_end();
 
 				prev_texture = mm.texture;
 			} else {
-				effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
+				copy_effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
 				prev_texture = mm.texture;
 			}
 		} else {
@@ -2623,8 +2623,8 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 }
 
 void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
-	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
-	ERR_FAIL_NULL(effects);
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
 
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -2642,9 +2642,11 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		}
 	}
 
+	// TODO figure out stereo support here
+
 	//single texture copy for backbuffer
 	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
-	effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
 
 	if (!p_gen_mipmaps) {
 		return;
@@ -2660,7 +2662,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		region.size.y = MAX(1, region.size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		effects->gaussian_blur(prev_texture, mipmap, region, true);
+		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();
@@ -2670,8 +2672,8 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
-	ERR_FAIL_NULL(effects);
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
 
 	if (!rt->backbuffer.is_valid()) {
 		_create_render_target_backbuffer(rt);
@@ -2688,15 +2690,15 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	}
 
 	//single texture copy for backbuffer
-	effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
 }
 
 void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	EffectsRD *effects = RendererStorageRD::base_singleton->get_effects();
-	ERR_FAIL_NULL(effects);
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
 
 	if (!rt->backbuffer.is_valid()) {
 		_create_render_target_backbuffer(rt);
@@ -2722,7 +2724,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		region.size.y = MAX(1, region.size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		effects->gaussian_blur(prev_texture, mipmap, region, true);
+		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();

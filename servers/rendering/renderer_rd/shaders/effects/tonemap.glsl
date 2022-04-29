@@ -44,7 +44,11 @@ layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
 
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
+#ifdef MULTIVIEW
+layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
+#else
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
+#endif
 layout(set = 2, binding = 1) uniform sampler2D glow_map;
 
 #ifdef USE_1D_LUT
@@ -118,6 +122,36 @@ float h1(float a) {
 	return 1.0f + w3(a) / (w2(a) + w3(a));
 }
 
+#ifdef MULTIVIEW
+vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
+	float lod = float(p_lod);
+	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
+	vec2 pixel_size = vec2(1.0f) / tex_size;
+
+	uv = uv * tex_size + vec2(0.5f);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec3 p0 = vec3((vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p1 = vec3((vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p2 = vec3((vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p3 = vec3((vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
+
+	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+}
+
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#else // MULTIVIEW
+
 vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
 	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
@@ -145,12 +179,17 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#endif // !MULTIVIEW
 
-#else
+#else // USE_GLOW_FILTER_BICUBIC
 
+#ifdef MULTIVIEW
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
+#else // MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
+#endif // !MULTIVIEW
 
-#endif
+#endif // !USE_GLOW_FILTER_BICUBIC
 
 vec3 tonemap_filmic(vec3 color, float white) {
 	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
@@ -231,7 +270,11 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 	}
 }
 
+#ifdef MULTIVIEW
+vec3 gather_glow(sampler2DArray tex, vec2 uv) { // sample all selected glow levels, view is added to uv later
+#else
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
+#endif // defined(MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
 	if (params.glow_levels[0] > 0.0001) {

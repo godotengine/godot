@@ -1420,6 +1420,25 @@ MaterialStorage::MaterialStorage() {
 	//custom sampler
 	sampler_rd_configure_custom(0.0f);
 
+	// buffers
+	{ //create index array for copy shaders
+		Vector<uint8_t> pv;
+		pv.resize(6 * 4);
+		{
+			uint8_t *w = pv.ptrw();
+			int *p32 = (int *)w;
+			p32[0] = 0;
+			p32[1] = 1;
+			p32[2] = 2;
+			p32[3] = 0;
+			p32[4] = 2;
+			p32[5] = 3;
+		}
+		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		quad_index_array = RD::get_singleton()->index_array_create(quad_index_buffer, 0, 6);
+	}
+
+	// Shaders
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		shader_data_request_func[i] = nullptr;
 	}
@@ -1440,6 +1459,10 @@ MaterialStorage::~MaterialStorage() {
 	memdelete_arr(global_variables.buffer_usage);
 	memdelete_arr(global_variables.buffer_dirty_regions);
 	RD::get_singleton()->free(global_variables.buffer);
+
+	// buffers
+
+	RD::get_singleton()->free(quad_index_buffer); //array gets freed as dependency
 
 	//def samplers
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {

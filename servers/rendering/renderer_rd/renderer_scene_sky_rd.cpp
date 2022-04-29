@@ -32,6 +32,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
 #include "renderer_scene_render_rd.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -730,8 +731,10 @@ bool RendererSceneSkyRD::Sky::set_material(RID p_material) {
 	return true;
 }
 
-Ref<Image> RendererSceneSkyRD::Sky::bake_panorama(RendererStorageRD *p_storage, float p_energy, int p_roughness_layers, const Size2i &p_size) {
+Ref<Image> RendererSceneSkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size) {
 	if (radiance.is_valid()) {
+		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 		tf.width = p_size.width;
@@ -739,7 +742,7 @@ Ref<Image> RendererSceneSkyRD::Sky::bake_panorama(RendererStorageRD *p_storage, 
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 		RID rad_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		p_storage->get_effects()->copy_cubemap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, reflection.layers.size() > 1);
+		copy_effects->copy_cubemap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, reflection.layers.size() > 1);
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
 		RD::get_singleton()->free(rad_tex);
 
@@ -1905,7 +1908,7 @@ Ref<Image> RendererSceneSkyRD::sky_bake_panorama(RID p_sky, float p_energy, bool
 
 	update_dirty_skys();
 
-	return sky->bake_panorama(storage, p_energy, p_bake_irradiance ? roughness_layers : 0, p_size);
+	return sky->bake_panorama(p_energy, p_bake_irradiance ? roughness_layers : 0, p_size);
 }
 
 RID RendererSceneSkyRD::sky_get_radiance_texture_rd(RID p_sky) const {
