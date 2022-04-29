@@ -93,22 +93,28 @@
 		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
 			Lightmap baking was successful.
 		</constant>
-		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="1" enum="BakeError">
+		<constant name="BAKE_ERROR_NO_SCENE_ROOT" value="1" enum="BakeError">
+			Lightmap baking failed because the root node for the edited scene could not be accessed.
+		</constant>
+		<constant name="BAKE_ERROR_FOREIGN_DATA" value="2" enum="BakeError">
+			Lightmap baking failed as the lightmap data resource is embedded in a foreign resource.
+		</constant>
+		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="3" enum="BakeError">
 			Lightmap baking failed as there is no lightmapper available in this Godot build.
 		</constant>
-		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="2" enum="BakeError">
+		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="4" enum="BakeError">
 			Lightmap baking failed as the [LightmapGIData] save path isn't configured in the resource.
 		</constant>
-		<constant name="BAKE_ERROR_NO_MESHES" value="3" enum="BakeError">
+		<constant name="BAKE_ERROR_NO_MESHES" value="5" enum="BakeError">
 			Lightmap baking failed as there are no meshes whose [member GeometryInstance3D.gi_mode] is [constant GeometryInstance3D.GI_MODE_STATIC] and with valid UV2 mapping in the current scene. You may need to select 3D scenes in the Import dock and change their global illumination mode accordingly.
 		</constant>
-		<constant name="BAKE_ERROR_MESHES_INVALID" value="4" enum="BakeError">
+		<constant name="BAKE_ERROR_MESHES_INVALID" value="6" enum="BakeError">
 			Lightmap baking failed as the lightmapper failed to analyze some of the meshes marked as static for baking.
 		</constant>
-		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="5" enum="BakeError">
+		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="7" enum="BakeError">
 			Lightmap baking failed as the resulting image couldn't be saved or imported by Godot after it was saved.
 		</constant>
-		<constant name="BAKE_ERROR_USER_ABORTED" value="6" enum="BakeError">
+		<constant name="BAKE_ERROR_USER_ABORTED" value="8" enum="BakeError">
 			The user aborted the lightmap baking operation (typically by clicking the [b]Cancel[/b] button in the progress dialog).
 		</constant>
 		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
