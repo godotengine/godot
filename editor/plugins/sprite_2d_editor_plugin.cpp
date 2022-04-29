@@ -160,6 +160,11 @@ void Sprite2DEditor::_menu_option(int p_option) {
 }
 
 void Sprite2DEditor::_update_mesh_data() {
+	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
+		err_dialog->set_text(TTR("Can't convert a Sprite2D from a foreign scene."));
+		err_dialog->popup_centered();
+	}
+
 	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		err_dialog->set_text(TTR("Sprite2D is empty!"));
