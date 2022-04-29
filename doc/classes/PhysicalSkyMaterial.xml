@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="dither_strength" type="float" setter="set_dither_strength" getter="get_dither_strength" default="1.0">
-			Sets the amount of dithering to use. Dithering helps reduce banding that appears from the smooth changes in color in the sky. Use the lowest value possible, higher amounts may add fuzziness to the sky.
+			The amount of dithering to use. Dithering helps reduce banding that appears from the smooth changes in color in the sky. Use the lowest value possible for your given sky settings, as higher amounts may add fuzziness to the sky.
 		</member>
 		<member name="exposure" type="float" setter="set_exposure" getter="get_exposure" default="0.1">
 			Sets the exposure of the sky. Higher exposure values make the entire sky brighter.
