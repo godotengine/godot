@@ -846,6 +846,7 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		actions.renames["POSITION"] = "params.position_multiplier.xyz";
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["TIME"] = "params.time";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);

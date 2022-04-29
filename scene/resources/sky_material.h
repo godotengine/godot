@@ -52,7 +52,7 @@ private:
 
 	float sun_angle_max = 0.0f;
 	float sun_curve = 0.0f;
-	float dither_strength = 0.0f;
+	bool use_debanding = true;
 
 	static Mutex shader_mutex;
 	static RID shader;
@@ -99,8 +99,8 @@ public:
 	void set_sun_curve(float p_curve);
 	float get_sun_curve() const;
 
-	void set_dither_strength(float p_dither_strength);
-	float get_dither_strength() const;
+	void set_use_debanding(bool p_use_debanding);
+	bool get_use_debanding() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
@@ -167,7 +167,7 @@ private:
 	float sun_disk_scale = 0.0f;
 	Color ground_color;
 	float exposure = 0.0f;
-	float dither_strength = 0.0f;
+	bool use_debanding = true;
 	Ref<Texture2D> night_sky;
 	static void _update_shader();
 	mutable bool shader_set = false;
@@ -203,8 +203,8 @@ public:
 	void set_exposure(float p_exposure);
 	float get_exposure() const;
 
-	void set_dither_strength(float p_dither_strength);
-	float get_dither_strength() const;
+	void set_use_debanding(bool p_use_debanding);
+	bool get_use_debanding() const;
 
 	void set_night_sky(const Ref<Texture2D> &p_night_sky);
 	Ref<Texture2D> get_night_sky() const;

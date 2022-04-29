@@ -1632,6 +1632,7 @@ ShaderCompiler::DefaultIdentifierActions actions;
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["TIME"] = "time";
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
