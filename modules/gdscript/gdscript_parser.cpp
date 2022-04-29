@@ -4914,6 +4914,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (autoexport && member.data_type.has_type) {
 					if (member.data_type.kind == DataType::BUILTIN) {
 						member._export.type = member.data_type.builtin_type;
+						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 					} else if (member.data_type.kind == DataType::NATIVE) {
 						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
 							member._export.type = Variant::OBJECT;
