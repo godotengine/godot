@@ -219,7 +219,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		if (p_viewport->clear_mode == RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
 			p_viewport->clear_mode = RS::VIEWPORT_CLEAR_NEVER;
 		}
-	}	
+	}
 
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
 		_draw_3d(p_viewport);
