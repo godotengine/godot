@@ -140,12 +140,10 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	const int modifications_size = modifications.size();
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
 
-	if (p_mod == nullptr) {
-		modifications.remove_at(p_mod_idx);
-	} else {
+	if (p_mod.is_valid()) {
 		p_mod->_setup_modification(this);
-		modifications[p_mod_idx] = p_mod;
 	}
+	modifications[p_mod_idx] = p_mod;
 }
 
 void SkeletonModificationStack3D::set_modification_count(int p_count) {
