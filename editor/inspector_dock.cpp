@@ -247,7 +247,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	}
 
 	if (res.is_null()) {
-		warning_dialog->set_text(TTR("Failed to load resource."));
+		info_dialog->set_text(TTR("Failed to load resource."));
 		return;
 	};
 
@@ -409,8 +409,8 @@ void InspectorDock::_menu_expand_revertable() {
 	inspector->expand_revertable();
 }
 
-void InspectorDock::_warning_pressed() {
-	warning_dialog->popup_centered();
+void InspectorDock::_info_pressed() {
+	info_dialog->popup_centered();
 }
 
 Container *InspectorDock::get_addon_area() {
@@ -446,8 +446,13 @@ void InspectorDock::_notification(int p_what) {
 			history_menu->set_icon(get_theme_icon(SNAME("History"), SNAME("EditorIcons")));
 			object_menu->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			warning->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-			warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			if (info_is_warning) {
+				info->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+				info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			} else {
+				info->set_icon(get_theme_icon(SNAME("NodeInfo"), SNAME("EditorIcons")));
+				info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Editor")));
+			}
 		} break;
 	}
 }
@@ -476,11 +481,22 @@ void InspectorDock::open_resource(const String &p_type) {
 	_load_resource(p_type);
 }
 
-void InspectorDock::set_warning(const String &p_message) {
-	warning->hide();
-	if (!p_message.is_empty()) {
-		warning->show();
-		warning_dialog->set_text(p_message);
+void InspectorDock::set_info(const String &p_button_text, const String &p_message, bool p_is_warning) {
+	info->hide();
+	info_is_warning = p_is_warning;
+
+	if (info_is_warning) {
+		info->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+		info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	} else {
+		info->set_icon(get_theme_icon(SNAME("NodeInfo"), SNAME("EditorIcons")));
+		info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Editor")));
+	}
+
+	if (!p_button_text.is_empty() && !p_message.is_empty()) {
+		info->show();
+		info->set_text(p_button_text);
+		info_dialog->set_text(p_message);
 	}
 }
 
@@ -515,7 +531,7 @@ void InspectorDock::update(Object *p_object) {
 	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_MAKE_BUILT_IN), !is_resource || is_text_file);
 
 	if (!is_object || is_text_file) {
-		warning->hide();
+		info->hide();
 		editor_path->clear_path();
 		return;
 	}
@@ -707,12 +723,11 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
 	object_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
 
-	warning = memnew(Button);
-	add_child(warning);
-	warning->set_text(TTR("Changes may be lost!"));
-	warning->set_clip_text(true);
-	warning->hide();
-	warning->connect("pressed", callable_mp(this, &InspectorDock::_warning_pressed));
+	info = memnew(Button);
+	add_child(info);
+	info->set_clip_text(true);
+	info->hide();
+	info->connect("pressed", callable_mp(this, &InspectorDock::_info_pressed));
 
 	unique_resources_confirmation = memnew(ConfirmationDialog);
 	add_child(unique_resources_confirmation);
@@ -737,8 +752,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
 
-	warning_dialog = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(warning_dialog);
+	info_dialog = memnew(AcceptDialog);
+	EditorNode::get_singleton()->get_gui_base()->add_child(info_dialog);
 
 	load_resource_dialog = memnew(EditorFileDialog);
 	add_child(load_resource_dialog);

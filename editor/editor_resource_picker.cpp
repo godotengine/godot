@@ -81,6 +81,8 @@ void EditorResourcePicker::_update_resource() {
 	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 	}
+
+	assign_button->set_disabled(!editable && !edited_resource.is_valid());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
@@ -171,35 +173,50 @@ void EditorResourcePicker::_update_menu_items() {
 	edit_menu->clear();
 
 	// Add options for creating specific subtypes of the base resource type.
-	set_create_options(edit_menu);
+	if (is_editable()) {
+		set_create_options(edit_menu);
 
-	// Add an option to load a resource from a file using the QuickOpen dialog.
-	edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+		// Add an option to load a resource from a file using the QuickOpen dialog.
+		edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
 
-	// Add an option to load a resource from a file using the regular file dialog.
-	edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Load"), OBJ_MENU_LOAD);
+		// Add an option to load a resource from a file using the regular file dialog.
+		edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Load"), OBJ_MENU_LOAD);
+	}
 
 	// Add options for changing existing value of the resource.
 	if (edited_resource.is_valid()) {
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), TTR("Edit"), OBJ_MENU_EDIT);
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), TTR("Clear"), OBJ_MENU_CLEAR);
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+		// Determine if the edited resource is part of another scene (foreign) which was imported
+		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource);
 
-		// Check whether the resource has subresources.
-		List<PropertyInfo> property_list;
-		edited_resource->get_property_list(&property_list);
-		bool has_subresources = false;
-		for (PropertyInfo &p : property_list) {
-			if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script")) {
-				has_subresources = true;
-				break;
+		// If the resource is determined to be foreign and imported, change the menu entry's description to 'inspect' rather than 'edit'
+		// since will only be able to view its properties in read-only mode.
+		if (is_edited_resource_foreign_import) {
+			// The 'Search' icon is a magnifying glass, which seems appropriate, but maybe a bespoke icon is preferred here.
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")), TTR("Inspect"), OBJ_MENU_INSPECT);
+		} else {
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), TTR("Edit"), OBJ_MENU_INSPECT);
+		}
+
+		if (is_editable()) {
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")), TTR("Clear"), OBJ_MENU_CLEAR);
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+
+			// Check whether the resource has subresources.
+			List<PropertyInfo> property_list;
+			edited_resource->get_property_list(&property_list);
+			bool has_subresources = false;
+			for (PropertyInfo &p : property_list) {
+				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script")) {
+					has_subresources = true;
+					break;
+				}
 			}
-		}
-		if (has_subresources) {
-			edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
-		}
+			if (has_subresources) {
+				edit_menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+			}
 
-		edit_menu->add_icon_item(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->add_icon_item(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")), TTR("Save"), OBJ_MENU_SAVE);
+		}
 
 		if (edited_resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
@@ -210,14 +227,16 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options to copy/paste resource.
 	Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
-	if (cb.is_valid()) {
-		if (base_type.is_empty()) {
-			paste_valid = true;
-		} else {
-			for (int i = 0; i < base_type.get_slice_count(","); i++) {
-				if (ClassDB::is_parent_class(cb->get_class(), base_type.get_slice(",", i))) {
-					paste_valid = true;
-					break;
+	if (is_editable()) {
+		if (cb.is_valid()) {
+			if (base_type.is_empty()) {
+				paste_valid = true;
+			} else {
+				for (int i = 0; i < base_type.get_slice_count(","); i++) {
+					if (ClassDB::is_parent_class(cb->get_class(), base_type.get_slice(",", i))) {
+						paste_valid = true;
+						break;
+					}
 				}
 			}
 		}
@@ -236,7 +255,7 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options to convert existing resource to another type of resource.
-	if (edited_resource.is_valid()) {
+	if (is_editable() && edited_resource.is_valid()) {
 		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
 		if (conversions.size()) {
 			edit_menu->add_separator();
@@ -295,7 +314,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			quick_open->set_title(TTR("Resource"));
 		} break;
 
-		case OBJ_MENU_EDIT: {
+		case OBJ_MENU_INSPECT: {
 			if (edited_resource.is_valid()) {
 				emit_signal(SNAME("resource_selected"), edited_resource, true);
 			}
@@ -491,20 +510,21 @@ void EditorResourcePicker::_button_draw() {
 }
 
 void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
-	if (!editable) {
-		return;
-	}
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-			_update_menu_items();
+			// Only attempt to update and show the menu if we have
+			// a valid resource or the Picker is editable, as
+			// there will otherwise be nothing to display.
+			if (edited_resource.is_valid() || is_editable()) {
+				_update_menu_items();
 
-			Vector2 pos = get_screen_position() + mb->get_position();
-			edit_menu->reset_size();
-			edit_menu->set_position(pos);
-			edit_menu->popup();
+				Vector2 pos = get_screen_position() + mb->get_position();
+				edit_menu->reset_size();
+				edit_menu->set_position(pos);
+				edit_menu->popup();
+			}
 		}
 	}
 }
@@ -734,7 +754,7 @@ void EditorResourcePicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "edit")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "inspect")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
@@ -866,7 +886,7 @@ void EditorResourcePicker::set_toggle_pressed(bool p_pressed) {
 
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
-	assign_button->set_disabled(!editable);
+	assign_button->set_disabled(!editable && !edited_resource.is_valid());
 	edit_button->set_visible(editable);
 }
 
