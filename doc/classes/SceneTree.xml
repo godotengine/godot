@@ -91,6 +91,7 @@
 			<return type="Node" />
 			<argument index="0" name="group" type="StringName" />
 			<description>
+				Returns the first node in the specified group, or [code]null[/code] if the group is empty or does not exist.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
