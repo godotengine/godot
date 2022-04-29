@@ -2456,8 +2456,6 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
-	bool in_script_variables = false;
-
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
@@ -2549,9 +2547,6 @@ void EditorInspector::update_tree() {
 				if (category->icon.is_null() && has_theme_icon(base_type, SNAME("EditorIcons"))) {
 					category->icon = get_theme_icon(base_type, SNAME("EditorIcons"));
 				}
-				in_script_variables = true;
-			} else {
-				in_script_variables = false;
 			}
 			if (category->icon.is_null()) {
 				if (!type.is_empty()) { // Can happen for built-in scripts.
@@ -2687,9 +2682,9 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		// Don't localize properties in Script Variables category.
+		// Don't localize script variables.
 		EditorPropertyNameProcessor::Style name_style = property_name_style;
-		if (in_script_variables && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 		}
 		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
@@ -2745,9 +2740,15 @@ void EditorInspector::update_tree() {
 				String label;
 				String tooltip;
 
+				// Don't localize groups for script variables.
+				EditorPropertyNameProcessor::Style section_name_style = property_name_style;
+				if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+					section_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+				}
+
 				// Only process group label if this is not the group or subgroup.
 				if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
-					if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+					if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 						label = TTRGET(component);
 						tooltip = component;
 					} else {
@@ -2755,8 +2756,8 @@ void EditorInspector::update_tree() {
 						tooltip = TTRGET(component);
 					}
 				} else {
-					label = EditorPropertyNameProcessor::get_singleton()->process_name(component, property_name_style);
-					tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(property_name_style));
+					label = EditorPropertyNameProcessor::get_singleton()->process_name(component, section_name_style);
+					tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(section_name_style));
 				}
 
 				Color c = sscolor;
