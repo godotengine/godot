@@ -31,6 +31,32 @@
 #include "tween.h"
 
 #include "core/method_bind_ext.gen.inc"
+#include "scene/animation/easing_equations.h"
+
+Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] = {
+	{ &linear::in, &linear::in, &linear::in, &linear::in }, // Linear is the same for each easing.
+	{ &sine::in, &sine::out, &sine::in_out, &sine::out_in },
+	{ &quint::in, &quint::out, &quint::in_out, &quint::out_in },
+	{ &quart::in, &quart::out, &quart::in_out, &quart::out_in },
+	{ &quad::in, &quad::out, &quad::in_out, &quad::out_in },
+	{ &expo::in, &expo::out, &expo::in_out, &expo::out_in },
+	{ &elastic::in, &elastic::out, &elastic::in_out, &elastic::out_in },
+	{ &cubic::in, &cubic::out, &cubic::in_out, &cubic::out_in },
+	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
+	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
+	{ &back::in, &back::out, &back::in_out, &back::out_in },
+};
+
+real_t Tween::run_equation(Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
+	if (p_duration == 0) {
+		// Special case to avoid dividing by 0 in equations.
+		return p_initial + p_delta;
+	}
+
+	interpolater func = interpolaters[p_trans_type][p_ease_type];
+	ERR_FAIL_NULL_V(func, p_initial);
+	return func(p_time, p_initial, p_delta, p_duration);
+}
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
 	// Add a new pending command and reference it
@@ -444,23 +470,23 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 	Variant result;
 
 #define APPLY_EQUATION(element) \
-	r.element = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, i.element, d.element, p_data.duration);
+	r.element = run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, i.element, d.element, p_data.duration);
 
 	// What type of data are we interpolating?
 	switch (initial_val.get_type()) {
 		case Variant::BOOL:
 			// Run the boolean specific equation (checking if it is at least 0.5)
-			result = (_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, initial_val, delta_val, p_data.duration)) >= 0.5;
+			result = (run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, initial_val, delta_val, p_data.duration)) >= 0.5;
 			break;
 
 		case Variant::INT:
 			// Run the integer specific equation
-			result = (int)_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int)initial_val, (int)delta_val, p_data.duration);
+			result = (int)run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int)initial_val, (int)delta_val, p_data.duration);
 			break;
 
 		case Variant::REAL:
 			// Run the REAL specific equation
-			result = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (real_t)initial_val, (real_t)delta_val, p_data.duration);
+			result = run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (real_t)initial_val, (real_t)delta_val, p_data.duration);
 			break;
 
 		case Variant::VECTOR2: {
