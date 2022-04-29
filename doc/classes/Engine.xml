@@ -146,7 +146,7 @@
 			else:
 			    simulate_physics()
 			[/codeblock]
-			See [url=$DOCS_URL/tutorials/misc/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
+			See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
 			[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] (e.g. when pressing [code]F5[/code]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] will evaluate to [code]true[/code] both when the code is running in the editor and when running the project from the editor, but it will evaluate to [code]false[/code] when the code is run from an exported project.
 		</member>
 		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second" default="60">
