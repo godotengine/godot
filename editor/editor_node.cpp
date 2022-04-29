@@ -4128,7 +4128,10 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 					// We've reached a native class, use its icon.
 					String base_type;
 					script->get_language()->get_global_class_name(script->get_path(), &base_type);
-					return gui_base->get_theme_icon(base_type, "EditorIcons");
+					if (gui_base->has_theme_icon(base_type, "EditorIcons")) {
+						return gui_base->get_theme_icon(base_type, "EditorIcons");
+					}
+					return gui_base->get_theme_icon(p_fallback, "EditorIcons");
 				}
 				script = base_script;
 				class_name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
