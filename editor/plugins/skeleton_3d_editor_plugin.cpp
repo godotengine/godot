@@ -357,7 +357,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 void Skeleton3DEditor::create_physical_skeleton() {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ERR_FAIL_COND(!get_tree());
-	Node *owner = skeleton == get_tree()->get_edited_scene_root() ? skeleton : skeleton->get_owner();
+	Node *owner = get_tree()->get_edited_scene_root();
 
 	const int bc = skeleton->get_bone_count();
 
@@ -368,37 +368,47 @@ void Skeleton3DEditor::create_physical_skeleton() {
 	Vector<BoneInfo> bones_infos;
 	bones_infos.resize(bc);
 
-	for (int bone_id = 0; bc > bone_id; ++bone_id) {
-		const int parent = skeleton->get_bone_parent(bone_id);
+	if (bc > 0) {
+		ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
+		for (int bone_id = 0; bc > bone_id; ++bone_id) {
+			const int parent = skeleton->get_bone_parent(bone_id);
 
-		if (parent < 0) {
-			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
+			if (parent < 0) {
+				bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
+			} else {
+				const int parent_parent = skeleton->get_bone_parent(parent);
 
-		} else {
-			const int parent_parent = skeleton->get_bone_parent(parent);
+				bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 
-			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
+				// Create physical bone on parent.
+				if (!bones_infos[parent].physical_bone) {
+					PhysicalBone3D *physical_bone = create_physical_bone(parent, bone_id, bones_infos);
+					if (physical_bone && physical_bone->get_child(0)) {
+						CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(physical_bone->get_child(0));
+						if (collision_shape) {
+							bones_infos.write[parent].physical_bone = physical_bone;
 
-			// Create physical bone on parent.
-			if (!bones_infos[parent].physical_bone) {
-				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
+							ur->add_do_method(skeleton, "add_child", physical_bone);
+							ur->add_do_method(physical_bone, "set_owner", owner);
+							ur->add_do_method(collision_shape, "set_owner", owner);
+							ur->add_do_property(physical_bone, "bone_name", skeleton->get_bone_name(parent));
 
-				ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
-				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
-				ur->add_do_reference(bones_infos[parent].physical_bone);
-				ur->add_undo_method(skeleton, "remove_child", bones_infos[parent].physical_bone);
-				ur->commit_action();
+							// Create joint between parent of parent.
+							if (parent_parent != -1) {
+								ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_PIN);
+							}
 
-				bones_infos[parent].physical_bone->set_bone_name(skeleton->get_bone_name(parent));
-				bones_infos[parent].physical_bone->set_owner(owner);
-				bones_infos[parent].physical_bone->get_child(0)->set_owner(owner); // set shape owner
+							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", physical_bone);
+							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", collision_shape);
 
-				// Create joint between parent of parent.
-				if (-1 != parent_parent) {
-					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone3D::JOINT_TYPE_PIN);
+							ur->add_do_reference(physical_bone);
+							ur->add_undo_method(skeleton, "remove_child", physical_bone);
+						}
+					}
 				}
 			}
 		}
+		ur->commit_action();
 	}
 }
 
@@ -414,6 +424,7 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
 	bone_shape->set_shape(bone_shape_capsule);
+	bone_shape->set_name("CollisionShape3D");
 
 	Transform3D capsule_transform;
 	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
