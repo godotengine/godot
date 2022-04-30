@@ -59,6 +59,7 @@
 	<members>
 		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
 			The material's base color.
+			[b]Note:[/b] If [member detail_enabled] is [code]true[/code] and a [member detail_albedo] texture is specified, [member albedo_color] will [i]not[/i] modulate the detail texture. This can be used to color partial areas of a material by not specifying an albedo texture and using a transparent [member detail_albedo] texture instead.
 		</member>
 		<member name="albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
 			Forces a conversion of the [member albedo_texture] from sRGB space to linear space.
@@ -148,19 +149,20 @@
 			Determines when depth rendering takes place. See [enum DepthDrawMode]. See also [member transparency].
 		</member>
 		<member name="detail_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
-			Texture that specifies the color of the detail overlay.
+			Texture that specifies the color of the detail overlay. [member detail_albedo]'s alpha channel is used as a mask, even when the material is opaque. To use a dedicated texture as a mask, see [member detail_mask].
+			[b]Note:[/b] [member detail_albedo] is [i]not[/i] modulated by [member albedo_color].
 		</member>
 		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
 			Specifies how the [member detail_albedo] should blend with the current [code]ALBEDO[/code]. See [enum BlendMode] for options.
 		</member>
 		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], enables the detail overlay. Detail is a second texture that gets mixed over the surface of the object based on [member detail_mask]. This can be used to add variation to objects, or to blend between two different albedo/normal textures.
+			If [code]true[/code], enables the detail overlay. Detail is a second texture that gets mixed over the surface of the object based on [member detail_mask] and [member detail_albedo]'s alpha channel. This can be used to add variation to objects, or to blend between two different albedo/normal textures.
 		</member>
 		<member name="detail_mask" type="Texture2D" setter="set_texture" getter="get_texture">
-			Texture used to specify how the detail textures get blended with the base textures.
+			Texture used to specify how the detail textures get blended with the base textures. [member detail_mask] can be used together with [member detail_albedo]'s alpha channel (if any).
 		</member>
 		<member name="detail_normal" type="Texture2D" setter="set_texture" getter="get_texture">
-			Texture that specifies the per-pixel normal of the detail overlay.
+			Texture that specifies the per-pixel normal of the detail overlay. The [member detail_normal] texture only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [member detail_normal] is oriented around the surface normal provided by the [Mesh].
 			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV" default="0">
@@ -262,9 +264,10 @@
 			The strength of the normal map's effect.
 		</member>
 		<member name="normal_texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			Texture used to specify the normal at a given pixel. The [code]normal_texture[/code] only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [code]normal_texture[/code] is oriented around the surface normal provided by the [Mesh].
+			Texture used to specify the normal at a given pixel. The [member normal_texture] only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [member normal_texture] is oriented around the surface normal provided by the [Mesh].
 			[b]Note:[/b] The mesh must have both normals and tangents defined in its vertex data. Otherwise, the normal map won't render correctly and will only appear to darken the whole surface. If creating geometry with [SurfaceTool], you can use [method SurfaceTool.generate_normals] and [method SurfaceTool.generate_tangents] to automatically generate normals and tangents respectively.
 			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
+			[b]Note:[/b] If [member detail_enabled] is [code]true[/code], the [member detail_albedo] texture is drawn [i]below[/i] the [member normal_texture]. To display a normal map [i]above[/i] the [member detail_albedo] texture, use [member detail_normal] instead.
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
@@ -709,7 +712,7 @@
 			Used to read from the alpha channel of a texture.
 		</constant>
 		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4" enum="TextureChannel">
-			Currently unused.
+			Used to read from the linear (non-perceptual) average of the red, green and blue channels of a texture.
 		</constant>
 		<constant name="EMISSION_OP_ADD" value="0" enum="EmissionOperator">
 			Adds the emission color to the color from the emission texture.
