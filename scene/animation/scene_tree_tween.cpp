@@ -272,13 +272,14 @@ bool SceneTreeTween::step(float p_delta) {
 	bool step_active = false;
 	total_time += rem_delta;
 
+#ifdef DEBUG_ENABLED
+	float initial_delta = rem_delta;
+	bool potential_infinite = false;
+#endif
+
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
 		step_active = false;
-
-#ifdef DEBUG_ENABLED
-		float prev_delta = rem_delta;
-#endif
 
 		List<Ref<Tweener>> &step = tweeners.write[current_step];
 		for (int i = 0; i < step.size(); i++) {
@@ -307,17 +308,21 @@ bool SceneTreeTween::step(float p_delta) {
 					emit_signal(SceneStringNames::get_singleton()->loop_finished, loops_done);
 					current_step = 0;
 					start_tweeners();
+#ifdef DEBUG_ENABLED
+					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
+						if (!potential_infinite) {
+							potential_infinite = true;
+						} else {
+							// Looped twice without using any time, this is 100% certain infinite loop.
+							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+						}
+					}
+#endif
 				}
 			} else {
 				start_tweeners();
 			}
 		}
-
-#ifdef DEBUG_ENABLED
-		if (Math::is_equal_approx(rem_delta, prev_delta) && running && loops <= 0) {
-			ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
-		}
-#endif
 	}
 
 	return true;
