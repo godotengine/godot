@@ -171,13 +171,13 @@ public:
 	void tile_set_tile_mode(int p_id, TileMode p_tile_mode);
 	TileMode tile_get_tile_mode(int p_id) const;
 
-	void autotile_set_icon_coordinate(int p_id, Vector2 coord);
+	void autotile_set_icon_coordinate(int p_id, const Vector2 &coord);
 	Vector2 autotile_get_icon_coordinate(int p_id) const;
 
 	void autotile_set_spacing(int p_id, int p_spacing);
 	int autotile_get_spacing(int p_id) const;
 
-	void autotile_set_size(int p_id, Size2 p_size);
+	void autotile_set_size(int p_id, const Size2 &p_size);
 	Size2 autotile_get_size(int p_id) const;
 
 	void autotile_clear_bitmask_map(int p_id);
@@ -189,8 +189,8 @@ public:
 	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, int> &autotile_get_z_index_map(int p_id) const;
 
-	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag);
-	uint32_t autotile_get_bitmask(int p_id, Vector2 p_coord);
+	void autotile_set_bitmask(int p_id, const Vector2 &p_coord, uint32_t p_flag);
+	uint32_t autotile_get_bitmask(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, uint32_t> &autotile_get_bitmask_map(int p_id);
 	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
 	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
